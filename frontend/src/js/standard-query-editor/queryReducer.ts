@@ -3,7 +3,20 @@ import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTre
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 
-import type { TableT } from "../api/types";
+import type {
+  AndQueryT,
+  TableT,
+  OrNodeT,
+  DateRestrictionNodeT,
+  NegationNodeT,
+  QueryConceptNodeT,
+  SavedQueryNodeT,
+  SelectorT,
+  TableConfigT,
+  FilterConfigT,
+  RangeFilterValueT,
+  FilterIdT,
+} from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
 import { selectsWithDefaults } from "../model/select";
@@ -22,11 +35,7 @@ import {
 
 import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
 
-import {
-  INTEGER_RANGE,
-  REAL_RANGE,
-  MONEY_RANGE,
-} from "../form-components/filterTypes";
+import type { TreesT } from "../concept-trees/reducer";
 
 import {
   DROP_AND_NODE,
@@ -58,12 +67,13 @@ import {
 
 import type {
   QueryNodeType,
-  StandardQueryType,
   DraggedNodeType,
   DraggedQueryType,
+  QueryGroupType,
 } from "./types";
+import { isMultiSelectFilter } from "../model/filter";
 
-export type StandardQueryStateT = StandardQueryType;
+export type StandardQueryStateT = QueryGroupType[];
 
 const initialState: StandardQueryStateT = [];
 
@@ -441,6 +451,27 @@ const resetGroupDates = (state: StandardQueryStateT, action: any) => {
   return setGroupProperties(state, andIdx, { dateRange: null });
 };
 
+const isRangeFilterConfig = (
+  filter: FilterConfigT
+): filter is {
+  filter: FilterIdT;
+  value: RangeFilterValueT;
+  type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE";
+} =>
+  filter.type === "INTEGER_RANGE" ||
+  filter.type === "REAL_RANGE" ||
+  filter.type === "MONEY_RANGE";
+
+const isMultiSelectFilterConfig = (
+  filter: FilterConfigT
+): filter is {
+  filter: FilterIdT;
+  value: FilterIdT[];
+  type: "MULTI_SELECT" | "BIG_MULTI_SELECT";
+} =>
+  (filter.type === "MULTI_SELECT" || filter.type === "BIG_MULTI_SELECT") &&
+  filter.value instanceof Array;
+
 // Merges filter values from `table` into declared filters from `savedTable`
 //
 // `savedTable` may define filters, but it won't have any filter values,
@@ -448,55 +479,79 @@ const resetGroupDates = (state: StandardQueryStateT, action: any) => {
 // `savedConcept` is never modified and only declares possible filters.
 // Since `table` comes from a previous query, it may have set filter values
 // if so, we will need to merge them in.
-const mergeFiltersFromSavedConcept = (savedTable, table) => {
+const mergeFiltersFromSavedConcept = (
+  savedTable: TableT,
+  table?: TableConfigT
+) => {
   if (!table || !table.filters) return savedTable.filters || null;
 
   if (!savedTable.filters) return null;
 
   return savedTable.filters.map((filter) => {
     // TODO: Improve the api and don't use `.filter`, but `.id` or `.filterId`
-    const matchingFilter =
-      table.filters.find((f) => f.filter === filter.id) || {};
+    const matchingFilter = table.filters!.find((f) => f.filter === filter.id);
 
-    const filterModeWithValue =
-      matchingFilter.type === INTEGER_RANGE ||
-      matchingFilter.type === REAL_RANGE ||
-      matchingFilter.type === MONEY_RANGE
-        ? matchingFilter.value &&
-          !isEmpty(matchingFilter.value.min) &&
-          !isEmpty(matchingFilter.value.max) &&
-          matchingFilter.value.min === matchingFilter.value.max
+    if (!matchingFilter) {
+      return filter;
+    }
+
+    if (isRangeFilterConfig(matchingFilter)) {
+      const filterDetails =
+        matchingFilter.value &&
+        !isEmpty(matchingFilter.value.min) &&
+        !isEmpty(matchingFilter.value.max) &&
+        matchingFilter.value.min === matchingFilter.value.max
           ? { mode: "exact", value: { exact: matchingFilter.value.min } }
-          : { mode: "range", value: matchingFilter.value }
-        : matchingFilter;
+          : { mode: "range", value: matchingFilter.value };
 
-    // If value is an array, there must be (multi-select) options to get other attributes from
-    const filterModeWithMappedValue =
-      filterModeWithValue.value && filterModeWithValue.value instanceof Array
-        ? {
-            ...filterModeWithValue,
-            value: filterModeWithValue.value.map((val) =>
-              !!filter.options
-                ? filter.options.find((op) => op.value === val)
-                : val
-            ),
-            defaultValue: filterModeWithValue.value.filter((val) => {
-              if (!filter.options) return false;
-              return !exists(filter.options.find((opt) => opt.value === val));
-            }),
-            type: filter.type,
+      return { ...filter, ...filterDetails };
+    }
+
+    if (isMultiSelectFilterConfig(matchingFilter)) {
+      const filterDetails = {
+        ...matchingFilter,
+        type: filter.type, // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
+        value: matchingFilter.value
+          .map((val) => {
+            if (!isMultiSelectFilter(filter)) {
+              console.error(
+                `Filter: ${filter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`
+              );
+              return val;
+            } else {
+              // There is the possibility, that we have a BIG_MULTI_SELECT that loads options async.
+              // Then filter.options would be empty and we wouldn't find it
+              return filter.options.find((op) => op.value === val);
+            }
+          })
+          .filter(exists),
+        // For BIG MULTI SELECT only, to be able to load all non-loaded options form the defaultValue later
+        defaultValue: matchingFilter.value.filter((val) => {
+          if (!isMultiSelectFilter(filter)) {
+            console.error(
+              `Filter: ${filter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`
+            );
+            return false;
           }
-        : filterModeWithValue;
 
-    return {
-      ...filter,
-      ...filterModeWithMappedValue, // => this one may contain a "value" property
-    };
+          return !exists(filter.options.find((opt) => opt.value === val));
+        }),
+      };
+
+      return { ...filter, ...filterDetails };
+    }
+
+    return { ...filter, ...matchingFilter };
   });
 };
 
-const mergeSelects = (savedSelects, conceptOrTable) => {
-  if (!conceptOrTable || !conceptOrTable.selects) return savedSelects || null;
+const mergeSelects = (
+  savedSelects?: SelectorT[],
+  conceptOrTable?: QueryConceptNodeT | TableT
+) => {
+  if (!conceptOrTable || !conceptOrTable.selects) {
+    return savedSelects || null;
+  }
 
   if (!savedSelects) return null;
 
@@ -519,7 +574,7 @@ const mergeDateColumn = (savedTable: TableT, table: TableT) => {
   };
 };
 
-const mergeTables = (savedTables, concept) => {
+const mergeTables = (savedTables: TableT[], concept: QueryConceptNodeT) => {
   return savedTables
     ? savedTables.map((savedTable) => {
         // Find corresponding table in previous queryObject
@@ -545,19 +600,33 @@ const mergeTables = (savedTables, concept) => {
 // Look for tables in the already savedConcept. If they were not included in the
 // respective query concept, exclude them.
 // Also, apply all necessary filters
-const mergeFromSavedConcept = (savedConcept, concept) => {
-  const tables = mergeTables(savedConcept.tables, concept);
-  const selects = mergeSelects(savedConcept.selects, concept);
-
-  return { selects, tables };
+const mergeFromSavedConceptIntoNode = (
+  node: QueryConceptNodeT,
+  { tables, selects }: { tables: TableT[]; selects: SelectorT[] }
+) => {
+  return {
+    selects: mergeSelects(selects, node),
+    tables: mergeTables(tables, node),
+  };
 };
 
-const expandNode = (rootConcepts, node) => {
+const expandNode = (
+  rootConcepts: TreesT,
+  node:
+    | NegationNodeT
+    | DateRestrictionNodeT
+    | OrNodeT
+    | QueryConceptNodeT
+    | SavedQueryNodeT,
+  expandErrorMessage: string
+) => {
   switch (node.type) {
     case "OR":
       return {
         type: "OR",
-        elements: node.children.map((c) => expandNode(rootConcepts, c)),
+        elements: node.children.map((c) =>
+          expandNode(rootConcepts, c, expandErrorMessage)
+        ),
       };
     case "SAVED_QUERY":
       return {
@@ -568,30 +637,31 @@ const expandNode = (rootConcepts, node) => {
     case "DATE_RESTRICTION":
       return {
         dateRange: node.dateRange,
-        ...expandNode(rootConcepts, node.child),
+        ...expandNode(rootConcepts, node.child, expandErrorMessage),
       };
     case "NEGATION":
       return {
         exclude: true,
-        ...expandNode(rootConcepts, node.child),
+        ...expandNode(rootConcepts, node.child, expandErrorMessage),
       };
     default:
-      const ids = node.ids || [node.id];
       const lookupResult = getConceptsByIdsWithTablesAndSelects(
-        ids,
-        rootConcepts
+        rootConcepts,
+        node.ids
       );
 
       if (!lookupResult)
         return {
           ...node,
-          error: t("queryEditor.couldNotExpandNode"),
+          error: expandErrorMessage,
         };
 
-      const { tables, selects } = mergeFromSavedConcept(lookupResult, node);
+      const { tables, selects } = mergeFromSavedConceptIntoNode(node, {
+        tables: lookupResult.tables,
+        selects: lookupResult.selects,
+      });
       const label = node.label || lookupResult.concepts[0].label;
-      const description =
-        node.description || lookupResult.concepts[0].description;
+      const description = lookupResult.concepts[0].description;
 
       return {
         ...node,
@@ -610,10 +680,18 @@ const expandNode = (rootConcepts, node) => {
 // a) merge elements with concept data from concept trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (action: any) => {
-  const { rootConcepts, query } = action.payload;
+const expandPreviousQuery = (action: {
+  payload: {
+    rootConcepts: TreesT;
+    query: AndQueryT;
+    expandErrorMessage: string;
+  };
+}) => {
+  const { rootConcepts, query, expandErrorMessage } = action.payload;
 
-  return query.root.children.map((child) => expandNode(rootConcepts, child));
+  return query.root.children.map((child) =>
+    expandNode(rootConcepts, child, expandErrorMessage)
+  );
 };
 
 const findPreviousQueries = (state: StandardQueryStateT, action: any) => {
@@ -751,8 +829,8 @@ const createQueryNodeFromConceptListUploadResult = (
   resolvedConcepts
 ): DraggedNodeType => {
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
-    resolvedConcepts,
-    rootConcepts
+    rootConcepts,
+    resolvedConcepts
   );
 
   return lookupResult
@@ -923,7 +1001,7 @@ const removeConceptFromNode = (state: StandardQueryStateT, action: any) => {
 // ]
 const query = (
   state: StandardQueryStateT = initialState,
-  action: Object
+  action: any
 ): StandardQueryStateT => {
   switch (action.type) {
     case DROP_AND_NODE:

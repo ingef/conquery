@@ -6,15 +6,14 @@ import Hotkeys from "react-hot-keys";
 
 import type { QueryNodeType } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
-
+import { DatasetIdT } from "../api/types";
+import type { ModeT } from "../form-components/InputRange";
 import BasicButton from "../button/BasicButton";
 
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
 import TableView from "./TableView";
-
 import { createQueryNodeEditorActions } from "./actions";
-import { DatasetIdT } from "../api/types";
 
 const Root = styled("div")`
   margin: 0 10px;
@@ -82,7 +81,11 @@ export interface QueryNodeEditorPropsT {
   onResetAllFilters: Function;
   onToggleTimestamps: Function;
   onToggleSecondaryIdExclude: Function;
-  onSwitchFilterMode: Function;
+  onSwitchFilterMode: (
+    tableIdx: number,
+    filterIdx: number,
+    mode: ModeT
+  ) => void;
   onLoadFilterSuggestions: Function;
   onSelectSelects: Function;
   onSelectTableSelects: Function;

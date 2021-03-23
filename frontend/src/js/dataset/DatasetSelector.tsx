@@ -1,15 +1,15 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
+import { StateT } from "app-types";
+import { useTranslation } from "react-i18next";
 
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { isEmpty } from "../common/helpers";
 import ReactSelect from "../form-components/ReactSelect";
 
 import { DatasetT } from "./reducer";
 import { useSelectDataset } from "./actions";
-import { StateT } from "app-types";
-import { StandardQueryType } from "../standard-query-editor/types";
-import { useTranslation } from "react-i18next";
 
 const Root = styled("div")`
   min-width: 300px;
@@ -28,7 +28,7 @@ const DatasetSelector: FC = () => {
   const error = useSelector<StateT, string | null>(
     (state) => state.datasets.error
   );
-  const query = useSelector<StateT, StandardQueryType>(
+  const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query
   );
 

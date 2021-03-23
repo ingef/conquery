@@ -7,7 +7,6 @@ import IconButton from "../button/IconButton";
 import { isEmpty } from "../common/helpers";
 import type { CurrencyConfigT } from "../api/types";
 
-import { MONEY_RANGE } from "./filterTypes";
 import CurrencyInput from "./CurrencyInput";
 
 const Root = styled("div")`
@@ -84,7 +83,7 @@ const BaseInput = (props: PropsT) => {
   }
 
   const isCurrencyInput =
-    props.valueType === MONEY_RANGE && !!props.currencyConfig;
+    props.valueType === "MONEY_RANGE" && !!props.currencyConfig;
 
   return (
     <Root className={props.className}>

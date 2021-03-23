@@ -13,6 +13,7 @@ import InputMultiSelect, {
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 
 import { usePostFilterValuesResolve } from "../api/api";
+import { usePrevious } from "../common/helpers/usePrevious";
 
 import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
@@ -32,7 +33,7 @@ interface PropsT {
   allowDropFile?: boolean;
 
   isLoading?: boolean;
-  onLoad?: Function;
+  onLoad?: (prefix: string) => void;
   startLoadingThreshold: number;
 
   input: MultiSelectInputProps;
@@ -44,7 +45,6 @@ const ResolvableMultiSelect: FC<PropsT> = ({
   label,
   options,
   disabled,
-  tooltip,
   allowDropFile,
 
   startLoadingThreshold,
@@ -64,7 +64,7 @@ const ResolvableMultiSelect: FC<PropsT> = ({
   // Can be both, an auto-completable (async) multi select or a regular one
   const Component = !!onLoad ? AsyncInputMultiSelect : InputMultiSelect;
 
-  const onDropFile = async (file) => {
+  const onDropFile = async (file: File) => {
     setLoading(true);
 
     const rows = await getUniqueFileRows(file);

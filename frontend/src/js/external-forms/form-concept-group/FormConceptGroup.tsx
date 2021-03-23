@@ -217,8 +217,8 @@ const createQueryNodeFromConceptListUploadResult = (
   resolvedConcepts
 ) => {
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
-    resolvedConcepts,
-    rootConcepts
+    rootConcepts,
+    resolvedConcepts
   );
 
   return lookupResult

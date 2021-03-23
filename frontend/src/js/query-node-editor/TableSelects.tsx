@@ -1,13 +1,13 @@
 import React from "react";
 
-import type { SelectedSelectorType } from "./types";
+import type { SelectedSelectorT } from "./types";
 
 import { sortSelects } from "../model/select";
 
 import InputMultiSelect from "../form-components/InputMultiSelect";
 
 interface PropsT {
-  selects: SelectedSelectorType[];
+  selects: SelectedSelectorT[];
   onSelectTableSelects: () => void;
   excludeTable: boolean;
 }
