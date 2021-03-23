@@ -12,7 +12,7 @@ import { usePostFilterValuesResolve } from "../api/api";
 
 import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
-import { usePrevious } from "js/common/helpers/usePrevious";
+import { usePrevious } from "../common/helpers/usePrevious";
 
 interface FilterContextT extends FiltersContextT {
   filterId: FilterIdT;
