@@ -5,6 +5,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
@@ -12,7 +13,6 @@ import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -50,7 +50,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		);
 	}
 
-	private BucketId bucket;
+	@NsIdRef
+	private Bucket bucket;
 	@NotNull
 	private ConnectorId connector;
 
@@ -77,7 +78,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	// todo, can this be implemented using a store or at least with bytes only?
 	private int[][] mostSpecificChildren;
 
-	public CBlock(BucketId bucket, ConnectorId connector) {
+	public CBlock(Bucket bucket, ConnectorId connector) {
 		this.bucket = bucket;
 		this.connector = connector;
 	}
@@ -114,7 +115,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	@Override
 	@JsonIgnore
 	public CBlockId createId() {
-		return new CBlockId(bucket, connector);
+		return new CBlockId(bucket.getId(), connector);
 	}
 
 	public void initIndizes(int bucketSize) {

@@ -64,7 +64,7 @@ public class AdminTablesResource extends HAdmin {
 		return namespace.getStorage()
 						.getAllImports()
 						.stream()
-						.filter(imp -> imp.getTable().equals(table.getId()))
+						.filter(imp -> imp.getTable().equals(table))
 						.map(Import::getId)
 						.collect(Collectors.toList());
 	}

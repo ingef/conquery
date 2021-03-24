@@ -82,12 +82,13 @@ public class UpdateMatchingStats extends Job {
 				return;
 			}
 
-			if(!cBlock.getConnector().getConcept().equals(concept.getId()))
+			if(!cBlock.getConnector().getConcept().equals(concept.getId())) {
 				continue;
+			}
 
 			try {
-				Bucket bucket = worker.getStorage().getBucket(cBlock.getBucket());
-				Table table = worker.getStorage().getTable(bucket.getImp().getTable());
+				Bucket bucket = cBlock.getBucket();
+				Table table = bucket.getImp().getTable();
 
 				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 

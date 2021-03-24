@@ -21,11 +21,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Provides a view on the storage that does not allow modification of the storage (update, delete).
  */
 @RequiredArgsConstructor
+@ToString(of = "delegate")
 public class ModificationShieldedWorkerStorage {
 
 	private final WorkerStorage delegate;

@@ -169,7 +169,7 @@ public class TestConquery {
 
 	@SneakyThrows
 	public synchronized void shutdown(StandaloneSupport support) {
-		log.info("Tearing down dataset");
+		log.info("Tearing down dataset", new Exception("MARKER"));
 
 
 		DatasetId dataset = support.getDataset().getId();
@@ -208,7 +208,7 @@ public class TestConquery {
 
 	public void afterEach() throws Exception {
 		for (StandaloneSupport openSupport : openSupports) {
-			log.info("Tearing down dataset");
+			log.info("Tearing down dataset", new Exception("MARKER"));
 			openSupport.close();
 			removeSupportDataset(openSupport);
 		}

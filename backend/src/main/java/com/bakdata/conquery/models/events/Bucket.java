@@ -67,6 +67,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	@JsonSerialize(using = Int2IntMapSerializer.class)
 	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
 	private final Int2IntMap length;
+
 	private final int bucketSize;
 	@NsIdRef
 	private final Import imp;

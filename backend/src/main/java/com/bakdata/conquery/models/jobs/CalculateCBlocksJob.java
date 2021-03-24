@@ -84,14 +84,14 @@ public class CalculateCBlocksJob extends Job {
 	}
 
 	private static CBlock createCBlock(Connector connector, CalculationInformation info) {
-		return new CBlock(info.getBucket().getId(), connector.getId());
+		return new CBlock(info.getBucket(), connector.getId());
 	}
 
 	/**
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 */
 	private void calculateEntityDateIndices(CBlock cBlock, Bucket bucket) {
-		Table table = storage.getTable(bucket.getImp().getTable());
+		Table table = bucket.getImp().getTable();
 		for (Column column : table.getColumns()) {
 			if (!column.getType().isDateCompatible()) {
 				continue;

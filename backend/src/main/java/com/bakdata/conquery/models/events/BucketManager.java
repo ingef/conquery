@@ -96,7 +96,7 @@ public class BucketManager {
 		}
 
 		tableBuckets
-				.computeIfAbsent(bucket.getImp().getTable(), id -> new Int2ObjectAVLTreeMap<>())
+				.computeIfAbsent(bucket.getImp().getTable().getId(), id -> new Int2ObjectAVLTreeMap<>())
 				.computeIfAbsent(bucket.getBucket(), n -> new ArrayList<>())
 				.add(bucket);
 	}
@@ -106,15 +106,11 @@ public class BucketManager {
 	 */
 	private static void registerCBlock(CBlock cBlock, WorkerStorage storage, Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorCBlocks) {
 
-		Bucket bucket = storage.getBucket(cBlock.getBucket());
-		if (bucket == null) {
-			throw new NoSuchElementException("Could not find an element called '" + cBlock.getBucket() + "'");
-		}
 
 		connectorCBlocks
 				.computeIfAbsent(cBlock.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
-				.computeIfAbsent(bucket.getId().getBucket(), bucketId -> new HashMap<>(3))
-				.put(cBlock.getBucket(), cBlock);
+				.computeIfAbsent(cBlock.getBucket().getBucket(), bucketId -> new HashMap<>(3))
+				.put(cBlock.getBucket().getId(), cBlock);
 	}
 
 	@SneakyThrows
@@ -170,7 +166,7 @@ public class BucketManager {
 					Import imp = bucket.getImp();
 					CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
 
-					if (con.getTable().getId().equals(bucket.getImp().getTable())) {
+					if (con.getTable().equals(bucket.getImp().getTable())) {
 						if (storage.getCBlock(cBlockId) == null) {
 							job.addCBlock(imp, bucket, cBlockId);
 						}
@@ -236,7 +232,7 @@ public class BucketManager {
 			}
 		}
 
-		tableToBuckets.getOrDefault(bucket.getImp().getTable(), Int2ObjectMaps.emptyMap())
+		tableToBuckets.getOrDefault(bucket.getImp().getTable().getId(), Int2ObjectMaps.emptyMap())
 					  .getOrDefault(bucket.getBucket(), Collections.emptyList())
 					  .removeIf(bkt -> bkt.getId().equals(bucket.getId()));
 

@@ -89,7 +89,6 @@ import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvWriter;
@@ -569,7 +568,7 @@ public class AdminProcessor {
 
 
 		namespace.getStorage().getAllImports().stream()
-				.filter(imp -> imp.getTable().equals(tableId))
+				.filter(imp -> imp.getTable().getId().equals(tableId))
 				.map(Import::getId)
 				.forEach(this::deleteImport);
 

@@ -439,7 +439,7 @@ public class ImportJob extends Job {
 	}
 
 	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) {
-		Import imp = new Import(table.getId());
+		Import imp = new Import(table);
 
 		imp.setName(header.getName());
 		imp.setNumberOfEntries(header.getRows());

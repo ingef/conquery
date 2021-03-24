@@ -1,5 +1,11 @@
 package com.bakdata.conquery.io.storage;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -12,14 +18,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.Validator;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-
 @Slf4j
+@ToString(of = "worker")
 public class WorkerStorage extends NamespacedStorage {
 
     private SingletonStore<WorkerInformation> worker;
@@ -71,12 +74,11 @@ public class WorkerStorage extends NamespacedStorage {
         // Nothing to decorate
     }
 
-    private void decorateBucketStore(IdentifiableStore<Bucket> store) {
-        store
-                .onAdd((bucket) -> {
-                    bucket.loadDictionaries(this);
-                });
-    }
+	private void decorateBucketStore(IdentifiableStore<Bucket> store) {
+		store.onAdd((bucket) -> {
+			bucket.loadDictionaries(this);
+		});
+	}
 
     private void decorateCBlockStore(IdentifiableStore<CBlock> baseStoreCreator) {
         // Nothing to decorate
@@ -90,11 +92,6 @@ public class WorkerStorage extends NamespacedStorage {
 
     public CBlock getCBlock(CBlockId id) {
         return cBlocks.get(id);
-    }
-
-    // TODO method is unused, delete it.
-    public void updateCBlock(CBlock cBlock) {
-        cBlocks.update(cBlock);
     }
 
     public void removeCBlock(CBlockId id) {
