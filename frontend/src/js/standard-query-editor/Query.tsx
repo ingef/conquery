@@ -2,7 +2,7 @@ import React, { FC, useState } from "react";
 import styled from "@emotion/styled";
 
 import { useDispatch, useSelector } from "react-redux";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import type { DatasetIdT } from "../api/types";
 import { exists } from "../common/helpers/exists";
@@ -24,7 +24,6 @@ import {
 } from "./actions";
 
 import type {
-  StandardQueryType,
   DraggedNodeType,
   DraggedQueryType,
   PreviousQueryQueryNodeType,
@@ -37,6 +36,7 @@ import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 import QueryHeader from "./QueryHeader";
 import QueryFooter from "./QueryFooter";
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
+import type { StandardQueryStateT } from "./queryReducer";
 
 const Container = styled("div")`
   height: 100%;
@@ -65,7 +65,8 @@ interface PropsT {
 }
 
 const Query: FC<PropsT> = ({ selectedDatasetId }) => {
-  const query = useSelector<StateT, StandardQueryType>(
+  const { t } = useTranslation();
+  const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query
   );
   const isEmptyQuery = useSelector<StateT, boolean>(
@@ -159,7 +160,7 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
                 }
               />,
               <QueryGroupConnector key={`${andIdx}.and`}>
-                {T.translate("common.and")}
+                {t("common.and")}
               </QueryGroupConnector>,
             ])}
             <QueryEditorDropzone

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import IconButton from "../button/IconButton";
 import { clearTimebasedQuery } from "./actions";
 import { anyConditionFilled } from "./helpers";
@@ -17,6 +17,7 @@ type PropsType = {
 };
 
 const TimebasedQueryClearButton = (props: PropsType) => {
+  const { t } = useTranslation();
   return (
     <Root>
       <IconButton
@@ -26,20 +27,20 @@ const TimebasedQueryClearButton = (props: PropsType) => {
         icon="trash-alt"
         disabled={!props.isEnabled}
       >
-        {T.translate("common.clear")}
+        {t("common.clear")}
       </IconButton>
     </Root>
   );
 };
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   isEnabled:
     state.timebasedQueryEditor.timebasedQuery.conditions.length > 1 ||
-    anyConditionFilled(state.timebasedQueryEditor.timebasedQuery)
+    anyConditionFilled(state.timebasedQueryEditor.timebasedQuery),
 });
 
-const mapDispatchToProps = dispatch => ({
-  clearQuery: () => dispatch(clearTimebasedQuery())
+const mapDispatchToProps = (dispatch) => ({
+  clearQuery: () => dispatch(clearTimebasedQuery()),
 });
 
 export default connect(

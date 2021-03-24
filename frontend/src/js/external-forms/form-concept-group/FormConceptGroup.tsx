@@ -1,8 +1,7 @@
-import * as React from "react";
+import React, { useState } from "react";
 import styled from "@emotion/styled";
 import { useDispatch } from "react-redux";
 import type { WrappedFieldProps } from "redux-form";
-import T from "i18n-react";
 
 import { resetAllFiltersInTables } from "../../model/table";
 import { compose, includes } from "../../common/helpers/commonHelper";
@@ -48,11 +47,11 @@ import FormConceptNode from "./FormConceptNode";
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import { useAllowExtendedCopying } from "../stateSelectors";
 import { Description } from "../form-components/Description";
+import { useTranslation } from "react-i18next";
 
 interface PropsType extends WrappedFieldProps {
   fieldName: string;
   label: string;
-  datasetId: string;
   onDropFilterFile: Function;
   newValue?: Object;
   isSingle?: boolean;
@@ -218,8 +217,8 @@ const createQueryNodeFromConceptListUploadResult = (
   resolvedConcepts
 ) => {
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
-    resolvedConcepts,
-    rootConcepts
+    rootConcepts,
+    resolvedConcepts
   );
 
   return lookupResult
@@ -413,7 +412,8 @@ const FormConceptGroup = (props: PropsType) => {
   const newValue = props.newValue;
   const defaults = props.defaults || {};
 
-  const [isCopyModalOpen, setIsCopyModalOpen] = React.useState(false);
+  const { t } = useTranslation();
+  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const allowExtendedCopying = useAllowExtendedCopying(props.fieldName);
 
   const dispatch = useDispatch();
@@ -421,8 +421,8 @@ const FormConceptGroup = (props: PropsType) => {
   const initModal = (file) => dispatch(initUploadConceptListModal(file));
   const resetModal = () => dispatch(resetUploadConceptListModal());
 
-  const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [modalContext, setModalContext] = React.useState({});
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalContext, setModalContext] = useState({});
 
   const onCloseModal = () => {
     setIsModalOpen(false); // For the Modal "container"
@@ -493,14 +493,14 @@ const FormConceptGroup = (props: PropsType) => {
                 tiny
                 onClick={() => setIsCopyModalOpen(true)}
               >
-                {T.translate("externalForms.common.concept.copyFrom")}
+                {t("externalForms.common.concept.copyFrom")}
               </SxTransparentButton>
             )}
           </>
         }
         dropzoneChildren={({ isOver, itemType }) =>
           isOver && itemType === FORM_CONCEPT_NODE
-            ? T.translate("externalForms.common.concept.copying")
+            ? t("externalForms.common.concept.copying")
             : props.attributeDropzoneText
         }
         acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
@@ -543,10 +543,10 @@ const FormConceptGroup = (props: PropsType) => {
             {props.renderRowPrefix
               ? props.renderRowPrefix(props.input, row, i)
               : null}
-            {!props.renderRowPrefix && row.concepts.length > 1 && (
+            {row.concepts.length > 1 && (
               <Row>
                 <SxDescription>
-                  {T.translate("externalForms.common.connectedWith")}:
+                  {t("externalForms.common.connectedWith")}:
                 </SxDescription>
                 <ToggleButton
                   input={{
@@ -560,8 +560,8 @@ const FormConceptGroup = (props: PropsType) => {
                     },
                   }}
                   options={[
-                    { value: "OR", label: T.translate("common.or") },
-                    { value: "AND", label: T.translate("common.and") },
+                    { value: "OR", label: t("common.or") },
+                    { value: "AND", label: t("common.and") },
                   ]}
                 />
               </Row>
@@ -651,7 +651,7 @@ const FormConceptGroup = (props: PropsType) => {
                   >
                     {({ isOver, itemType }) =>
                       isOver && itemType === FORM_CONCEPT_NODE
-                        ? T.translate("externalForms.common.concept.copying")
+                        ? t("externalForms.common.concept.copying")
                         : props.conceptDropzoneText
                     }
                   </DropzoneWithFileInput>
@@ -670,7 +670,6 @@ const FormConceptGroup = (props: PropsType) => {
       )}
       {isModalOpen && (
         <UploadConceptListModal
-          selectedDatasetId={props.datasetId}
           onAccept={onAcceptUploadConceptListModal}
           onClose={onCloseModal}
         />
@@ -678,7 +677,6 @@ const FormConceptGroup = (props: PropsType) => {
       <FormQueryNodeEditor
         formType={props.formType}
         fieldName={props.input.name}
-        datasetId={props.datasetId}
         blocklistedTables={props.blocklistedTables}
         allowlistedTables={props.allowlistedTables}
         onCloseModal={(valueIdx, conceptIdx) =>

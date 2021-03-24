@@ -22,7 +22,6 @@ public class JobExecutor extends Thread {
 	private final LinkedBlockingDeque<Job> jobs = new LinkedBlockingDeque<>();
 	private final AtomicReference<Job> currentJob = new AtomicReference<>();
 	private final AtomicBoolean closed = new AtomicBoolean(false);
-	private final AtomicBoolean busy = new AtomicBoolean(false);
 	private final boolean failOnError;
 
 	public JobExecutor(String name, boolean failOnError) {
@@ -74,7 +73,7 @@ public class JobExecutor extends Thread {
 	 * @return True if there is work left to do for this executor
 	 */
 	public boolean isBusy() {
-		if(busy.get()) {
+		if(currentJob.get() != null) {
 			log.trace("JobExecutor {} is still working on a task.", getName());
 			return true;
 		}
@@ -101,7 +100,6 @@ public class JobExecutor extends Thread {
 			Job job;
 			try {
 				while((job =jobs.poll(100, TimeUnit.MILLISECONDS))!=null) {
-					busy.set(true);
 					currentJob.set(job);
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
@@ -135,8 +133,6 @@ public class JobExecutor extends Thread {
 						time.stop();
 					}
 				}
-				busy.set(false);
-				currentJob.set(null);
 			} catch (InterruptedException e) {
 				log.warn("Interrupted JobManager polling", e);
 
@@ -144,6 +140,8 @@ public class JobExecutor extends Thread {
 					log.error("Propagating Error outer loop");
 					throw e.getCause();
 				}
+			} finally {
+				currentJob.set(null);
 			}
 		}
 	}

@@ -15,9 +15,9 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.models.api.description.FEValue;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -54,10 +54,10 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
 
 		conquery.waitUntilWorkDone();
-		
-		VirtualConcept concept = (VirtualConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
-		VirtualConceptConnector connector = concept.getConnectors().iterator().next();
-		AbstractSelectFilter<?> filter = (AbstractSelectFilter<?>) connector.getFilter();
+
+		Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		Connector connector = concept.getConnectors().iterator().next();
+		AbstractSelectFilter<?> filter = (AbstractSelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");

@@ -58,6 +58,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Setter
@@ -99,6 +100,12 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 			return label;
 		}
 
+		return getDefaultLabel();
+	}
+
+	@Nullable
+	@JsonIgnore
+	public String getDefaultLabel() {
 		if (elements.isEmpty()) {
 			return null;
 		}

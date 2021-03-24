@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import IconButton from "../button/IconButton";
 import { Icon } from "../icon/FaIcon";
 
@@ -57,6 +57,8 @@ const QueryGroupActions: FC<PropsT> = ({
   onDeleteGroup,
   onDateClick,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Actions>
       <div>
@@ -67,7 +69,7 @@ const QueryGroupActions: FC<PropsT> = ({
           icon="ban"
           onClick={onExcludeClick}
         >
-          {T.translate("queryEditor.exclude")}
+          {t("queryEditor.exclude")}
         </RedIconButton>
         <StyledIconButton
           active={dateActive}
@@ -76,7 +78,7 @@ const QueryGroupActions: FC<PropsT> = ({
           icon="calendar"
           onClick={onDateClick}
         >
-          {T.translate("queryEditor.date")}
+          {t("queryEditor.date")}
         </StyledIconButton>
       </div>
       <Right>

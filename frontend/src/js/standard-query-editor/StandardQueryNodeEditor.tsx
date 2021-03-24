@@ -24,13 +24,14 @@ import {
   toggleSecondaryIdExclude,
   useLoadFilterSuggestions,
 } from "./actions";
-import { QueryNodeType, StandardQueryType } from "./types";
+import { QueryNodeType } from "./types";
+import type { StandardQueryStateT } from "./queryReducer";
 
 interface PropsT {
   datasetId: DatasetIdT;
 }
 
-const findNodeBeingEdited = (query: StandardQueryType) =>
+const findNodeBeingEdited = (query: StandardQueryStateT) =>
   query
     .reduce<QueryNodeType[]>((acc, group) => [...acc, ...group.elements], [])
     .find((element) => element.isEditing);

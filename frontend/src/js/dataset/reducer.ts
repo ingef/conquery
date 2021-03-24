@@ -1,3 +1,4 @@
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type { DatasetIdT } from "../api/types";
 
 import {
@@ -5,12 +6,13 @@ import {
   LOAD_DATASETS_SUCCESS,
   LOAD_DATASETS_ERROR,
   SELECT_DATASET,
-  SAVE_QUERY
+  SAVE_QUERY,
 } from "./actionTypes";
 
 export type DatasetT = {
   id: DatasetIdT;
   label: string;
+  query?: StandardQueryStateT;
 };
 
 export type DatasetStateT = {
@@ -26,16 +28,24 @@ const initialState: DatasetStateT = {
   loading: false,
   error: null,
   data: [],
-  selectedDatasetId: null
+  selectedDatasetId: null,
 };
 
-const saveQuery = (state: DatasetStateT, action: Object): DatasetStateT => {
+const saveQuery = (
+  state: DatasetStateT,
+  action: {
+    payload: {
+      query: StandardQueryStateT;
+      previouslySelectedDatasetId: DatasetIdT;
+    };
+  }
+): DatasetStateT => {
   const { query, previouslySelectedDatasetId } = action.payload;
 
   if (!query || query.length === 0) return state;
 
   const selectedDataset = state.data.find(
-    db => db.id === previouslySelectedDatasetId
+    (db) => db.id === previouslySelectedDatasetId
   );
 
   if (!selectedDataset) return state;
@@ -49,16 +59,16 @@ const saveQuery = (state: DatasetStateT, action: Object): DatasetStateT => {
       ...state.data.slice(0, selectedDatasetIdx),
       {
         ...state.data[selectedDatasetIdx],
-        query
+        query,
       },
-      ...state.data.slice(selectedDatasetIdx + 1)
-    ]
+      ...state.data.slice(selectedDatasetIdx + 1),
+    ],
   };
 };
 
 const datasets = (
   state: DatasetStateT = initialState,
-  action: Object
+  action: any
 ): DatasetStateT => {
   switch (action.type) {
     case LOAD_DATASETS_START:
@@ -73,7 +83,7 @@ const datasets = (
     case SELECT_DATASET:
       return {
         ...state,
-        selectedDatasetId: action.payload.id
+        selectedDatasetId: action.payload.id,
       };
     case SAVE_QUERY:
       return saveQuery(state, action);

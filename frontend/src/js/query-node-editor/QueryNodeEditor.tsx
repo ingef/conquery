@@ -1,20 +1,19 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { useDispatch } from "react-redux";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import Hotkeys from "react-hot-keys";
 
 import type { QueryNodeType } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
-
+import { DatasetIdT } from "../api/types";
+import type { ModeT } from "../form-components/InputRange";
 import BasicButton from "../button/BasicButton";
 
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
 import TableView from "./TableView";
-
 import { createQueryNodeEditorActions } from "./actions";
-import { DatasetIdT } from "../api/types";
 
 const Root = styled("div")`
   margin: 0 10px;
@@ -61,7 +60,7 @@ interface QueryNodeEditorState {
   onReset: Function;
 }
 
-export interface PropsType {
+export interface QueryNodeEditorPropsT {
   name: string;
   editorState: QueryNodeEditorState;
   node: QueryNodeType;
@@ -82,14 +81,19 @@ export interface PropsType {
   onResetAllFilters: Function;
   onToggleTimestamps: Function;
   onToggleSecondaryIdExclude: Function;
-  onSwitchFilterMode: Function;
+  onSwitchFilterMode: (
+    tableIdx: number,
+    filterIdx: number,
+    mode: ModeT
+  ) => void;
   onLoadFilterSuggestions: Function;
   onSelectSelects: Function;
   onSelectTableSelects: Function;
   onSetDateColumn: Function;
 }
 
-const QueryNodeEditorComponent = (props: PropsType) => {
+const QueryNodeEditorComponent = (props: QueryNodeEditorPropsT) => {
+  const { t } = useTranslation();
   const { node, editorState } = props;
 
   function close() {
@@ -115,9 +119,9 @@ const QueryNodeEditorComponent = (props: PropsType) => {
         {!editorState.detailsViewActive && selectedTable != null && (
           <TableView {...props} />
         )}
-        <SxWithTooltip text={T.translate("common.closeEsc")}>
+        <SxWithTooltip text={t("common.closeEsc")}>
           <CloseButton small onClick={close}>
-            {T.translate("common.done")}
+            {t("common.done")}
           </CloseButton>
         </SxWithTooltip>
       </Wrapper>
@@ -125,7 +129,7 @@ const QueryNodeEditorComponent = (props: PropsType) => {
   );
 };
 
-const QueryNodeEditor = (props: PropsType) => {
+const QueryNodeEditor = (props: QueryNodeEditorPropsT) => {
   const dispatch = useDispatch();
 
   const {

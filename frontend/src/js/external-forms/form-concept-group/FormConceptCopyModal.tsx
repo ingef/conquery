@@ -1,19 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { StateT } from "app-types";
+import { useTranslation } from "react-i18next";
 
 import Modal from "../../modal/Modal";
 import BasicButton from "../../button/BasicButton";
 import PrimaryButton from "../../button/PrimaryButton";
 import {
   selectActiveFormValues,
-  useVisibleConceptListFields
+  useVisibleConceptListFields,
 } from "../stateSelectors";
 
 import InputSelect from "../../form-components/InputSelect";
 import InputCheckbox from "../../form-components/InputCheckbox";
-import { getLocale } from "../../localization";
+import { useActiveLang } from "../../localization/useActiveLang";
 
 const Buttons = styled("div")`
   display: flex;
@@ -46,30 +47,33 @@ type PropsT = {
 const FormConceptCopyModal = ({
   targetFieldname,
   onAccept,
-  onClose
+  onClose,
 }: PropsT) => {
-  const locale = getLocale();
-  const formValues = useSelector(state => selectActiveFormValues(state));
+  const { t } = useTranslation();
+  const activeLang = useActiveLang();
+  const formValues = useSelector<StateT, Record<string, any>>((state) =>
+    selectActiveFormValues(state)
+  );
   const visibleConceptListFields = useVisibleConceptListFields();
 
   const conceptListFieldOptions = visibleConceptListFields
-    .filter(field => field.name !== targetFieldname)
-    .map(field => ({
-      label: field.label[locale],
-      value: field.name
+    .filter((field) => field.name !== targetFieldname)
+    .map((field) => ({
+      label: field.label[activeLang],
+      value: field.name,
     }));
 
   // Since the modal is only rendered when there exists more than one concept list field
   // we can assume that `conceptListFieldOptions` still has length >= 1
-  const [selectedOption, setSelectedOption] = React.useState<string>(
+  const [selectedOption, setSelectedOption] = useState<string>(
     conceptListFieldOptions[0].value
   );
 
-  const [valuesChecked, setValuesChecked] = React.useState<{
+  const [valuesChecked, setValuesChecked] = useState<{
     [key: number]: boolean;
   }>({});
 
-  React.useEffect(() => {
+  useEffect(() => {
     const values = formValues[selectedOption];
     const initiallyChecked = values.reduce((checkedValues, value, i) => {
       checkedValues[i] = false;
@@ -80,23 +84,23 @@ const FormConceptCopyModal = ({
   }, [selectedOption]);
 
   const allConceptsSelected = Object.keys(valuesChecked).every(
-    key => valuesChecked[key]
+    (key) => valuesChecked[key]
   );
 
   const isAcceptDisabled = Object.keys(valuesChecked).every(
-    key => !valuesChecked[key]
+    (key) => !valuesChecked[key]
   );
 
   function idxHasConcepts(idx: number) {
     const values = formValues[selectedOption];
-    const concepts = values[idx].concepts.filter(cpt => !!cpt);
+    const concepts = values[idx].concepts.filter((cpt) => !!cpt);
 
     return concepts.length > 0;
   }
 
   function getLabelFromIdx(idx: number) {
     const values = formValues[selectedOption];
-    const concepts = values[idx].concepts.filter(cpt => !!cpt);
+    const concepts = values[idx].concepts.filter((cpt) => !!cpt);
 
     if (concepts.length === 0) return "-";
 
@@ -119,7 +123,7 @@ const FormConceptCopyModal = ({
   function onToggleConcept(idx: number, checked: boolean) {
     const nextValues = {
       ...valuesChecked,
-      [idx]: checked
+      [idx]: checked,
     };
 
     setValuesChecked(nextValues);
@@ -127,8 +131,8 @@ const FormConceptCopyModal = ({
 
   function onSubmit() {
     const selectedValues = Object.keys(valuesChecked)
-      .filter(key => valuesChecked[key])
-      .map(key => formValues[selectedOption][key]);
+      .filter((key) => valuesChecked[key])
+      .map((key) => formValues[selectedOption][key]);
 
     onAccept(selectedValues);
     onClose();
@@ -138,15 +142,15 @@ const FormConceptCopyModal = ({
     <Modal
       onClose={onClose}
       closeIcon
-      headline={T.translate("externalForms.copyModal.headline")}
+      headline={t("externalForms.copyModal.headline")}
     >
       <InputSelect
-        label={T.translate("externalForms.copyModal.selectLabel")}
+        label={t("externalForms.copyModal.selectLabel")}
         options={conceptListFieldOptions}
         input={{ onChange: setSelectedOption, value: selectedOption }}
       />
       <SelectAllCheckbox
-        label={T.translate("externalForms.copyModal.selectAll")}
+        label={t("externalForms.copyModal.selectAll")}
         input={{ value: allConceptsSelected, onChange: onToggleAllConcepts }}
       />
       <Options>
@@ -157,18 +161,16 @@ const FormConceptCopyModal = ({
               label={getLabelFromIdx(idx)}
               input={{
                 value: valuesChecked[idx],
-                onChange: (checked: boolean) => onToggleConcept(idx, checked)
+                onChange: (checked: boolean) => onToggleConcept(idx, checked),
               }}
             />
           ) : null
         )}
       </Options>
       <Buttons>
-        <BasicButton onClick={onClose}>
-          {T.translate("common.cancel")}
-        </BasicButton>
+        <BasicButton onClick={onClose}>{t("common.cancel")}</BasicButton>
         <PrimaryButton onClick={onSubmit} disabled={isAcceptDisabled}>
-          {T.translate("externalForms.copyModal.accept")}
+          {t("externalForms.copyModal.accept")}
         </PrimaryButton>
       </Buttons>
     </Modal>

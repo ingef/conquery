@@ -1,6 +1,10 @@
-import React, { FC, useState } from "react";
+import React, { FC, useEffect, useState } from "react";
 
-import type { FilterIdT, SelectOptionT } from "../api/types";
+import type {
+  FilterIdT,
+  PostFilterResolveResponseT,
+  SelectOptionT,
+} from "../api/types";
 
 import AsyncInputMultiSelect from "../form-components/AsyncInputMultiSelect";
 import InputMultiSelect, {
@@ -9,9 +13,11 @@ import InputMultiSelect, {
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 
 import { usePostFilterValuesResolve } from "../api/api";
+import { usePrevious } from "../common/helpers/usePrevious";
 
 import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
+import { usePrevious } from "../common/helpers/usePrevious";
 
 interface FilterContextT extends FiltersContextT {
   filterId: FilterIdT;
@@ -27,7 +33,7 @@ interface PropsT {
   allowDropFile?: boolean;
 
   isLoading?: boolean;
-  onLoad?: Function;
+  onLoad?: (prefix: string) => void;
   startLoadingThreshold: number;
 
   input: MultiSelectInputProps;
@@ -39,23 +45,26 @@ const ResolvableMultiSelect: FC<PropsT> = ({
   label,
   options,
   disabled,
-  tooltip,
   allowDropFile,
 
   startLoadingThreshold,
   onLoad,
   isLoading,
 }) => {
-  const [resolved, setResolved] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [resolved, setResolved] = useState<PostFilterResolveResponseT | null>(
+    null
+  );
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const postFilterValuesResolve = usePostFilterValuesResolve();
+
+  const previousDefaultValue = usePrevious(input.defaultValue);
 
   // Can be both, an auto-completable (async) multi select or a regular one
   const Component = !!onLoad ? AsyncInputMultiSelect : InputMultiSelect;
 
-  const onDropFile = async (file) => {
+  const onDropFile = async (file: File) => {
     setLoading(true);
 
     const rows = await getUniqueFileRows(file);
@@ -70,7 +79,7 @@ const ResolvableMultiSelect: FC<PropsT> = ({
       );
 
       setResolved(r);
-      setIsModalOpen(r.unknownCodes && r.unknownCodes.length > 0);
+      setIsModalOpen(!!r.unknownCodes && r.unknownCodes.length > 0);
 
       if (
         r.resolvedFilter &&
@@ -85,6 +94,43 @@ const ResolvableMultiSelect: FC<PropsT> = ({
 
     setLoading(false);
   };
+
+  useEffect(() => {
+    async function resolveDefaultValue() {
+      const hasDefaultValueToLoad =
+        input.defaultValue &&
+        input.defaultValue.length > 0 &&
+        JSON.stringify(input.defaultValue) !==
+          JSON.stringify(previousDefaultValue);
+
+      if (hasDefaultValueToLoad) {
+        const r = await postFilterValuesResolve(
+          context.datasetId,
+          context.treeId,
+          context.tableId,
+          context.filterId,
+          input.defaultValue as string[]
+        );
+
+        if (
+          r.resolvedFilter &&
+          r.resolvedFilter.value &&
+          r.resolvedFilter.value.length > 0
+        ) {
+          input.onChange(r.resolvedFilter.value);
+        }
+      }
+    }
+    resolveDefaultValue();
+  }, [
+    context.datasetId,
+    context.filterId,
+    context.tableId,
+    context.treeId,
+    previousDefaultValue,
+    input,
+    postFilterValuesResolve,
+  ]);
 
   return (
     <>

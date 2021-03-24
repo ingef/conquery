@@ -79,7 +79,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		PrintSettings
 				PRINT_SETTINGS =
-				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), (columnInfo, dr) -> columnInfo.getSelect()
+				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), (columnInfo) -> columnInfo.getSelect()
 																																		 .getId()
 																																		 .toStringWithoutDataset());
 		IdMappingState mappingState = standaloneSupport.getConfig().getIdMapping().initToExternal(standaloneSupport.getTestUser(), managed);

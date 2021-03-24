@@ -1,5 +1,5 @@
-import * as React from "react";
-import T from "i18n-react";
+import React, { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 import { DropTarget } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
@@ -24,7 +24,7 @@ const FileInput = styled("input")`
 const TopRight = styled("p")`
   margin: 0;
   font-size: ${({ theme }) => theme.font.tiny};
-  color: ${({ theme }) => theme.font.gray};
+  color: ${({ theme }) => theme.col.gray};
   position: absolute;
   top: -15px;
   right: 0;
@@ -42,13 +42,13 @@ const target = {
     if (item && props.onDropFile) {
       props.onDropFile(item.files[0]);
     }
-  }
+  },
 };
 
 const collect = (connect, monitor) => ({
   connectDropTarget: connect.dropTarget(),
   isOver: monitor.isOver(),
-  canDrop: monitor.canDrop()
+  canDrop: monitor.canDrop(),
 });
 
 export default DropTarget(
@@ -56,7 +56,8 @@ export default DropTarget(
   target,
   collect
 )(({ onDropFile, children, isOver, canDrop, connectDropTarget }) => {
-  const fileInputRef = React.useRef(null);
+  const { t } = useTranslation();
+  const fileInputRef = useRef(null);
 
   function onOpenFileDialog() {
     fileInputRef.current.click();
@@ -72,11 +73,11 @@ export default DropTarget(
         {children}
       </InnerZone>
       <TopRight onClick={onOpenFileDialog}>
-        {T.translate("inputMultiSelect.openFileDialog")}
+        {t("inputMultiSelect.openFileDialog")}
         <FileInput
           ref={fileInputRef}
           type="file"
-          onChange={e => {
+          onChange={(e) => {
             onDropFile(e.target.files[0]);
             fileInputRef.current.value = null;
           }}

@@ -1,5 +1,5 @@
-import React from "react";
-import T from "i18n-react";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 
 import IconButton from "../button/IconButton";
@@ -15,16 +15,25 @@ const Text = styled("p")`
   margin: 0;
 `;
 
-export default ({ value, onClear }) => (
-  <Root>
-    <Text>
-      {T.translate("queryNodeEditor.tooManyValues", { count: value.length })}
-    </Text>
-    <IconButton
-      icon="times"
-      title={T.translate("common.clearValue")}
-      aria-label={T.translate("common.clearValue")}
-      onClick={onClear}
-    />
-  </Root>
-);
+interface Props {
+  value: unknown[];
+  onClear: () => void;
+}
+
+const TooManyValues: FC<Props> = ({ value, onClear }) => {
+  const { t } = useTranslation();
+
+  return (
+    <Root>
+      <Text>{t("queryNodeEditor.tooManyValues", { count: value.length })}</Text>
+      <IconButton
+        icon="times"
+        title={t("common.clearValue")}
+        aria-label={t("common.clearValue")}
+        onClick={onClear}
+      />
+    </Root>
+  );
+};
+
+export default TooManyValues;

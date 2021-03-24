@@ -1,11 +1,11 @@
 import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
 
 import FaIcon from "../icon/FaIcon";
 
 import type { TreesT } from "./reducer";
 import { getConceptById } from "./globalTreeStoreHelper";
+import { useTranslation } from "react-i18next";
 
 const Root = styled("div")`
   margin: 10px;
@@ -30,7 +30,6 @@ const Bar = styled("div")`
 `;
 
 const BarProgress = styled("div")`
-  width: ${({ donePercent }) => `${donePercent}%`};
   height: 100%;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -40,9 +39,11 @@ type PropsT = {
   trees: TreesT;
 };
 
-export default ({ trees }: PropsT) => {
+const ProgressBar = ({ trees }: PropsT) => {
+  const { t } = useTranslation();
+
   const treeIds = Object.keys(trees);
-  const doneCount = treeIds.map(getConceptById).filter(c => !!c).length;
+  const doneCount = treeIds.map(getConceptById).filter((c) => !!c).length;
 
   const donePercent = (doneCount / treeIds.length) * 100;
 
@@ -51,13 +52,14 @@ export default ({ trees }: PropsT) => {
       <Row>
         <FaIcon icon="spinner" />
         <Text>
-          {T.translate("conceptTreeList.loading")} {doneCount} /{" "}
-          {treeIds.length}
+          {t("conceptTreeList.loading")} {doneCount} / {treeIds.length}
         </Text>
       </Row>
       <Bar>
-        <BarProgress donePercent={donePercent} />
+        <BarProgress style={{ width: `${donePercent}%` }} />
       </Bar>
     </Root>
   );
 };
+
+export default ProgressBar;

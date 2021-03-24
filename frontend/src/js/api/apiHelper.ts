@@ -12,11 +12,12 @@ import {
 } from "../common/constants/timebasedQueryOperatorTypes";
 
 import type {
-  TableWithFilterValueType,
-  SelectedSelectorType,
+  TableWithFilterValueT,
+  SelectedSelectorT,
   SelectedDateColumnT,
 } from "../standard-query-editor/types";
 import { isEmpty } from "../common/helpers";
+import { isLabelPristine } from "../standard-query-editor/helper";
 
 export const transformFilterValueToApi = (filter: any) => {
   const { value, mode } = filter;
@@ -32,9 +33,7 @@ export const transformFilterValueToApi = (filter: any) => {
   return value;
 };
 
-export const transformSelectsToApi = (
-  selects?: SelectedSelectorType[] | null
-) => {
+export const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
   if (!selects) return [];
 
   return selects
@@ -50,7 +49,7 @@ export const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
   };
 };
 
-export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
+export const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
   if (!tables) return [];
 
   return tables
@@ -130,7 +129,7 @@ const createQueryConcept = (concept: any) =>
 const createConcept = (concept: any) => ({
   type: "CONCEPT",
   ids: concept.ids,
-  label: concept.label,
+  label: isLabelPristine(concept) ? undefined : concept.label,
   excludeFromTimeAggregation: concept.excludeTimestamps,
   excludeFromSecondaryIdQuery: concept.excludeFromSecondaryIdQuery,
   tables: transformTablesToApi(concept.tables),

@@ -1,7 +1,6 @@
 import { LOAD_ME_START, LOAD_ME_ERROR, LOAD_ME_SUCCESS } from "./actionTypes";
 
 import type { GetMeResponseT } from "../api/types";
-import { ActionT } from "../common/actions";
 
 export type UserStateT = {
   loading: boolean;
@@ -15,10 +14,7 @@ const initialState: UserStateT = {
   me: null,
 };
 
-const startup = (
-  state: UserStateT = initialState,
-  action: ActionT
-): UserStateT => {
+const startup = (state: UserStateT = initialState, action: any): UserStateT => {
   switch (action.type) {
     case LOAD_ME_START:
       return {
@@ -29,13 +25,13 @@ const startup = (
       return {
         ...state,
         loading: false,
-        error: action.payload!.message,
+        error: action.payload.message,
       };
     case LOAD_ME_SUCCESS:
       return {
         ...state,
         loading: false,
-        me: action.payload!.data,
+        me: action.payload.data,
       };
     default:
       return state;

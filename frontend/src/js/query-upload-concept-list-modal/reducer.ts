@@ -1,7 +1,6 @@
-import { ActionT } from "../common/actions";
 import { MODAL_OPEN, MODAL_CLOSE } from "./actionTypes";
 
-interface QueryUploadConceptListModalStateT {
+export interface QueryUploadConceptListModalStateT {
   isOpen: boolean;
   andIdx: number | null;
 }
@@ -11,9 +10,9 @@ const initialState: QueryUploadConceptListModalStateT = {
   andIdx: null,
 };
 
-export default (
+const reducer = (
   state = initialState,
-  action: ActionT
+  action: any
 ): QueryUploadConceptListModalStateT => {
   switch (action.type) {
     case MODAL_OPEN:
@@ -26,3 +25,5 @@ export default (
       return state;
   }
 };
+
+export default reducer;

@@ -1,7 +1,6 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { useDispatch, useSelector } from "react-redux";
-import T from "i18n-react";
 
 import WithTooltip from "../tooltip/WithTooltip";
 import IconButton from "../button/IconButton";
@@ -10,6 +9,7 @@ import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
 import { ConceptTreesOpenStateT } from "./reducer";
 import { StateT } from "app-types";
 import { clearSearchQuery } from "../concept-trees/actions";
+import { useTranslation } from "react-i18next";
 
 const SxWithTooltip = styled(WithTooltip)`
   margin-right: 5px;
@@ -32,6 +32,7 @@ interface PropsT {
 
 const ConceptTreesOpenButtons: FC<PropsT> = ({ className }) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const conceptTreesOpen = useSelector<StateT, ConceptTreesOpenStateT>(
     (state) => state.conceptTreesOpen
@@ -57,10 +58,10 @@ const ConceptTreesOpenButtons: FC<PropsT> = ({ className }) => {
 
   return (
     <Row className={className}>
-      <SxWithTooltip text={T.translate("conceptTreesOpen.resetAll")}>
+      <SxWithTooltip text={t("conceptTreesOpen.resetAll")}>
         <SxIconButton frame icon="home" onClick={onResetAllConceptOpen} />
       </SxWithTooltip>
-      <SxWithTooltip text={T.translate("conceptTreesOpen.closeAll")}>
+      <SxWithTooltip text={t("conceptTreesOpen.closeAll")}>
         <SxIconButton
           disabled={isCloseAllDisabled}
           frame

@@ -1,5 +1,5 @@
 import type { TableT } from "../api/types";
-import type { TableWithFilterValueType } from "../standard-query-editor/types";
+import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
 import { isEmpty, compose } from "../common/helpers";
 
@@ -11,10 +11,10 @@ export const tableIsEditable = (table: TableT) =>
   (!!table.selects && table.selects.length > 0) ||
   (!!table.dateColumn && table.dateColumn.options.length > 0);
 
-export const tablesHaveActiveFilter = (tables: TableWithFilterValueType[]) =>
+export const tablesHaveActiveFilter = (tables: TableWithFilterValueT[]) =>
   tables.some((table) => tableHasActiveFilters(table));
 
-export const tableHasActiveFilters = (table: TableWithFilterValueType) =>
+export const tableHasActiveFilters = (table: TableWithFilterValueT) =>
   objectHasSelectedSelects(table) ||
   tableHasNonDefaultDateColumn(table) ||
   (table.filters &&
@@ -22,14 +22,14 @@ export const tableHasActiveFilters = (table: TableWithFilterValueType) =>
       (filter) => !isEmpty(filter.value) && filter.value !== filter.defaultValue
     ));
 
-const tableHasNonDefaultDateColumn = (table: TableWithFilterValueType) =>
+const tableHasNonDefaultDateColumn = (table: TableWithFilterValueT) =>
   !!table.dateColumn &&
   !!table.dateColumn.options &&
   table.dateColumn.options.length > 0 &&
   table.dateColumn.value !== table.dateColumn.options[0].value;
 
 export function tableIsDisabled(
-  table: TableWithFilterValueType,
+  table: TableWithFilterValueT,
   blocklistedTables?: string[],
   allowlistedTables?: string[]
 ) {
@@ -40,7 +40,7 @@ export function tableIsDisabled(
 }
 
 export function tableIsBlocklisted(
-  table: TableWithFilterValueType,
+  table: TableWithFilterValueT,
   blocklistedTables: string[]
 ) {
   return blocklistedTables.some(
@@ -50,7 +50,7 @@ export function tableIsBlocklisted(
 }
 
 export function tableIsAllowlisted(
-  table: TableWithFilterValueType,
+  table: TableWithFilterValueT,
   allowlistedTables: string[]
 ) {
   return allowlistedTables.some(
@@ -59,35 +59,38 @@ export function tableIsAllowlisted(
   );
 }
 
-export const resetAllFiltersInTables = (tables: TableWithFilterValueType[]) => {
+export const resetAllFiltersInTables = (tables: TableWithFilterValueT[]) => {
   if (!tables) return [];
 
   return tablesWithDefaults(tables);
 };
 
-const tableWithDefaultDateColumn = (table) => {
+const tableWithDefaultDateColumn = (table: TableT): TableT => {
   return {
     ...table,
     dateColumn:
       !!table.dateColumn &&
       !!table.dateColumn.options &&
       table.dateColumn.options.length > 0
-        ? { ...table.dateColumn, value: table.dateColumn.options[0].value }
+        ? {
+            ...table.dateColumn,
+            value: table.dateColumn.options[0].value as string,
+          }
         : null,
   };
 };
 
-const tableWithDefaultFilters = (table) => ({
+const tableWithDefaultFilters = (table: TableT) => ({
   ...table,
   filters: filtersWithDefaults(table.filters),
 });
 
-const tableWithDefaultSelects = (table) => ({
+const tableWithDefaultSelects = (table: TableT) => ({
   ...table,
   selects: selectsWithDefaults(table.selects),
 });
 
-const tableWithDefaults = (table) =>
+const tableWithDefaults = (table: TableT) =>
   compose(
     tableWithDefaultDateColumn,
     tableWithDefaultSelects,
@@ -97,5 +100,5 @@ const tableWithDefaults = (table) =>
     exclude: false,
   });
 
-export const tablesWithDefaults = (tables) =>
-  tables ? tables.map(tableWithDefaults) : null;
+export const tablesWithDefaults = (tables?: TableT[]) =>
+  tables ? tables.map(tableWithDefaults) : [];
