@@ -27,11 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 public class Import extends NamedImpl<ImportId> {
 
-
 	@Valid
 	@NotNull
 	@NsIdRef
-	private final Table table; // todo migrate to NsIdRef
+	private final Table table;
 
 	private long numberOfEntities;
 
