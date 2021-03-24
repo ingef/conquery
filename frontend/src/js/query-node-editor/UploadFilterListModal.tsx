@@ -108,7 +108,7 @@ const UploadFilterListModal: FC<PropsT> = ({
                 <ScrollableList
                   maxVisibleItems={3}
                   fullWidth
-                  items={resolved.unknownCodes}
+                  items={resolved.unknownCodes || []}
                 />
               </>
             )}

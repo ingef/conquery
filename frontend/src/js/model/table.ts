@@ -6,7 +6,7 @@ import { isEmpty, compose } from "../common/helpers";
 import { objectHasSelectedSelects, selectsWithDefaults } from "./select";
 import { filtersWithDefaults } from "./filter";
 
-export const tableIsEditable = (table: TableT) =>
+export const tableIsEditable = (table: TableWithFilterValueT) =>
   (!!table.filters && table.filters.length > 0) ||
   (!!table.selects && table.selects.length > 0) ||
   (!!table.dateColumn && table.dateColumn.options.length > 0);

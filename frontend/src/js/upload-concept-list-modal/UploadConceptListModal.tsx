@@ -199,7 +199,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
                     <ScrollableList
                       maxVisibleItems={3}
                       fullWidth
-                      items={resolved.unknownCodes}
+                      items={resolved.unknownCodes || []}
                     />
                   </div>
                 )}

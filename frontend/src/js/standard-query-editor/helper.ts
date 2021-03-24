@@ -1,8 +1,8 @@
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 
-import type { ConceptQueryNodeType, QueryNodeType } from "./types";
+import type { ConceptQueryNodeType, StandardQueryNodeT } from "./types";
 
-export function getRootNodeLabel(node: QueryNodeType) {
+export function getRootNodeLabel(node: StandardQueryNodeT) {
   if (!node.ids || !node.tree) return null;
 
   const nodeIsRootNode = node.ids.indexOf(node.tree) !== -1;

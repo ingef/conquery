@@ -27,7 +27,7 @@ interface PropsT {
   className?: string;
   context: FiltersContextT;
   filters: FilterWithValueType[] | null;
-  excludeTable: boolean;
+  excludeTable?: boolean;
   onSwitchFilterMode: (filterIdx: number, mode: ModeT) => void;
   onSetFilterValue: Function;
   onLoadFilterSuggestions: (
@@ -35,8 +35,7 @@ interface PropsT {
     filterId: FilterIdT,
     prefix: string
   ) => void;
-  onShowDescription: Function;
-  suggestions: Object | null;
+  onShowDescription: (filterIdx: number) => void;
   currencyConfig: CurrencyConfigT;
 }
 
@@ -94,22 +93,10 @@ const TableFilters = (props: PropsT) => {
                       props.onSetFilterValue(filterIdx, value),
                   }}
                   label={filter.label}
-                  options={
-                    filter.options ||
-                    (props.suggestions &&
-                    props.suggestions[filterIdx] &&
-                    props.suggestions[filterIdx].options
-                      ? props.suggestions[filterIdx].options
-                      : [])
-                  }
+                  options={filter.options}
                   disabled={!!props.excludeTable}
                   allowDropFile={!!filter.allowDropFile}
-                  isLoading={
-                    filter.isLoading ||
-                    (props.suggestions &&
-                      props.suggestions[filterIdx] &&
-                      props.suggestions[filterIdx].isLoading)
-                  }
+                  isLoading={filter.isLoading}
                   startLoadingThreshold={filter.threshold || 1}
                   onLoad={(prefix: string) =>
                     props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)

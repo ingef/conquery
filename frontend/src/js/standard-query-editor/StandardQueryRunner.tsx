@@ -16,7 +16,7 @@ function validateQueryStartStop({ startQuery, stopQuery }: QueryRunnerStateT) {
   return !startQuery.loading && !stopQuery.loading;
 }
 
-function validateDataset(datasetId: DatasetIdT) {
+function validateDataset(datasetId: DatasetIdT | null) {
   return datasetId !== null;
 }
 
@@ -32,11 +32,10 @@ function useButtonTooltip(hasQueryValidDates: boolean) {
   return undefined;
 }
 
-interface PropsT {
-  datasetId: DatasetIdT;
-}
-
-const StandardQueryRunner: FC<PropsT> = ({ datasetId }) => {
+const StandardQueryRunner = () => {
+  const datasetId = useSelector<StateT, DatasetIdT | null>(
+    (state) => state.datasets.selectedDatasetId
+  );
   const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query
   );
@@ -59,12 +58,15 @@ const StandardQueryRunner: FC<PropsT> = ({ datasetId }) => {
   const startStandardQuery = useStartQuery("standard");
   const stopStandardQuery = useStopQuery("standard");
 
-  const startQuery = () =>
-    startStandardQuery(datasetId, query, {
-      selectedSecondaryId,
-    });
+  const startQuery = () => {
+    if (datasetId) {
+      startStandardQuery(datasetId, query, {
+        selectedSecondaryId,
+      });
+    }
+  };
   const stopQuery = () => {
-    if (queryId) {
+    if (datasetId && queryId) {
       stopStandardQuery(datasetId, queryId);
     }
   };

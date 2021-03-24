@@ -19,7 +19,7 @@ interface PropsT {
   input: {
     clearable?: boolean;
     defaultValue?: string | null;
-    value: string | null;
+    value?: string | null;
     onChange: (value: string | null) => void;
   };
 }
@@ -35,9 +35,9 @@ const InputSelect = ({
   tooltip,
 }: PropsT) => {
   const { t } = useTranslation();
-  const selected = options && options.filter((v) => v.value === input.value);
+  const selected = options && options.find((v) => v.value === input.value);
   const defaultValue =
-    options && options.filter((v) => v.value === input.defaultValue);
+    options && options.find((v) => v.value === input.defaultValue);
 
   return (
     <Labeled

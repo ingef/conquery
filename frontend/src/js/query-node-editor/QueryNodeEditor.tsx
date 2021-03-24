@@ -4,16 +4,19 @@ import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import Hotkeys from "react-hot-keys";
 
-import type { QueryNodeType } from "../standard-query-editor/types";
+import type { StandardQueryNodeT } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
-import { DatasetIdT } from "../api/types";
+import { CurrencyConfigT, DatasetIdT } from "../api/types";
 import type { ModeT } from "../form-components/InputRange";
 import BasicButton from "../button/BasicButton";
+import { isConceptQueryNode } from "../model/query";
 
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
 import TableView from "./TableView";
 import { createQueryNodeEditorActions } from "./actions";
+import type { PostPrefixForSuggestionsParams } from "../api/api";
+import { QueryNodeEditorStateT } from "./reducer";
 
 const Root = styled("div")`
   margin: 0 10px;
@@ -47,30 +50,17 @@ const CloseButton = styled(BasicButton)`
   border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-interface QueryNodeEditorState {
-  detailsViewActive: boolean;
-  selectedInputTableIdx: number;
-  selectedInput: number;
-  editingLabel: boolean;
-
-  onSelectDetailsView: Function;
-  onSelectInputTableView: Function;
-  onShowDescription: Function;
-  onToggleEditLabel: Function;
-  onReset: Function;
-}
-
 export interface QueryNodeEditorPropsT {
   name: string;
-  editorState: QueryNodeEditorState;
-  node: QueryNodeType;
+  editorState: QueryNodeEditorStateT;
+  node: StandardQueryNodeT;
   showTables: boolean;
   isExcludeTimestampsPossible: boolean;
   isExcludeFromSecondaryIdQueryPossible: boolean;
   datasetId: DatasetIdT;
-  suggestions: Object | null;
   allowlistedTables?: string[];
   blocklistedTables?: string[];
+  currencyConfig: CurrencyConfigT;
 
   onCloseModal: Function;
   onUpdateLabel: Function;
@@ -86,15 +76,39 @@ export interface QueryNodeEditorPropsT {
     filterIdx: number,
     mode: ModeT
   ) => void;
-  onLoadFilterSuggestions: Function;
+  onLoadFilterSuggestions: (
+    params: PostPrefixForSuggestionsParams,
+    tableIdx: number,
+    filterIdx: number
+  ) => void;
   onSelectSelects: Function;
   onSelectTableSelects: Function;
   onSetDateColumn: Function;
 }
 
-const QueryNodeEditorComponent = (props: QueryNodeEditorPropsT) => {
+const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { t } = useTranslation();
-  const { node, editorState } = props;
+  const dispatch = useDispatch();
+
+  const {
+    setDetailsViewActive,
+    toggleEditLabel,
+    setInputTableViewActive,
+    setFocusedInput,
+    reset,
+  } = createQueryNodeEditorActions(props.name);
+
+  // TODO: Move all of the callbacks out of that object and pass individually where necessary
+  const editorState = {
+    ...(props.editorState || {}),
+    onSelectDetailsView: () => dispatch(setDetailsViewActive()),
+    onToggleEditLabel: () => dispatch(toggleEditLabel()),
+    onSelectInputTableView: (tableIdx: number) =>
+      dispatch(setInputTableViewActive(tableIdx)),
+    onShowDescription: (filterIdx: number) =>
+      dispatch(setFocusedInput(filterIdx)),
+    onReset: () => dispatch(reset()),
+  };
 
   function close() {
     if (!node) return;
@@ -106,7 +120,7 @@ const QueryNodeEditorComponent = (props: QueryNodeEditorPropsT) => {
   if (!node) return null;
 
   const selectedTable =
-    !node.isPreviousQuery && editorState.selectedInputTableIdx != null
+    isConceptQueryNode(node) && editorState.selectedInputTableIdx != null
       ? node.tables[editorState.selectedInputTableIdx]
       : null;
 
@@ -114,11 +128,23 @@ const QueryNodeEditorComponent = (props: QueryNodeEditorPropsT) => {
     <Root>
       <Wrapper>
         <Hotkeys keyName="escape" onKeyDown={close} />
-        <MenuColumn {...props} />
-        {editorState.detailsViewActive && <NodeDetailsView {...props} />}
-        {!editorState.detailsViewActive && selectedTable != null && (
-          <TableView {...props} />
+        <MenuColumn node={node} {...props} editorState={editorState} />
+        {editorState.detailsViewActive && (
+          <NodeDetailsView node={node} {...props} editorState={editorState} />
         )}
+        {isConceptQueryNode(node) &&
+          !editorState.detailsViewActive &&
+          selectedTable != null && (
+            <TableView
+              {...props}
+              onShowDescription={editorState.onShowDescription}
+              datasetId={props.datasetId}
+              currencyConfig={props.currencyConfig}
+              node={node}
+              selectedInputTableIdx={editorState.selectedInputTableIdx}
+              onLoadFilterSuggestions={props.onLoadFilterSuggestions}
+            />
+          )}
         <SxWithTooltip text={t("common.closeEsc")}>
           <CloseButton small onClick={close}>
             {t("common.done")}
@@ -126,34 +152,6 @@ const QueryNodeEditorComponent = (props: QueryNodeEditorPropsT) => {
         </SxWithTooltip>
       </Wrapper>
     </Root>
-  );
-};
-
-const QueryNodeEditor = (props: QueryNodeEditorPropsT) => {
-  const dispatch = useDispatch();
-
-  const {
-    setDetailsViewActive,
-    toggleEditLabel,
-    setInputTableViewActive,
-    setFocusedInput,
-    reset,
-  } = createQueryNodeEditorActions(props.name);
-
-  return (
-    <QueryNodeEditorComponent
-      {...props}
-      editorState={{
-        ...(props.editorState || {}),
-        onSelectDetailsView: () => dispatch(setDetailsViewActive()),
-        onToggleEditLabel: () => dispatch(toggleEditLabel()),
-        onSelectInputTableView: (tableIdx: number) =>
-          dispatch(setInputTableViewActive(tableIdx)),
-        onShowDescription: (filterIdx: number) =>
-          dispatch(setFocusedInput(filterIdx)),
-        onReset: () => dispatch(reset()),
-      }}
-    />
   );
 };
 

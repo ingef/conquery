@@ -28,9 +28,6 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
   const activeTab = useSelector<StateT, string | null>(
     (state) => state.panes.right.activeTab
   );
-  const selectedDatasetId = useSelector<StateT, string | null>(
-    (state) => state.datasets.selectedDatasetId
-  );
 
   useEffect(() => {
     dispatch(clickPaneTab("right", tabs[0].key));
@@ -46,9 +43,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
     >
       {tabs.map((tab) => {
         const isActive = tab.key === activeTab;
-        const tabComponent = React.createElement(tab.component, {
-          selectedDatasetId: selectedDatasetId,
-        });
+        const tabComponent = React.createElement(tab.component);
 
         return (
           <Tab key={tab.key} isActive={isActive}>
