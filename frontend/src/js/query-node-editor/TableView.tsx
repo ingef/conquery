@@ -8,6 +8,7 @@ import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";
 import type { ConceptQueryNodeType } from "../standard-query-editor/types";
 import type { CurrencyConfigT, DatasetIdT } from "../api/types";
+import type { PostPrefixForSuggestionsParams } from "../api/api";
 
 const Column = styled("div")`
   display: flex;
@@ -27,14 +28,16 @@ interface PropsT {
   datasetId: DatasetIdT;
   currencyConfig: CurrencyConfigT;
 
-  suggestions;
+  onLoadFilterSuggestions: (
+    params: PostPrefixForSuggestionsParams,
+    tableIdx: number,
+    filterIdx: number
+  ) => void;
 
   onSelectTableSelects;
   onSetDateColumn;
-
   onSetFilterValue;
   onSwitchFilterMode;
-  onLoadFilterSuggestions;
 }
 
 const TableView: FC<PropsT> = ({
@@ -43,8 +46,6 @@ const TableView: FC<PropsT> = ({
   onShowDescription,
   datasetId,
   currencyConfig,
-
-  suggestions,
 
   onSelectTableSelects,
   onSetDateColumn,
@@ -106,16 +107,17 @@ const TableView: FC<PropsT> = ({
             }
             onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
               onLoadFilterSuggestions(
-                datasetId,
-                node.tree,
-                table.id,
-                filterId,
-                prefix,
+                {
+                  datasetId: datasetId,
+                  conceptId: node.tree,
+                  tableId: table.id,
+                  filterId,
+                  prefix,
+                },
                 selectedInputTableIdx,
                 filterIdx
               )
             }
-            suggestions={!!suggestions && suggestions[selectedInputTableIdx]}
             onShowDescription={onShowDescription}
             currencyConfig={currencyConfig}
           />

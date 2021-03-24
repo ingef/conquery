@@ -7,14 +7,11 @@ import {
 import createQueryRunnerReducer, {
   QueryRunnerStateT,
 } from "../query-runner/reducer";
+import type { QueryNodeEditorStateT } from "../query-node-editor/reducer";
 
 import { SET_EXTERNAL_FORM, LOAD_EXTERNAL_FORM_VALUES } from "./actionTypes";
 
-import { createFormQueryNodeEditorReducer } from "./form-query-node-editor";
-import {
-  createFormSuggestionsReducer,
-  FormSuggestionsStateT,
-} from "./form-suggestions/reducer";
+import { createFormQueryNodeEditorReducer } from "./form-query-node-editor/reducer";
 import { collectAllFormFields } from "./helper";
 
 import type { Form } from "./config-types";
@@ -28,7 +25,7 @@ function collectConceptListFieldNames(config: Form) {
 }
 
 export interface FormContextStateT {
-  suggestions: FormSuggestionsStateT;
+  [conceptListFieldName: string]: QueryNodeEditorStateT;
 }
 
 function buildFormReducer(form: Form) {
@@ -37,19 +34,11 @@ function buildFormReducer(form: Form) {
   if (conceptListFieldNames.length === 0) return (state: any) => state;
 
   return combineReducers(
-    conceptListFieldNames.reduce(
-      (combined, name) => {
-        combined[name] = createFormQueryNodeEditorReducer(form.type, name);
+    conceptListFieldNames.reduce((combined, name) => {
+      combined[name] = createFormQueryNodeEditorReducer(form.type, name);
 
-        return combined;
-      },
-      {
-        suggestions: createFormSuggestionsReducer(
-          form.type,
-          conceptListFieldNames
-        ),
-      }
-    )
+      return combined;
+    }, {})
   );
 }
 

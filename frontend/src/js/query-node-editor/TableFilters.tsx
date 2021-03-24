@@ -36,7 +36,6 @@ interface PropsT {
     prefix: string
   ) => void;
   onShowDescription: (filterIdx: number) => void;
-  suggestions: Object | null;
   currencyConfig: CurrencyConfigT;
 }
 
@@ -94,22 +93,10 @@ const TableFilters = (props: PropsT) => {
                       props.onSetFilterValue(filterIdx, value),
                   }}
                   label={filter.label}
-                  options={
-                    filter.options ||
-                    (props.suggestions &&
-                    props.suggestions[filterIdx] &&
-                    props.suggestions[filterIdx].options
-                      ? props.suggestions[filterIdx].options
-                      : [])
-                  }
+                  options={filter.options}
                   disabled={!!props.excludeTable}
                   allowDropFile={!!filter.allowDropFile}
-                  isLoading={
-                    filter.isLoading ||
-                    (props.suggestions &&
-                      props.suggestions[filterIdx] &&
-                      props.suggestions[filterIdx].isLoading)
-                  }
+                  isLoading={filter.isLoading}
                   startLoadingThreshold={filter.threshold || 1}
                   onLoad={(prefix: string) =>
                     props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)

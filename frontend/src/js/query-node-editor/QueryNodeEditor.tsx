@@ -15,6 +15,8 @@ import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
 import TableView from "./TableView";
 import { createQueryNodeEditorActions } from "./actions";
+import type { PostPrefixForSuggestionsParams } from "../api/api";
+import { QueryNodeEditorStateT } from "./reducer";
 
 const Root = styled("div")`
   margin: 0 10px;
@@ -48,28 +50,14 @@ const CloseButton = styled(BasicButton)`
   border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-interface QueryNodeEditorState {
-  detailsViewActive: boolean;
-  selectedInputTableIdx: number;
-  selectedInput: number;
-  editingLabel: boolean;
-
-  onSelectDetailsView: Function;
-  onSelectInputTableView: Function;
-  onShowDescription: Function;
-  onToggleEditLabel: Function;
-  onReset: Function;
-}
-
 export interface QueryNodeEditorPropsT {
   name: string;
-  editorState: QueryNodeEditorState;
+  editorState: QueryNodeEditorStateT;
   node: StandardQueryNodeT;
   showTables: boolean;
   isExcludeTimestampsPossible: boolean;
   isExcludeFromSecondaryIdQueryPossible: boolean;
   datasetId: DatasetIdT;
-  suggestions: Object | null;
   allowlistedTables?: string[];
   blocklistedTables?: string[];
   currencyConfig: CurrencyConfigT;
@@ -88,7 +76,11 @@ export interface QueryNodeEditorPropsT {
     filterIdx: number,
     mode: ModeT
   ) => void;
-  onLoadFilterSuggestions: Function;
+  onLoadFilterSuggestions: (
+    params: PostPrefixForSuggestionsParams,
+    tableIdx: number,
+    filterIdx: number
+  ) => void;
   onSelectSelects: Function;
   onSelectTableSelects: Function;
   onSetDateColumn: Function;
@@ -106,6 +98,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     reset,
   } = createQueryNodeEditorActions(props.name);
 
+  // TODO: Move all of the callbacks out of that object and pass individually where necessary
   const editorState = {
     ...(props.editorState || {}),
     onSelectDetailsView: () => dispatch(setDetailsViewActive()),
@@ -135,9 +128,9 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     <Root>
       <Wrapper>
         <Hotkeys keyName="escape" onKeyDown={close} />
-        <MenuColumn node={node} {...props} />
+        <MenuColumn node={node} {...props} editorState={editorState} />
         {editorState.detailsViewActive && (
-          <NodeDetailsView node={node} {...props} />
+          <NodeDetailsView node={node} {...props} editorState={editorState} />
         )}
         {isConceptQueryNode(node) &&
           !editorState.detailsViewActive &&
@@ -149,6 +142,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
               currencyConfig={props.currencyConfig}
               node={node}
               selectedInputTableIdx={editorState.selectedInputTableIdx}
+              onLoadFilterSuggestions={props.onLoadFilterSuggestions}
             />
           )}
         <SxWithTooltip text={t("common.closeEsc")}>

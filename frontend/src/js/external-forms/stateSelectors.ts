@@ -2,11 +2,10 @@ import { useSelector } from "react-redux";
 import { StateT } from "app-types";
 
 import { initTables } from "./transformers";
-import { FormContextStateT } from "./reducer";
 import { Form } from "./config-types";
 import { useActiveLang } from "../localization/useActiveLang";
 
-const selectFormField = (state, formName, fieldName) => {
+const selectFormField = (state, formName: string, fieldName: string) => {
   if (
     !state ||
     !state[formName] ||
@@ -47,19 +46,6 @@ export const selectEditedConcept = (
   const concept = formField[andIdx].concepts[orIdx];
 
   return initTables({ blocklistedTables, allowlistedTables })(concept);
-};
-
-export const selectSuggestions = (
-  state: FormContextStateT,
-  fieldName: string,
-  { andIdx, orIdx }: { andIdx: number; orIdx: number }
-) => {
-  return (
-    state.suggestions &&
-    state.suggestions[fieldName] &&
-    state.suggestions[fieldName][andIdx] &&
-    state.suggestions[fieldName][andIdx][orIdx]
-  );
 };
 
 export const selectFormContextState = (state: StateT, formType: string) =>
