@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -18,8 +17,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2LongArrayMap;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,6 +32,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @JsonDeserialize(using = CBlockDeserializer.class)
 public class CBlock extends IdentifiableImpl<CBlockId> {
+
+	private int root;
 
 	/**
 	 * Estimate the memory usage of CBlocks.
@@ -58,15 +57,19 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	/**
 	 * Bloom filter per entity for the first 64 {@link ConceptTreeChild}.
 	 */
-	private Int2LongArrayMap includedConcepts = new Int2LongArrayMap();
+	private long[] includedConcepts;
 
 	/**
 	 * Statistic for fast lookup if entity is of interest.
 	 * Int array for memory performance.
 	 */
-	//TODO wrap access in private methods and change to a more appropriate class
-	private Map<Integer, Integer> minDate = new Int2IntArrayMap();
-	private Map<Integer, Integer> maxDate = new Int2IntArrayMap();
+	private int[] minDate;
+	private int[] maxDate;
+
+	private int getEntityIndex(int entity){
+		return entity - root;
+	}
+
 	/**
 	 * Represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
@@ -101,11 +104,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	}
 
 	public int getEntityMinDate(int entity) {
-		return minDate.getOrDefault(entity, Integer.MIN_VALUE);
+		return minDate[getEntityIndex(entity)];
 	}
 
 	public int getEntityMaxDate(int entity) {
-		return maxDate.getOrDefault(entity, Integer.MAX_VALUE);
+		return maxDate[getEntityIndex(entity)];
 	}
 
 	@Override
@@ -115,43 +118,56 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	}
 
 	public void initIndizes(int bucketSize) {
-		includedConcepts = new Int2LongArrayMap(bucketSize);
-		includedConcepts.defaultReturnValue(0);
+		root = bucket.getBucket() * bucketSize;
 
-		minDate = new Int2IntArrayMap(bucketSize);
-		maxDate = new Int2IntArrayMap(bucketSize);
+		includedConcepts = new long[bucketSize];
+
+		minDate = new int[bucketSize];
+		maxDate = new int[bucketSize];
+
+		for (int index = 0; index < bucketSize; index++) {
+			includedConcepts[index] = 0;
+
+			minDate[index] = Integer.MIN_VALUE;
+			maxDate[index] = Integer.MAX_VALUE;
+		}
 	}
 
 	public void addEntityDateRange(int entity, CDateRange range) {
+		final int index = getEntityIndex(entity);
+
 		if (range.hasLowerBound()) {
 			final int minValue = range.getMinValue();
 
-			if (!minDate.containsKey(entity)) {
-				minDate.put(entity, minValue);
+			if (minDate[index] != Integer.MIN_VALUE) {
+				minDate[index] = minValue;
 			}
 			else {
-				int min = Math.min(minDate.get(entity), minValue);
-				minDate.put(entity, min);
+				int min = Math.min(minDate[index], minValue);
+				minDate[index] = min;
 			}
 		}
 
 		if (range.hasUpperBound()) {
 			final int maxValue = range.getMaxValue();
 
-			if (!maxDate.containsKey(entity)) {
-				maxDate.put(entity, maxValue);
+			if (maxDate[index] != Integer.MAX_VALUE) {
+				maxDate[index] = maxValue;
 			}
 			else {
-				int min = Math.max(maxDate.get(entity), maxValue);
-				maxDate.put(entity, min);
+				int min = Math.max(maxDate[index], maxValue);
+				maxDate[index]  = min;
 			}
 		}
 	}
 
 	public void addIncludedConcept(int entity, ConceptTreeNode<?> node) {
+		final int index = getEntityIndex(entity);
+
 		final long mask = node.calculateBitMask();
-		final long original = includedConcepts.getOrDefault(entity, 0);
-		includedConcepts.put(entity, original | mask);
+		final long original = includedConcepts[index];
+
+		includedConcepts[index] = original | mask;
 	}
 
 	public boolean isConceptIncluded(int entity, long requiredBits) {
@@ -159,7 +175,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 			return true;
 		}
 
-		long bits = includedConcepts.get(entity);
+		long bits = includedConcepts[getEntityIndex(entity)];
 
 		return (bits & requiredBits) != 0L;
 	}

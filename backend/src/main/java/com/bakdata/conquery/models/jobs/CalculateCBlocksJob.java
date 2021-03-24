@@ -52,12 +52,12 @@ public class CalculateCBlocksJob extends Job {
 		for (CalculationInformation info : infos) {
 			try {
 				if (bucketManager.hasCBlock(info.getCBlockId())) {
-					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.");
+					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", info.getCBlockId());
 					continue;
 				}
 
 				CBlock cBlock = createCBlock(connector, info);
-				cBlock.initIndizes(info.getBucket().getBucketSize());
+				cBlock.initIndizes(bucketManager.getEntityBucketSize());
 
 				connector.calculateCBlock(cBlock, info.getBucket());
 

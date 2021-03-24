@@ -49,6 +49,7 @@ public class BucketManager {
 	@Getter
 	private final Int2ObjectMap<Entity> entities;
 
+
 	/**
 	 * The final Map is the way the APIs expect the data to be delivered.
 	 * <p>
@@ -61,7 +62,10 @@ public class BucketManager {
 	 */
 	private final Map<TableId, Int2ObjectMap<List<Bucket>>> tableToBuckets;
 
-	public static BucketManager create(Worker worker, WorkerStorage storage) {
+	@Getter
+	private final int entityBucketSize;
+
+	public static BucketManager create(Worker worker, WorkerStorage storage, int entityBucketSize) {
 		Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
 		Map<ConnectorId, Int2ObjectMap<Map<BucketId, CBlock>>> connectorCBlocks = new HashMap<>();
 		Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets = new HashMap<>();
@@ -80,7 +84,7 @@ public class BucketManager {
 			registerCBlock(cBlock, storage, connectorCBlocks);
 		}
 
-		return new BucketManager(worker.getJobManager(), storage, worker, entities, connectorCBlocks, tableBuckets);
+		return new BucketManager(worker.getJobManager(), storage, worker, entities, connectorCBlocks, tableBuckets, entityBucketSize);
 	}
 
 	/**
