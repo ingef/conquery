@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,6 +36,7 @@ import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeAll;
@@ -47,19 +49,28 @@ public class StoredQueriesProcessorTest {
 	private static final Dataset DATASET_0 = new Dataset() {{setName("dataset0");}};
 	private static final Dataset DATASET_1 = new Dataset() {{setName("dataset1");}};
 
-	private static final ManagedExecutionId QUERY_ID_0 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000000"));
-	private static final ManagedExecutionId QUERY_ID_1 = new ManagedExecutionId(DATASET_1.getId(), UUID.fromString("00000000-0000-0000-0000-000000000001"));
-	private static final ManagedExecutionId QUERY_ID_2 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000002"));
-	private static final ManagedExecutionId QUERY_ID_3 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000003"));
-	private static final ManagedExecutionId QUERY_ID_4 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000004"));
-	private static final ManagedExecutionId QUERY_ID_5 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000005"));
-	private static final ManagedExecutionId QUERY_ID_6 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000006"));
-	private static final ManagedExecutionId QUERY_ID_7 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000007"));
-	private static final ManagedExecutionId QUERY_ID_8 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000008"));
+	private static final ManagedExecutionId QUERY_ID_0 = createExecutionId(DATASET_0, "0");
+	private static final ManagedExecutionId QUERY_ID_1 = createExecutionId(DATASET_1, "1");
+	private static final ManagedExecutionId QUERY_ID_2 = createExecutionId(DATASET_0, "2");
+	private static final ManagedExecutionId QUERY_ID_3 = createExecutionId(DATASET_0, "3");
+	private static final ManagedExecutionId QUERY_ID_4 = createExecutionId(DATASET_0, "4");
+	private static final ManagedExecutionId QUERY_ID_5 = createExecutionId(DATASET_0, "5");
+	private static final ManagedExecutionId QUERY_ID_6 = createExecutionId(DATASET_0, "6");
+	private static final ManagedExecutionId QUERY_ID_7 = createExecutionId(DATASET_0, "7");
+	private static final ManagedExecutionId QUERY_ID_8 = createExecutionId(DATASET_0, "8");
+	private static final ManagedExecutionId QUERY_ID_9 = createExecutionId(DATASET_0, "9");
+
+	private static ManagedExecutionId createExecutionId(Dataset dataset0, String s) {
+		StringBuilder idBuilder = new StringBuilder("00000000-0000-0000-0000-000000000000");
+		idBuilder.replace(idBuilder.length() - s.length(),idBuilder.length(), s);
+
+		return new ManagedExecutionId(dataset0.getId(), UUID.fromString(idBuilder.toString()));
+	}
 
 	private static int USER_COUNT = 0;
+
 	private static final User[] USERS = new User[] {
-		mockUser(List.of(QUERY_ID_0, QUERY_ID_1,QUERY_ID_2, QUERY_ID_4, QUERY_ID_7)),
+		mockUser(List.of(QUERY_ID_0, QUERY_ID_1,QUERY_ID_2, QUERY_ID_4, QUERY_ID_7, QUERY_ID_9)),
 		mockUser(List.of(QUERY_ID_3, QUERY_ID_4))
 	};
 
@@ -74,7 +85,8 @@ public class StoredQueriesProcessorTest {
 			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED),        // not included: wrong state
 			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW),                                                    // not included: wrong query structure
 			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd()),    // included, but secondaryId-Query
-			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept())    // not-included, wrong structure
+			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept()),    // not-included, wrong structure
+			mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0])), USERS[1], QUERY_ID_9, DONE)        // included
 
 		);
 
@@ -101,8 +113,10 @@ public class StoredQueriesProcessorTest {
 				.containsExactly(
 						makeState(QUERY_ID_0, USERS[0], USERS[0], NEW, "CONCEPT_QUERY", null),
 						makeState(QUERY_ID_4, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null),
-						makeState(QUERY_ID_7, USERS[1], USERS[0], DONE, "SECONDARY_ID_QUERY", new SecondaryIdDescriptionId(DATASET_0.getId(),"sid"))
-				);
+						makeState(QUERY_ID_7, USERS[1], USERS[0], DONE, "SECONDARY_ID_QUERY", new SecondaryIdDescriptionId(DATASET_0.getId(),"sid")),
+						makeState(QUERY_ID_9, USERS[1], USERS[0], DONE, "CONCEPT_QUERY", null)
+
+						);
 	}
 
 	private static User mockUser(List<ManagedExecutionId> allowedQueryIds) {
