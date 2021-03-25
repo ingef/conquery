@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.jobs;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -38,19 +37,16 @@ import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
-import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
+import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.jakewharton.byteunits.BinaryByteUnit;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,8 +58,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImportJob extends Job {
 
-	private final ObjectReader headerReader = Jackson.BINARY_MAPPER.readerFor(PreprocessedHeader.class);
-
 	private final Namespace namespace;
 
 	private final Table table;
@@ -73,34 +67,37 @@ public class ImportJob extends Job {
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */3;
 
 	@Override
-	public void execute() throws JSONException, InterruptedException, JsonProcessingException {
-		final PreprocessedData container;
-		final PreprocessedHeader header;
+	public void execute() throws JSONException, InterruptedException, IOException {
 
 		getProgressReporter().setMax(NUMBER_OF_STEPS);
 
-		try (HCFile file = new HCFile(importFile, false)) {
-			if (log.isInfoEnabled()) {
-				log.info("Reading HCFile {}: header size: {}  content size: {}", importFile, BinaryByteUnit.format(file.getHeaderSize()), BinaryByteUnit.format(file.getContentSize()));
-			}
+		// We parse semi-manually as the incoming file consist of multiple documents we only read progressively.
+		final FileInputStream in = new FileInputStream(importFile);
+//		final GZIPInputStream in = new GZIPInputStream(in1);
 
-			header = readHeader(file);
-			log.info("Importing {} into {}", header.getName(), table);
 
-			//check that all workers are connected
-			namespace.checkConnections();
+		final JsonParser parser = Jackson.BINARY_MAPPER.getFactory()
+													   .createParser(in);
 
-			//import the actual data
-			log.info("Begin reading data.");
+		log.info("Reading CQPP {}", importFile);
 
-			try (InputStream in = file.readContent()) {
-				container = Preprocessed.readContainer(in);
-			}
+		final PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
+		log.info("Importing {} into {}", header.getName(), table);
 
-		}
-		catch (IOException exception) {
-			throw new IllegalStateException("Failed to load the file " + importFile, exception);
-		}
+		namespace.checkConnections();
+
+		log.debug("Begin reading Dictionaries");
+
+
+		PreprocessedDictionaries dictionaries = parser.readValueAs(PreprocessedDictionaries.class);
+
+
+
+
+		//import the actual data
+		log.debug("Begin reading data.");
+
+		final PreprocessedData container = parser.readValueAs(PreprocessedData.class);
 
 
 		if (container.isEmpty()) {
@@ -111,12 +108,12 @@ public class ImportJob extends Job {
 
 		getProgressReporter().report(1);
 
-		log.info("Done reading data. Contains {} Entities.", container.size());
+		log.debug("Done reading data. Contains {} Entities.", container.size());
 
-		log.info("Updating primary dictionary");
+		log.debug("Updating primary dictionary");
 
 		// Update primary dictionary: load new data, and create mapping.
-		DictionaryMapping primaryMapping = importPrimaryDictionary(container.getPrimaryDictionary());
+		DictionaryMapping primaryMapping = importPrimaryDictionary(dictionaries.getPrimaryDictionary());
 
 		getProgressReporter().report(1);
 
@@ -125,7 +122,7 @@ public class ImportJob extends Job {
 
 		getProgressReporter().report(1);
 
-		final Map<String, DictionaryMapping> mappings = importAndSendDictionaries(container.getDictionaries(), table.getColumns(), header.getName());
+		final Map<String, DictionaryMapping> mappings = importAndSendDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
 		setDictionaryIds(container.getStores(), table.getColumns(), header.getName());
 
@@ -175,7 +172,8 @@ public class ImportJob extends Job {
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
 
 			WorkerInformation responsibleWorker =
-					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket2entities.getKey()), () -> "No responsible worker for bucket " + bucket2entities.getKey());
+					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket2entities.getKey()), () -> "No responsible worker for bucket "
+																													+ bucket2entities.getKey());
 
 			awaitFreeJobQueue(responsibleWorker);
 
@@ -242,16 +240,6 @@ public class ImportJob extends Job {
 		);
 	}
 
-	private PreprocessedHeader readHeader(HCFile file) throws JsonParseException, IOException {
-		try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
-			PreprocessedHeader header = headerReader.readValue(in);
-
-			header.assertMatch(table);
-
-			return header;
-		}
-	}
-
 	private DictionaryMapping importPrimaryDictionary(Dictionary underlyingDictionary) {
 
 
@@ -308,7 +296,7 @@ public class ImportJob extends Job {
 			throws JSONException {
 
 		// Empty Maps are Coalesced to null by Jackson
-		if(dicts == null){
+		if (dicts == null) {
 			return Collections.emptyMap();
 		}
 
@@ -432,7 +420,8 @@ public class ImportJob extends Job {
 				mapping.applyToStore(stringStore, newType);
 
 				stringStore.setIndexStore(newType);
-			}finally {
+			}
+			finally {
 				subJob.report(1);
 			}
 		}
@@ -455,7 +444,7 @@ public class ImportJob extends Job {
 
 			col.setName(columns[i].getName());
 
-			importColumns[i]  = col;
+			importColumns[i] = col;
 		}
 
 		imp.setColumns(importColumns);
@@ -469,12 +458,12 @@ public class ImportJob extends Job {
 			}
 
 			// shared dictionaries are not related to a specific import.
-			if(column.getSharedDictionary() != null){
+			if (column.getSharedDictionary() != null) {
 				continue;
 			}
 
 			// Some StringStores don't have Dictionaries.
-			if(!((StringStore) stores.get(column.getName())).isDictionaryHolding()){
+			if (!((StringStore) stores.get(column.getName())).isDictionaryHolding()) {
 				continue;
 			}
 
@@ -484,7 +473,6 @@ public class ImportJob extends Job {
 		imp.setDictionaries(dictionaries);
 		return imp;
 	}
-
 
 
 	/**

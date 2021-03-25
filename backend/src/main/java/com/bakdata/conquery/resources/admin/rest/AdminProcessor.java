@@ -1,6 +1,7 @@
 package com.bakdata.conquery.resources.admin.rest;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -25,7 +26,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
-import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -184,23 +184,25 @@ public class AdminProcessor {
 	public void addImport(Namespace namespace, File selectedFile) throws IOException {
 		Dataset ds = namespace.getDataset();
 
-		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
-			PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(in, PreprocessedHeader.class);
+		try (final InputStream in = new FileInputStream(selectedFile)) {
+
+			PreprocessedHeader header = Jackson.BINARY_MAPPER.getFactory().createParser(in).readValueAs(PreprocessedHeader.class);
 
 			TableId tableName = new TableId(ds.getId(), header.getTable());
 			Table table = namespace.getStorage().getTable(tableName);
 
 			final ImportId importId = new ImportId(table.getId(), header.getName());
 
-			if(datasetRegistry.get(ds.getId()).getStorage().getImport(importId) != null){
+			if (namespace.getStorage().getImport(importId) != null) {
 				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
 			}
 
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
 			datasetRegistry.get(ds.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize));
+						   .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize));
 		}
+
 	}
 
 	public void addWorker(ShardNodeInformation node, Dataset dataset) {

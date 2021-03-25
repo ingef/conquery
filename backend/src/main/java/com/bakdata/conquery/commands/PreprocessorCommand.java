@@ -1,6 +1,7 @@
 package com.bakdata.conquery.commands;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +18,6 @@ import java.util.function.Predicate;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
@@ -72,10 +72,10 @@ public class PreprocessorCommand extends ConqueryCommand {
 											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 
-			try (HCFile outFile = new HCFile(preprocessingJob.getPreprocessedFile(), false);
-				 InputStream is = outFile.readHeader()) {
+			try (InputStream is = new FileInputStream(preprocessingJob.getPreprocessedFile())) {
 
-				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
+				// TODO encapsulate this
+				PreprocessedHeader header = Jackson.BINARY_MAPPER.getFactory().createParser(is).readValueAs(PreprocessedHeader.class);
 
 				if (header.getValidityHash() == currentHash) {
 					log.info("\tHASH STILL VALID");
