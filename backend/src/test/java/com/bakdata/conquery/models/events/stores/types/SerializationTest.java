@@ -36,7 +36,6 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumbe
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefixSuffix;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -61,7 +60,7 @@ public class SerializationTest {
 	}
 
 	public static List<ColumnStore> createCTypes() {
-		final MapDictionary dictionary = new MapDictionary(new DatasetId("dataset"), "hi");
+		final MapDictionary dictionary = new MapDictionary( "hi");
 		return Arrays.asList(
 				new DecimalTypeScaled(13, IntArrayStore.create(10)),
 				new MoneyIntStore(IntArrayStore.create(10)),

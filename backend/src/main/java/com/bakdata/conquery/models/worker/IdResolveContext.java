@@ -42,8 +42,12 @@ public abstract class IdResolveContext implements Injectable {
 	public <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> T resolve(ID id) {
 		return findRegistry(id.getDataset()).resolve(id);
 	}
-	
+
 	public <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> Optional<T> getOptional(ID id) {
 		return findRegistry(id.getDataset()).getOptional(id);
+	}
+
+	public <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> Optional<T> getOptional(DatasetId dataset, ID id) {
+		return findRegistry(dataset).getOptional(id);
 	}
 }

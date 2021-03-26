@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
 import java.util.InputMismatchException;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -57,18 +58,21 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId & IId<T>, T exten
 					datasetName = Optional.ofNullable(Jackson.findInjectable(ctxt, DatasetId.class)).map(DatasetId::getName).orElse(null);
 				}
 
+				final DatasetId dataset;
 				if (datasetName != null) {
 					id = idParser.parsePrefixed(datasetName, text);
+					dataset = new DatasetId(datasetName);
 				}
 				else {
 					id = idParser.parse(text);
+					dataset = Objects.requireNonNull(id.getDataset(), "Id has no dataset");
 				}
 
 				final IdResolveContext idResolveContext = IdResolveContext.get(ctxt);
-				Optional<T> result = idResolveContext.getOptional(id);
+				Optional<T> result = idResolveContext.getOptional(dataset, id);
 
-				if (!result.isPresent()) {
-					throw new IdReferenceResolvingException(parser, "Could not find entry `" + id + "` of type " + type.getName(), text, type);
+				if (result.isEmpty()) {
+					return null;
 				}
 
 				if (!type.isAssignableFrom(result.get().getClass())) {

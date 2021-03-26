@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Ints;
@@ -52,8 +51,8 @@ public class BigStoreTest {
 		BigStore<DictionaryId, Dictionary> store = new BigStore<>(new XodusStoreFactory(), Validators.newValidator(), env,
 			StoreInfo.DICTIONARIES, new ArrayList<>(), (e) -> {}, (e) -> {});
 		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
-
-		Dictionary nDict = new MapDictionary(new DatasetId("test"), "dict");
+		// TODO inject dataset
+		Dictionary nDict = new MapDictionary("dict");
 
 		for (int v = 0; v < 1000000; v++) {
 			nDict.add(Integer.toHexString(v).getBytes());
@@ -88,7 +87,8 @@ public class BigStoreTest {
 			StoreInfo.DICTIONARIES, new ArrayList<>(), (e) -> {}, (e) -> {});
 		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
-		Dictionary nDict = new MapDictionary(new DatasetId("test"), "dict");
+		// TODO inject dataset
+		Dictionary nDict = new MapDictionary( "dict");
 
 		// check if manual serialization deserialization works
 		byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);

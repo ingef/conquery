@@ -2,20 +2,17 @@ package com.bakdata.conquery.models.events.stores.specific.string;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Objects;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,12 +31,10 @@ public class StringTypeDictionary implements ColumnStore {
 
 	protected IntegerStore numberType;
 
-	@JsonIgnore
+	@NsIdRef
 	private transient Dictionary dictionary;
 	// todo use NsIdRef
 	private String name;
-	@InternalOnly
-	private DatasetId dataset;
 
 	public StringTypeDictionary(IntegerStore numberType, Dictionary dictionary, String name) {
 		this.numberType = numberType;
@@ -48,10 +43,9 @@ public class StringTypeDictionary implements ColumnStore {
 	}
 
 	@JsonCreator
-	public StringTypeDictionary(IntegerStore numberType, DatasetId dataset, String name) {
+	public StringTypeDictionary(IntegerStore numberType, String name) {
 		this.numberType = numberType;
 		this.name = name;
-		this.dataset = dataset;
 	}
 
 	@Override
@@ -71,9 +65,6 @@ public class StringTypeDictionary implements ColumnStore {
 
 	public void loadDictionaries(NamespacedStorage storage) {
 		// todo consider implementing this with Id-Injection instead of hand-wiring.
-		final DictionaryId dictionaryId = new DictionaryId(getDataset(), getName());
-		log.trace("Loading Dictionary[{}]", dictionaryId);
-		dictionary = Objects.requireNonNull(storage.getDictionary(dictionaryId));
 	}
 
 	public int size() {
@@ -104,13 +95,12 @@ public class StringTypeDictionary implements ColumnStore {
 
 
 	public void setUnderlyingDictionary(DictionaryId newDict) {
-		name = newDict.getDictionary();
-		this.dataset = Objects.requireNonNull(newDict.getDataset());
+		name = newDict.getName();
 	}
 
 	@Override
 	public StringTypeDictionary select(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.select(starts, length), getDataset(), getName());
+		return new StringTypeDictionary(numberType.select(starts, length), getName());
 	}
 
 	public int getString(int event) {

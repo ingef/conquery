@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -37,8 +36,8 @@ public class SuccinctTrieTest {
 
 	@Test
 	public void replicationTest() throws IOException {
-		SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
-		MapDictionary direct = new MapDictionary(new DatasetId("dataset"), "name2");
+		SuccinctTrie dict = new SuccinctTrie( "name");
+		MapDictionary direct = new MapDictionary( "name2");
 
 		data().forEach(entry -> direct.put(entry.getBytes()));
 
@@ -67,7 +66,7 @@ public class SuccinctTrieTest {
 		words.add("ha");
 		words.add("hat");
 
-		SuccinctTrie direct = new SuccinctTrie(new DatasetId("dataset"), "name");
+		SuccinctTrie direct = new SuccinctTrie("name");
 
 
 		int distinctValues = 0;
@@ -93,9 +92,8 @@ public class SuccinctTrieTest {
 	public void serializationTest()
 			throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 
-		SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
-		dict.setDataset(new DatasetId("test"));
-		dict.setName("testDict");
+		SuccinctTrie dict = new SuccinctTrie("testDict");
+
 		data().forEach(value -> dict.put(value.getBytes()));
 
 		dict.compress();
@@ -107,7 +105,7 @@ public class SuccinctTrieTest {
 	@ParameterizedTest(name = "seed: {0}")
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
-		final SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
+		final SuccinctTrie dict = new SuccinctTrie("name");
 		EncodedDictionary direct = new EncodedDictionary(dict, StringTypeEncoded.Encoding.UTF8);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 

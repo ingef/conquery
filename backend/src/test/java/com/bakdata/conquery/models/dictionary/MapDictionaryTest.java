@@ -7,7 +7,6 @@ import java.io.IOException;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import org.junit.jupiter.api.Test;
 
 
@@ -16,7 +15,7 @@ class MapDictionaryTest {
 	@Test
 	void testSerializationAsList() throws IOException, JSONException {
 
-		MapDictionary map = new MapDictionary(new DatasetId("dataset"), "dictionary");
+		MapDictionary map = new MapDictionary( "dictionary");
 
 		map.add("a".getBytes());
 		map.add("b".getBytes());

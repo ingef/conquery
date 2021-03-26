@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.preproc.parser.specific.string;
 
+import java.util.UUID;
+
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -20,7 +23,7 @@ public class MapTypeGuesser extends StringTypeGuesser {
 	public Guess createGuess() {
 		IntegerStore indexType = p.decideIndexType();
 
-		final MapDictionary dictionaryEntries = new MapDictionary(null, "");
+		final MapDictionary dictionaryEntries = new MapDictionary(Dataset.PLACEHOLDER, "");
 
 		StringTypeDictionary type = new StringTypeDictionary(indexType, dictionaryEntries, dictionaryEntries.getName());
 		long mapSize = MapDictionary.estimateMemoryConsumption(
@@ -38,7 +41,7 @@ public class MapTypeGuesser extends StringTypeGuesser {
 		) {
 			@Override
 			public StringStore getType() {
-				MapDictionary map = new MapDictionary(null, "");
+				MapDictionary map = new MapDictionary(UUID.randomUUID().toString());
 				for (byte[] v : p.getDecoded()) {
 					map.add(v);
 				}

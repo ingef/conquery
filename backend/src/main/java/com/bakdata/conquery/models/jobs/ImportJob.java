@@ -18,12 +18,14 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
+import com.bakdata.conquery.models.dictionary.SharedDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -76,8 +78,13 @@ public class ImportJob extends Job {
 //		final GZIPInputStream in = new GZIPInputStream(in1);
 
 
-		final JsonParser parser = Jackson.BINARY_MAPPER.getFactory()
-													   .createParser(in);
+		final JsonParser parser = namespace.getDataset().injectInto(namespace.getNamespaces().injectInto(namespace.getStorage()
+										   .getCentralRegistry()
+										   .injectInto(Jackson.BINARY_MAPPER)))
+										   .getFactory()
+										   .createParser(in);
+
+
 
 		log.info("Reading CQPP {}", importFile);
 
@@ -91,8 +98,19 @@ public class ImportJob extends Job {
 
 		PreprocessedDictionaries dictionaries = parser.readValueAs(PreprocessedDictionaries.class);
 
+		log.debug("Updating primary dictionary");
 
+		// Update primary dictionary: load new data, and create mapping.
+		DictionaryMapping primaryMapping = importPrimaryDictionary(dictionaries.getPrimaryDictionary());
 
+		getProgressReporter().report(1);
+
+		// Distribute the new IDs among workers
+		distributeWorkerResponsibilities(primaryMapping);
+
+		getProgressReporter().report(1);
+
+		final Map<String, DictionaryMapping> mappings = importAndSendDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
 		//import the actual data
 		log.debug("Begin reading data.");
@@ -109,20 +127,6 @@ public class ImportJob extends Job {
 		getProgressReporter().report(1);
 
 		log.debug("Done reading data. Contains {} Entities.", container.size());
-
-		log.debug("Updating primary dictionary");
-
-		// Update primary dictionary: load new data, and create mapping.
-		DictionaryMapping primaryMapping = importPrimaryDictionary(dictionaries.getPrimaryDictionary());
-
-		getProgressReporter().report(1);
-
-		// Distribute the new IDs among workers
-		distributeWorkerResponsibilities(primaryMapping);
-
-		getProgressReporter().report(1);
-
-		final Map<String, DictionaryMapping> mappings = importAndSendDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
 		setDictionaryIds(container.getStores(), table.getColumns(), header.getName());
 
@@ -250,7 +254,7 @@ public class ImportJob extends Job {
 		// Start with an empty Dictionary and merge into it
 		if (orig == null) {
 			log.debug("No prior Dictionary[{}], creating one", dictionaryId);
-			orig = new MapDictionary(namespace.getDataset().getId(), dictionaryId.getDictionary());
+			orig = new MapDictionary(getDataset(), dictionaryId.getName());
 		}
 
 		Dictionary primaryDict = Dictionary.copyUncompressed(orig);
@@ -319,30 +323,28 @@ public class ImportJob extends Job {
 				continue;
 			}
 
+			Dictionary dict = dicts.get(column.getName());
 
 			// if the target column has a shared dictionary, we merge them and then update the merged dictionary.
 			if (column.getSharedDictionary() != null) {
 				final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
-				final Dictionary dictionary = dicts.get(column.getName());
 
 				log.info("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryId);
 
-				final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
+				final DictionaryMapping mapping = importSharedDictionary(dict, sharedDictionaryId);
+
+				// this is an indirect reference to the shared dictionary
+				dict = new SharedDictionary(getDataset(), dict.getName(), mapping.getTargetDictionary());
 
 				out.put(column.getName(), mapping);
 
 				subJob.report(1);
 
-				continue;
 			}
 
 			//store external infos into master and slaves
-			final Dictionary dict = dicts.get(column.getName());
-			final DictionaryId dictionaryId = computeDefaultDictionaryId(importName, column);
 
 			try {
-				dict.setDataset(dictionaryId.getDataset());
-				dict.setName(dictionaryId.getDictionary());
 
 				log.debug("Sending {} to all Workers", dict);
 				namespace.getStorage().updateDictionary(dict);
@@ -485,7 +487,7 @@ public class ImportJob extends Job {
 	}
 
 	private DictionaryId computeSharedDictionaryId(Column column) {
-		return new DictionaryId(namespace.getDataset().getId(), column.getSharedDictionary());
+		return new DictionaryId(column.getTable().getDataset().getId(), column.getSharedDictionary());
 	}
 
 	private DictionaryMapping importSharedDictionary(Dictionary incoming, DictionaryId targetDictionary) throws JSONException {
@@ -495,14 +497,13 @@ public class ImportJob extends Job {
 		Dictionary shared = namespace.getStorage().getDictionary(targetDictionary);
 
 		if (shared == null) {
-			shared = new MapDictionary(targetDictionary.getDataset(), targetDictionary.getDictionary());
+			shared = new MapDictionary(getDataset(), targetDictionary.getName());
 		}
 		shared = Dictionary.copyUncompressed(shared);
 
 		DictionaryMapping mapping = DictionaryMapping.create(incoming, shared);
 
-		shared.setName(targetDictionary.getDictionary());
-		shared.setDataset(targetDictionary.getDataset());
+		shared.setName(targetDictionary.getName());
 
 		namespace.getStorage().updateDictionary(shared);
 		namespace.sendToAll(new UpdateDictionary(shared));
@@ -510,8 +511,12 @@ public class ImportJob extends Job {
 		return mapping;
 	}
 
+	private Dataset getDataset() {
+		return namespace.getDataset();
+	}
+
 	public DictionaryId computeDefaultDictionaryId(String importName, Column column) {
-		return new DictionaryId(namespace.getDataset().getId(), String.format("%s#%s", importName, column.getId().toString()));
+		return new DictionaryId(getDataset().getId(), String.format("%s#%s", importName, column.getId().toString()));
 	}
 
 	@Override

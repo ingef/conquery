@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -29,14 +28,9 @@ public class SuccinctTrieBenchmark {
 			
 			Arguments.of(
 				"succinct",
-				new SuccinctTrie(new DatasetId("dataset"), "name"),
+				new SuccinctTrie( "name"),
 				list
-			)/*,
-			Arguments.of(
-				"ternarytree",
-				new SuccinctTrie2(),
-				list
-			)*/
+			)
 		);
 	}
 
