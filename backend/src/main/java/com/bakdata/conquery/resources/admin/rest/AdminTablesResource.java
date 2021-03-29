@@ -66,7 +66,7 @@ public class AdminTablesResource extends HAdmin {
 		final List<ConceptId> dependents = processor.deleteTable(tableId, force);
 
 		if (!force && !dependents.isEmpty()) {
-			return Response.status(Status.BAD_REQUEST)
+			return Response.status(Status.CONFLICT)
 						   .entity(dependents)
 						   .build();
 		}
