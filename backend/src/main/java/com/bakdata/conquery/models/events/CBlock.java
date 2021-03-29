@@ -140,7 +140,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		if (range.hasLowerBound()) {
 			final int minValue = range.getMinValue();
 
-			if (minDate[index] != Integer.MIN_VALUE) {
+			if (minDate[index] == Integer.MIN_VALUE) {
 				minDate[index] = minValue;
 			}
 			else {
