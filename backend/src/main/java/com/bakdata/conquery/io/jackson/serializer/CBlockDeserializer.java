@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -32,9 +31,9 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 	@Override
 	public CBlock deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		CBlock block = beanDeserializer.deserialize(p, ctxt);
-		
-		Connector con = IdResolveContext.get(ctxt).getOptional(block.getConnector()).get();
-		Concept<?> concept = con.getConcept();
+
+		Concept<?> concept = block.getConnector().getConcept();
+
 		if(concept instanceof TreeConcept && block.getMostSpecificChildren() != null) {
 			TreeConcept tree = (TreeConcept) concept;
 

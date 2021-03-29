@@ -237,7 +237,6 @@ public class ImportJob extends Job {
 				bucketStores,
 				new Int2IntArrayMap(globalIds, entityStarts),
 				new Int2IntArrayMap(globalIds, entityLengths),
-				bucketSize,
 				imp
 		);
 	}

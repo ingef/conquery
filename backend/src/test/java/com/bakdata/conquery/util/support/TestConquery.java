@@ -208,7 +208,6 @@ public class TestConquery {
 
 	public void afterEach() throws Exception {
 		for (StandaloneSupport openSupport : openSupports) {
-			log.info("Tearing down dataset", new Exception("MARKER"));
 			openSupport.close();
 			removeSupportDataset(openSupport);
 		}
