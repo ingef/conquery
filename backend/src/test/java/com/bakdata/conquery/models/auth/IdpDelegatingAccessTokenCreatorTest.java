@@ -2,15 +2,18 @@ package com.bakdata.conquery.models.auth;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.models.auth.oidc.passwordflow.IdpDelegatingAccessTokenCreator;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import io.dropwizard.validation.BaseValidator;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockserver.model.JsonBody;
 import org.mockserver.model.MediaType;
 
 import javax.validation.Validator;
@@ -74,8 +77,15 @@ public class IdpDelegatingAccessTokenCreatorTest {
 									param("username", USER_1_NAME),
 									param("scope", "openid"))))
 					.respond(
-							response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
-									.withBody("{\"token_type\" : \"Bearer\",\"access_token\" : \"" + USER_1_TOKEN + "\"}"));
+							response()
+									.withBody(JsonBody.json(
+											new Object() {
+												@Getter
+												String token_type = "Bearer";
+												@Getter
+												String access_token = USER_1_TOKEN;
+											}
+									)));
 			// Block other exchange requests (this has a lower prio than the above)
 			server.when(
 					request().withMethod("POST").withPath(String.format("/realms/%s/protocol/openid-connect/token", OIDCMockServer.REALM_NAME)))
