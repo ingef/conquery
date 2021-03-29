@@ -25,7 +25,8 @@ public class FormQueryPlan implements QueryPlan {
 	private final List<DateContext> dateContexts;
 	private final ArrayConceptQueryPlan features;
 	private final int constantCount;
-	
+	private int[] validityDatePositions;
+
 	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features) {
 		this.dateContexts = dateContexts;
 		this.features = features;
@@ -44,6 +45,7 @@ public class FormQueryPlan implements QueryPlan {
 			}
 		}
 		constantCount = withRelativeEventdate ? 4 : 3; // resolution indicator, index value, (event date,) date range
+		validityDatePositions = new int[]{getDateRangePosition()};
 	}
 
 	@Override
@@ -134,21 +136,8 @@ public class FormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
-
-		int dateRangePosition = getDateRangePosition();
-		if(dateRangePosition < 0) {
-			return;
-		}
-		for(Object[] resultLine : result.listResultLines()) {
-			Object dates = resultLine[dateRangePosition];
-
-			if(dates == null) {
-				continue;
-			}
-
-			dateSet.add((CDateRange) dates);
-		}
+	public int[] getValidityDateResultPositions() {
+		return validityDatePositions;
 	}
 
 	public int columnCount() {

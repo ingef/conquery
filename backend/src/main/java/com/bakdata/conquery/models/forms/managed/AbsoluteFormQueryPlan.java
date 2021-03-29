@@ -39,7 +39,7 @@ public class AbsoluteFormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
-		subPlan.collectValidityDates(result, dateSet);
+	public int[] getValidityDateResultPositions() {
+		return subPlan.getValidityDateResultPositions();
 	}
 }

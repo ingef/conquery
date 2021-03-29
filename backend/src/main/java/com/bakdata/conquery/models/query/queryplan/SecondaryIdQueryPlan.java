@@ -38,6 +38,7 @@ import org.apache.commons.lang3.ArrayUtils;
 public class SecondaryIdQueryPlan implements QueryPlan {
 
 	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;
+	public static final int[] VALIDITY_DATE_POSITIONS = {VALIDITY_DATE_POSITION};
 	private final ConceptQueryPlan query;
 	private final SecondaryIdDescriptionId secondaryId;
 
@@ -203,20 +204,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
-		if(!query.isAggregateValidityDates()) {
-			return;
-		}
-
-
-		for(Object[] resultLine : result.listResultLines()) {
-			Object dates = resultLine[VALIDITY_DATE_POSITION];
-
-			if(dates == null) {
-				continue;
-			}
-
-			dateSet.addAll((CDateSet) dates);
-		}
+	public int[] getValidityDateResultPositions() {
+		return VALIDITY_DATE_POSITIONS;
 	}
 }

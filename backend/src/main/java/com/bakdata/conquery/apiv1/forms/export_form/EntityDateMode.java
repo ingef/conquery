@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -31,9 +33,7 @@ import lombok.Setter;
 @CPSType(id = "ENTITY_DATE", base = Mode.class)
 public class EntityDateMode extends Mode {
 
-    /**
-     * Optional DateRestriction
-     */
+    @CheckForNull
     @Valid
     private Range<LocalDate> dateRange;
 

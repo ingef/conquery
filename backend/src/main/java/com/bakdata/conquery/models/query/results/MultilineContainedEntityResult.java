@@ -10,6 +10,8 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -53,6 +55,13 @@ public class MultilineContainedEntityResult implements ContainedEntityResult {
 	@Override
 	public void modifyResultLinesInplace(UnaryOperator<Object[]> lineModifier) {
 		values.replaceAll(lineModifier);
+	}
+
+	@Override
+	public void collectValidityDates(QueryPlan plan, CDateSet dateSet) {
+		for(Object[] resultLine : values){
+			ContainedEntityResult.collectValidityDates(plan,dateSet,resultLine);
+		}
 	}
 
 	@Override

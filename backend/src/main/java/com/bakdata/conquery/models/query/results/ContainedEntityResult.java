@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.query.results;
 
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -37,4 +41,25 @@ public interface ContainedEntityResult extends EntityResult {
 	 * @param lineModifier A modifier(-chain) for a result line.
 	 */
 	void modifyResultLinesInplace(UnaryOperator<Object[]> lineModifier);
+
+
+
+	void collectValidityDates(QueryPlan plan, CDateSet dateSet);
+
+	static void collectValidityDates(QueryPlan plan, CDateSet dateSet, Object[] resultLine) {
+		for(int pos :plan.getValidityDateResultPositions()) {
+			Object date = resultLine[pos];
+			if(date == null) {
+				continue;
+			}
+			if(date instanceof CDateSet) {
+				dateSet.addAll((CDateSet) date);
+				continue;
+			}
+			if(date instanceof CDateRange) {
+				dateSet.add((CDateRange) date);
+				continue;
+			}
+		}
+	}
 }

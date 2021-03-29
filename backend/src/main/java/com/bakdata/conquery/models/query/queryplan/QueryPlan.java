@@ -6,6 +6,9 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import lombok.NonNull;
+
+import javax.validation.constraints.NotNull;
 
 public interface QueryPlan {
 
@@ -15,5 +18,7 @@ public interface QueryPlan {
 
 	boolean isOfInterest(Entity entity);
 
-	void collectValidityDates(ContainedEntityResult result, CDateSet dateSet);
+	//void collectValidityDates(ContainedEntityResult result, CDateSet dateSet);
+
+	int[] getValidityDateResultPositions();
 }

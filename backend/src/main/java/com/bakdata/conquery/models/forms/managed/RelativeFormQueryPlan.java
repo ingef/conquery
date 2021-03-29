@@ -20,8 +20,11 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
+import com.esotericsoftware.kryo.util.IntArray;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +50,9 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final DateContext.CalendarUnit timeUnit;
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
+	@Getter
+	private final int[] validityDateResultPositions = createValidityDateResultPositions();
+
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 		EntityResult preResult = query.execute(ctx, entity);
@@ -59,7 +65,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		ContainedEntityResult contained = preResult.asContained();
 		CDateSet dateSet = CDateSet.create();
 		// Gather all validity dates from prerequisite
-		query.collectValidityDates(contained, dateSet);
+		contained.collectValidityDates(query,dateSet);
 
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
@@ -261,24 +267,21 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		return query.isOfInterest(entity) || featurePlan.isOfInterest(entity) || outcomePlan.isOfInterest(entity);
 	}
 
-	@Override
-	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
-		for(Object[] resultLine : result.listResultLines()) {
-			int featureDateRangePosition = getFeatureDateRangePosition();
-			if(featureDateRangePosition >= 0) {
-				Object date = resultLine[featureDateRangePosition];
-				if(date != null){
-					dateSet.add((CDateRange) date);
-				}
-			}
+	private int[] createValidityDateResultPositions() {
+		IntList pos = new IntArrayList(2);
 
-			int outcomeDateRangePosition = getOutcomeDateRangePosition();
-			if(outcomeDateRangePosition >= 0) {
-				Object date = resultLine[outcomeDateRangePosition];
-				if(date != null){
-					dateSet.add((CDateRange) date);
-				}
-			}
+		int featureDateRangePosition = getFeatureDateRangePosition();
+		int outcomeDateRangePosition = getOutcomeDateRangePosition();
+
+
+		if(featureDateRangePosition >= 0) {
+			pos.add(featureDateRangePosition);
 		}
+
+		if(outcomeDateRangePosition >= 0) {
+			pos.add(outcomeDateRangePosition);
+		}
+
+		return pos.toIntArray();
 	}
 }
