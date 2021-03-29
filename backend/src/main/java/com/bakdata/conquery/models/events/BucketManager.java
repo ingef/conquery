@@ -108,7 +108,7 @@ public class BucketManager {
 
 
 		connectorCBlocks
-				.computeIfAbsent(cBlock.getConnector(), connectorId -> new Int2ObjectAVLTreeMap<>())
+				.computeIfAbsent(cBlock.getConnector().getId(), connectorId -> new Int2ObjectAVLTreeMap<>())
 				.computeIfAbsent(cBlock.getBucket().getBucket(), bucketId -> new HashMap<>(3))
 				.put(cBlock.getBucket().getId(), cBlock);
 	}

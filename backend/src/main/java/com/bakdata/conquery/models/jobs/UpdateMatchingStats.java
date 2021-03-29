@@ -82,7 +82,7 @@ public class UpdateMatchingStats extends Job {
 				return;
 			}
 
-			if(!cBlock.getConnector().getConcept().equals(concept.getId())) {
+			if(!cBlock.getConnector().getConcept().equals(concept)) {
 				continue;
 			}
 

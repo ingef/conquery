@@ -98,7 +98,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
+							.filteredOn(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId))
 							.isNotEmpty();
 				}
 			}
@@ -145,7 +145,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					// CBlocks of Concept are deleted on Workers
 					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
 															 .stream()
-															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().equals(conceptId)));
+															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
 			;
 
 
@@ -190,7 +190,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
+							.filteredOn(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId))
 							.isNotEmpty();
 				}
 			}
@@ -236,7 +236,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 						assertThat(workerStorage.getAllCBlocks())
 								.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-								.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
+								.filteredOn(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId))
 								.isNotEmpty();
 					}
 				}
