@@ -1,5 +1,5 @@
 import React from "react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import ReactSelect from "./ReactSelect";
 import Labeled from "./Labeled";
@@ -18,8 +18,8 @@ interface PropsT {
   tooltip?: string;
   input: {
     clearable?: boolean;
-    defaultValue: string | null;
-    value: string | null;
+    defaultValue?: string | null;
+    value?: string | null;
     onChange: (value: string | null) => void;
   };
 }
@@ -34,9 +34,10 @@ const InputSelect = ({
   selectProps,
   tooltip,
 }: PropsT) => {
-  const selected = options && options.filter((v) => v.value === input.value);
+  const { t } = useTranslation();
+  const selected = options && options.find((v) => v.value === input.value);
   const defaultValue =
-    options && options.filter((v) => v.value === input.defaultValue);
+    options && options.find((v) => v.value === input.defaultValue);
 
   return (
     <Labeled
@@ -50,7 +51,7 @@ const InputSelect = ({
         </>
       }
     >
-      <ReactSelect
+      <ReactSelect<false>
         highlightChanged
         name="form-field"
         small={small}
@@ -63,8 +64,8 @@ const InputSelect = ({
         isSearchable={false}
         isClearable={input.clearable}
         isDisabled={!!disabled}
-        placeholder={T.translate("reactSelect.placeholder")}
-        noOptionsMessage={() => T.translate("reactSelect.noResults")}
+        placeholder={t("reactSelect.placeholder")}
+        noOptionsMessage={() => t("reactSelect.noResults")}
         {...selectProps}
       />
     </Labeled>

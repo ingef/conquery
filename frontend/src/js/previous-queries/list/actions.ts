@@ -1,4 +1,4 @@
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { DatasetIdT } from "../../api/types";
 
@@ -41,6 +41,7 @@ export const loadPreviousQueriesError = (err) =>
   defaultError(LOAD_PREVIOUS_QUERIES_ERROR, err);
 
 export const useLoadPreviousQueries = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const getStoredQueries = useGetStoredQueries();
 
@@ -52,7 +53,7 @@ export const useLoadPreviousQueries = () => {
 
       return dispatch(loadPreviousQueriesSuccess(result));
     } catch (e) {
-      dispatch(setMessage("previousQueries.error"));
+      dispatch(setMessage(t("previousQueries.error")));
 
       return dispatch(loadPreviousQueriesError(e));
     }
@@ -71,6 +72,7 @@ export const loadPreviousQueryError = (queryId, err) =>
 export const useLoadPreviousQuery = () => {
   const dispatch = useDispatch();
   const getStoredQuery = useGetStoredQuery();
+  const { t } = useTranslation();
 
   return (datasetId: DatasetIdT, queryId: PreviousQueryIdT) => {
     dispatch(loadPreviousQueryStart(queryId));
@@ -80,7 +82,7 @@ export const useLoadPreviousQuery = () => {
       (e) =>
         dispatch(
           loadPreviousQueryError(queryId, {
-            message: T.translate("previousQuery.loadError"),
+            message: t("previousQuery.loadError"),
           })
         )
     );
@@ -116,7 +118,7 @@ export const useRenamePreviousQuery = () => {
       (e) =>
         dispatch(
           renamePreviousQueryError(queryId, {
-            message: T.translate("previousQuery.renameError"),
+            message: t("previousQuery.renameError"),
           })
         )
     );
@@ -152,7 +154,7 @@ export const useRetagPreviousQuery = () => {
       (e) =>
         dispatch(
           retagPreviousQueryError(queryId, {
-            message: T.translate("previousQuery.retagError"),
+            message: t("previousQuery.retagError"),
           })
         )
     );

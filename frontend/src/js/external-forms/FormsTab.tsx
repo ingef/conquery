@@ -1,10 +1,12 @@
 import React, { useEffect } from "react";
-import { useStore } from "react-redux";
+import { StateT } from "app-types";
+import { useSelector, useStore } from "react-redux";
+
 import StandardQueryEditorTab from "../standard-query-editor";
 import TimebasedQueryEditorTab from "../timebased-query-editor";
-import type { TabPropsType } from "../pane";
 import { updateReducers } from "../store";
 import { useGetForms } from "../api/api";
+import { DatasetIdT } from "../api/types";
 
 import buildExternalFormsReducer from "./reducer";
 
@@ -13,13 +15,20 @@ import FormsContainer from "./FormsContainer";
 import FormsQueryRunner from "./FormsQueryRunner";
 import { tabDescription } from ".";
 
-const FormsTab = (props: TabPropsType) => {
+const FormsTab = () => {
   const store = useStore();
   const getForms = useGetForms();
+  const datasetId = useSelector<StateT, DatasetIdT | null>(
+    (state) => state.datasets.selectedDatasetId
+  );
 
   useEffect(() => {
     async function loadForms() {
-      const configuredForms = await getForms(props.selectedDatasetId);
+      if (!datasetId) {
+        return;
+      }
+
+      const configuredForms = await getForms(datasetId);
 
       const forms = configuredForms.reduce((all, form) => {
         all[form.type] = form;
@@ -41,16 +50,14 @@ const FormsTab = (props: TabPropsType) => {
       updateReducers(store, tabs);
     }
 
-    if (props.selectedDatasetId) {
-      loadForms();
-    }
-  }, [store, props.selectedDatasetId]);
+    loadForms();
+  }, [store, datasetId]);
 
   return (
     <>
       <FormsNavigation />
-      <FormsContainer datasetId={props.selectedDatasetId} />
-      <FormsQueryRunner datasetId={props.selectedDatasetId} />
+      <FormsContainer />
+      <FormsQueryRunner />
     </>
   );
 };

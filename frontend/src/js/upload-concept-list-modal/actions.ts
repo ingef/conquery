@@ -1,6 +1,7 @@
 import { defaultSuccess, defaultError } from "../common/actions";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
-import type { ConceptIdT, DatasetIdT } from "../api/types";
+import type { ConceptIdT } from "../api/types";
+import { useDatasetId } from "../dataset/selectors";
 
 import {
   SELECT_CONCEPT_ROOT_NODE,
@@ -28,16 +29,17 @@ export const selectConceptRootNode = (conceptId: ConceptIdT) => ({
 export const useSelectConceptRootNodeAndResolveCodes = () => {
   const dispatch = useDispatch();
   const postConceptsListToResolve = usePostConceptsListToResolve();
+  const datasetId = useDatasetId();
 
-  return (
-    datasetId: DatasetIdT,
-    treeId: string | null,
-    conceptCodes: string[]
-  ) => {
+  return (treeId: string | null, conceptCodes: string[]) => {
     if (exists(treeId)) {
       dispatch(selectConceptRootNode(treeId));
     } else {
       return dispatch(selectConceptRootNode(""));
+    }
+
+    if (!datasetId) {
+      return;
     }
 
     dispatch(resolveConceptsStart());
@@ -49,7 +51,7 @@ export const useSelectConceptRootNodeAndResolveCodes = () => {
   };
 };
 
-export const initUploadConceptListModal = (file) => async (dispatch) => {
+export const initUploadConceptListModal = (file: File) => async (dispatch) => {
   const rows = await getUniqueFileRows(file);
 
   return dispatch({

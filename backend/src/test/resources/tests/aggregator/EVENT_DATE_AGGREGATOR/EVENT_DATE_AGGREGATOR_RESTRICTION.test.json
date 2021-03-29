@@ -30,7 +30,7 @@
         {
             "label": "Geschlecht SELECT",
             "name": "con",
-            "type": "VIRTUAL",
+            "type": "TREE",
             "connectors": [
                 {
                     "label": "geschlecht_connector",

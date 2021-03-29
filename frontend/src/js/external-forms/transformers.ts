@@ -1,6 +1,6 @@
 import type {
   ConceptQueryNodeType,
-  TableWithFilterValueType,
+  TableWithFilterValueT,
 } from "../standard-query-editor/types";
 import type { SelectorT } from "../api/types";
 import type { ConnectorDefault as ConnectorDefaultType } from "./config-types";
@@ -61,7 +61,7 @@ export const initTablesWithDefaults = (
 };
 
 export const initSelectsWithDefaults = (defaultSelects: string[]) => (
-  node: ConceptQueryNodeType | TableWithFilterValueType
+  node: ConceptQueryNodeType | TableWithFilterValueT
 ) => {
   return !node.selects || !defaultSelects
     ? node

@@ -5,7 +5,7 @@ export type SupportedTabsT = "timebasedQueryEditor" | "queryEditor";
 // Used for right pane tabs at the moment
 export type TabT = {
   key: string;
-  label: string; // Translatable key
+  labelKey: string; // Translatable key, yes, not ideal that it's dynamic
   reducer: Function; // combineReducers({ ... }) will be spread on root, see app/reducers.js
   component: React.ComponentType<any>; // The tab contents
 };

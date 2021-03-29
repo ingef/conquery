@@ -1,7 +1,6 @@
 import React, { useRef, memo, FC } from "react";
 import styled from "@emotion/styled";
 import { useSelector, useDispatch } from "react-redux";
-import T from "i18n-react";
 
 import FaIcon from "../icon/FaIcon";
 
@@ -42,24 +41,24 @@ const ClearZone = styled("div")`
 
 const SnackMessage: FC = memo(function SnackMessageComponent() {
   const ref = useRef(null);
-  const messageKey = useSelector<StateT, string | null>(
-    (state) => state.snackMessage.messageKey
+  const message = useSelector<StateT, string | null>(
+    (state) => state.snackMessage.message
   );
   const dispatch = useDispatch();
   const resetMessage = () => dispatch(setMessage(null));
 
   useClickOutside(ref, () => {
-    if (messageKey) {
+    if (message) {
       resetMessage();
     }
   });
 
   return (
     <div ref={ref}>
-      {messageKey && (
+      {message && (
         <Root>
           <Relative>
-            {T.translate(messageKey)}
+            {message}
             <ClearZone onClick={resetMessage}>
               <FaIcon white large icon="times" />
             </ClearZone>

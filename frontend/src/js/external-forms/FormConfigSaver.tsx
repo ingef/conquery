@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { T } from "../localization";
 import styled from "@emotion/styled";
 import EditableText from "../form-components/EditableText";
 import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
 import {
   selectActiveFormValues,
-  selectActiveFormName,
+  useSelectActiveFormName,
   selectActiveFormType,
 } from "./stateSelectors";
 import {
@@ -25,10 +24,8 @@ import { FormConfigDragItem } from "./form-configs/FormConfig";
 import { loadExternalFormValues, setExternalForm } from "./actions";
 import FaIcon from "../icon/FaIcon";
 import { useLoadFormConfigs } from "./form-configs/selectors";
-
-interface PropsT {
-  datasetId: string;
-}
+import { useDatasetId } from "../dataset/selectors";
+import { useTranslation } from "react-i18next";
 
 const Root = styled("div")`
   display: flex;
@@ -78,8 +75,10 @@ const hasChanged = (a: any, b: any) => {
   return JSON.stringify(a) !== JSON.stringify(b);
 };
 
-const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
+const FormConfigSaver: React.FC = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
+  const datasetId = useDatasetId();
   const [editing, setEditing] = useState<boolean>(false);
   const [formConfigId, setFormConfigId] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState<boolean>(true);
@@ -90,9 +89,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
     selectActiveFormValues(state)
   );
   const previousFormValues = usePrevious(formValues);
-  const activeFormName = useSelector<StateT, string>((state) =>
-    selectActiveFormName(state)
-  );
+  const activeFormName = useSelectActiveFormName();
   const activeFormType = useSelector<StateT, string | null>((state) =>
     selectActiveFormType(state)
   );
@@ -127,6 +124,8 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
   }, [formValues, previousFormValues]);
 
   async function onSubmit() {
+    if (!datasetId) return;
+
     setIsSaving(true);
     try {
       if (formConfigId) {
@@ -149,12 +148,14 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
         loadFormConfigs(datasetId);
       }
     } catch (e) {
-      dispatch(setMessage("externalForms.config.saveError"));
+      dispatch(setMessage(t("externalForms.config.saveError")));
     }
     setIsSaving(false);
   }
 
   async function onLoad(dragItem: FormConfigDragItem) {
+    if (!datasetId) return;
+
     setIsLoading(true);
     setIsDirty(false);
     try {
@@ -168,7 +169,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
       setConfigName(config.label);
       setIsDirty(false);
     } catch (e) {
-      dispatch(setMessage("formConfig.loadError"));
+      dispatch(setMessage(t("formConfig.loadError")));
     }
     setIsLoading(false);
   }
@@ -185,12 +186,12 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
         {() => (
           <SpacedRow>
             <div>
-              <Label>{T.translate("externalForms.config.headline")}</Label>
+              <Label>{t("externalForms.config.headline")}</Label>
               <Row>
                 {isLoading ? (
                   <LoadingText>
                     <SxFaIcon icon="spinner" />
-                    {T.translate("common.loading")}
+                    {t("common.loading")}
                   </LoadingText>
                 ) : (
                   <>
@@ -217,7 +218,7 @@ const FormConfigSaver: React.FC<PropsT> = ({ datasetId }) => {
               icon={isSaving ? "spinner" : "save"}
               onClick={onSubmit}
             >
-              {T.translate("externalForms.config.save")}
+              {t("externalForms.config.save")}
             </IconButton>
           </SpacedRow>
         )}

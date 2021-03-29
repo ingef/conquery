@@ -1,16 +1,23 @@
 import { useDispatch } from "react-redux";
-import type { ConceptIdT, DatasetIdT, FilterIdT, TableIdT } from "../api/types";
+import type {
+  AndQueryT,
+  ConceptIdT,
+  DatasetIdT,
+  QueryT,
+  QueryNodeT,
+  PostFilterSuggestionsResponseT,
+} from "../api/types";
 
 import { defaultSuccess, defaultError } from "../common/actions";
 import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 import type { TreesT } from "../concept-trees/reducer";
-import { usePostPrefixForSuggestions } from "../api/api";
+import {
+  PostPrefixForSuggestionsParams,
+  usePostPrefixForSuggestions,
+} from "../api/api";
+import type { ModeT } from "../form-components/InputRange";
 
-import type {
-  DraggedNodeType,
-  DraggedQueryType,
-  PreviousQueryQueryNodeType,
-} from "./types";
+import type { DraggedNodeType, DraggedQueryType } from "./types";
 import {
   DROP_AND_NODE,
   DROP_OR_NODE,
@@ -39,6 +46,8 @@ import {
   SET_SELECTED_SECONDARY_ID,
   TOGGLE_SECONDARY_ID_EXCLUDE,
 } from "./actionTypes";
+import { StandardQueryStateT } from "./queryReducer";
+import { useTranslation } from "react-i18next";
 
 export const dropAndNode = (item: DraggedNodeType | DraggedQueryType) => ({
   type: DROP_AND_NODE,
@@ -68,14 +77,14 @@ export const toggleExcludeGroup = (andIdx: number) => ({
   payload: { andIdx },
 });
 
-export const loadQuery = (query) => ({
+export const loadQuery = (query: StandardQueryStateT) => ({
   type: LOAD_QUERY,
   payload: { query },
 });
 
 export const clearQuery = () => ({ type: CLEAR_QUERY });
 
-const findPreviousQueryIds = (node, queries = []) => {
+const findPreviousQueryIds = (node: QueryNodeT, queries = []): string[] => {
   switch (node.type) {
     case "SAVED_QUERY":
       return [...queries, node.query];
@@ -86,13 +95,18 @@ const findPreviousQueryIds = (node, queries = []) => {
     case "OR":
       return [
         ...queries,
-        ...node.children.flatMap((child) => findPreviousQueryIds(child, [])),
+        ...node.children.flatMap((child: any) =>
+          findPreviousQueryIds(child, [])
+        ),
       ];
     default:
       return queries;
   }
 };
 
+const isAndQuery = (query: QueryT): query is AndQueryT => {
+  return query.root.type === "AND";
+};
 /*
   1) Expands previous query in the editor
   2) Triggers a load for all nested queries
@@ -100,13 +114,10 @@ const findPreviousQueryIds = (node, queries = []) => {
 export const useExpandPreviousQuery = () => {
   const dispatch = useDispatch();
   const loadPreviousQuery = useLoadPreviousQuery();
+  const { t } = useTranslation();
 
-  return async (
-    datasetId: DatasetIdT,
-    rootConcepts: TreesT,
-    query: PreviousQueryQueryNodeType
-  ) => {
-    if (!query.root || query.root.type !== "AND") {
+  return async (datasetId: DatasetIdT, rootConcepts: TreesT, query: QueryT) => {
+    if (!isAndQuery(query)) {
       throw new Error("Cant expand query, because root is not AND");
     }
 
@@ -114,7 +125,11 @@ export const useExpandPreviousQuery = () => {
 
     dispatch({
       type: EXPAND_PREVIOUS_QUERY,
-      payload: { rootConcepts, query },
+      payload: {
+        rootConcepts,
+        query,
+        expandErrorMessage: t("queryEditor.couldNotExpandNode"),
+      },
     });
 
     await Promise.all(
@@ -136,7 +151,7 @@ export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
 
 export const deselectNode = () => ({ type: DESELECT_NODE });
 
-export const updateNodeLabel = (label) => ({
+export const updateNodeLabel = (label: string) => ({
   type: UPDATE_NODE_LABEL,
   payload: { label },
 });
@@ -144,22 +159,26 @@ export const addConceptToNode = (concept) => ({
   type: ADD_CONCEPT_TO_NODE,
   payload: { concept },
 });
-export const removeConceptFromNode = (conceptId) => ({
+export const removeConceptFromNode = (conceptId: ConceptIdT) => ({
   type: REMOVE_CONCEPT_FROM_NODE,
   payload: { conceptId },
 });
 
-export const toggleTable = (tableIdx, isExcluded) => ({
+export const toggleTable = (tableIdx: number, isExcluded: boolean) => ({
   type: TOGGLE_TABLE,
   payload: { tableIdx, isExcluded },
 });
 
-export const setFilterValue = (tableIdx, filterIdx, value) => ({
+export const setFilterValue = (
+  tableIdx: number,
+  filterIdx: number,
+  value: unknown
+) => ({
   type: SET_FILTER_VALUE,
   payload: { tableIdx, filterIdx, value },
 });
 
-export const setTableSelects = (tableIdx, value) => ({
+export const setTableSelects = (tableIdx: number, value: unknown) => ({
   type: SET_TABLE_SELECTS,
   payload: { tableIdx, value },
 });
@@ -168,7 +187,7 @@ export const setSelects = (value) => ({
   payload: { value },
 });
 
-export const setDateColumn = (tableIdx, value) => ({
+export const setDateColumn = (tableIdx: number, value) => ({
   type: SET_DATE_COLUMN,
   payload: { tableIdx, value },
 });
@@ -178,7 +197,11 @@ export const resetAllFilters = (andIdx: number, orIdx: number) => ({
   payload: { andIdx, orIdx },
 });
 
-export const switchFilterMode = (tableIdx, filterIdx, mode) => ({
+export const switchFilterMode = (
+  tableIdx: number,
+  filterIdx: number,
+  mode: ModeT
+) => ({
   type: SWITCH_FILTER_MODE,
   payload: { tableIdx, filterIdx, mode },
 });
@@ -202,9 +225,9 @@ export const loadFilterSuggestionsStart = (
 });
 
 export const loadFilterSuggestionsSuccess = (
-  suggestions,
-  tableIdx,
-  filterIdx
+  suggestions: PostFilterSuggestionsResponseT,
+  tableIdx: number,
+  filterIdx: number
 ) =>
   defaultSuccess(LOAD_FILTER_SUGGESTIONS_SUCCESS, suggestions, {
     tableIdx,
@@ -223,23 +246,13 @@ export const useLoadFilterSuggestions = () => {
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
 
   return (
-    datasetId: DatasetIdT,
-    conceptId: ConceptIdT,
-    tableId: TableIdT,
-    filterId: FilterIdT,
-    prefix: string,
+    params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number
   ) => {
     dispatch(loadFilterSuggestionsStart(tableIdx, filterIdx));
 
-    return postPrefixForSuggestions(
-      datasetId,
-      conceptId,
-      tableId,
-      filterId,
-      prefix
-    ).then(
+    return postPrefixForSuggestions(params).then(
       (r) => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
       (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
     );

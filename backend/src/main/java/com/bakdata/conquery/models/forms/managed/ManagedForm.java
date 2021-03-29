@@ -106,7 +106,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	
 	@Override
 	public void start() {
-		synchronized (getExecution()) {
+		synchronized (this) {
 			subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
 		}
 		flatSubQueries.values().forEach(ManagedQuery::start);
@@ -129,7 +129,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	// Executed on Worker
 	@Override
 	public Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context) {
-		synchronized (getExecution()) {			
+		synchronized (this) {
 			Map<ManagedExecutionId,QueryPlan> plans = new HashMap<>();
 			for( ManagedQuery subQuery : flatSubQueries.values()) {
 				plans.putAll(subQuery.createQueryPlans(context));
@@ -176,7 +176,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	private boolean allSubQueriesDone() {
-		synchronized (getExecution()) {			
+		synchronized (this) {
 			for (ManagedQuery q : flatSubQueries.values()) {
 				if (!q.getState().equals(ExecutionState.DONE)) {
 					return false;

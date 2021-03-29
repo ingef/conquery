@@ -5,7 +5,7 @@ import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
 
 import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
-import type { TableWithFilterValueType } from "../standard-query-node-editor/types";
+import type { TableWithFilterValueT } from "../standard-query-node-editor/types";
 
 import MenuColumnButton from "./MenuColumnButton";
 
@@ -30,7 +30,7 @@ const Label = styled("span")`
 `;
 
 type PropsT = {
-  table: TableWithFilterValueType;
+  table: TableWithFilterValueT;
   isActive: boolean;
   isOnlyOneTableIncluded: boolean;
   blocklistedTables?: string[];
