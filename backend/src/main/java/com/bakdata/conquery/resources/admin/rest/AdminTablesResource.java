@@ -8,10 +8,12 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -60,7 +62,7 @@ public class AdminTablesResource extends HAdmin {
 	 * @return List of dependent concepts.
 	 */
 	@DELETE
-	public Response remove(@PathParam("force") boolean force) {
+	public Response remove(@QueryParam("force") @DefaultValue("false") boolean force) {
 		final List<ConceptId> dependents = processor.deleteTable(tableId, force);
 
 		if (!force && !dependents.isEmpty()) {
