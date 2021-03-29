@@ -38,9 +38,14 @@ import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.google.common.collect.ImmutableList;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import javax.ws.rs.core.UriBuilder;
 
 public class StoredQueriesProcessorTest {
 	private static final MetaStorage STRORAGE = mock(MetaStorage.class);
@@ -59,6 +64,7 @@ public class StoredQueriesProcessorTest {
 	private static final ManagedExecutionId QUERY_ID_7 = createExecutionId(DATASET_0, "7");
 	private static final ManagedExecutionId QUERY_ID_8 = createExecutionId(DATASET_0, "8");
 	private static final ManagedExecutionId QUERY_ID_9 = createExecutionId(DATASET_0, "9");
+	public static final UriBuilder URI_BUILDER = UriBuilder.fromPath("http://localhost");
 
 	private static ManagedExecutionId createExecutionId(Dataset dataset0, String s) {
 		StringBuilder idBuilder = new StringBuilder("00000000-0000-0000-0000-000000000000");
@@ -84,7 +90,7 @@ public class StoredQueriesProcessorTest {
 			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_4, DONE),        // included
 			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED),        // not included: wrong state
 			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW),                                                    // not included: wrong query structure
-			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd()),    // included, but secondaryId-Query
+			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd(){{setChildren(List.of(new CQConcept()));}}),    // included, but secondaryId-Query
 			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept()),    // not-included, wrong structure
 			mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0])), USERS[1], QUERY_ID_9, DONE)        // included
 
@@ -107,7 +113,7 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), null, USERS[0], queries).collect(Collectors.toList());
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), URI_BUILDER, USERS[0], queries).collect(Collectors.toList());
 
 		assertThat(infos)
 				.containsExactly(
@@ -142,7 +148,17 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedQuery mockManagedConceptQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState){
-		return mockManagedQuery(new ConceptQuery(new CQAnd()), user, id, execState);
+		return mockManagedQuery(
+				new ConceptQuery(
+						new CQAnd()
+						{{
+							// short hand class initializer block to support visiting of CQAnd Children
+							setChildren(List.of(new CQConcept()));
+						}}
+						),
+				user,
+				id,
+				execState);
 	}
 	private static ManagedQuery mockManagedSecondaryIdQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, CQElement root){
 		final SecondaryIdQuery sid = new SecondaryIdQuery();
@@ -166,6 +182,7 @@ public class StoredQueriesProcessorTest {
 		};
 	}
 
+	@SneakyThrows
 	private static ExecutionStatus makeState(ManagedExecutionId id, User owner, User callingUser, ExecutionState state, String typeLabel, SecondaryIdDescriptionId secondaryId) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 
@@ -180,6 +197,15 @@ public class StoredQueriesProcessorTest {
 		status.setStatus(state);
 		status.setQueryType(typeLabel);
 		status.setSecondaryId(secondaryId); // This is probably not interesting on the overview (only if there is an filter for the search)
+		if(state.equals(DONE)) {
+			status.setResultUrl(URI_BUILDER.clone()
+					.path(ResultCSVResource.class)
+					.resolveTemplate(ResourceConstants.DATASET, id.getDataset())
+					.path(ResultCSVResource.class, ResultCSVResource.GET_CSV_PATH_METHOD)
+					.resolveTemplate(ResourceConstants.QUERY, id.toString())
+					.build()
+					.toURL());
+		}
 
 		return status;
 	}
