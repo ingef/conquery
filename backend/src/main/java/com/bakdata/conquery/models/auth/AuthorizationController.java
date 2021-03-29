@@ -47,7 +47,7 @@ public final class AuthorizationController implements Managed{
 	@NonNull
 	private final MetaStorage storage;
 	@Getter
-	private final ConqueryTokenRealm centralTokenRealm;
+	private final ConqueryTokenRealm conqueryTokenRealm;
 	@Getter
 	private final List<ConqueryAuthenticationRealm> authenticationRealms = new ArrayList<>();
 	@Getter
@@ -66,9 +66,9 @@ public final class AuthorizationController implements Managed{
 
 
 		// Add the central authentication realm
-		centralTokenRealm = new ConqueryTokenRealm(storage);
-		authenticationRealms.add(centralTokenRealm);
-		realms.add(centralTokenRealm);
+		conqueryTokenRealm = new ConqueryTokenRealm(storage);
+		authenticationRealms.add(conqueryTokenRealm);
+		realms.add(conqueryTokenRealm);
 		authenticationFilter.registerTokenExtractor(JWTokenHandler::extractToken);
 
 		// Add the central authorization realm

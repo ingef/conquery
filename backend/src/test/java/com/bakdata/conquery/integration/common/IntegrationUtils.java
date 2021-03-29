@@ -96,7 +96,7 @@ public class IntegrationUtils {
 					conquery.getClient()
 							.target(queryStatusURI)
 							.request(MediaType.APPLICATION_JSON_TYPE)
-							.header("Authorization", "Bearer " + conquery.getAuthorizationController().getCentralTokenRealm().createTokenForUser(user.getId()))
+							.header("Authorization", "Bearer " + conquery.getAuthorizationController().getConqueryTokenRealm().createTokenForUser(user.getId()))
 							.get(JsonNode.class);
 
 			String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
@@ -125,7 +125,7 @@ public class IntegrationUtils {
 		final URI postQueryURI = getPostQueryURI(conquery);
 
 		final String userToken = conquery.getAuthorizationController()
-											.getCentralTokenRealm()
+											.getConqueryTokenRealm()
 											.createTokenForUser(user.getId());
 
 		Response response = conquery.getClient()

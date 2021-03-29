@@ -27,16 +27,24 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 
 	public static final String CONFIDENTIAL_CREDENTIAL = "secret";
 
+
+	private transient AuthzClient authClient;
+
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
 
+		// Register token extractor for JWT Tokens
 		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
 
+		// At start up, try tp retrieve the idp client api object if possible. If the idp service is not up don't fail start up.
 		authClient = getAuthClient(false);
+
+		// Register task to retrieve the idp client api, so the realm can be used, when the idp service is available.
 		if(managerNode != null && managerNode.getEnvironment().admin() != null) {
 			managerNode.getEnvironment().admin().addTask(new Task("keycloak-update-authz-client") {
 
 				@Override
 				public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
+					// Fail if api could not be received
 					authClient = getAuthClient(true);
 				}
 			});
@@ -45,6 +53,10 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 	}
 
 
+	/**
+	 * Retrieves the token endpoint from the idp client api. If the api is not available authenticatio is not possible
+	 * @return
+	 */
 	@JsonIgnore
 	public String getTokenEndpoint(){
 		return getAuthClient(true).getServerConfiguration().getTokenEndpoint();
@@ -71,9 +83,6 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 		return new ClientSecretBasic(new ClientID(getClientId()), new Secret(getClientSecret()));
 	}
 
-
-	private transient AuthzClient authClient;
-
 	@JsonIgnore
 	public AuthzClient getAuthClient(boolean exceptionOnFailedRetrieval) {
 		if(authClient != null) {
@@ -84,7 +93,7 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 			AuthzClient authzClient = AuthzClient.create(this);
 			return authzClient;
 		} catch (RuntimeException e) {
-			log.warn("Unable to estatblish connection to auth server.", log.isTraceEnabled()? e : null );
+			log.warn("Unable to establish connection to auth server.", log.isTraceEnabled()? e : null );
 			if(exceptionOnFailedRetrieval) {
 				throw e;
 			}

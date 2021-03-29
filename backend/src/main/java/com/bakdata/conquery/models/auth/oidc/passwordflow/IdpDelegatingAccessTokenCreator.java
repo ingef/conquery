@@ -20,8 +20,6 @@ import java.net.URI;
 @Setter
 public class IdpDelegatingAccessTokenCreator implements AccessTokenCreator {
 
-	private static final String GROUPS_CLAIM = "groups";
-
 	private final IntrospectionDelegatingRealmFactory authProviderConf;
 
 

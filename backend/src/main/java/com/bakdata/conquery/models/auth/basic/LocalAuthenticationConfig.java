@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.auth.basic;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -13,11 +12,14 @@ import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementRes
 import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
+import io.dropwizard.util.Duration;
+import io.dropwizard.validation.MinDuration;
 import lombok.Getter;
 import lombok.Setter;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 @CPSType(base = AuthenticationConfig.class, id = "LOCAL_AUTHENTICATION")
 @Getter
@@ -29,9 +31,9 @@ public class LocalAuthenticationConfig implements AuthenticationConfig {
 	 */
 	@NotNull
 	private XodusConfig passwordStoreConfig = new XodusConfig();
-	
-	@Min(1)
-	private int jwtDuration = 12; // Hours
+
+	@MinDuration(value = 1, unit = TimeUnit.MINUTES)
+	private Duration jwtDuration = Duration.hours(12);
 	
 	/**
 	 * The name of the folder the store lives in.
@@ -45,12 +47,17 @@ public class LocalAuthenticationConfig implements AuthenticationConfig {
 	
 	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
+		// Token extractor is not needed because this realm depends on the ConqueryTokenRealm
 		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(JWTokenHandler::extractToken);
 
 
-
-
-		LocalAuthenticationRealm realm = new LocalAuthenticationRealm(managerNode.getStorage(), managerNode.getAuthController().getCentralTokenRealm(), storeName, directory, passwordStoreConfig);
+		LocalAuthenticationRealm realm = new LocalAuthenticationRealm(
+				managerNode.getStorage(),
+				managerNode.getAuthController().getConqueryTokenRealm(),
+				storeName,
+				directory,
+				passwordStoreConfig,
+				jwtDuration);
 		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(realm, managerNode.getStorage());
 
 		// Register resources for users to exchange username and password for an access token

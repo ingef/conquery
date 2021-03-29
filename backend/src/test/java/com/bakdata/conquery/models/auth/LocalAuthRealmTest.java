@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import io.dropwizard.util.Duration;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.BearerToken;
@@ -46,7 +47,7 @@ public class LocalAuthRealmTest {
 
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 
-		realm = new LocalAuthenticationRealm(storage, conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig());
+		realm = new LocalAuthenticationRealm(storage, conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig(), Duration.hours(1));
 		LifecycleUtils.init(realm);
 	}
 

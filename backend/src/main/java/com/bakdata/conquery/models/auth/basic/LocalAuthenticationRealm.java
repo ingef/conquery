@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
+import io.dropwizard.util.Duration;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.ExodusException;
@@ -68,6 +69,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	private final MetaStorage storage;
 	@JsonIgnore
 	private final ConqueryTokenRealm centralTokenRealm;
+	private final Duration validDuration;
 
 	@RequiredArgsConstructor
 	@Getter
@@ -83,13 +85,14 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(MetaStorage storage,  ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig) {
+	public LocalAuthenticationRealm(MetaStorage storage,  ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration) {
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		this.storage = storage;
 		this.storeName = storeName;
 		this.storageDir = storageDir;
 		this.centralTokenRealm = centralTokenRealm;
 		this.passwordStoreConfig = passwordStoreConfig;
+		this.validDuration = validDuration;
 	}
 
 	@Override
@@ -120,7 +123,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			throw new AuthenticationException("Provided username or password was not valid.");
 		}
 		// The username is in this case the email
-		return centralTokenRealm.createTokenForUser(new UserId(username));
+		return centralTokenRealm.createTokenForUser(new UserId(username), validDuration);
 	}
 
 	/**

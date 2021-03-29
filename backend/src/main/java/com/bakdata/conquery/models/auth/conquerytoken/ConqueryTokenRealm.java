@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.*;
@@ -84,14 +85,19 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 
 		return new ConqueryAuthenticationInfo(userId, token, this, true);
 	}
-	
 
-	
-	public String createTokenForUser(UserId userId) {
+
+	public String createTokenForUser(@NonNull UserId userId, @NonNull Duration validDuration) {
 		if(storage.getUser(userId) == null) {
 			throw new IllegalArgumentException("Cannot create a JWT for unknown user with id: " + userId);
 		}
-		return JWTokenHandler.createToken(userId.toString(), jwtConfig.getJwtDuration(), getName(), jwtConfig.getTokenSignAlgorithm());
+		return JWTokenHandler.createToken(userId.toString(), validDuration, getName(), jwtConfig.getTokenSignAlgorithm());
+
+	}
+
+	
+	public String createTokenForUser(UserId userId) {
+		return createTokenForUser(userId, jwtConfig.getJwtDuration());
 	}
 	
 	public static class JWTConfig{
