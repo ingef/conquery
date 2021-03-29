@@ -153,8 +153,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 				maxDate[index] = maxValue;
 			}
 			else {
-				int min = Math.max(maxDate[index], maxValue);
-				maxDate[index]  = min;
+				int max = Math.max(maxDate[index], maxValue);
+				maxDate[index]  = max;
 			}
 		}
 	}
