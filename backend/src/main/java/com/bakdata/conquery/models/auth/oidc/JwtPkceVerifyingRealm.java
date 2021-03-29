@@ -61,7 +61,7 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
         }
 
         if (subject == null) {
-            log.trace("Could not find a subject in provided token.");
+            // Should not happen, as sub is mandatory in a access_token
             throw new UnsupportedTokenException("Unable to extract a subject from the provided token.");
         }
 

@@ -7,6 +7,7 @@ import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -18,14 +19,10 @@ import java.net.URI;
 @Slf4j
 @Getter
 @Setter
+@RequiredArgsConstructor
 public class IdpDelegatingAccessTokenCreator implements AccessTokenCreator {
 
 	private final IntrospectionDelegatingRealmFactory authProviderConf;
-
-
-	public IdpDelegatingAccessTokenCreator(IntrospectionDelegatingRealmFactory authProviderConf) {
-		this.authProviderConf = authProviderConf;
-	}
 
 	@Override
 	@SneakyThrows
