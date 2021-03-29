@@ -126,12 +126,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		minDate = new int[bucketSize];
 		maxDate = new int[bucketSize];
 
-		for (int index = 0; index < bucketSize; index++) {
-			includedConcepts[index] = 0;
-
-			minDate[index] = Integer.MIN_VALUE;
-			maxDate[index] = Integer.MAX_VALUE;
-		}
+		Arrays.fill(includedConcepts, 0);
+		Arrays.fill(minDate, Integer.MIN_VALUE);
+		Arrays.fill(maxDate, Integer.MAX_VALUE);
 	}
 
 	public void addEntityDateRange(int entity, CDateRange range) {
