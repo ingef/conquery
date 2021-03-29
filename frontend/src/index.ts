@@ -1,9 +1,6 @@
-import { de } from "date-fns/locale";
-import { enGB } from "date-fns/locale";
-
 import conquery from "./js";
 
-import { initializeLocalization } from "./js/localization";
+import i18next from "./js/localization/i18next";
 import translationsDe from "./localization/de.json";
 import translationsEn from "./localization/en.json";
 
@@ -22,11 +19,9 @@ const disableLogin = process.env.REACT_APP_DISABLE_LOGIN === "true";
 const enableIDP = process.env.REACT_APP_IDP_ENABLE === "true";
 const LANG = process.env.REACT_APP_LANG;
 
-if (!LANG || LANG === "de") {
-  initializeLocalization("de", de, translationsDe);
-} else {
-  initializeLocalization("en", enGB, translationsEn);
-}
+i18next.addResourceBundle("de", "translation", translationsDe, true, true);
+i18next.addResourceBundle("en", "translation", translationsEn, true, true);
+i18next.changeLanguage(LANG === "de" ? "de" : "en");
 
 const environment: Environment = {
   isProduction: isProduction,

@@ -4,7 +4,6 @@
 
 import { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../external-forms/form-configs/reducer";
-import { SupportedErrorCodesT } from "./errorCodes";
 
 export type DatasetIdT = string;
 export interface DatasetT {
@@ -53,11 +52,11 @@ export interface RangeFilterT extends FilterBaseT {
   pattern?: string;
 }
 
-export type MultiSelectFilterValueT = (string | number)[];
+export type MultiSelectFilterValueT = SelectOptionT[] | FilterSuggestion[];
 export interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
-  options: SelectOptionT[];
-  defaultValue: MultiSelectFilterValueT | null;
+  options: SelectOptionT[] | FilterSuggestion[];
+  defaultValue?: string[];
 }
 
 export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
@@ -100,7 +99,8 @@ export type FilterT =
   | StringFilterT
   | SelectFilterT
   | MultiSelectFilterT
-  | RangeFilterT;
+  | RangeFilterT
+  | BigMultiSelectFilterT;
 
 export type TableIdT = string;
 export interface TableT {
@@ -153,8 +153,8 @@ export type ConceptT = ConceptElementT | ConceptStructT;
 
 export interface FilterConfigT {
   filter: FilterIdT; // TODO: Rename this: "id"
-  type: // TODO: NOT USED, the type is clear based on the filter id
-  | "INTEGER_RANGE"
+  type:
+    | "INTEGER_RANGE"
     | "REAL_RANGE"
     | "MONEY_RANGE"
     | "STRING"
@@ -165,54 +165,78 @@ export interface FilterConfigT {
     | StringFilterValueT
     | RangeFilterValueT
     | SelectFilterValueT
-    | MultiSelectFilterValueT;
+    | FilterIdT[]; // Multi select
+}
+
+export interface DateColumnConfigT {
+  value: string;
 }
 
 export interface TableConfigT {
   id: TableIdT;
-  filters?: FilterConfigT;
+  filters?: FilterConfigT[];
+  dateColumn?: DateColumnConfigT;
+  selects: SelectorIdT[];
 }
 
-export interface QueryConceptT {
+export interface QueryConceptNodeT {
   type: "CONCEPT";
   ids: ConceptIdT[];
-  label: string; // Used to expand
-  excludeFromTimestampAggregation: boolean; // TODO: Not used
+  label?: string; // Used to expand
+  excludeFromTimeAggregation: boolean; // TODO: Not used
+  excludeFromSecondaryIdQuery: boolean;
   tables: TableConfigT[];
   selects?: SelectorIdT[];
 }
 
 export type QueryIdT = string;
-export interface SavedQueryT {
+export interface SavedQueryNodeT {
   type: "SAVED_QUERY";
   query: QueryIdT; // TODO: rename this "id"
 }
 
-export interface OrQueryT {
+export interface OrNodeT {
   type: "OR";
-  children: (QueryConceptT | SavedQueryT)[];
+  children: (QueryConceptNodeT | SavedQueryNodeT)[];
 }
 
-export interface DateRestrictionQueryT {
+export interface DateRestrictionNodeT {
   type: "DATE_RESTRICTION";
   dateRange: DateRangeT;
-  child: OrQueryT;
+  child: OrNodeT;
 }
 
-export interface NegationQueryT {
+export interface NegationNodeT {
   type: "NEGATION";
-  child: DateRestrictionQueryT | OrQueryT;
+  child: DateRestrictionNodeT | OrNodeT;
 }
 
-export interface AndQueryT {
+export interface AndNodeT {
   type: "AND";
-  children: (DateRestrictionQueryT | NegationQueryT | OrQueryT)[];
+  children: (DateRestrictionNodeT | NegationNodeT | OrNodeT)[];
+}
+interface BaseQueryT {
+  type: "CONCEPT_QUERY";
 }
 
-export interface QueryT {
-  type: "CONCEPT_QUERY";
-  root: AndQueryT | NegationQueryT | DateRestrictionQueryT;
+export interface AndQueryT extends BaseQueryT {
+  secondaryId?: string;
+  root: AndNodeT;
 }
+export interface NegationQueryT extends BaseQueryT {
+  root: NegationNodeT;
+}
+export interface DateRestrictionQueryT extends BaseQueryT {
+  root: DateRestrictionNodeT;
+}
+export type QueryT = AndQueryT | NegationQueryT | DateRestrictionQueryT;
+export type QueryNodeT =
+  | AndNodeT
+  | NegationNodeT
+  | DateRestrictionNodeT
+  | OrNodeT
+  | QueryConceptNodeT
+  | SavedQueryNodeT;
 
 // ---------------------------------------
 // ---------------------------------------
@@ -282,7 +306,7 @@ export interface GetQueryErrorResponseT {
 
 export interface ErrorResponseT {
   id?: string;
-  code: SupportedErrorCodesT; // To translate to localized messages
+  code: string; // To translate to localized messages
   message?: string; // For developers / debugging only
   context?: Record<string, string>; // More information to maybe display in translated messages
 }
@@ -338,7 +362,7 @@ export interface FilterSuggestion {
   label: string;
   value: string;
   optionValue: string;
-  templateValues: string[]; // unclear whether that's correct
+  templateValues: Record<string, string>;
 }
 export type PostFilterSuggestionsResponseT = FilterSuggestion[];
 

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.concepts;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -51,6 +52,10 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	private Concept<?> concept;
 	@JsonIgnore @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
+
+	public Collection<Filter<?>> getFilters() {
+		return allFiltersMap.values();
+	}
 
 	@NotNull @Getter @Setter @JsonManagedReference @Valid
 	private List<Select> selects = new ArrayList<>();

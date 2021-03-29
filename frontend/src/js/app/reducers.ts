@@ -13,7 +13,7 @@ import user, { UserStateT } from "../user/reducer";
 import type { TabT } from "../pane/types";
 
 import startup, { StartupStateT } from "../startup/reducer";
-import { buildPanesReducer, PanesStateT } from "../pane/reducer";
+import panes, { PanesStateT } from "../pane/reducer";
 import queryGroupModal from "../query-group-modal/reducer";
 import previousQueries, {
   PreviousQueriesStateT,
@@ -87,7 +87,7 @@ const buildAppReducer = (tabs: TabT[]) => {
     queryGroupModal,
     datasets,
     tooltip,
-    panes: buildPanesReducer(tabs),
+    panes,
     previousQueries,
     previousQueriesSearch,
     previousQueriesFilter,

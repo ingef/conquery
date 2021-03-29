@@ -1,15 +1,15 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
 import { useSelector } from "react-redux";
+import { StateT } from "app-types";
+import { useTranslation } from "react-i18next";
 
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { isEmpty } from "../common/helpers";
 import ReactSelect from "../form-components/ReactSelect";
 
 import { DatasetT } from "./reducer";
 import { useSelectDataset } from "./actions";
-import { StateT } from "app-types";
-import { StandardQueryType } from "../standard-query-editor/types";
 
 const Root = styled("div")`
   min-width: 300px;
@@ -18,6 +18,7 @@ const Root = styled("div")`
 `;
 
 const DatasetSelector: FC = () => {
+  const { t } = useTranslation();
   const selectedDatasetId = useSelector<StateT, string | null>(
     (state) => state.datasets.selectedDatasetId
   );
@@ -27,7 +28,7 @@ const DatasetSelector: FC = () => {
   const error = useSelector<StateT, string | null>(
     (state) => state.datasets.error
   );
-  const query = useSelector<StateT, StandardQueryType>(
+  const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query
   );
 
@@ -49,9 +50,7 @@ const DatasetSelector: FC = () => {
           !isEmpty(value) ? onSelectDataset(value.value) : onSelectDataset(null)
         }
         placeholder={
-          error
-            ? T.translate("datasetSelector.error")
-            : T.translate("reactSelect.placeholder")
+          error ? t("datasetSelector.error") : t("reactSelect.placeholder")
         }
         isDisabled={!!error}
         options={options}

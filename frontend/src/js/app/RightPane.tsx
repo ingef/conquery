@@ -1,11 +1,13 @@
-import React, { FC } from "react";
-import { useSelector } from "react-redux";
+import React, { FC, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
 
 import type { TabT } from "../pane/types";
 
 import Pane from "../pane/Pane";
+import { useTranslation } from "react-i18next";
+import { clickPaneTab } from "../pane/actions";
 
 interface PropsT {
   tabs: TabT[];
@@ -21,20 +23,27 @@ const Tab = styled("div")<{ isActive: boolean }>`
 `;
 
 const RightPane: FC<PropsT> = ({ tabs }) => {
-  const activeTab = useSelector<StateT, string>(
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const activeTab = useSelector<StateT, string | null>(
     (state) => state.panes.right.activeTab
   );
-  const selectedDatasetId = useSelector<StateT, string | null>(
-    (state) => state.datasets.selectedDatasetId
-  );
+
+  useEffect(() => {
+    dispatch(clickPaneTab("right", tabs[0].key));
+  }, [dispatch, tabs]);
 
   return (
-    <Pane right>
+    <Pane
+      right
+      tabs={tabs.map((tab) => ({
+        key: tab.key,
+        label: t(tab.labelKey), // TODO: Somehow make this non-dynamic
+      }))}
+    >
       {tabs.map((tab) => {
         const isActive = tab.key === activeTab;
-        const tabComponent = React.createElement(tab.component, {
-          selectedDatasetId: selectedDatasetId,
-        });
+        const tabComponent = React.createElement(tab.component);
 
         return (
           <Tab key={tab.key} isActive={isActive}>

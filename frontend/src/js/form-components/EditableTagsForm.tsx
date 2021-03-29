@@ -1,6 +1,6 @@
 import React, { FC, useState, useRef, FormEvent } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import PrimaryButton from "../button/PrimaryButton";
 import ReactSelect from "./ReactSelect";
@@ -32,6 +32,7 @@ const EditableTagsForm: FC<PropsT> = ({
   onCancel,
   availableTags,
 }) => {
+  const { t } = useTranslation();
   const ref = useRef(null);
   const [values, setValues] = useState<ValueT[]>(
     tags ? tags.map((t) => ({ label: t, value: t })) : []
@@ -58,14 +59,14 @@ const EditableTagsForm: FC<PropsT> = ({
         isMulti
         isClearable
         autoFocus={true}
-        placeholder={T.translate("reactSelect.tagPlaceholder")}
-        noOptionsMessage={() => T.translate("reactSelect.noResults")}
+        placeholder={t("reactSelect.tagPlaceholder")}
+        noOptionsMessage={() => t("reactSelect.noResults")}
         formatCreateLabel={(inputValue: string) =>
-          T.translate("common.create") + `: "${inputValue}"`
+          t("common.create") + `: "${inputValue}"`
         }
       />
       <StyledPrimaryButton type="submit" small disabled={loading}>
-        {T.translate("common.save")}
+        {t("common.save")}
       </StyledPrimaryButton>
     </form>
   );

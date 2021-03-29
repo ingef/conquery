@@ -5,6 +5,8 @@ import type { TreesT } from "./reducer";
 
 import { tablesWithDefaults } from "../model/table";
 import { selectsWithDefaults } from "../model/select";
+import { nodeIsElement } from "../model/node";
+import { exists } from "../common/helpers/exists";
 
 import { findConcepts } from "./search";
 
@@ -57,64 +59,83 @@ export function getConceptById(conceptId?: ConceptIdT): ConceptT | null {
 //
 // GETTER including parent tables all the way to the root concept
 //
-const findParentConcepts = (concepts: ConceptT[]): ConceptT[] => {
-  // Get parent from first concept
-  const parentId = concepts[0].parent;
+const findParentConcepts = (
+  concepts: { concept: ConceptT; id: ConceptIdT }[]
+): { concept: ConceptT; id: ConceptIdT }[] => {
+  const firstConcept = concepts[0].concept;
+  const parentId = nodeIsElement(firstConcept) ? firstConcept.parent : null;
+
+  if (!parentId) return concepts;
+
   const parentConcept = getConceptById(parentId);
 
   if (!parentConcept) return concepts;
 
-  const parentConceptWithId = {
-    ...parentConcept,
-    id: parentId,
-  };
-
   // Will return a list like
   // [rootConcept, childConcept, grandChildConcept, grandGrandChildConcept, ...]
-  return findParentConcepts([parentConceptWithId, ...concepts]);
+  return findParentConcepts([
+    { concept: parentConcept, id: parentId },
+    ...concepts,
+  ]);
 };
 
 interface ConceptsByIds {
-  concepts: (ConceptT & { id: ConceptIdT })[];
+  concepts: ConceptT[];
   root: ConceptIdT;
   tables: TableT[];
   selects?: SelectorT[];
 }
 
-export const getConceptsByIdsWithTablesAndSelects = (
-  conceptIds: ConceptIdT[],
-  rootConcepts: TreesT
-): ConceptsByIds | null => {
-  const concepts = conceptIds
+const findRootConceptFromNodeIds = (
+  rootConcepts: TreesT,
+  conceptIds: ConceptIdT[]
+) => {
+  // Note: The implicit assumption is that all of the passed conceptIds have the same root.
+  // because otherwise they wouldn't have landed in the node.ids array in the first place
+  const conceptsWithIds: {
+    concept: ConceptT;
+    id: ConceptIdT;
+  }[] = conceptIds
     .map((id) => ({ concept: getConceptById(id), id }))
-    .filter(({ concept }) => !!concept)
-    .map(({ concept, id }) => ({ ...concept, id }));
+    .filter((d): d is { concept: ConceptT; id: string } => !!d.concept);
 
-  if (concepts.length !== conceptIds.length) return null;
+  if (conceptsWithIds.length !== conceptIds.length) return null;
 
-  const parentConceptIds = findParentConcepts(concepts).map(
+  const parentConceptIds = findParentConcepts(conceptsWithIds).map(
     (c) => c.id.toString() // toString so we can find them by object keys
   );
 
-  const rootConceptId = Object.keys(rootConcepts).find(
-    (id) => includes(parentConceptIds, id) && !!rootConcepts[id].tables
+  return Object.keys(rootConcepts).find(
+    (id) => includes(parentConceptIds, id) && nodeIsElement(rootConcepts[id])
   );
+};
+
+export const getConceptsByIdsWithTablesAndSelects = (
+  rootConcepts: TreesT,
+  conceptIds: ConceptIdT[]
+): ConceptsByIds | null => {
+  const rootConceptId = findRootConceptFromNodeIds(rootConcepts, conceptIds);
 
   // There should only be one exact root node that has table information
   // If it's more or less than one, something went wrong
   if (!rootConceptId) {
-    console.error("No root concept ID found");
+    console.error(`No root concept ID found for ${conceptIds}`);
     return null;
   }
 
   const rootConcept = rootConcepts[rootConceptId];
+
+  if (!nodeIsElement(rootConcept)) {
+    console.error(`Only struct root concept ID found for ${conceptIds}`);
+    return null;
+  }
 
   const selects = rootConcept.selects
     ? { selects: selectsWithDefaults(rootConcept.selects) }
     : {};
 
   return {
-    concepts,
+    concepts: conceptIds.map((id) => getConceptById(id)).filter(exists),
     root: rootConceptId,
     tables: tablesWithDefaults(rootConcept.tables),
     ...selects,

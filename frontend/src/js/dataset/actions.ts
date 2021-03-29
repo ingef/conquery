@@ -1,4 +1,7 @@
 import { reset } from "redux-form";
+import { useDispatch, useSelector } from "react-redux";
+import { StateT } from "app-types";
+import { useTranslation } from "react-i18next";
 
 import type { DatasetIdT } from "../api/types";
 
@@ -7,8 +10,9 @@ import { useLoadTrees } from "../concept-trees/actions";
 import { useLoadPreviousQueries } from "../previous-queries/list/actions";
 import { loadQuery, clearQuery } from "../standard-query-editor/actions";
 import { setMessage } from "../snack-message/actions";
-
-import type { StandardQueryType } from "../standard-query-editor/types";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import { exists } from "../common/helpers/exists";
+import { useGetDatasets } from "../api/api";
 
 import { setDatasetId } from "./globalDatasetHelper";
 
@@ -21,10 +25,6 @@ import {
 } from "./actionTypes";
 
 import type { DatasetT } from "./reducer";
-import { exists } from "../common/helpers/exists";
-import { useDispatch, useSelector } from "react-redux";
-import { useGetDatasets } from "../api/api";
-import { StateT } from "app-types";
 
 export const loadDatasetsStart = () => ({ type: LOAD_DATASETS_START });
 export const loadDatasetsError = (err: any) =>
@@ -34,6 +34,7 @@ export const loadDatasetsSuccess = (res: any) =>
 
 // Done at the very beginning on loading the site
 export const useLoadDatasets = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const getDatasets = useGetDatasets();
   const loadTrees = useLoadTrees();
@@ -56,7 +57,7 @@ export const useLoadDatasets = () => {
 
       return loadTrees(defaultId);
     } catch (e) {
-      dispatch(setMessage("datasetSelector.error"));
+      dispatch(setMessage(t("datasetSelector.error")));
       dispatch(loadDatasetsError(e));
     }
   };
@@ -70,7 +71,7 @@ export const selectDatasetInput = (id: DatasetIdT | null) => {
 };
 
 export const saveQuery = (
-  query: StandardQueryType,
+  query: StandardQueryStateT,
   previouslySelectedDatasetId: DatasetIdT
 ) => {
   return { type: SAVE_QUERY, payload: { query, previouslySelectedDatasetId } };
@@ -90,7 +91,7 @@ export const useSelectDataset = () => {
     datasets: DatasetT[],
     datasetId: DatasetIdT | null,
     previouslySelectedDatasetId: DatasetIdT | null,
-    query: StandardQueryType
+    query: StandardQueryStateT
   ) => {
     if (previouslySelectedDatasetId) {
       dispatch(saveQuery(query, previouslySelectedDatasetId));

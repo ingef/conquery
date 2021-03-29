@@ -1,11 +1,11 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import {
   formatStdDate,
-  formatDateDistance,
+  useFormatDateDistance,
 } from "../common/helpers/dateHelper";
 import type { ColumnDescriptionType } from "./Preview";
 import ColumnStats from "./ColumnStats";
@@ -77,6 +77,9 @@ const PreviewInfo: FC<PropsT> = ({
   minDate,
   maxDate,
 }) => {
+  const { t } = useTranslation();
+  const formatDateDistance = useFormatDateDistance();
+
   if (rawPreviewData.length < 2) return null;
 
   const showStats = columns.some((column) =>
@@ -89,10 +92,10 @@ const PreviewInfo: FC<PropsT> = ({
         <div>
           <StdRow>
             <IconButton frame icon="chevron-left" onClick={onClose}>
-              {T.translate("common.back")}
+              {t("common.back")}
             </IconButton>
             <HeadInfo>
-              <Headline>{T.translate("preview.headline")}</Headline>
+              <Headline>{t("preview.headline")}</Headline>
             </HeadInfo>
           </StdRow>
         </div>
@@ -100,13 +103,13 @@ const PreviewInfo: FC<PropsT> = ({
           <tbody>
             <Tr>
               <td>
-                <Stat>{T.translate("preview.total")}:</Stat>
+                <Stat>{t("preview.total")}:</Stat>
               </td>
               <td>
                 <BStat>{rawPreviewData.length - 1}</BStat>
               </td>
               <td>
-                <Stat>{T.translate("preview.min")}:</Stat>
+                <Stat>{t("preview.min")}:</Stat>
               </td>
               <td>
                 <BStat>{minDate ? formatStdDate(minDate) : "-"}</BStat>
@@ -114,7 +117,7 @@ const PreviewInfo: FC<PropsT> = ({
             </Tr>
             <Tr>
               <td>
-                <Stat>{T.translate("preview.span")}:</Stat>
+                <Stat>{t("preview.span")}:</Stat>
               </td>
               <td>
                 <BStat>
@@ -124,7 +127,7 @@ const PreviewInfo: FC<PropsT> = ({
                 </BStat>
               </td>
               <td>
-                <Stat>{T.translate("preview.max")}:</Stat>
+                <Stat>{t("preview.max")}:</Stat>
               </td>
               <td>
                 <BStat>{maxDate ? formatStdDate(maxDate) : "-"}</BStat>
@@ -135,12 +138,8 @@ const PreviewInfo: FC<PropsT> = ({
       </TopRow>
       {showStats && (
         <div>
-          <StatsHeadline>
-            {T.translate("preview.statisticsHeadline")}
-          </StatsHeadline>
-          <StatsSubline>
-            {T.translate("preview.statisticsSubline")}
-          </StatsSubline>
+          <StatsHeadline>{t("preview.statisticsHeadline")}</StatsHeadline>
+          <StatsSubline>{t("preview.statisticsSubline")}</StatsSubline>
           <StatsContainer>
             {rawPreviewData[0].map((col, j) => (
               <ColumnStats

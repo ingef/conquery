@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { T } from "../localization";
 import styled from "@emotion/styled";
 import EditableText from "../form-components/EditableText";
 import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
 import {
   selectActiveFormValues,
-  selectActiveFormName,
+  useSelectActiveFormName,
   selectActiveFormType,
 } from "./stateSelectors";
 import {
@@ -26,6 +25,7 @@ import { loadExternalFormValues, setExternalForm } from "./actions";
 import FaIcon from "../icon/FaIcon";
 import { useLoadFormConfigs } from "./form-configs/selectors";
 import { useDatasetId } from "../dataset/selectors";
+import { useTranslation } from "react-i18next";
 
 const Root = styled("div")`
   display: flex;
@@ -76,6 +76,7 @@ const hasChanged = (a: any, b: any) => {
 };
 
 const FormConfigSaver: React.FC = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const datasetId = useDatasetId();
   const [editing, setEditing] = useState<boolean>(false);
@@ -88,9 +89,7 @@ const FormConfigSaver: React.FC = () => {
     selectActiveFormValues(state)
   );
   const previousFormValues = usePrevious(formValues);
-  const activeFormName = useSelector<StateT, string>((state) =>
-    selectActiveFormName(state)
-  );
+  const activeFormName = useSelectActiveFormName();
   const activeFormType = useSelector<StateT, string | null>((state) =>
     selectActiveFormType(state)
   );
@@ -149,7 +148,7 @@ const FormConfigSaver: React.FC = () => {
         loadFormConfigs(datasetId);
       }
     } catch (e) {
-      dispatch(setMessage("externalForms.config.saveError"));
+      dispatch(setMessage(t("externalForms.config.saveError")));
     }
     setIsSaving(false);
   }
@@ -170,7 +169,7 @@ const FormConfigSaver: React.FC = () => {
       setConfigName(config.label);
       setIsDirty(false);
     } catch (e) {
-      dispatch(setMessage("formConfig.loadError"));
+      dispatch(setMessage(t("formConfig.loadError")));
     }
     setIsLoading(false);
   }
@@ -187,12 +186,12 @@ const FormConfigSaver: React.FC = () => {
         {() => (
           <SpacedRow>
             <div>
-              <Label>{T.translate("externalForms.config.headline")}</Label>
+              <Label>{t("externalForms.config.headline")}</Label>
               <Row>
                 {isLoading ? (
                   <LoadingText>
                     <SxFaIcon icon="spinner" />
-                    {T.translate("common.loading")}
+                    {t("common.loading")}
                   </LoadingText>
                 ) : (
                   <>
@@ -219,7 +218,7 @@ const FormConfigSaver: React.FC = () => {
               icon={isSaving ? "spinner" : "save"}
               onClick={onSubmit}
             >
-              {T.translate("externalForms.config.save")}
+              {t("externalForms.config.save")}
             </IconButton>
           </SpacedRow>
         )}

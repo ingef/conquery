@@ -2,7 +2,6 @@ import React from "react";
 import styled from "@emotion/styled";
 import { Field as RxFormField } from "redux-form";
 
-import { T } from "../../localization";
 import { nodeIsInvalid } from "../../model/node";
 
 import InputSelect from "../../form-components/InputSelect";
@@ -11,7 +10,7 @@ import InputDateRange from "../../form-components/InputDateRange";
 import InputCheckbox from "../../form-components/InputCheckbox";
 import ToggleButton from "../../form-components/ToggleButton";
 
-import type { DatasetIdT, SelectOptionT } from "../../api/types";
+import type { SelectOptionT } from "../../api/types";
 
 import {
   FormQueryDropzone,
@@ -27,6 +26,7 @@ import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
 
 import { Headline } from "../form-components/Headline";
 import { Description } from "../form-components/Description";
+import { useTranslation } from "react-i18next";
 
 const TabsField = styled("div")``;
 
@@ -60,6 +60,7 @@ interface PropsT {
 
 const Field = ({ field, ...commonProps }: PropsT) => {
   const { formType, locale, availableDatasets, getFieldValue } = commonProps;
+  const { t } = useTranslation();
 
   switch (field.type) {
     case "HEADLINE":
@@ -206,10 +207,10 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             label: field.label[locale],
             conceptDropzoneText: field.conceptDropzoneLabel
               ? field.conceptDropzoneLabel[locale]
-              : T.translate("externalForms.default.conceptDropzoneLabel"),
+              : t("externalForms.default.conceptDropzoneLabel"),
             attributeDropzoneText: field.conceptColumnDropzoneLabel
               ? field.conceptColumnDropzoneLabel[locale]
-              : T.translate("externalForms.default.conceptDropzoneLabel"),
+              : t("externalForms.default.conceptDropzoneLabel"),
             formType,
             enableDropFile: true,
             disallowMultipleColumns: !field.isTwoDimensional,

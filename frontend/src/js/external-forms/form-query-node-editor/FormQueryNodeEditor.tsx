@@ -6,33 +6,39 @@ import {
   selectReduxFormState,
   selectEditedConceptPosition,
   selectEditedConcept,
-  selectSuggestions,
   selectFormContextState,
 } from "../stateSelectors";
 import { tableIsEditable } from "../../model/table";
-import { useLoadFormFilterSuggestions } from "../form-suggestions/actions";
 import { FormStateMap } from "redux-form";
 import { useSelector } from "react-redux";
 import { StateT } from "app-types";
 import { FormContextStateT } from "../reducer";
-import { ConceptIdT, CurrencyConfigT } from "../../api/types";
+import { ConceptIdT, CurrencyConfigT, DatasetIdT } from "../../api/types";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
+import type { PostPrefixForSuggestionsParams } from "../../api/api";
 
-export type PropsType = {
+interface PropsT {
   formType: string;
   fieldName: string;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
-  onCloseModal: Function;
-  onUpdateLabel: Function;
+  onCloseModal: (andIdx: number, orIdx: number) => void;
+  onUpdateLabel: (andIdx: number, orIdx: number, label: string) => void;
   onToggleTable: Function;
   onDropConcept: Function;
   onSetFilterValue: Function;
   onSwitchFilterMode: Function;
   onResetAllFilters: Function;
-};
+  onLoadFilterSuggestions: (
+    andIdx: number,
+    orIdx: number,
+    params: PostPrefixForSuggestionsParams,
+    tableIdx: number,
+    filterIdx: number
+  ) => void;
+}
 
-export const FormQueryNodeEditor = (props: PropsType) => {
+const FormQueryNodeEditor = (props: PropsT) => {
   const reduxFormState = useSelector<StateT, FormStateMap | null>(
     selectReduxFormState
   );
@@ -40,6 +46,10 @@ export const FormQueryNodeEditor = (props: PropsType) => {
     reduxFormState,
     props.formType,
     props.fieldName
+  );
+
+  const datasetId = useSelector<StateT, DatasetIdT | null>(
+    (state) => state.datasets.selectedDatasetId
   );
 
   const node = conceptPosition
@@ -56,7 +66,7 @@ export const FormQueryNodeEditor = (props: PropsType) => {
   const { andIdx, orIdx } = conceptPosition || {};
 
   const showTables =
-    node &&
+    !!node &&
     node.tables &&
     (node.tables.length > 1 ||
       node.tables.some((table) => tableIsEditable(table)));
@@ -64,10 +74,6 @@ export const FormQueryNodeEditor = (props: PropsType) => {
   const formState = useSelector<StateT, FormContextStateT | null>((state) =>
     selectFormContextState(state, props.formType)
   );
-  const suggestions =
-    conceptPosition && formState
-      ? selectSuggestions(formState, props.fieldName, conceptPosition)
-      : null;
 
   const currencyConfig = useSelector<StateT, CurrencyConfigT>(
     (state) => state.startup.config.currency
@@ -94,29 +100,27 @@ export const FormQueryNodeEditor = (props: PropsType) => {
   const onResetAllFilters = () => props.onResetAllFilters(andIdx, orIdx);
   const onSetDateColumn = (...args) =>
     props.onSetDateColumn(andIdx, orIdx, ...args);
+  const onLoadFilterSuggestions = (
+    params: PostPrefixForSuggestionsParams,
+    tableIdx: number,
+    filterIdx: number
+  ) =>
+    props.onLoadFilterSuggestions(andIdx, orIdx, params, tableIdx, filterIdx);
 
-  const loadFilterSuggestions = useLoadFormFilterSuggestions();
-  const onLoadFilterSuggestions = (...args: any[]) =>
-    loadFilterSuggestions(
-      props.formType,
-      props.fieldName,
-      andIdx,
-      orIdx,
-      ...args
-    );
+  if (!datasetId || !node || !editorState) {
+    return null;
+  }
 
   return (
     <QueryNodeEditor
+      datasetId={datasetId}
       name={`${props.formType}_${toUpperCaseUnderscore(props.fieldName)}`}
       onLoadFilterSuggestions={onLoadFilterSuggestions}
       node={node}
-      andIdx={andIdx}
-      orIdx={orIdx}
       editorState={editorState}
       showTables={showTables}
       blocklistedTables={props.blocklistedTables}
       allowlistedTables={props.allowlistedTables}
-      suggestions={suggestions}
       currencyConfig={currencyConfig}
       isExcludeTimestampsPossible={false}
       isExcludeFromSecondaryIdQueryPossible={false}
@@ -135,3 +139,5 @@ export const FormQueryNodeEditor = (props: PropsType) => {
     />
   );
 };
+
+export default FormQueryNodeEditor;

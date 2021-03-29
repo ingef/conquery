@@ -1,4 +1,3 @@
-import { ActionT } from "../common/actions";
 import { MODAL_OPEN, MODAL_CLOSE } from "./actionTypes";
 
 export interface QueryUploadConceptListModalStateT {
@@ -13,7 +12,7 @@ const initialState: QueryUploadConceptListModalStateT = {
 
 const reducer = (
   state = initialState,
-  action: ActionT
+  action: any
 ): QueryUploadConceptListModalStateT => {
   switch (action.type) {
     case MODAL_OPEN:

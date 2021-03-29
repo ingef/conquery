@@ -2,13 +2,13 @@ import React, { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 import styled from "@emotion/styled";
 
-import { T } from "../../localization";
 import IconButton from "../../button/IconButton";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import { FORM_CONCEPT_NODE } from "../../common/constants/dndTypes";
 import { getWidthAndHeight } from "../../app/DndProvider";
+import { useTranslation } from "react-i18next";
 
 const Root = styled("div")<{ active?: boolean }>`
   padding: 5px 10px;
@@ -88,6 +88,7 @@ const FormConceptNode: FC<PropsT> = ({
   hasActiveFilters,
   expand,
 }) => {
+  const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(conceptNode);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -123,9 +124,7 @@ const FormConceptNode: FC<PropsT> = ({
       </Left>
       <Right>
         {expand && expand.expandable && (
-          <WithTooltip
-            text={T.translate("externalForms.common.concept.expand")}
-          >
+          <WithTooltip text={t("externalForms.common.concept.expand")}>
             <IconButton
               icon={expand.active ? "compress-arrows-alt" : "expand-arrows-alt"}
               tiny

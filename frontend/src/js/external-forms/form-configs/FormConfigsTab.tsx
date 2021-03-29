@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import styled from "@emotion/styled";
+import { useTranslation } from "react-i18next";
 
 import type { DatasetIdT } from "../../api/types";
 
-import { T } from "../../localization";
 import EmptyList from "../../list/EmptyList";
 import Loading from "../../list/Loading";
 import FormConfigs from "./FormConfigs";
@@ -24,6 +24,7 @@ interface PropsT {
 const FormConfigsTab = ({ datasetId }: PropsT) => {
   const formConfigs = useFilteredFormConfigs();
   const { loading, loadFormConfigs } = useLoadFormConfigs();
+  const { t } = useTranslation();
 
   const hasConfigs = loading || formConfigs.length !== 0;
 
@@ -40,9 +41,9 @@ const FormConfigsTab = ({ datasetId }: PropsT) => {
       <FormConfigsFilter />
       <FormConfigsSearchBox />
       <Container>
-        {loading && <Loading message={T.translate("formConfigs.loading")} />}
+        {loading && <Loading message={t("formConfigs.loading")} />}
         {formConfigs.length === 0 && !loading && (
-          <EmptyList emptyMessage={T.translate("formConfigs.noneFound")} />
+          <EmptyList emptyMessage={t("formConfigs.noneFound")} />
         )}
       </Container>
       {hasConfigs && (

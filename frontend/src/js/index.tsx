@@ -4,7 +4,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { ThemeProvider, Theme } from "@emotion/react";
 
-import "./app/actions"; //  To initialize parameterized actions
 import { makeStore } from "./store";
 import AppRoot from "./AppRoot";
 

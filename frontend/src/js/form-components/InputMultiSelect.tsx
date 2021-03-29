@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import { components } from "react-select";
 import Markdown from "react-markdown";
 import Mustache from "mustache";
@@ -19,8 +19,10 @@ const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
 `;
 
-const SxReactSelect = styled(ReactSelect)`
-  width: 100%;
+const SxLabeled = styled(Labeled)`
+  .fullwidth {
+    width: 100%;
+  }
 `;
 
 const SxMarkdown = styled(Markdown)`
@@ -71,25 +73,24 @@ const optionContainsStr = (str: string) => (option: SelectOptionT) => {
 export interface MultiSelectInputProps {
   defaultValue?: string[];
   value: SelectOptionT[] | FilterSuggestion[];
-  onChange: (value: string[] | null) => void;
+  onChange: (value: SelectOptionT[] | FilterSuggestion[] | null) => void;
 }
 
 export interface InputMultiSelectProps {
   label?: string;
   options: SelectOptionT[];
-  disabled?: boolean | null;
+  disabled?: boolean;
   tooltip?: string;
-  onInputChange?: (value: string[] | null) => void;
+  onInputChange?: (value: string) => void;
   isLoading?: boolean;
   className?: string;
   allowDropFile?: boolean | null;
   closeMenuOnSelect?: boolean;
-  onDropFile?: Function;
+  onDropFile?: (file: File) => void;
 
   input: MultiSelectInputProps;
 }
 
-// Typescript typeguard
 const isFilterSuggestion = (
   val: SelectOptionT | FilterSuggestion
 ): val is FilterSuggestion => {
@@ -99,6 +100,8 @@ const isFilterSuggestion = (
 };
 
 const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
+  const { t } = useTranslation();
+
   const allowDropFile = props.allowDropFile && !!props.onDropFile;
 
   const hasTooManyValues =
@@ -119,7 +122,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
         <Row>
           <InfoText>
             {!!props.options ? props.options.length : 0}{" "}
-            {T.translate("inputMultiSelect.options")}
+            {t("inputMultiSelect.options")}
           </InfoText>
           <TransparentButton
             tiny
@@ -132,7 +135,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
               ownProps.setValue(visibleOptions);
             }}
           >
-            {T.translate("inputMultiSelect.insertAll")}
+            {t("inputMultiSelect.insertAll")}
           </TransparentButton>
         </Row>
         <components.MenuList {...ownProps}>{children}</components.MenuList>
@@ -141,11 +144,12 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
   };
 
   const Select = (
-    <SxReactSelect
+    <ReactSelect<true>
       creatable
       highlightChanged
       isSearchable
       isMulti
+      className="fullwidth"
       createOptionPosition="first"
       name="form-field"
       options={options}
@@ -157,19 +161,19 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       closeMenuOnSelect={!!props.closeMenuOnSelect}
       placeholder={
         allowDropFile
-          ? T.translate("reactSelect.dndPlaceholder")
-          : T.translate("reactSelect.placeholder")
+          ? t("reactSelect.dndPlaceholder")
+          : t("reactSelect.placeholder")
       }
-      noOptionsMessage={() => T.translate("reactSelect.noResults")}
+      noOptionsMessage={() => t("reactSelect.noResults")}
       onChange={props.input.onChange}
       onInputChange={
         props.onInputChange || // To allow for async option loading
-        function (value: string[]) {
+        function (value: string) {
           return value;
         }
       }
       formatCreateLabel={(inputValue: string) =>
-        T.translate("common.create") + `: "${inputValue}"`
+        t("common.create") + `: "${inputValue}"`
       }
       formatOptionLabel={({ label, optionValue, templateValues, highlight }) =>
         optionValue && templateValues ? (
@@ -182,7 +186,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
   );
 
   return (
-    <Labeled
+    <SxLabeled
       className={props.className}
       valueChanged={
         exists(props.input.value) &&
@@ -209,7 +213,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
           {() => Select}
         </SxInputMultiSelectDropzone>
       )}
-    </Labeled>
+    </SxLabeled>
   );
 };
 

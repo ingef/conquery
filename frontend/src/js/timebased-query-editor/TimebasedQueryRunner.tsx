@@ -11,7 +11,7 @@ import { allConditionsFilled } from "./helpers";
 import { TimebasedQueryStateT } from "./reducer";
 
 const selectIsButtonEnabled = (
-  datasetId: DatasetIdT,
+  datasetId: DatasetIdT | null,
   queryRunner: QueryRunnerStateT | null
 ) => (state: StateT) => {
   if (!queryRunner) return false;
@@ -24,11 +24,10 @@ const selectIsButtonEnabled = (
   );
 };
 
-interface PropsT {
-  datasetId: DatasetIdT;
-}
-
-const TimebasedQueryRunner: FC<PropsT> = ({ datasetId }) => {
+const TimebasedQueryRunner = () => {
+  const datasetId = useSelector<StateT, DatasetIdT | null>(
+    (state) => state.datasets.selectedDatasetId
+  );
   const queryRunner = useSelector<StateT, QueryRunnerStateT>(
     (state) => state.timebasedQueryEditor.timebasedQueryRunner
   );
@@ -47,9 +46,13 @@ const TimebasedQueryRunner: FC<PropsT> = ({ datasetId }) => {
   const startTimebasedQuery = useStartQuery("timebased");
   const stopTimebasedQuery = useStopQuery("timebased");
 
-  const startQuery = () => startTimebasedQuery(datasetId, query);
+  const startQuery = () => {
+    if (datasetId) {
+      startTimebasedQuery(datasetId, query);
+    }
+  };
   const stopQuery = () => {
-    if (queryId) {
+    if (datasetId && queryId) {
       stopTimebasedQuery(datasetId, queryId);
     }
   };
