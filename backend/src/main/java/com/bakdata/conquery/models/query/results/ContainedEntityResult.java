@@ -52,13 +52,14 @@ public interface ContainedEntityResult extends EntityResult {
 			if(date == null) {
 				continue;
 			}
-			if(date instanceof CDateSet) {
+			else if(date instanceof CDateSet) {
 				dateSet.addAll((CDateSet) date);
-				continue;
 			}
-			if(date instanceof CDateRange) {
+			else if(date instanceof CDateRange) {
 				dateSet.add((CDateRange) date);
-				continue;
+			}
+			else {
+				throw new IllegalStateException("Encountered unhandled type during date aggregation: " + date.getClass() + "(" + date + ")")
 			}
 		}
 	}
