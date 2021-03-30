@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
+import java.util.Collection;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -34,18 +35,23 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 		// Submit the token to Shiro (to all realms that were registered)
 		ConqueryAuthenticationInfo info = (ConqueryAuthenticationInfo) SecurityUtils.getSecurityManager().authenticate(token);
 		// All authenticating realms must return a UserId as identifying principal
-		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();
 
-		// The UserId is queried in the MetaStorage, the central place for authorization information
-		User user = storage.getUser(userId);
-		
-		if(user != null) {
-			ConqueryMDC.setLocation(user.getId().toString());
-			user.setDisplayLogout(info.isDisplayLogout());
-		} else {
-			log.trace("The user id {} could not be map to a user.", userId);
+		// Used the first matching user id
+		User user = null;
+		Collection<UserId> userIds = info.getPrincipals().byType(UserId.class);
+		for(UserId userId : userIds) {
+			user = storage.getUser(userId);
 		}
-		// If the user was present, all further authorization can know be perfomed on the user object
+		
+		if(user == null) {
+			log.trace("None of the provided ids match any user: {}", userIds);
+			return Optional.empty();
+		}
+
+		// If the user was present, all further authorization can now be performed on the user object
+		log.trace("Using user {} for further authorization (provided ids: {})", user, userIds );
+		ConqueryMDC.setLocation(user.getId().toString());
+		user.setDisplayLogout(info.isDisplayLogout());
 		return Optional.ofNullable(user);
 	}
 

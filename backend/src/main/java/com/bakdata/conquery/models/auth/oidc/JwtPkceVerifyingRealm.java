@@ -21,6 +21,8 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.JsonWebToken;
 
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This realm uses the configured public key to verify the signature of a provided JWT and extracts informations about
@@ -46,27 +48,36 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
         log.trace("Creating token verifier");
         TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class);
 
-        verifier.publicKey(publicKey);
-        verifier
+        verifier = verifier.publicKey(publicKey)
                 .withChecks(JsonWebToken::isActive);
 
         String subject;
         log.trace("Verifying token");
+        AccessToken accessToken = null;
         try {
             verifier.verify();
-            subject = verifier.getToken().getSubject();
+            accessToken = verifier.getToken();
         } catch (VerificationException e) {
             log.trace("Verification failed",e);
             throw new IncorrectCredentialsException(e);
         }
+        subject = accessToken.getSubject();
 
         if (subject == null) {
             // Should not happen, as sub is mandatory in a access_token
             throw new UnsupportedTokenException("Unable to extract a subject from the provided token.");
         }
 
+        // Extract alternative ids
+        // TODO make configurable which claims might be mapped to a user id in the future
+        List<UserId> alternativeIds = new ArrayList<>();
+        String email = accessToken.getEmail();
+        if(email != null) {
+            alternativeIds.add(new UserId(email));
+        }
 
-        return new ConqueryAuthenticationInfo(new UserId(subject), token, this, true);
+
+        return new ConqueryAuthenticationInfo(new UserId(subject), token, this, true,alternativeIds);
     }
 
 }
