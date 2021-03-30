@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.query.results;
 
-import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
+
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 
 public interface ContainedEntityResult extends EntityResult {
 
@@ -47,16 +47,23 @@ public interface ContainedEntityResult extends EntityResult {
 	CDateSet collectValidityDates(QueryPlan plan);
 
 	static CDateSet collectValidityDates(QueryPlan plan, Object[] resultLine) {
+		final int[] dateResultPositions = plan.getValidityDateResultPositions();
+
+		if(dateResultPositions.length == 1 && resultLine[dateResultPositions[0]] instanceof CDateSet){
+			return ((CDateSet) resultLine[dateResultPositions[0]]);
+		}
+
 		CDateSet dateSet = CDateSet.create();
-		for(int pos :plan.getValidityDateResultPositions()) {
+		for (int pos : plan.getValidityDateResultPositions()) {
 			Object date = resultLine[pos];
-			if(date == null) {
+			if (date == null) {
 				continue;
 			}
-			else if(date instanceof CDateSet) {
+
+			if (date instanceof CDateSet) {
 				dateSet.addAll((CDateSet) date);
 			}
-			else if(date instanceof CDateRange) {
+			else if (date instanceof CDateRange) {
 				dateSet.add((CDateRange) date);
 			}
 			else {
