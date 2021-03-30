@@ -14,6 +14,7 @@ import com.bakdata.conquery.resources.unprotected.TokenResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.util.Duration;
 import io.dropwizard.validation.MinDuration;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -44,6 +45,19 @@ public class LocalAuthenticationConfig implements AuthenticationConfig {
 	
 	@NotNull
 	private File directory = new File("storage");
+
+
+	@ValidationMethod(message = "Storage has no encryption configured")
+	boolean isStorageEncrypted() {
+		// Check if a cipher is configured for xodus according to https://github.com/JetBrains/xodus/wiki/Database-Encryption
+		// in the config
+		if(passwordStoreConfig.getCipherId() != null){
+			return true;
+		}
+
+		// and system property
+		return System.getProperty("exodus.cipherId") != null;
+	}
 	
 	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
