@@ -58,10 +58,12 @@ public class MultilineContainedEntityResult implements ContainedEntityResult {
 	}
 
 	@Override
-	public void collectValidityDates(QueryPlan plan, CDateSet dateSet) {
+	public CDateSet collectValidityDates(QueryPlan plan) {
+		CDateSet dateSet = CDateSet.create();
 		for(Object[] resultLine : values){
-			ContainedEntityResult.collectValidityDates(plan,dateSet,resultLine);
+			dateSet.addAll(ContainedEntityResult.collectValidityDates(plan, resultLine));
 		}
+		return dateSet;
 	}
 
 	@Override

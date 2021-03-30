@@ -17,7 +17,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /**
@@ -43,8 +42,7 @@ public class EntityDateQueryPlan implements QueryPlan {
         }
         final List<Object[]> resultLines = new ArrayList<>();
 
-        CDateSet entityDate = CDateSet.create();
-        preResult.asContained().collectValidityDates(query,entityDate);
+        CDateSet entityDate = preResult.asContained().collectValidityDates(query);
         entityDate.retainAll(dateRestriction);
 
         // Generate DateContexts in the provided resolutions

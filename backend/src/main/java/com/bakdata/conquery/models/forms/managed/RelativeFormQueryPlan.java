@@ -6,7 +6,6 @@ import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
@@ -20,7 +19,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
-import com.esotericsoftware.kryo.util.IntArray;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -66,9 +64,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 		int size = calculateCompleteLength();
 		ContainedEntityResult contained = preResult.asContained();
-		CDateSet dateSet = CDateSet.create();
 		// Gather all validity dates from prerequisite
-		contained.collectValidityDates(query,dateSet);
+		CDateSet dateSet = contained.collectValidityDates(query);
 
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 

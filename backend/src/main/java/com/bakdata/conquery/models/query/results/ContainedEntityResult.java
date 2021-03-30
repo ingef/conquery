@@ -44,9 +44,10 @@ public interface ContainedEntityResult extends EntityResult {
 
 
 
-	void collectValidityDates(QueryPlan plan, CDateSet dateSet);
+	CDateSet collectValidityDates(QueryPlan plan);
 
-	static void collectValidityDates(QueryPlan plan, CDateSet dateSet, Object[] resultLine) {
+	static CDateSet collectValidityDates(QueryPlan plan, Object[] resultLine) {
+		CDateSet dateSet = CDateSet.create();
 		for(int pos :plan.getValidityDateResultPositions()) {
 			Object date = resultLine[pos];
 			if(date == null) {
@@ -59,8 +60,9 @@ public interface ContainedEntityResult extends EntityResult {
 				dateSet.add((CDateRange) date);
 			}
 			else {
-				throw new IllegalStateException("Encountered unhandled type during date aggregation: " + date.getClass() + "(" + date + ")")
+				throw new IllegalStateException("Encountered unhandled type during date aggregation: " + date.getClass() + "(" + date + ")");
 			}
 		}
+		return dateSet;
 	}
 }
