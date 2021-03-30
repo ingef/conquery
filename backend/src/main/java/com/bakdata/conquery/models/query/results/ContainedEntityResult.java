@@ -54,7 +54,7 @@ public interface ContainedEntityResult extends EntityResult {
 		}
 
 		CDateSet dateSet = CDateSet.create();
-		for (int pos : plan.getValidityDateResultPositions()) {
+		for (int pos : dateResultPositions) {
 			Object date = resultLine[pos];
 			if (date == null) {
 				continue;
