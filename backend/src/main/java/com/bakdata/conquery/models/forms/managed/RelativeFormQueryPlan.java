@@ -50,7 +50,10 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final DateContext.CalendarUnit timeUnit;
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
-	@Getter
+	/**
+	 * @implNote lazy is important here because the value needs to be created after featurePlan and outcomePlan are initialized
+	 */
+	@Getter(lazy = true)
 	private final int[] validityDateResultPositions = createValidityDateResultPositions();
 
 	@Override

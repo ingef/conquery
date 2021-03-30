@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.OptionalInt;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -14,7 +13,6 @@ import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.Getter;
@@ -45,7 +43,7 @@ public class FormQueryPlan implements QueryPlan {
 			}
 		}
 		constantCount = withRelativeEventdate ? 4 : 3; // resolution indicator, index value, (event date,) date range
-		validityDatePositions = new int[]{getDateRangePosition()};
+		validityDatePositions = new int[]{getDateRangeResultPosition()};
 	}
 
 	@Override
@@ -116,12 +114,12 @@ public class FormQueryPlan implements QueryPlan {
 			result[2] = dateContext.getEventDate().toEpochDay();
 		}
 		//add date range at [2] or [3]
-		result[getDateRangePosition()] = dateContext.getDateRange();
+		result[getDateRangeResultPosition()] = dateContext.getDateRange();
 		
 		return result;
 	}
 
-	private int getDateRangePosition() {
+	private int getDateRangeResultPosition() {
 		return constantCount-1;
 	}
 
