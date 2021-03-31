@@ -91,7 +91,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 
 
 	/**
-	 * Represents the path in a {@link TreeConcept} to optimize lookup.
+	 * Per event: represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
 	 */
 	// todo, can this be implemented using a store or at least with bytes only?
@@ -161,7 +161,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		if (range.hasUpperBound()) {
 			final int maxValue = range.getMaxValue();
 
-			if (maxDate[index] != Integer.MAX_VALUE) {
+			if (maxDate[index] == Integer.MAX_VALUE) {
 				maxDate[index] = maxValue;
 			}
 			else {
@@ -185,7 +185,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 			return true;
 		}
 
-		long bits = includedConcepts[getEntityIndex(entity)];
+		final int index = getEntityIndex(entity);
+
+		long bits = includedConcepts[index];
 
 		return (bits & requiredBits) != 0L;
 	}
