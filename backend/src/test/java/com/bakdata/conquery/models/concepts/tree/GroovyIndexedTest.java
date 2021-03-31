@@ -85,14 +85,14 @@ public class GroovyIndexedTest {
 
 		indexedConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
 
-		indexedConcept.setDataset(dataset.getId());
+		indexedConcept.setDataset(dataset);
 		indexedConcept.initElements(Validators.newValidator());
 
 		TreeChildPrefixIndex.putIndexInto(indexedConcept);
 
 		oldConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
 
-		oldConcept.setDataset(dataset.getId());
+		oldConcept.setDataset(dataset);
 		oldConcept.initElements(Validators.newValidator());
 	}
 

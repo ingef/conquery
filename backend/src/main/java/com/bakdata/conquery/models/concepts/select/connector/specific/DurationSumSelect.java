@@ -1,16 +1,24 @@
 package com.bakdata.conquery.models.concepts.select.connector.specific;
 
+import java.util.EnumSet;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 @CPSType(id = "DURATION_SUM", base = Select.class)
 public class DurationSumSelect extends SingleColumnSelect {
+
+	@Override
+	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
+		return EnumSet.of(MajorTypeId.DATE, MajorTypeId.DATE_RANGE);
+	}
 
 	@JsonCreator
 	public DurationSumSelect(@NsIdRef Column column) {
@@ -19,12 +27,6 @@ public class DurationSumSelect extends SingleColumnSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		switch (getColumn().getType()) {
-			case DATE:
-			case DATE_RANGE:
-				return new DurationSumAggregator(getColumn());
-			default:
-				throw new IllegalStateException(String.format("Duration Sum requires either DateRange or Dates, not %s", getColumn()));
-		}
+		return new DurationSumAggregator(getColumn());
 	}
 }

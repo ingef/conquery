@@ -18,6 +18,29 @@ import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
+import javax.validation.Validator;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
@@ -142,7 +165,7 @@ public class AdminProcessor {
 	}
 
 	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) throws JSONException {
-		concept.setDataset(dataset.getId());
+		concept.setDataset(dataset);
 		ValidatorHelper.failOnError(log, validator.validate(concept));
 		// Register the Concept in the ManagerNode and Workers
 		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
