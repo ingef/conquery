@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -231,6 +232,16 @@ public class SerializationTests {
 		SerializationTestUtil
 			.forType(ConqueryError.class)
 			.test(error);
+	}
+
+
+	@Test
+	public void executionQueryJobError() throws JSONException, IOException {
+		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5),new ConqueryError.UnknownError(null));
+
+		SerializationTestUtil
+				.forType(ConqueryError.class)
+				.test(error);
 	}
 
 	@Test

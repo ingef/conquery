@@ -45,14 +45,19 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@NotEmpty
 	private String messageTemplate;
 	private Map<String, String> context;
+
+	/**
+	 * Since Jackson does not seem to be able to deserialize throwable with super.cause set. We have our own member
+	 */
+	private ConqueryError conqueryCause;
 	
 	
 	public ConqueryError(String messageTemplate, Map<String, String> context) {
 		this(messageTemplate,context,null);
 	}
 
-	public ConqueryError(String messageTemplate, Map<String, String> context, Throwable cause) {
-		super(cause);
+	public ConqueryError(String messageTemplate, Map<String, String> context, ConqueryError conqueryCause) {
+		this.conqueryCause = conqueryCause;
 		this.messageTemplate = messageTemplate;
 		this.context = context;
 	}
@@ -97,7 +102,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		public ContextError(String messageTemplate) {
 			this(messageTemplate, null);
 		}
-		public ContextError(String messageTemplate, Throwable cause) {
+		public ContextError(String messageTemplate, ConqueryError cause) {
 			super(messageTemplate, new Flat3Map<>(), cause);
 		}
 	}
@@ -264,11 +269,11 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		}
 
 
-		private ExecutionJobErrorWrapper(Throwable e) {
+		private ExecutionJobErrorWrapper(ConqueryError e) {
 			super(TEMPLATE,e);
 		}
 
-		public ExecutionJobErrorWrapper(Entity entity, Throwable e) {
+		public ExecutionJobErrorWrapper(Entity entity, ConqueryError e) {
 			this(e);
 			getContext().put(ENTITY, Integer.toString(entity.getId()));
 
