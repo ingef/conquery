@@ -23,7 +23,6 @@ public class GroupId extends PermissionOwnerId<Group> {
 	}
 
 	public void collectComponents(List<Object> components) {
-		super.collectComponents(components);
 		components.add(TYPE);
 		components.add(group);
 	}

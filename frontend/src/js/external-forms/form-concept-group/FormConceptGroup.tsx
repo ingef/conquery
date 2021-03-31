@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "@emotion/styled";
 import { useDispatch } from "react-redux";
 import type { WrappedFieldProps } from "redux-form";
+import { useTranslation } from "react-i18next";
 
 import { resetAllFiltersInTables } from "../../model/table";
 import { compose, includes } from "../../common/helpers/commonHelper";
@@ -30,6 +31,8 @@ import {
 import TransparentButton from "../../button/TransparentButton";
 import ToggleButton from "../../form-components/ToggleButton";
 import { exists } from "../../common/helpers/exists";
+import { usePostPrefixForSuggestions } from "../../api/api";
+import { PostFilterSuggestionsResponseT } from "../../api/types";
 
 import DynamicInputGroup from "../form-components/DynamicInputGroup";
 import DropzoneList from "../form-components/DropzoneList";
@@ -41,15 +44,15 @@ import {
 
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 
-import { FormQueryNodeEditor } from "../form-query-node-editor";
+import FormQueryNodeEditor from "../form-query-node-editor/FormQueryNodeEditor";
 
 import FormConceptNode from "./FormConceptNode";
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import { useAllowExtendedCopying } from "../stateSelectors";
 import { Description } from "../form-components/Description";
-import { useTranslation } from "react-i18next";
 
 interface PropsType extends WrappedFieldProps {
+  formType: string;
   fieldName: string;
   label: string;
   onDropFilterFile: Function;
@@ -157,9 +160,9 @@ const setFilterProperties = (
 
 const onToggleIncludeSubnodes = (
   value,
-  valueIdx,
-  conceptIdx,
-  includeSubnodes,
+  valueIdx: number,
+  conceptIdx: number,
+  includeSubnodes: boolean,
   newValue
 ) => {
   const element = value[valueIdx];
@@ -217,8 +220,8 @@ const createQueryNodeFromConceptListUploadResult = (
   resolvedConcepts
 ) => {
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
-    resolvedConcepts,
-    rootConcepts
+    rootConcepts,
+    resolvedConcepts
   );
 
   return lookupResult
@@ -375,10 +378,10 @@ const resetAllFilters = (value, valueIdx, conceptIdx) => {
 
 const switchFilterMode = (
   value,
-  valueIdx,
-  conceptIdx,
-  tableIdx,
-  filterIdx,
+  valueIdx: number,
+  conceptIdx: number,
+  tableIdx: number,
+  filterIdx: number,
   mode
 ) => {
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
@@ -390,6 +393,19 @@ const switchFilterMode = (
 
 const copyConcept = (item) => {
   return JSON.parse(JSON.stringify(item));
+};
+
+const updateFilterOptionsWithSuggestions = (
+  value,
+  valueIdx: number,
+  conceptIdx: number,
+  tableIdx: number,
+  filterIdx: number,
+  suggestions: PostFilterSuggestionsResponseT
+) => {
+  return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
+    options: suggestions,
+  });
 };
 
 const DropzoneListItem = styled("div")``;
@@ -415,10 +431,11 @@ const FormConceptGroup = (props: PropsType) => {
   const { t } = useTranslation();
   const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
   const allowExtendedCopying = useAllowExtendedCopying(props.fieldName);
+  const postPrefixForSuggestions = usePostPrefixForSuggestions();
 
   const dispatch = useDispatch();
 
-  const initModal = (file) => dispatch(initUploadConceptListModal(file));
+  const initModal = (file: File) => dispatch(initUploadConceptListModal(file));
   const resetModal = () => dispatch(resetUploadConceptListModal());
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -791,6 +808,26 @@ const FormConceptGroup = (props: PropsType) => {
             )
           )
         }
+        onLoadFilterSuggestions={async (
+          valueIdx,
+          conceptIdx,
+          params,
+          tableIdx,
+          filterIdx
+        ) => {
+          const suggestions = await postPrefixForSuggestions(params);
+
+          props.input.onChange(
+            updateFilterOptionsWithSuggestions(
+              props.input.value,
+              valueIdx,
+              conceptIdx,
+              tableIdx,
+              filterIdx,
+              suggestions
+            )
+          );
+        }}
       />
     </div>
   );

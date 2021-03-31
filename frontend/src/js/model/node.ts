@@ -2,6 +2,7 @@ import type { ConceptQueryNodeType } from "../standard-query-editor/types";
 
 import { tablesHaveActiveFilter } from "./table";
 import { objectHasSelectedSelects } from "./select";
+import { ConceptElementT, ConceptT } from "../api/types";
 
 export const nodeHasActiveFilters = (node: ConceptQueryNodeType) =>
   node.excludeTimestamps ||
@@ -56,4 +57,8 @@ export function nodeIsAllowlisted(
       node.ids.every((conceptId) => conceptId.indexOf(id.toLowerCase()) !== -1)
     )
   );
+}
+
+export function nodeIsElement(node: ConceptT): node is ConceptElementT {
+  return "tables" in node;
 }

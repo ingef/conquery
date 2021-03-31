@@ -24,7 +24,6 @@ import {
 } from "./actions";
 
 import type {
-  StandardQueryType,
   DraggedNodeType,
   DraggedQueryType,
   PreviousQueryQueryNodeType,
@@ -37,6 +36,7 @@ import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 import QueryHeader from "./QueryHeader";
 import QueryFooter from "./QueryFooter";
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
+import type { StandardQueryStateT } from "./queryReducer";
 
 const Container = styled("div")`
   height: 100%;
@@ -60,13 +60,12 @@ const QueryGroupConnector = styled("p")`
   text-align: center;
 `;
 
-interface PropsT {
-  selectedDatasetId: DatasetIdT;
-}
-
-const Query: FC<PropsT> = ({ selectedDatasetId }) => {
+const Query = () => {
   const { t } = useTranslation();
-  const query = useSelector<StateT, StandardQueryType>(
+  const datasetId = useSelector<StateT, DatasetIdT | null>(
+    (state) => state.datasets.selectedDatasetId
+  );
+  const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query
   );
   const isEmptyQuery = useSelector<StateT, boolean>(
@@ -103,8 +102,11 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
     dispatch(selectNodeForEditing(andIdx, orIdx));
   const onQueryGroupModalSetNode = (andIdx: number) =>
     dispatch(queryGroupModalSetNode(andIdx));
-  const onLoadPreviousQuery = (queryId: PreviousQueryIdT) =>
-    loadPreviousQuery(selectedDatasetId, queryId);
+  const onLoadPreviousQuery = (queryId: PreviousQueryIdT) => {
+    if (datasetId) {
+      loadPreviousQuery(datasetId, queryId);
+    }
+  };
 
   const [
     queryToExpand,
@@ -120,8 +122,10 @@ const Query: FC<PropsT> = ({ selectedDatasetId }) => {
         <ExpandPreviousQueryModal
           onClose={() => setQueryToExpand(null)}
           onAccept={() => {
-            expandPreviousQuery(selectedDatasetId, rootConcepts, queryToExpand);
-            setQueryToExpand(null);
+            if (datasetId) {
+              expandPreviousQuery(datasetId, rootConcepts, queryToExpand);
+              setQueryToExpand(null);
+            }
           }}
         />
       )}

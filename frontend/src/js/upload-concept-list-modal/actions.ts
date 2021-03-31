@@ -51,7 +51,7 @@ export const useSelectConceptRootNodeAndResolveCodes = () => {
   };
 };
 
-export const initUploadConceptListModal = (file) => async (dispatch) => {
+export const initUploadConceptListModal = (file: File) => async (dispatch) => {
   const rows = await getUniqueFileRows(file);
 
   return dispatch({

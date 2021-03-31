@@ -19,8 +19,10 @@ const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
 `;
 
-const SxReactSelect = styled(ReactSelect)`
-  width: 100%;
+const SxLabeled = styled(Labeled)`
+  .fullwidth {
+    width: 100%;
+  }
 `;
 
 const SxMarkdown = styled(Markdown)`
@@ -71,25 +73,24 @@ const optionContainsStr = (str: string) => (option: SelectOptionT) => {
 export interface MultiSelectInputProps {
   defaultValue?: string[];
   value: SelectOptionT[] | FilterSuggestion[];
-  onChange: (value: string[] | null) => void;
+  onChange: (value: SelectOptionT[] | FilterSuggestion[] | null) => void;
 }
 
 export interface InputMultiSelectProps {
   label?: string;
   options: SelectOptionT[];
-  disabled?: boolean | null;
+  disabled?: boolean;
   tooltip?: string;
-  onInputChange?: (value: string[] | null) => void;
+  onInputChange?: (value: string) => void;
   isLoading?: boolean;
   className?: string;
   allowDropFile?: boolean | null;
   closeMenuOnSelect?: boolean;
-  onDropFile?: Function;
+  onDropFile?: (file: File) => void;
 
   input: MultiSelectInputProps;
 }
 
-// Typescript typeguard
 const isFilterSuggestion = (
   val: SelectOptionT | FilterSuggestion
 ): val is FilterSuggestion => {
@@ -143,11 +144,12 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
   };
 
   const Select = (
-    <SxReactSelect
+    <ReactSelect<true>
       creatable
       highlightChanged
       isSearchable
       isMulti
+      className="fullwidth"
       createOptionPosition="first"
       name="form-field"
       options={options}
@@ -166,7 +168,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       onChange={props.input.onChange}
       onInputChange={
         props.onInputChange || // To allow for async option loading
-        function (value: string[]) {
+        function (value: string) {
           return value;
         }
       }
@@ -184,7 +186,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
   );
 
   return (
-    <Labeled
+    <SxLabeled
       className={props.className}
       valueChanged={
         exists(props.input.value) &&
@@ -211,7 +213,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
           {() => Select}
         </SxInputMultiSelectDropzone>
       )}
-    </Labeled>
+    </SxLabeled>
   );
 };
 

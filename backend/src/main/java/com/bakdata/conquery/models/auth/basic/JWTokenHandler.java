@@ -20,10 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.BearerToken;
 
 @UtilityClass
 @Slf4j
-public class TokenHandler {
+public class JWTokenHandler {
 
 	private static final String PREFIX = "Bearer";
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
@@ -74,7 +75,7 @@ public class TokenHandler {
 
 		try {
 			JWT.decode(token);
-			return new JwtToken(token);
+			return new BearerToken(token);
 
 		}
 		catch (JWTDecodeException e) {
@@ -130,24 +131,5 @@ public class TokenHandler {
 	 */
 	public static String generateTokenSecret() {
 		return RandomStringUtils.random(TOKEN_SECRET_LENGTH, 0, 0, false, false, null, RANDOM_GEN);
-	}
-
-	@SuppressWarnings("serial")
-	@AllArgsConstructor
-	@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-	public static class JwtToken implements AuthenticationToken {
-
-		@EqualsAndHashCode.Include
-		private String token;
-
-		@Override
-		public Object getPrincipal() {
-			throw new UnsupportedOperationException("No principal availibale for this token type");
-		}
-
-		@Override
-		public Object getCredentials() {
-			return token;
-		}
 	}
 }

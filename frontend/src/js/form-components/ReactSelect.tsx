@@ -1,14 +1,16 @@
 import React from "react";
-import Select from "react-select";
-import Creatable from "react-select/creatable";
-import { withTheme } from "@emotion/react";
+import Select, { Props } from "react-select";
+import Creatable, { Props as CreatableProps } from "react-select/creatable";
+import { Theme, useTheme } from "@emotion/react";
+
+import type { SelectOptionT } from "../api/types";
 
 // Helps to have a common ground for styling selects
-const stylesFromTheme = (theme, changed, small) => ({
-  control: (provided, state) => {
+const stylesFromTheme = (theme: Theme, changed?: boolean, small?: boolean) => ({
+  control: (provided: any, state: any) => {
     const smallStyles = small
       ? {
-          minHeight: "0"
+          minHeight: "0",
         }
       : {};
 
@@ -21,17 +23,18 @@ const stylesFromTheme = (theme, changed, small) => ({
       backgroundColor: "white",
       borderColor: changed && state.hasValue ? theme.col.blueGrayDark : "#aaa",
       ":hover": {
-        borderColor: changed && state.hasValue ? theme.col.blueGrayDark : "#aaa"
-      }
+        borderColor:
+          changed && state.hasValue ? theme.col.blueGrayDark : "#aaa",
+      },
     };
   },
-  dropdownIndicator: (provided, state) => {
+  dropdownIndicator: (provided: any, state: any) => {
     return {
       ...provided,
-      padding: small ? "3px" : "6px"
+      padding: small ? "3px" : "6px",
     };
   },
-  option: (provided, state) => {
+  option: (provided: any, state: any) => {
     return {
       ...provided,
       cursor: "pointer",
@@ -45,26 +48,43 @@ const stylesFromTheme = (theme, changed, small) => ({
         : "white",
       ":active": {
         backgroundColor: theme.col.blueGrayLight,
-        color: "white"
-      }
+        color: "white",
+      },
     };
   },
-  multiValueRemove: provided => ({
+  multiValueRemove: (provided: any) => ({
     ...provided,
     cursor: "pointer",
     ":hover": {
-      backgroundColor: theme.col.gray
-    }
-  })
+      backgroundColor: theme.col.gray,
+    },
+  }),
 });
 
-const ReactSelect = ({
-  theme,
+interface SelectPropsT<IsMulti extends boolean>
+  extends Props<SelectOptionT, IsMulti> {
+  highlightChanged?: boolean;
+  small?: boolean;
+}
+
+interface CreatablePropsT<IsMulti extends boolean>
+  extends CreatableProps<SelectOptionT, IsMulti> {
+  creatable: true;
+  highlightChanged?: boolean;
+  small?: boolean;
+}
+
+type PropsT<IsMulti extends boolean> =
+  | CreatablePropsT<IsMulti>
+  | SelectPropsT<IsMulti>;
+
+const ReactSelect = <IsMulti extends boolean>({
   creatable,
   highlightChanged,
   small,
   ...props
-}) => {
+}: PropsT<IsMulti>) => {
+  const theme = useTheme();
   const hasChanged =
     JSON.stringify(props.value) !== JSON.stringify(props.defaultValue);
   const changed = hasChanged && highlightChanged;
@@ -78,4 +98,4 @@ const ReactSelect = ({
   );
 };
 
-export default withTheme(ReactSelect);
+export default ReactSelect;

@@ -3,7 +3,7 @@ import InputMultiSelect, { InputMultiSelectProps } from "./InputMultiSelect";
 
 interface PropsType extends InputMultiSelectProps {
   startLoadingThreshold: number;
-  onLoad: Function;
+  onLoad: (prefix: string) => void;
 }
 
 const AsyncInputMultiSelect = ({

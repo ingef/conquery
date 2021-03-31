@@ -23,7 +23,7 @@
   "concepts": [
     {
       "label": "SELECT",
-      "type": "VIRTUAL",
+      "type": "TREE",
       "connectors": [
         {
           "label": "connector",

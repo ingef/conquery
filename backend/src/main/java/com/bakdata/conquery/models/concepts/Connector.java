@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.concepts;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -60,6 +61,10 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	@Setter(AccessLevel.NONE)
 	@Valid
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
+
+	public Collection<Filter<?>> getFilters() {
+		return allFiltersMap.values();
+	}
 
 	@NotNull
 	@Getter

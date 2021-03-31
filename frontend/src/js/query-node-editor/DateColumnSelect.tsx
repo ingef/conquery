@@ -7,7 +7,7 @@ import type { SelectedDateColumnT } from "../standard-query-editor/types";
 
 interface PropsT {
   dateColumn: SelectedDateColumnT;
-  onSelectDateColumn: (dateColum: string) => void;
+  onSelectDateColumn: (dateColumn: string | null) => void;
 }
 
 const DateColumnSelect: FC<PropsT> = ({ dateColumn, onSelectDateColumn }) => {

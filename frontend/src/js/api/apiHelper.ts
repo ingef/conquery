@@ -12,8 +12,8 @@ import {
 } from "../common/constants/timebasedQueryOperatorTypes";
 
 import type {
-  TableWithFilterValueType,
-  SelectedSelectorType,
+  TableWithFilterValueT,
+  SelectedSelectorT,
   SelectedDateColumnT,
 } from "../standard-query-editor/types";
 import { isEmpty } from "../common/helpers";
@@ -33,9 +33,7 @@ export const transformFilterValueToApi = (filter: any) => {
   return value;
 };
 
-export const transformSelectsToApi = (
-  selects?: SelectedSelectorType[] | null
-) => {
+export const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
   if (!selects) return [];
 
   return selects
@@ -51,7 +49,7 @@ export const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
   };
 };
 
-export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
+export const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
   if (!tables) return [];
 
   return tables
