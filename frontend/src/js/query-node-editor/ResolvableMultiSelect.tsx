@@ -17,7 +17,6 @@ import { usePrevious } from "../common/helpers/usePrevious";
 
 import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
-import { usePrevious } from "../common/helpers/usePrevious";
 
 interface FilterContextT extends FiltersContextT {
   filterId: FilterIdT;

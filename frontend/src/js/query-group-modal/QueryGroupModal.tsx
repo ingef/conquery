@@ -29,13 +29,13 @@ const ResetAll = styled(IconButton)`
   margin-left: 20px;
 `;
 
-type PropsType = {
+interface PropsType {
   group: Object;
   andIdx: number;
   onClose: () => void;
   onSetDate: (date: any) => void;
   onResetAllDates: () => void;
-};
+}
 
 const QueryGroupModal = (props: PropsType) => {
   const { t } = useTranslation();

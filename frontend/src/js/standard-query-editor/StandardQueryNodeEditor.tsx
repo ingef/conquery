@@ -24,24 +24,28 @@ import {
   toggleSecondaryIdExclude,
   useLoadFilterSuggestions,
 } from "./actions";
-import { QueryNodeType } from "./types";
+import { StandardQueryNodeT } from "./types";
 import type { StandardQueryStateT } from "./queryReducer";
-
-interface PropsT {
-  datasetId: DatasetIdT;
-}
+import { isConceptQueryNode } from "../model/query";
 
 const findNodeBeingEdited = (query: StandardQueryStateT) =>
   query
-    .reduce<QueryNodeType[]>((acc, group) => [...acc, ...group.elements], [])
+    .reduce<StandardQueryNodeT[]>(
+      (acc, group) => [...acc, ...group.elements],
+      []
+    )
     .find((element) => element.isEditing);
 
-const StandardQueryNodeEditor = (props: PropsT) => {
-  const node = useSelector<StateT, QueryNodeType | undefined>((state) =>
+const StandardQueryNodeEditor = () => {
+  const datasetId = useSelector<StateT, DatasetIdT | null>(
+    (state) => state.datasets.selectedDatasetId
+  );
+  const node = useSelector<StateT, StandardQueryNodeT | undefined>((state) =>
     findNodeBeingEdited(state.queryEditor.query)
   );
   const showTables =
-    node &&
+    !!node &&
+    isConceptQueryNode(node) &&
     !!node.tables &&
     node.tables.some((table) => tableIsEditable(table));
   const editorState = useSelector<StateT, QueryNodeEditorStateT>(
@@ -54,10 +58,14 @@ const StandardQueryNodeEditor = (props: PropsT) => {
   const onLoadFilterSuggestions = useLoadFilterSuggestions();
   const dispatch = useDispatch();
 
+  if (!datasetId || !node) {
+    return null;
+  }
+
   return (
     <QueryNodeEditor
       name="standard"
-      datasetId={props.datasetId}
+      datasetId={datasetId}
       node={node}
       editorState={editorState}
       showTables={showTables}

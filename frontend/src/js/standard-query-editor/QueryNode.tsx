@@ -16,7 +16,7 @@ import QueryNodeActions from "./QueryNodeActions";
 
 import { getRootNodeLabel } from "./helper";
 import type {
-  QueryNodeType,
+  StandardQueryNodeT,
   DraggedNodeType,
   DraggedQueryType,
   PreviousQueryQueryNodeType,
@@ -93,7 +93,7 @@ const RootNode = styled("p")`
 `;
 
 interface PropsT {
-  node: QueryNodeType;
+  node: StandardQueryNodeT;
   andIdx: number;
   orIdx: number;
   onDeleteNode: () => void;
@@ -104,7 +104,7 @@ interface PropsT {
 }
 
 const nodeHasActiveSecondaryId = (
-  node: QueryNodeType,
+  node: StandardQueryNodeT,
   activeSecondaryId: string | null
 ) => {
   if (!activeSecondaryId) {

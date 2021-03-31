@@ -66,7 +66,7 @@ import {
 } from "./actionTypes";
 
 import type {
-  QueryNodeType,
+  StandardQueryNodeT,
   DraggedNodeType,
   DraggedQueryType,
   QueryGroupType,
@@ -79,7 +79,7 @@ const initialState: StandardQueryStateT = [];
 
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
-): QueryNodeType => {
+): StandardQueryNodeT => {
   // This sort of mapping might be a problem when adding new optional properties to
   // either Nodes or Queries: Flow won't complain when we omit those optional
   // properties here. But we can't use a spread operator either...
@@ -136,7 +136,7 @@ const setElementProperties = (
   node: StandardQueryStateT,
   andIdx: number,
   orIdx: number,
-  properties: Partial<QueryNodeType>
+  properties: Partial<StandardQueryNodeT>
 ) => {
   const groupProperties = {
     elements: [
@@ -171,10 +171,10 @@ const dropAndNode = (
   }
 ) => {
   const group = state[state.length - 1];
-  const dateRangeOfLastGroup = group ? group.dateRange : null;
+  const dateRangeOfLastGroup = group ? group.dateRange : undefined;
   const { item } = action.payload;
 
-  const nextState = [
+  const nextState: StandardQueryStateT = [
     ...state,
     {
       elements: [filterItem(item)],
@@ -271,7 +271,7 @@ const updateNodeTable = (
   andIdx: number,
   orIdx: number,
   tableIdx: number,
-  table
+  table: TableT
 ) => {
   const node = state[andIdx].elements[orIdx];
   const tables = [
@@ -385,7 +385,7 @@ const setNodeTableDateColumn = (state: StandardQueryStateT, action: any) => {
   const { dateColumn } = table;
 
   // value contains the selects that have now been selected
-  const newTable = {
+  const newTable: TableT = {
     ...table,
     dateColumn: {
       ...dateColumn,

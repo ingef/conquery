@@ -164,22 +164,29 @@ export const usePatchStoredQuery = () => {
     });
 };
 
+export interface PostPrefixForSuggestionsParams {
+  datasetId: DatasetIdT;
+  conceptId: string;
+  tableId: string;
+  filterId: string;
+  prefix: string;
+}
 export const usePostPrefixForSuggestions = () => {
   const api = useApi<PostFilterSuggestionsResponseT>();
 
-  return (
-    datasetId: DatasetIdT,
-    conceptId: string,
-    tableId: string,
-    filterId: string,
-    text: string
-  ) =>
+  return ({
+    datasetId,
+    conceptId,
+    tableId,
+    filterId,
+    prefix,
+  }: PostPrefixForSuggestionsParams) =>
     api({
       url: getProtectedUrl(
         `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/autocomplete`
       ),
       method: "POST",
-      data: { text },
+      data: { text: prefix },
     });
 };
 

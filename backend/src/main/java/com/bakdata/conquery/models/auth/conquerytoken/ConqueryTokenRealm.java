@@ -13,25 +13,22 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.auth.basic.TokenHandler;
-import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
+import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.ExpiredCredentialsException;
-import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.*;
 
 @Slf4j
 public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 
-	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
+	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 
 	private final MetaStorage storage;
 	
@@ -42,7 +39,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 	public ConqueryTokenRealm(MetaStorage storage) {
 		this.storage = storage;
 		setAuthenticationTokenClass(TOKEN_CLASS);
-		setCredentialsMatcher(new SkippingCredentialsMatcher());
+		setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 	}
 
 	@Override
@@ -88,14 +85,19 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 
 		return new ConqueryAuthenticationInfo(userId, token, this, true);
 	}
-	
 
-	
-	public String createTokenForUser(UserId userId) {
+
+	public String createTokenForUser(@NonNull UserId userId, @NonNull Duration validDuration) {
 		if(storage.getUser(userId) == null) {
 			throw new IllegalArgumentException("Cannot create a JWT for unknown user with id: " + userId);
 		}
-		return TokenHandler.createToken(userId.toString(), jwtConfig.getJwtDuration(), getName(), jwtConfig.getTokenSignAlgorithm());
+		return JWTokenHandler.createToken(userId.toString(), validDuration, getName(), jwtConfig.getTokenSignAlgorithm());
+
+	}
+
+	
+	public String createTokenForUser(UserId userId) {
+		return createTokenForUser(userId, jwtConfig.getJwtDuration());
 	}
 	
 	public static class JWTConfig{
@@ -105,7 +107,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		
 		@JsonIgnore
 		@Getter
-		private Algorithm tokenSignAlgorithm = Algorithm.HMAC256(TokenHandler.generateTokenSecret());
+		private Algorithm tokenSignAlgorithm = Algorithm.HMAC256(JWTokenHandler.generateTokenSecret());
 		@JsonIgnore
 		private JWTVerifier tokenVerifier;
 		
@@ -118,11 +120,6 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		}
 		
 
-	}
-
-	@Override
-	public AuthenticationToken extractToken(ContainerRequestContext request) {
-		return TokenHandler.extractToken(request);
 	}
 
 }

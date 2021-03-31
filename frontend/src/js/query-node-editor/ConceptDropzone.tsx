@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";
 import Dropzone from "../form-components/Dropzone";
-import type { QueryNodeType } from "../standard-query-editor/types";
+import type { StandardQueryNodeT } from "../standard-query-editor/types";
 
 const StyledDropzone = styled(Dropzone)`
   width: 100%;
@@ -13,8 +13,8 @@ const StyledDropzone = styled(Dropzone)`
 const DROP_TYPES = [CONCEPT_TREE_NODE];
 
 interface PropsT {
-  node: QueryNodeType;
-  onDropConcept: (concept: QueryNodeType) => void;
+  node: StandardQueryNodeT;
+  onDropConcept: (concept: StandardQueryNodeT) => void;
 }
 
 const ConceptDropzone: FC<PropsT> = ({ node, onDropConcept }) => {

@@ -3,16 +3,18 @@ import type {
   AndQueryT,
   ConceptIdT,
   DatasetIdT,
-  FilterIdT,
   QueryT,
-  TableIdT,
   QueryNodeT,
+  PostFilterSuggestionsResponseT,
 } from "../api/types";
 
 import { defaultSuccess, defaultError } from "../common/actions";
 import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 import type { TreesT } from "../concept-trees/reducer";
-import { usePostPrefixForSuggestions } from "../api/api";
+import {
+  PostPrefixForSuggestionsParams,
+  usePostPrefixForSuggestions,
+} from "../api/api";
 import type { ModeT } from "../form-components/InputRange";
 
 import type { DraggedNodeType, DraggedQueryType } from "./types";
@@ -223,9 +225,9 @@ export const loadFilterSuggestionsStart = (
 });
 
 export const loadFilterSuggestionsSuccess = (
-  suggestions,
-  tableIdx,
-  filterIdx
+  suggestions: PostFilterSuggestionsResponseT,
+  tableIdx: number,
+  filterIdx: number
 ) =>
   defaultSuccess(LOAD_FILTER_SUGGESTIONS_SUCCESS, suggestions, {
     tableIdx,
@@ -244,23 +246,13 @@ export const useLoadFilterSuggestions = () => {
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
 
   return (
-    datasetId: DatasetIdT,
-    conceptId: ConceptIdT,
-    tableId: TableIdT,
-    filterId: FilterIdT,
-    prefix: string,
+    params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number
   ) => {
     dispatch(loadFilterSuggestionsStart(tableIdx, filterIdx));
 
-    return postPrefixForSuggestions(
-      datasetId,
-      conceptId,
-      tableId,
-      filterId,
-      prefix
-    ).then(
+    return postPrefixForSuggestions(params).then(
       (r) => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
       (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
     );

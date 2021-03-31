@@ -3,6 +3,7 @@ package com.bakdata.conquery.util;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
@@ -133,5 +134,12 @@ public class NonPersistentStoreFactory implements StoreFactory {
     @Override
     public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, List<String> pathName) {
         return AUTH_GROUP.identifiable(new NonPersistentStore(), centralRegistry);
+    }
+
+    /**
+     * @implNote intended for Unit-tests
+     */
+    public MetaStorage createMetaStorage(){
+        return new MetaStorage(null, this, Collections.emptyList(), null);
     }
 }

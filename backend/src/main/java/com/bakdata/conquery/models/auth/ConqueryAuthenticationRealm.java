@@ -34,23 +34,6 @@ public abstract class ConqueryAuthenticationRealm extends AuthenticatingRealm im
 	 */
 	protected abstract ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException;
 
-	/**
-	 * Authenticating realms need to be able to extract a token from a request. How
-	 * it performs the extraction is implementation dependent. Anyway the realm
-	 * should NOT alter the request. This function is called prior to the
-	 * authentication process in the {@link DefaultAuthFilter}. After the token
-	 * extraction process the Token is resubmitted to the realm from the AuthFilter
-	 * to the {@link ConqueryAuthenticator} which dispatches it to shiro.
-	 * 
-	 * @param request
-	 *            An incoming request that potentially holds a token for the
-	 *            implementing realm.
-	 * @return The extracted {@link AuthenticationToken} or <code>null</code> if no
-	 *         token could be parsed.
-	 */
-	@Nullable
-	public abstract AuthenticationToken extractToken(ContainerRequestContext request);
-
 	@Override
 	public void destroy() throws Exception {
 		// Might be implemented if the realm needs to release resources

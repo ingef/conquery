@@ -49,7 +49,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.dropwizard.jersey.validation.Validators;
-import io.dropwizard.setup.Environment;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.Mockito;
@@ -112,8 +111,7 @@ public class FormConfigTest {
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())
 		.add(IdResolveContext.class, namespacesMock);
 		processor = new FormConfigProcessor(validator, storage);
-		controller = new AuthorizationController(new Environment("test"), new DevelopmentAuthorizationConfig(), Collections.emptyList(), storage);
-		controller.init();
+		controller = new AuthorizationController(storage, new DevelopmentAuthorizationConfig());
 		controller.start();
 	}
 	

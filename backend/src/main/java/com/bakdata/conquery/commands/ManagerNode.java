@@ -42,6 +42,7 @@ import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.base.Throwables;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Environment;
@@ -79,6 +80,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
+	// Resources without authentication
+	private DropwizardResourceConfig unprotectedAuthApi;
+	private DropwizardResourceConfig unprotectedAuthAdmin;
 	/**
 	 * Flags if the instance name should be a prefix for the instances storage.
 	 */
@@ -125,24 +129,22 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		loadNamespaces();
 
-		log.info("Started meta storage");
-		this.storage = new MetaStorage(validator, config.getStorage(), ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
-		this.storage.loadData();
-		log.info("MetaStorage loaded {}", this.storage);
+		loadMetaStorage();
 
-		datasetRegistry.setMetaStorage(this.storage);
-		for (Namespace sn : datasetRegistry.getDatasets()) {
-			sn.getStorage().setMetaStorage(storage);
-		}
-
-
-		authController = new AuthorizationController(environment, config.getAuthorization(), config.getAuthentication(), storage);
-		authController.init();
+		authController = new AuthorizationController(storage, config.getAuthorization());
 		environment.lifecycle().manage(authController);
 
-		admin = new AdminServlet();
-		admin.register(this);
+		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
+		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
 
+		// Create AdminServlet first to make it available to the realms
+		admin = new AdminServlet(this);
+
+		authController.externalInit(this, config.getAuthentication());
+
+
+		// Register default components for the admin interface
+		admin.register(this);
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
@@ -154,12 +156,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				log.error("Failed to register Resource {}",resourceProvider, e);
 			}
 		}
-
-		// Register an unprotected servlet for logins on the app port
-		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
-
-		// Register an unprotected servlet for logins on the admin port
-		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 
 		Task formScanner = new FormScanner();
 		try {
@@ -182,6 +178,18 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
+	}
+
+	private void loadMetaStorage() {
+		log.info("Started meta storage");
+		this.storage = new MetaStorage(validator, config.getStorage(), ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
+		this.storage.loadData();
+		log.info("MetaStorage loaded {}", this.storage);
+
+		datasetRegistry.setMetaStorage(this.storage);
+		for (Namespace sn : datasetRegistry.getDatasets()) {
+			sn.getStorage().setMetaStorage(storage);
+		}
 	}
 
 	public void loadNamespaces() {

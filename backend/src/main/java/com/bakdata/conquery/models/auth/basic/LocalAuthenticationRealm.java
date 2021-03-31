@@ -1,20 +1,11 @@
 package com.bakdata.conquery.models.auth.basic;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.container.ContainerRequestContext;
-
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.IStoreInfo;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
-import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
@@ -24,15 +15,9 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.resources.admin.AdminServlet.AuthAdminResourceProvider;
-import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
-import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthAdminUnprotectedResourceProvider;
-import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthApiUnprotectedResourceProvider;
-import com.bakdata.conquery.resources.unprotected.LoginResource;
-import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
-import io.dropwizard.jersey.DropwizardResourceConfig;
+import io.dropwizard.util.Duration;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.ExodusException;
@@ -45,7 +30,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * This realm stores credentials in a local database ({@link XodusStore}). Upon
@@ -59,7 +49,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
  * through specific endpoints that are registerd by this realm.
  */
 @Slf4j
-public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, AuthAdminResourceProvider, UsernamePasswordChecker {
+public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AccessTokenCreator {
 
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
@@ -79,6 +69,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	private final MetaStorage storage;
 	@JsonIgnore
 	private final ConqueryTokenRealm centralTokenRealm;
+	private final Duration validDuration;
 
 	@RequiredArgsConstructor
 	@Getter
@@ -94,13 +85,14 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(AuthorizationController controller, LocalAuthenticationConfig config) {
-		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
-		this.storage = controller.getStorage();
-		this.storeName = config.getStoreName();
-		this.storageDir = config.getDirectory();
-		this.centralTokenRealm = controller.getCentralTokenRealm();
-		this.passwordStoreConfig = config.getPasswordStoreConfig();
+	public LocalAuthenticationRealm(MetaStorage storage,  ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration) {
+		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
+		this.storage = storage;
+		this.storeName = storeName;
+		this.storageDir = storageDir;
+		this.centralTokenRealm = centralTokenRealm;
+		this.passwordStoreConfig = passwordStoreConfig;
+		this.validDuration = validDuration;
 	}
 
 	@Override
@@ -125,13 +117,13 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	//////////////////// FOR USERNAME/PASSWORD
 
-	public String checkCredentialsAndCreateJWT(String username, char[] password) {
+	public String createAccessToken(String username, char[] password) {
 		// Check the password which is afterwards cleared
 		if (!CredentialChecker.validUsernamePassword(username, password, passwordStore)) {
 			throw new AuthenticationException("Provided username or password was not valid.");
 		}
 		// The username is in this case the email
-		return centralTokenRealm.createTokenForUser(new UserId(username));
+		return centralTokenRealm.createTokenForUser(new UserId(username), validDuration);
 	}
 
 	/**
@@ -158,11 +150,6 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			.filter(PasswordCredential.class::isInstance)
 			.map(PasswordCredential.class::cast)
 			.collect(MoreCollectors.toOptional());
-	}
-
-	@Override
-	public AuthenticationToken extractToken(ContainerRequestContext request) {
-		return TokenHandler.extractToken(request);
 	}
 
 	//////////////////// USER MANAGEMENT ////////////////////
@@ -210,32 +197,6 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		return listId.stream().map(UserId::new).collect(Collectors.toList());
 	}
 
-	//////////////////// RESOURCE REGISTRATION ////////////////////
-
-	@Override
-	public void registerAdminUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
-		jerseyConfig.register(new TokenResource(this));
-		jerseyConfig.register(LoginResource.class);
-	}
-
-	@Override
-	public void registerApiUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
-		jerseyConfig.register(new TokenResource(this));
-	}
-
-	@Override
-	public void registerAuthenticationAdminResources(DropwizardResourceConfig jerseyConfig) {
-		LocalAuthenticationRealm thisRealm = this;
-		jerseyConfig.register(new AbstractBinder() {
-
-			@Override
-			protected void configure() {
-				this.bind(new UserAuthenticationManagementProcessor(thisRealm, storage)).to(UserAuthenticationManagementProcessor.class);
-			}
-
-		});
-		jerseyConfig.register(UserAuthenticationManagementResource.class);
-	}
 
 	
 	//////////////////// LIFECYCLE MANAGEMENT ////////////////////

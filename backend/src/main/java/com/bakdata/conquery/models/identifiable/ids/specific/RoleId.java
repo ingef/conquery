@@ -22,7 +22,6 @@ public class RoleId extends PermissionOwnerId<Role> {
 	}
 
 	public void collectComponents(List<Object> components) {
-		super.collectComponents(components);
 		components.add(TYPE);
 		components.add(role);
 	}
