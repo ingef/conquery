@@ -63,8 +63,7 @@ public class ShardResult {
 
 		try {
 			results =  Uninterruptibles.getUninterruptibly(future).stream()
-					.filter(Optional::isPresent)
-					.map(Optional::get)
+					.flatMap(Optional::stream)
 					.collect(Collectors.toList());
 		} catch (ConqueryError e) {
 			error = Optional.of(e);
