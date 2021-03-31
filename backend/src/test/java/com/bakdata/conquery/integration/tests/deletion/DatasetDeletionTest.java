@@ -13,7 +13,6 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -103,17 +102,10 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteDataset(dataset.getId()))
 					.isInstanceOf(IllegalArgumentException.class);
 
-			// Now properly clean-up before deleting:
-			// First delete all concepts, so that we can then delete all tables.
-			conquery.getNamespace().getStorage().getAllConcepts().stream()
-					.map(Concept::getId)
-					.forEach(conquery.getDatasetsProcessor()::deleteConcept);
-
-			conquery.waitUntilWorkDone();
 
 			conquery.getNamespace().getStorage().getTables().stream()
 					.map(Table::getId)
-					.forEach(tableId -> conquery.getDatasetsProcessor().deleteTable(tableId, false));
+					.forEach(tableId -> conquery.getDatasetsProcessor().deleteTable(tableId, true));
 
 			conquery.waitUntilWorkDone();
 
