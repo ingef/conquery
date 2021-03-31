@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -45,15 +46,15 @@ public class QueryExecutor implements Closeable {
 		}
 
 		QueryPlan queryPlan = entry.getValue();
-		List<ListenableFuture<EntityResult>> futures = new ArrayList<>();
+		List<ListenableFuture<Optional<EntityResult>>> futures = new ArrayList<>();
 
 		for (Entity entity : entries) {
 			QueryJob queryJob = new QueryJob(context, queryPlan, entity);
-			ListenableFuture<EntityResult> submit = executor.submit(queryJob);
+			ListenableFuture<Optional<EntityResult>> submit = executor.submit(queryJob);
 			futures.add(submit);
 		}
 
-		ListenableFuture<List<EntityResult>> future = Futures.allAsList(futures);
+		ListenableFuture<List<Optional<EntityResult>>> future = Futures.allAsList(futures);
 		result.setFuture(future);
 		future.addListener(result::finish, MoreExecutors.directExecutor());
 		return result;

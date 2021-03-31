@@ -47,8 +47,9 @@ public class AbsoluteFormQuery extends IQuery {
 	public AbsoluteFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new AbsoluteFormQueryPlan(
 			query.createQueryPlan(context),
-			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
-			features.createQueryPlan(context)
+			new FormQueryPlan(
+					DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
+					features.createQueryPlan(context))
 		);
 	}
 	

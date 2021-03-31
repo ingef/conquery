@@ -7,7 +7,7 @@ import java.util.function.UnaryOperator;
 
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.util.functions.ChainableUnaryOperator;
 
 public class ResultModifier {
@@ -18,7 +18,7 @@ public class ResultModifier {
 	 * If the result is not contained this method creates a default result row
 	 * anyways.
 	 */
-	public static <T extends ContainedEntityResult> T modify(T inResult, UnaryOperator<Object[]> modification) {
+	public static <T extends EntityResult> T modify(T inResult, UnaryOperator<Object[]> modification) {
 
 		inResult.modifyResultLinesInplace(modification);
 

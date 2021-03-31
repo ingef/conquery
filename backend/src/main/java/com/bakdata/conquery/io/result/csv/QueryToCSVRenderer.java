@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.experimental.UtilityClass;
@@ -30,11 +30,11 @@ public class QueryToCSVRenderer {
 	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
 	private static final Collection<String> HEADER = Arrays.asList(ID_MAPPING.getPrintIdFields());
 	
-	public static Stream<String> toCSV(PrintSettings cfg, ManagedQuery query, Function<ContainedEntityResult,ExternalEntityId> idMapper) {
+	public static Stream<String> toCSV(PrintSettings cfg, ManagedQuery query, Function<EntityResult,ExternalEntityId> idMapper) {
 		return toCSV(cfg, List.of(query), idMapper);
 	}
 	
-	public static Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries, Function<ContainedEntityResult,ExternalEntityId> idMapper) {
+	public static Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries, Function<EntityResult,ExternalEntityId> idMapper) {
 		if (queries.stream()
 			.anyMatch(q -> q.getState() != ExecutionState.DONE)) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
@@ -63,18 +63,17 @@ public class QueryToCSVRenderer {
 		);
 	}
 
-	private static Stream<String> createCSVBody(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, ManagedQuery query, Function<ContainedEntityResult,ExternalEntityId> idMapper) {
+	private static Stream<String> createCSVBody(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, ManagedQuery query, Function<EntityResult,ExternalEntityId> idMapper) {
 		Namespace namespace = Objects.requireNonNull(query.getNamespace());
 		return query.getResults()
 			.stream()
-			.flatMap(ContainedEntityResult::filterCast)
 			.map(result -> Pair.of(idMapper.apply(result), result))
 			.sorted(Comparator.comparing(Pair::getKey))
 			.flatMap(res -> createCSVLine(writer, cfg, infos, res));
 	}
 
 	
-	private static Stream<String> createCSVLine(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, Pair<ExternalEntityId, ContainedEntityResult> idResult) {
+	private static Stream<String> createCSVLine(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, Pair<ExternalEntityId, EntityResult> idResult) {
 		return idResult
 			.getValue()
 			.streamValues()
