@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.EmptyBucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -187,10 +186,10 @@ public class ConceptQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
+	public CDateSet getValidityDates(ContainedEntityResult result) {
 		if(!isAggregateValidityDates()) {
 			// The date aggregator was not added to the plan, so we don't collect a validity date
-			return;
+			return CDateSet.create();
 		}
 
 		if(!(result instanceof SinglelineContainedEntityResult)) {
@@ -199,9 +198,9 @@ public class ConceptQueryPlan implements QueryPlan {
 
 		Object dates = ((SinglelineContainedEntityResult)result).getValues()[VALIDITY_DATE_POSITION];
 		if(dates == null) {
-			return;
+			return CDateSet.create();
 		}
-		dateSet.addAll((CDateSet) dates);
+		return (CDateSet) dates;
 	}
 
 	public boolean isAggregateValidityDates() {

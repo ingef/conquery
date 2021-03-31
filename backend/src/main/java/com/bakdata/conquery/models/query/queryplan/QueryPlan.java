@@ -15,5 +15,5 @@ public interface QueryPlan {
 
 	boolean isOfInterest(Entity entity);
 
-	void collectValidityDates(ContainedEntityResult result, CDateSet dateSet);
+	CDateSet getValidityDates(ContainedEntityResult result);
 }

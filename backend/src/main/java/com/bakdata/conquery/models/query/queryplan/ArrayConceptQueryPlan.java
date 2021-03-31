@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.*;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -150,9 +149,9 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
+	public CDateSet getValidityDates(ContainedEntityResult result) {
 		if(!generateDateAggregation) {
-			return;
+			return CDateSet.create();
 		}
 
 		if(!(result instanceof SinglelineContainedEntityResult)){
@@ -162,9 +161,9 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 		Object valDate = ((SinglelineContainedEntityResult)result).getValues()[VALIDITY_DATE_POSITION];
 
 		if (valDate == null){
-			return;
+			return CDateSet.create();
 		}
-		dateSet.addAll((CDateSet) valDate);
+		return (CDateSet) valDate;
 	}
 
 

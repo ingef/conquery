@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * Implementation of the QueryPlan for an {@link EntityDateQuery}.
@@ -31,7 +31,7 @@ public class EntityDateQueryPlan implements QueryPlan {
     private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
     private final CDateRange dateRestriction;
 
-    private BiConsumer<ContainedEntityResult, CDateSet> validityDateCollector;
+    private Function<ContainedEntityResult, CDateSet> validityDateCollector;
 
     @Override
     public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
@@ -42,8 +42,7 @@ public class EntityDateQueryPlan implements QueryPlan {
         }
         final List<Object[]> resultLines = new ArrayList<>();
 
-        CDateSet entityDate = CDateSet.create();
-        query.collectValidityDates(preResult.asContained(), entityDate);
+        CDateSet entityDate = query.getValidityDates(preResult.asContained());
         entityDate.retainAll(dateRestriction);
 
         // Generate DateContexts in the provided resolutions
@@ -53,7 +52,7 @@ public class EntityDateQueryPlan implements QueryPlan {
         }
 
         FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features);
-        validityDateCollector = resolutionQuery::collectValidityDates;
+        validityDateCollector = resolutionQuery::getValidityDates;
 
         EntityResult result = resolutionQuery.execute(ctx, entity);
 
@@ -84,8 +83,8 @@ public class EntityDateQueryPlan implements QueryPlan {
     }
 
     @Override
-    public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
+    public CDateSet getValidityDates(ContainedEntityResult result) {
         Preconditions.checkNotNull(validityDateCollector, "The query was not executed and no validity date collector set");
-        validityDateCollector.accept(result,dateSet);
+        return validityDateCollector.apply(result);
     }
 }

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -203,12 +202,12 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
+	public CDateSet getValidityDates(ContainedEntityResult result) {
 		if(!query.isAggregateValidityDates()) {
-			return;
+			return CDateSet.create();
 		}
 
-
+		CDateSet dateSet = CDateSet.create();
 		for(Object[] resultLine : result.listResultLines()) {
 			Object dates = resultLine[VALIDITY_DATE_POSITION];
 
@@ -218,5 +217,6 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 
 			dateSet.addAll((CDateSet) dates);
 		}
+		return dateSet;
 	}
 }

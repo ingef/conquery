@@ -41,8 +41,9 @@ public class TableExportQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
+	public CDateSet getValidityDates(ContainedEntityResult result) {
 		// TODO figure out where the dates are
+		return CDateSet.create();
 	}
 
 	@Override

@@ -57,9 +57,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 		int size = calculateCompleteLength();
 		ContainedEntityResult contained = preResult.asContained();
-		CDateSet dateSet = CDateSet.create();
 		// Gather all validity dates from prerequisite
-		query.collectValidityDates(contained, dateSet);
+		CDateSet dateSet = query.getValidityDates(contained);
 
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
@@ -262,7 +261,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
+	public CDateSet getValidityDates(ContainedEntityResult result) {
+		CDateSet dateSet = CDateSet.create();
 		for(Object[] resultLine : result.listResultLines()) {
 			int featureDateRangePosition = getFeatureDateRangePosition();
 			if(featureDateRangePosition >= 0) {
@@ -280,5 +280,6 @@ public class RelativeFormQueryPlan implements QueryPlan {
 				}
 			}
 		}
+		return dateSet;
 	}
 }

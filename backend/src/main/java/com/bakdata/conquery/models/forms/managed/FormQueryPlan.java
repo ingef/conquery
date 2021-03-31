@@ -134,12 +134,14 @@ public class FormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public void collectValidityDates(ContainedEntityResult result, CDateSet dateSet) {
+	public CDateSet getValidityDates(ContainedEntityResult result) {
 
 		int dateRangePosition = getDateRangePosition();
 		if(dateRangePosition < 0) {
-			return;
+			return CDateSet.create();
 		}
+
+		CDateSet dateSet = CDateSet.create();
 		for(Object[] resultLine : result.listResultLines()) {
 			Object dates = resultLine[dateRangePosition];
 
@@ -149,6 +151,7 @@ public class FormQueryPlan implements QueryPlan {
 
 			dateSet.add((CDateRange) dates);
 		}
+		return dateSet;
 	}
 
 	public int columnCount() {
