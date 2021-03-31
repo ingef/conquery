@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.*;
-
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
@@ -13,21 +11,21 @@ import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
 import lombok.ToString;
 
-import javax.swing.text.html.Option;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * Represents the QueryPlan for corresponding to the {@link ArrayConceptQuery}.
  */
 @Getter
 @ToString
-public class ArrayConceptQueryPlan implements QueryPlan<SinglelineContainedEntityResult> {
+public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = 0;
 	private List<ConceptQueryPlan> childPlans;
@@ -80,7 +78,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineContainedEntit
 	}
 
 	@Override
-	public Optional<SinglelineContainedEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+	public Optional<SinglelineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
 		init(ctx, entity);
 
@@ -96,7 +94,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineContainedEntit
 		int resultInsertIdx = resultOffset;
 		boolean notContainedInChildQueries = true;
 		for (ConceptQueryPlan child : childPlans) {
-			Optional<SinglelineContainedEntityResult> result = child.execute(ctx, entity);
+			Optional<SinglelineEntityResult> result = child.execute(ctx, entity);
 
 			if (result.isEmpty()) {
 				// The sub result was empty. Generate the necessary gaped columns in the result line
@@ -112,7 +110,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineContainedEntit
 				continue;
 			}
 
-			SinglelineContainedEntityResult singleLineResult = result.get();
+			SinglelineEntityResult singleLineResult = result.get();
 			// Mark this result line as contained.
 			notContainedInChildQueries = false;
 			if (generateDateAggregation) {
@@ -137,7 +135,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineContainedEntit
 			resultValues[VALIDITY_DATE_POSITION] = dateSet;
 		}
 
-		return Optional.of(new SinglelineContainedEntityResult(entity.getId(), resultValues));
+		return Optional.of(new SinglelineEntityResult(entity.getId(), resultValues));
 	}
 
 	@Override
@@ -151,7 +149,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineContainedEntit
 	}
 
 	@Override
-	public CDateSet getValidityDates(SinglelineContainedEntityResult result) {
+	public CDateSet getValidityDates(SinglelineEntityResult result) {
 		if(!generateDateAggregation) {
 			return CDateSet.create();
 		}
@@ -202,7 +200,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineContainedEntit
 		return currentIdx + offset;
 	}
 
-	private int calculateCopyLength(SinglelineContainedEntityResult singleLineResult) {
+	private int calculateCopyLength(SinglelineEntityResult singleLineResult) {
 		int length = singleLineResult.getValues().length - (generateDateAggregation ? 1 : 0);
 		if (length < 0) {
 			throw new IllegalStateException("Copy length must be positive.");

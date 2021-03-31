@@ -33,21 +33,21 @@ public class ShardResult {
 	@ToString.Include
 	private ManagedExecutionId queryId;
 
-	private List<ContainedEntityResult> results = new ArrayList<>();
+	private List<EntityResult> results = new ArrayList<>();
 	
 	@ToString.Include
 	private LocalDateTime startTime = LocalDateTime.now();
 	@ToString.Include
 	private LocalDateTime finishTime;
 	@JsonIgnore
-	private ListenableFuture<List<Optional<ContainedEntityResult>>> future;
+	private ListenableFuture<List<Optional<EntityResult>>> future;
 
 	private Optional<ConqueryError> error = Optional.empty();
 
 	@ToString.Include
 	private WorkerId workerId;
 	
-	public synchronized void addResult(ContainedEntityResult result) {
+	public synchronized void addResult(EntityResult result) {
 		results.add(result);
 	}
 

@@ -15,8 +15,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter @ToString
-@CPSType(id="MULTILINE_CONTAINED", base=EntityResult.class)
-public class MultilineContainedEntityResult implements ContainedEntityResult {
+@CPSType(id="MULTI_LINE", base= EntityResult.class)
+public class MultilineEntityResult implements EntityResult {
 	
 	@Min(0)
 	private final int entityId;
@@ -24,7 +24,7 @@ public class MultilineContainedEntityResult implements ContainedEntityResult {
 	private final List<Object[]> values;
 
 	//this is needed because of https://github.com/FasterXML/jackson-databind/issues/2024
-	public MultilineContainedEntityResult(int entityId, List<Object[]> values) {
+	public MultilineEntityResult(int entityId, List<Object[]> values) {
 		this.entityId = entityId;
 		this.values = Objects.requireNonNullElse(values, Collections.emptyList());
 	}

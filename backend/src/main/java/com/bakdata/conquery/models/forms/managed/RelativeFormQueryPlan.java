@@ -17,21 +17,17 @@ import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.swing.text.html.Option;
-import javax.validation.constraints.NotNull;
-
 @Slf4j
 @Getter @RequiredArgsConstructor
-public class RelativeFormQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
+public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	// Position of fixed columns in the result. (This is without identifier column[s], they are added upon result rendering)
 	private static final int RESOLUTION_POS = 0;
@@ -51,15 +47,15 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineContainedEntity
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
 	@Override
-	public Optional<MultilineContainedEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
-		Optional<ContainedEntityResult> preResult = query.execute(ctx, entity);
+	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+		Optional<EntityResult> preResult = query.execute(ctx, entity);
 
 		if (preResult.isEmpty()) {
 			return Optional.empty();
 		}
 
 		int size = calculateCompleteLength();
-		ContainedEntityResult contained = preResult.get();
+		EntityResult contained = preResult.get();
 		// Gather all validity dates from prerequisite
 		CDateSet dateSet = query.getValidityDates(contained);
 
@@ -71,7 +67,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineContainedEntity
 			List<Object[]> results = new ArrayList<>();
 			results.add(new Object[size]);
 			return Optional.of(
-					ResultModifier.modify(EntityResult.multilineOf(entity.getId(), results), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(getFirstAggregatorPosition())))
+					ResultModifier.modify(new MultilineEntityResult(entity.getId(), results), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(getFirstAggregatorPosition())))
 			);
 		}
 
@@ -89,8 +85,8 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineContainedEntity
 
 
 
-		Optional<MultilineContainedEntityResult> featureResult = featureSubquery.execute(ctx, entity);
-		Optional<MultilineContainedEntityResult> outcomeResult = outcomeSubquery.execute(ctx, entity);
+		Optional<MultilineEntityResult> featureResult = featureSubquery.execute(ctx, entity);
+		Optional<MultilineEntityResult> outcomeResult = outcomeSubquery.execute(ctx, entity);
 
 		// determine result length and check against aggregators in query
 		checkResultWidth(featureResult.get(), featureLength);
@@ -138,7 +134,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineContainedEntity
 			values.add(result);
 		}
 
-		return Optional.of(EntityResult.multilineOf(entity.getId(), values));
+		return Optional.of(new MultilineEntityResult(entity.getId(), values));
 	}
 
 
@@ -177,7 +173,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineContainedEntity
 	}
 
 	private int checkResultWidth(EntityResult subResult, int resultWidth) {
-		int resultColumnCount = subResult.asContained().columnCount();
+		int resultColumnCount = subResult.columnCount();
 
 		if(resultColumnCount != resultWidth) {
 			throw new IllegalStateException(String
@@ -260,7 +256,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineContainedEntity
 	}
 
 	@Override
-	public CDateSet getValidityDates(MultilineContainedEntityResult result) {
+	public CDateSet getValidityDates(MultilineEntityResult result) {
 		CDateSet dateSet = CDateSet.create();
 		for(Object[] resultLine : result.listResultLines()) {
 			int featureDateRangePosition = getFeatureDateRangePosition();

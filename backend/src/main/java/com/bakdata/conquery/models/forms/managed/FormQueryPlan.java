@@ -14,15 +14,13 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
-import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
 
 @Getter
-public class FormQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
+public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final List<DateContext> dateContexts;
 	private final ArrayConceptQueryPlan features;
@@ -49,7 +47,7 @@ public class FormQueryPlan implements QueryPlan<MultilineContainedEntityResult> 
 	}
 
 	@Override
-	public Optional<MultilineContainedEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
 		features.init(ctx,entity);
 
@@ -68,7 +66,7 @@ public class FormQueryPlan implements QueryPlan<MultilineContainedEntityResult> 
 	
 			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
 			dateRestriction.retainAll(dateContext.getDateRange());
-			Optional<SinglelineContainedEntityResult> subResult = subPlan.execute(ctx.withDateRestriction(dateRestriction), entity);
+			Optional<SinglelineEntityResult> subResult = subPlan.execute(ctx.withDateRestriction(dateRestriction), entity);
 			
 			if(subResult.isEmpty()) {
 				resultValues.addAll(createResultForNotContained(entity, dateContext).listResultLines());
@@ -83,13 +81,13 @@ public class FormQueryPlan implements QueryPlan<MultilineContainedEntityResult> 
 			);
 		}
 		
-		return Optional.of(EntityResult.multilineOf(entity.getId(), resultValues));
+		return Optional.of(new MultilineEntityResult(entity.getId(), resultValues));
 	}
 
-	private MultilineContainedEntityResult createResultForNotContained(Entity entity, DateContext dateContext) {
+	private MultilineEntityResult createResultForNotContained(Entity entity, DateContext dateContext) {
 		List<Object[]> result = new ArrayList<>();
 		result.add(new Object[features.getAggregatorSize()]);
-		return ResultModifier.modify(EntityResult.multilineOf(entity.getId(), result), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(0)).unaryAndThen( v->addConstants(v, dateContext)));
+		return ResultModifier.modify(new MultilineEntityResult(entity.getId(), result), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(0)).unaryAndThen(v->addConstants(v, dateContext)));
 	}
 	
 	public List<Aggregator<?>> getAggregators() {
@@ -133,7 +131,7 @@ public class FormQueryPlan implements QueryPlan<MultilineContainedEntityResult> 
 	}
 
 	@Override
-	public CDateSet getValidityDates(MultilineContainedEntityResult result) {
+	public CDateSet getValidityDates(MultilineEntityResult result) {
 
 		int dateRangePosition = getDateRangePosition();
 		if(dateRangePosition < 0) {

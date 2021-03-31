@@ -47,7 +47,6 @@ import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -94,7 +93,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 	@JsonIgnore
-	private transient List<ContainedEntityResult> results = new ArrayList<>();
+	private transient List<EntityResult> results = new ArrayList<>();
 
 	public ManagedQuery(IQuery query, UserId owner, DatasetId submittedDataset) {
 		super(owner, submittedDataset);
@@ -152,8 +151,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		}
 	}
 
-	public Stream<ContainedEntityResult> fetchContainedEntityResult() {
-		return results.stream().flatMap(ContainedEntityResult::filterCast);
+	public Stream<EntityResult> fetchContainedEntityResult() {
+		return results.stream();
 	}
 
 	@Override
@@ -237,7 +236,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public StreamingOutput getResult(Function<ContainedEntityResult, ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
+	public StreamingOutput getResult(Function<EntityResult, ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
 		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), idMapper, charset, lineSeparator);
 	}
 

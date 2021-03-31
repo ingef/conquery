@@ -12,9 +12,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -31,7 +29,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @RequiredArgsConstructor
 @Getter
 @Setter
-public class SecondaryIdQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
+public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;
 	private final ConceptQueryPlan query;
@@ -49,7 +47,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineContainedEntityR
 	 * @return
 	 */
 	@Override
-	public Optional<MultilineContainedEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
 		if (query.getRequiredTables().get().isEmpty()) {
 			return Optional.empty();
@@ -88,7 +86,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineContainedEntityR
 			return Optional.empty();
 		}
 
-		return Optional.of(EntityResult.multilineOf(entity.getId(), result));
+		return Optional.of(new MultilineEntityResult(entity.getId(), result));
 	}
 
 
@@ -200,7 +198,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineContainedEntityR
 	}
 
 	@Override
-	public CDateSet getValidityDates(MultilineContainedEntityResult result) {
+	public CDateSet getValidityDates(MultilineEntityResult result) {
 		if(!query.isAggregateValidityDates()) {
 			return CDateSet.create();
 		}

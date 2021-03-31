@@ -7,19 +7,18 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class QueryJob implements Callable<Optional<ContainedEntityResult>>{
+public class QueryJob implements Callable<Optional<EntityResult>>{
 
 	private final QueryExecutionContext ctx;
 	private final QueryPlan plan;
 	private final Entity entity;
 	
 	@Override
-	public Optional<ContainedEntityResult> call() throws Exception {
+	public Optional<EntityResult> call() throws Exception {
 		try {
 			CloneContext cCtx = new CloneContext(ctx.getStorage());
 			QueryPlan queryPlan = this.plan.clone(cCtx);

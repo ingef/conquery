@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
@@ -47,11 +46,11 @@ public class ArrowRenderer {
             Function<VectorSchemaRoot, ArrowWriter> writerProducer,
             PrintSettings cfg,
             ManagedExecution<?> exec,
-            Function<ContainedEntityResult, String[]> idMapper,
+            Function<EntityResult, String[]> idMapper,
             String[] idHeaders,
             int batchsize) throws IOException {
         // Test the execution if the result is renderable into one table
-        Stream<ContainedEntityResult> results = getResults(exec);
+        Stream<EntityResult> results = getResults(exec);
         List<ResultInfo> resultInfos = getResultInfos(exec);
 
         // Combine id and value Fields to one vector to build a schema
@@ -70,7 +69,7 @@ public class ArrowRenderer {
 
     }
 
-    private static Stream<ContainedEntityResult> getResults(ManagedExecution<?> exec) {
+    private static Stream<EntityResult> getResults(ManagedExecution<?> exec) {
         if (exec instanceof ManagedQuery) {
             return ((ManagedQuery) exec).getResults().stream();
         } else if (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1) {
@@ -94,8 +93,8 @@ public class ArrowRenderer {
             VectorSchemaRoot root,
             RowConsumer[] idWriter,
             RowConsumer[] valueWriter,
-            Function<ContainedEntityResult, String[]> idMapper,
-            Stream<ContainedEntityResult> results,
+            Function<EntityResult, String[]> idMapper,
+            Stream<EntityResult> results,
             int batchSize) throws IOException {
         Preconditions.checkArgument(batchSize > 0, "Batchsize needs be larger than 0.");
         // TODO add time metric for writing
@@ -105,10 +104,9 @@ public class ArrowRenderer {
         int batchCount = 0;
         int batchLineCount = 0;
         root.setRowCount(batchSize);
-        Iterator<ContainedEntityResult> resultIter = results.iterator();
+        Iterator<EntityResult> resultIter = results.iterator();
         while (resultIter.hasNext()) {
-            EntityResult result = resultIter.next();
-            ContainedEntityResult cer = result.asContained();
+            EntityResult cer = resultIter.next();
             for (Object[] line : cer.listResultLines()) {
                 if(line.length != valueWriter.length) {
                     throw new IllegalStateException("The number of value writers and values in a result line differs. Writers: " + valueWriter.length + " Line: " + line.length);

@@ -10,21 +10,22 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Getter
 @Setter
 @ToString
 @Slf4j
-public class ConceptQueryPlan implements QueryPlan<SinglelineContainedEntityResult> {
+public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = 0;
 	@Getter
@@ -88,18 +89,18 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineContainedEntityResu
 		getChild().acceptEvent(bucket, event);
 	}
 
-	protected SinglelineContainedEntityResult result() {
+	protected SinglelineEntityResult result() {
 		Object[] values = new Object[aggregators.size()];
 
 		for (int i = 0; i < values.length; i++) {
 			values[i] = aggregators.get(i).getAggregationResult();
 		}
 
-		return EntityResult.of(entity.getId(), values);
+		return new SinglelineEntityResult(entity.getId(), values);
 	}
 
 	@Override
-	public Optional<SinglelineContainedEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+	public Optional<SinglelineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
  		checkRequiredTables(ctx.getStorage());
 
@@ -185,7 +186,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineContainedEntityResu
 	}
 
 	@Override
-	public CDateSet getValidityDates(SinglelineContainedEntityResult result) {
+	public CDateSet getValidityDates(SinglelineEntityResult result) {
 		if(!isAggregateValidityDates()) {
 			// The date aggregator was not added to the plan, so we don't collect a validity date
 			return CDateSet.create();
