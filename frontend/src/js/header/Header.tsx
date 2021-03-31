@@ -73,20 +73,21 @@ const useVersion = () => {
   );
 
   const frontendDateTimeStamp = preval`module.exports = new Date().toISOString();`;
-  const frontendGitCommit = preval`
-    const { execSync } = require('child_process');
-    module.exports = execSync('git rev-parse --short HEAD').toString();
-  `;
-  const frontendGitTag = preval`
-    const { execSync } = require('child_process');
-    module.exports = execSync('git describe --all --exact-match \`git rev-parse HEAD\`').toString();
-  `;
+  // TODO: GET THIS TO WORK WHEN BUILDING INSIDE A DODCKER CONTAINER
+  // const frontendGitCommit = preval`
+  //   const { execSync } = require('child_process');
+  //   module.exports = execSync('git rev-parse --short HEAD').toString();
+  // `;
+  // const frontendGitTag = preval`
+  //   const { execSync } = require('child_process');
+  //   module.exports = execSync('git describe --all --exact-match \`git rev-parse HEAD\`').toString();
+  // `;
 
   return {
     backendVersion,
-    frontendGitCommit,
+    frontendGitCommit: "",
     frontendDateTimeStamp,
-    frontendGitTag,
+    frontendGitTag: "",
   };
 };
 

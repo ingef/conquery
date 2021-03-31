@@ -44,18 +44,10 @@ import org.glassfish.jersey.servlet.ServletContainer;
 @Slf4j
 public class AdminServlet {
 
-	/**
-	 * Marker interface for classes that provide admin UI functionality.
-	 */
-	@CPSBase
-	public interface AuthAdminResourceProvider {
-		void registerAuthenticationAdminResources(DropwizardResourceConfig jerseyConfig);
-	}
+	private final AdminProcessor adminProcessor;
+	private final DropwizardResourceConfig jerseyConfig;
 
-	private AdminProcessor adminProcessor;
-	private DropwizardResourceConfig jerseyConfig;
-
-	public void register(ManagerNode manager) {
+	public AdminServlet(ManagerNode manager) {
 		jerseyConfig = new DropwizardResourceConfig(manager.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
 
@@ -78,6 +70,7 @@ public class AdminServlet {
 				manager.isUseNameForStoragePrefix() ? manager.getName() : null
 		);
 
+
 		// inject required services
 		jerseyConfig.register(new AbstractBinder() {
 
@@ -86,6 +79,10 @@ public class AdminServlet {
 				bind(adminProcessor).to(AdminProcessor.class);
 			}
 		});
+
+	}
+
+	public void register(ManagerNode manager) {
 
 		// register root resources
 		jerseyConfig
@@ -107,17 +104,9 @@ public class AdminServlet {
 			.register(AuthOverviewUIResource.class)
 			.register(AuthOverviewResource.class);
 
-		// Scan classpath for Admin side plugins and register them.
-		for ( Realm realm : manager.getAuthController().getRealms()) {
-			if(realm instanceof AuthAdminResourceProvider) {
-				((AuthAdminResourceProvider)realm).registerAuthenticationAdminResources(jerseyConfig);
-			}
-		}
-
 		// register features
 		jerseyConfig
 			.register(new MultiPartFeature())
-			.register(manager.getAuthController().getAuthenticationFilter())
 			.register(IdParamConverter.Provider.INSTANCE)
 			.register(AuthCookieFilter.class)
 			.register(manager.getAuthController().getAuthenticationFilter());
