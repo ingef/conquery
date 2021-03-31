@@ -40,7 +40,6 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
         if (preResult.isEmpty()) {
             return Optional.empty();
         }
-        final List<Object[]> resultLines = new ArrayList<>();
 
         CDateSet entityDate = query.getValidityDates(preResult.get());
         entityDate.retainAll(dateRestriction);
@@ -54,17 +53,7 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
         FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features);
         validityDateCollector = resolutionQuery::getValidityDates;
 
-        Optional<MultilineEntityResult> result = resolutionQuery.execute(ctx, entity);
-
-        if (result.isEmpty()) {
-            return Optional.empty();
-        }
-
-        EntityResult contained = result.get();
-
-        resultLines.addAll(contained.listResultLines());
-
-        return Optional.of(new MultilineEntityResult(entity.getId(), resultLines));
+        return resolutionQuery.execute(ctx, entity);
     }
 
     @Override

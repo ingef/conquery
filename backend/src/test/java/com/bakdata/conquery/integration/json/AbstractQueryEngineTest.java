@@ -71,7 +71,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		ResultInfoCollector resultInfos = managed.collectResultInfos();
 
 		assertThat(
-				managed.fetchContainedEntityResult()
+				managed.getResults().stream()
 					   .flatMap(EntityResult::streamValues)
 		)
 				.as("Should have same size as result infos")
@@ -99,7 +99,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		assertThat(actual).as("Results for %s are not as expected.", this).containsExactlyInAnyOrderElementsOf(expected);
 		// check that getLastResultCount returns the correct size
-		if (managed.fetchContainedEntityResult().noneMatch(MultilineEntityResult.class::isInstance)) {
+		if (managed.getResults().stream().noneMatch(MultilineEntityResult.class::isInstance)) {
 			assertThat(managed.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
 		}
 

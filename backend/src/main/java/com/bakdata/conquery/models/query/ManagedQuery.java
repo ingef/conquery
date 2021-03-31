@@ -151,10 +151,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		}
 	}
 
-	public Stream<EntityResult> fetchContainedEntityResult() {
-		return results.stream();
-	}
-
 	@Override
 	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
 		super.setStatusBase(storage, user, status, url, datasetAbilities);

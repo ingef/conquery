@@ -111,12 +111,12 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			result[2] = dateContext.getEventDate().toEpochDay();
 		}
 		//add date range at [2] or [3]
-		result[getDateRangePosition()] = dateContext.getDateRange();
+		result[getDateRangeResultPosition()] = dateContext.getDateRange();
 		
 		return result;
 	}
 
-	private int getDateRangePosition() {
+	private int getDateRangeResultPosition() {
 		return constantCount-1;
 	}
 
@@ -133,7 +133,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Override
 	public CDateSet getValidityDates(MultilineEntityResult result) {
 
-		int dateRangePosition = getDateRangePosition();
+		int dateRangePosition = getDateRangeResultPosition();
 		if(dateRangePosition < 0) {
 			return CDateSet.create();
 		}

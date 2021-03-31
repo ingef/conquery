@@ -97,7 +97,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 			Optional<SinglelineEntityResult> result = child.execute(ctx, entity);
 
 			if (result.isEmpty()) {
-				// The sub result was empty. Generate the necessary gaped columns in the result line
+				// The sub result was empty. Generate the necessary gapped columns in the result line
 				final Object[] applied = ResultModifier.existAggValuesSetterFor(child.getAggregators(), OptionalInt.of(0)).apply(new Object[child.getAggregatorSize()]);
 
 				// applied[0] is the child-queries DateUnion, which we don't copy.

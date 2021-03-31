@@ -62,6 +62,6 @@ public abstract class IQuery implements QueryDescription {
 	 * @return the number of results in the result List.
 	 */
 	public long countResults(List<EntityResult> results) {
-		return results.stream().count();
+		return results.size();
 	}
 }
