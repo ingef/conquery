@@ -5,13 +5,13 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter @RequiredArgsConstructor
-public class AbsoluteFormQueryPlan implements QueryPlan {
+public class AbsoluteFormQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 	private final QueryPlan query;
 	private final FormQueryPlan subPlan;
@@ -39,7 +39,9 @@ public class AbsoluteFormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public int[] getValidityDateResultPositions() {
-		return subPlan.getValidityDateResultPositions();
+	public CDateSet collectValidityDates(MultilineContainedEntityResult result) {
+		return subPlan.collectValidityDates(result);
 	}
+
+
 }

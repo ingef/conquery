@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -17,8 +16,8 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -35,7 +34,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @RequiredArgsConstructor
 @Getter
 @Setter
-public class SecondaryIdQueryPlan implements QueryPlan {
+public class SecondaryIdQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;
 	public static final int[] VALIDITY_DATE_POSITIONS = {VALIDITY_DATE_POSITION};
@@ -204,7 +203,13 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public int[] getValidityDateResultPositions() {
-		return VALIDITY_DATE_POSITIONS;
+	public CDateSet collectValidityDates(MultilineContainedEntityResult result) {
+		CDateSet out = CDateSet.create();
+
+		result.streamValues()
+			  .map(line -> (CDateSet) line[VALIDITY_DATE_POSITION])
+			  .forEach(out::addAll);
+
+		return out;
 	}
 }

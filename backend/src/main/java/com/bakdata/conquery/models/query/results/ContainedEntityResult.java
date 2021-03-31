@@ -4,10 +4,6 @@ import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-
 public interface ContainedEntityResult extends EntityResult {
 
 	int getEntityId();
@@ -42,34 +38,4 @@ public interface ContainedEntityResult extends EntityResult {
 	 */
 	void modifyResultLinesInplace(UnaryOperator<Object[]> lineModifier);
 
-
-
-	CDateSet collectValidityDates(QueryPlan plan);
-
-	static CDateSet collectValidityDates(QueryPlan plan, Object[] resultLine) {
-		final int[] dateResultPositions = plan.getValidityDateResultPositions();
-
-		if(dateResultPositions.length == 1 && resultLine[dateResultPositions[0]] instanceof CDateSet){
-			return ((CDateSet) resultLine[dateResultPositions[0]]);
-		}
-
-		CDateSet dateSet = CDateSet.create();
-		for (int pos : dateResultPositions) {
-			Object date = resultLine[pos];
-			if (date == null) {
-				continue;
-			}
-
-			if (date instanceof CDateSet) {
-				dateSet.addAll((CDateSet) date);
-			}
-			else if (date instanceof CDateRange) {
-				dateSet.add((CDateRange) date);
-			}
-			else {
-				throw new IllegalStateException("Encountered unhandled type during date aggregation: " + date.getClass() + "(" + date + ")");
-			}
-		}
-		return dateSet;
-	}
 }

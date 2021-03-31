@@ -6,8 +6,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -45,11 +43,6 @@ public class SinglelineContainedEntityResult implements ContainedEntityResult, S
 	@Override
 	public void modifyResultLinesInplace(UnaryOperator<Object[]> lineModifier) {
 		values = lineModifier.apply(values);
-	}
-
-	@Override
-	public CDateSet collectValidityDates(QueryPlan plan) {
-		return ContainedEntityResult.collectValidityDates(plan, values);
 	}
 
 	@Override

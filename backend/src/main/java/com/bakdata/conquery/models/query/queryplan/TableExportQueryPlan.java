@@ -13,8 +13,8 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
  * date range.
  */
 @RequiredArgsConstructor
-public class TableExportQueryPlan implements QueryPlan {
+public class TableExportQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 	private final QueryPlan subPlan;
 	private final CDateRange dateRange;
@@ -41,10 +41,11 @@ public class TableExportQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public int[] getValidityDateResultPositions() {
-		// TODO figure out where the dates are
-		return new int[0];
+	public CDateSet collectValidityDates(MultilineContainedEntityResult result) {
+		// TODO calculate them or also place them in dedicated column at the beginning.
+		return CDateSet.createFull();
 	}
+
 
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {

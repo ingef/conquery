@@ -15,10 +15,11 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
+import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import lombok.Getter;
 
 @Getter
-public class FormQueryPlan implements QueryPlan {
+public class FormQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 	private final List<DateContext> dateContexts;
 	private final ArrayConceptQueryPlan features;
@@ -134,8 +135,15 @@ public class FormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public int[] getValidityDateResultPositions() {
-		return validityDatePositions;
+	public CDateSet collectValidityDates(MultilineContainedEntityResult result) {
+		CDateSet out = CDateSet.create();
+		//TODO this is a touch complicated
+		result.streamValues()
+			  .map(line -> new SinglelineContainedEntityResult(result.getEntityId(), line))
+			  .map(features::collectValidityDates)
+			  .forEach(out::addAll);
+
+		return out;
 	}
 
 	public int columnCount() {

@@ -1,9 +1,10 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalInt;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -14,7 +15,6 @@ import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
@@ -26,7 +26,7 @@ import lombok.ToString;
  */
 @Getter
 @ToString
-public class ArrayConceptQueryPlan implements QueryPlan {
+public class ArrayConceptQueryPlan implements QueryPlan<SinglelineContainedEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = 0;
 	public static final int[] VALIDITY_DATE_POSITIONS = {VALIDITY_DATE_POSITION};
@@ -151,10 +151,9 @@ public class ArrayConceptQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public int[] getValidityDateResultPositions() {
-		return VALIDITY_DATE_POSITIONS;
+	public CDateSet collectValidityDates(SinglelineContainedEntityResult result) {
+		return ((CDateSet) result.getValues()[VALIDITY_DATE_POSITION]);
 	}
-
 
 	public int getAggregatorSize() {
 		int size = 0;

@@ -1,17 +1,19 @@
 package com.bakdata.conquery.models.query.queryplan;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.EmptyBucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
@@ -20,13 +22,11 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
-
 @Getter
 @Setter
 @ToString
 @Slf4j
-public class ConceptQueryPlan implements QueryPlan {
+public class ConceptQueryPlan implements QueryPlan<SinglelineContainedEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = 0;
 	public static final int[] VALIDITY_DATE_POSITIONS = {VALIDITY_DATE_POSITION};
@@ -188,9 +188,10 @@ public class ConceptQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public int[] getValidityDateResultPositions() {
-		return VALIDITY_DATE_POSITIONS;
+	public CDateSet collectValidityDates(SinglelineContainedEntityResult result) {
+		return ((CDateSet) result.getValues()[VALIDITY_DATE_POSITION]);
 	}
+
 
 	public boolean isAggregateValidityDates() {
 		return dateAggregator.equals(aggregators.get(0));

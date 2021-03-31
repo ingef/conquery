@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -12,18 +15,13 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
-import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Implementation of the QueryPlan for an {@link EntityDateQuery}.
  */
 @RequiredArgsConstructor
-public class EntityDateQueryPlan implements QueryPlan {
+public class EntityDateQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 
     private final QueryPlan query;
@@ -31,7 +29,6 @@ public class EntityDateQueryPlan implements QueryPlan {
     private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
     private final CDateRange dateRestriction;
 
-    private Supplier<int[]> validityDatePositionSupplier;
 
     @Override
     public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
@@ -42,7 +39,7 @@ public class EntityDateQueryPlan implements QueryPlan {
         }
         final List<Object[]> resultLines = new ArrayList<>();
 
-        CDateSet entityDate = preResult.asContained().collectValidityDates(query);
+        CDateSet entityDate = query.collectValidityDates(preResult.asContained());
         entityDate.retainAll(dateRestriction);
 
         // Generate DateContexts in the provided resolutions
@@ -52,7 +49,6 @@ public class EntityDateQueryPlan implements QueryPlan {
         }
 
         FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features);
-        validityDatePositionSupplier = resolutionQuery::getValidityDateResultPositions;
 
         EntityResult result = resolutionQuery.execute(ctx, entity);
 
@@ -82,9 +78,8 @@ public class EntityDateQueryPlan implements QueryPlan {
         return query.isOfInterest(entity);
     }
 
-    @Override
-    public int[] getValidityDateResultPositions() {
-        Preconditions.checkNotNull(validityDatePositionSupplier, "The query was not executed and no validity position supplier was set");
-        return validityDatePositionSupplier.get();
-    }
+	@Override
+	public CDateSet collectValidityDates(MultilineContainedEntityResult result) {
+		return null;
+	}
 }

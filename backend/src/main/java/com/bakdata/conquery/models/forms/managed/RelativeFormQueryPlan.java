@@ -1,11 +1,14 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.OptionalInt;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
@@ -29,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Getter @RequiredArgsConstructor
-public class RelativeFormQueryPlan implements QueryPlan {
+public class RelativeFormQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 	// Position of fixed columns in the result. (This is without identifier column[s], they are added upon result rendering)
 	private static final int RESOLUTION_POS = 0;
@@ -54,6 +57,8 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	@Getter(lazy = true)
 	private final int[] validityDateResultPositions = createValidityDateResultPositions();
 
+
+
 	@Override
 	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 		EntityResult preResult = query.execute(ctx, entity);
@@ -65,7 +70,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		int size = calculateCompleteLength();
 		ContainedEntityResult contained = preResult.asContained();
 		// Gather all validity dates from prerequisite
-		CDateSet dateSet = contained.collectValidityDates(query);
+		CDateSet dateSet = query.collectValidityDates(contained);
 
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
@@ -265,6 +270,18 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	@Override
 	public boolean isOfInterest(Entity entity) {
 		return query.isOfInterest(entity) || featurePlan.isOfInterest(entity) || outcomePlan.isOfInterest(entity);
+	}
+
+	@Override
+	public CDateSet collectValidityDates(MultilineContainedEntityResult result) {
+		CDateSet out = CDateSet.create();
+		for (int validityDateResultPosition : getValidityDateResultPositions()) {
+			result.streamValues()
+				  .map(line -> (CDateRange) line[validityDateResultPosition])
+				  .forEach(out::add);
+		}
+
+		return null;
 	}
 
 	private int[] createValidityDateResultPositions() {
