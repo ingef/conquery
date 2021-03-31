@@ -15,7 +15,7 @@ import lombok.Setter;
  */
 @Getter @Setter
 @CPSType(id = "SINGLE_SELECT", base = Filter.class)
-public class SelectFilter extends AbstractSelectFilter<String> implements ISelectFilter {
+public class SelectFilter extends AbstractSelectFilter<String> {
 
 	
 	public SelectFilter() {
