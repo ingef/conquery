@@ -41,6 +41,9 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 		Collection<UserId> userIds = info.getPrincipals().byType(UserId.class);
 		for(UserId userId : userIds) {
 			user = storage.getUser(userId);
+			if (user != null) {
+				break;
+			}
 		}
 		
 		if(user == null) {
