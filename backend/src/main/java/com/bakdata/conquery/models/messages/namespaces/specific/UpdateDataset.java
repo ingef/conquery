@@ -20,7 +20,7 @@ public class UpdateDataset extends WorkerMessage.Slow {
 
 	@Override
 	public void react(Worker context) throws Exception {
-		log.info("Recieved update of dataset {}", dataset.getId());
+		log.info("Received update of dataset {}", dataset.getId());
 		synchronized (context.getStorage()) {
 			context.updateDataset(dataset);
 		}

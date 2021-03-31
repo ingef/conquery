@@ -166,7 +166,7 @@ public class LoadingUtil {
 			support,
 			rawConcepts,
 			Concept.class,
-			c -> c.setDataset(support.getDataset().getId())
+			c -> c.setDataset(support.getDataset())
 		);
 
 		for (Concept<?> concept : concepts) {
