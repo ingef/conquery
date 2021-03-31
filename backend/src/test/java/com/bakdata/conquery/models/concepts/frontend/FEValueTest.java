@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
@@ -15,6 +13,7 @@ import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
+import org.junit.jupiter.api.Test;
 
 public class FEValueTest {
 
@@ -32,7 +31,7 @@ public class FEValueTest {
 		ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setName("testConnector");
 		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset.getId());
+		concept.setDataset(dataset);
 		concept.setName("testConcept");
 		ValidityDate val0 = new ValidityDate();
 		val0.setName("val0");
