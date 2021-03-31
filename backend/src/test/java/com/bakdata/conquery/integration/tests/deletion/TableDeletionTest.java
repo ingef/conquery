@@ -2,9 +2,12 @@ package com.bakdata.conquery.integration.tests.deletion;
 
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.net.URI;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -21,6 +24,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
+import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -103,17 +109,33 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Issuing deletion of import {}", tableId);
 
-			// Delete the import.
+			// Delete the import via API.
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
-			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteTable(tableId))
-					.isInstanceOf(IllegalArgumentException.class);
+
+			final URI deleteTable =
+					HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "remove")
+					.buildFromMap(Map.of(
+							ResourceConstants.DATASET, conquery.getDataset().getName(),
+							ResourceConstants.TABLE, tableId.toString()
+					));
+
+			final Response failed = conquery.getClient()
+											.target(deleteTable)
+											.request()
+											.delete();
+
+			assertThat(failed.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.CLIENT_ERROR);
 
 			conquery.getDatasetsProcessor().deleteConcept(conquery.getNamespace().getStorage().getAllConcepts().iterator().next().getId());
 
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
 
-			conquery.getDatasetsProcessor().deleteTable(tableId);
+			final Response success = conquery.getClient().target(deleteTable).request().delete();
+
+
+			assertThat(success.getStatusInfo().getStatusCode()).isEqualTo(Response.Status.OK.getStatusCode());
+
 
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
