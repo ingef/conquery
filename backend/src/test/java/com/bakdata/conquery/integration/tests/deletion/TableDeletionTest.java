@@ -124,7 +124,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 											.request()
 											.delete();
 
-			assertThat(failed.getStatusInfo().getStatusCode()).isEqualTo(Response.Status.BAD_REQUEST.getStatusCode());
+			assertThat(failed.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.CLIENT_ERROR);
 
 			conquery.getDatasetsProcessor().deleteConcept(conquery.getNamespace().getStorage().getAllConcepts().iterator().next().getId());
 
