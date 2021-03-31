@@ -94,7 +94,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 	@JsonIgnore
-	private transient List<EntityResult> results = new ArrayList<>();
+	private transient List<ContainedEntityResult> results = new ArrayList<>();
 
 	public ManagedQuery(IQuery query, UserId owner, DatasetId submittedDataset) {
 		super(owner, submittedDataset);

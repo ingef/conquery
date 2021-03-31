@@ -26,9 +26,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.swing.text.html.Option;
+import javax.validation.constraints.NotNull;
+
 @Slf4j
 @Getter @RequiredArgsConstructor
-public class RelativeFormQueryPlan implements QueryPlan {
+public class RelativeFormQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 	// Position of fixed columns in the result. (This is without identifier column[s], they are added upon result rendering)
 	private static final int RESOLUTION_POS = 0;
@@ -48,15 +51,15 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
 	@Override
-	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-		EntityResult preResult = query.execute(ctx, entity);
+	public Optional<MultilineContainedEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+		Optional<ContainedEntityResult> preResult = query.execute(ctx, entity);
 
-		if (preResult.isFailed() || !preResult.isContained()) {
-			return preResult;
+		if (preResult.isEmpty()) {
+			return Optional.empty();
 		}
 
 		int size = calculateCompleteLength();
-		ContainedEntityResult contained = preResult.asContained();
+		ContainedEntityResult contained = preResult.get();
 		// Gather all validity dates from prerequisite
 		CDateSet dateSet = query.getValidityDates(contained);
 
@@ -67,7 +70,9 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			log.warn("Sampled empty result for Entity[{}]: `{}({})`", contained.getEntityId(), indexSelector, dateSet);
 			List<Object[]> results = new ArrayList<>();
 			results.add(new Object[size]);
-			return ResultModifier.modify(EntityResult.multilineOf(entity.getId(), results), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(getFirstAggregatorPosition())));
+			return Optional.of(
+					ResultModifier.modify(EntityResult.multilineOf(entity.getId(), results), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(getFirstAggregatorPosition())))
+			);
 		}
 
 		int sample = sampled.getAsInt();
@@ -84,21 +89,15 @@ public class RelativeFormQueryPlan implements QueryPlan {
 
 
 
-		MultilineContainedEntityResult featureResult = featureSubquery.execute(ctx, entity);
-		MultilineContainedEntityResult outcomeResult = outcomeSubquery.execute(ctx, entity);
-
-		// on fail return failed result
-		if (featureResult.isFailed()) {
-			return featureResult;
-		}
-		if (outcomeResult.isFailed()) {
-			return outcomeResult;
-		}
+		Optional<MultilineContainedEntityResult> featureResult = featureSubquery.execute(ctx, entity);
+		Optional<MultilineContainedEntityResult> outcomeResult = outcomeSubquery.execute(ctx, entity);
 
 		// determine result length and check against aggregators in query
-		checkResultWidth(featureResult, featureLength);
-		checkResultWidth(outcomeResult, outcomeLength);
+		checkResultWidth(featureResult.get(), featureLength);
+		checkResultWidth(outcomeResult.get(), outcomeLength);
 
+		List<Object[]> featureResultValues = featureResult.get().getValues();
+		List<Object[]> outcomeResultValues = outcomeResult.get().getValues();
 
 		int resultStartIndex = 0;
 		List<Object[]> values = new ArrayList<>();
@@ -112,13 +111,13 @@ public class RelativeFormQueryPlan implements QueryPlan {
 			Object[] mergedFull = new Object[size];
 
 			if (featurePlan.getAggregatorSize() > 0) {
-				setFeatureValues(mergedFull, featureResult.getValues().get(resultStartIndex));
+				setFeatureValues(mergedFull, featureResultValues.get(resultStartIndex));
 			}
 
 			if (outcomePlan.getAggregatorSize() > 0) {
 				setOutcomeValues(
 						mergedFull,
-						outcomeResult.getValues().get(resultStartIndex)
+						outcomeResultValues.get(resultStartIndex)
 				);
 			}
 
@@ -127,19 +126,19 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		}
 
 		// append all other lines directly
-		for (int i = resultStartIndex; i < featureResult.getValues().size(); i++) {
+		for (int i = resultStartIndex; i < featureResultValues.size(); i++) {
 			Object[] result = new Object[size];
-			setFeatureValues(result, featureResult.getValues().get(i));
+			setFeatureValues(result, featureResultValues.get(i));
 			values.add(result);
 		}
 
-		for (int i = resultStartIndex; i < outcomeResult.getValues().size(); i++) {
+		for (int i = resultStartIndex; i < outcomeResultValues.size(); i++) {
 			Object[] result = new Object[size];
-			setOutcomeValues(result, outcomeResult.getValues().get(i));
+			setOutcomeValues(result, outcomeResultValues.get(i));
 			values.add(result);
 		}
 
-		return EntityResult.multilineOf(entity.getId(), values);
+		return Optional.of(EntityResult.multilineOf(entity.getId(), values));
 	}
 
 
@@ -261,7 +260,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public CDateSet getValidityDates(ContainedEntityResult result) {
+	public CDateSet getValidityDates(MultilineContainedEntityResult result) {
 		CDateSet dateSet = CDateSet.create();
 		for(Object[] resultLine : result.listResultLines()) {
 			int featureDateRangePosition = getFeatureDateRangePosition();

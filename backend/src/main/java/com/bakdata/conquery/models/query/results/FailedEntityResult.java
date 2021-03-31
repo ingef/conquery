@@ -17,16 +17,6 @@ public class FailedEntityResult implements SinglelineEntityResult {
 	private final int entityId;
 	@NotEmpty
 	private final ConqueryError error;
-		
-	@JsonIgnore @Override
-	public boolean isFailed() {
-		return true;
-	}
-
-	@Override
-	public boolean isContained() {
-		return false;
-	}
 
 	@Override
 	public FailedEntityResult asFailed() {

@@ -51,7 +51,7 @@ public class ArrowRenderer {
             String[] idHeaders,
             int batchsize) throws IOException {
         // Test the execution if the result is renderable into one table
-        Stream<EntityResult> results = getResults(exec);
+        Stream<ContainedEntityResult> results = getResults(exec);
         List<ResultInfo> resultInfos = getResultInfos(exec);
 
         // Combine id and value Fields to one vector to build a schema
@@ -70,7 +70,7 @@ public class ArrowRenderer {
 
     }
 
-    private static Stream<EntityResult> getResults(ManagedExecution<?> exec) {
+    private static Stream<ContainedEntityResult> getResults(ManagedExecution<?> exec) {
         if (exec instanceof ManagedQuery) {
             return ((ManagedQuery) exec).getResults().stream();
         } else if (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1) {
@@ -95,7 +95,7 @@ public class ArrowRenderer {
             RowConsumer[] idWriter,
             RowConsumer[] valueWriter,
             Function<ContainedEntityResult, String[]> idMapper,
-            Stream<EntityResult> results,
+            Stream<ContainedEntityResult> results,
             int batchSize) throws IOException {
         Preconditions.checkArgument(batchSize > 0, "Batchsize needs be larger than 0.");
         // TODO add time metric for writing
@@ -105,12 +105,9 @@ public class ArrowRenderer {
         int batchCount = 0;
         int batchLineCount = 0;
         root.setRowCount(batchSize);
-        Iterator<EntityResult> resultIter = results.iterator();
+        Iterator<ContainedEntityResult> resultIter = results.iterator();
         while (resultIter.hasNext()) {
             EntityResult result = resultIter.next();
-            if (!result.isContained()) {
-                continue;
-            }
             ContainedEntityResult cer = result.asContained();
             for (Object[] line : cer.listResultLines()) {
                 if(line.length != valueWriter.length) {

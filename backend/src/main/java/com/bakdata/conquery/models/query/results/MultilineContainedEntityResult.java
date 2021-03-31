@@ -35,16 +35,6 @@ public class MultilineContainedEntityResult implements ContainedEntityResult {
 	}
 
 	@Override
-	public boolean isFailed() {
-		return false;
-	}
-
-	@Override
-	public boolean isContained() {
-		return true;
-	}
-
-	@Override
 	public int columnCount() {
 		// We look at the first result line to determine the number of columns
 		return values.get(0).length;

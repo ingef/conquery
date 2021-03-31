@@ -7,20 +7,23 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+
 @Getter @RequiredArgsConstructor
-public class AbsoluteFormQueryPlan implements QueryPlan {
+public class AbsoluteFormQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 	private final QueryPlan query;
 	private final FormQueryPlan subPlan;
 	
 	@Override
-	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-		EntityResult preResult = query.execute(ctx, entity);
-		if (preResult.isFailed() || !preResult.isContained()) {
-			return preResult;
+	public Optional<MultilineContainedEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+		Optional<EntityResult> preResult = query.execute(ctx, entity);
+		if (preResult.isEmpty()) {
+			return Optional.empty();
 		}
 		return subPlan.execute(ctx, entity);
 	}
@@ -39,7 +42,7 @@ public class AbsoluteFormQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public CDateSet getValidityDates(ContainedEntityResult result) {
+	public CDateSet getValidityDates(MultilineContainedEntityResult result) {
 		return subPlan.getValidityDates(result);
 	}
 }

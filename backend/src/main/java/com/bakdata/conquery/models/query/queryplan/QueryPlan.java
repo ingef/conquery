@@ -7,13 +7,15 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 
-public interface QueryPlan {
+import java.util.Optional;
+
+public interface QueryPlan<RESULT extends ContainedEntityResult> {
 
 	QueryPlan clone(CloneContext ctx);
 
-	EntityResult execute(QueryExecutionContext ctx, Entity entity);
+	Optional<RESULT> execute(QueryExecutionContext ctx, Entity entity);
 
 	boolean isOfInterest(Entity entity);
 
-	CDateSet getValidityDates(ContainedEntityResult result);
+	CDateSet getValidityDates(RESULT result);
 }

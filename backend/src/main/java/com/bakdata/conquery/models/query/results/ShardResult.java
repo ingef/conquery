@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -32,21 +33,21 @@ public class ShardResult {
 	@ToString.Include
 	private ManagedExecutionId queryId;
 
-	private List<EntityResult> results = new ArrayList<>();
+	private List<ContainedEntityResult> results = new ArrayList<>();
 	
 	@ToString.Include
 	private LocalDateTime startTime = LocalDateTime.now();
 	@ToString.Include
 	private LocalDateTime finishTime;
 	@JsonIgnore
-	private ListenableFuture<List<EntityResult>> future;
+	private ListenableFuture<List<Optional<ContainedEntityResult>>> future;
 
 	private Optional<ConqueryError> error = Optional.empty();
 
 	@ToString.Include
 	private WorkerId workerId;
 	
-	public synchronized void addResult(EntityResult result) {
+	public synchronized void addResult(ContainedEntityResult result) {
 		results.add(result);
 	}
 
@@ -61,25 +62,10 @@ public class ShardResult {
 		}
 
 		try {
-			final List<EntityResult> entityResults = Uninterruptibles.getUninterruptibly(future);
-			results = new ArrayList<>(entityResults.size());
-
-			// Filter the results, skipping not contained results and sending failed results when they appear.
-			for (EntityResult entityResult : entityResults) {
-				// If any Entity breaks the Execution the whole Query is invalid and we abort anyway.
-				if(entityResult.isFailed()) {
-					// Set the first encountered Error as failure of the whole result.
-					error = Optional.of(entityResult.asFailed().getError());
-					results.clear();
-					break;
-				}
-				else if (!entityResult.isContained()){
-					continue;
-				}
-
-				results.add(entityResult);
-			}
-
+			results =  Uninterruptibles.getUninterruptibly(future).stream()
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.collect(Collectors.toList());
 		} catch (ConqueryError e) {
 			error = Optional.of(e);
 		} catch (Exception e) {

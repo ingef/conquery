@@ -4,6 +4,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -47,6 +48,11 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	
 	
 	public ConqueryError(String messageTemplate, Map<String, String> context) {
+		this(messageTemplate,context,null);
+	}
+
+	public ConqueryError(String messageTemplate, Map<String, String> context, Throwable cause) {
+		super(cause);
 		this.messageTemplate = messageTemplate;
 		this.context = context;
 	}
@@ -89,7 +95,10 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	public static abstract class ContextError extends ConqueryError {
 
 		public ContextError(String messageTemplate) {
-			super(messageTemplate, new Flat3Map<>());
+			this(messageTemplate, null);
+		}
+		public ContextError(String messageTemplate, Throwable cause) {
+			super(messageTemplate, new Flat3Map<>(), cause);
 		}
 	}
 
@@ -233,6 +242,36 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			getContext().put(ALIGNMENT, Objects.toString(alignment));
 			getContext().put(RESOLUTION, Objects.toString(resolution));
 			getContext().put(ALIGNMENT_SUPPORTED, Objects.toString(resolution.getSupportedAlignments()));
+		}
+	}
+
+	/**
+	 * Unspecified execution processing error.
+	 */
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_JOB")
+	public static class ExecutionJobErrorWrapper extends ContextError {
+
+		private final static String ENTITY = "entity";
+		private final static String TEMPLATE = "Failed to run query job for entity ${" + ENTITY + "}";
+
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		private ExecutionJobErrorWrapper() {
+			super(TEMPLATE);
+		}
+
+
+		private ExecutionJobErrorWrapper(Throwable e) {
+			super(TEMPLATE,e);
+		}
+
+		public ExecutionJobErrorWrapper(Entity entity, Throwable e) {
+			this(e);
+			getContext().put(ENTITY, Integer.toString(entity.getId()));
+
 		}
 	}
 	

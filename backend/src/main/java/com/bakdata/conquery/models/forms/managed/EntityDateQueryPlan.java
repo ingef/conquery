@@ -17,13 +17,14 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
  * Implementation of the QueryPlan for an {@link EntityDateQuery}.
  */
 @RequiredArgsConstructor
-public class EntityDateQueryPlan implements QueryPlan {
+public class EntityDateQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 
     private final QueryPlan query;
@@ -31,18 +32,18 @@ public class EntityDateQueryPlan implements QueryPlan {
     private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
     private final CDateRange dateRestriction;
 
-    private Function<ContainedEntityResult, CDateSet> validityDateCollector;
+    private Function<MultilineContainedEntityResult, CDateSet> validityDateCollector;
 
     @Override
-    public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+    public Optional<MultilineContainedEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
         // Execute the prerequisite query
-        EntityResult preResult = query.execute(ctx, entity);
-        if (preResult.isFailed() || !preResult.isContained()) {
-            return preResult;
+        Optional<ContainedEntityResult> preResult = query.execute(ctx, entity);
+        if (preResult.isEmpty()) {
+            return Optional.empty();
         }
         final List<Object[]> resultLines = new ArrayList<>();
 
-        CDateSet entityDate = query.getValidityDates(preResult.asContained());
+        CDateSet entityDate = query.getValidityDates(preResult.get());
         entityDate.retainAll(dateRestriction);
 
         // Generate DateContexts in the provided resolutions
@@ -54,17 +55,17 @@ public class EntityDateQueryPlan implements QueryPlan {
         FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features);
         validityDateCollector = resolutionQuery::getValidityDates;
 
-        EntityResult result = resolutionQuery.execute(ctx, entity);
+        Optional<MultilineContainedEntityResult> result = resolutionQuery.execute(ctx, entity);
 
-        if (result.isFailed() || !result.isContained()) {
-            return result;
+        if (result.isEmpty()) {
+            return Optional.empty();
         }
 
-        ContainedEntityResult contained = result.asContained();
+        ContainedEntityResult contained = result.get();
 
         resultLines.addAll(contained.listResultLines());
 
-        return new MultilineContainedEntityResult(entity.getId(), resultLines);
+        return Optional.of(new MultilineContainedEntityResult(entity.getId(), resultLines));
     }
 
     @Override
@@ -83,7 +84,7 @@ public class EntityDateQueryPlan implements QueryPlan {
     }
 
     @Override
-    public CDateSet getValidityDates(ContainedEntityResult result) {
+    public CDateSet getValidityDates(MultilineContainedEntityResult result) {
         Preconditions.checkNotNull(validityDateCollector, "The query was not executed and no validity date collector set");
         return validityDateCollector.apply(result);
     }

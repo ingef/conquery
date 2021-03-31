@@ -26,16 +26,6 @@ public class SinglelineContainedEntityResult implements ContainedEntityResult, S
 	}
 
 	@Override
-	public boolean isFailed() {
-		return false;
-	}
-
-	@Override
-	public boolean isContained() {
-		return true;
-	}
-
-	@Override
 	public int columnCount() {
 		return values.length;
 	}

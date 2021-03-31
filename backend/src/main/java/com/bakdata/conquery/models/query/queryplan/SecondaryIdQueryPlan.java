@@ -1,10 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
@@ -18,6 +14,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -34,7 +31,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @RequiredArgsConstructor
 @Getter
 @Setter
-public class SecondaryIdQueryPlan implements QueryPlan {
+public class SecondaryIdQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;
 	private final ConceptQueryPlan query;
@@ -49,19 +46,20 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	 * This is the same execution as a typical ConceptQueryPlan. The difference
 	 * is that this method will create a new cloned child for each distinct
 	 * secondaryId it encounters during iteration.
+	 * @return
 	 */
 	@Override
-	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+	public Optional<MultilineContainedEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
 		if (query.getRequiredTables().get().isEmpty()) {
-			return EntityResult.notContained();
+			return Optional.empty();
 		}
 
 		query.checkRequiredTables(ctx.getStorage());
 		query.init(entity, ctx);
 
 		if (!query.isOfInterest(entity)) {
-			return EntityResult.notContained();
+			return Optional.empty();
 		}
 
 		//first execute only tables with secondaryIds, creating all sub-queries
@@ -87,10 +85,10 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 		}
 
 		if (result.isEmpty()) {
-			return EntityResult.notContained();
+			return Optional.empty();
 		}
 
-		return EntityResult.multilineOf(entity.getId(), result);
+		return Optional.of(EntityResult.multilineOf(entity.getId(), result));
 	}
 
 
@@ -202,7 +200,7 @@ public class SecondaryIdQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public CDateSet getValidityDates(ContainedEntityResult result) {
+	public CDateSet getValidityDates(MultilineContainedEntityResult result) {
 		if(!query.isAggregateValidityDates()) {
 			return CDateSet.create();
 		}

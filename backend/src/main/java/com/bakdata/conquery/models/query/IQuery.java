@@ -62,7 +62,7 @@ public abstract class IQuery implements QueryDescription {
 	 * @see ManagedQuery#finish(MetaStorage, ExecutionState) for how it's used.
 	 * @return the number of results in the result List.
 	 */
-	public long countResults(List<EntityResult> results) {
+	public long countResults(List<ContainedEntityResult> results) {
 		return results.stream().flatMap(ContainedEntityResult::filterCast).count();
 	}
 }

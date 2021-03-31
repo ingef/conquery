@@ -152,9 +152,8 @@ public class SecondaryIdQuery extends IQuery {
 	}
 
 	@Override
-	public long countResults(List<EntityResult> results) {
+	public long countResults(List<ContainedEntityResult> results) {
 		return results.stream()
-					  .flatMap(ContainedEntityResult::filterCast)
 					  .map(ContainedEntityResult::listResultLines)
 					  .mapToLong(List::size)
 					  .sum();

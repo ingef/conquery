@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -15,6 +16,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +25,7 @@ import lombok.RequiredArgsConstructor;
  * date range.
  */
 @RequiredArgsConstructor
-public class TableExportQueryPlan implements QueryPlan {
+public class TableExportQueryPlan implements QueryPlan<MultilineContainedEntityResult> {
 
 	private final QueryPlan subPlan;
 	private final CDateRange dateRange;
@@ -41,23 +43,18 @@ public class TableExportQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public CDateSet getValidityDates(ContainedEntityResult result) {
+	public CDateSet getValidityDates(MultilineContainedEntityResult result) {
 		// TODO figure out where the dates are
 		return CDateSet.create();
 	}
 
 	@Override
-	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-		EntityResult result = subPlan.execute(ctx, entity);
+	public Optional<MultilineContainedEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+		Optional<ContainedEntityResult> result = subPlan.execute(ctx, entity);
 
-		if (!result.isContained()) {
-			return result;
+		if (result.isEmpty() || tables.isEmpty()) {
+			return Optional.empty();
 		}
-
-		if (tables.isEmpty()) {
-			return EntityResult.notContained();
-		}
-
 
 		List<Object[]> results = new ArrayList<>();
 		for (TableExportDescription exportDescription : tables) {
@@ -98,10 +95,10 @@ public class TableExportQueryPlan implements QueryPlan {
 			}
 		}
 
-		return EntityResult.multilineOf(
+		return Optional.of(EntityResult.multilineOf(
 				entity.getId(),
 				results
-		);
+		));
 	}
 
 	@RequiredArgsConstructor

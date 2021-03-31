@@ -37,12 +37,6 @@ public interface EntityResult {
 		return NotContainedEntityResult.INSTANCE;
 	};
 	
-	@JsonIgnore
-	boolean isFailed();
-	
-	@JsonIgnore
-	boolean isContained();
-	
 	default FailedEntityResult asFailed() {
 		throw new IllegalStateException("The EntityResult "+this+" is not failed");
 	}

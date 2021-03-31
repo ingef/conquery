@@ -137,14 +137,13 @@ public class ArrowResultGenerationTest {
         // Prepare every input data
         PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
-        List<EntityResult> results = List.of(
+        List<ContainedEntityResult> results = List.of(
                 new SinglelineContainedEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),
                 new SinglelineContainedEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, null}),
                 new MultilineContainedEntityResult(3, List.of(
                         new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
                         new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, null}
-                )),
-                EntityResult.notContained());
+                )));
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
             public ResultInfoCollector collectResultInfos() {
@@ -158,7 +157,7 @@ public class ArrowResultGenerationTest {
 
             ;
 
-            public List<EntityResult> getResults() {
+            public List<ContainedEntityResult> getResults() {
                 return new ArrayList<>(results);
             }
         };
@@ -206,9 +205,8 @@ public class ArrowResultGenerationTest {
         return sb.toString();
     }
 
-    private String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
+    private String generateExpectedTSV(List<ContainedEntityResult> results, List<ResultInfo> resultInfos) {
         String expected = results.stream()
-                .filter(EntityResult::isContained)
                 .map(ContainedEntityResult.class::cast)
                 .map(res -> {
                     StringJoiner lineJoiner = new StringJoiner("\n");

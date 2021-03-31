@@ -6,12 +6,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.google.common.util.concurrent.Futures;
@@ -45,15 +47,15 @@ public class QueryExecutor implements Closeable {
 		}
 
 		QueryPlan queryPlan = entry.getValue();
-		List<ListenableFuture<EntityResult>> futures = new ArrayList<>();
+		List<ListenableFuture<Optional<ContainedEntityResult>>> futures = new ArrayList<>();
 
 		for (Entity entity : entries) {
 			QueryJob queryJob = new QueryJob(context, queryPlan, entity);
-			ListenableFuture<EntityResult> submit = executor.submit(queryJob);
+			ListenableFuture<Optional<ContainedEntityResult>> submit = executor.submit(queryJob);
 			futures.add(submit);
 		}
 
-		ListenableFuture<List<EntityResult>> future = Futures.allAsList(futures);
+		ListenableFuture<List<Optional<ContainedEntityResult>>> future = Futures.allAsList(futures);
 		result.setFuture(future);
 		future.addListener(result::finish, MoreExecutors.directExecutor());
 		return result;
