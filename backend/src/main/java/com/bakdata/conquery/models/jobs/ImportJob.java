@@ -447,7 +447,7 @@ public class ImportJob extends Job {
 
 		imp.setColumns(importColumns);
 
-		Set<Dictionary> dictionaries = new HashSet<>();
+		Set<DictionaryId> dictionaries = new HashSet<>();
 
 		for (Column column : columns) {
 			// only non-shared dictionaries need to be registered here
@@ -467,11 +467,11 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-			dictionaries.add(stringStore.getUnderlyingDictionary());
+			dictionaries.add(stringStore.getUnderlyingDictionary().getId());
 		}
 
 		imp.setDictionaries(dictionaries);
-		namespace.sendToAll(AddImport.forImport(imp));
+		namespace.sendToAll(new AddImport(imp));
 		return imp;
 	}
 
