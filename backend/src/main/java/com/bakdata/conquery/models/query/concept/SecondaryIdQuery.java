@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -154,8 +153,7 @@ public class SecondaryIdQuery extends IQuery {
 	@Override
 	public long countResults(List<EntityResult> results) {
 		return results.stream()
-					  .flatMap(ContainedEntityResult::filterCast)
-					  .map(ContainedEntityResult::listResultLines)
+					  .map(EntityResult::listResultLines)
 					  .mapToLong(List::size)
 					  .sum();
 	}

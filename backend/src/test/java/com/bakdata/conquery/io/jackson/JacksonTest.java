@@ -9,6 +9,7 @@ import java.util.List;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.BiMap;
@@ -51,17 +52,17 @@ public class JacksonTest {
 		SerializationTestUtil.forType(Double.class).test(Double.MAX_VALUE);
 		SerializationTestUtil.forType(Double.class).test(Double.MIN_VALUE);
 		SerializationTestUtil
-			.forType(EntityResult.class)
-			.test(
-				EntityResult.of(4, List.of(
-					new Object[] {0, 1, 2},
-					new Object[] {Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
-				)),
-				EntityResult.of(4, List.of(
-					new Object[] {0, 1, 2},
-					new Object[] {null, null, null}
-				))
-			);
+				.forType(EntityResult.class)
+				.test(
+						new MultilineEntityResult(4, List.of(
+								new Object[]{0, 1, 2},
+								new Object[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
+						)),
+						new MultilineEntityResult(4, List.of(
+								new Object[]{0, 1, 2},
+								new Object[]{null, null, null}
+						))
+				);
 	}
 
 	@Test

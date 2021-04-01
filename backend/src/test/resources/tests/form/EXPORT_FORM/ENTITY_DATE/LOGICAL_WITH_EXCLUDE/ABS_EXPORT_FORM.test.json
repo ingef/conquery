@@ -37,6 +37,9 @@
         "/tests/form/shared/abc.concept.json"
     ],
     "content": {
+        "secondaryIds": [
+            "/tests/form/shared/secondary.sid.json"
+        ],
         "tables": [
             "/tests/form/shared/vers_stamm.table.json",
             "/tests/form/shared/abc.table.json"

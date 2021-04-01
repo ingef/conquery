@@ -3,6 +3,7 @@ package com.bakdata.conquery.models;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.IdLabel;
@@ -13,7 +14,6 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -41,12 +41,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 public class SerializationTests {
 
@@ -131,18 +130,29 @@ public class SerializationTests {
 		dataset.setName("datasetName");
 		
 		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset.getId());
+		concept.setDataset(dataset);
 		concept.setLabel("conceptLabel");
 		concept.setName("conceptName");
-		
+
+		Table table = new Table();
+
 		Column column = new Column();
 		column.setLabel("colLabel");
 		column.setName("colName");
-		column.setPosition(2);
-		column.setType(MajorTypeId.DATE);
-		
-		Table table = new Table();
-		table.setColumns(new Column[]{column});
+		column.setPosition(0);
+		column.setType(MajorTypeId.STRING);
+		column.setTable(table);
+
+		Column dateColumn = new Column();
+		dateColumn.setLabel("colLabel2");
+		dateColumn.setName("colName2");
+		dateColumn.setPosition(1);
+		dateColumn.setType(MajorTypeId.DATE);
+		dateColumn.setTable(table);
+
+
+
+		table.setColumns(new Column[]{column, dateColumn});
 		table.setDataset(dataset);
 		table.setLabel("tableLabel");
 		table.setName("tableName");
@@ -154,11 +164,11 @@ public class SerializationTests {
 		connector.setLabel("connLabel");
 		connector.setName("connName");
 		connector.setColumn(column);
-		
+
 		concept.setConnectors(List.of(connector));
 		
 		ValidityDate valDate = new ValidityDate();
-		valDate.setColumn(column);
+		valDate.setColumn(dateColumn);
 		valDate.setConnector(connector);
 		valDate.setLabel("valLabel");
 		valDate.setName("valName");
@@ -169,6 +179,7 @@ public class SerializationTests {
 		registry.register(dataset);
 		registry.register(concept);
 		registry.register(column);
+		registry.register(dateColumn);
 		registry.register(table);
 		registry.register(connector);
 		registry.register(valDate);
@@ -231,6 +242,16 @@ public class SerializationTests {
 		SerializationTestUtil
 			.forType(ConqueryError.class)
 			.test(error);
+	}
+
+
+	@Test
+	public void executionQueryJobError() throws JSONException, IOException {
+		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5),new ConqueryError.UnknownError(null));
+
+		SerializationTestUtil
+				.forType(ConqueryError.class)
+				.test(error);
 	}
 
 	@Test

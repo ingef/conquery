@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -31,7 +32,7 @@ import lombok.Setter;
 @CPSType(id = "ENTITY_DATE", base = Mode.class)
 public class EntityDateMode extends Mode {
 
-    @NotNull
+    @CheckForNull
     @Valid
     private Range<LocalDate> dateRange;
 
@@ -62,12 +63,13 @@ public class EntityDateMode extends Mode {
 
     @Override
     public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+        CDateRange dateRestriction = dateRange == null ? CDateRange.all() : CDateRange.of(dateRange);
 
         return new EntityDateQuery(
                 getForm().getPrerequisite(),
                 resolvedFeatures,
                 ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
-                CDateRange.of(dateRange),
+                dateRestriction,
                 dateAggregationMode
         );
     }

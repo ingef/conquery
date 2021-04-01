@@ -47,7 +47,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -351,7 +351,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
 	 */
 	@JsonIgnore
-	public abstract StreamingOutput getResult(Function<ContainedEntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator);
+	public abstract StreamingOutput getResult(Function<EntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator);
 	
 	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.

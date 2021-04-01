@@ -87,6 +87,8 @@ public class QueryResource {
 		authorize(user, query, Ability.READ);
 		query.awaitDone(10, TimeUnit.SECONDS);
 
+
+
 		return processor.getStatus(
 				query,
 				RequestAwareUriBuilder.fromRequest(req),

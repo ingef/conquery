@@ -37,7 +37,6 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -168,7 +167,7 @@ public class FormTest extends ConqueryTestSpec {
 			support,
 			rawConcepts,
 			Concept.class,
-			c -> c.setDataset(support.getDataset().getId())
+			c -> c.setDataset(support.getDataset())
 		);
 
 		for (Concept<?> concept : concepts) {

@@ -13,9 +13,6 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor @EqualsAndHashCode(callSuper=false)
 public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AId<T> {
-	@Override
-	public void collectComponents(List<Object> components) {
-	}
 	
 
 	public enum Parser implements IId.Parser<PermissionOwnerId<?>> {

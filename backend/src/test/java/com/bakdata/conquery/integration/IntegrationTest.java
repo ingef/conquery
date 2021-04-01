@@ -25,7 +25,7 @@ public interface IntegrationTest {
 		public void execute(String name, TestConquery testConquery) throws Exception {
 			try(StandaloneSupport conquery = testConquery.getSupport(name)) {
 				// Because Shiro works with a static Security manager
-				testConquery.getStandaloneCommand().getManager().getAuthController().registerShiro();
+				testConquery.getStandaloneCommand().getManager().getAuthController().registerStaticSecurityManager();
 
 				execute(conquery);
 			}

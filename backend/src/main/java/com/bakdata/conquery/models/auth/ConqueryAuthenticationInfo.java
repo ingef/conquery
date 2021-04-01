@@ -3,10 +3,13 @@ package com.bakdata.conquery.models.auth;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.subject.SimplePrincipalCollection;
+
+import java.util.Collection;
 
 /**
  * Specialization class of the {@link AuthenticationInfo} that enforces the use
@@ -32,8 +35,16 @@ public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 	private final boolean displayLogout; 
 
 	public ConqueryAuthenticationInfo(UserId userId, Object credentials, Realm realm, boolean displayLogout) {
-		principals.add(userId, realm.getName());
 		this.credentials = credentials;
 		this.displayLogout = displayLogout;
+		principals.add(userId, realm.getName());
+	}
+
+	public ConqueryAuthenticationInfo(UserId userId, Object credentials, Realm realm, boolean displayLogout, @NonNull Collection<UserId> alternativeIds) {
+		this(userId, credentials, realm, displayLogout);
+		if(!alternativeIds.isEmpty()){
+			// The underlying SimplePrincipalCollection denies empty collections
+			principals.addAll(alternativeIds, realm.getName());
+		}
 	}
 }

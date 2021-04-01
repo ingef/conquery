@@ -28,12 +28,6 @@ import org.apache.shiro.authc.AuthenticationToken;
 @Slf4j
 public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 
-	private static final String UID_QUERY_STRING_PARAMETER = "access_token";
-
-	// Not allowed to be empty to take the first user as default
-	private final User defaultUser = Objects.requireNonNull(ConqueryConfig.getInstance()
-		.getAuthorization().getInitialUsers().get(0).getUser(), "There must be at least one initial user configured.");
-
 	/**
 	 * The warning that is displayed, when the realm is instantiated.
 	 */
@@ -57,7 +51,7 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 	public DefaultInitialUserRealm() {
 		log.warn(WARNING);
 		this.setAuthenticationTokenClass(DevelopmentToken.class);
-		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
+		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 	}
 
 	@Override
@@ -67,43 +61,5 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 		}
 		DevelopmentToken devToken = (DevelopmentToken) token;
 		return new ConqueryAuthenticationInfo(devToken.getPrincipal(), devToken.getCredentials(), this, true);
-	}
-
-	/**
-	 * Tries to extract a plain {@link UserId} from the request to submit it for the authentication process.
-	 */
-	@Override
-	public AuthenticationToken extractToken(ContainerRequestContext requestContext) {
-		// Check if the developer passed a UserId under whose the Request should be
-		// executed
-
-		// Check the Authorization header for a String which can be parsed as a UserId
-		String uid = requestContext.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-
-		if (uid != null) {
-			uid = uid.replaceFirst("^Bearer ", "");
-		}
-		else {
-			// Check also the query parameter "access_token" for a UserId
-			uid = requestContext.getUriInfo().getQueryParameters().getFirst(UID_QUERY_STRING_PARAMETER);
-		}
-
-
-		UserId userId = null;
-
-		if (StringUtils.isEmpty(uid)) {
-			// If nothing was found execute the request as the default user
-			userId = defaultUser.getId();
-			return new DevelopmentToken(userId, uid);
-		}
-
-		try {
-			userId = UserId.Parser.INSTANCE.parse(uid);
-			log.trace("Parsed UserId: {}", userId);
-			return new DevelopmentToken(userId, uid);
-		} catch (Exception e) {
-			log.trace("Unable to extract a valid user id.");
-			return null;
-		}
 	}
 }

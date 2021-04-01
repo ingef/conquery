@@ -22,7 +22,6 @@ public class UpdateConcept extends WorkerMessage.Slow {
 	
 	@Override
 	public void react(Worker context) throws Exception {
-		concept.setDataset(context.getStorage().getDataset().getId());
 		ValidatorHelper.failOnError(log, context.getStorage().getValidator().validate(concept));
 		context.updateConcept(concept);
 	}

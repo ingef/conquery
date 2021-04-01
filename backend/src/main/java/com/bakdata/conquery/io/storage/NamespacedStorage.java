@@ -134,12 +134,12 @@ public abstract class NamespacedStorage implements ConqueryStorage {
     private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
         store
                 .onAdd(concept -> {
-                    Dataset ds = centralRegistry.resolve(
-                            concept.getDataset() == null
-                                    ? concept.getId().getDataset()
-                                    : concept.getDataset()
-                    );
-                    concept.setDataset(ds.getId());
+
+					if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get())) {
+						throw new IllegalStateException("Concept is not for this dataset.");
+					}
+
+                    concept.setDataset(dataset.get());
 
                     concept.initElements(getValidator());
 

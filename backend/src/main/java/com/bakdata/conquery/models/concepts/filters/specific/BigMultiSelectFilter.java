@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "BIG_MULTI_SELECT", base = Filter.class)
-public class BigMultiSelectFilter extends AbstractSelectFilter<String[]> implements ISelectFilter {
+public class BigMultiSelectFilter extends AbstractSelectFilter<String[]> {
 
 	public BigMultiSelectFilter() {
 		super(-1, FEFilterType.BIG_MULTI_SELECT);

@@ -173,7 +173,7 @@ public class SerializingStoreDumpTest {
 	 */
 	@Test
 	public void testCorruptionRemoval() throws JSONException, IOException {
-		log.info("This test with throw some warnings from the SerializingStore.");
+		log.info("This test will throw some warnings from the SerializingStore.");
 		// Set config to remove corrupt entries
 		config.setRemoveUnreadableFromStore(true);
 
