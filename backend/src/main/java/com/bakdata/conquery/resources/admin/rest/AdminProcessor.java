@@ -1,30 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
-
-import javax.validation.Validator;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -44,6 +20,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
@@ -110,6 +87,7 @@ import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
@@ -205,26 +183,28 @@ public class AdminProcessor {
 	}
 
 	public void addImport(Namespace namespace, File selectedFile) throws IOException {
-		Dataset ds = namespace.getDataset();
 
-		try (final InputStream in = new FileInputStream(selectedFile)) {
+		final Dataset ds = namespace.getDataset();
+		final PreprocessedHeader header;
 
-			PreprocessedHeader header = Jackson.BINARY_MAPPER.getFactory().createParser(in).readValueAs(PreprocessedHeader.class);
+		// try and read only the header.
+		try (JsonParser parser = ImportJob.createParser(selectedFile, Collections.emptyMap(), namespace.getStorage().getCentralRegistry())) {
 
-			TableId tableName = new TableId(ds.getId(), header.getTable());
-			Table table = namespace.getStorage().getTable(tableName);
-
-			final ImportId importId = new ImportId(table.getId(), header.getName());
-
-			if (namespace.getStorage().getImport(importId) != null) {
-				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
-			}
-
-			log.info("Importing {}", selectedFile.getAbsolutePath());
-
-			datasetRegistry.get(ds.getId()).getJobManager()
-						   .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize));
+			header = parser.readValueAs(PreprocessedHeader.class);
 		}
+
+		Table table = namespace.getStorage().getTable(new TableId(ds.getId(), header.getTable()));
+
+		final ImportId importId = new ImportId(table.getId(), header.getName());
+
+		if (namespace.getStorage().getImport(importId) != null) {
+			throw new BadRequestException(String.format("Import[%s] is already present.", importId));
+		}
+
+		log.info("Importing {}", selectedFile.getAbsolutePath());
+
+		final ImportJob job = new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize);
+		datasetRegistry.get(ds.getId()).getJobManager().addSlowJob(job);
 
 	}
 

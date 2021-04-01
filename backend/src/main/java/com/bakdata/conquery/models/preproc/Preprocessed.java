@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.preproc;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.IntSummaryStatistics;
@@ -81,14 +79,8 @@ public class Preprocessed {
 		}
 	}
 
-	/**
-	 * Read the data section of a CQPP file.
-	 */
-	public static PreprocessedData readContainer(InputStream in) throws IOException {
-		return CONTAINER_READER.readValue(in);
-	}
 
-	public void write(OutputStream out) throws IOException {
+	public void write(JsonGenerator generator) throws IOException {
 
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
@@ -104,8 +96,6 @@ public class Preprocessed {
 		Dictionary primaryDictionary = encodePrimaryDictionary();
 
 		Map<String, Dictionary> dicts = collectDictionaries(columnStores);
-
-		final JsonGenerator generator = Jackson.BINARY_MAPPER.getFactory().createGenerator(out);
 
 		log.debug("Writing Headers");
 

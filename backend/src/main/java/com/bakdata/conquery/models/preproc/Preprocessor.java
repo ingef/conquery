@@ -14,8 +14,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import com.bakdata.conquery.io.csv.CsvIo;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -25,6 +27,7 @@ import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.io.CountingInputStream;
 import com.univocity.parsers.csv.CsvParser;
@@ -37,6 +40,8 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 @UtilityClass
 public class Preprocessor {
+
+	private static final ObjectMapper MAPPER = Jackson.BINARY_MAPPER;
 
 	/**
 	 * Create version of file-name with tag.
@@ -145,8 +150,7 @@ public class Preprocessor {
 					}
 
 					try {
-						int
-								primaryId =
+						int primaryId =
 								(int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
 
 						final PPColumn[] columns = result.getColumns();
@@ -210,8 +214,8 @@ public class Preprocessor {
 			exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
 		}
 
-		try(OutputStream out = new FileOutputStream(tmp)) {
-			result.write(out);
+		try (OutputStream out = new GZIPOutputStream(new FileOutputStream(tmp))) {
+			result.write(MAPPER.getFactory().createGenerator(out));
 		}
 
 		if (errors > 0) {
