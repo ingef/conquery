@@ -6,9 +6,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -41,15 +41,12 @@ public class Import extends NamedImpl<ImportId> {
 	private ImportColumn[] columns = new ImportColumn[0];
 
 	@NotNull
-	private Set<DictionaryId> dictionaries;
+	@NsIdRefCollection
+	private Set<Dictionary> dictionaries;
 
 	@Override
 	public ImportId createId() {
 		return new ImportId(table.getId(), getName());
-	}
-
-	public void loadExternalInfos(NamespacedStorage storage) {
-
 	}
 
 	public long estimateMemoryConsumption() {

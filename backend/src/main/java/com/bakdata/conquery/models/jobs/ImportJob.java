@@ -142,7 +142,6 @@ public class ImportJob extends Job {
 
 		log.debug("Done reading data. Contains {} Entities.", container.size());
 
-		setDictionaryIds(container.getStores(), table.getColumns(), header.getName());
 
 		log.info("Remapping Dictionaries {}", mappings.values());
 
@@ -379,24 +378,6 @@ public class ImportJob extends Job {
 		return out;
 	}
 
-	public void setDictionaryIds(Map<String, ColumnStore> values, Column[] columns, String importName) {
-		for (Column column : columns) {
-			if (!(values.get(column.getName()) instanceof StringStore)) {
-				continue;
-			}
-
-			final StringStore stringStore = (StringStore) values.get(column.getName());
-
-			// if not shared use default naming
-			if (column.getSharedDictionary() != null) {
-				stringStore.setUnderlyingDictionary(computeSharedDictionaryId(column));
-			}
-			else {
-				stringStore.setUnderlyingDictionary(computeDefaultDictionaryId(importName, column));
-			}
-		}
-	}
-
 	public void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values, Column[] columns) {
 		final ProgressReporter subJob = getProgressReporter().subJob(columns.length);
 
@@ -467,7 +448,7 @@ public class ImportJob extends Job {
 
 		imp.setColumns(importColumns);
 
-		Set<DictionaryId> dictionaries = new HashSet<>();
+		Set<Dictionary> dictionaries = new HashSet<>();
 
 		for (Column column : columns) {
 			// only non-shared dictionaries need to be registered here
@@ -481,11 +462,13 @@ public class ImportJob extends Job {
 			}
 
 			// Some StringStores don't have Dictionaries.
-			if (!((StringStore) stores.get(column.getName())).isDictionaryHolding()) {
+			final StringStore stringStore = (StringStore) stores.get(column.getName());
+
+			if (!stringStore.isDictionaryHolding()) {
 				continue;
 			}
 
-			dictionaries.add(computeDefaultDictionaryId(header.getName(), column));
+			dictionaries.add(stringStore.getUnderlyingDictionary());
 		}
 
 		imp.setDictionaries(dictionaries);

@@ -14,7 +14,6 @@ import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -35,22 +34,6 @@ public class SuccinctTrieTest {
 		return new long[]{0L, 7L};
 	}
 
-	@Test
-	public void replicationTest() throws IOException {
-		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "name");
-		MapDictionary direct = new MapDictionary( Dataset.PLACEHOLDER, "name2");
-
-		data().forEach(entry -> direct.put(entry.getBytes()));
-
-		dict.compress();
-
-		SuccinctTrie replicatedDict = SuccinctTrie.fromSerialized(dict.toSerialized());
-
-		assertThat(IntStream.range(0, dict.size())).allSatisfy(id -> {
-			assertThat(replicatedDict.getElement(id)).isEqualTo(dict.getElement(id));
-		});
-
-	}
 
 	public static Stream<String> data() throws IOException {
 		return In.resource(SuccinctTrieTest.class, "SuccinctTrieTest.data").streamLines();

@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -176,8 +175,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	public void removeImport(ImportId importId) {
 		final Import imp = storage.getImport(importId);
 
-		for (DictionaryId dictionaryId : imp.getDictionaries()) {
-			storage.removeDictionary(dictionaryId);
+		for (Dictionary dictionary : imp.getDictionaries()) {
+			storage.removeDictionary(dictionary.getId());
 		}
 
 		storage.removeImport(importId);

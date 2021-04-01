@@ -4,7 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
@@ -82,8 +81,6 @@ public class TablesUIResource extends HAdmin {
 						//total size of dictionaries
 						imports.stream()
 							   .flatMap(imp -> imp.getDictionaries().stream())
-							   .filter(Objects::nonNull)
-							   .map(namespace.getStorage()::getDictionary)
 							   .mapToLong(Dictionary::estimateMemoryConsumption)
 							   .sum(),
 						//total size of entries

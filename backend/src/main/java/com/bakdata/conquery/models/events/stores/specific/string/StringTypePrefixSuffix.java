@@ -6,12 +6,10 @@ import java.util.Iterator;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NonNull;
@@ -95,11 +93,6 @@ public class StringTypePrefixSuffix implements StringStore {
 	}
 
 	@Override
-	public void loadDictionaries(NamespacedStorage storage) {
-		subType.loadDictionaries(storage);
-	}
-
-	@Override
 	public int size() {
 		return subType.size();
 	}
@@ -130,11 +123,6 @@ public class StringTypePrefixSuffix implements StringStore {
 	@Override
 	public boolean isDictionaryHolding() {
 		return subType.isDictionaryHolding();
-	}
-
-	@Override
-	public void setUnderlyingDictionary(DictionaryId newDict) {
-		subType.setUnderlyingDictionary(newDict);
 	}
 
 	@Override

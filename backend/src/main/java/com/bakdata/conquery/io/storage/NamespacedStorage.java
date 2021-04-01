@@ -180,10 +180,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
     }
 
     private void decorateImportStore(IdentifiableStore<Import> store) {
-        store
-                .onAdd(imp -> {
-                    imp.loadExternalInfos(this);
-
+        store.onAdd(imp -> {
                     if (isRegisterImports()) {
                         for (Concept<?> c : getAllConcepts()) {
                             for (Connector con : c.getConnectors()) {
@@ -193,13 +190,6 @@ public abstract class NamespacedStorage implements ConqueryStorage {
                             }
                         }
                     }
-
-                    getCentralRegistry().register(imp);
-
-                })
-                .onRemove(imp -> {
-                    getCentralRegistry().remove(imp);
-
                 });
     }
 

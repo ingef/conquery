@@ -5,13 +5,11 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.UnprefixedNsIdRef;
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -56,10 +54,6 @@ public class StringTypeDictionary implements ColumnStore {
 	}
 
 
-	public void loadDictionaries(NamespacedStorage storage) {
-		// todo consider implementing this with Id-Injection instead of hand-wiring.
-	}
-
 	public int size() {
 		return dictionary.size();
 	}
@@ -86,10 +80,6 @@ public class StringTypeDictionary implements ColumnStore {
 		return dictionary.estimateMemoryConsumption();
 	}
 
-
-	public void setUnderlyingDictionary(DictionaryId newDict) {
-
-	}
 
 	@Override
 	public StringTypeDictionary select(int[] starts, int[] length) {
