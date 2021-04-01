@@ -88,7 +88,7 @@ public class UpdateMatchingStats extends Job {
 
 			try {
 				Bucket bucket = cBlock.getBucket();
-				Table table = bucket.getImp().getTable();
+				Table table = bucket.getTable();
 
 				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 

@@ -169,9 +169,6 @@ public class TestConquery {
 
 	@SneakyThrows
 	public synchronized void shutdown(StandaloneSupport support) {
-		log.info("Tearing down dataset", new Exception("MARKER"));
-
-
 		DatasetId dataset = support.getDataset().getId();
 
 		standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();

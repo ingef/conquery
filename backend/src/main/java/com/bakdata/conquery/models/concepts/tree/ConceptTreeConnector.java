@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketEntry;
@@ -88,8 +87,7 @@ public class ConceptTreeConnector extends Connector {
 
 		final TreeConcept treeConcept = getConcept();
 
-		final Import imp = bucket.getImp();
-		final ImportId importId = imp.getId();
+		final ImportId importId = bucket.getImp();
 
 		final StringStore stringStore;
 

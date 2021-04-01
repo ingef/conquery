@@ -7,7 +7,6 @@ import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketEntry;
@@ -40,7 +39,7 @@ public class CalculateCBlocksJob extends Job {
 		return "Calculate " + infos.size() + " CBlocks for " + connector.getId();
 	}
 
-	public void addCBlock(Import imp, Bucket bucket, CBlockId cBlockId) {
+	public void addCBlock(Bucket bucket, CBlockId cBlockId) {
 		infos.add(new CalculationInformation(bucket, cBlockId));
 	}
 
@@ -91,7 +90,7 @@ public class CalculateCBlocksJob extends Job {
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 */
 	private void calculateEntityDateIndices(CBlock cBlock, Bucket bucket) {
-		Table table = bucket.getImp().getTable();
+		Table table = bucket.getTable();
 		for (Column column : table.getColumns()) {
 			if (!column.getType().isDateCompatible()) {
 				continue;

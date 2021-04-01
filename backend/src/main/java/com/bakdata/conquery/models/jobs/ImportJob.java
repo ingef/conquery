@@ -150,10 +150,8 @@ public class ImportJob extends Job {
 
 		Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
 
-		log.debug("Sending Import Information  {}", imp);
 
 		namespace.getStorage().updateImport(imp);
-		namespace.sendToAll(new AddImport(imp));
 
 		Map<Integer, List<Integer>> buckets2LocalEntities = groupEntitiesByBucket(container.entities(), primaryMapping, bucketSize);
 
@@ -253,7 +251,8 @@ public class ImportJob extends Job {
 				new Int2IntArrayMap(globalIds, entityStarts),
 				new Int2IntArrayMap(globalIds, entityLengths),
 				bucketSize,
-				imp
+				imp.getTable(),
+				imp.getId()
 		);
 	}
 
@@ -426,7 +425,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) {
+	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) throws JsonProcessingException {
 		Import imp = new Import(table);
 
 		imp.setName(header.getName());
@@ -472,6 +471,7 @@ public class ImportJob extends Job {
 		}
 
 		imp.setDictionaries(dictionaries);
+		namespace.sendToAll(AddImport.forImport(imp));
 		return imp;
 	}
 
