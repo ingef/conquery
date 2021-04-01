@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -15,9 +13,9 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.annotation.JsonCreator;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Test;
 
 public class IdRefrenceTest {
 
@@ -36,8 +34,7 @@ public class IdRefrenceTest {
 		
 		String json = Jackson.MAPPER.writeValueAsString(
 			new ListHolder(
-				Collections.singletonList(table),
-				Collections.singletonList(user)
+				Collections.singletonList(table)
 			)
 		);
 		
@@ -49,7 +46,6 @@ public class IdRefrenceTest {
 			.injectInto(Jackson.MAPPER.readerFor(ListHolder.class))
 			.readValue(json);
 		
-		assertThat(holder.getUsers().get(0)).isSameAs(user);
 		assertThat(holder.getTables().get(0)).isSameAs(table);
 	}
 	
@@ -58,7 +54,5 @@ public class IdRefrenceTest {
 	public static class ListHolder {
 		@NsIdRefCollection
 		private final List<Table> tables;
-		@MetaIdRefCollection
-		private final List<User> users;
 	}
 }

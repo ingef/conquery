@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.UnprefixedNsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -30,7 +30,7 @@ public class StringTypeDictionary implements ColumnStore {
 
 	protected IntegerStore numberType;
 
-	@UnprefixedNsIdRef
+	@NsIdRef
 	private Dictionary dictionary;
 
 	public StringTypeDictionary(IntegerStore store, Dictionary dictionary) {

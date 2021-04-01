@@ -21,8 +21,6 @@ import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
-import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.model.Base;
@@ -180,8 +178,8 @@ public class Constants {
 
 	public static final String JSON_CREATOR = JsonCreator.class.getName();
 	public static final String CPS_TYPE = CPSType.class.getName();
-	public static final Set<String> ID_REF = Set.of(NsIdRef.class.getName(), MetaIdRef.class.getName());
-	public static final Set<String> ID_REF_COL = Set.of(NsIdRefCollection.class.getName(), MetaIdRefCollection.class.getName());
+	public static final Set<String> ID_REF = Set.of(NsIdRef.class.getName());
+	public static final Set<String> ID_REF_COL = Set.of(NsIdRefCollection.class.getName());
 	public static final String JSON_IGNORE = JsonIgnore.class.getName();
 	public static final String JSON_BACK_REFERENCE = JsonBackReference.class.getName();
 	public static final String PATH = Path.class.getName();

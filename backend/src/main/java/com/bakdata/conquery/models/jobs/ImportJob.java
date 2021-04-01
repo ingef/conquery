@@ -79,7 +79,7 @@ public class ImportJob extends Job {
 
 		// We parse semi-manually as the incoming file consist of multiple documents we only read progressively.
 		final FileInputStream in = new FileInputStream(importFile);
-//		final GZIPInputStream in = new GZIPInputStream(in1);
+		//		final GZIPInputStream in = new GZIPInputStream(in1);
 		//TODO clean this up!
 
 
@@ -90,7 +90,7 @@ public class ImportJob extends Job {
 		final InjectedCentralRegistry injectedCentralRegistry = new InjectedCentralRegistry(replacements, namespace.getStorage().getCentralRegistry());
 		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectedCentralRegistry);
 
-		final JsonParser parser = namespaceCollection.injectInto(getDataset().injectInto(binaryMapper))
+		final JsonParser parser = namespaceCollection.injectInto(binaryMapper)
 													 .getFactory()
 													 .createParser(in);
 
@@ -119,12 +119,16 @@ public class ImportJob extends Job {
 
 		getProgressReporter().report(1);
 
-		final Map<String, DictionaryMapping> mappings = importAndSendDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
+		final Map<DictionaryId, Dictionary> normalDictionaries = importNormalDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
+
+		final Map<String, DictionaryMapping> mappings = importSharedDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
 
 		// We inject the mappings into the parser, so that the incoming names are replaced with the new names of shared dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
+		replacements.putAll(normalDictionaries);
+
 		for (DictionaryMapping value : mappings.values()) {
-			replacements.put(new DictionaryId(getDataset().getId(), value.getSourceDictionary().getName()), value.getTargetDictionary());
+			replacements.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), value.getSourceDictionary().getName()), value.getTargetDictionary());
 		}
 
 		//import the actual data
@@ -308,7 +312,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private Map<String, DictionaryMapping> importAndSendDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName)
+	private Map<DictionaryId, Dictionary> importNormalDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName)
 			throws JSONException {
 
 		// Empty Maps are Coalesced to null by Jackson
@@ -318,13 +322,13 @@ public class ImportJob extends Job {
 
 		final ProgressReporter subJob = getProgressReporter().subJob(dicts.size());
 
-		final Map<String, DictionaryMapping> out = new HashMap<>();
+		final Map<DictionaryId, Dictionary> out = new HashMap<>();
 
 		log.info("Importing Dictionaries ({})", dicts);
 
 		for (Column column : columns) {
 
-			if (column.getType() != MajorTypeId.STRING) {
+			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() != null) {
 				continue;
 			}
 
@@ -335,30 +339,15 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-
-			// if the target column has a shared dictionary, we merge them and then update the merged dictionary.
-			if (column.getSharedDictionary() != null) {
-				final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
-				final Dictionary dictionary = dicts.get(column.getName());
-
-				log.info("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryId);
-
-				final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
-
-				out.put(column.getName(), mapping);
-
-				subJob.report(1);
-
-				continue;
-			}
-
 			//store external infos into master and slaves
 			final Dictionary dict = dicts.get(column.getName());
-			final DictionaryId dictionaryId = computeDefaultDictionaryId(importName, column);
+			final String name = computeDefaultDictionaryName(importName, column);
+
+			out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dict.getName()), dict);
 
 			try {
 				dict.setDataset(getDataset());
-				dict.setName(dict.getName());
+				dict.setName(name);
 
 				log.debug("Sending {} to all Workers", dict);
 				namespace.getStorage().updateDictionary(dict);
@@ -370,6 +359,51 @@ public class ImportJob extends Job {
 			finally {
 				subJob.report(1);
 			}
+		}
+
+		subJob.done();
+
+		return out;
+	}
+
+	private Map<String, DictionaryMapping> importSharedDictionaries(Map<String, Dictionary> dicts, Column[] columns, String importName)
+			throws JSONException {
+
+		// Empty Maps are Coalesced to null by Jackson
+		if (dicts == null) {
+			return Collections.emptyMap();
+		}
+
+		final ProgressReporter subJob = getProgressReporter().subJob(dicts.size());
+
+		final Map<String, DictionaryMapping> out = new HashMap<>();
+
+		log.info("Importing Shared Dictionaries ({})", dicts);
+
+		for (Column column : columns) {
+
+			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() == null) {
+				continue;
+			}
+
+			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
+			// but could also be an error :/ Most likely the former
+			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
+				log.trace("No Dictionary for {}", column);
+				continue;
+			}
+
+			final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
+			final Dictionary dictionary = dicts.get(column.getName());
+
+			log.debug("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryId);
+
+			final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
+
+			out.put(column.getName(), mapping);
+
+			subJob.report(1);
+
 		}
 
 		subJob.done();
@@ -514,8 +548,8 @@ public class ImportJob extends Job {
 		return namespace.getDataset();
 	}
 
-	public DictionaryId computeDefaultDictionaryId(String importName, Column column) {
-		return new DictionaryId(getDataset().getId(), String.format("%s#%s", importName, column.getId().toString()));
+	public String computeDefaultDictionaryName(String importName, Column column) {
+		return String.format("%s#%s", importName, column.getId().toString());
 	}
 
 	@Override
