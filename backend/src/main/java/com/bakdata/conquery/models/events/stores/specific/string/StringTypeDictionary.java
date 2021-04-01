@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.UnprefixedNsIdRef;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
@@ -12,9 +12,9 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Iterators;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,26 +27,19 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
+@NoArgsConstructor
 public class StringTypeDictionary implements ColumnStore {
 
 	protected IntegerStore numberType;
 
-	@NsIdRef
-	private transient Dictionary dictionary;
-	// todo use NsIdRef
-	private String name;
+	@UnprefixedNsIdRef
+	private Dictionary dictionary;
 
-	public StringTypeDictionary(IntegerStore numberType, Dictionary dictionary, String name) {
-		this.numberType = numberType;
+	public StringTypeDictionary(IntegerStore store, Dictionary dictionary) {
+		this.numberType = store;
 		this.dictionary = dictionary;
-		this.name = name;
 	}
 
-	@JsonCreator
-	public StringTypeDictionary(IntegerStore numberType, String name) {
-		this.numberType = numberType;
-		this.name = name;
-	}
 
 	@Override
 	public int getLines() {
@@ -95,12 +88,12 @@ public class StringTypeDictionary implements ColumnStore {
 
 
 	public void setUnderlyingDictionary(DictionaryId newDict) {
-		name = newDict.getName();
+
 	}
 
 	@Override
 	public StringTypeDictionary select(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.select(starts, length), getName());
+		return new StringTypeDictionary(numberType.select(starts, length), dictionary);
 	}
 
 	public int getString(int event) {

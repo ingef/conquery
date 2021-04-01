@@ -64,7 +64,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		Namespace removed = datasets.remove(id);
 
 		if(removed != null) {
-			metaStorage.getCentralRegistry().remove(id);
+			metaStorage.getCentralRegistry().remove(removed.getDataset());
 
 			getShardNodes().values().forEach(s -> s.send(new RemoveWorker(id)));
 

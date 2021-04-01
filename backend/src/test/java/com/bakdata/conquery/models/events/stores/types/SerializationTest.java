@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.EmptyStore;
@@ -60,13 +61,13 @@ public class SerializationTest {
 	}
 
 	public static List<ColumnStore> createCTypes() {
-		final MapDictionary dictionary = new MapDictionary( "hi");
+		final MapDictionary dictionary = new MapDictionary(Dataset.PLACEHOLDER, "hi");
 		return Arrays.asList(
 				new DecimalTypeScaled(13, IntArrayStore.create(10)),
 				new MoneyIntStore(IntArrayStore.create(10)),
-				new StringTypeDictionary(IntArrayStore.create(10), dictionary, "hi"),
-				new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase),
-				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), dictionary, "hi"), Encoding.Base16LowerCase), "a", "b"),
+				new StringTypeDictionary(IntArrayStore.create(10), dictionary),
+				new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), dictionary), Encoding.Base16LowerCase),
+				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), dictionary), Encoding.Base16LowerCase), "a", "b"),
 
 				new StringTypeNumber(new IntegerRange(0, 7), ByteArrayStore.create(10)),
 				new StringTypeSingleton("a", BitSetStore.create(10)),

@@ -25,13 +25,15 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.dictionary.SharedDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.InjectedCentralRegistry;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -49,6 +51,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -76,11 +79,18 @@ public class ImportJob extends Job {
 		// We parse semi-manually as the incoming file consist of multiple documents we only read progressively.
 		final FileInputStream in = new FileInputStream(importFile);
 //		final GZIPInputStream in = new GZIPInputStream(in1);
+		//TODO clean this up!
 
 
-		final JsonParser parser = namespace.getDataset().injectInto(namespace.getNamespaces().injectInto(namespace.getStorage()
-										   .getCentralRegistry()
-										   .injectInto(Jackson.BINARY_MAPPER)))
+		final ObjectMapper binaryMapper = Jackson.BINARY_MAPPER;
+
+		Map<IId<?>, Identifiable<?>> replacements = new HashMap<>();
+
+		final InjectedCentralRegistry injectedCentralRegistry = new InjectedCentralRegistry(replacements, namespace.getStorage().getCentralRegistry());
+
+		// TODO clean this pattern up, its a total mess.
+		final JsonParser parser = namespace.getNamespaces()
+										   .injectInto(injectedCentralRegistry.injectInto(getDataset().injectInto(binaryMapper)))
 										   .getFactory()
 										   .createParser(in);
 
@@ -112,11 +122,16 @@ public class ImportJob extends Job {
 
 		final Map<String, DictionaryMapping> mappings = importAndSendDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
+
+		// We inject the mappings into the parser, so that the incoming names are replaced with the new names of shared dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
+		for (DictionaryMapping value : mappings.values()) {
+			replacements.put(new DictionaryId(getDataset().getId(), value.getSourceDictionary().getName()), value.getTargetDictionary());
+		}
+
 		//import the actual data
 		log.debug("Begin reading data.");
 
 		final PreprocessedData container = parser.readValueAs(PreprocessedData.class);
-
 
 		if (container.isEmpty()) {
 			log.warn("Import was empty. Skipping.");
@@ -323,28 +338,30 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-			Dictionary dict = dicts.get(column.getName());
 
 			// if the target column has a shared dictionary, we merge them and then update the merged dictionary.
 			if (column.getSharedDictionary() != null) {
 				final DictionaryId sharedDictionaryId = computeSharedDictionaryId(column);
+				final Dictionary dictionary = dicts.get(column.getName());
 
 				log.info("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryId);
 
-				final DictionaryMapping mapping = importSharedDictionary(dict, sharedDictionaryId);
-
-				// this is an indirect reference to the shared dictionary
-				dict = new SharedDictionary(getDataset(), dict.getName(), mapping.getTargetDictionary());
+				final DictionaryMapping mapping = importSharedDictionary(dictionary, sharedDictionaryId);
 
 				out.put(column.getName(), mapping);
 
 				subJob.report(1);
 
+				continue;
 			}
 
 			//store external infos into master and slaves
+			final Dictionary dict = dicts.get(column.getName());
+			final DictionaryId dictionaryId = computeDefaultDictionaryId(importName, column);
 
 			try {
+				dict.setDataset(getDataset());
+				dict.setName(dict.getName());
 
 				log.debug("Sending {} to all Workers", dict);
 				namespace.getStorage().updateDictionary(dict);

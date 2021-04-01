@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.StoreInfo;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
@@ -52,7 +53,7 @@ public class BigStoreTest {
 			StoreInfo.DICTIONARIES, new ArrayList<>(), (e) -> {}, (e) -> {});
 		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 		// TODO inject dataset
-		Dictionary nDict = new MapDictionary("dict");
+		Dictionary nDict = new MapDictionary(Dataset.PLACEHOLDER, "dict");
 
 		for (int v = 0; v < 1000000; v++) {
 			nDict.add(Integer.toHexString(v).getBytes());
@@ -88,7 +89,7 @@ public class BigStoreTest {
 		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
 		// TODO inject dataset
-		Dictionary nDict = new MapDictionary( "dict");
+		Dictionary nDict = new MapDictionary( Dataset.PLACEHOLDER,"dict");
 
 		// check if manual serialization deserialization works
 		byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);

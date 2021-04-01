@@ -23,9 +23,7 @@ public class MapTypeGuesser extends StringTypeGuesser {
 	public Guess createGuess() {
 		IntegerStore indexType = p.decideIndexType();
 
-		final MapDictionary dictionaryEntries = new MapDictionary(Dataset.PLACEHOLDER, "");
-
-		StringTypeDictionary type = new StringTypeDictionary(indexType, dictionaryEntries, dictionaryEntries.getName());
+		StringTypeDictionary type = new StringTypeDictionary(indexType, null);
 		long mapSize = MapDictionary.estimateMemoryConsumption(
 				p.getStrings().size(),
 				p.getDecoded().stream().mapToLong(s -> s.length).sum()
@@ -41,7 +39,7 @@ public class MapTypeGuesser extends StringTypeGuesser {
 		) {
 			@Override
 			public StringStore getType() {
-				MapDictionary map = new MapDictionary(UUID.randomUUID().toString());
+				MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, UUID.randomUUID().toString());
 				for (byte[] v : p.getDecoded()) {
 					map.add(v);
 				}

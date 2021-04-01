@@ -7,9 +7,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.BufferUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -50,7 +50,7 @@ public class SuccinctTrie extends Dictionary {
 	@Getter
 	private boolean compressed;
 
-	public SuccinctTrie(DatasetId dataset, String name) {
+	public SuccinctTrie(Dataset dataset, String name) {
 		super(dataset, name);
 		this.root = new HelpNode(null, (byte) 0);
 		this.root.setPositionInArray(0);

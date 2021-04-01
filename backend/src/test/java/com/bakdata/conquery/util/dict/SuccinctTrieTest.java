@@ -11,6 +11,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
@@ -36,8 +37,8 @@ public class SuccinctTrieTest {
 
 	@Test
 	public void replicationTest() throws IOException {
-		SuccinctTrie dict = new SuccinctTrie( "name");
-		MapDictionary direct = new MapDictionary( "name2");
+		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "name");
+		MapDictionary direct = new MapDictionary( Dataset.PLACEHOLDER, "name2");
 
 		data().forEach(entry -> direct.put(entry.getBytes()));
 
@@ -66,7 +67,7 @@ public class SuccinctTrieTest {
 		words.add("ha");
 		words.add("hat");
 
-		SuccinctTrie direct = new SuccinctTrie("name");
+		SuccinctTrie direct = new SuccinctTrie(Dataset.PLACEHOLDER,"name");
 
 
 		int distinctValues = 0;
@@ -92,7 +93,7 @@ public class SuccinctTrieTest {
 	public void serializationTest()
 			throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 
-		SuccinctTrie dict = new SuccinctTrie("testDict");
+		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER,"testDict");
 
 		data().forEach(value -> dict.put(value.getBytes()));
 
@@ -105,7 +106,7 @@ public class SuccinctTrieTest {
 	@ParameterizedTest(name = "seed: {0}")
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
-		final SuccinctTrie dict = new SuccinctTrie("name");
+		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER,"name");
 		EncodedDictionary direct = new EncodedDictionary(dict, StringTypeEncoded.Encoding.UTF8);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 

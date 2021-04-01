@@ -1,15 +1,17 @@
 package com.bakdata.conquery.util.dict;
 
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import javax.inject.Inject;
 
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data @AllArgsConstructor(onConstructor_ = @JsonCreator )
 public class SerializedSuccinctTrie {
 	private String name;
-	private DatasetId dataset;
+	@Inject
+	private Dataset dataset;
 	private int nodeCount;
 	private int entryCount;
 	private int[] reverseLookup;

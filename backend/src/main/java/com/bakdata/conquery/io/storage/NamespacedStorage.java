@@ -11,7 +11,6 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
@@ -170,8 +169,8 @@ public abstract class NamespacedStorage implements ConqueryStorage {
                     //see #146  remove from Dataset.concepts
                     for (Connector c : concept.getConnectors()) {
                         c.getSelects().forEach(centralRegistry::remove);
-                        c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
-                        centralRegistry.remove(c.getId());
+                        c.collectAllFilters().forEach(centralRegistry::remove);
+                        centralRegistry.remove(c);
                     }
 
 					if(concept instanceof TreeConcept){

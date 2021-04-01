@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -19,8 +18,9 @@ public class ImportColumn extends NamedImpl<ImportColumnId> {
 	@JsonBackReference @NotNull
 	private final Import parent;
 
-	@NotNull @Valid
-	private final ColumnStore typeDescription;
+	// Only used on ManagerNode for com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter.addImport
+	// Can Probably be removed.
+	private final transient ColumnStore typeDescription;
 
 	private final long lines;
 
