@@ -47,6 +47,7 @@ import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonParser;
@@ -87,13 +88,11 @@ public class ImportJob extends Job {
 		Map<IId<?>, Identifiable<?>> replacements = new HashMap<>();
 
 		final InjectedCentralRegistry injectedCentralRegistry = new InjectedCentralRegistry(replacements, namespace.getStorage().getCentralRegistry());
+		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectedCentralRegistry);
 
-		// TODO clean this pattern up, its a total mess.
-		final JsonParser parser = namespace.getNamespaces()
-										   .injectInto(injectedCentralRegistry.injectInto(getDataset().injectInto(binaryMapper)))
-										   .getFactory()
-										   .createParser(in);
-
+		final JsonParser parser = namespaceCollection.injectInto(getDataset().injectInto(binaryMapper))
+													 .getFactory()
+													 .createParser(in);
 
 
 		log.info("Reading CQPP {}", importFile);
