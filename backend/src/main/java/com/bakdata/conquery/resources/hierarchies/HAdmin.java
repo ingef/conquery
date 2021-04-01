@@ -16,6 +16,7 @@ public abstract class HAdmin extends HAuthorized {
 	@Inject
 	protected AdminProcessor processor;
 	
+	@Override
 	@PostConstruct
 	public void init() {
 		super.init();

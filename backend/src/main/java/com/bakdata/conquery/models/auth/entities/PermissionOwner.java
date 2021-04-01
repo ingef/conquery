@@ -12,10 +12,13 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.set.UnmodifiableSet;
 import org.apache.shiro.authz.Permission;
 
 /**
@@ -68,6 +71,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *            The permissions to add.
 	 * @return Returns the added Permission
 	 */
+	//TODO unused?
 	public boolean addPermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
 		boolean ret = false;
 		synchronized (this) {
@@ -101,6 +105,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *            The permission to remove.
 	 * @return Returns the added Permission
 	 */
+	//todo unsed?
 	public boolean removePermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
 		boolean ret = false;
 		synchronized (this) {

@@ -252,30 +252,22 @@ public class FrontEndConceptBuilder {
 		return result;
 	}
 
-	public static FESelect createFilter(Select select) {
-		return FESelect.builder()
-			.label(select.getLabel())
-			.id(select.getId())
-			.description(select.getDescription())
-			.build();
-	}
-	
 	public static FEFilter createFilter(Filter<?> filter) {
 		FEFilter f = FEFilter.builder()
-			.id(filter.getId())
-			.label(filter.getLabel())
-			.description(filter.getDescription())
-			.unit(filter.getUnit())
-			.allowDropFile(filter.getAllowDropFile())
-			.pattern(filter.getPattern())
-			.build();
+							 .id(filter.getId())
+							 .label(filter.getLabel())
+							 .description(filter.getDescription())
+							 .unit(filter.getUnit())
+							 .allowDropFile(filter.getAllowDropFile())
+							 .pattern(filter.getPattern())
+							 .build();
 		try {
 			filter.configureFrontend(f);
+			return f;
 		}
 		catch (ConceptConfigurationException e) {
 			throw new IllegalStateException(e);
 		}
-		return f;
 	}
 
 	public static FESelect createSelect(Select select) {

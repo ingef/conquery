@@ -18,11 +18,7 @@ public abstract class QPChainNode extends QPNode {
 	
 	@Getter
 	private QPNode child;
-	
-	public QPChainNode() {
-		this(null);
-	}
-	
+
 	public QPChainNode(QPNode child) {
 		setChild(child);
 	}

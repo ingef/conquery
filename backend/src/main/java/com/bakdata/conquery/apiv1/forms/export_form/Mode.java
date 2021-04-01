@@ -8,11 +8,9 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.ArrayUtils;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "value")
 @CPSBase
@@ -22,11 +20,6 @@ public abstract class Mode implements Visitable {
 	@Setter
 	@JsonBackReference
 	private ExportForm form;
-
-	@JsonIgnore
-	public String[] getAdditionalHeader() {
-		return ArrayUtils.EMPTY_STRING_ARRAY;
-	}
 
 	public abstract void resolve(QueryResolveContext context);
 	

@@ -69,7 +69,7 @@ public class ExecutionManager {
 
 	public static ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution<?> managed = query.toManagedExecution(datasets, userId, submittedDataset);
+		ManagedExecution<?> managed = query.toManagedExecution(userId, submittedDataset);
 
 		managed.setQueryId(queryId);
 

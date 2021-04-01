@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.SortedSet;
@@ -9,7 +8,6 @@ import java.util.TreeSet;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +27,5 @@ public class JobManagerStatus {
 	public int size() {
 		return jobs.size();
 	}
-	
-	@JsonIgnore
-	public String getAgeString() {
-		Duration duration = Duration.between(timestamp, LocalDateTime.now());
-		if(duration.toSeconds()>0) {
-			return Long.toString(duration.toSeconds())+" s";
-		}
-		return Long.toString(duration.toMillis())+" ms";
-	}
+
 }

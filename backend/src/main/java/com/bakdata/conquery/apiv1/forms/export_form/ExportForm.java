@@ -78,7 +78,7 @@ public class ExportForm implements Form, NamespacedIdHolding {
 			ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
 			List.of(
 				timeMode.createSpecializedQuery(datasets, userId, submittedDataset)
-					.toManagedExecution(datasets, userId, submittedDataset)));
+					.toManagedExecution(userId, submittedDataset)));
 	}
 
 	@Override

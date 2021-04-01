@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.concepts.conditions.OrCondition;
 import com.bakdata.conquery.models.concepts.conditions.PrefixCondition;
 import com.bakdata.conquery.models.concepts.conditions.PrefixRangeCondition;
-import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.dict.BytesTTMap;
 import com.bakdata.conquery.util.dict.ValueNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,7 +24,7 @@ public class TreeChildPrefixIndex {
 	@JsonIgnore
 	private ConceptTreeChild[] treeChildren;
 
-	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) {
+	public ConceptTreeChild findMostSpecificChild(String stringValue) {
 		ValueNode nearestNode = valueToChildIndex.getNearestNode(stringValue.getBytes());
 
 		if(nearestNode != null) {

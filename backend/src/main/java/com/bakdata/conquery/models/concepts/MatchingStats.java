@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -48,7 +47,7 @@ public class MatchingStats {
 		private long numberOfEvents = 0;
 		private CDateRange span;
 		
-		public void addEvent(Table table, Bucket bucket, CBlock cBlock, int event) {
+		public void addEvent(Table table, Bucket bucket, int event) {
 			numberOfEvents++;
 			for(Column c : table.getColumns()) {
 				if(c.getType().isDateCompatible()) {

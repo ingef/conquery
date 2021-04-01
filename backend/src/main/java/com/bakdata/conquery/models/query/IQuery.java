@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 
@@ -43,7 +42,7 @@ public abstract class IQuery implements QueryDescription {
 	public abstract void collectResultInfos(ResultInfoCollector collector);
 	
 	@Override
-	public ManagedQuery toManagedExecution(DatasetRegistry namespaces, UserId userId, DatasetId submittedDataset) {
+	public ManagedQuery toManagedExecution(UserId userId, DatasetId submittedDataset) {
 		return new ManagedQuery(this,userId, submittedDataset);
 	}
 

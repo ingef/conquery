@@ -72,6 +72,6 @@ public class StoredQueriesResource extends HDatasets {
 	public void deleteQuery(@PathParam(QUERY) ManagedExecutionId queryId) {
 		authorize(user, datasetId, Ability.READ);
 
-		processor.deleteQuery(queryId, user);
+		processor.deleteQuery(queryId);
 	}
 }

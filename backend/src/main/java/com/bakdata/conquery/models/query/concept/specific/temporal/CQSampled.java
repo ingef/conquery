@@ -3,12 +3,10 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.SampledNode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,10 +34,9 @@ public class CQSampled {
 	/**
 	 * Creates a SampleNode containing the samples and a sub query plan for this part of the query.
 	 * @param ctx the context used to create the query plan
-	 * @param plan the parent plan
 	 * @return a new SampledNode
 	 */
-	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
+	public SampledNode createQueryPlan(QueryPlanContext ctx) {
 		ConceptQueryPlan subPlan = new ConceptQueryPlan(true);
 		subPlan.setChild(child.createQueryPlan(ctx, subPlan));
 		// Since we create the plan manually we have to register the lower date aggregators manually.

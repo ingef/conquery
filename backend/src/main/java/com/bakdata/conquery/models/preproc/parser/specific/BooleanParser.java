@@ -44,7 +44,7 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues createColumnValues() {
 		return new BooleanColumnValues();
 	}
 

@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -19,7 +18,6 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.tuple.Pair;
@@ -64,12 +62,11 @@ public class QueryToCSVRenderer {
 	}
 
 	private static Stream<String> createCSVBody(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, ManagedQuery query, Function<EntityResult,ExternalEntityId> idMapper) {
-		Namespace namespace = Objects.requireNonNull(query.getNamespace());
 		return query.getResults()
-			.stream()
-			.map(result -> Pair.of(idMapper.apply(result), result))
-			.sorted(Comparator.comparing(Pair::getKey))
-			.flatMap(res -> createCSVLine(writer, cfg, infos, res));
+					.stream()
+					.map(result -> Pair.of(idMapper.apply(result), result))
+					.sorted(Comparator.comparing(Pair::getKey))
+					.flatMap(res -> createCSVLine(writer, cfg, infos, res));
 	}
 
 	

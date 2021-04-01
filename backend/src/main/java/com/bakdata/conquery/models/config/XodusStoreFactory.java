@@ -1,10 +1,38 @@
 package com.bakdata.conquery.models.config;
 
+import static com.bakdata.conquery.io.storage.StoreInfo.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import javax.validation.Valid;
+import javax.validation.Validator;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.*;
-import com.bakdata.conquery.io.storage.xodus.stores.*;
+import com.bakdata.conquery.io.storage.IdentifiableStore;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.Store;
+import com.bakdata.conquery.io.storage.StoreInfo;
+import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
+import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
+import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
+import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
+import com.bakdata.conquery.io.storage.xodus.stores.WeakCachedStore;
+import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -28,28 +56,20 @@ import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.*;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Multimaps;
 import io.dropwizard.util.Duration;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
-import lombok.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Valid;
-import javax.validation.Validator;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static com.bakdata.conquery.io.storage.StoreInfo.*;
 
 @Slf4j
 @Getter
@@ -103,7 +123,7 @@ public class XodusStoreFactory implements StoreFactory {
 
     @Override
     @SneakyThrows
-    public Collection<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName) {
+    public Collection<NamespaceStorage> loadNamespaceStorages(List<String> pathName) {
         @NonNull File baseDir = getStorageDir(pathName);
 
         if (baseDir.mkdirs()) {
@@ -146,7 +166,7 @@ public class XodusStoreFactory implements StoreFactory {
 
     @Override
     @SneakyThrows
-    public Collection<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName) {
+    public Collection<WorkerStorage> loadWorkerStorages(List<String> pathName) {
         @NonNull File baseDir = getStorageDir(pathName);
 
         if (baseDir.mkdirs()) {

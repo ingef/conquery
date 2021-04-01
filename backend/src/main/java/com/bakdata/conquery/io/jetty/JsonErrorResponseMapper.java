@@ -9,6 +9,7 @@ import io.dropwizard.jersey.errors.ErrorMessage;
 
 public class JsonErrorResponseMapper {
 
+	//TODO del?
 	public static Response toResponse(Response response) {
 		ErrorMessage errorMessage = buildErrorMessage(response);
 		return Response.fromResponse(response)

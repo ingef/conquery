@@ -64,7 +64,7 @@ public class MoneyParser extends Parser<Long, MoneyStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues createColumnValues() {
 		return new LongColumnValues();
 	}
 

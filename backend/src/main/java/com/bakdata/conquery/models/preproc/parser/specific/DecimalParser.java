@@ -68,7 +68,7 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 	}
 
 	@Override
-	public ColumnValues<BigDecimal> createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues<BigDecimal> createColumnValues() {
 		return new ListColumnValues();
 	}
 

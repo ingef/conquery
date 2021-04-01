@@ -8,30 +8,26 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.DateContext;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
-import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.ResultInfoDecorator;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.collect.ImmutableClassToInstanceMap;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class RelExportGenerator {
 	
-	public static RelativeFormQuery generate(DatasetRegistry namespaces, RelativeMode mode, UserId userId, DatasetId submittedDataset) {
+	public static RelativeFormQuery generate(RelativeMode mode) {
 
 
 		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(mode.getForm().getResolvedResolutions(), mode.getTimeUnit().getAlignment());
 
-		return generate(mode.getForm().getPrerequisite(), mode.getResolvedFeatures(), mode.getResolvedOutcomes(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), namespaces, resolutionsAndAlignments);
+		return generate(mode.getForm().getPrerequisite(), mode.getResolvedFeatures(), mode.getResolvedOutcomes(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), resolutionsAndAlignments);
 	}
 	
-	public static RelativeFormQuery generate(IQuery query, ArrayConceptQuery features, ArrayConceptQuery outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContext.CalendarUnit timeUnit, DatasetRegistry namespaces, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
+	public static RelativeFormQuery generate(IQuery query, ArrayConceptQuery features, ArrayConceptQuery outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContext.CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
 
 		return new RelativeFormQuery(
 			query, 

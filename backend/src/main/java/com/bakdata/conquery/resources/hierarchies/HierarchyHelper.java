@@ -16,10 +16,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class HierarchyHelper {
 
-	public static UriBuilder fromHierachicalPathResourceMethod(String path, Class<?> clazz, String methodName) {
-		return fromHierachicalPathResourceMethod(UriBuilder.fromPath(path), clazz, methodName);
-	}
-
 	public static UriBuilder fromHierachicalPathResourceMethod(UriBuilder uri, Class<?> clazz, String methodName) {
 		assert (clazz != null);
 		assert (methodName != null);

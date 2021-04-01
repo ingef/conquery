@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -107,8 +108,11 @@ public class StoredQueriesProcessor {
 		return root instanceof CQAnd;
 	}
 
-    public void deleteQuery(ManagedExecutionId executionId, User user) {
-        ManagedExecution<?> execution = Objects.requireNonNull(storage.getExecution(executionId));
+    public void deleteQuery(ManagedExecutionId executionId) {
+        ManagedExecution<?> execution = storage.getExecution(executionId);
+		if (execution == null) {
+			throw new NotFoundException(executionId.toString());
+		}
 
         storage.removeExecution(executionId);
     }

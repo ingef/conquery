@@ -125,8 +125,7 @@ public class BytesNode extends ABytesNode {
 				}
 			}
 		}
-		
-		added(result);
+
 		return result;
 	}
 	
@@ -145,12 +144,7 @@ public class BytesNode extends ABytesNode {
 		map.setEntry(rep, value);
 		return -1;
 	}
-	
-	@Override
-	protected int ownValue() {
-		return 0;
-	}
-	
+
 	@Override
 	public String toString() {
 		return Byte.toString(key);

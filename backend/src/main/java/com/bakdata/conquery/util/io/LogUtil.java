@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 
-import com.github.powerlibraries.io.Out;
-import com.github.powerlibraries.io.helper.stringout.SBPrintWriter;
-
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -24,16 +21,5 @@ public class LogUtil {
 			return p.toAbsolutePath().toString();
 		}
 	}
-	
-	public String printException(Exception e) {
-		try {
-			SBPrintWriter errorPrinter = Out.string().asPrint();
-			e.printStackTrace(errorPrinter);
-			errorPrinter.close();
-			return errorPrinter.getResult();
-		} catch (IOException e1) {
-			throw new IllegalStateException(e1);
-		}
-		
-	}
+
 }

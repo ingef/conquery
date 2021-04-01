@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
@@ -27,7 +26,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset.Entry;
 import io.dropwizard.validation.ValidationMethod;
@@ -84,40 +82,12 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 		return concept;
 	}
 
-	@JsonDeserialize(contentUsing = NsIdReferenceDeserializer.class)
-	public void setSelectableDates(List<Column> cols) {
-		this.setValidityDates(
-				cols
-						.stream()
-						.map(c -> {
-							ValidityDate sd = new ValidityDate();
-							sd.setColumn(c);
-							sd.setName(c.getName());
-							sd.setConnector(this);
-							return sd;
-						})
-						.collect(Collectors.toList())
-		);
-	}
-
 	@Override
 	public ConnectorId createId() {
 		return new ConnectorId(concept.getId(), getName());
 	}
 
 	public abstract Table getTable();
-
-	@JsonIgnore
-	public Column getSelectableDate(String name) {
-		return validityDates
-					   .stream()
-					   .filter(vd -> vd.getName().equals(name))
-					   .map(ValidityDate::getColumn)
-					   .findAny()
-					   .orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
-	}
-
-
 
 	@JsonIgnore
 	@ValidationMethod(message = "Filter names are not unique.")
