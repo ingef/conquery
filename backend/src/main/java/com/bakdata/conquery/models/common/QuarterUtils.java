@@ -94,4 +94,13 @@ public final class QuarterUtils {
 	public static TemporalAdjuster lastDayOfQuarterAdjuster() {
 		return LAST_DAY_OF_QUARTER_ADJUSTER;
 	}
+
+	/**
+	 * Returns the numerical value of the quarter the date in in.
+	 * @param date
+	 * @return The quarter
+	 */
+	public static int getQuarter(LocalDate date) {
+		return date.get(IsoFields.QUARTER_OF_YEAR);
+	}
 }
