@@ -133,8 +133,8 @@ public class AuthorizationHelper {
 	 * the permission of the roles it inherits.
 	 * @return Owned and inherited permissions.
 	 */
-	public static Set<Permission> getEffectiveUserPermissions(User user, MetaStorage storage) {
-		Set<Permission> tmpView = collectRolePermissions(storage, user, user.getPermissions());
+	public static Set<ConqueryPermission> getEffectiveUserPermissions(User user, MetaStorage storage) {
+		Set<ConqueryPermission> tmpView = collectRolePermissions(storage, user, user.getPermissions());
 
 		for (Group group : storage.getAllGroups()) {
 			if (group.containsMember(user.getId())) {
@@ -149,11 +149,11 @@ public class AuthorizationHelper {
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
 	 * the permission of the roles it inherits.
 	 */
-	public static Set<Permission> getEffectiveGroupPermissions(Group group, MetaStorage storage) {
+	public static Set<ConqueryPermission> getEffectiveGroupPermissions(Group group, MetaStorage storage) {
 		return collectRolePermissions(storage, group, group.getPermissions());
 	}
 
-	private static Set<Permission> collectRolePermissions(MetaStorage storage, RoleOwner roleOwner, Set<Permission> tmpView) {
+	private static Set<ConqueryPermission> collectRolePermissions(MetaStorage storage, RoleOwner roleOwner, Set<ConqueryPermission> tmpView) {
 		for (RoleId roleId : roleOwner.getRoles()) {
 			Role role = storage.getRole(roleId);
 			if (role == null) {
@@ -172,7 +172,7 @@ public class AuthorizationHelper {
 	 * @return Owned and inherited permissions.
 	 */
 	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(User user, List<String> domainSpecifier, MetaStorage storage) {
-		Set<Permission> permissions = getEffectiveUserPermissions(user, storage);
+		Set<ConqueryPermission> permissions = getEffectiveUserPermissions(user, storage);
 		Multimap<String, ConqueryPermission> mappedPerms = ArrayListMultimap.create();
 		for(Permission perm : permissions) {
 			ConqueryPermission cPerm = (ConqueryPermission) perm;

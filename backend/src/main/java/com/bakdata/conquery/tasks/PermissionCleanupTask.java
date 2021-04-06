@@ -1,8 +1,16 @@
 package com.bakdata.conquery.tasks;
 
+import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
@@ -15,10 +23,6 @@ import io.dropwizard.servlets.tasks.Task;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.PrintWriter;
-import java.util.*;
-import java.util.function.Function;
 
 @Slf4j
 public class PermissionCleanupTask extends Task {
@@ -49,44 +53,42 @@ public class PermissionCleanupTask extends Task {
         int countDeleted = 0;
         // Do the loop-di-loop
         for (PermissionOwner<?> owner : owners) {
-            Set<Permission> permissions = owner.getPermissions();
-            Iterator<Permission> it = permissions.iterator();
-            while (it.hasNext()) {
-                Permission permission = it.next();
-                WildcardPermission wpermission = getAsWildcardPermission(permission);
-                if (wpermission == null) {
-                    continue;
-                }
-                if (!wpermission.getDomains().contains(QueryPermission.DOMAIN.toLowerCase())) {
-                    // Skip Permissions that do not reference an Execution/Query
-                    continue;
-                }
+            Set<ConqueryPermission> permissions = owner.getPermissions();
+			for (Permission permission : permissions) {
+				WildcardPermission wpermission = getAsWildcardPermission(permission);
+				if (wpermission == null) {
+					continue;
+				}
+				if (!wpermission.getDomains().contains(QueryPermission.DOMAIN.toLowerCase())) {
+					// Skip Permissions that do not reference an Execution/Query
+					continue;
+				}
 
-                // Handle multiple references to instances
-                Set<String> validRef = new HashSet<>();
-                for (String sId : wpermission.getInstances()) {
-                    ManagedExecutionId mId = ManagedExecutionId.Parser.INSTANCE.parse(sId);
-                    if (storage.getExecution(mId) != null) {
-                        // Execution exists -- it is a valid reference
-                        validRef.add(mId.toString());
-                    }
-                }
-                if (!validRef.isEmpty()) {
-                    if (wpermission.getInstances().size() == validRef.size()) {
-                        // All are valid, nothing changed proceed with the next permission
-                        continue;
-                    }
-                    // Create a new Permission that only contains valid references
-                    WildcardPermission reducedPermission = new WildcardPermission(
-                            List.of(wpermission.getDomains(), wpermission.getAbilities(), validRef), wpermission.getCreationTime());
-                    owner.addPermission(storage, reducedPermission);
-                }
+				// Handle multiple references to instances
+				Set<String> validRef = new HashSet<>();
+				for (String sId : wpermission.getInstances()) {
+					ManagedExecutionId mId = ManagedExecutionId.Parser.INSTANCE.parse(sId);
+					if (storage.getExecution(mId) != null) {
+						// Execution exists -- it is a valid reference
+						validRef.add(mId.toString());
+					}
+				}
+				if (!validRef.isEmpty()) {
+					if (wpermission.getInstances().size() == validRef.size()) {
+						// All are valid, nothing changed proceed with the next permission
+						continue;
+					}
+					// Create a new Permission that only contains valid references
+					WildcardPermission reducedPermission = new WildcardPermission(
+							List.of(wpermission.getDomains(), wpermission.getAbilities(), validRef), wpermission.getCreationTime());
+					owner.addPermission(storage, reducedPermission);
+				}
 
-                // Delete the old permission that containes both valid and invalid references
-                owner.removePermission(storage, wpermission);
-                countDeleted++;
+				// Delete the old permission that containes both valid and invalid references
+				owner.removePermission(storage, wpermission);
+				countDeleted++;
 
-            }
+			}
         }
         return countDeleted;
     }
@@ -100,8 +102,7 @@ public class PermissionCleanupTask extends Task {
                     permission);
             return null;
         }
-        WildcardPermission wpermission = (WildcardPermission) permission;
-        return wpermission;
+		return (WildcardPermission) permission;
     }
 
     /**
@@ -112,48 +113,49 @@ public class PermissionCleanupTask extends Task {
     public static <E extends IdentifiableImpl<ID> & Owned, ID extends IId<E>> int deletePermissionsOfOwnedInstances(MetaStorage storage, String permissionDomain, IId.Parser<ID> idParser, Function<ID, E> instanceStorageExtractor) {
         int countDeleted = 0;
         for (User user : storage.getAllUsers()) {
-            Set<Permission> permissions = user.getPermissions();
-            Iterator<Permission> it = permissions.iterator();
-            while (it.hasNext()) {
-                Permission permission = it.next();
-                WildcardPermission wpermission = getAsWildcardPermission(permission);
-                if (wpermission == null) {
-                    continue;
-                }
+            Set<ConqueryPermission> permissions = user.getPermissions();
+			for (Permission permission : permissions) {
+				WildcardPermission wpermission = getAsWildcardPermission(permission);
+				if (wpermission == null) {
+					continue;
+				}
 
-                if (!wpermission.getDomains().contains(permissionDomain)) {
-                    // Skip Permissions that do not reference an Execution/Query
-                    continue;
-                }
+				if (!wpermission.getDomains().contains(permissionDomain)) {
+					// Skip Permissions that do not reference an Execution/Query
+					continue;
+				}
 
-                if (wpermission.getInstances().size() != 1) {
-                    log.trace("Skipping permission {} because it refers to multiple instances.", wpermission);
-                }
-                ID executionId = null;
-                try {
-                    executionId = idParser.parse(wpermission.getInstances().iterator().next());
-                } catch (Exception e) {
-                    log.warn("Unable to parse an id from permission instance. Permission was: {}", wpermission);
-                    continue;
-                }
+				if (wpermission.getInstances().size() != 1) {
+					log.trace("Skipping permission {} because it refers to multiple instances.", wpermission);
+				}
+				ID executionId = null;
+				try {
+					executionId = idParser.parse(wpermission.getInstances().iterator().next());
+				}
+				catch (Exception e) {
+					log.warn("Unable to parse an id from permission instance. Permission was: {}", wpermission);
+					continue;
+				}
 
-                E execution = instanceStorageExtractor.apply(executionId);
-                if (execution == null) {
-                    log.trace("The execution referenced in permission {} does not exist. Skipping permission");
-                    continue;
-                }
+				E execution = instanceStorageExtractor.apply(executionId);
+				if (execution == null) {
+					log.trace("The execution referenced in permission {} does not exist. Skipping permission");
+					continue;
+				}
 
-                if (!user.isOwner(execution)) {
-                    log.trace("The user is not owner of the instance. Keeping the permission. User: {}, Owner: {}, Instance: {}, Permission: {}", user.getId(), execution.getOwner(), execution.getId(), wpermission);
-                    continue;
-                }
+				if (!user.isOwner(execution)) {
+					log.trace("The user is not owner of the instance. Keeping the permission. User: {}, Owner: {}, Instance: {}, Permission: {}", user.getId(), execution
+																																										.getOwner(), execution
+																																															 .getId(), wpermission);
+					continue;
+				}
 
-                log.trace("User owns the instance. Deleting the permission");
-                user.removePermission(storage, wpermission);
-                countDeleted++;
+				log.trace("User owns the instance. Deleting the permission");
+				user.removePermission(storage, wpermission);
+				countDeleted++;
 
 
-            }
+			}
         }
 
         return countDeleted;

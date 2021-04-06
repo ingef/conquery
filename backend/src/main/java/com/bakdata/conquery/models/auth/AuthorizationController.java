@@ -152,7 +152,7 @@ public final class AuthorizationController implements Managed{
 	 * Creates a copy of an existing user. The copied user has the same effective permissions as the original user
 	 * at the time of copying, but these are flatted. This means that the original user might hold certain permissions
 	 * through inheritance from roles or groups, the copy will hold the permissions directly.
-	 * @param originUserId The id of the user to make a flat copy from
+	 * @param originUser The user to make a flat copy of
 	 * @param namePrefix The prefix for the id of the new copied user
 	 * @return A flat copy of the referenced user
 	 */
@@ -167,7 +167,7 @@ public final class AuthorizationController implements Managed{
 		String name = null;
 		do {
 			name = namePrefix + UUID.randomUUID() + originUserId.getEmail();
-		} while (name == null || storage.getUser(new UserId(name)) != null);
+		} while (storage.getUser(new UserId(name)) != null);
 
 		// Retrieve original user and its effective permissions
 		User origin = Objects.requireNonNull(storage.getUser(originUserId), "User to copy cannot be found");

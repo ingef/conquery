@@ -97,7 +97,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.shiro.authz.Permission;
 
 /**
  * This class holds the logic for several admin http endpoints.
@@ -277,17 +276,11 @@ public class AdminProcessor {
 					   .build();
 	}
 
-	private SortedSet<FEPermission> wrapInFEPermission(Collection<Permission> permissions) {
+	private SortedSet<FEPermission> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
 		TreeSet<FEPermission> fePermissions = new TreeSet<>();
 
-		for (Permission permission : permissions) {
-			if (permission instanceof ConqueryPermission) {
-				fePermissions.add(FEPermission.from((ConqueryPermission) permission));
-
-			}
-			else {
-				log.warn("Could not create frontend representation for permission {}", permission);
-			}
+		for (ConqueryPermission permission : permissions) {
+			fePermissions.add(FEPermission.from(permission));
 		}
 		return fePermissions;
 	}

@@ -137,7 +137,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *
 	 * @return A set of the permissions hold by the owner.
 	 */
-	public Set<Permission> getPermissions() {
+	public Set<ConqueryPermission> getPermissions() {
 		if (permissions.isEmpty()) {
 			return Collections.emptySet();
 		}
