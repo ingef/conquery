@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -39,7 +40,6 @@ import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.Permission;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -82,9 +82,12 @@ public class QueryProcessor {
 		query.visit(consumerChain);
 
 
-		Set<Permission> permissions = new HashSet<>();
+		Set<ConqueryPermission> permissions = new HashSet<>();
 		query.collectPermissions(visitors, permissions, dataset.getId(), storage, user);
-		user.checkPermissions(permissions);
+
+		AuthorizationHelper.authorize(user,permissions);
+
+
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), primaryGroupName);
 

@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -34,7 +35,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.Permission;
 
 @Slf4j
 @UtilityClass
@@ -189,13 +189,12 @@ public class QueryUtils {
 		}
 	}
 	
-	public static void generateConceptReadPermissions(@NonNull NamespacedIdCollector idCollector, @NonNull Collection<Permission> collectPermissions){
+	public static void generateConceptReadPermissions(@NonNull NamespacedIdCollector idCollector, @NonNull Collection<ConqueryPermission> collectPermissions){
 		idCollector.getIds().stream()
 			.filter(id -> ConceptElementId.class.isAssignableFrom(id.getClass()))
 			.map(ConceptElementId.class::cast)
 			.map(ConceptElementId::findConcept)
 			.map(cId -> ConceptPermission.onInstance(Ability.READ, cId))
-			.map(Permission.class::cast)
 			.distinct()
 			.collect(Collectors.toCollection(() -> collectPermissions));
 	}

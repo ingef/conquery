@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -28,7 +29,6 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ClassToInstanceMap;
 import lombok.NonNull;
-import org.apache.shiro.authz.Permission;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -71,7 +71,7 @@ public interface QueryDescription extends Visitable {
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset, MetaStorage storage, User user) {
+	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<ConqueryPermission> requiredPermissions, DatasetId submittedDataset, MetaStorage storage, User user) {
 		NamespacedIdCollector nsIdCollector = QueryUtils.getVisitor(visitors, QueryUtils.NamespacedIdCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, QueryUtils.ExternalIdChecker.class);
 		if(nsIdCollector == null) {

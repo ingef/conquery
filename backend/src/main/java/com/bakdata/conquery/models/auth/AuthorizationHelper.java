@@ -18,10 +18,12 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -59,6 +61,11 @@ public class AuthorizationHelper {
 		user.checkPermission(DatasetPermission.onInstance(EnumSet.of(ability), dataset.getId()));
 	}
 
+	public static void authorize(User user, Concept<?> concept, Ability ability) {
+		user.checkPermission(ConceptPermission.onInstance(EnumSet.of(ability), concept.getId()));
+	}
+
+
 	// Query Instances
 	/**
 	 * Helper function for authorizing an ability on a query.
@@ -79,6 +86,15 @@ public class AuthorizationHelper {
 	 */
 	public static void authorize(@NonNull User user, @NonNull ConqueryPermission toBeChecked) {
 		user.checkPermission(toBeChecked);
+	}
+
+	/**
+	 * Helper function for authorizing an ability on a query.
+	 * @param user The subject that needs authorization.
+	 * @param toBeChecked The permission that is checked
+	 */
+	public static void authorize(@NonNull User user, @NonNull Set<ConqueryPermission> toBeChecked) {
+		user.checkPermissions(Collections.unmodifiableSet(toBeChecked));
 	}
 
 	/**
@@ -287,4 +303,5 @@ public class AuthorizationHelper {
 			user.checkPermission(FormConfigPermission.onInstance(Set.of(ability), form.getId()));
 		}
 	}
+
 }

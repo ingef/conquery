@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -104,7 +105,11 @@ public class FormConfigProcessor {
 	 * translatable to those.
 	 */
 	public FormConfigId addConfig(User user, DatasetId targetDataset, FormConfigAPI config) {
-		user.checkPermission(DatasetPermission.onInstance(Ability.READ.asSet(), targetDataset));
+
+		//TODO clear this up
+		final Namespace namespace = storage.getDatasetRegistry().get(targetDataset);
+
+		AuthorizationHelper.authorize(user, namespace.getDataset(), Ability.READ);
 
 		List<DatasetId> translateToDatasets = storage.getDatasetRegistry().getAllDatasets().stream()
 			.map(Identifiable::getId)
