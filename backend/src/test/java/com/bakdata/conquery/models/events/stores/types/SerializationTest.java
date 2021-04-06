@@ -37,14 +37,23 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumbe
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefixSuffix;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class SerializationTest {
+
+	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
+
+	@BeforeAll
+	public void setupRegistry(){
+		CENTRAL_REGISTRY.register(Dataset.PLACEHOLDER);
+	}
 
 	@Test
 	@SuppressWarnings({"unchecked", "rawtypes"})
@@ -93,6 +102,7 @@ public class SerializationTest {
 	public void testSerialization(ColumnStore type) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 		SerializationTestUtil
 				.forType(ColumnStore.class)
+				.registry(CENTRAL_REGISTRY)
 				.ignoreClasses(List.of(Dictionary.class))
 				.test(type);
 	}
