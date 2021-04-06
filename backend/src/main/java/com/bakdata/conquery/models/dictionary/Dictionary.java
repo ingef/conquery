@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.dictionary;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -15,6 +16,7 @@ import lombok.Setter;
 public abstract class Dictionary extends NamedImpl<DictionaryId> implements Iterable<DictionaryEntry> {
 
 	@Getter @Setter
+	@NsIdRef
 	private Dataset dataset;
 	
 	public Dictionary(Dataset dataset, @NotNull String name) {

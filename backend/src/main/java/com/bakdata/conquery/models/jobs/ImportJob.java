@@ -86,6 +86,8 @@ public class ImportJob extends Job {
 
 		final Map<IId<?>, Identifiable<?>> replacements = new HashMap<>();
 
+		replacements.put(Dataset.PLACEHOLDER.getId(),getDataset());
+
 		log.info("BEGIN Reading `{}`", importFile);
 
 		final JsonParser parser = createParser(importFile, replacements, namespace.getStorage().getCentralRegistry());
