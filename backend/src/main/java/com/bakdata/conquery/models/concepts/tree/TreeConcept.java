@@ -46,8 +46,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Getter
 	private final int[] prefix = new int[]{0};
 	@JsonIgnore
-	private transient int maxDepth = -1;
-	@JsonIgnore
 	private List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
 	@JsonIgnore
 	@Getter
@@ -88,14 +86,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Override
 	public boolean matchesPrefix(int[] conceptPrefix) {
 		return conceptPrefix != null && conceptPrefix[0] == 0;
-	}
-
-	public int getMaxDepth() {
-		if (maxDepth == -1) {
-			maxDepth = allChildren.stream().mapToInt(ConceptTreeNode::getDepth).max().orElse(-1) + 1;
-		}
-
-		return maxDepth;
 	}
 
 	@Override
@@ -141,7 +131,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 		if (this.getChildIndex() != null) {
-			ConceptTreeChild best = this.getChildIndex().findMostSpecificChild(stringValue, rowMap);
+			ConceptTreeChild best = this.getChildIndex().findMostSpecificChild(stringValue);
 
 			if (best != null) {
 				return findMostSpecificChild(stringValue, rowMap, best, best.getChildren());
@@ -165,7 +155,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 					match = n;
 
 					if (n.getChildIndex() != null) {
-						ConceptTreeChild specificChild = n.getChildIndex().findMostSpecificChild(stringValue, rowMap);
+						ConceptTreeChild specificChild = n.getChildIndex().findMostSpecificChild(stringValue);
 
 						if (specificChild != null) {
 							match = specificChild;

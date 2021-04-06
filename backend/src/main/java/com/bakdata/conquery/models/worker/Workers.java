@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -53,7 +56,7 @@ public class Workers extends IdResolveContext {
 	}
 
 	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
-		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, failOnError, entityBucketSize);
+		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, failOnError);
 
 		addWorker(worker);
 

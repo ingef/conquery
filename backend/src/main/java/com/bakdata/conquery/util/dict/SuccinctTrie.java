@@ -97,12 +97,6 @@ public class SuccinctTrie extends Dictionary {
 			throw new IllegalStateException(errorMessage);
 		}
 	}
-	
-	public void tryCompress() {
-		if(!isCompressed()) {
-			this.compress();
-		}
-	}
 
 	private int put(byte[] key, int value, boolean failOnDuplicate) {
 		checkUncompressed("no put allowed after compression");
@@ -139,9 +133,7 @@ public class SuccinctTrie extends Dictionary {
 		}
 	}
 
-	/*
-	 * select0(n) - returns the position of the nth 0 in the bit store.
-	 */
+
 
 	public void compress() {
 		checkUncompressed("compress is only allowed once");
@@ -255,10 +247,6 @@ public class SuccinctTrie extends Dictionary {
 		return -1;
 	}
 
-	public boolean containsReverse(int intValue) {
-		checkCompressed("use compress before performing containsReverse on the trie");
-		return intValue < reverseLookup.length;
-	}
 
 	public void getReverse(int intValue, IoBuffer buffer) {
 		checkCompressed("use compress before performing getReverse on the trie");
@@ -360,16 +348,6 @@ public class SuccinctTrie extends Dictionary {
 			this.children.put(child.partialKey, child);
 		}
 
-	}
-
-	public SuccinctTrie uncompress() {
-		checkCompressed("Constructor only works for compressed tries");
-
-		SuccinctTrie trie = new SuccinctTrie(getDataset(), getName());
-		for (byte[] value : getValuesBytes()) {
-			trie.put(value);
-		}
-		return trie;
 	}
 
 	@Override

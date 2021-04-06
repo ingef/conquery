@@ -61,7 +61,7 @@ public class RealParser extends Parser<Double, RealStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues createColumnValues() {
 		return new DoubleColumnValues();
 	}
 

@@ -37,7 +37,7 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 
 	@Override
 	public Chunkable encode(NetworkMessage<?> message) throws Exception {
-		ValidatorHelper.failOnError(log, validator.validate(message), "encoding " + message.getClass().getSimpleName());
+		ValidatorHelper.failOnError(log, validator.validate(message));
 
 		UUID id = message.getMessageId();
 		Chunkable chunkable = new Chunkable(id, writer, message);
@@ -54,7 +54,7 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 			if(!is.isAtEnd()) {
 				throw new IllegalStateException("After reading the JSON message "+obj+" the buffer has still bytes available");
 			}
-			ValidatorHelper.failOnError(log, validator.validate(obj), "decoding " + obj.getClass().getSimpleName());
+			ValidatorHelper.failOnError(log, validator.validate(obj));
 			return (NetworkMessage<?>)obj;
 		}
 	}

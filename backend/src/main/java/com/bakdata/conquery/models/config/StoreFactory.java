@@ -1,11 +1,14 @@
 package com.bakdata.conquery.models.config;
 
+import java.util.Collection;
+import java.util.List;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
-import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -29,9 +32,6 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.util.Collection;
-import java.util.List;
-
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public interface StoreFactory {
@@ -39,9 +39,9 @@ public interface StoreFactory {
 	default void init(ManagerNode managerNode) {};
 	default void init(ShardNode shardNode) {};
 
-	Collection<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName);
+	Collection<NamespaceStorage> loadNamespaceStorages(List<String> pathName);
 
-	Collection<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName);
+	Collection<WorkerStorage> loadWorkerStorages(List<String> pathName);
 
 	// NamespacedStorage (Important for serdes communication between manager and shards)
 	SingletonStore<Dataset> createDatasetStore(List<String> pathName);

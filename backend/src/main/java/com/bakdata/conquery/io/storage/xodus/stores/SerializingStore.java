@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -149,7 +148,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			throw new IllegalStateException("The element " + value + " is not of the required type " + valueType);
 		}
 		if (validateOnWrite) {
-			ValidatorHelper.failOnError(log, validator.validate(value), "encoding " + value.getClass().getSimpleName() + " " + Objects.toString(value));
+			ValidatorHelper.failOnError(log, validator.validate(value));
 		}
 
 		store.add(writeKey(key), writeValue(value));
@@ -275,7 +274,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 
 		if (validateOnWrite) {
-			ValidatorHelper.failOnError(log, validator.validate(value), "encoding " + value.getClass().getSimpleName() + " " + Objects.toString(value));
+			ValidatorHelper.failOnError(log, validator.validate(value));
 		}
 
 		store.update(writeKey(key), writeValue(value));

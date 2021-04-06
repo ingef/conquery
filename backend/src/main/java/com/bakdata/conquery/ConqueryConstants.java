@@ -18,7 +18,6 @@ public class ConqueryConstants {
 	public static final String ALL_IDS_TABLE = "ALL_IDS";
 	public static final String EXTENSION_PREPROCESSED = ".cqpp";
 	public static final String EXTENSION_DESCRIPTION = ".import.json";
-	public static final String INPUT_FILE_EXTENSION = ".csv.gz";
 
 	public static final ResultInfo DATES_INFO = new LocalizedSimpleResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).dates(), new ResultType.ListT(ResultType.DateRangeT.INSTANCE));
 	

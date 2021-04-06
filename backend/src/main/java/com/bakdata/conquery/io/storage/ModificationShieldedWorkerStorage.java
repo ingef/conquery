@@ -1,25 +1,19 @@
 package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
-import java.util.List;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -39,10 +33,6 @@ public class ModificationShieldedWorkerStorage {
 	}
 
 
-	public EncodedDictionary getPrimaryDictionary() {
-		return delegate.getPrimaryDictionary();
-	}
-
 	public Import getImport(ImportId id) {
 		return delegate.getImport(id);
 	}
@@ -58,25 +48,8 @@ public class ModificationShieldedWorkerStorage {
 	}
 
 
-	public List<Table> getTables() {
-		return delegate.getTables();
-	}
-
-	public Concept<?> getConcept(ConceptId id) {
-		return delegate.getConcept(id);
-	}
-
-	public boolean hasConcept(ConceptId id) {
-		return delegate.hasConcept(id);
-	}
-
-
 	public Collection<? extends Concept<?>> getAllConcepts() {
 		return delegate.getAllConcepts();
-	}
-
-	public WorkerInformation getWorker() {
-		return delegate.getWorker();
 	}
 
 
@@ -98,11 +71,4 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getTable(tableId);
 	}
 
-	public List<SecondaryIdDescription> getSecondaryIds() {
-		return delegate.getSecondaryIds();
-	}
-
-	public SecondaryIdDescription getSecondaryId(SecondaryIdDescriptionId descriptionId) {
-		return delegate.getSecondaryId(descriptionId);
-	}
 }

@@ -213,8 +213,7 @@ public class BytesPatriciaNode extends ABytesNode {
 				result = rep.put(map, parent, direction, k, i, value);
 			}
 		}
-		
-		added(result);
+
 		return result;
 	}
 	
@@ -237,12 +236,7 @@ public class BytesPatriciaNode extends ABytesNode {
 	protected ABytesNode createSplit(BytesTTMap map, byte[] splitKey) {
 		return TTHelper.createBytesNode(splitKey);
 	}
-	
-	@Override
-	protected int ownValue() {
-		return 0;
-	}
-	
+
 	@Override
 	public String toString() {
 		return Arrays.toString(key);

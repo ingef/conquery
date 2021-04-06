@@ -1,10 +1,14 @@
 package com.bakdata.conquery.io.storage;
 
-import com.bakdata.conquery.ConqueryConstants;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -13,11 +17,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Validator;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 
 @Slf4j
 public class WorkerStorage extends NamespacedStorage {
@@ -92,25 +91,12 @@ public class WorkerStorage extends NamespacedStorage {
         return cBlocks.get(id);
     }
 
-    // TODO method is unused, delete it.
-    public void updateCBlock(CBlock cBlock) {
-        cBlocks.update(cBlock);
-    }
-
-    public void removeCBlock(CBlockId id) {
+	public void removeCBlock(CBlockId id) {
         log.debug("Removing CBlock[{}]", id);
         cBlocks.remove(id);
     }
 
-    public void addDictionary(Dictionary dict) {
-        if (dict.getId().equals(ConqueryConstants.getPrimaryDictionary(getDataset()))) {
-            throw new IllegalStateException("Workers may not receive the primary dictionary");
-        }
-
-        super.addDictionary(dict);
-    }
-
-    public Collection<CBlock> getAllCBlocks() {
+	public Collection<CBlock> getAllCBlocks() {
         return cBlocks.getAll();
     }
 

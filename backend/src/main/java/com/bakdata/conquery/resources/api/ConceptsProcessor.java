@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -30,7 +29,6 @@ import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -46,7 +44,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -254,17 +251,7 @@ public class ConceptsProcessor {
 		private FilterId filterId;
 		private List<FEValue> value;
 	}
-	
-	@Getter
-	@Setter
-	@AllArgsConstructor
-	@NoArgsConstructor
-	private class ResolvedFilter {
-		private Column column;
-		private Map<String, String> realLabels;
-		private QuickSearch<FilterSearchItem> sourceSearch;
-	}
-	
+
 	@Getter
 	@Setter
 	@AllArgsConstructor

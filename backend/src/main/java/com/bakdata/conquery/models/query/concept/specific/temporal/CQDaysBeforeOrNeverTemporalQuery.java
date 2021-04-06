@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific.temporal;
 
+import java.util.Set;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -9,8 +11,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.DaysBeforeOrNeverPrecedenceMatcher;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQueryNode;
 import lombok.Getter;
-
-import java.util.Set;
 
 /**
  * Creates a query that will contain all entities where {@code preceding} contains events that happened {@code days} before the events of {@code index}, or no events. And the time where this has happened.
@@ -32,8 +32,8 @@ public class CQDaysBeforeOrNeverTemporalQuery extends CQAbstractTemporalQuery {
 		plan.getDateAggregator().register(Set.of(dateAggregator));
 
 		return new TemporalQueryNode(
-				index.createQueryPlan(ctx, plan),
-				preceding.createQueryPlan(ctx, plan),
+				index.createQueryPlan(ctx),
+				preceding.createQueryPlan(ctx),
 				new DaysBeforeOrNeverPrecedenceMatcher(days),
 				dateAggregator
 		);

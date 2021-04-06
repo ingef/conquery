@@ -3,11 +3,8 @@ package com.bakdata.conquery.models.query;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import c10n.C10N;
-import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.SelectNameExtractor;
@@ -107,7 +104,4 @@ public class PrintSettings implements SelectNameExtractor {
 		return sb.toString();
 	}
 
-	public CQElementC10n getC10N(Class<CQElementC10n> c10nInterface) {
-		return C10N.get(c10nInterface, getLocale());
-	}
 }

@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,7 +17,11 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.*;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.auth.permissions.FormPermission;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
@@ -120,7 +123,7 @@ public class FormConfigProcessor {
 	public FormConfigId addConfigAndTranslations(User user, DatasetId targetDataset, Collection<DatasetId> translateTo, FormConfigAPI config) {
 		FormConfig internalConfig = FormConfigAPI.intern(config, user.getId(), targetDataset);
 		// Add the config immediately to the submitted dataset
-		addConfigToDataset(user, internalConfig);
+		addConfigToDataset(internalConfig);
 
 		return internalConfig.getId();
 	}
@@ -128,7 +131,7 @@ public class FormConfigProcessor {
 	/**
 	 * Adds a formular configuration under a specific dataset to the storage and grants the user the rights to manage/patch it.
 	 */
-	private FormConfigId addConfigToDataset(User user, FormConfig internalConfig) {
+	private FormConfigId addConfigToDataset(FormConfig internalConfig) {
 		
 		ValidatorHelper.failOnError(log, validator.validate(internalConfig));
 		storage.addFormConfig(internalConfig);

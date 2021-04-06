@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
@@ -291,7 +290,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		final AtomicInteger length = new AtomicInteger();
 		String usedConcepts = sortedContents.computeIfAbsent(CQConcept.class, (clazz) -> List.of()).stream()
 											.map((CQConcept.class::cast))
-											.map(c -> makeLabelWithRootAndChild(datasetRegistry, c, cfg))
+											.map(c -> makeLabelWithRootAndChild(c, cfg))
 											.distinct()
 											.filter((s) -> !Strings.isNullOrEmpty(s))
 											.takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
@@ -313,7 +312,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		}
 	}
 
-	private static String makeLabelWithRootAndChild(DatasetRegistry datasetRegistry, CQConcept cqConcept, PrintSettings cfg) {
+	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {
 		String cqConceptLabel = cqConcept.getLabel(cfg.getLocale());
 		if (cqConceptLabel == null) {
 			return "";

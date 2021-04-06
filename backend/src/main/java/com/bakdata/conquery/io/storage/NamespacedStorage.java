@@ -204,11 +204,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
                 });
     }
 
-    public void addDictionary(Dictionary dict) {
-        dictionaries.add(dict);
-    }
-
-    public Dictionary getDictionary(DictionaryId id) {
+	public Dictionary getDictionary(DictionaryId id) {
         return dictionaries.get(id);
     }
 
