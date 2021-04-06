@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -123,19 +122,27 @@ public class StoredQueriesProcessor {
     public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
         ManagedExecution<?> query = storage.getExecution(queryId);
 
-        authorize(user, query, Ability.READ);
-
         if (query == null) {
-            return null;
+            throw new NotFoundException();
         }
-        query.initExecutable(datasetRegistry, config);
+
+		authorize(user, query, Ability.READ);
+
+		query.initExecutable(datasetRegistry, config);
 
         Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
         return query.buildStatusFull(storage, url, user, datasetRegistry, datasetAbilities);
     }
 
     public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {
-        ManagedExecution<?> execution = Objects.requireNonNull(storage.getExecution(executionId), String.format("Could not find form config %s", executionId));
+        ManagedExecution<?> execution = storage.getExecution(executionId);
+
+        if(execution == null){
+        	throw new NotFoundException();
+		}
+
+        authorize(user, execution, Ability.MODIFY);
+
         log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
         patch.applyTo(execution, storage, user, QueryPermission::onInstance);
         storage.updateExecution(execution);

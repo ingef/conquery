@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -21,7 +20,6 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
@@ -48,7 +46,6 @@ public class StoredQueriesResource extends HDatasets {
 	@GET
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecutionId queryId) {
-		authorize(user, datasetId, Ability.READ);
 
 		// Permission to see the actual query is checked in the processor
 		FullExecutionStatus status = processor.getQueryFullStatus(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
@@ -61,7 +58,6 @@ public class StoredQueriesResource extends HDatasets {
 	@PATCH
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus patchQuery(@PathParam(QUERY) ManagedExecutionId queryId, MetaDataPatch patch) throws JSONException {
-		authorize(user, datasetId, Ability.READ);
 		processor.patchQuery(user, queryId, patch);
 		
 		return processor.getQueryFullStatus(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
@@ -70,8 +66,6 @@ public class StoredQueriesResource extends HDatasets {
 	@DELETE
 	@Path("{" + QUERY + "}")
 	public void deleteQuery(@PathParam(QUERY) ManagedExecutionId queryId) {
-		authorize(user, datasetId, Ability.READ);
-
 		processor.deleteQuery(user, queryId);
 	}
 }

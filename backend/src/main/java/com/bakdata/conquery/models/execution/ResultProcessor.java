@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.google.common.base.Strings;
@@ -58,10 +59,10 @@ public class ResultProcessor {
 	private final ConqueryConfig config;
 	
 	public ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty, String fileExtension) {
-
+		final Namespace namespace = datasetRegistry.get(datasetId);
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
-		authorize(user, datasetId, Ability.READ);
+		authorize(user, namespace.getDataset(), Ability.READ);
 
 		ManagedExecution<?> exec = Objects.requireNonNull(datasetRegistry.getMetaStorage().getExecution(queryId));
 
@@ -78,7 +79,7 @@ public class ResultProcessor {
 
 		try {
 			StreamingOutput out = exec.getResult(
-				cer -> ResultUtil.createId(datasetRegistry.get(datasetId), cer, config.getIdMapping(), mappingState),
+				cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState),
 				settings,
 				charset,
 				config.getCsv().getLineSeparator());
@@ -137,10 +138,12 @@ public class ResultProcessor {
 		DatasetRegistry datasetRegistry,
 		boolean pretty,
 		String fileExtension) {
-		
+
+		final Namespace namespace = datasetRegistry.get(datasetId);
+
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
-		authorize(user, datasetId, Ability.READ);
+		authorize(user, namespace.getDataset(), Ability.READ);
 
 		ManagedExecution<?> exec = Objects.requireNonNull(datasetRegistry.getMetaStorage().getExecution(queryId));
 
@@ -166,7 +169,7 @@ public class ResultProcessor {
 				renderToStream(writerProducer.apply(output),
 					settings,
 					exec, 
-					cer -> ResultUtil.createId(datasetRegistry.get(datasetId), cer, config.getIdMapping(), mappingState).getExternalId(),
+					cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState).getExternalId(),
 					idMappingConf.getPrintIdFields(),
 					config.getArrow().getBatchSize());
 				

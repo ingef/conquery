@@ -31,7 +31,7 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Comparable<PermissionOwner<?>> {
-	
+
 	private static final Comparator<PermissionOwner<?>> COMPARATOR = Comparator.<PermissionOwner<?>, String>comparing(PermissionOwner::getLabel).thenComparing(po -> po.getId().toString());
 
 	@Getter
@@ -41,7 +41,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@NotEmpty
 	@ToString.Include
 	protected String name;
-	
+
 	@Getter
 	@Setter
 	@NonNull
@@ -49,18 +49,18 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@NotEmpty
 	@ToString.Include
 	protected String label;
-	
+
 	@ToString.Exclude
 	@Getter(AccessLevel.PRIVATE) // So only Jackson can use this to deserialize
 	@NotNull
 	private Set<ConqueryPermission> permissions = new HashSet<>();
-	
-	
+
+
 	public PermissionOwner(String name, String label) {
 		this.name = name;
 		this.label = label;
 	}
-	
+
 
 	/**
 	 * Adds permissions to the owner object and to the persistent storage.
@@ -95,7 +95,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		}
 		return ret;
 	}
-	
+
 	/**
 	 * Removes permissions from the owner object and from the persistent storage.
 	 *
@@ -109,7 +109,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	public boolean removePermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
 		boolean ret = false;
 		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size()+ permissions.size());
+			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size() - permissions.size());
 			newSet.addAll(this.permissions);
 			ret = newSet.removeAll(permissions);
 			this.permissions = newSet;
@@ -121,7 +121,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	public boolean removePermission(MetaStorage storage, Permission permission) {
 		boolean ret = false;
 		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size()+ 1);
+			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size() - 1);
 			newSet.addAll(this.permissions);
 			ret = newSet.remove(permission);
 			this.permissions = newSet;
@@ -134,7 +134,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * Returns a copy of the permissions hold by the owner.
 	 * Changes to the returned collection are not persisted and do not alter the
 	 * permissions owned.
-	 * 
+	 *
 	 * @return A set of the permissions hold by the owner.
 	 */
 	public Set<Permission> getPermissions() {
@@ -158,8 +158,8 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * Update this instance in the {@link MetaStorage}.
 	 */
 	protected abstract void updateStorage(MetaStorage storage);
-	
-	
+
+
 	@Override
 	public int compareTo(PermissionOwner<?> other) {
 		return COMPARATOR.compare(this, other);

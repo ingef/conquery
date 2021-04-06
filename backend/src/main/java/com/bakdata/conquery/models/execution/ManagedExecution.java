@@ -87,7 +87,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected String label;
 
 	protected LocalDateTime creationTime = LocalDateTime.now();
-	@Nullable
+	@Nullable //TODO use NsIdRef?
 	protected UserId owner;
 
 	@NotNull

@@ -156,7 +156,9 @@ public final class AuthorizationController implements Managed{
 	 * @param namePrefix The prefix for the id of the new copied user
 	 * @return A flat copy of the referenced user
 	 */
-	public static User flatCopyUser(@NonNull UserId originUserId, String namePrefix, @NonNull MetaStorage storage) {
+	public static User flatCopyUser(@NonNull User originUser, String namePrefix, @NonNull MetaStorage storage) {
+		final UserId originUserId = originUser.getId();
+
 		if(Strings.isNullOrEmpty(namePrefix)) {
 			throw new IllegalArgumentException("There must be a prefix");
 		}
@@ -171,12 +173,14 @@ public final class AuthorizationController implements Managed{
 		User origin = Objects.requireNonNull(storage.getUser(originUserId), "User to copy cannot be found");
 
 		// Copy inherited permissions
-		Set<ConqueryPermission> copiedPermission = new HashSet(AuthorizationHelper.getEffectiveUserPermissions(originUserId, storage));
+		Set<ConqueryPermission> copiedPermission = new HashSet<>();
+
+		copiedPermission.addAll(AuthorizationHelper.getEffectiveUserPermissions(originUser, storage));
 
 		// Give read permission to all executions the original user owned
 		copiedPermission.addAll(
 			storage.getAllExecutions().stream()
-					.filter(e -> origin.isOwner(e))
+					.filter(origin::isOwner)
 					.map(ManagedExecution::getId)
 					.map(id -> QueryPermission.onInstance(Ability.READ,id))
 					.collect(Collectors.toSet())
@@ -185,7 +189,7 @@ public final class AuthorizationController implements Managed{
 		// Give read permission to all form configs the original user owned
 		copiedPermission.addAll(
 				storage.getAllFormConfigs().stream()
-						.filter(e -> origin.isOwner(e))
+						.filter(origin::isOwner)
 						.map(FormConfig::getId)
 						.map(id -> FormConfigPermission.onInstance(Ability.READ,id))
 						.collect(Collectors.toSet())
@@ -200,10 +204,10 @@ public final class AuthorizationController implements Managed{
 	}
 
 	/**
-	 * @see AuthorizationController#flatCopyUser(UserId, String, MetaStorage)
+	 * @see AuthorizationController#flatCopyUser(User, String, MetaStorage)
 	 */
-	public User flatCopyUser(@NonNull UserId originUserId, String namePrefix) {
-		return flatCopyUser(originUserId, namePrefix, storage);
+	public User flatCopyUser(@NonNull User originUser, String namePrefix) {
+		return flatCopyUser(originUser, namePrefix, storage);
 	}
 
 }

@@ -1,6 +1,10 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.Objects;
+import java.util.Set;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -12,12 +16,8 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
-import org.apache.shiro.authz.permission.PermissionResolver;
-import org.apache.shiro.authz.permission.RolePermissionResolver;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.util.CollectionUtils;
-import org.apache.shiro.util.StringUtils;
 
 /**
  * This realms only provides authorization information for a given {@link UserId}.
@@ -44,8 +44,8 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 		Objects.requireNonNull(principals, "No principal info was provided");
 		UserId userId = (UserId) principals.getPrimaryPrincipal();
 		SimpleAuthorizationInfo info = new ConqueryAuthorizationInfo();
-		
-		info.addObjectPermissions(AuthorizationHelper.getEffectiveUserPermissions(userId, storage));
+
+		info.addObjectPermissions(AuthorizationHelper.getEffectiveUserPermissions(storage.getUser(userId), storage));
 		
 		return info;
 	}

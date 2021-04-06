@@ -42,13 +42,13 @@ import lombok.extern.slf4j.Slf4j;
 @Produces(AdditionalMediaTypes.JSON)
 @Slf4j
 public class QueryResource {
-	
+
 	private QueryProcessor processor;
 	private ResourceUtil dsUtil;
 
 	@Inject
 	public QueryResource(QueryProcessor processor) {
-		this.processor= processor;
+		this.processor = processor;
 		dsUtil = new ResourceUtil(processor.getDatasetRegistry());
 	}
 
@@ -69,25 +69,27 @@ public class QueryResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws SQLException {
-		authorize(user, datasetId, Ability.READ);
+	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req)
+			throws SQLException {
 
 		return processor.cancel(
-			dsUtil.getDataset(datasetId),
-			dsUtil.getManagedQuery(queryId),
-			RequestAwareUriBuilder.fromRequest(req));
+				user,
+				dsUtil.getDataset(datasetId),
+				dsUtil.getManagedQuery(queryId),
+				RequestAwareUriBuilder.fromRequest(req)
+		);
 	}
 
 	@GET
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req)
 			throws InterruptedException {
-		authorize(user, datasetId, Ability.READ);
+
 		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
+
 		authorize(user, query, Ability.READ);
+
 		query.awaitDone(10, TimeUnit.SECONDS);
-
-
 
 		return processor.getStatus(
 				query,
