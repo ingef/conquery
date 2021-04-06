@@ -8,12 +8,12 @@
   "leftPane": {
     "conceptTrees": "Concepts",
     "previousQueries": "Queries",
-    "formConfigs": "Form configurations"
+    "formConfigs": "Forms"
   },
   "rightPane": {
-    "queryEditor": "Group Editor",
+    "queryEditor": "Editor",
     "timebasedQueryEditor": "Timebased Editor",
-    "externalForms": "Forms"
+    "externalForms": "Form Editor"
   },
   "conceptTreeList": {
     "loading": "Loading concept trees",
@@ -73,6 +73,7 @@
     "intoThisArea": "into this area"
   },
   "datasetSelector": {
+    "label": "Data sets",
     "pleaseChoose": "Choose a data set",
     "error": "Could not load data sets"
   },
@@ -375,5 +376,11 @@
   "conceptTreesOpen": {
     "resetAll": "Back to default view",
     "closeAll": "Close all concepts"
+  },
+  "help": {
+    "tabConceptTrees": "Select concepts from concepts trees and use them in the Editor, Timebased Editor and Form Editor",
+    "tabPreviousQueries": "Select previous queries and use them in the Editor and Form Editor",
+    "tabFormConfigs": "Select the stored forms and use them in the Form Editor",
+    "datasetSelector": "Select the data set – concept trees, previous queries and forms will be loaded."
   }
 }
