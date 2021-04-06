@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.jobs;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,10 +12,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -33,9 +29,7 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.InjectedCentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -44,13 +38,13 @@ import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
+import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonParser;
@@ -90,7 +84,7 @@ public class ImportJob extends Job {
 
 		log.info("BEGIN Reading `{}`", importFile);
 
-		final JsonParser parser = createParser(importFile, replacements, namespace.getStorage().getCentralRegistry());
+		final JsonParser parser = Preprocessed.createParser(importFile, replacements, namespace.getStorage().getCentralRegistry());
 
 		final PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
 		log.info("Importing {} into {}", header.getName(), table);
@@ -169,17 +163,6 @@ public class ImportJob extends Job {
 		workerAssignments.forEach(namespace::addBucketsToWorker);
 
 		getProgressReporter().done();
-	}
-
-	public static JsonParser createParser(File importFile, Map<IId<?>, Identifiable<?>> replacements, CentralRegistry centralRegistry) throws IOException {
-		final InputStream in = new GZIPInputStream(new FileInputStream(importFile));
-
-		final InjectedCentralRegistry injectedCentralRegistry = new InjectedCentralRegistry(replacements, centralRegistry);
-		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectedCentralRegistry);
-
-		return namespaceCollection.injectInto(Jackson.BINARY_MAPPER)
-								  .getFactory()
-								  .createParser(in);
 	}
 
 	/**

@@ -3,9 +3,7 @@ package com.bakdata.conquery.models.preproc;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -14,10 +12,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import com.bakdata.conquery.io.csv.CsvIo;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -27,7 +23,6 @@ import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.io.CountingInputStream;
 import com.univocity.parsers.csv.CsvParser;
@@ -40,8 +35,6 @@ import org.apache.commons.io.FileUtils;
 @Slf4j
 @UtilityClass
 public class Preprocessor {
-
-	private static final ObjectMapper MAPPER = Jackson.BINARY_MAPPER;
 
 	/**
 	 * Create version of file-name with tag.
@@ -214,9 +207,7 @@ public class Preprocessor {
 			exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
 		}
 
-		try (OutputStream out = new GZIPOutputStream(new FileOutputStream(tmp))) {
-			result.write(MAPPER.getFactory().createGenerator(out));
-		}
+		result.write(tmp);
 
 		if (errors > 0) {
 			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * (double) errors / (double) lineId), errors, lineId);
@@ -230,6 +221,10 @@ public class Preprocessor {
 		//if successful move the tmp file to the target location
 		FileUtils.moveFile(tmp, preprocessedFile);
 		log.info("PREPROCESSING DONE in {}", preprocessingJob);
+	}
+
+	private static void write(File tmp, Preprocessed result) throws IOException {
+
 	}
 
 	/**

@@ -1,10 +1,8 @@
 package com.bakdata.conquery.commands;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,8 +16,9 @@ import java.util.function.Predicate;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessingJob;
 import com.bakdata.conquery.models.preproc.Preprocessor;
@@ -28,6 +27,7 @@ import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
+import com.fasterxml.jackson.core.JsonParser;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import io.dropwizard.setup.Environment;
 import lombok.SneakyThrows;
@@ -72,10 +72,9 @@ public class PreprocessorCommand extends ConqueryCommand {
 											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 
-			try (InputStream is = new FileInputStream(preprocessingJob.getPreprocessedFile())) {
+			try (final JsonParser parser = Preprocessed.createParser(preprocessingJob.getPreprocessedFile(), Collections.emptyMap(), new CentralRegistry());) {
 
-				// TODO encapsulate this
-				PreprocessedHeader header = Jackson.BINARY_MAPPER.getFactory().createParser(is).readValueAs(PreprocessedHeader.class);
+				PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
 
 				if (header.getValidityHash() == currentHash) {
 					log.info("\tHASH STILL VALID");

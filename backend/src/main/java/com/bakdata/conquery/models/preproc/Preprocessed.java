@@ -1,11 +1,18 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.IntSummaryStatistics;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
@@ -14,11 +21,18 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.InjectedCentralRegistry;
+import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.bakdata.conquery.models.preproc.parser.specific.string.MapTypeGuesser;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
@@ -79,8 +93,32 @@ public class Preprocessed {
 		}
 	}
 
+	/**
+	 * Creates a writer for CQPP files.
+	 */
+	public static JsonGenerator createWriter(File file) throws IOException {
+		OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
+		return Jackson.BINARY_MAPPER.getFactory().createGenerator(out);
+	}
 
-	public void write(JsonGenerator generator) throws IOException {
+	/**
+	 * Creates a Jackson Parser to read CQPP documents. They consist of a {@link PreprocessedHeader} {@link PreprocessedDictionaries} {@link PreprocessedData} in order. But their order depends on each other.
+	 *
+	 * This is heavily tied to {@link Preprocessed#write(File)} and {@link ImportJob#execute()}
+	 */
+	public static JsonParser createParser(File importFile, Map<IId<?>, Identifiable<?>> replacements, CentralRegistry centralRegistry) throws IOException {
+		final InputStream in = new GZIPInputStream(new FileInputStream(importFile));
+
+		final InjectedCentralRegistry injectedCentralRegistry = new InjectedCentralRegistry(replacements, centralRegistry);
+		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectedCentralRegistry);
+
+		return namespaceCollection.injectInto(Jackson.BINARY_MAPPER)
+								  .getFactory()
+								  .createParser(in);
+	}
+
+
+	public void write(File file) throws IOException {
 
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
@@ -113,18 +151,24 @@ public class Preprocessed {
 
 		final PreprocessedData data = new PreprocessedData(entityStart, entityLength, columnStores);
 
-		log.debug("Writing header");
 
-		generator.writeObject(header);
+		try (JsonGenerator generator = createWriter(file)) {
 
-		log.debug("Writing Dictionaries");
+			log.debug("Writing header");
 
-		generator.writeObject(dictionaries);
+			generator.writeObject(header);
 
-		log.debug("Writing data");
+			log.debug("Writing Dictionaries");
 
-		generator.writeObject(data);
+			generator.writeObject(dictionaries);
+
+			log.debug("Writing data");
+
+			generator.writeObject(data);
+		}
 	}
+
+
 
 	/**
 	 * Calculate beginning and length of entities in output data.

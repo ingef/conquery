@@ -16,7 +16,7 @@ import lombok.Setter;
 public class Dataset extends Labeled<DatasetId> implements Injectable {
 
 	/**
-	 * Used to programmatically generate proper Namespaced Ids.
+	 * Used to programmatically generate proper {@link com.bakdata.conquery.models.identifiable.ids.NamespacedId}s.
 	 */
 	public static final Dataset PLACEHOLDER = new Dataset("PLACEHOLDER");
 

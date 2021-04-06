@@ -75,6 +75,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryI
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -188,7 +189,7 @@ public class AdminProcessor {
 		final PreprocessedHeader header;
 
 		// try and read only the header.
-		try (JsonParser parser = ImportJob.createParser(selectedFile, Collections.emptyMap(), namespace.getStorage().getCentralRegistry())) {
+		try (JsonParser parser = Preprocessed.createParser(selectedFile, Collections.emptyMap(), namespace.getStorage().getCentralRegistry())) {
 
 			header = parser.readValueAs(PreprocessedHeader.class);
 		}
