@@ -16,9 +16,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.github.powerlibraries.io.In;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -74,7 +72,10 @@ public class SuccinctTrieTest {
 
 	@Test
 	public void serializationTest()
-			throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
+			throws IOException, JSONException {
+
+		final CentralRegistry registry = new CentralRegistry();
+		registry.register(Dataset.PLACEHOLDER);
 
 		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER,"testDict");
 
@@ -83,6 +84,7 @@ public class SuccinctTrieTest {
 		dict.compress();
 		SerializationTestUtil
 				.forType(Dictionary.class)
+				.registry(registry)
 				.test(dict);
 	}
 

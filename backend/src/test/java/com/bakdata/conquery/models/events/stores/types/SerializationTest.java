@@ -38,9 +38,6 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefi
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,10 +46,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class SerializationTest {
 
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
+	private static final Dictionary DICTIONARY = new MapDictionary(Dataset.PLACEHOLDER,"dictionary");
 
 	@BeforeAll
 	public static void setupRegistry(){
 		CENTRAL_REGISTRY.register(Dataset.PLACEHOLDER);
+		CENTRAL_REGISTRY.register(DICTIONARY);
 	}
 
 	@Test
@@ -70,13 +69,13 @@ public class SerializationTest {
 	}
 
 	public static List<ColumnStore> createCTypes() {
-		final MapDictionary dictionary = new MapDictionary(Dataset.PLACEHOLDER, "hi");
+
 		return Arrays.asList(
 				new DecimalTypeScaled(13, IntArrayStore.create(10)),
 				new MoneyIntStore(IntArrayStore.create(10)),
-				new StringTypeDictionary(IntArrayStore.create(10), dictionary),
-				new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), dictionary), Encoding.Base16LowerCase),
-				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), dictionary), Encoding.Base16LowerCase), "a", "b"),
+				new StringTypeDictionary(IntArrayStore.create(10), DICTIONARY),
+				new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), DICTIONARY), Encoding.Base16LowerCase),
+				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), DICTIONARY), Encoding.Base16LowerCase), "a", "b"),
 
 				new StringTypeNumber(new IntegerRange(0, 7), ByteArrayStore.create(10)),
 				new StringTypeSingleton("a", BitSetStore.create(10)),
@@ -99,11 +98,10 @@ public class SerializationTest {
 
 	@ParameterizedTest
 	@MethodSource("createCTypes")
-	public void testSerialization(ColumnStore type) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
+	public void testSerialization(ColumnStore type) throws IOException, JSONException {
 		SerializationTestUtil
 				.forType(ColumnStore.class)
 				.registry(CENTRAL_REGISTRY)
-				.ignoreClasses(List.of(Dictionary.class))
 				.test(type);
 	}
 }
