@@ -55,7 +55,10 @@
     "loadingPreviousQuery": "Loading Query Details",
     "secondaryId": "Analysis layer",
     "secondaryIdStandard": "Standard",
-    "hasSecondaryId": "Analysis layer active"
+    "hasSecondaryId": "Analysis layer active",
+    "removeNode": "Remove node",
+    "removeColumn": "Remove column",
+    "clear": "Clear the Editor"
   },
   "expandPreviousQueryModal": {
     "headline": "Are you sure to expand the query?",
@@ -381,6 +384,17 @@
     "tabConceptTrees": "Select concepts from concepts trees and use them in the Editor, Timebased Editor and Form Editor",
     "tabPreviousQueries": "Select previous queries and use them in the Editor and Form Editor",
     "tabFormConfigs": "Select the stored forms and use them in the Form Editor",
-    "datasetSelector": "Select the data set – concept trees, previous queries and forms will be loaded."
+    "tabQueryEditor": "In the Editor, a query may be built and sent.",
+    "tabTimebasedEditor": "In the Timebased Editor, a time-based query may be built and sent. That means, previous queries may be combined using time based relations, such as 'before' and 'after'.",
+    "tabFormEditor": "The Form Editor allows for further analysis and statistics of previous queries.",
+    "datasetSelector": "Select the data set – concept trees, previous queries and forms will be loaded.",
+    "excludeTimestamps": "If selected, will avoid using the date values from this concept within a query.",
+    "excludeFromSecondaryIdQuery": "If selected, will avoid using this concept in the analysis layer, should an analysis layer be selected.",
+    "editConceptName": "Edit concept name",
+    "queryEditorExclude": "If selected, will return results which do not include the concepts from this column.",
+    "queryEditorDate": "Select a date range for the concepts of this column.",
+    "editorDropzoneAnd": "Drop concepts here to connect them logically via AND. Click to select a concept list.",
+    "editorDropzoneOr": "Drop concepts here to connect them logically via OR. Click to select a concept list.",
+    "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   }
 }

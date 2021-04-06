@@ -43,6 +43,8 @@ const NodeDetailsView: FC<QueryNodeEditorPropsT> = ({
         <Row>
           <InputCheckbox
             label={t("queryNodeEditor.excludeTimestamps")}
+            tooltip={t("help.excludeTimestamps")}
+            tooltipLazy
             input={{
               value: node.excludeTimestamps,
               onChange: () => onToggleTimestamps(),
@@ -54,6 +56,8 @@ const NodeDetailsView: FC<QueryNodeEditorPropsT> = ({
         <Row>
           <InputCheckbox
             label={t("queryNodeEditor.excludeFromSecondaryIdQuery")}
+            tooltip={t("help.excludeFromSecondaryIdQuery")}
+            tooltipLazy
             input={{
               value: node.excludeFromSecondaryIdQuery,
               onChange: () => onToggleSecondaryIdExclude(),

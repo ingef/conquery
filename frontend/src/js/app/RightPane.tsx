@@ -39,6 +39,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
       tabs={tabs.map((tab) => ({
         key: tab.key,
         label: t(tab.labelKey), // TODO: Somehow make this non-dynamic
+        tooltip: t(tab.tooltipKey), // TODO: Somehow make this non-dynamic
       }))}
     >
       {tabs.map((tab) => {

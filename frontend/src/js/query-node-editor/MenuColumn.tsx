@@ -62,6 +62,7 @@ const MenuColumn: FC<QueryNodeEditorPropsT> = ({
             large
             loading={false}
             text={node.label}
+            tooltip={t("help.editConceptName")}
             selectTextOnMount={true}
             editing={editorState.editingLabel}
             onSubmit={(value) => {
