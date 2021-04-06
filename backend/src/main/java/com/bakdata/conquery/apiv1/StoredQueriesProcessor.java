@@ -108,13 +108,16 @@ public class StoredQueriesProcessor {
 		return root instanceof CQAnd;
 	}
 
-    public void deleteQuery(ManagedExecutionId executionId) {
+    public void deleteQuery(User user, ManagedExecutionId executionId) {
         ManagedExecution<?> execution = storage.getExecution(executionId);
 		if (execution == null) {
 			throw new NotFoundException(executionId.toString());
 		}
 
-        storage.removeExecution(executionId);
+		authorize(user, execution, Ability.DELETE);
+
+
+		storage.removeExecution(executionId);
     }
 
     public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
