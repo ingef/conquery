@@ -1,5 +1,6 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
   margin-bottom: 10px;
@@ -38,26 +39,34 @@ const Headline = styled("h2")<{ active: boolean }>`
   }
 `;
 
+export interface TabNavigationTab {
+  key: string;
+  label: string;
+  tooltip?: string;
+}
+
 interface PropsT {
   onClickTab: (tab: string) => void;
   activeTab: string | null;
-  tabs: { key: string; label: string }[];
+  tabs: TabNavigationTab[];
 }
 
 const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab }) => {
   return (
     <Root>
-      {tabs.map(({ key, label }) => {
+      {tabs.map(({ key, label, tooltip }) => {
         return (
-          <Headline
-            key={key}
-            active={activeTab === key}
-            onClick={() => {
-              if (key !== activeTab) onClickTab(key);
-            }}
-          >
-            {label}
-          </Headline>
+          <WithTooltip text={tooltip} lazy>
+            <Headline
+              key={key}
+              active={activeTab === key}
+              onClick={() => {
+                if (key !== activeTab) onClickTab(key);
+              }}
+            >
+              {label}
+            </Headline>
+          </WithTooltip>
         );
       })}
     </Root>

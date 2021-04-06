@@ -73,8 +73,9 @@
     "intoThisArea": "in diesen Bereich"
   },
   "datasetSelector": {
-    "pleaseChoose": "Datenbank auswählen",
-    "error": "Konnte Datenbanken nicht laden"
+    "label": "Datensatz",
+    "pleaseChoose": "Datensatz auswählen",
+    "error": "Konnte Datensätze nicht laden"
   },
   "queryNodeEditor": {
     "conceptTree": "Konzeptbaum",
@@ -375,5 +376,11 @@
   "conceptTreesOpen": {
     "resetAll": "Zurück zu Standardansicht",
     "closeAll": "Alle Konzepte schließen"
+  },
+  "help": {
+    "tabConceptTrees": "Auswahl der Konzepte aus den Konzeptbäumen zur Verwendung in Editor, Zeit-Editor, oder Formular-Editor",
+    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung in Editor oder Formular-Editor",
+    "tabFormConfigs": "Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor",
+    "datasetSelector": "Auswahl des Datensatzes – die jeweiligen Konzeptbäume, Anfragen und Formulare werden geladen."
   }
 }
