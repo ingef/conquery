@@ -51,7 +51,7 @@ public class SerializationTest {
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
 
 	@BeforeAll
-	public void setupRegistry(){
+	public static void setupRegistry(){
 		CENTRAL_REGISTRY.register(Dataset.PLACEHOLDER);
 	}
 
