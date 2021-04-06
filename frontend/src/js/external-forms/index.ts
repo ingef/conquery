@@ -12,6 +12,7 @@ export type ExternalFormsStateT = FormsStateT | null;
 const Tab: TabT = {
   ...tabDescription,
   labelKey: "rightPane.externalForms",
+  tooltipKey: "help.tabFormEditor",
   reducer: buildExternalFormsReducer({}), // Will be set when forms are loaded
   component: FormsTab,
 };

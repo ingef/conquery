@@ -54,13 +54,15 @@ const QueryNodeActions: FC<PropsT> = (props) => {
 
   return (
     <Actions>
-      <StyledIconButton
-        icon="times"
-        onClick={(e) => {
-          e.stopPropagation();
-          props.onDeleteNode();
-        }}
-      />
+      <WithTooltip text={t("queryEditor.removeNode")}>
+        <StyledIconButton
+          icon="times"
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onDeleteNode();
+          }}
+        />
+      </WithTooltip>
       {props.excludeTimestamps && (
         <WithTooltip text={t("queryNodeEditor.excludingTimestamps")}>
           <StyledIconButton

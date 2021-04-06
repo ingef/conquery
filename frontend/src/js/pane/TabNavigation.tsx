@@ -24,7 +24,7 @@ const Headline = styled("h2")<{ active: boolean }>`
   transition: color ${({ theme }) => theme.transitionTime},
     border-bottom ${({ theme }) => theme.transitionTime};
   cursor: pointer;
-  margin-right: 15px;
+  margin-right: 5px;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.gray};
   border-bottom: 3px solid

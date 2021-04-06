@@ -20,6 +20,7 @@ export interface TimebasedQueryEditorStateT {
 const Tab: TabT = {
   key: "timebasedQueryEditor",
   labelKey: "rightPane.timebasedQueryEditor",
+  tooltipKey: "help.tabTimebasedEditor",
   reducer: combineReducers({
     timebasedQuery: timebasedQueryReducer,
     timebasedQueryRunner: timebasedQueryRunnerReducer,
