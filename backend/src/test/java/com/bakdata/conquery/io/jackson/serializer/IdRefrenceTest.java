@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -29,9 +28,7 @@ public class IdRefrenceTest {
 		table.setName("table");
 		registry.register(dataset);
 		registry.register(table);
-		User user = new User("usermail", "userlabel");
-		registry.register(user);
-		
+
 		String json = Jackson.MAPPER.writeValueAsString(
 			new ListHolder(
 				Collections.singletonList(table)
@@ -39,7 +36,6 @@ public class IdRefrenceTest {
 		);
 		
 		assertThat(json)
-			.contains("\"user.usermail\"")
 			.contains("\"dataset.table\"");
 		
 		ListHolder holder = new SingletonNamespaceCollection(registry)
