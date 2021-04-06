@@ -18,7 +18,10 @@ import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterators;
 import com.google.common.primitives.Ints;
 import io.dropwizard.jersey.validation.Validators;
@@ -26,6 +29,7 @@ import io.dropwizard.util.DataSize;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +37,15 @@ public class BigStoreTest {
 
 	private File tmpDir;
 	private Environment env;
+
+	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
+	private static SingletonNamespaceCollection NAMESPACE_COLLECTION = new SingletonNamespaceCollection(CENTRAL_REGISTRY);
+	private static ObjectMapper MAPPER = NAMESPACE_COLLECTION.injectInto(Jackson.BINARY_MAPPER);
+
+	@BeforeAll
+	public static void setupRegistry(){
+		CENTRAL_REGISTRY.register(Dataset.PLACEHOLDER);
+	}
 
 	@BeforeEach
 	public void init() throws IOException {
@@ -49,10 +62,14 @@ public class BigStoreTest {
 
 	@Test
 	public void testFull() throws JSONException, IOException {
+
 		BigStore<DictionaryId, Dictionary> store = new BigStore<>(new XodusStoreFactory(), Validators.newValidator(), env,
-			StoreInfo.DICTIONARIES, new ArrayList<>(), (e) -> {}, (e) -> {});
+																  StoreInfo.DICTIONARIES, new ArrayList<>(), (e) -> {}, (e) -> {}, MAPPER
+		);
+
+
 		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
-		// TODO inject dataset
+
 		Dictionary nDict = new MapDictionary(Dataset.PLACEHOLDER, "dict");
 
 		for (int v = 0; v < 1000000; v++) {
@@ -61,7 +78,11 @@ public class BigStoreTest {
 
 		// check if manual serialization deserialization works
 		byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);
-		Dictionary simpleCopy = Jackson.BINARY_MAPPER.readValue(bytes, Dictionary.class);
+
+
+		Dictionary simpleCopy = MAPPER.readValue(bytes, Dictionary.class);
+
+
 		for (int v = 0; v < 1000000; v++) {
 			assertThat(simpleCopy.getId(Integer.toHexString(v).getBytes())).isEqualTo(v);
 		}
@@ -85,15 +106,15 @@ public class BigStoreTest {
 	@Test
 	public void testEmpty() throws JSONException, IOException {
 		BigStore<DictionaryId, Dictionary> store = new BigStore<>(new XodusStoreFactory(), Validators.newValidator(), env,
-			StoreInfo.DICTIONARIES, new ArrayList<>(), (e) -> {}, (e) -> {});
+																  StoreInfo.DICTIONARIES, new ArrayList<>(), (e) -> {}, (e) -> {}, MAPPER
+		);
 		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
-		// TODO inject dataset
-		Dictionary nDict = new MapDictionary( Dataset.PLACEHOLDER,"dict");
+		Dictionary nDict = new MapDictionary(Dataset.PLACEHOLDER,"dict");
 
 		// check if manual serialization deserialization works
-		byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);
-		Dictionary simpleCopy = Jackson.BINARY_MAPPER.readValue(bytes, Dictionary.class);
+		byte[] bytes = MAPPER.writeValueAsBytes(nDict);
+		Dictionary simpleCopy = MAPPER.readValue(bytes, Dictionary.class);
 		assertThat(simpleCopy).isEmpty();
 
 		// check if store works
