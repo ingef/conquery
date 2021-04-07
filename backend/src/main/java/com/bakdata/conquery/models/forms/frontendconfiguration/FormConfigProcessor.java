@@ -69,7 +69,7 @@ public class FormConfigProcessor {
 			// the form config can be used by the user again.
 			Set<String> allowedFormTypes = new HashSet<>();
 			for (String formType : FormScanner.FRONTEND_FORM_CONFIGS.keySet()) {
-				if (user.isPermitted(FormPermission.onInstance(Ability.CREATE, formType))) {
+				if (AuthorizationHelper.isPermitted(user, FormPermission.onInstance(Ability.CREATE, formType))) {
 					allowedFormTypes.add(formType);
 				}
 			}
@@ -112,7 +112,7 @@ public class FormConfigProcessor {
 
 		List<DatasetId> translateToDatasets = storage.getDatasetRegistry().getAllDatasets()
 													 .stream()
-													 .filter(dId -> user.isPermitted(dId.createPermission(Ability.READ.asSet())))
+													 .filter(dId -> AuthorizationHelper.isPermitted(user, dId, Ability.READ))
 													 .map(Identifiable::getId)
 													 .collect(Collectors.toList());
 
