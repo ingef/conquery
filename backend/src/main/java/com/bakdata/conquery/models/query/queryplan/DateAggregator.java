@@ -40,7 +40,7 @@ public class DateAggregator implements Aggregator<CDateSet> {
         CDateSet ret = CDateSet.create();
         final Set<CDateSet> all = new HashSet<>();
         siblings.forEach(s -> {
-            result = s.getAggregationResult();
+            CDateSet result = s.getAggregationResult();
             if(result != null) {
                 all.add(result);
             }
