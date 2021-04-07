@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -25,6 +27,14 @@ import lombok.experimental.FieldNameConstants;
 @EqualsAndHashCode(callSuper = true)
 @FieldNameConstants
 public class FullExecutionStatus extends ExecutionStatus {
+
+	/**
+	 * The estimated progress of an running execution in the enclosing interval [0-1].
+	 * This value does not have to be set if the state is RUNNING and it must not be set
+	 * if the state is not RUNNING.
+	 */
+	@Nullable
+	private Float progress;
 
 	/**
 	 * Holds a description for each column, present in the result.
