@@ -154,7 +154,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
                     if (isRegisterImports()) {
                         for (Import imp : getAllImports()) {
                             for (Connector con : concept.getConnectors()) {
-                                if (con.getTable().getId().equals(imp.getTable())) {
+                                if (con.getTable().equals(imp.getTable())) {
                                     con.addImport(imp);
                                 }
                             }
@@ -188,7 +188,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
                     if (isRegisterImports()) {
                         for (Concept<?> c : getAllConcepts()) {
                             for (Connector con : c.getConnectors()) {
-                                if (con.getTable().getId().equals(imp.getTable())) {
+                                if (con.getTable().equals(imp.getTable())) {
                                     con.addImport(imp);
                                 }
                             }

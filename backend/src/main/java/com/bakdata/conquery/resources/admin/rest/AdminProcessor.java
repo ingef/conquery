@@ -18,29 +18,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
-import javax.validation.Validator;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
-
 import javax.annotation.Nullable;
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
@@ -112,7 +89,6 @@ import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvWriter;
@@ -575,9 +551,10 @@ public class AdminProcessor {
 
 	public synchronized List<ConceptId> deleteTable(TableId tableId, boolean force) {
 		final Namespace namespace = datasetRegistry.get(tableId.getDataset());
+		final Table table = namespace.getStorage().getTable(tableId);
 
 		final List<ConceptId> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-														   .filter(con -> con.getTable().getId().equals(tableId))
+														   .filter(con -> con.getTable().equals(table))
 														   .map(Connector::getConcept)
 														   .map(Concept::getId)
 														   .collect(Collectors.toList());
@@ -593,7 +570,7 @@ public class AdminProcessor {
 
 
 		namespace.getStorage().getAllImports().stream()
-				 .filter(imp -> imp.getTable().equals(tableId))
+				 .filter(imp -> imp.getTable().equals(table))
 				 .map(Import::getId)
 				 .forEach(this::deleteImport);
 

@@ -52,12 +52,11 @@ public class CalculateCBlocksJob extends Job {
 		for (CalculationInformation info : infos) {
 			try {
 				if (bucketManager.hasCBlock(info.getCBlockId())) {
-					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.");
+					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", info.getCBlockId());
 					continue;
 				}
 
-				CBlock cBlock = createCBlock(connector, info);
-				cBlock.initIndizes(info.getBucket().getBucketSize());
+				CBlock cBlock = CBlock.createCBlock(connector, info.getBucket(), bucketManager.getEntityBucketSize());
 
 				connector.calculateCBlock(cBlock, info.getBucket());
 
@@ -83,15 +82,11 @@ public class CalculateCBlocksJob extends Job {
 		getProgressReporter().done();
 	}
 
-	private static CBlock createCBlock(Connector connector, CalculationInformation info) {
-		return new CBlock(info.getBucket().getId(), connector.getId());
-	}
-
 	/**
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 */
 	private void calculateEntityDateIndices(CBlock cBlock, Bucket bucket) {
-		Table table = storage.getTable(bucket.getImp().getTable());
+		Table table = bucket.getImp().getTable();
 		for (Column column : table.getColumns()) {
 			if (!column.getType().isDateCompatible()) {
 				continue;
