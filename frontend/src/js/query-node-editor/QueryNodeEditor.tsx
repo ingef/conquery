@@ -16,15 +16,15 @@ import {
   SelectOptionT,
 } from "../api/types";
 import type { ModeT } from "../form-components/InputRange";
-import BasicButton from "../button/BasicButton";
 
 import MenuColumn from "./MenuColumn";
 import { createQueryNodeEditorActions } from "./actions";
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import { QueryNodeEditorStateT } from "./reducer";
 import ContentColumn from "./ContentColumn";
-import EditableText from "js/form-components/EditableText";
+import EditableText from "../form-components/EditableText";
 import ResetAllFiltersButton from "./ResetAllFiltersButton";
+import TransparentButton from "../button/TransparentButton";
 
 const Root = styled("div")`
   padding: 0 20px 10px;
@@ -39,6 +39,7 @@ const Root = styled("div")`
 
 const ContentWrap = styled("div")`
   background-color: white;
+  box-shadow: 1px 2px 5px 0 rgba(0, 0, 0, 0.2);
   border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
   border-radius: ${({ theme }) => theme.borderRadius};
   flex-grow: 1;
@@ -46,6 +47,7 @@ const ContentWrap = styled("div")`
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 `;
 
 const Wrapper = styled("div")`
@@ -60,12 +62,14 @@ const ScrollContainer = styled("div")`
   width: 100%;
   height: 100%;
   overflow-y: auto;
+  background-color: ${({ theme }) => theme.col.bg};
   --webkit-overflow-scrolling: touch;
 `;
 
 const SxMenuColumn = styled(MenuColumn)`
-  background-color: white;
+  background-color: ${({ theme }) => theme.col.bg};
   position: sticky;
+  z-index: 2;
   top: 0;
   left: 0;
 `;
@@ -84,9 +88,7 @@ const Row = styled("div")`
   align-items: center;
 `;
 
-const CloseButton = styled(BasicButton)`
-  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
-`;
+const CloseButton = styled(TransparentButton)``;
 
 const NodeName = styled("div")`
   padding: 10px 15px;
@@ -210,6 +212,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
               node={node}
               datasetId={props.datasetId}
               currencyConfig={props.currencyConfig}
+              selectedTableIdx={props.editorState.selectedInputTableIdx}
               onShowDescription={onShowDescription}
               onToggleTimestamps={props.onToggleTimestamps}
               onToggleSecondaryIdExclude={props.onToggleSecondaryIdExclude}
@@ -228,23 +231,3 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
 };
 
 export default QueryNodeEditor;
-
-// {editorState.detailsViewActive && (
-//   <NodeDetailsView node={node} {...props} editorState={editorState} />
-// )}
-// {isConceptQueryNode(node) &&
-//   !editorState.detailsViewActive &&
-//   selectedTable != null && (
-//     <TableView
-//       node={node}
-//       datasetId={props.datasetId}
-//       currencyConfig={props.currencyConfig}
-//       selectedInputTableIdx={editorState.selectedInputTableIdx}
-//       onSelectTableSelects={props.onSelectTableSelects}
-//       onSetDateColumn={props.onSetDateColumn}
-//       onSetFilterValue={props.onSetFilterValue}
-//       onSwitchFilterMode={props.onSwitchFilterMode}
-//       onShowDescription={editorState.onShowDescription}
-//       onLoadFilterSuggestions={props.onLoadFilterSuggestions}
-//     />
-//   )}

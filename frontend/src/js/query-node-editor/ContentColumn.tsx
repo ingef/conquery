@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useEffect, useRef } from "react";
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 
@@ -11,18 +11,17 @@ import { isConceptQueryNode } from "../model/query";
 import InputMultiSelect from "../form-components/InputMultiSelect";
 import { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
 import { sortSelects } from "../model/select";
+import type { ModeT } from "../form-components/InputRange";
+import type { PostPrefixForSuggestionsParams } from "../api/api";
+import { Heading3 } from "../headings/Headings";
 
 import ContentCell from "./ContentCell";
 import TableView from "./TableView";
-import { ModeT } from "js/form-components/InputRange";
-import { PostPrefixForSuggestionsParams } from "js/api/api";
-import { Heading3 } from "js/headings/Headings";
 
 const Column = styled("div")`
   width: 100%;
   display: flex;
   flex-direction: column;
-  background-color: ${({ theme }) => theme.col.graySuperLight};
 `;
 
 const Row = styled("div")`
@@ -31,13 +30,18 @@ const Row = styled("div")`
 `;
 
 const SectionHeading = styled(Heading3)`
-  margin: 0;
+  margin: 15px 10px 0;
+`;
+
+const CommonSettingsContainer = styled("div")`
+  margin: 15px 10px;
 `;
 
 interface PropsT {
   node: StandardQueryNodeT;
   datasetId: DatasetIdT;
   currencyConfig: CurrencyConfigT;
+  selectedTableIdx: number | null;
   onShowDescription: (filterIdx: number) => void;
   onSelectSelects: (value: SelectOptionT[]) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
@@ -61,6 +65,7 @@ const ContentColumn: FC<PropsT> = ({
   node,
   datasetId,
   currencyConfig,
+  selectedTableIdx,
   onLoadFilterSuggestions,
   onSetDateColumn,
   onSetFilterValue,
@@ -75,11 +80,25 @@ const ContentColumn: FC<PropsT> = ({
 
   const tables = isConceptQueryNode(node) ? node.tables : [];
 
+  const itemsRef = useRef<(HTMLDivElement | null)[]>(new Array(tables.length));
+
+  useEffect(() => {
+    if (
+      selectedTableIdx !== null &&
+      itemsRef.current &&
+      itemsRef.current[selectedTableIdx]
+    ) {
+      itemsRef.current[selectedTableIdx]?.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+  }, [selectedTableIdx]);
+
   return (
     <Column>
       <ContentCell>
         <SectionHeading>{t("queryNodeEditor.properties")}</SectionHeading>
-        <ContentCell>
+        <CommonSettingsContainer>
           {onToggleTimestamps && (
             <Row>
               <InputCheckbox
@@ -102,7 +121,7 @@ const ContentColumn: FC<PropsT> = ({
               />
             </Row>
           )}
-        </ContentCell>
+        </CommonSettingsContainer>
         {node.selects && (
           <ContentCell headline={t("queryNodeEditor.selects")}>
             <InputMultiSelect
@@ -126,7 +145,7 @@ const ContentColumn: FC<PropsT> = ({
         }
 
         return (
-          <ContentCell>
+          <ContentCell ref={(instance) => (itemsRef.current[idx] = instance)}>
             <SectionHeading>{table.label}</SectionHeading>
             <TableView
               node={

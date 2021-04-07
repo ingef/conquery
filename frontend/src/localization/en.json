@@ -99,7 +99,8 @@
     "nodeNotFound": "Concept not found",
     "selectValidityDate": "Relevant date interval",
     "dateColumn": "Date column",
-    "dropMoreConcepts": "Contained concepts"
+    "dropMoreConcepts": "Contained concepts",
+    "emptyMenuColumn": "No further settings"
   },
   "queryGroupModal": {
     "explanation": "Set time frame",

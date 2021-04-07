@@ -47,6 +47,7 @@ const StandardQueryNodeEditor = () => {
     !!node &&
     isConceptQueryNode(node) &&
     !!node.tables &&
+    node.tables.length > 1 &&
     node.tables.some((table) => tableIsEditable(table));
   const editorState = useSelector<StateT, QueryNodeEditorStateT>(
     (state) => state.queryNodeEditor

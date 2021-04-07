@@ -22,7 +22,7 @@ const Root = styled("div")`
 const Group = styled("div")<{ excluded?: boolean }>`
   position: relative;
   padding: 6px 8px 8px;
-  background-color: ${({ theme }) => theme.col.graySuperLight};
+  background-color: ${({ theme }) => theme.col.bg};
   border: 1px solid
     ${({ theme, excluded }) => (excluded ? theme.col.red : theme.col.grayLight)};
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.12);

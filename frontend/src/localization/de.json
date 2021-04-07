@@ -99,7 +99,8 @@
     "nodeNotFound": "Konzept nicht gefunden",
     "selectValidityDate": "Relevanter Zeitraum",
     "dateColumn": "Datumsspalte",
-    "dropMoreConcepts": "Konzepte im Knoten"
+    "dropMoreConcepts": "Konzepte im Knoten",
+    "emptyMenuColumn": "Keine weiteren Einstellungen"
   },
   "queryGroupModal": {
     "explanation": "Zeitlich einschränken",

@@ -2,23 +2,23 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 
-import MenuColumnItem from "./MenuColumnItem";
-
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import ConceptDropzone from "./ConceptDropzone";
-import ConceptEntry from "./ConceptEntry";
-import { QueryNodeEditorStateT } from "./reducer";
 import type {
   DraggedNodeType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import { ConceptIdT } from "js/api/types";
-import { Heading5 } from "js/headings/Headings";
+import type { ConceptIdT } from "../api/types";
+import { Heading3, Heading4 } from "../headings/Headings";
 
-const FixedColumn = styled("div")`
+import ConceptDropzone from "./ConceptDropzone";
+import ConceptEntry from "./ConceptEntry";
+import { QueryNodeEditorStateT } from "./reducer";
+import MenuColumnItem from "./MenuColumnItem";
+
+const FixedColumn = styled("div")<{ isEmpty?: boolean }>`
   display: flex;
   flex-direction: column;
-  width: 270px;
+  width: ${({ isEmpty }) => (isEmpty ? "200px" : "270px")};
   overflow: hidden;
   flex-shrink: 0;
   flex-grow: 1;
@@ -29,16 +29,24 @@ const FixedColumn = styled("div")`
 `;
 
 const Padded = styled("div")`
-  padding: 0 15px;
+  padding: 0 15px 15px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 
-const HeadingBetween = styled(Heading5)`
+const HeadingBetween = styled(Heading4)`
   margin: 15px 15px 0;
 `;
-const Heading5Highlighted = styled(Heading5)`
+const Heading4Highlighted = styled(Heading4)`
   color: ${({ theme }) => theme.col.blueGrayDark};
   font-weight: 700;
   margin: 10px 0 5px;
+`;
+
+const DimmedNote = styled(Heading3)`
+  color: ${({ theme }) => theme.col.grayLight};
+  padding: 15px;
+  font-weight: 400;
 `;
 
 interface PropsT {
@@ -73,8 +81,15 @@ const MenuColumn: FC<PropsT> = ({
 
   const rootConcept = !node.isPreviousQuery ? getConceptById(node.tree) : null;
 
+  const isEmpty =
+    node.isPreviousQuery ||
+    (!showTables && (!rootConcept || !rootConcept.children));
+
   return (
-    <FixedColumn className={className}>
+    <FixedColumn className={className} isEmpty={isEmpty}>
+      {isEmpty && (
+        <DimmedNote>{t("queryNodeEditor.emptyMenuColumn")}</DimmedNote>
+      )}
       {!node.isPreviousQuery && showTables && (
         <div>
           <HeadingBetween>
@@ -103,7 +118,7 @@ const MenuColumn: FC<PropsT> = ({
             {t("queryNodeEditor.dropMoreConcepts")}
           </HeadingBetween>
           <Padded>
-            <Heading5Highlighted>{rootConcept.label}</Heading5Highlighted>
+            <Heading4Highlighted>{rootConcept.label}</Heading4Highlighted>
             <div>
               <ConceptDropzone node={node} onDropConcept={onDropConcept} />
             </div>
