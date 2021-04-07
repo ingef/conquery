@@ -118,8 +118,8 @@ const FormQueryNodeEditor = (props: PropsT) => {
   const showTables =
     !!node &&
     node.tables &&
-    (node.tables.length > 1 ||
-      node.tables.some((table) => tableIsEditable(table)));
+    node.tables.length > 1 &&
+    node.tables.some((table) => tableIsEditable(table));
 
   const formState = useSelector<StateT, FormContextStateT | null>((state) =>
     selectFormContextState(state, props.formType)
