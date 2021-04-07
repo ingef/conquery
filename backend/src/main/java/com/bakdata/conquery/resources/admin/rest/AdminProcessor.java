@@ -188,7 +188,7 @@ public class AdminProcessor {
 		final PreprocessedHeader header;
 
 		// try and read only the header.
-		try (JsonParser parser = Preprocessed.createParser(selectedFile, Collections.emptyMap(), namespace.getStorage().getCentralRegistry())) {
+		try (JsonParser parser = Preprocessed.createParser(selectedFile, Collections.emptyMap())) {
 
 			header = parser.readValueAs(PreprocessedHeader.class);
 		}

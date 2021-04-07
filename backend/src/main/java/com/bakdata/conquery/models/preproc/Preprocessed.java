@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.InjectedCentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -109,10 +108,10 @@ public class Preprocessed {
 	 *
 	 * This is heavily tied to {@link Preprocessed#write(File)} and {@link ImportJob#execute()}
 	 */
-	public static JsonParser createParser(File importFile, Map<IId<?>, Identifiable<?>> replacements, CentralRegistry centralRegistry) throws IOException {
+	public static JsonParser createParser(File importFile, Map<IId<?>, Identifiable<?>> replacements) throws IOException {
 		final InputStream in = new GZIPInputStream(new FileInputStream(importFile));
 
-		final InjectedCentralRegistry injectedCentralRegistry = new InjectedCentralRegistry(replacements, centralRegistry);
+		final InjectedCentralRegistry injectedCentralRegistry = new InjectedCentralRegistry(replacements);
 		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectedCentralRegistry);
 
 		return namespaceCollection.injectInto(Jackson.BINARY_MAPPER.copy())

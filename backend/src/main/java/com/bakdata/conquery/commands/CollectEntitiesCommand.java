@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
 import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
@@ -117,7 +116,7 @@ public class CollectEntitiesCommand extends Command {
 
 		@Override
 		public void execute() throws Exception {
-			try (final JsonParser parser = Preprocessed.createParser(file, Map.of(Dataset.PLACEHOLDER.getId(), Dataset.PLACEHOLDER), new CentralRegistry())) {
+			try (final JsonParser parser = Preprocessed.createParser(file, Map.of(Dataset.PLACEHOLDER.getId(), Dataset.PLACEHOLDER))) {
 
 				final PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
 				log.info("Reading {}", header.getName());

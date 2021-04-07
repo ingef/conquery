@@ -17,7 +17,6 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessingJob;
@@ -71,7 +70,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 
-			try (final JsonParser parser = Preprocessed.createParser(preprocessingJob.getPreprocessedFile(), Collections.emptyMap(), new CentralRegistry());) {
+			try (final JsonParser parser = Preprocessed.createParser(preprocessingJob.getPreprocessedFile(), Collections.emptyMap())) {
 
 				PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
 

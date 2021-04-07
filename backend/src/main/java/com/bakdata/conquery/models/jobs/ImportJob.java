@@ -84,7 +84,7 @@ public class ImportJob extends Job {
 
 		log.info("BEGIN Reading `{}`", importFile);
 
-		final JsonParser parser = Preprocessed.createParser(importFile, replacements, namespace.getStorage().getCentralRegistry());
+		final JsonParser parser = Preprocessed.createParser(importFile, replacements);
 
 		final PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
 		log.info("Importing {} into {}", header.getName(), table);
