@@ -7,9 +7,12 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Central Registry used to wire up incoming ids with already established ids.
+ */
 @RequiredArgsConstructor
 @Data
-public class InjectedCentralRegistry extends CentralRegistry{
+public class InjectingCentralRegistry extends CentralRegistry{
 	/**
 	 * This map is intentionally NOT an IdMap as it allows wiring up mismatched ids.
 	 */

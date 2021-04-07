@@ -22,7 +22,7 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.InjectedCentralRegistry;
+import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
@@ -111,8 +111,8 @@ public class Preprocessed {
 	public static JsonParser createParser(File importFile, Map<IId<?>, Identifiable<?>> replacements) throws IOException {
 		final InputStream in = new GZIPInputStream(new FileInputStream(importFile));
 
-		final InjectedCentralRegistry injectedCentralRegistry = new InjectedCentralRegistry(replacements);
-		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectedCentralRegistry);
+		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
+		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
 
 		return namespaceCollection.injectInto(Jackson.BINARY_MAPPER.copy())
 								  .enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
