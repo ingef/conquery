@@ -1,4 +1,4 @@
-import styled from "app-theme";
+import styled from "@emotion/styled";
 
 export const Heading3 = styled("h3")`
   line-height: 1.3;
