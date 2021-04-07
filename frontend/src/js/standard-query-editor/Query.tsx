@@ -169,6 +169,7 @@ const Query = () => {
             ])}
             <QueryEditorDropzone
               isAnd
+              tooltip={t("help.editorDropzoneAnd")}
               onDropNode={onDropAndNode}
               onDropFile={(file) => onDropConceptListFile(file, null)}
               onLoadPreviousQuery={onLoadPreviousQuery}

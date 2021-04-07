@@ -34,9 +34,21 @@ const LeftPane = () => {
     <Pane
       left
       tabs={[
-        { label: t("leftPane.conceptTrees"), key: "conceptTrees" },
-        { label: t("leftPane.previousQueries"), key: "previousQueries" },
-        { label: t("leftPane.formConfigs"), key: "formConfigs" },
+        {
+          label: t("leftPane.conceptTrees"),
+          key: "conceptTrees",
+          tooltip: t("help.tabConceptTrees"),
+        },
+        {
+          label: t("leftPane.previousQueries"),
+          key: "previousQueries",
+          tooltip: t("help.tabPreviousQueries"),
+        },
+        {
+          label: t("leftPane.formConfigs"),
+          key: "formConfigs",
+          tooltip: t("help.tabFormConfigs"),
+        },
       ]}
     >
       {activeTab === "conceptTrees" &&

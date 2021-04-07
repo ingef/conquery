@@ -1,8 +1,10 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
+
 import IconButton from "../button/IconButton";
 import { Icon } from "../icon/FaIcon";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Actions = styled("div")`
   margin: 0 0 6px;
@@ -62,27 +64,33 @@ const QueryGroupActions: FC<PropsT> = ({
   return (
     <Actions>
       <div>
-        <RedIconButton
-          red
-          tight
-          active={excludeActive}
-          icon="ban"
-          onClick={onExcludeClick}
-        >
-          {t("queryEditor.exclude")}
-        </RedIconButton>
-        <StyledIconButton
-          active={dateActive}
-          regular
-          tight
-          icon="calendar"
-          onClick={onDateClick}
-        >
-          {t("queryEditor.date")}
-        </StyledIconButton>
+        <WithTooltip text={t("help.queryEditorExclude")} lazy>
+          <RedIconButton
+            red
+            tight
+            active={excludeActive}
+            icon="ban"
+            onClick={onExcludeClick}
+          >
+            {t("queryEditor.exclude")}
+          </RedIconButton>
+        </WithTooltip>
+        <WithTooltip text={t("help.queryEditorDate")} lazy>
+          <StyledIconButton
+            active={dateActive}
+            regular
+            tight
+            icon="calendar"
+            onClick={onDateClick}
+          >
+            {t("queryEditor.date")}
+          </StyledIconButton>
+        </WithTooltip>
       </div>
       <Right>
-        <IconButton tiny icon="times" onClick={onDeleteGroup} />
+        <WithTooltip text={t("queryEditor.removeColumn")}>
+          <IconButton tiny icon="times" onClick={onDeleteGroup} />
+        </WithTooltip>
       </Right>
     </Actions>
   );

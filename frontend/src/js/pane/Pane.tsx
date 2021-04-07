@@ -1,6 +1,7 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 import PaneTabNavigation from "./PaneTabNavigation";
+import { TabNavigationTab } from "./TabNavigation";
 
 const Root = styled("div")<{ left?: boolean; right?: boolean }>`
   width: 100%;
@@ -18,7 +19,7 @@ const Container = styled("div")`
 `;
 
 interface PropsT {
-  tabs: { key: string; label: string }[];
+  tabs: TabNavigationTab[];
   right?: boolean;
   left?: boolean;
 }

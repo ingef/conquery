@@ -55,6 +55,8 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	@Min(0)
 	private final int numberOfEvents;
 	private final ColumnStore[] stores;
+
+	//TODO migrate these back to arrays again, like CBlock#getEntityIndex (and unify those)
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
@@ -67,8 +69,6 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	@JsonSerialize(using = Int2IntMapSerializer.class)
 	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
 	private final Int2IntMap length;
-
-	private final int bucketSize;
 
 	@NsIdRef
 	private final Table table;

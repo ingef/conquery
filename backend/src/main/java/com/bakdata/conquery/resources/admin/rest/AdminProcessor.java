@@ -556,9 +556,10 @@ public class AdminProcessor {
 
 	public synchronized List<ConceptId> deleteTable(TableId tableId, boolean force) {
 		final Namespace namespace = datasetRegistry.get(tableId.getDataset());
+		final Table table = namespace.getStorage().getTable(tableId);
 
 		final List<ConceptId> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-														   .filter(con -> con.getTable().getId().equals(tableId))
+														   .filter(con -> con.getTable().equals(table))
 														   .map(Connector::getConcept)
 														   .map(Concept::getId)
 														   .collect(Collectors.toList());
@@ -574,7 +575,7 @@ public class AdminProcessor {
 
 
 		namespace.getStorage().getAllImports().stream()
-				.filter(imp -> imp.getTable().getId().equals(tableId))
+				.filter(imp -> imp.getTable().equals(table))
 				 .map(Import::getId)
 				 .forEach(this::deleteImport);
 

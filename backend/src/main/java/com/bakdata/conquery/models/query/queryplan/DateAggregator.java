@@ -38,7 +38,12 @@ public class DateAggregator implements Aggregator<CDateSet> {
     @Override
     public CDateSet getAggregationResult() {
         final Set<CDateSet> all = new HashSet<>();
-        siblings.forEach(s -> all.add(s.getAggregationResult()));
+        siblings.forEach(s -> {
+            CDateSet result = s.getAggregationResult();
+            if(result != null) {
+                all.add(result);
+            }
+        });
 
         // Repackage to get the results sorted. Might need some optimization.
         return action.aggregate(all);

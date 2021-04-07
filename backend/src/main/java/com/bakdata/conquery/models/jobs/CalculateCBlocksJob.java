@@ -55,8 +55,7 @@ public class CalculateCBlocksJob extends Job {
 					continue;
 				}
 
-				CBlock cBlock = createCBlock(connector, info);
-				cBlock.initIndizes(bucketManager.getEntityBucketSize());
+				CBlock cBlock = CBlock.createCBlock(connector, info.getBucket(), bucketManager.getEntityBucketSize());
 
 				connector.calculateCBlock(cBlock, info.getBucket());
 
@@ -80,10 +79,6 @@ public class CalculateCBlocksJob extends Job {
 			}
 		}
 		getProgressReporter().done();
-	}
-
-	private static CBlock createCBlock(Connector connector, CalculationInformation info) {
-		return new CBlock(info.getBucket(), connector.getId());
 	}
 
 	/**

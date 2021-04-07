@@ -16,7 +16,7 @@ public enum DateAggregationAction {
     BLOCK() {
         @Override
         public CDateSet aggregate(Set<CDateSet> all) {
-            return CDateSet.create();
+            return null;
         }
     },
     /**
