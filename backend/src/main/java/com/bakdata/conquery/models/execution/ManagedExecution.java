@@ -213,9 +213,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
 	}
 
-	@TestOnly
+	/**
+	 * Blocks until a execution finished of the specified timeout is reached. Return immediately if the execution is not running
+	 */
 	public void awaitDone(int time, TimeUnit unit) {
-		if (state == ExecutionState.DONE || state == ExecutionState.CANCELED || state == ExecutionState.FAILED ){
+		if (state != ExecutionState.RUNNING){
 			return;
 		}
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
