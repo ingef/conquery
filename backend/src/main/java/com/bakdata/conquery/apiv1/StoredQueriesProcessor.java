@@ -15,6 +15,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
@@ -66,8 +67,8 @@ public class StoredQueriesProcessor {
                 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
                 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
                 // However, for other executions we check because those are probably shared.
-                .filter(q -> user.isOwner(q) || user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
-                .flatMap(mq -> {
+				.filter(q -> AuthorizationHelper.isPermitted(user, q.createPermission(Ability.READ.asSet())))
+				.flatMap(mq -> {
                     try {
                         return Stream.of(
                                 mq.buildStatusOverview(

@@ -34,10 +34,12 @@ public class DatasetPermission extends StringPermissionBuilder {
 	
 	
 	//// Helper functions
+	@Deprecated
 	public static ConqueryPermission onInstance(Set<Ability> abilities, DatasetId instance) {
 		return INSTANCE.instancePermission(abilities, instance);
 	}
 
+	@Deprecated
 	public static ConqueryPermission onInstance(Ability ability, DatasetId instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}

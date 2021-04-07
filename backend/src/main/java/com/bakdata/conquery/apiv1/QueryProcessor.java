@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -83,7 +82,7 @@ public class QueryProcessor {
 
 
 		Set<ConqueryPermission> permissions = new HashSet<>();
-		query.collectPermissions(visitors, permissions, dataset.getId(), storage, user);
+		query.collectPermissions(visitors, permissions, dataset, storage, user);
 
 		AuthorizationHelper.authorize(user,permissions);
 
@@ -164,8 +163,11 @@ public class QueryProcessor {
 		IQuery translateable = (IQuery) query;
 		// translate the query for all other datasets of user and submit it.
 		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
-			if (!user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), targetNamespace.getDataset().getId()))
-					|| targetNamespace.getDataset().equals(dataset)) {
+			if (targetNamespace.getDataset().equals(dataset)) {
+				continue;
+			}
+
+			if (AuthorizationHelper.isPermitted(user, targetNamespace.getDataset().createPermission(Ability.READ.asSet()))) {
 				continue;
 			}
 

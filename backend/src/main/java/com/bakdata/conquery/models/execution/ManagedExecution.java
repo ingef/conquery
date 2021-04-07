@@ -303,7 +303,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		List<GroupId> permittedGroups = new ArrayList<>();
 		for(Group group : storage.getAllGroups()) {
 			for(Permission perm : group.getPermissions()) {
-				if(perm.implies(QueryPermission.onInstance(Ability.READ, this.getId()))) {
+				if(perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
 					continue;
 				}

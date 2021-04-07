@@ -190,12 +190,13 @@ public class QueryUtils {
 	}
 	
 	public static void generateConceptReadPermissions(@NonNull NamespacedIdCollector idCollector, @NonNull Collection<ConqueryPermission> collectPermissions){
+		//TODO id prefer to not use the ids here, instead refactor NamespacedIdCollector to collect the Objects.
 		idCollector.getIds().stream()
-			.filter(id -> ConceptElementId.class.isAssignableFrom(id.getClass()))
-			.map(ConceptElementId.class::cast)
-			.map(ConceptElementId::findConcept)
-			.map(cId -> ConceptPermission.onInstance(Ability.READ, cId))
-			.distinct()
-			.collect(Collectors.toCollection(() -> collectPermissions));
+				   .filter(id -> ConceptElementId.class.isAssignableFrom(id.getClass()))
+				   .map(ConceptElementId.class::cast)
+				   .map(ConceptElementId::findConcept)
+				   .map(cId -> ConceptPermission.onInstance(Ability.READ, cId))
+				   .distinct()
+				   .collect(Collectors.toCollection(() -> collectPermissions));
 	}
 }

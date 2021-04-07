@@ -119,7 +119,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		List<GroupId> permittedGroups = new ArrayList<>();
 		for(Group group : storage.getAllGroups()) {
 			for(Permission perm : group.getPermissions()) {
-				if(perm.implies(FormConfigPermission.onInstance(Ability.READ, this.getId()))) {
+				if(perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
 					continue;
 				}

@@ -36,10 +36,6 @@ public class FormConfigPermission extends StringPermissionBuilder {
 	}
 
 	//// Helper functions
-	public static ConqueryPermission onInstance(Ability ability, FormConfigId instance) {
-		return INSTANCE.instancePermission(ability, instance);
-	}
-
 	public static ConqueryPermission onInstance(Set<Ability> abilities, FormConfigId instance) {
 		return INSTANCE.instancePermission(abilities, instance);
 	}

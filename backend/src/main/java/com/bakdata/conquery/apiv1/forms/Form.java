@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -43,7 +44,7 @@ public abstract class Form implements QueryDescription {
 	}
 
 	@Override
-	public void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<ConqueryPermission> requiredPermissions, DatasetId submittedDataset, MetaStorage storage, User user) {
+	public void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<ConqueryPermission> requiredPermissions, Dataset submittedDataset, MetaStorage storage, User user) {
 		QueryDescription.super.collectPermissions(visitors, requiredPermissions, submittedDataset, storage, user);
 		// Check if user is allowed to create this form
 		requiredPermissions.add(FormPermission.onInstance(Ability.CREATE, getFormType()));

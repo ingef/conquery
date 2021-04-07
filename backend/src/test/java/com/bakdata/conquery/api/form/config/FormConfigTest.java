@@ -192,7 +192,7 @@ public class FormConfigTest {
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		formConfig.setOwner(user.getId());
-		user.addPermission(storage, FormConfigPermission.onInstance(Ability.READ, formConfig.getId()));
+		user.addPermission(storage, formConfig.createPermission(Ability.READ.asSet()));
 		storage.addFormConfig(formConfig);
 		
 		// EXECUTE

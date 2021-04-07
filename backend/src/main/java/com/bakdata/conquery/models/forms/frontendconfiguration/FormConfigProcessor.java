@@ -18,7 +18,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
@@ -80,9 +79,9 @@ public class FormConfigProcessor {
 		final Set<String> formTypesFinal = requestedFormType;
 
 		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
-				.filter(c -> dataset.equals(c.getDataset()))
-				.filter(c -> formTypesFinal.contains(c.getFormType()))
-				.filter(c -> user.isOwner(c) || user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
+										   .filter(c -> dataset.equals(c.getDataset()))
+										   .filter(c -> formTypesFinal.contains(c.getFormType()))
+										   .filter(c -> AuthorizationHelper.isPermitted(user, c, Ability.READ));
 
 
 		return stream.map(c -> c.overview(storage, user));
@@ -111,10 +110,11 @@ public class FormConfigProcessor {
 
 		AuthorizationHelper.authorize(user, namespace.getDataset(), Ability.READ);
 
-		List<DatasetId> translateToDatasets = storage.getDatasetRegistry().getAllDatasets().stream()
-			.map(Identifiable::getId)
-			.filter(dId -> user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), dId)))
-			.collect(Collectors.toList());
+		List<DatasetId> translateToDatasets = storage.getDatasetRegistry().getAllDatasets()
+													 .stream()
+													 .filter(dId -> user.isPermitted(dId.createPermission(Ability.READ.asSet())))
+													 .map(Identifiable::getId)
+													 .collect(Collectors.toList());
 
 		translateToDatasets.remove(targetDataset);
 
@@ -149,7 +149,8 @@ public class FormConfigProcessor {
 	 */
 	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, FormConfigPatch patch) {
 		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
-		
+
+		//TODO i have no idea what this does
 		patch.applyTo(config, storage, user, FormConfigPermission::onInstance);
 		
 		storage.updateFormConfig(config);

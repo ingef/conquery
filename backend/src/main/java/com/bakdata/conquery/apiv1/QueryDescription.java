@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -71,7 +72,7 @@ public interface QueryDescription extends Visitable {
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<ConqueryPermission> requiredPermissions, DatasetId submittedDataset, MetaStorage storage, User user) {
+	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<ConqueryPermission> requiredPermissions, Dataset submittedDataset, MetaStorage storage, User user) {
 		NamespacedIdCollector nsIdCollector = QueryUtils.getVisitor(visitors, QueryUtils.NamespacedIdCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, QueryUtils.ExternalIdChecker.class);
 		if(nsIdCollector == null) {
@@ -79,10 +80,10 @@ public interface QueryDescription extends Visitable {
 		}
 		// Generate DatasetPermissions
 		nsIdCollector.getIds().stream()
-			.map(NamespacedId::getDataset)
-			.distinct()
-			.map(dId -> DatasetPermission.onInstance(Ability.READ, dId))
-			.collect(Collectors.toCollection(() -> requiredPermissions));
+					 .map(NamespacedId::getDataset)
+					 .distinct()
+					 .map(dId -> DatasetPermission.onInstance(Ability.READ, dId))
+					 .collect(Collectors.toCollection(() -> requiredPermissions));
 		
 		// Generate ConceptPermissions
 		QueryUtils.generateConceptReadPermissions(nsIdCollector, requiredPermissions);
@@ -98,7 +99,7 @@ public interface QueryDescription extends Visitable {
 		
 		// Check if the query contains parts that require to resolve external IDs. If so the user must have the preserve_id permission on the dataset.
 		if(externalIdChecker.resolvesExternalIds()) {
-			requiredPermissions.add(DatasetPermission.onInstance(Ability.PRESERVE_ID, submittedDataset));
+			requiredPermissions.add(submittedDataset.createPermission(Ability.PRESERVE_ID.asSet()));
 		}
 	}
 
