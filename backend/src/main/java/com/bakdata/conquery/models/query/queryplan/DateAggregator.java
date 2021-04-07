@@ -39,7 +39,12 @@ public class DateAggregator implements Aggregator<CDateSet> {
     public CDateSet getAggregationResult() {
         CDateSet ret = CDateSet.create();
         final Set<CDateSet> all = new HashSet<>();
-        siblings.forEach(s -> all.add(s.getAggregationResult()));
+        siblings.forEach(s -> {
+            CDateSet result = s.getAggregationResult();
+            if(result != null) {
+                all.add(result);
+            }
+        });
 
         // Repackage to get the results sorted. Might need some optimization.
         return action.aggregate(all);
