@@ -218,7 +218,7 @@ public class SerializationTests {
 	@Test
 	public void managedQuery() throws JSONException, IOException {
 		
-		ManagedQuery execution = new ManagedQuery(null, new UserId("test-user"), new DatasetId("test-dataset"));
+		ManagedQuery execution = new ManagedQuery(null, new UserId("test-user"), new Dataset("test-dataset"));
 		execution.setTags(new String[] {"test-tag"});
 		
 		SerializationTestUtil

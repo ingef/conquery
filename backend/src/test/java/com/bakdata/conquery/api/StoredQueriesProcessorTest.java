@@ -66,15 +66,15 @@ public class StoredQueriesProcessorTest {
 
 
 	private static final List<ManagedExecution<?>> queries = ImmutableList.of(
-			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_0, NEW),            // included
-			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_1, NEW),            // not included: wrong dataset
-			mockManagedForm(USERS[0], QUERY_ID_2, NEW),                            // not included: not a ManagedQuery
-			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_3, NEW),         // not included: missing permission
-			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_4, DONE),        // included
-			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED),        // not included: wrong state
-			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW),                                                    // not included: wrong query structure
-			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd()),    // included, but secondaryId-Query
-			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept())    // not-included, wrong structure
+			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_0, NEW, DATASET_0),            // included
+			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_1, NEW, DATASET_1),            // not included: wrong dataset
+			mockManagedForm(USERS[0], QUERY_ID_2, NEW, DATASET_0),                            // not included: not a ManagedQuery
+			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_3, NEW, DATASET_0),         // not included: missing permission
+			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_4, DONE, DATASET_0),        // included
+			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED, DATASET_0),        // not included: wrong state
+			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW, DATASET_0),                                                    // not included: wrong query structure
+			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd(), DATASET_0),    // included, but secondaryId-Query
+			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept(), DATASET_0)    // not-included, wrong structure
 
 		);
 
@@ -82,7 +82,7 @@ public class StoredQueriesProcessorTest {
 	public static void beforeAll() {
 		// setup storage mock
 		doAnswer((invocation) -> {
-			UserId id = (UserId) invocation.getArgument(0);
+			UserId id = invocation.getArgument(0);
 			for (User user : USERS) {
 				if(user.getId().equals(id)) {
 					return user;
@@ -95,7 +95,7 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0.getId(), null, USERS[0], queries).collect(Collectors.toList());
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, null, USERS[0], queries).collect(Collectors.toList());
 
 		assertThat(infos)
 				.containsExactly(
@@ -117,8 +117,8 @@ public class StoredQueriesProcessorTest {
 
 	}
 
-	private static ManagedForm mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState){
-		return new ManagedForm(new ExportForm(), user.getId(), id.getDataset()) {
+	private static ManagedForm mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
+		return new ManagedForm(new ExportForm(), user.getId(), dataset) {
 			{
 				state = execState;
 				creationTime = LocalDateTime.MIN;
@@ -127,10 +127,10 @@ public class StoredQueriesProcessorTest {
 		};
 	}
 
-	private static ManagedQuery mockManagedConceptQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState){
-		return mockManagedQuery(new ConceptQuery(new CQAnd()), user, id, execState);
+	private static ManagedQuery mockManagedConceptQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, Dataset dataset){
+		return mockManagedQuery(new ConceptQuery(new CQAnd()), user, id, execState, dataset);
 	}
-	private static ManagedQuery mockManagedSecondaryIdQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, CQElement root){
+	private static ManagedQuery mockManagedSecondaryIdQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, CQElement root, Dataset dataset){
 		final SecondaryIdQuery sid = new SecondaryIdQuery();
 		sid.setSecondaryId(new SecondaryIdDescription() {{
 			setDataset(DATASET_0);
@@ -138,12 +138,12 @@ public class StoredQueriesProcessorTest {
 		}});
 		sid.setRoot(root);
 
-		return mockManagedQuery(sid, user, id, execState);
+		return mockManagedQuery(sid, user, id, execState, dataset);
 	}
 
 
-	private static ManagedQuery mockManagedQuery(IQuery queryDescription, User user, ManagedExecutionId id, ExecutionState execState){
-		return new ManagedQuery(queryDescription, user.getId(), id.getDataset()) {
+	private static ManagedQuery mockManagedQuery(IQuery queryDescription, User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
+		return new ManagedQuery(queryDescription, user.getId(), dataset) {
 			{
 				state = execState;
 				creationTime = LocalDateTime.MIN;

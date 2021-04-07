@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
@@ -94,7 +95,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@JsonIgnore
 	private transient List<EntityResult> results = new ArrayList<>();
 
-	public ManagedQuery(IQuery query, UserId owner, DatasetId submittedDataset) {
+	public ManagedQuery(IQuery query, UserId owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
 		this.query = query;
 	}
@@ -102,7 +103,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	protected void doInitExecutable(@NonNull DatasetRegistry namespaces, ConqueryConfig config) {
 		this.config = config;
-		this.namespace = namespaces.get(getDataset());
+		this.namespace = namespaces.get(getDataset().getId());
 		this.involvedWorkers = namespace.getWorkers().size();
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, null));
 		if (label == null) {

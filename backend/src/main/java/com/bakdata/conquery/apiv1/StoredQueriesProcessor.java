@@ -51,10 +51,10 @@ public class StoredQueriesProcessor {
     public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user) {
         Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
-        return getQueriesFiltered(namespace.getDataset().getId(), RequestAwareUriBuilder.fromRequest(req), user, allQueries);
+        return getQueriesFiltered(namespace.getDataset(), RequestAwareUriBuilder.fromRequest(req), user, allQueries);
     }
 
-    public Stream<ExecutionStatus> getQueriesFiltered(DatasetId datasetId, UriBuilder uriBuilder, User user, Collection<ManagedExecution<?>> allQueries) {
+    public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, User user, Collection<ManagedExecution<?>> allQueries) {
         Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
 
         return allQueries

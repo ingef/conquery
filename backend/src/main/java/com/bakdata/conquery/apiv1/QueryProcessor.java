@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
@@ -84,9 +83,7 @@ public class QueryProcessor {
 		Set<ConqueryPermission> permissions = new HashSet<>();
 		query.collectPermissions(visitors, permissions, dataset, storage, user);
 
-		AuthorizationHelper.authorize(user,permissions);
-
-
+		AuthorizationHelper.authorize(user, permissions);
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), primaryGroupName);
 
@@ -105,7 +102,7 @@ public class QueryProcessor {
 		}
 
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset.getId(), config);
+		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset, config);
 
 		if (query instanceof IQuery) {
 			translateToOtherDatasets(dataset, query, user, mq);
@@ -163,22 +160,23 @@ public class QueryProcessor {
 		IQuery translateable = (IQuery) query;
 		// translate the query for all other datasets of user and submit it.
 		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
-			if (targetNamespace.getDataset().equals(dataset)) {
+			final Dataset targetDataset = targetNamespace.getDataset();
+			if (targetDataset.equals(dataset)) {
 				continue;
 			}
 
-			if (AuthorizationHelper.isPermitted(user, targetNamespace.getDataset().createPermission(Ability.READ.asSet()))) {
+			if (AuthorizationHelper.isPermitted(user, targetDataset.createPermission(Ability.READ.asSet()))) {
 				continue;
 			}
 
 			try {
-				DatasetId targetDataset = targetNamespace.getDataset().getId();
+
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
 				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
 
 			}
 			catch (Exception e) {
-				log.trace("Could not translate " + query + " to dataset " + targetNamespace.getDataset(), e);
+				log.trace("Could not translate " + query + " to dataset " + targetDataset, e);
 			}
 		}
 	}

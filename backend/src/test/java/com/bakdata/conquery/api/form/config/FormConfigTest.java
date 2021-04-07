@@ -234,7 +234,7 @@ public class FormConfigTest {
 		}
 
 		@Override
-		public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+		public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, Dataset submittedDataset) {
 			return Collections.emptyMap();
 		}
 

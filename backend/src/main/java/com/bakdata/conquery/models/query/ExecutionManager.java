@@ -9,9 +9,9 @@ import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
@@ -29,7 +29,7 @@ public class ExecutionManager {
 	@NonNull
 	private final Namespace namespace;
 
-	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UserId userId, DatasetId submittedDataset, ConqueryConfig config) {
+	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UserId userId, Dataset submittedDataset, ConqueryConfig config) {
 		return execute(datasets, createExecution(datasets, query, userId, submittedDataset), config);
 	}
 
@@ -52,7 +52,7 @@ public class ExecutionManager {
 		return execution;
 	}
 
-	public static ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, UserId userId, DatasetId submittedDataset) {
+	public static ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, UserId userId, Dataset submittedDataset) {
 		return createQuery(datasets, query, UUID.randomUUID(), userId, submittedDataset);
 	}
 
@@ -64,7 +64,7 @@ public class ExecutionManager {
 		return query;
 	}
 
-	public static ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset) {
+	public static ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, Dataset submittedDataset) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution<?> managed = query.toManagedExecution(userId, submittedDataset);
 
@@ -76,7 +76,7 @@ public class ExecutionManager {
 		return managed;
 	}
 
-	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, DatasetId submittedDataset, ConqueryConfig config) {
+	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, Dataset submittedDataset, ConqueryConfig config) {
 		return execute(datasets, createQuery(datasets, query, queryId, userId, submittedDataset), config);
 	}
 

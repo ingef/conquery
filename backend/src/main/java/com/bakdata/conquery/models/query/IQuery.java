@@ -6,8 +6,8 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -42,7 +42,7 @@ public abstract class IQuery implements QueryDescription {
 	public abstract void collectResultInfos(ResultInfoCollector collector);
 	
 	@Override
-	public ManagedQuery toManagedExecution(UserId userId, DatasetId submittedDataset) {
+	public ManagedQuery toManagedExecution(UserId userId, Dataset submittedDataset) {
 		return new ManagedQuery(this,userId, submittedDataset);
 	}
 

@@ -26,6 +26,7 @@ import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -35,11 +36,13 @@ import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -78,14 +81,15 @@ import org.jetbrains.annotations.TestOnly;
 @CPSBase
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Authorized, Visitable {
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Authorized, Visitable, NamespacedIdentifiable<ManagedExecutionId> {
 	
 	/**
 	 * Some unusual suffix. Its not too bad if someone actually uses this. 
 	 */
 	public final static String AUTO_LABEL_SUFFIX = "\t@§$";
 
-	protected DatasetId dataset;
+	@NsIdRef
+	protected Dataset dataset;
 	protected UUID queryId;
 	protected String label;
 
@@ -114,7 +118,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@JsonIgnore
 	private boolean initialized = false;
 
-	public ManagedExecution(UserId owner, DatasetId submittedDataset) {
+	public ManagedExecution(UserId owner, Dataset submittedDataset) {
 		this.owner = owner;
 		this.dataset = submittedDataset;
 	}
@@ -151,7 +155,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		if(queryId == null) {
 			queryId = UUID.randomUUID();
 		}
-		return new ManagedExecutionId(dataset, queryId);
+		return new ManagedExecutionId(dataset.getId(), queryId);
 	}
 
 	/**

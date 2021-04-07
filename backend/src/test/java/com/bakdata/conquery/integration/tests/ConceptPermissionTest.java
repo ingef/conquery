@@ -9,9 +9,11 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -65,7 +67,9 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 
 		// Add the necessary Permission
 		{
-			user.addPermission(storage, ConceptPermission.onInstance(Ability.READ, conceptId));			
+			final ConqueryPermission permission = ConceptPermission.onInstance(Ability.READ, conceptId);
+			log.info("Adding the Permission[{}] to User[{}]", permission, user);
+			AuthorizationHelper.addPermission(user, permission, storage);
 		}
 
 		// Only assert permissions

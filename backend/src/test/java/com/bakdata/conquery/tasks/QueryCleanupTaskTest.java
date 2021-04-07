@@ -1,8 +1,6 @@
 package com.bakdata.conquery.tasks;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -12,14 +10,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -37,7 +34,7 @@ class QueryCleanupTaskTest {
 
 		ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, null, new DatasetId("test"));
+		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"));
 
 		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
 

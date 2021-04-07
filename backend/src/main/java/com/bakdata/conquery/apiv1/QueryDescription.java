@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -46,7 +45,7 @@ public interface QueryDescription extends Visitable {
 	 * @param submittedDataset
 	 * @return
 	 */
-	ManagedExecution<?> toManagedExecution(UserId userId, DatasetId submittedDataset);
+	ManagedExecution<?> toManagedExecution(UserId userId, Dataset submittedDataset);
 
 	
 	Set<ManagedExecutionId> collectRequiredQueries();

@@ -19,10 +19,10 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -73,7 +73,7 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	}
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, Dataset submittedDataset) {
 		return Map.of(
 			ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
 			List.of(

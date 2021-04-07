@@ -25,6 +25,7 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -32,7 +33,6 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
@@ -89,7 +89,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 
 
-	public ManagedForm(Form submittedForm , UserId owner, DatasetId submittedDataset) {
+	public ManagedForm(Form submittedForm , UserId owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
 		this.submittedForm = submittedForm;
 	}
@@ -100,7 +100,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		// init all subqueries
 		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, null));
-		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
+		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset());
 		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
 	}
 	
