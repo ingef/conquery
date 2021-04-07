@@ -1,13 +1,13 @@
 import React, { FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
+import { StateT } from "app-types";
 
-import { getStoredAuthToken } from "../authorization/helper";
 import { openPreview } from "../preview/actions";
 
 import IconButton from "./IconButton";
-import { StateT } from "app-types";
 import type { ColumnDescription } from "../api/types";
-import { useTranslation } from "react-i18next";
+import { useAuthToken } from "../api/useApi";
 
 interface PropsT {
   columns: ColumnDescription[];
@@ -21,7 +21,7 @@ const PreviewButton: FC<PropsT> = ({
   className,
   ...restProps
 }) => {
-  const authToken = getStoredAuthToken();
+  const authToken = useAuthToken();
   const isLoading = useSelector<StateT, boolean>(
     (state) => state.preview.isLoading
   );
@@ -31,7 +31,7 @@ const PreviewButton: FC<PropsT> = ({
   const onOpenPreview = (url: string) => dispatch(openPreview(url, columns));
 
   const href = `${url}?access_token=${encodeURIComponent(
-    authToken || ""
+    authToken
   )}&charset=utf-8&pretty=false`;
 
   return (
