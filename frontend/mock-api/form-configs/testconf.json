@@ -145,6 +145,7 @@
                     "id": "production_country",
                     "label": "Production Country",
                     "type": "BIG_MULTI_SELECT",
+                    "options": [],
                     "value": []
                   },
                   {

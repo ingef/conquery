@@ -19,21 +19,15 @@ const Column = styled("div")`
 
 const MaximizedCell = styled(ContentCell)`
   flex-grow: 1;
-  padding-bottom: 30px;
 `;
 
 interface PropsT {
   node: ConceptQueryNodeType;
   selectedInputTableIdx: number;
-  onShowDescription: (filterIdx: number) => void;
   datasetId: DatasetIdT;
   currencyConfig: CurrencyConfigT;
 
-  onLoadFilterSuggestions: (
-    params: PostPrefixForSuggestionsParams,
-    tableIdx: number,
-    filterIdx: number
-  ) => void;
+  onShowDescription: (filterIdx: number) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
   onSetDateColumn: (tableIdx: number, dateColumnValue: string | null) => void;
   onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
@@ -41,6 +35,11 @@ interface PropsT {
     tableIdx: number,
     filterIdx: number,
     mode: ModeT
+  ) => void;
+  onLoadFilterSuggestions: (
+    params: PostPrefixForSuggestionsParams,
+    tableIdx: number,
+    filterIdx: number
   ) => void;
 }
 

@@ -27,6 +27,7 @@ const Buttons = styled("div")`
 const Options = styled("div")`
   padding: 8px 0 0 28px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   max-height: 345px;
 `;
 

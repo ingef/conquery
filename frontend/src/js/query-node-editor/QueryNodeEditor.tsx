@@ -17,45 +17,79 @@ import {
 } from "../api/types";
 import type { ModeT } from "../form-components/InputRange";
 import BasicButton from "../button/BasicButton";
-import { isConceptQueryNode } from "../model/query";
 
 import MenuColumn from "./MenuColumn";
-import NodeDetailsView from "./NodeDetailsView";
-import TableView from "./TableView";
 import { createQueryNodeEditorActions } from "./actions";
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import { QueryNodeEditorStateT } from "./reducer";
+import ContentColumn from "./ContentColumn";
+import EditableText from "js/form-components/EditableText";
+import ResetAllFiltersButton from "./ResetAllFiltersButton";
 
 const Root = styled("div")`
-  margin: 0 10px;
+  padding: 0 20px 10px;
   left: 0;
   top: 0;
   right: 0;
   bottom: 0;
   position: absolute;
-  display: flex;
-  background: rgb(249, 249, 249);
   z-index: 1;
+  background-color: ${({ theme }) => theme.col.bg};
+`;
+
+const ContentWrap = styled("div")`
+  background-color: white;
+  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
+  border-radius: ${({ theme }) => theme.borderRadius};
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Wrapper = styled("div")`
-  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+  flex-grow: 1;
+  width: 100%;
+  overflow: hidden;
+`;
+const ScrollContainer = styled("div")`
+  position: relative;
   display: flex;
   flex-direction: row;
   width: 100%;
   height: 100%;
-  overflow: auto;
-  border-radius: ${({ theme }) => theme.borderRadius};
+  overflow-y: auto;
+  --webkit-overflow-scrolling: touch;
 `;
 
-const SxWithTooltip = styled(WithTooltip)`
-  position: absolute;
-  bottom: 10px;
-  right: 20px;
+const SxMenuColumn = styled(MenuColumn)`
+  background-color: white;
+  position: sticky;
+  top: 0;
+  left: 0;
+`;
+
+const Header = styled("div")`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid #ccc;
+  padding-right: 10px;
+`;
+
+const Row = styled("div")`
+  display: flex;
+  align-items: center;
 `;
 
 const CloseButton = styled(BasicButton)`
   border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+`;
+
+const NodeName = styled("div")`
+  padding: 10px 15px;
 `;
 
 export interface QueryNodeEditorPropsT {
@@ -73,10 +107,10 @@ export interface QueryNodeEditorPropsT {
   onDropConcept: (node: DraggedNodeType) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
-  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
   onResetAllFilters: () => void;
   onToggleTimestamps?: () => void;
   onToggleSecondaryIdExclude?: () => void;
+  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,
@@ -87,9 +121,9 @@ export interface QueryNodeEditorPropsT {
     tableIdx: number,
     filterIdx: number
   ) => void;
+  onSetDateColumn: (tableIdx: number, value: string | null) => void;
   onSelectSelects: (value: SelectOptionT[]) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
-  onSetDateColumn: (tableIdx: number, value: string | null) => void;
 }
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
@@ -111,10 +145,11 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     onToggleEditLabel: () => dispatch(toggleEditLabel()),
     onSelectInputTableView: (tableIdx: number) =>
       dispatch(setInputTableViewActive(tableIdx)),
-    onShowDescription: (filterIdx: number) =>
-      dispatch(setFocusedInput(filterIdx)),
     onReset: () => dispatch(reset()),
   };
+
+  const onShowDescription = (filterIdx: number) =>
+    dispatch(setFocusedInput(filterIdx));
 
   function close() {
     if (!node) return;
@@ -125,43 +160,91 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
 
   if (!node) return null;
 
-  const selectedTable =
-    isConceptQueryNode(node) && editorState.selectedInputTableIdx != null
-      ? node.tables[editorState.selectedInputTableIdx]
-      : null;
-
   return (
     <Root>
-      <Wrapper>
+      <ContentWrap>
         <Hotkeys keyName="escape" onKeyDown={close} />
-        <MenuColumn node={node} {...props} editorState={editorState} />
-        {editorState.detailsViewActive && (
-          <NodeDetailsView node={node} {...props} editorState={editorState} />
-        )}
-        {isConceptQueryNode(node) &&
-          !editorState.detailsViewActive &&
-          selectedTable != null && (
-            <TableView
+        <Header>
+          <NodeName>
+            {!node.isPreviousQuery && (
+              <EditableText
+                large
+                loading={false}
+                text={node.label}
+                selectTextOnMount={true}
+                editing={editorState.editingLabel}
+                onSubmit={(value) => {
+                  props.onUpdateLabel(value);
+                  editorState.onToggleEditLabel();
+                }}
+                onToggleEdit={editorState.onToggleEditLabel}
+              />
+            )}
+            {node.isPreviousQuery && (node.label || node.id || node.ids)}
+          </NodeName>
+          <Row>
+            <ResetAllFiltersButton
+              node={node}
+              onResetAllFilters={props.onResetAllFilters}
+            />
+            <WithTooltip text={t("common.closeEsc")}>
+              <CloseButton small onClick={close}>
+                {t("common.done")}
+              </CloseButton>
+            </WithTooltip>
+          </Row>
+        </Header>
+        <Wrapper>
+          <ScrollContainer>
+            <SxMenuColumn
+              node={node}
+              editorState={editorState}
+              showTables={props.showTables}
+              blocklistedTables={props.blocklistedTables}
+              allowlistedTables={props.allowlistedTables}
+              onDropConcept={props.onDropConcept}
+              onRemoveConcept={props.onRemoveConcept}
+              onToggleTable={props.onToggleTable}
+            />
+            <ContentColumn
               node={node}
               datasetId={props.datasetId}
               currencyConfig={props.currencyConfig}
-              selectedInputTableIdx={editorState.selectedInputTableIdx}
+              onShowDescription={onShowDescription}
+              onToggleTimestamps={props.onToggleTimestamps}
+              onToggleSecondaryIdExclude={props.onToggleSecondaryIdExclude}
+              onSelectSelects={props.onSelectSelects}
               onSelectTableSelects={props.onSelectTableSelects}
+              onLoadFilterSuggestions={props.onLoadFilterSuggestions}
               onSetDateColumn={props.onSetDateColumn}
               onSetFilterValue={props.onSetFilterValue}
               onSwitchFilterMode={props.onSwitchFilterMode}
-              onShowDescription={editorState.onShowDescription}
-              onLoadFilterSuggestions={props.onLoadFilterSuggestions}
             />
-          )}
-        <SxWithTooltip text={t("common.closeEsc")}>
-          <CloseButton small onClick={close}>
-            {t("common.done")}
-          </CloseButton>
-        </SxWithTooltip>
-      </Wrapper>
+          </ScrollContainer>
+        </Wrapper>
+      </ContentWrap>
     </Root>
   );
 };
 
 export default QueryNodeEditor;
+
+// {editorState.detailsViewActive && (
+//   <NodeDetailsView node={node} {...props} editorState={editorState} />
+// )}
+// {isConceptQueryNode(node) &&
+//   !editorState.detailsViewActive &&
+//   selectedTable != null && (
+//     <TableView
+//       node={node}
+//       datasetId={props.datasetId}
+//       currencyConfig={props.currencyConfig}
+//       selectedInputTableIdx={editorState.selectedInputTableIdx}
+//       onSelectTableSelects={props.onSelectTableSelects}
+//       onSetDateColumn={props.onSetDateColumn}
+//       onSetFilterValue={props.onSetFilterValue}
+//       onSwitchFilterMode={props.onSwitchFilterMode}
+//       onShowDescription={editorState.onShowDescription}
+//       onLoadFilterSuggestions={props.onLoadFilterSuggestions}
+//     />
+//   )}

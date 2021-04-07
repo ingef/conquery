@@ -50,6 +50,7 @@ const Content = styled("div")`
   width: 100%;
   flex-grow: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overflow-x: hidden;
 `;
 const Head = styled("div")`

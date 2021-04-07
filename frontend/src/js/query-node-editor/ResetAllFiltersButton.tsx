@@ -8,7 +8,6 @@ import type { ConceptQueryNodeType } from "../standard-query-editor/types";
 
 const Container = styled("div")`
   text-transform: uppercase;
-  padding: 10px 2px;
   white-space: nowrap;
 `;
 

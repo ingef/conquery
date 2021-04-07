@@ -383,10 +383,9 @@ const setNodeTableDateColumn = (state: StandardQueryStateT, action: any) => {
   if (!nodeIdx) return state;
   const { andIdx, orIdx } = nodeIdx;
 
+  const { tableIdx, value } = action.payload;
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { dateColumn } = table;
-
-  const { tableIdx, value } = action.payload;
 
   // value contains the selects that have now been selected
   const newTable: TableT = {
