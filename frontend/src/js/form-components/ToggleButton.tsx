@@ -53,7 +53,7 @@ const Option = styled("span")<{ active?: boolean }>`
 
   &:hover {
     background-color: ${({ theme, active }) =>
-      active ? "white" : theme.col.graySuperLight};
+      active ? "white" : theme.col.bg};
   }
 `;
 

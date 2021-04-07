@@ -155,7 +155,7 @@ export const updateNodeLabel = (label: string) => ({
   type: UPDATE_NODE_LABEL,
   payload: { label },
 });
-export const addConceptToNode = (concept) => ({
+export const addConceptToNode = (concept: DraggedNodeType) => ({
   type: ADD_CONCEPT_TO_NODE,
   payload: { concept },
 });
@@ -192,9 +192,8 @@ export const setDateColumn = (tableIdx: number, value) => ({
   payload: { tableIdx, value },
 });
 
-export const resetAllFilters = (andIdx: number, orIdx: number) => ({
+export const resetAllFilters = () => ({
   type: RESET_ALL_FILTERS,
-  payload: { andIdx, orIdx },
 });
 
 export const switchFilterMode = (

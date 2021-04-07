@@ -8,7 +8,7 @@ const Root = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 2px 8px;
+  padding: 6px 0px 3px;
 `;
 
 const Text = styled("p")`

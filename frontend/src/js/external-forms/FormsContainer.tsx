@@ -12,6 +12,7 @@ import FormConfigSaver from "./FormConfigSaver";
 const Root = styled("div")`
   flex-grow: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 0 20px 20px 10px;
 `;
 

@@ -23,6 +23,7 @@ import TimebasedCondition from "./TimebasedCondition";
 const Root = styled("div")`
   flex-grow: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 0 20px 0 10px;
 `;
 const Connector = styled("p")`

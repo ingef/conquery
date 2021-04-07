@@ -17,6 +17,7 @@ const Root = styled("div")<{ maxVisibleItems: number; fullWidth?: boolean }>`
 
   overflow-x: none;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   max-width: 340px;
   border-radius: 2px;
   border: 1px solid ${({ theme }) => theme.col.grayMediumLight};

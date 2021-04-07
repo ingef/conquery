@@ -2,20 +2,23 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 
-import EditableText from "../form-components/EditableText";
+import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
+import type {
+  DraggedNodeType,
+  StandardQueryNodeT,
+} from "../standard-query-editor/types";
+import type { ConceptIdT } from "../api/types";
+import { Heading3, Heading4 } from "../headings/Headings";
 
-import ResetAllFiltersButton from "./ResetAllFiltersButton";
+import ConceptDropzone from "./ConceptDropzone";
+import ConceptEntry from "./ConceptEntry";
+import { QueryNodeEditorStateT } from "./reducer";
 import MenuColumnItem from "./MenuColumnItem";
-import MenuColumnButton from "./MenuColumnButton";
 
-import type { QueryNodeEditorPropsT } from "./QueryNodeEditor";
-
-const FixedColumn = styled("div")`
-  height: 100%;
+const FixedColumn = styled("div")<{ isEmpty?: boolean }>`
   display: flex;
   flex-direction: column;
-  min-width: 205px;
-  max-width: 220px;
+  width: ${({ isEmpty }) => (isEmpty ? "200px" : "270px")};
   overflow: hidden;
   flex-shrink: 0;
   flex-grow: 1;
@@ -25,70 +28,79 @@ const FixedColumn = styled("div")`
   }
 `;
 
-const CategoryHeader = styled("p")`
-  margin: 0;
-  padding: 10px 0 5px 14px;
-  line-height: 1;
-  font-size: ${({ theme }) => theme.font.xs};
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.col.black};
+const Padded = styled("div")`
+  padding: 0 15px 15px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 `;
 
-const NodeName = styled("div")`
-  padding: 10px 15px;
-  border-bottom: 1px solid #ccc;
+const HeadingBetween = styled(Heading4)`
+  margin: 15px 15px 0;
+`;
+const Heading4Highlighted = styled(Heading4)`
+  color: ${({ theme }) => theme.col.blueGrayDark};
+  font-weight: 700;
+  margin: 10px 0 5px;
 `;
 
-const MenuColumn: FC<QueryNodeEditorPropsT> = ({
+const DimmedNote = styled(Heading3)`
+  color: ${({ theme }) => theme.col.grayLight};
+  padding: 15px;
+  font-weight: 400;
+`;
+
+interface PropsT {
+  className?: string;
+
+  node: StandardQueryNodeT;
+  editorState: QueryNodeEditorStateT;
+  showTables: boolean;
+  allowlistedTables?: string[];
+  blocklistedTables?: string[];
+
+  onDropConcept: (node: DraggedNodeType) => void;
+  onRemoveConcept: (conceptId: ConceptIdT) => void;
+  onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
+}
+
+const MenuColumn: FC<PropsT> = ({
+  className,
   node,
   editorState,
   showTables,
   blocklistedTables,
   allowlistedTables,
+  onDropConcept,
+  onRemoveConcept,
   onToggleTable,
-  onResetAllFilters,
-  onUpdateLabel,
 }) => {
   const { t } = useTranslation();
   const isOnlyOneTableIncluded =
     !node.isPreviousQuery &&
     node.tables.filter((table) => !table.exclude).length === 1;
 
+  const rootConcept = !node.isPreviousQuery ? getConceptById(node.tree) : null;
+
+  const isEmpty =
+    node.isPreviousQuery ||
+    (!showTables &&
+      (!rootConcept ||
+        !rootConcept.children ||
+        rootConcept.children.length === 0));
+
   return (
-    <FixedColumn>
-      <NodeName>
-        {!node.isPreviousQuery && (
-          <EditableText
-            large
-            loading={false}
-            text={node.label}
-            tooltip={t("help.editConceptName")}
-            selectTextOnMount={true}
-            editing={editorState.editingLabel}
-            onSubmit={(value) => {
-              onUpdateLabel(value);
-              editorState.onToggleEditLabel();
-            }}
-            onToggleEdit={editorState.onToggleEditLabel}
-          />
-        )}
-        {node.isPreviousQuery && (node.label || node.id || node.ids)}
-      </NodeName>
-      <MenuColumnButton
-        active={editorState.detailsViewActive}
-        onClick={editorState.onSelectDetailsView}
-      >
-        {t("queryNodeEditor.properties")}
-      </MenuColumnButton>
+    <FixedColumn className={className} isEmpty={isEmpty}>
+      {isEmpty && (
+        <DimmedNote>{t("queryNodeEditor.emptyMenuColumn")}</DimmedNote>
+      )}
       {!node.isPreviousQuery && showTables && (
         <div>
-          <CategoryHeader>
+          <HeadingBetween>
             {t("queryNodeEditor.conceptNodeTables")}
-          </CategoryHeader>
+          </HeadingBetween>
           {node.tables.map((table, tableIdx) => (
             <MenuColumnItem
               key={tableIdx}
-              idx={tableIdx}
               table={table}
               isActive={
                 editorState.selectedInputTableIdx === tableIdx &&
@@ -101,12 +113,35 @@ const MenuColumn: FC<QueryNodeEditorPropsT> = ({
               onToggleTable={(value) => onToggleTable(tableIdx, value)}
             />
           ))}
-          <ResetAllFiltersButton
-            node={node}
-            onResetAllFilters={onResetAllFilters}
-          />
         </div>
       )}
+      {!node.isPreviousQuery &&
+        rootConcept &&
+        rootConcept.children &&
+        rootConcept.children.length > 0 && (
+          <>
+            <HeadingBetween>
+              {t("queryNodeEditor.dropMoreConcepts")}
+            </HeadingBetween>
+            <Padded>
+              <Heading4Highlighted>{rootConcept.label}</Heading4Highlighted>
+              <div>
+                <ConceptDropzone node={node} onDropConcept={onDropConcept} />
+              </div>
+              <div>
+                {node.ids.map((conceptId) => (
+                  <ConceptEntry
+                    key={conceptId}
+                    node={getConceptById(conceptId)}
+                    conceptId={conceptId}
+                    canRemoveConcepts={node.ids.length > 1}
+                    onRemoveConcept={onRemoveConcept}
+                  />
+                ))}
+              </div>
+            </Padded>
+          </>
+        )}
     </FixedColumn>
   );
 };
