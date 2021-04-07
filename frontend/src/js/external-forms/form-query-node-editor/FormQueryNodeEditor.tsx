@@ -13,9 +13,16 @@ import { FormStateMap } from "redux-form";
 import { useSelector } from "react-redux";
 import { StateT } from "app-types";
 import { FormContextStateT } from "../reducer";
-import { ConceptIdT, CurrencyConfigT, DatasetIdT } from "../../api/types";
+import {
+  ConceptIdT,
+  CurrencyConfigT,
+  DatasetIdT,
+  SelectOptionT,
+} from "../../api/types";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import type { PostPrefixForSuggestionsParams } from "../../api/api";
+import { DraggedNodeType } from "../../standard-query-editor/types";
+import { ModeT } from "../../form-components/InputRange";
 
 interface PropsT {
   formType: string;
@@ -24,17 +31,60 @@ interface PropsT {
   allowlistedTables?: string[];
   onCloseModal: (andIdx: number, orIdx: number) => void;
   onUpdateLabel: (andIdx: number, orIdx: number, label: string) => void;
-  onToggleTable: Function;
-  onDropConcept: Function;
-  onSetFilterValue: Function;
-  onSwitchFilterMode: Function;
-  onResetAllFilters: Function;
+  onToggleTable: (
+    valueIdx: number,
+    conceptIdx: number,
+    tableIdx: number,
+    isExcluded: boolean
+  ) => void;
+  onDropConcept: (
+    valueIdx: number,
+    conceptIdx: number,
+    concept: DraggedNodeType
+  ) => void;
+  onRemoveConcept: (
+    valueIdx: number,
+    conceptIdx: number,
+    conceptId: ConceptIdT
+  ) => void;
+  onSetFilterValue: (
+    valueIdx: number,
+    conceptIdx: number,
+    tableIdx: number,
+    filterIdx: number,
+    filterValue: any
+  ) => void;
+  onSwitchFilterMode: (
+    valueIdx: number,
+    conceptIdx: number,
+    tableIdx: number,
+    filterIdx: number,
+    mode: ModeT
+  ) => void;
+  onResetAllFilters: (valueIdx: number, conceptIdx: number) => void;
+  onSelectSelects: (
+    valueIdx: number,
+    conceptIdx: number,
+    selectedSelects: SelectOptionT[]
+  ) => void;
+  onSelectTableSelects: (
+    valueIdx: number,
+    conceptIdx: number,
+    tableIdx: number,
+    selectedSelects: SelectOptionT[]
+  ) => void;
   onLoadFilterSuggestions: (
     andIdx: number,
     orIdx: number,
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number
+  ) => void;
+  onSetDateColumn: (
+    valueIdx: number,
+    conceptIdx: number,
+    tableIdx: number,
+    dateColumnValue: string | null
   ) => void;
 }
 
@@ -80,33 +130,6 @@ const FormQueryNodeEditor = (props: PropsT) => {
   );
   const editorState = formState ? formState[props.fieldName] : null;
 
-  const onCloseModal = () => props.onCloseModal(andIdx, orIdx);
-  const onUpdateLabel = (label: string) =>
-    props.onUpdateLabel(andIdx, orIdx, label);
-  const onDropConcept = (concept) =>
-    props.onDropConcept(andIdx, orIdx, concept);
-  const onRemoveConcept = (conceptId: ConceptIdT) =>
-    props.onRemoveConcept(andIdx, orIdx, conceptId);
-  const onToggleTable = (...args) =>
-    props.onToggleTable(andIdx, orIdx, ...args);
-  const onSelectSelects = (...args) =>
-    props.onSelectSelects(andIdx, orIdx, ...args);
-  const onSelectTableSelects = (...args) =>
-    props.onSelectTableSelects(andIdx, orIdx, ...args);
-  const onSetFilterValue = (...args) =>
-    props.onSetFilterValue(andIdx, orIdx, ...args);
-  const onSwitchFilterMode = (...args) =>
-    props.onSwitchFilterMode(andIdx, orIdx, ...args);
-  const onResetAllFilters = () => props.onResetAllFilters(andIdx, orIdx);
-  const onSetDateColumn = (...args) =>
-    props.onSetDateColumn(andIdx, orIdx, ...args);
-  const onLoadFilterSuggestions = (
-    params: PostPrefixForSuggestionsParams,
-    tableIdx: number,
-    filterIdx: number
-  ) =>
-    props.onLoadFilterSuggestions(andIdx, orIdx, params, tableIdx, filterIdx);
-
   if (!datasetId || !node || !editorState) {
     return null;
   }
@@ -115,27 +138,38 @@ const FormQueryNodeEditor = (props: PropsT) => {
     <QueryNodeEditor
       datasetId={datasetId}
       name={`${props.formType}_${toUpperCaseUnderscore(props.fieldName)}`}
-      onLoadFilterSuggestions={onLoadFilterSuggestions}
+      onLoadFilterSuggestions={(...args) =>
+        props.onLoadFilterSuggestions(andIdx, orIdx, ...args)
+      }
       node={node}
       editorState={editorState}
       showTables={showTables}
       blocklistedTables={props.blocklistedTables}
       allowlistedTables={props.allowlistedTables}
       currencyConfig={currencyConfig}
-      isExcludeTimestampsPossible={false}
-      isExcludeFromSecondaryIdQueryPossible={false}
-      onToggleTimestamps={() => {}}
-      onCloseModal={onCloseModal}
-      onUpdateLabel={onUpdateLabel}
-      onDropConcept={onDropConcept}
-      onRemoveConcept={onRemoveConcept}
-      onToggleTable={onToggleTable}
-      onSelectSelects={onSelectSelects}
-      onSelectTableSelects={onSelectTableSelects}
-      onSetFilterValue={onSetFilterValue}
-      onSwitchFilterMode={onSwitchFilterMode}
-      onResetAllFilters={onResetAllFilters}
-      onSetDateColumn={onSetDateColumn}
+      onCloseModal={() => props.onCloseModal(andIdx, orIdx)}
+      onUpdateLabel={(label) => props.onUpdateLabel(andIdx, orIdx, label)}
+      onDropConcept={(node) => props.onDropConcept(andIdx, orIdx, node)}
+      onRemoveConcept={(conceptId) =>
+        props.onRemoveConcept(andIdx, orIdx, conceptId)
+      }
+      onToggleTable={(...args) => props.onToggleTable(andIdx, orIdx, ...args)}
+      onSelectSelects={(value) => {
+        props.onSelectSelects(andIdx, orIdx, value);
+      }}
+      onSelectTableSelects={(...args) =>
+        props.onSelectTableSelects(andIdx, orIdx, ...args)
+      }
+      onSetFilterValue={(...args) =>
+        props.onSetFilterValue(andIdx, orIdx, ...args)
+      }
+      onSwitchFilterMode={(...args) =>
+        props.onSwitchFilterMode(andIdx, orIdx, ...args)
+      }
+      onResetAllFilters={() => props.onResetAllFilters(andIdx, orIdx)}
+      onSetDateColumn={(...args) =>
+        props.onSetDateColumn(andIdx, orIdx, ...args)
+      }
     />
   );
 };

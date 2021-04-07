@@ -87,7 +87,6 @@ const MenuColumn: FC<QueryNodeEditorPropsT> = ({
           {node.tables.map((table, tableIdx) => (
             <MenuColumnItem
               key={tableIdx}
-              idx={tableIdx}
               table={table}
               isActive={
                 editorState.selectedInputTableIdx === tableIdx &&

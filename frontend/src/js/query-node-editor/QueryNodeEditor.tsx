@@ -4,9 +4,17 @@ import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import Hotkeys from "react-hot-keys";
 
-import type { StandardQueryNodeT } from "../standard-query-editor/types";
+import type {
+  DraggedNodeType,
+  StandardQueryNodeT,
+} from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
-import { CurrencyConfigT, DatasetIdT } from "../api/types";
+import {
+  ConceptIdT,
+  CurrencyConfigT,
+  DatasetIdT,
+  SelectOptionT,
+} from "../api/types";
 import type { ModeT } from "../form-components/InputRange";
 import BasicButton from "../button/BasicButton";
 import { isConceptQueryNode } from "../model/query";
@@ -55,22 +63,20 @@ export interface QueryNodeEditorPropsT {
   editorState: QueryNodeEditorStateT;
   node: StandardQueryNodeT;
   showTables: boolean;
-  isExcludeTimestampsPossible: boolean;
-  isExcludeFromSecondaryIdQueryPossible: boolean;
   datasetId: DatasetIdT;
   allowlistedTables?: string[];
   blocklistedTables?: string[];
   currencyConfig: CurrencyConfigT;
 
-  onCloseModal: Function;
-  onUpdateLabel: Function;
-  onDropConcept: Function;
-  onRemoveConcept: Function;
-  onToggleTable: Function;
-  onSetFilterValue: Function;
-  onResetAllFilters: Function;
-  onToggleTimestamps: Function;
-  onToggleSecondaryIdExclude: Function;
+  onCloseModal: () => void;
+  onUpdateLabel: (label: string) => void;
+  onDropConcept: (node: DraggedNodeType) => void;
+  onRemoveConcept: (conceptId: ConceptIdT) => void;
+  onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
+  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
+  onResetAllFilters: () => void;
+  onToggleTimestamps?: () => void;
+  onToggleSecondaryIdExclude?: () => void;
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,
@@ -81,9 +87,9 @@ export interface QueryNodeEditorPropsT {
     tableIdx: number,
     filterIdx: number
   ) => void;
-  onSelectSelects: Function;
-  onSelectTableSelects: Function;
-  onSetDateColumn: Function;
+  onSelectSelects: (value: SelectOptionT[]) => void;
+  onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
+  onSetDateColumn: (tableIdx: number, value: string | null) => void;
 }
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
@@ -136,12 +142,15 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
           !editorState.detailsViewActive &&
           selectedTable != null && (
             <TableView
-              {...props}
-              onShowDescription={editorState.onShowDescription}
+              node={node}
               datasetId={props.datasetId}
               currencyConfig={props.currencyConfig}
-              node={node}
               selectedInputTableIdx={editorState.selectedInputTableIdx}
+              onSelectTableSelects={props.onSelectTableSelects}
+              onSetDateColumn={props.onSetDateColumn}
+              onSetFilterValue={props.onSetFilterValue}
+              onSwitchFilterMode={props.onSwitchFilterMode}
+              onShowDescription={editorState.onShowDescription}
               onLoadFilterSuggestions={props.onLoadFilterSuggestions}
             />
           )}

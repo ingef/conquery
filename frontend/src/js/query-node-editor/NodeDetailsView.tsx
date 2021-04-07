@@ -27,8 +27,6 @@ const RowHeading = styled("h5")`
 const NodeDetailsView: FC<QueryNodeEditorPropsT> = ({
   node,
   onSelectSelects,
-  isExcludeTimestampsPossible,
-  isExcludeFromSecondaryIdQueryPossible,
   onToggleTimestamps,
   onToggleSecondaryIdExclude,
   onDropConcept,
@@ -39,7 +37,7 @@ const NodeDetailsView: FC<QueryNodeEditorPropsT> = ({
 
   return (
     <ContentCell>
-      {isExcludeTimestampsPossible && (
+      {onToggleTimestamps && (
         <Row>
           <InputCheckbox
             label={t("queryNodeEditor.excludeTimestamps")}
@@ -50,7 +48,7 @@ const NodeDetailsView: FC<QueryNodeEditorPropsT> = ({
           />
         </Row>
       )}
-      {isExcludeFromSecondaryIdQueryPossible && (
+      {onToggleSecondaryIdExclude && (
         <Row>
           <InputCheckbox
             label={t("queryNodeEditor.excludeFromSecondaryIdQuery")}
