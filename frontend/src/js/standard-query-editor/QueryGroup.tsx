@@ -65,6 +65,7 @@ const QueryGroup = (props: PropsT) => {
     <Root>
       <QueryEditorDropzone
         key={props.group.elements.length + 1}
+        tooltip={t("help.editorDropzoneOr")}
         onDropNode={props.onDropNode}
         onDropFile={props.onDropFile}
         onLoadPreviousQuery={props.onLoadPreviousQuery}

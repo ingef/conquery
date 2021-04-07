@@ -1,7 +1,10 @@
 import React, { FC, ReactNode } from "react";
 import type { WrappedFieldProps } from "redux-form";
 
-import { PREVIOUS_QUERY } from "../../common/constants/dndTypes";
+import {
+  PREVIOUS_QUERY,
+  PREVIOUS_SECONDARY_ID_QUERY,
+} from "../../common/constants/dndTypes";
 
 import type { ChildArgs } from "../../form-components/Dropzone";
 import { PreviousQueryT } from "../../previous-queries/list/reducer";
@@ -32,7 +35,7 @@ const FormMultiQueryDropzone: FC<PropsT> = ({
 
   return (
     <DropzoneList
-      acceptedDropTypes={[PREVIOUS_QUERY]}
+      acceptedDropTypes={[PREVIOUS_QUERY, PREVIOUS_SECONDARY_ID_QUERY]}
       label={label}
       dropzoneChildren={dropzoneChildren}
       items={input.value.map((query: PreviousQueryT, i: number) => (

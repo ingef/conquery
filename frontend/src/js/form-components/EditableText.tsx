@@ -4,12 +4,14 @@ import styled from "@emotion/styled";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
 import EditableTextForm from "./EditableTextForm";
 import IconButton from "../button/IconButton";
+import WithTooltip from "../tooltip/WithTooltip";
 
 interface PropsT {
   className?: string;
   loading: boolean;
   editing: boolean;
   text: string;
+  tooltip?: string;
   large?: boolean;
   saveOnClickoutside?: boolean;
   isHighlighted?: boolean;
@@ -44,12 +46,14 @@ const EditableText: React.FC<PropsT> = (props) => {
     />
   ) : (
     <Text className={props.className}>
-      <StyledIconButton
-        large={props.large}
-        bare
-        icon="edit"
-        onClick={props.onToggleEdit}
-      />
+      <WithTooltip text={props.tooltip}>
+        <StyledIconButton
+          large={props.large}
+          bare
+          icon="edit"
+          onClick={props.onToggleEdit}
+        />
+      </WithTooltip>
       <HighlightableLabel
         label={props.text}
         isHighlighted={props.isHighlighted}
