@@ -55,7 +55,10 @@
     "loadingPreviousQuery": "Lade Anfragedetails",
     "secondaryId": "Analyse-Ebene",
     "secondaryIdStandard": "Standard",
-    "hasSecondaryId": "Analyse-Ebene aktiv"
+    "hasSecondaryId": "Analyse-Ebene aktiv",
+    "removeNode": "Knoten entfernen",
+    "removeColumn": "Spalte entfernen",
+    "clear": "Editor-Oberfläche zurücksetzen"
   },
   "expandPreviousQueryModal": {
     "headline": "Anfrage wirklich expandieren?",
@@ -73,8 +76,9 @@
     "intoThisArea": "in diesen Bereich"
   },
   "datasetSelector": {
-    "pleaseChoose": "Datenbank auswählen",
-    "error": "Konnte Datenbanken nicht laden"
+    "label": "Datensatz",
+    "pleaseChoose": "Datensatz auswählen",
+    "error": "Konnte Datensätze nicht laden"
   },
   "queryNodeEditor": {
     "conceptTree": "Konzeptbaum",
@@ -91,7 +95,7 @@
     "description": "Beschreibung",
     "noDescriptionProvided": "Keine Beschreibung verfügbar.",
     "selectAFilter": "Kein Filter ausgewählt.",
-    "dropConcept": "Füge ein weiteres Konzept hinzu",
+    "dropConcept": "Füge weitere Konzepte des selben Konzeptbaumes hinzu",
     "includeSubnodes": "Untergeordnete Konzepte einbeziehen",
     "tooManyValues": "{{count}} Werte ausgewählt",
     "filters": "Filter",
@@ -377,5 +381,22 @@
   "conceptTreesOpen": {
     "resetAll": "Zurück zu Standardansicht",
     "closeAll": "Alle Konzepte schließen"
+  },
+  "help": {
+    "tabConceptTrees": "Auswahl der Konzepte aus den Konzeptbäumen zur Verwendung in Editor, Zeit-Editor, oder Formular-Editor.",
+    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung in Editor oder Formular-Editor.",
+    "tabFormConfigs": "Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
+    "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
+    "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",
+    "tabFormEditor": "Hier können Auswertungen und Analysen zu bestehenden Anfragen erstellt werden.",
+    "datasetSelector": "Auswahl des Datensatzes – die jeweiligen Konzeptbäume, Anfragen und Formulare werden geladen.",
+    "excludeTimestamps": "Auswahl führt dazu, dass die Datumswerte des Konzepts bei der Weiterverarbeitung nicht berücksichtigt werden.",
+    "excludeFromSecondaryIdQuery": "Auswahl führt dazu, dass dieses Konzept nicht in der Analyse-Ebene berücksichtigt wird, falls eine Analyse-Ebene gewählt wurde.",
+    "editConceptName": "Konzeptname bearbeiten",
+    "queryEditorExclude": "Auswahl führt dazu dass Ergebnisse selektiert werden, die die Konzepte in dieser Spalte nicht enthalten.",
+    "queryEditorDate": "Auswahl des Datumsbereiches für alle Konzepte in dieser Spalte.",
+    "editorDropzoneAnd": "Konzepte hier ablegen um sie per UND zu verknüpfen. Via Klick kann eine Konzeptliste ausgewählt werden.",
+    "editorDropzoneOr": "Konzepte hier ablegen um sie per ODER zu verknüpfen. Via Klick kann eine Konzeptliste ausgewählt werden.",
+    "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   }
 }

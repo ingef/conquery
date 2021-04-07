@@ -5,6 +5,13 @@ import { isIDPEnabled, isLoginDisabled } from "../environment";
 import { getStoredAuthToken } from "../authorization/helper";
 import { useKeycloak } from "@react-keycloak/web";
 
+export const useAuthToken = () => {
+  const idpEnabled = isIDPEnabled();
+  const { keycloak } = useKeycloak();
+
+  return idpEnabled ? keycloak.token || "" : getStoredAuthToken() || "";
+};
+
 export const useApiUnauthorized = <T>(
   requestConfig: Partial<AxiosRequestConfig> = {}
 ) => {
@@ -20,11 +27,7 @@ export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
   const loginDisabled = isLoginDisabled();
 
   const idpEnabled = isIDPEnabled();
-  const { keycloak } = useKeycloak();
-
-  const authToken = idpEnabled
-    ? keycloak.token || ""
-    : getStoredAuthToken() || "";
+  const authToken = useAuthToken();
 
   return async (
     finalRequestConfig: Partial<AxiosRequestConfig> = {}

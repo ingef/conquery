@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "@emotion/styled";
-
 import type { WrappedFieldProps } from "redux-form";
+
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Row = styled("div")`
   display: flex;
@@ -51,6 +52,8 @@ const Checkmark = styled("div")`
 interface PropsType extends WrappedFieldProps {
   label: string;
   className?: string;
+  tooltip?: string;
+  tooltipLazy?: boolean;
 }
 
 const InputCheckbox = (props: PropsType) => (
@@ -58,7 +61,9 @@ const InputCheckbox = (props: PropsType) => (
     className={props.className}
     onClick={() => props.input.onChange(!props.input.value)}
   >
-    <Container>{!!props.input.value && <Checkmark />}</Container>
+    <WithTooltip text={props.tooltip} lazy={props.tooltipLazy}>
+      <Container>{!!props.input.value && <Checkmark />}</Container>
+    </WithTooltip>
     <Label>{props.label}</Label>
   </Row>
 );

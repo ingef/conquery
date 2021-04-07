@@ -11,7 +11,6 @@ import LogoutButton from "./LogoutButton";
 
 const Root = styled("header")`
   background-color: ${({ theme }) => theme.col.bg};
-  color: ${({ theme }) => theme.col.blueGrayDark};
   border-bottom: 1px solid ${({ theme }) => theme.col.grayMediumLight};
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
   padding: 0 20px;
@@ -43,7 +42,7 @@ const OverflowHidden = styled("div")`
 `;
 
 const Spacer = styled("span")`
-  margin: 0 10px;
+  margin: 0 5px;
   height: 20px;
 `;
 
@@ -60,7 +59,11 @@ const Headline = styled("h1")`
   margin: 0 auto 0 0;
   line-height: 2;
   font-size: ${({ theme }) => theme.font.md};
-  font-weight: 300;
+  font-weight: 700;
+  font-size: 12px;
+  opacity: 0.3;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
 const SxLogoutButton = styled(LogoutButton)`
