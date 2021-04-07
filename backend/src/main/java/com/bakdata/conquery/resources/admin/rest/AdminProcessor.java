@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
@@ -198,7 +197,7 @@ public class AdminProcessor {
 		final ImportId importId = new ImportId(table.getId(), header.getName());
 
 		if (namespace.getStorage().getImport(importId) != null) {
-			throw new BadRequestException(String.format("Import[%s] is already present.", importId));
+			throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Status.CONFLICT);
 		}
 
 		log.info("Importing {}", selectedFile.getAbsolutePath());
