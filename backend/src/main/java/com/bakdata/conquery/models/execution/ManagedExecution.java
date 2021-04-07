@@ -109,6 +109,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@JsonIgnore
 	private transient ConqueryErrorInfo error;
 	@JsonIgnore
+	private transient Float progress;
+	@JsonIgnore
 	private boolean initialized = false;
 
 	public ManagedExecution(UserId owner, DatasetId submittedDataset) {
@@ -183,6 +185,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 		synchronized (this) {
 			finishTime = LocalDateTime.now();
+			progress = null;
 			// Set execution state before acting on the latch to prevent a race condition
 			// Not sure if also the storage needs an update first
 			setState(executionState);
@@ -275,6 +278,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		setAdditionalFieldsForStatusWithSource(user, status);
 		setAdditionalFieldsForStatusWithGroups(storage, status);
 		setAvailableSecondaryIds(status);
+		status.setProgress(progress);
 
 
 		if (state.equals(ExecutionState.FAILED) && error != null) {
