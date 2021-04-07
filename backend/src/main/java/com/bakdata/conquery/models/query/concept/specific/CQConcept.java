@@ -233,7 +233,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 		}
 
 		// We always merge on concept level
-		final QPNode outNode = OrNode.of(tableNodes, DateAggregationAction.MERGE);
+		final QPNode outNode = OrNode.of(tableNodes, aggregateEventDates ? DateAggregationAction.MERGE : DateAggregationAction.BLOCK);
 
 		for (Iterator<Aggregator<?>> iterator = conceptAggregators.iterator(); iterator.hasNext(); ) {
 			Aggregator<?> aggregator = iterator.next();
