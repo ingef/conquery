@@ -80,54 +80,62 @@ public class ImportJob extends Job {
 
 		final Map<IId<?>, Identifiable<?>> replacements = new HashMap<>();
 
-		replacements.put(Dataset.PLACEHOLDER.getId(),getDataset());
+		replacements.put(Dataset.PLACEHOLDER.getId(), getDataset());
 
 		log.info("BEGIN Reading `{}`", importFile);
 
-		final JsonParser parser = Preprocessed.createParser(importFile, replacements);
+		final DictionaryMapping primaryMapping;
+		final PreprocessedData container;
+		final Map<String, DictionaryMapping> mappings;
+		final PreprocessedHeader header;
 
-		final PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
-		log.info("Importing {} into {}", header.getName(), table);
+		try (final JsonParser parser = Preprocessed.createParser(importFile, replacements)) {
 
-		namespace.checkConnections();
+			header = parser.readValueAs(PreprocessedHeader.class);
+			log.info("Importing {} into {}", header.getName(), table);
 
-		log.trace("Begin reading Dictionaries");
+			namespace.checkConnections();
 
-		PreprocessedDictionaries dictionaries = parser.readValueAs(PreprocessedDictionaries.class);
+			log.trace("Begin reading Dictionaries");
 
-		log.trace("Updating primary dictionary");
+			PreprocessedDictionaries dictionaries = parser.readValueAs(PreprocessedDictionaries.class);
 
-		// Update primary dictionary: load new data, and create mapping.
-		DictionaryMapping primaryMapping = importPrimaryDictionary(dictionaries.getPrimaryDictionary());
+			log.trace("Updating primary dictionary");
 
-		getProgressReporter().report(1);
+			// Update primary dictionary: load new data, and create mapping.
+			primaryMapping = importPrimaryDictionary(dictionaries.getPrimaryDictionary());
 
-		// Distribute the new IDs among workers
-		distributeWorkerResponsibilities(primaryMapping);
+			getProgressReporter().report(1);
 
-		getProgressReporter().report(1);
+			// Distribute the new IDs among workers
+			distributeWorkerResponsibilities(primaryMapping);
 
-		final Map<DictionaryId, Dictionary> normalDictionaries = importNormalDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
+			getProgressReporter().report(1);
 
-		final Map<String, DictionaryMapping> mappings = importSharedDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
+			final Map<DictionaryId, Dictionary> normalDictionaries =
+					importNormalDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
+
+			mappings = importSharedDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
 
-		// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
-		replacements.putAll(normalDictionaries);
+			// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
+			replacements.putAll(normalDictionaries);
 
-		for (DictionaryMapping value : mappings.values()) {
-			replacements.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), value.getSourceDictionary().getName()), value.getTargetDictionary());
+			for (DictionaryMapping value : mappings.values()) {
+				replacements.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), value.getSourceDictionary().getName()), value.getTargetDictionary());
+			}
+
+			log.trace("Begin reading data.");
+
+			container = parser.readValueAs(PreprocessedData.class);
 		}
-
-		log.trace("Begin reading data.");
-
-		final PreprocessedData container = parser.readValueAs(PreprocessedData.class);
 
 		if (container.isEmpty()) {
 			log.warn("Import was empty. Skipping.");
 			getProgressReporter().done();
 			return;
 		}
+
 
 		getProgressReporter().report(1);
 
@@ -178,7 +186,8 @@ public class ImportJob extends Job {
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
 
 			WorkerInformation responsibleWorker =
-					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket2entities.getKey()), () -> "No responsible worker for Bucket#" + bucket2entities.getKey());
+					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket2entities.getKey()), () -> "No responsible worker for Bucket#"
+																													+ bucket2entities.getKey());
 
 			awaitFreeJobQueue(responsibleWorker);
 
@@ -240,8 +249,7 @@ public class ImportJob extends Job {
 				bucketStores,
 				new Int2IntArrayMap(globalIds, entityStarts),
 				new Int2IntArrayMap(globalIds, entityLengths),
-				imp.getTable(),
-				imp.getId()
+				imp
 		);
 	}
 

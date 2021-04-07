@@ -87,7 +87,7 @@ public class ConceptTreeConnector extends Connector {
 
 		final TreeConcept treeConcept = getConcept();
 
-		final ImportId importId = bucket.getImp();
+		final ImportId importId = bucket.getImp().getId();
 
 		final StringStore stringStore;
 

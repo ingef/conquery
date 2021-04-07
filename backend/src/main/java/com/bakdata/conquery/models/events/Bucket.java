@@ -15,6 +15,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -27,8 +28,8 @@ import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -70,14 +71,19 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
 	private final Int2IntMap length;
 
-	@NsIdRef
-	private final Table table;
 
-	private final ImportId imp;
+
+	@NsIdRef
+	private final Import imp;
+
+	@JsonIgnore
+	public Table getTable() {
+		return imp.getTable();
+	}
 
 	@Override
 	public BucketId createId() {
-		return new BucketId(imp, bucket);
+		return new BucketId(imp.getId(), bucket);
 	}
 
 	/**
@@ -175,7 +181,7 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 			if (!store.has(event)) {
 				continue;
 			}
-			out.put(table.getColumns()[i].getName(), store.createScriptValue(event));
+			out.put(getTable().getColumns()[i].getName(), store.createScriptValue(event));
 		}
 
 		return out;
