@@ -1,7 +1,8 @@
 {
-    "name": "abc-concept",
-    "type": "TREE",
-    "connectors": {
+  "name": "abc-concept",
+  "type": "TREE",
+  "connectors": [
+    {
       "name": "connector",
       "column": "table.column",
       "validityDates": {
@@ -9,22 +10,31 @@
         "column": "table.datum"
       }
     },
-    "children": [
-      {
-        "name": "a",
-        "condition": {
-          "type": "PREFIX_LIST",
-          "prefixes": "A"
-        },
-        "children": []
-      },
-      {
-        "name": "b",
-        "condition": {
-          "type": "PREFIX_LIST",
-          "prefixes": "B"
-        },
-        "children": []
+    {
+      "name": "connector2",
+      "column": "table.column",
+      "validityDates": {
+        "name": "datum",
+        "column": "table.datum"
       }
-    ]
-  }
+    }
+  ],
+  "children": [
+    {
+      "name": "a",
+      "condition": {
+        "type": "PREFIX_LIST",
+        "prefixes": "A"
+      },
+      "children": []
+    },
+    {
+      "name": "b",
+      "condition": {
+        "type": "PREFIX_LIST",
+        "prefixes": "B"
+      },
+      "children": []
+    }
+  ]
+}

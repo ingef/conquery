@@ -7,6 +7,7 @@ interface PropsT {
   place?: "bottom" | "left" | "right" | "top";
   text?: string;
   html?: ReactElement;
+  lazy?: boolean;
 }
 
 const WithTooltip: FC<PropsT> = ({
@@ -15,6 +16,7 @@ const WithTooltip: FC<PropsT> = ({
   place,
   text,
   html,
+  lazy,
 }) => {
   if (!text && !html) return <>{children}</>;
 
@@ -24,9 +26,13 @@ const WithTooltip: FC<PropsT> = ({
       position={place || "top"}
       arrow={true}
       duration={0}
-      delay={0}
+      delay={lazy ? 1000 : 0}
+      hideDelay={0}
+      hideDuration={0}
       title={text}
       html={html}
+      theme="light"
+      interactive
     >
       {children}
     </Tooltip>
