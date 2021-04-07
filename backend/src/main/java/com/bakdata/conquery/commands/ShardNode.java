@@ -1,7 +1,8 @@
 package com.bakdata.conquery.commands;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
@@ -99,14 +100,14 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		this.config = config;
 		config.initialize(this);
 
-		ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 		workers = new Workers(
 				getConfig().getQueries().getExecutionPool(),
 				getConfig().getQueries().getExecutionPool().getMaxThreads(),
 				getConfig().getCluster().getEntityBucketSize());
 
-		for(WorkerStorage workerStorage : config.getStorage().loadWorkerStorages(this, ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName())) ) {
+		for(WorkerStorage workerStorage : config.getStorage().loadWorkerStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName())) ) {
 			workers.createWorker(workerStorage, config.isFailOnError());
 		}
 

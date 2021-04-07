@@ -1,6 +1,15 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -9,18 +18,20 @@ import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.*;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
@@ -66,20 +77,9 @@ public class AuthorizationHelper {
 	 * @param query The id of the object that needs to be checked.
 	 * @param ability The kind of ability that is checked.
 	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedExecution query, @NonNull Ability ability) {
-		authorize(user, query, EnumSet.of(ability));
-	}
-
-	/**
-	 * Helper function for authorizing an ability on a query.
-	 * @param user The subject that needs authorization.
-	 * @param execution The id of the object that needs to be checked.
-	 * @param abilities The kind of ability that is checked.
-	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedExecution<?> execution, @NonNull EnumSet<Ability> abilities) {
-
-		if(!user.isOwner(execution)) {
-			user.checkPermission(QueryPermission.onInstance(abilities, execution.getId()));
+	public static void authorize(@NonNull User user, @NonNull ManagedExecution<?> query, @NonNull Ability ability) {
+		if(!user.isOwner(query)) {
+			user.checkPermission(QueryPermission.onInstance(ability, query.getId()));
 		}
 	}
 

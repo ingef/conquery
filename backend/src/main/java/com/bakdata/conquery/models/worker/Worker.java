@@ -32,9 +32,7 @@ import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
-import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -79,8 +77,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull ExecutorService executorService,
 			@NonNull WorkerStorage storage,
-			boolean failOnError,
-			int entityBucketSize) {
+			boolean failOnError) {
 
 		return new Worker(queryThreadPoolDefinition, storage, executorService, failOnError, entityBucketSize);
 	}
@@ -116,10 +113,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	
 	public WorkerInformation getInfo() {
 		return storage.getWorker();
-	}
-	
-	public Int2ObjectMap<Entity> getEntities(){
-		return bucketManager.getEntities();
 	}
 
 	@Override

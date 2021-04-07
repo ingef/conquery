@@ -57,11 +57,7 @@ public class SpecialDateUnion implements Aggregator<CDateSet> {
 	public CDateSet getAggregationResult() {
 		return set;
 	}
-	
-	public CDateSet getResultSet() {
-		return set;
-	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);

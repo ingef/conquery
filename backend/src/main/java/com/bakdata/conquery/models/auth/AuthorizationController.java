@@ -1,12 +1,23 @@
 package com.bakdata.conquery.models.auth;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.*;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -25,9 +36,6 @@ import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.util.LifecycleUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * The central class for the initialization of authorization and authentication.
@@ -157,7 +165,6 @@ public final class AuthorizationController implements Managed{
 		String name = null;
 		do {
 			name = namePrefix + UUID.randomUUID() + originUserId.getEmail();
-			User prev = storage.getUser(new UserId(name));
 		} while (name == null || storage.getUser(new UserId(name)) != null);
 
 		// Retrieve original user and its effective permissions

@@ -97,7 +97,7 @@ public class UpdateMatchingStats extends Job {
 					if (!(concept instanceof TreeConcept) || localIds == null) {
 
 						messages.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
-								.addEvent(table, bucket, cBlock, event);
+								.addEvent(table, bucket, event);
 
 						continue;
 					}
@@ -110,7 +110,7 @@ public class UpdateMatchingStats extends Job {
 
 					while (e != null) {
 						messages.computeIfAbsent(e.getId(), (x) -> new MatchingStats.Entry())
-								.addEvent(table, bucket, cBlock, event);
+								.addEvent(table, bucket, event);
 						e = e.getParent();
 					}
 				}

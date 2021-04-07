@@ -97,16 +97,6 @@ public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends I
 	public V put(ID key, V value) {
 		return super.put(key, value);
 	}
-	
-	public boolean addAll(Collection<? extends V> c) {
-		boolean modified = false;
-		for (V e : c) {
-			if (add(e)) {
-				modified = true;
-			}
-		}
-		return modified;
-	}
 
 	@Override
 	protected Map <ID, V> delegate() {

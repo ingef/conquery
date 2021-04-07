@@ -23,12 +23,7 @@ public class BytesPatriciaValueNode extends BytesPatriciaNode implements ValueNo
 	protected ABytesNode createSplit(BytesTTMap map, byte[] splitKey) {
 		return TTHelper.createBytesValueNode(map, splitKey, value);
 	}
-	
-	@Override
-	protected int ownValue() {
-		return 1;
-	}
-	
+
 	@Override
 	public ValueNode getThisAsValueNode() {
 		return this;

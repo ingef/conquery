@@ -65,7 +65,7 @@ public class RelativeMode extends Mode {
 	
 	@Override
 	public RelativeFormQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
-		return RelExportGenerator.generate(datasets, this, userId, submittedDataset);
+		return RelExportGenerator.generate(this);
 	}
 
 	@Override

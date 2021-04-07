@@ -101,7 +101,7 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues createColumnValues() {
 		return new LongColumnValues();
 	}
 

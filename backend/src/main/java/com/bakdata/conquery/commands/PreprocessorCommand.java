@@ -47,7 +47,6 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 	private final List<String> failed = Collections.synchronizedList(new ArrayList<>());
 	private final List<String> success = Collections.synchronizedList(new ArrayList<>());
-	private final List<String> missing = Collections.synchronizedList(new ArrayList<>());
 	private ExecutorService pool;
 	private boolean isFailFast = false;
 	private boolean isStrict = true;

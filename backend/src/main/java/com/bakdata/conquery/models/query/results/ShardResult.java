@@ -46,10 +46,6 @@ public class ShardResult {
 
 	@ToString.Include
 	private WorkerId workerId;
-	
-	public synchronized void addResult(EntityResult result) {
-		results.add(result);
-	}
 
 	public synchronized void finish() {
 		if (finishTime != null) {

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.concepts.conditions;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -70,14 +68,8 @@ public class GroovyCondition implements CTCondition {
 			throw new ConceptConfigurationException(node, "Could not execute condition \""+script+"\" on "+rowMap.getValue(), e);
 		}
 	}
-	
-	//compile after deserialization
-	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException, ConceptConfigurationException {
-		in.defaultReadObject();
-		compile();
-	}
-	
-	
+
+
 	public abstract static class ConditionScript extends Script {
 		
 		@Getter

@@ -171,7 +171,6 @@ public class AdminProcessor {
 		datasetStorage.updateDataset(dataset);
 
 		Namespace ns = new Namespace(datasetStorage, config.isFailOnError());
-		ns.initMaintenance(maintenanceService);
 
 		datasetRegistry.add(ns);
 

@@ -27,9 +27,7 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -194,8 +192,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
-			Column validityDateColumn = selectValidityDateColumn(table);
-
 			if(aggregateEventDates){
 				aggregators.add(new EventDateUnionAggregator(Set.of(table.getConnector().getTable().getId())));
 			}
@@ -244,12 +240,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 		}
 
 		return outNode;
-	}
-
-	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
-		return ids.stream()
-				  .map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-				  .toArray(ConceptElement[]::new);
 	}
 
 	/**

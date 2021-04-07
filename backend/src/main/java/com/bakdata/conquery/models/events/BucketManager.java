@@ -77,7 +77,7 @@ public class BucketManager {
 			if (!assignedBucketNumbers.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
-			registerBucket(bucket, entities, storage, tableBuckets);
+			registerBucket(bucket, entities, tableBuckets);
 		}
 
 		for (CBlock cBlock : storage.getAllCBlocks()) {
@@ -90,7 +90,7 @@ public class BucketManager {
 	/**
 	 * register entities, and create query specific indices for bucket
 	 */
-	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, WorkerStorage storage, Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets) {
+	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, Map<TableId, Int2ObjectMap<List<Bucket>>> tableBuckets) {
 		for (int entity : bucket.entities()) {
 			entities.computeIfAbsent(entity, Entity::new);
 		}
@@ -157,7 +157,7 @@ public class BucketManager {
 
 	public void addBucket(Bucket bucket) {
 		storage.addBucket(bucket);
-		registerBucket(bucket, entities, storage, tableToBuckets);
+		registerBucket(bucket, entities, tableToBuckets);
 
 		for (Concept<?> c : storage.getAllConcepts()) {
 			for (Connector con : c.getConnectors()) {
@@ -358,14 +358,6 @@ public class BucketManager {
 
 	public boolean hasCBlock(CBlockId id) {
 		return storage.getCBlock(id) != null;
-	}
-
-	public boolean hasBucket(BucketId id) {
-		return storage.getBucket(id) != null;
-	}
-
-	public Bucket getBucket(BucketId id) {
-		return storage.getBucket(id);
 	}
 
 	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {

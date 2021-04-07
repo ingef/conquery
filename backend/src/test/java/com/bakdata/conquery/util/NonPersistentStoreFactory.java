@@ -1,12 +1,16 @@
 package com.bakdata.conquery.util;
 
-import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.commands.ShardNode;
+import static com.bakdata.conquery.io.storage.StoreInfo.*;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
-import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -30,23 +34,17 @@ import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import static com.bakdata.conquery.io.storage.StoreInfo.*;
-
 @CPSType(id = "NON_PERSISTENT", base = StoreFactory.class)
 public class NonPersistentStoreFactory implements StoreFactory {
 
     @Override
-    public Collection<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName) {
+    public Collection<NamespaceStorage> loadNamespaceStorages(List<String> pathName) {
 
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName) {
+    public Collection<WorkerStorage> loadWorkerStorages(List<String> pathName) {
 
         return Collections.emptyList();
     }

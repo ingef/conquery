@@ -102,7 +102,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	}
 
 	@Override
-	public ColumnValues<CDateRange> createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues<CDateRange> createColumnValues() {
 		return new ListColumnValues<>();
 	}
 

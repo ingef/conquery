@@ -58,7 +58,7 @@ const InputSelect = ({
         value={selected}
         defaultValue={defaultValue}
         options={options}
-        onChange={(field: { value: string; label: string }) =>
+        onChange={(field: { value: string; label: string } | null) =>
           field ? input.onChange(field.value) : input.onChange(null)
         }
         isSearchable={false}

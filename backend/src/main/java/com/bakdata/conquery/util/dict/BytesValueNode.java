@@ -18,12 +18,7 @@ public class BytesValueNode extends BytesNode implements ValueNode {
 		this.value = value;
 		return lastValue;
 	}
-	
-	@Override
-	protected int ownValue() {
-		return 1;
-	}
-	
+
 	@Override
 	public ValueNode getThisAsValuesNode() {
 		return this;

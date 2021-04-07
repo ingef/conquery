@@ -33,6 +33,17 @@ import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
+import com.bakdata.conquery.io.storage.IdentifiableStore;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.Store;
+import com.bakdata.conquery.io.storage.StoreInfo;
+import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
+import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
+import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
+import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
+import com.bakdata.conquery.io.storage.xodus.stores.WeakCachedStore;
+import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -124,7 +135,7 @@ public class XodusStoreFactory implements StoreFactory {
 
     @Override
     @SneakyThrows
-    public Collection<NamespaceStorage> loadNamespaceStorages(ManagerNode managerNode, List<String> pathName) {
+    public Collection<NamespaceStorage> loadNamespaceStorages(List<String> pathName) {
         @NonNull File baseDir = getStorageDir(pathName);
 
         if (baseDir.mkdirs()) {
@@ -167,7 +178,7 @@ public class XodusStoreFactory implements StoreFactory {
 
     @Override
     @SneakyThrows
-    public Collection<WorkerStorage> loadWorkerStorages(ShardNode shardNode, List<String> pathName) {
+    public Collection<WorkerStorage> loadWorkerStorages(List<String> pathName) {
         @NonNull File baseDir = getStorageDir(pathName);
 
         if (baseDir.mkdirs()) {

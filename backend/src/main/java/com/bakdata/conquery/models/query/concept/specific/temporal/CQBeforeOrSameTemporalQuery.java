@@ -1,18 +1,15 @@
 package com.bakdata.conquery.models.query.concept.specific.temporal;
 
+import java.util.Set;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.BeforeOrSameTemporalMatcher;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQueryNode;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * Creates a query that will contain all entities where {@code preceding} contains events that happened on the same day or before the events of {@code index}. And the time where this has happened.
@@ -30,8 +27,8 @@ public class CQBeforeOrSameTemporalQuery extends CQAbstractTemporalQuery {
 		plan.getDateAggregator().register(Set.of(dateAggregator));
 
 		return new TemporalQueryNode(
-			index.createQueryPlan(ctx, plan), 
-			preceding.createQueryPlan(ctx, plan), 
+			index.createQueryPlan(ctx),
+			preceding.createQueryPlan(ctx),
 			new BeforeOrSameTemporalMatcher(),
 				dateAggregator
 		);

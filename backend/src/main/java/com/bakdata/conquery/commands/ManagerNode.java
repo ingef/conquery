@@ -193,7 +193,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void loadNamespaces() {
-		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(this, ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
+		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
 			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError());
 
 			datasetRegistry.add(ns);

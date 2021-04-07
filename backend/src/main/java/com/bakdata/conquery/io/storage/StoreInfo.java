@@ -4,6 +4,8 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.WeakCachedStore;
+import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
+import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -39,7 +41,6 @@ import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
-import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -111,12 +112,6 @@ public enum StoreInfo implements IStoreInfo {
         return new IdentifiableCachedStore<T>(centralRegistry, baseStore);
     }
 
-    /**
-     * General Key-Value store with weak caching.
-     */
-    public <KEY, VALUE> WeakCachedStore<KEY, VALUE> weakCached(Store<KEY, VALUE> baseStore, Duration cacheDuration) {
-        return new WeakCachedStore<>(baseStore, cacheDuration);
-    }
 
     /**
      * Store holding a single value.

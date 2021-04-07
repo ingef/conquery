@@ -41,12 +41,11 @@ public interface QueryDescription extends Visitable {
 	 * should be done in an extra init procedure (see {@link ManagedForm#doInitExecutable(DatasetRegistry)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
 	 *
-	 * @param datasets
 	 * @param userId
 	 * @param submittedDataset
 	 * @return
 	 */
-	ManagedExecution<?> toManagedExecution(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset);
+	ManagedExecution<?> toManagedExecution(UserId userId, DatasetId submittedDataset);
 
 	
 	Set<ManagedExecutionId> collectRequiredQueries();

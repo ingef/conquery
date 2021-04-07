@@ -73,10 +73,6 @@ public class CDateSet {
 		return (result == null) ? asRanges = new AsRanges(rangesByLowerBound.values()) : result;
 	}
 
-	public Set<CDateRange> asDescendingSetOfRanges() {
-		Set<CDateRange> result = asDescendingSetOfRanges;
-		return (result == null) ? asDescendingSetOfRanges = new AsRanges(rangesByLowerBound.descendingMap().values()) : result;
-	}
 
 	final class AsRanges extends ForwardingCollection<CDateRange> implements Set<CDateRange> {
 
@@ -157,10 +153,7 @@ public class CDateSet {
 	public void clear() {
 		rangesByLowerBound.clear();
 	}
-	
-	public boolean enclosesAll(CDateSet other) {
-		return enclosesAll(other.asRanges());
-	}
+
 	
 	public void addAll(CDateSet other) {
 		addAll(other.asRanges());

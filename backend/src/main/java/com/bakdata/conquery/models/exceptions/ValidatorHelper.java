@@ -17,14 +17,9 @@ import org.slf4j.Logger;
 @UtilityClass
 @Slf4j
 public final class ValidatorHelper {
-	
-	private static final String VERTICAL_DIVIDER = "\n------------------------------------";
 
-	public static void failOnError(Logger log, Set<? extends ConstraintViolation<?>> violations) {
-		failOnError(log, violations, null);
-	}
-	
-	public static <V extends ConstraintViolation<?>> void failOnError(Logger log, Set<V> violations, String context) {
+
+	public static <V extends ConstraintViolation<?>> void failOnError(Logger log, Set<V> violations) {
 		
 		Map<Optional<Object>, List<V>> mapByRoot = violations.stream().collect(Collectors.groupingBy(v -> Optional.of(v.getRootBean())));
 		

@@ -38,7 +38,7 @@ public interface Form extends QueryDescription {
 	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset);
 	
 	@Override
-	public default ManagedForm toManagedExecution(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+	public default ManagedForm toManagedExecution(UserId userId, DatasetId submittedDataset) {
 		return new ManagedForm(this, userId, submittedDataset);
 	}
 		

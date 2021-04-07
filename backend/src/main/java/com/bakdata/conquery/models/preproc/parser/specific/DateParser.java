@@ -60,7 +60,7 @@ public class DateParser extends Parser<Integer, DateStore> {
 
 	@SneakyThrows
 	@Override
-	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues createColumnValues() {
 		return new IntegerColumnValues();
 	}
 

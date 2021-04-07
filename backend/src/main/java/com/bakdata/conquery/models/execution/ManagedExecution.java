@@ -233,13 +233,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setStatus(state);
 		status.setOwner(Optional.ofNullable(owner).orElse(null));
 		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
-		status.setResultUrl(getDownloadURL(url, user, datasetAbilities).orElse(null));
+		status.setResultUrl(getDownloadURL(url, datasetAbilities).orElse(null));
 	}
 	
 
 	@SneakyThrows({MalformedURLException.class, IllegalArgumentException.class, UriBuilderException.class})
-	public final Optional<URL> getDownloadURL(UriBuilder url, User user, Map<DatasetId, Set<Ability>> datasetAbilities) {
-		if(url == null || !isReadyToDownload(url, user, datasetAbilities)) {
+	public final Optional<URL> getDownloadURL(UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
+		if(url == null || !isReadyToDownload(datasetAbilities)) {
 			// url might be null because no url was wished and no builder was provided
 			return Optional.empty();
 		}
@@ -272,8 +272,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		setStatusBase(storage, user, status, url, datasetAbilities);
 
 		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
-		setAdditionalFieldsForStatusWithSource(storage, url, user, status);
-		setAdditionalFieldsForStatusWithGroups(storage, user, status);
+		setAdditionalFieldsForStatusWithSource(user, status);
+		setAdditionalFieldsForStatusWithGroups(storage, status);
 		setAvailableSecondaryIds(status);
 
 
@@ -293,7 +293,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setAvailableSecondaryIds(secondaryIdCollector.getIds());
 	}
 
-	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, User user, FullExecutionStatus status) {
+	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, FullExecutionStatus status) {
 		/* Calculate which groups can see this query.
 		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
@@ -317,7 +317,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(User user, FullExecutionStatus status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
 		query.visit(namespacesIdCollector);
@@ -331,7 +331,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setQuery(canExpand ? getSubmitted() : null);
 	}
 
-	protected boolean isReadyToDownload(@NonNull UriBuilder url, User user, Map<DatasetId, Set<Ability>> datasetAbilities) {
+	protected boolean isReadyToDownload(Map<DatasetId, Set<Ability>> datasetAbilities) {
 		if (state != ExecutionState.DONE) {
 			// No url for unfinished executions, quick return
 			return false;

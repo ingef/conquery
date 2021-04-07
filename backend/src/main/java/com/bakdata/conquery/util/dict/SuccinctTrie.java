@@ -106,12 +106,6 @@ public class SuccinctTrie extends Dictionary {
 			throw new IllegalStateException(errorMessage);
 		}
 	}
-	
-	public void tryCompress() {
-		if(!isCompressed()) {
-			this.compress();
-		}
-	}
 
 	private int put(byte[] key, int value, boolean failOnDuplicate) {
 		checkUncompressed("No put allowed after compression");
@@ -327,7 +321,7 @@ public class SuccinctTrie extends Dictionary {
 			}
 		};
 	}
-	
+
 	@Data
 	private class HelpNode {
 

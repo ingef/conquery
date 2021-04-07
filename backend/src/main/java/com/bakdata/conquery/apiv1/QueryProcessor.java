@@ -15,9 +15,7 @@ import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -171,9 +169,7 @@ public class QueryProcessor {
 			try {
 				DatasetId targetDataset = targetNamespace.getDataset().getId();
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
-				final ManagedExecution<?>
-						mqTranslated =
-						ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
+				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
 
 			}
 			catch (Exception e) {
