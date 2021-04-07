@@ -56,7 +56,7 @@ public class Workers extends IdResolveContext {
 	}
 
 	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
-		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, failOnError);
+		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, failOnError, entityBucketSize);
 
 		addWorker(worker);
 

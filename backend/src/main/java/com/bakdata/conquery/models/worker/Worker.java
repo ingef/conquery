@@ -77,7 +77,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull ExecutorService executorService,
 			@NonNull WorkerStorage storage,
-			boolean failOnError) {
+			boolean failOnError, int entityBucketSize) {
 
 		return new Worker(queryThreadPoolDefinition, storage, executorService, failOnError, entityBucketSize);
 	}

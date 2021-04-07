@@ -141,7 +141,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 							.map(Worker::getStorage)
 			)
 					// Concept is deleted on Workers
-					.noneMatch(workerStorage -> workerStorage.hasConcept(conceptId))
+					.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
 					// CBlocks of Concept are deleted on Workers
 					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
 															 .stream()
