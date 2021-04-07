@@ -13,12 +13,12 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * An annotation that guides Jackson to serialize/deserialize the field as a {@link NamespacedId} instead of the object content itself.
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @JacksonAnnotationsInside
 @JsonProperty
-@JsonSerialize(using=IdReferenceSerializer.class)
-@JsonDeserialize(using=MetaIdReferenceDeserializer.class)
+@JsonSerialize(using = IdReferenceSerializer.class)
+@JsonDeserialize(using = MetaIdReferenceDeserializer.class)
 @Target({ElementType.FIELD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
-public @interface MetaIdRef {}
+public @interface MetaIdRef {
+}

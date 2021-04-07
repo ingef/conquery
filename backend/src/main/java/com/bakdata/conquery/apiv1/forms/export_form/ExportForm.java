@@ -42,7 +42,7 @@ import lombok.Setter;
 
 @Getter @Setter
 @CPSType(id="EXPORT_FORM", base=QueryDescription.class)
-public class ExportForm implements Form, NamespacedIdHolding {
+public class ExportForm extends Form implements NamespacedIdHolding {
 	@NotNull
 	private ManagedExecutionId queryGroup;
 	@NotNull @Valid @JsonManagedReference

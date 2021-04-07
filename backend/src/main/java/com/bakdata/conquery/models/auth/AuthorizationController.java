@@ -16,12 +16,8 @@ import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Strings;
@@ -179,19 +175,17 @@ public final class AuthorizationController implements Managed{
 
 		// Give read permission to all executions the original user owned
 		copiedPermission.addAll(
-			storage.getAllExecutions().stream()
-					.filter(origin::isOwner)
-					.map(ManagedExecution::getId)
-					.map(id -> QueryPermission.onInstance(Ability.READ,id))
-					.collect(Collectors.toSet())
+				storage.getAllExecutions().stream()
+					   .filter(origin::isOwner)
+					   .map(exc -> exc.createPermission(Ability.READ.asSet()))
+					   .collect(Collectors.toSet())
 		);
 
 		// Give read permission to all form configs the original user owned
 		copiedPermission.addAll(
 				storage.getAllFormConfigs().stream()
 						.filter(origin::isOwner)
-						.map(FormConfig::getId)
-						.map(id -> FormConfigPermission.onInstance(Ability.READ,id))
+						.map(conf -> conf.createPermission(Ability.READ.asSet()))
 						.collect(Collectors.toSet())
 		);
 

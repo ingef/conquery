@@ -38,7 +38,7 @@ public class FormScanner extends Task {
 	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
 		Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
 		// Gather form implementations first
-		for (Class<?> subclass : CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(Form.class.getName()).loadClasses()) {
+		for (Class<?> subclass : CPSTypeIdResolver.SCAN_RESULT.getSubclasses(Form.class.getName()).loadClasses()) {
 			if (Modifier.isAbstract(subclass.getModifiers())) {
 				continue;
 			}

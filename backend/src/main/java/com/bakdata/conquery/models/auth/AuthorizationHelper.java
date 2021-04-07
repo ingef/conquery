@@ -18,15 +18,12 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
+import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
@@ -50,34 +47,35 @@ import org.apache.shiro.authz.Permission;
 @UtilityClass
 public class AuthorizationHelper {
 
-	// Dataset Instances
-	/**
-	 * Helper function for authorizing an ability on a dataset.
-	 * @param user The subject that needs authorization.
-	 * @param dataset The id of the object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
-	 */
-	public static void authorize(@NonNull User user, @NonNull Dataset dataset, @NonNull Ability ability) {
-		user.checkPermission(DatasetPermission.onInstance(EnumSet.of(ability), dataset.getId()));
+
+	public static boolean isPermittedAll(User user, Set<ConqueryPermission> permissions){
+		return user.isPermittedAll(Collections.unmodifiableSet(permissions));
 	}
 
-	public static void authorize(User user, Concept<?> concept, Ability ability) {
-		user.checkPermission(ConceptPermission.onInstance(EnumSet.of(ability), concept.getId()));
-	}
-
-
-	// Query Instances
-	/**
-	 * Helper function for authorizing an ability on a query.
-	 * @param user The subject that needs authorization.
-	 * @param query The id of the object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
-	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedExecution<?> query, @NonNull Ability ability) {
-		if(!user.isOwner(query)) {
-			user.checkPermission(QueryPermission.onInstance(ability, query.getId()));
+	public static void authorize(User user, Authorized object, Ability ability) {
+		if(object instanceof Owned && user.isOwner(((Owned) object))){
+			return;
 		}
+
+		user.checkPermission(object.createPermission(EnumSet.of(ability)));
 	}
+
+	public static boolean isPermitted(User user, Authorized object, Ability ability) {
+		if(object instanceof Owned && user.isOwner(((Owned) object))){
+			return true;
+		}
+
+		return isPermitted(user, object.createPermission(EnumSet.of(ability)));
+	}
+
+	public static boolean isPermitted(User user, ConqueryPermission permission) {
+		return user.isPermitted(permission);
+	}
+
+	public static boolean[] isPermitted(User user, List<ConqueryPermission> permissions) {
+		return user.isPermitted(Collections.unmodifiableList(permissions));
+	}
+
 
 	/**
 	 * Helper function for authorizing an ability on a query.
@@ -244,12 +242,13 @@ public class AuthorizationHelper {
 	 * This checks all used {@link DatasetId}s for the {@link Ability#DOWNLOAD} on the user.
 	 */
 	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution<?> exec) {
-		List<Permission> perms = exec.getUsedNamespacedIds().stream()
-				.map(NamespacedId::getDataset)
-				.distinct()
-				.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
-				.map(Permission.class::cast)
-				.collect(Collectors.toList());
+		List<Permission> perms = exec.getUsedNamespacedIds()
+									 .stream()
+									 .map(NamespacedId::getDataset)
+									 .distinct()
+									 .map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
+									 .map(Permission.class::cast)
+									 .collect(Collectors.toList());
 		user.checkPermissions(perms);
 	}
 
@@ -261,11 +260,11 @@ public class AuthorizationHelper {
 		NamespacedIdCollector collector = new NamespacedIdCollector();
 		visitable.visit(collector);
 		List<Permission> perms = collector.getIds().stream()
-				.map(NamespacedId::getDataset)
-				.distinct()
-				.map(d -> DatasetPermission.onInstance(Ability.READ, d))
-				.map(Permission.class::cast)
-				.collect(Collectors.toList());
+										  .map(NamespacedId::getDataset)
+										  .distinct()
+										  .map(d -> DatasetPermission.onInstance(Ability.READ, d))
+										  .map(Permission.class::cast)
+										  .collect(Collectors.toList());
 		user.checkPermissions(perms);
 	}
 
@@ -276,7 +275,7 @@ public class AuthorizationHelper {
 	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(User user, DatasetRegistry datasetRegistry) {
 		HashMap<DatasetId, Set<Ability>> datasetAbilities = new HashMap<>();
 		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
-			boolean[] abilitiesCheck = user.isPermitted(List.of(
+			boolean[] abilitiesCheck = isPermitted(user, List.of(
 					DatasetPermission.onInstance(Ability.READ, dataset.getId()),
 					DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId()),
 					DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId())
@@ -298,10 +297,6 @@ public class AuthorizationHelper {
 		return datasetAbilities;
 	}
 
-	public static void authorize(User user, FormConfig form, Ability ability) {
-		if(!user.isOwner(form)) {
-			user.checkPermission(FormConfigPermission.onInstance(Set.of(ability), form.getId()));
-		}
-	}
+
 
 }

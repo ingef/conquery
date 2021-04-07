@@ -9,7 +9,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
@@ -41,9 +40,9 @@ public class MeProcessor {
 		// Compute dataset ablilities
 		Map<DatasetId, FEDatasetAbility> datasetAblilites= new HashMap<>();
 		for(Dataset dataset : datasetRegistry.getAllDatasets()){
-			boolean[] result = user.isPermitted(List.of(
-					DatasetPermission.onInstance(Ability.READ, dataset.getId()),
-					DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId())
+			boolean[] result = AuthorizationHelper.isPermitted(user, List.of(
+					dataset.createPermission(Ability.READ.asSet()),
+					dataset.createPermission(Ability.PRESERVE_ID.asSet())
 			));
 
 			if(!result[0] /* READ */) {

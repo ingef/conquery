@@ -453,8 +453,7 @@ public class AdminProcessor {
 			}
 		}
 
-		owner.removeRole(storage, role);
-		log.trace("Deleted role {} from {}", role, owner);
+		AuthorizationHelper.deleteRoleFrom(storage,owner,role);
 	}
 
 	public <ID extends PermissionOwnerId<? extends RoleOwner>> void addRoleTo(ID ownerId, RoleId roleId) {

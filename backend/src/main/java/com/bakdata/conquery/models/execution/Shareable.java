@@ -30,8 +30,8 @@ public interface  Shareable {
 	 */
 	void setShared(boolean shared);
 	
-	
-	default  <ID extends IId<?>,S extends Identifiable<? extends ID> & Shareable> Consumer<ShareInformation> sharer(
+	//TODO add Authorized?
+	default  <ID extends IId<?>, S extends Identifiable<? extends ID> & Shareable> Consumer<ShareInformation> sharer(
 		MetaStorage storage,
 		User user,
 		PermissionCreator<ID> sharedPermissionCreator) {

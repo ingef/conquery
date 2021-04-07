@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
@@ -23,27 +24,26 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ClassToInstanceMap;
 import lombok.NonNull;
-import org.apache.shiro.authz.Permission;
 
 /**
  * API representation of a form query.
  */
-public interface Form extends QueryDescription {
+public abstract class Form implements QueryDescription {
 	
 	@JsonIgnore
-	default String getFormType() {
+	public String getFormType() {
 		return this.getClass().getAnnotation(CPSType.class).id();
 	}
 
 	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset);
 	
 	@Override
-	public default ManagedForm toManagedExecution(UserId userId, DatasetId submittedDataset) {
+	public ManagedForm toManagedExecution(UserId userId, DatasetId submittedDataset) {
 		return new ManagedForm(this, userId, submittedDataset);
 	}
-		
+
 	@Override
-	public default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset, MetaStorage storage, User user) {
+	public void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<ConqueryPermission> requiredPermissions, DatasetId submittedDataset, MetaStorage storage, User user) {
 		QueryDescription.super.collectPermissions(visitors, requiredPermissions, submittedDataset, storage, user);
 		// Check if user is allowed to create this form
 		requiredPermissions.add(FormPermission.onInstance(Ability.CREATE, getFormType()));

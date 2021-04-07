@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -31,7 +32,8 @@ public class FormConfigPatch extends MetaDataPatch {
 	
 	protected Consumer<FormConfigPatch> chain(Consumer<FormConfigPatch> patchConsumerChain, MetaStorage storage, User user, FormConfig instance, PermissionCreator<FormConfigId> permissionCreator) {
 		patchConsumerChain = super.buildChain(patchConsumerChain, storage, user, instance, permissionCreator);
-		if(getValues() != null && (user.isOwner(instance) || user.isPermitted(permissionCreator.apply(Ability.MODIFY.asSet(), instance.getId())))) {
+
+		if(getValues() != null && AuthorizationHelper.isPermitted(user,instance,Ability.MODIFY)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.valueSetter());
 		}
 		return patchConsumerChain;

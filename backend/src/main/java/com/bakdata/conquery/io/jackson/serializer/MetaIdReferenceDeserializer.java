@@ -36,26 +36,28 @@ public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiab
 	@SuppressWarnings("unchecked")
 	@Override
 	public T deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
-		if(parser.getCurrentToken()==JsonToken.VALUE_STRING) {
-			String text = parser.getText();
-			try {
-				Optional<T> result = Objects.requireNonNull(CentralRegistry.get(ctxt), "Could not find injected central registry").getOptional(idParser.parse(text));
-
-				if (result.isEmpty()) {
-					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+text+" of type "+type.getName());
-				}
-
-				if(!type.isAssignableFrom(result.get().getClass())) {
-					throw new InputMismatchException(String.format("Cannot assign type %s to %s ", result.get().getClass(), type));
-				}
-
-				return result.get();
-			} catch(Exception e) {
-				log.error("Error while resolving entry "+text+" of type "+type, e);
-				throw e;
-			}
+		if (parser.getCurrentToken() != JsonToken.VALUE_STRING) {
+			return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
 		}
-		return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
+
+		String text = parser.getText();
+
+		try {
+			Optional<T> result = Objects.requireNonNull(CentralRegistry.get(ctxt), "Could not find injected central registry").getOptional(idParser.parse(text));
+
+			if (result.isEmpty()) {
+				return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+text+" of type "+type.getName());
+			}
+
+			if(!type.isAssignableFrom(result.get().getClass())) {
+				throw new InputMismatchException(String.format("Cannot assign type %s to %s ", result.get().getClass(), type));
+			}
+
+			return result.get();
+		} catch(Exception e) {
+			log.error("Error while resolving entry "+text+" of type "+type, e);
+			throw e;
+		}
 	}
 	
 	@Override

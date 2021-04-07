@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
@@ -18,7 +19,7 @@ public class FormProcessor {
 		List<JsonNode> allowedForms = new ArrayList<>();
 
 		for (Entry<String, JsonNode> formMapping : FRONTEND_FORM_CONFIGS.entrySet()) {
-			if (user.isPermitted(FormPermission.onInstance(Ability.CREATE, formMapping.getKey()))) {
+			if (AuthorizationHelper.isPermitted(user, FormPermission.onInstance(Ability.CREATE, formMapping.getKey()))) {
 				allowedForms.add(formMapping.getValue());
 			}
 		}
