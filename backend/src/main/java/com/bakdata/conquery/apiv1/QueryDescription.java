@@ -10,12 +10,11 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -79,9 +78,9 @@ public interface QueryDescription extends Visitable {
 		}
 		// Generate DatasetPermissions
 		nsIdCollector.getIds().stream()
-					 .map(NamespacedId::getDataset)
+					 .map(NamespacedIdentifiable::getDataset)
 					 .distinct()
-					 .map(dId -> DatasetPermission.onInstance(Ability.READ, dId))
+					 .map(dId -> dId.createPermission(Ability.READ.asSet()))
 					 .collect(Collectors.toCollection(() -> requiredPermissions));
 		
 		// Generate ConceptPermissions

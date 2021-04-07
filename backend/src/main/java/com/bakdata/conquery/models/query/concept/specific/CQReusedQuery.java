@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -87,10 +87,11 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 	}
 
 	@Override
-	public void collectNamespacedIds(Set<NamespacedId> ids) {
+	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> ids) {
 		checkNotNull(ids);
-		if (query != null) {
-			ids.add(query);
-		}
+//TODO is this needed?
+		//		if (query != null) {
+//			ids.add(resolvedQuery);
+//		}
 	}
 }

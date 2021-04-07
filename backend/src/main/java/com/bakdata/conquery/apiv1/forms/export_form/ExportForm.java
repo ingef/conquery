@@ -22,7 +22,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -65,11 +65,12 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	}
 
 	@Override
-	public void collectNamespacedIds(Set<NamespacedId> ids) {
+	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> ids) {
 		checkNotNull(ids);
-		if(queryGroup != null) {
-			ids.add(queryGroup);
-		}
+//TODO is this needed?
+		//		if(queryGroup != null) {
+//			ids.add(queryGroup);
+//		}
 	}
 
 	@Override

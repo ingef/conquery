@@ -8,6 +8,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
@@ -68,10 +69,12 @@ public class ExecutionMetrics {
 	/**
 	 * Report all NamespacedIds to the metrics registry.
 	 */
-	public static void reportNamespacedIds(Collection<NamespacedId> foundIds, String group) {
+	public static void reportNamespacedIds(Collection<NamespacedIdentifiable<?>> foundIds, String group) {
 		final Set<ConceptId> reportedIds = new HashSet<>(foundIds.size());
 
-		for (NamespacedId id : foundIds) {
+		for (NamespacedIdentifiable<?> identifiable : foundIds) {
+
+			NamespacedId id = identifiable.getId();
 			// We don't want to report the whole tree, as that would be spammy and potentially wrong.
 
 			if (id instanceof ConceptId) {

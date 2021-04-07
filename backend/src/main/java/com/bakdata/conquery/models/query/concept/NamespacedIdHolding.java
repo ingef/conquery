@@ -4,6 +4,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 
 /**
  * Classes that contain {@link NamespacedId}s on their first level should implement this interface.
@@ -13,5 +14,5 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
  */
 public interface NamespacedIdHolding {
 
-	void collectNamespacedIds(Set<NamespacedId> ids);
+	void collectNamespacedIds(Set<NamespacedIdentifiable<?>> ids);
 }

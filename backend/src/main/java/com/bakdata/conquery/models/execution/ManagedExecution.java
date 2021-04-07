@@ -349,9 +349,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		 */
 
 		return getUsedNamespacedIds().stream()
-				.map(NamespacedId::getDataset)
+				.map(NamespacedIdentifiable::getDataset)
 				.distinct()
-				.allMatch((id) -> datasetAbilities.get(id).contains(Ability.DOWNLOAD));
+				.allMatch((id) -> datasetAbilities.get(id.getId()).contains(Ability.DOWNLOAD));
 	}
 
 	/**
@@ -366,7 +366,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * @return A List of all {@link NamespacedId}s needed for the execution.
 	 */
 	@JsonIgnore
-	public abstract Set<NamespacedId> getUsedNamespacedIds();
+	public abstract Set<NamespacedIdentifiable<?>> getUsedNamespacedIds();
 
 
 	/**

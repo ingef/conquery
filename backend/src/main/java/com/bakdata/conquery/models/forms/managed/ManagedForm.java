@@ -32,7 +32,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMap;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
@@ -114,7 +114,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 	@Override
-	public Set<NamespacedId> getUsedNamespacedIds() {
+	public Set<NamespacedIdentifiable<?>> getUsedNamespacedIds() {
 		NamespacedIdCollector collector = new NamespacedIdCollector();
 
 		for( Map.Entry<String, List<ManagedQuery>> entry : subQueries.entrySet()) {

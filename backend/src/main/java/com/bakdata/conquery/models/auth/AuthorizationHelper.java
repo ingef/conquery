@@ -24,7 +24,7 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.execution.Owned;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -242,14 +242,15 @@ public class AuthorizationHelper {
 	 * This checks all used {@link DatasetId}s for the {@link Ability#DOWNLOAD} on the user.
 	 */
 	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution<?> exec) {
-		List<Permission> perms = exec.getUsedNamespacedIds()
-									 .stream()
-									 .map(NamespacedId::getDataset)
-									 .distinct()
-									 .map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
-									 .map(Permission.class::cast)
-									 .collect(Collectors.toList());
-		user.checkPermissions(perms);
+		Set<ConqueryPermission> perms =
+				exec.getUsedNamespacedIds()
+					.stream()
+					.map(NamespacedIdentifiable::getDataset)
+					.distinct()
+					.map(d -> d.createPermission(Ability.READ.asSet()))
+					.collect(Collectors.toSet());
+
+		AuthorizationHelper.authorize(user, perms);
 	}
 
 	/**
@@ -260,9 +261,9 @@ public class AuthorizationHelper {
 		NamespacedIdCollector collector = new NamespacedIdCollector();
 		visitable.visit(collector);
 		List<Permission> perms = collector.getIds().stream()
-										  .map(NamespacedId::getDataset)
+										  .map(NamespacedIdentifiable::getDataset)
 										  .distinct()
-										  .map(d -> DatasetPermission.onInstance(Ability.READ, d))
+										  .map(d -> d.createPermission(Ability.READ.asSet()))
 										  .map(Permission.class::cast)
 										  .collect(Collectors.toList());
 		user.checkPermissions(perms);

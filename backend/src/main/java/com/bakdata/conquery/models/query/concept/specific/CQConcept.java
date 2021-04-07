@@ -27,7 +27,7 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -283,11 +283,11 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	}
 
 	@Override
-	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> namespacedIds) {
 		checkNotNull(namespacedIds);
-		elements.forEach(ce -> namespacedIds.add(ce.getId()));
-		selects.forEach(select -> namespacedIds.add(select.getId()));
-		tables.forEach(table -> namespacedIds.add(table.getConnector().getId()));
+		namespacedIds.addAll(elements);
+		namespacedIds.addAll(selects);
+		tables.forEach(table -> namespacedIds.add(table.getConnector()));
 	}
 
 	@Override

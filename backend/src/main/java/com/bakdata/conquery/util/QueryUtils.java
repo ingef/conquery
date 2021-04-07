@@ -13,13 +13,13 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -146,7 +146,7 @@ public class QueryUtils {
 	public static class NamespacedIdCollector implements QueryVisitor {
 
 		@Getter
-		private Set<NamespacedId> ids = new HashSet<>();
+		private Set<NamespacedIdentifiable<?>> ids = new HashSet<>();
 
 		@Override
 		public void accept(Visitable element) {
@@ -192,10 +192,10 @@ public class QueryUtils {
 	public static void generateConceptReadPermissions(@NonNull NamespacedIdCollector idCollector, @NonNull Collection<ConqueryPermission> collectPermissions){
 		//TODO id prefer to not use the ids here, instead refactor NamespacedIdCollector to collect the Objects.
 		idCollector.getIds().stream()
-				   .filter(id -> ConceptElementId.class.isAssignableFrom(id.getClass()))
-				   .map(ConceptElementId.class::cast)
-				   .map(ConceptElementId::findConcept)
-				   .map(cId -> ConceptPermission.onInstance(Ability.READ, cId))
+				   .filter(id -> id instanceof ConceptElement)
+				   .map(ConceptElement.class::cast)
+				   .map(ConceptElement::getConcept)
+				   .map(cId -> cId.createPermission(Ability.READ.asSet()))
 				   .distinct()
 				   .collect(Collectors.toCollection(() -> collectPermissions));
 	}

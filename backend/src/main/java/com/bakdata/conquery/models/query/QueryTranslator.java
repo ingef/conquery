@@ -5,7 +5,8 @@ import java.util.regex.Pattern;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
@@ -31,15 +32,17 @@ public class QueryTranslator {
 			NamespacedIdCollector collector = new NamespacedIdCollector();
 			
 			element.visit(collector);
-	
-			Pattern[] patterns = collector.getIds()
-				.stream()
-				.map(NamespacedId::getDataset)
-				.map(DatasetId::toString)
-				// ?<= -- non-capturing assertion, to start with "
-				// ?= --  non-capturing assertion to end with [."]
-				.map(n -> Pattern.compile("(?<=(\"))" + Pattern.quote(n) + "(?=([.\"]))"))
-				.toArray(Pattern[]::new);
+
+			Pattern[] patterns =
+					collector.getIds()
+							 .stream()
+							 .map(NamespacedIdentifiable::getDataset)
+							 .map(Dataset::getId)
+							 .map(IId::toString)
+							 // ?<= -- non-capturing assertion, to start with "
+							 // ?= --  non-capturing assertion to end with [."]
+							 .map(n -> Pattern.compile("(?<=(\"))" + Pattern.quote(n) + "(?=([.\"]))"))
+							 .toArray(Pattern[]::new);
 	
 			String replacement = Matcher.quoteReplacement(target.toString());
 			for (Pattern pattern : patterns) {
