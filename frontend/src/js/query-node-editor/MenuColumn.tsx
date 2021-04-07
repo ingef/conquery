@@ -83,7 +83,10 @@ const MenuColumn: FC<PropsT> = ({
 
   const isEmpty =
     node.isPreviousQuery ||
-    (!showTables && (!rootConcept || !rootConcept.children));
+    (!showTables &&
+      (!rootConcept ||
+        !rootConcept.children ||
+        rootConcept.children.length === 0));
 
   return (
     <FixedColumn className={className} isEmpty={isEmpty}>
@@ -112,30 +115,33 @@ const MenuColumn: FC<PropsT> = ({
           ))}
         </div>
       )}
-      {!node.isPreviousQuery && rootConcept && rootConcept.children && (
-        <>
-          <HeadingBetween>
-            {t("queryNodeEditor.dropMoreConcepts")}
-          </HeadingBetween>
-          <Padded>
-            <Heading4Highlighted>{rootConcept.label}</Heading4Highlighted>
-            <div>
-              <ConceptDropzone node={node} onDropConcept={onDropConcept} />
-            </div>
-            <div>
-              {node.ids.map((conceptId) => (
-                <ConceptEntry
-                  key={conceptId}
-                  node={getConceptById(conceptId)}
-                  conceptId={conceptId}
-                  canRemoveConcepts={node.ids.length > 1}
-                  onRemoveConcept={onRemoveConcept}
-                />
-              ))}
-            </div>
-          </Padded>
-        </>
-      )}
+      {!node.isPreviousQuery &&
+        rootConcept &&
+        rootConcept.children &&
+        rootConcept.children.length > 0 && (
+          <>
+            <HeadingBetween>
+              {t("queryNodeEditor.dropMoreConcepts")}
+            </HeadingBetween>
+            <Padded>
+              <Heading4Highlighted>{rootConcept.label}</Heading4Highlighted>
+              <div>
+                <ConceptDropzone node={node} onDropConcept={onDropConcept} />
+              </div>
+              <div>
+                {node.ids.map((conceptId) => (
+                  <ConceptEntry
+                    key={conceptId}
+                    node={getConceptById(conceptId)}
+                    conceptId={conceptId}
+                    canRemoveConcepts={node.ids.length > 1}
+                    onRemoveConcept={onRemoveConcept}
+                  />
+                ))}
+              </div>
+            </Padded>
+          </>
+        )}
     </FixedColumn>
   );
 };

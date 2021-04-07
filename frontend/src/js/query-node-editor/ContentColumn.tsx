@@ -30,7 +30,7 @@ const Row = styled("div")`
 `;
 
 const SectionHeading = styled(Heading3)`
-  margin: 15px 10px 0;
+  margin: 10px 10px 0;
 `;
 
 const CommonSettingsContainer = styled("div")`
