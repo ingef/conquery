@@ -98,7 +98,10 @@ public class Preprocessed {
 	 */
 	public static JsonGenerator createWriter(File file) throws IOException {
 		OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
-		return Jackson.BINARY_MAPPER.getFactory().createGenerator(out);
+		return Jackson.BINARY_MAPPER.copy()
+									.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+									.getFactory()
+									.createGenerator(out);
 	}
 
 	/**
@@ -112,7 +115,8 @@ public class Preprocessed {
 		final InjectedCentralRegistry injectedCentralRegistry = new InjectedCentralRegistry(replacements, centralRegistry);
 		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectedCentralRegistry);
 
-		return namespaceCollection.injectInto(Jackson.BINARY_MAPPER)
+		return namespaceCollection.injectInto(Jackson.BINARY_MAPPER.copy())
+								  .enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
 								  .getFactory()
 								  .createParser(in);
 	}

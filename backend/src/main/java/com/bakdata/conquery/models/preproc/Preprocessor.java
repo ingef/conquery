@@ -223,10 +223,6 @@ public class Preprocessor {
 		log.info("PREPROCESSING DONE in {}", preprocessingJob);
 	}
 
-	private static void write(File tmp, Preprocessed result) throws IOException {
-
-	}
-
 	/**
 	 * Apply each output for a single row. Returning all resulting values.
 	 */
