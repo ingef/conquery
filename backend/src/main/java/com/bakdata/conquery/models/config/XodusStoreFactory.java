@@ -32,16 +32,6 @@ import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
-import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
-import com.bakdata.conquery.io.storage.IdentifiableStore;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreInfo;
-import com.bakdata.conquery.io.storage.WorkerStorage;
-import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
-import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
-import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
-import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.WeakCachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -268,7 +258,7 @@ public class XodusStoreFactory implements StoreFactory {
 		final Store<IId<Dictionary>, Dictionary> result;
 
 		if (useWeakDictionaryCaching) {
-			result = DICTIONARIES.weakCached(bigStore, getWeakCacheDuration());
+			result = new WeakCachedStore<>(bigStore, getWeakCacheDuration());
 		}
 		else {
 			result = DICTIONARIES.cached(bigStore);
