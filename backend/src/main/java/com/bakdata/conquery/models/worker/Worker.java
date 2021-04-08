@@ -63,7 +63,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull WorkerStorage storage,
 			@NonNull ExecutorService executorService,
-			boolean failOnError, int entityBucketSize
+			boolean failOnError,
+			int entityBucketSize
 	) {
 		this.jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		this.storage = storage;
