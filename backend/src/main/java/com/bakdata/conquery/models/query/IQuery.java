@@ -8,7 +8,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -22,13 +22,13 @@ public abstract class IQuery implements QueryDescription {
 
 	public abstract QueryPlan createQueryPlan(QueryPlanContext context);
 	
-	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries);
+	public abstract void collectRequiredQueries(Set<ManagedExecution> requiredQueries);
 	
 	@Override
 	public abstract void resolve(QueryResolveContext context);
 	
-	public Set<ManagedExecutionId> collectRequiredQueries() {
-		HashSet<ManagedExecutionId> set = new HashSet<>();
+	public Set<ManagedExecution> collectRequiredQueries() {
+		HashSet<ManagedExecution> set = new HashSet<>();
 		this.collectRequiredQueries(set);
 		return set;
 	}

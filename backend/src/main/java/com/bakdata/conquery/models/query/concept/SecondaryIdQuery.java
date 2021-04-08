@@ -17,8 +17,8 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -79,7 +79,7 @@ public class SecondaryIdQuery extends IQuery {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
 		query.collectRequiredQueries(requiredQueries);
 	}
 

@@ -1,25 +1,30 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.*;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * This query uses the date range defined by {@link EntityDateQuery#query} for each entity and applies it as a
@@ -66,7 +71,7 @@ public class EntityDateQuery extends IQuery {
     }
 
     @Override
-    public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+    public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
         query.collectRequiredQueries(requiredQueries);
         features.collectRequiredQueries(requiredQueries);
     }

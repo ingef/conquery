@@ -35,6 +35,7 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
@@ -42,7 +43,6 @@ import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcess
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -130,10 +130,13 @@ public class FormConfigTest {
 	@BeforeEach
 	public void setupTest(){
 
+		final ManagedQuery managedQuery = new ManagedQuery(null, null, dataset);
+		managedQuery.setQueryId(UUID.randomUUID());
+
 		form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
 		form.setTimeMode(mode);
-		form.setQueryGroup(new ManagedExecutionId(datasetId, UUID.randomUUID()));
+		form.setQueryGroup(managedQuery);
 		mode.setForm(form);
 		mode.setFeatures(List.of(new CQConcept()));
 	}
@@ -224,7 +227,7 @@ public class FormConfigTest {
 		}
 
 		@Override
-		public Set<ManagedExecutionId> collectRequiredQueries() {
+		public Set<ManagedExecution> collectRequiredQueries() {
 			return Collections.emptySet();
 		}
 

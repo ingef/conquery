@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
@@ -92,7 +91,7 @@ public class QueryProcessor {
 
 		// If this is only a re-executing query, try to execute the underlying query instead.
 		{
-			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
+			final Optional<ManagedExecution<?>> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
 			final FullExecutionStatus status = tryReuse(query, executionId, user, storage, datasetRegistry, config, urlb);
 
@@ -112,17 +111,14 @@ public class QueryProcessor {
 		return getStatus(mq, urlb, user);
 	}
 
-	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
+	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecution<?>> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
 
 		// If this is only a re-executing query, execute the underlying query instead.
 		if (maybeId.isEmpty()) {
 			return null;
 		}
 
-		final ManagedExecutionId executionId = maybeId.get();
-
-
-		final ManagedExecution<?> execution = storage.getExecution(executionId);
+		final ManagedExecution<?> execution = maybeId.get();
 
 		// Direct reuse only works if the queries are of the same type (As reuse reconstructs the Query for different types)
 		if (!query.getClass().equals(execution.getSubmitted().getClass())) {
@@ -148,7 +144,7 @@ public class QueryProcessor {
 		}
 
 
-		log.trace("Re-executing Query {}", executionId);
+		log.trace("Re-executing Query {}", execution);
 
 		final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, execution, config);
 

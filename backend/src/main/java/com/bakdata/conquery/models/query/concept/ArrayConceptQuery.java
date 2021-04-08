@@ -13,7 +13,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -91,7 +91,7 @@ public class ArrayConceptQuery extends IQuery {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
 		childQueries.forEach(q -> q.collectRequiredQueries(requiredQueries));
 	}
 
