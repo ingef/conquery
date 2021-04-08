@@ -24,13 +24,12 @@ import org.slf4j.LoggerFactory;
  */
 public interface  Shareable {
 	static final Logger log = LoggerFactory.getLogger(Shareable.class);
-	
+
 	/**
 	 * Sets the flag that indicated if an instance is shared among groups.
 	 */
 	void setShared(boolean shared);
 	
-	//TODO add Authorized?
 	default  <ID extends IId<?>, S extends Identifiable<? extends ID> & Shareable> Consumer<ShareInformation> sharer(
 		MetaStorage storage,
 		User user,

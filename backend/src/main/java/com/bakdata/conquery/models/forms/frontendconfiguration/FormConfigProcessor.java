@@ -150,7 +150,6 @@ public class FormConfigProcessor {
 	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, FormConfigPatch patch) {
 		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
 
-		//TODO i have no idea what this does
 		patch.applyTo(config, storage, user, FormConfigPermission::onInstance);
 		
 		storage.updateFormConfig(config);
