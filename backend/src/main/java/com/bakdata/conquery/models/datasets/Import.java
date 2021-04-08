@@ -5,12 +5,12 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
@@ -27,10 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 public class Import extends NamedImpl<ImportId> {
 
-
 	@Valid
 	@NotNull
-	private final TableId table; // todo migrate to NsIdRef
+	@NsIdRef
+	private final Table table;
 
 	private long numberOfEntities;
 
@@ -46,7 +46,7 @@ public class Import extends NamedImpl<ImportId> {
 
 	@Override
 	public ImportId createId() {
-		return new ImportId(table, getName());
+		return new ImportId(table.getId(), getName());
 	}
 
 	public void loadExternalInfos(NamespacedStorage storage) {

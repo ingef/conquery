@@ -106,7 +106,7 @@ public class TablesUIResource extends HAdmin {
 		return concepts.stream()
 					   .filter(TreeConcept.class::isInstance)
 					   .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
-					   .filter(con -> con.getTable().getId().equals(imp.getTable()))
+					   .filter(con -> con.getTable().equals(imp.getTable()))
 					   .mapToLong(con -> {
 						   // Per event an int array is stored marking the path to the concept child.
 						   final double avgDepth = con.getConcept()
