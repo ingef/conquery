@@ -21,6 +21,7 @@ const Root = styled("div")<{ show?: boolean }>`
   flex-shrink: 0;
   flex-basis: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 0 10px 0;
   white-space: nowrap;
 

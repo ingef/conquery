@@ -101,7 +101,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(block -> block.getBucket().getDataset().equals(dataset.getId()))
+							.filteredOn(block -> block.getBucket().getId().getDataset().equals(dataset.getId()))
 							.isNotEmpty();
 					assertThat(workerStorage.getAllBuckets())
 							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset.getId()))
@@ -158,7 +158,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 					// No CBlock associated with import may exist
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getBucket().getImp().equals(importId))
+							.filteredOn(cBlock -> cBlock.getBucket().getId().getImp().equals(importId))
 							.isEmpty();
 					
 					// Import should not exists anymore

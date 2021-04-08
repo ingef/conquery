@@ -2,6 +2,7 @@ import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
 import { useTranslation } from "react-i18next";
+import { DropTargetMonitor } from "react-dnd";
 
 import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
 import FaIcon from "../icon/FaIcon";
@@ -13,8 +14,9 @@ import {
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../common/constants/dndTypes";
 import type { QueryIdT } from "../api/types";
+import WithTooltip from "../tooltip/WithTooltip";
+
 import type { DraggedNodeType, DraggedQueryType } from "./types";
-import { DropTargetMonitor } from "react-dnd";
 
 const DROP_TYPES = [
   CONCEPT_TREE_NODE,
@@ -81,6 +83,7 @@ const Row = styled("div")`
 interface PropsT {
   isInitial?: boolean;
   isAnd?: boolean;
+  tooltip?: string;
   onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
   onDropFile: (file: File) => void;
   onLoadPreviousQuery: (id: QueryIdT) => void;
@@ -89,6 +92,7 @@ interface PropsT {
 const QueryEditorDropzone: FC<PropsT> = ({
   isAnd,
   isInitial,
+  tooltip,
   onLoadPreviousQuery,
   onDropFile,
   onDropNode,
@@ -118,7 +122,7 @@ const QueryEditorDropzone: FC<PropsT> = ({
       showFileSelectButton={isInitial}
     >
       {() => (
-        <>
+        <WithTooltip text={tooltip} lazy>
           {isInitial && (
             <TextInitial>
               <h2>{t("dropzone.explanation")}</h2>
@@ -137,7 +141,7 @@ const QueryEditorDropzone: FC<PropsT> = ({
             </TextInitial>
           )}
           {!isInitial && <Text>{t("dropzone.dragElementPlease")}</Text>}
-        </>
+        </WithTooltip>
       )}
     </SxDropzoneWithFileInput>
   );

@@ -379,8 +379,11 @@ const setNodeTableSelects = (state: StandardQueryStateT, action: any) => {
 };
 
 const setNodeTableDateColumn = (state: StandardQueryStateT, action: any) => {
+  const nodeIdx = selectEditedNodePosition(state);
+  if (!nodeIdx) return state;
+  const { andIdx, orIdx } = nodeIdx;
+
   const { tableIdx, value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNodePosition(state);
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { dateColumn } = table;
 
@@ -397,8 +400,12 @@ const setNodeTableDateColumn = (state: StandardQueryStateT, action: any) => {
 };
 
 const setNodeSelects = (state: StandardQueryStateT, action: any) => {
+  const nodeIdx = selectEditedNodePosition(state);
+  if (!nodeIdx) return state;
+  const { andIdx, orIdx } = nodeIdx;
+
   const { value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNodePosition(state);
+
   const { selects } = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
@@ -420,11 +427,11 @@ const switchNodeFilterMode = (state: StandardQueryStateT, action: any) => {
   });
 };
 
-const resetNodeAllFilters = (state: StandardQueryStateT, action: any) => {
+const resetNodeAllFilters = (state: StandardQueryStateT) => {
   const nodeIdx = selectEditedNodePosition(state);
   if (!nodeIdx) return state;
-
   const { andIdx, orIdx } = nodeIdx;
+
   const node = state[andIdx].elements[orIdx];
 
   const newState = setElementProperties(state, andIdx, orIdx, {
@@ -787,7 +794,9 @@ function getPositionFromActionOrEditedNode(
 }
 
 const toggleTimestamps = (state: StandardQueryStateT, action: any) => {
-  const { andIdx, orIdx } = getPositionFromActionOrEditedNode(state, action);
+  const nodeIdx = getPositionFromActionOrEditedNode(state, action);
+  if (!nodeIdx) return state;
+  const { andIdx, orIdx } = nodeIdx;
 
   return setElementProperties(state, andIdx, orIdx, {
     excludeTimestamps: !state[andIdx].elements[orIdx].excludeTimestamps,
@@ -795,7 +804,9 @@ const toggleTimestamps = (state: StandardQueryStateT, action: any) => {
 };
 
 const toggleSecondaryIdExclude = (state: StandardQueryStateT, action: any) => {
-  const { andIdx, orIdx } = getPositionFromActionOrEditedNode(state, action);
+  const nodeIdx = getPositionFromActionOrEditedNode(state, action);
+  if (!nodeIdx) return state;
+  const { andIdx, orIdx } = nodeIdx;
 
   return setElementProperties(state, andIdx, orIdx, {
     excludeFromSecondaryIdQuery: !state[andIdx].elements[orIdx]
@@ -883,7 +894,10 @@ const updateNodeLabel = (state: StandardQueryStateT, action: any) => {
   });
 };
 
-const addConceptToNode = (state: StandardQueryStateT, action: any) => {
+const addConceptToNode = (
+  state: StandardQueryStateT,
+  action: { payload: { concept: DraggedNodeType } }
+) => {
   const nodePosition = selectEditedNodePosition(state);
 
   if (!nodePosition) return state;
@@ -1037,7 +1051,7 @@ const query = (
     case SET_SELECTS:
       return setNodeSelects(state, action);
     case RESET_ALL_FILTERS:
-      return resetNodeAllFilters(state, action);
+      return resetNodeAllFilters(state);
     case SWITCH_FILTER_MODE:
       return switchNodeFilterMode(state, action);
     case TOGGLE_TIMESTAMPS:

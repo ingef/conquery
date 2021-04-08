@@ -13,6 +13,7 @@ import { useFilteredFormConfigs, useLoadFormConfigs } from "./selectors";
 
 const Container = styled("div")`
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   font-size: ${({ theme }) => theme.font.sm};
   padding: 0 10px;
 `;

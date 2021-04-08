@@ -19,7 +19,7 @@ public class EmptyBucket extends Bucket {
 	private static final EmptyBucket Instance = new EmptyBucket();
 
 	public EmptyBucket() {
-		super(0, 0, new ColumnStore[0], Int2IntMaps.EMPTY_MAP, Int2IntMaps.EMPTY_MAP, 0, null);
+		super(0, 0, new ColumnStore[0], Int2IntMaps.EMPTY_MAP, Int2IntMaps.EMPTY_MAP, null);
 	}
 
 
@@ -44,11 +44,6 @@ public class EmptyBucket extends Bucket {
 		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
-
-	@Override
-	public int getBucketSize() {
-		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
-	}
 
 	@Override
 	public int getString(int event, Column column) {

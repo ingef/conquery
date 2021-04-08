@@ -23,6 +23,7 @@ export interface StandardQueryEditorStateT {
 const Tab: TabT = {
   key: "queryEditor",
   labelKey: "rightPane.queryEditor",
+  tooltipKey: "help.tabQueryEditor",
   reducer: combineReducers({
     query: queryReducer,
     selectedSecondaryId: selectedSecondaryIdsReducer,

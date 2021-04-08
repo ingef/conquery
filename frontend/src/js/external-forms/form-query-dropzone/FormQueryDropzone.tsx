@@ -4,7 +4,10 @@ import type { WrappedFieldProps } from "redux-form";
 
 import FormQueryResult from "./FormQueryResult";
 
-import { PREVIOUS_QUERY } from "../../common/constants/dndTypes";
+import {
+  PREVIOUS_QUERY,
+  PREVIOUS_SECONDARY_ID_QUERY,
+} from "../../common/constants/dndTypes";
 
 import Dropzone from "../../form-components/Dropzone";
 import Label from "../../form-components/Label";
@@ -31,7 +34,10 @@ const FormQueryDropzone: FC<PropsT> = (props) => {
           onDelete={() => props.input.onChange(null)}
         />
       ) : (
-        <Dropzone onDrop={onDrop} acceptedDropTypes={[PREVIOUS_QUERY]}>
+        <Dropzone
+          onDrop={onDrop}
+          acceptedDropTypes={[PREVIOUS_QUERY, PREVIOUS_SECONDARY_ID_QUERY]}
+        >
           {() => props.dropzoneText}
         </Dropzone>
       )}
