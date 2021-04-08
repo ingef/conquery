@@ -47,6 +47,7 @@ const StandardQueryNodeEditor = () => {
     !!node &&
     isConceptQueryNode(node) &&
     !!node.tables &&
+    node.tables.length > 1 &&
     node.tables.some((table) => tableIsEditable(table));
   const editorState = useSelector<StateT, QueryNodeEditorStateT>(
     (state) => state.queryNodeEditor
@@ -69,8 +70,6 @@ const StandardQueryNodeEditor = () => {
       node={node}
       editorState={editorState}
       showTables={showTables}
-      isExcludeTimestampsPossible={true}
-      isExcludeFromSecondaryIdQueryPossible={true}
       currencyConfig={currencyConfig}
       onLoadFilterSuggestions={onLoadFilterSuggestions}
       onCloseModal={() => dispatch(deselectNode())}
@@ -82,19 +81,17 @@ const StandardQueryNodeEditor = () => {
       onToggleTable={(tableIdx: number, isExcluded: boolean) =>
         dispatch(toggleTable(tableIdx, isExcluded))
       }
-      onSelectSelects={(value) => dispatch(setSelects(value))}
+      onSelectSelects={(value) => {
+        dispatch(setSelects(value));
+      }}
       onSelectTableSelects={(tableIdx: number, value) =>
         dispatch(setTableSelects(tableIdx, value))
       }
       onSetFilterValue={(tableIdx: number, filterIdx: number, value) =>
         dispatch(setFilterValue(tableIdx, filterIdx, value))
       }
-      onSwitchFilterMode={(tableIdx: number, filterIdx: number, mode) =>
-        dispatch(switchFilterMode(tableIdx, filterIdx, mode))
-      }
-      onResetAllFilters={(andIdx: number, orIdx: number) =>
-        dispatch(resetAllFilters(andIdx, orIdx))
-      }
+      onSwitchFilterMode={(...args) => dispatch(switchFilterMode(...args))}
+      onResetAllFilters={() => dispatch(resetAllFilters())}
       onToggleTimestamps={() => dispatch(toggleTimestamps())}
       onToggleSecondaryIdExclude={() => dispatch(toggleSecondaryIdExclude())}
       onSetDateColumn={(tableIdx: number, value) =>

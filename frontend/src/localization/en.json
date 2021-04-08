@@ -85,7 +85,7 @@
     "queryNode": "Query Node",
     "conceptNodes": "Concept Nodes",
     "conceptNodeTables": "Input Tables",
-    "properties": "Properties",
+    "properties": "Common properties",
     "reset": "Reset",
     "resetSettings": "Reset all settings",
     "excludeTimestamps": "Exclude from time calculation",
@@ -102,7 +102,9 @@
     "selects": "More values",
     "nodeNotFound": "Concept not found",
     "selectValidityDate": "Relevant date interval",
-    "dateColumn": "Date column"
+    "dateColumn": "Date column",
+    "dropMoreConcepts": "Contained concepts",
+    "emptyMenuColumn": "No further settings"
   },
   "queryGroupModal": {
     "explanation": "Set time frame",

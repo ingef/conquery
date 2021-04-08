@@ -50,7 +50,7 @@ interface PropsT extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   left?: boolean;
   frame?: boolean;
   bare?: boolean;
-  onClick: () => void;
+  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
 }
 
 // A button that is prefixed by an icon

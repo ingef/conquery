@@ -312,12 +312,10 @@ const setFilterValue = (
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  filterValue,
-  formattedFilterValue
+  filterValue
 ) => {
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
     value: filterValue,
-    formattedValue: formattedFilterValue,
   });
 };
 
@@ -387,7 +385,6 @@ const switchFilterMode = (
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
     mode: mode,
     value: null,
-    formattedValue: null,
   });
 };
 
@@ -749,8 +746,7 @@ const FormConceptGroup = (props: PropsType) => {
           conceptIdx,
           tableIdx,
           filterIdx,
-          filterValue,
-          formattedFilterValue
+          filterValue
         ) =>
           props.input.onChange(
             setFilterValue(
@@ -759,8 +755,7 @@ const FormConceptGroup = (props: PropsType) => {
               conceptIdx,
               tableIdx,
               filterIdx,
-              filterValue,
-              formattedFilterValue
+              filterValue
             )
           )
         }
