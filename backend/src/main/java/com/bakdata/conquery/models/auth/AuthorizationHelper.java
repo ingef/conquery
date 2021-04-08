@@ -164,6 +164,7 @@ public class AuthorizationHelper {
 	 * the permission of the roles it inherits.
 	 */
 	public static Set<ConqueryPermission> getEffectiveGroupPermissions(Group group, MetaStorage storage) {
+		// Combine permissions held by the group with those inherited from roles
 		return collectRolePermissions(storage, group, group.getPermissions());
 	}
 
