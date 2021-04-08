@@ -25,14 +25,15 @@ import org.apache.shiro.authz.Permission;
  * The base class of security subjects in this project. Used to represent
  * persons and groups with permissions.
  *
- * @param <T>
- *            The id type by which an instance is identified
+ * @param <T> The id type by which an instance is identified
  */
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Comparable<PermissionOwner<?>> {
 
-	private static final Comparator<PermissionOwner<?>> COMPARATOR = Comparator.<PermissionOwner<?>, String>comparing(PermissionOwner::getLabel).thenComparing(po -> po.getId().toString());
+	private static final Comparator<PermissionOwner<?>>
+			COMPARATOR =
+			Comparator.<PermissionOwner<?>, String>comparing(PermissionOwner::getLabel).thenComparing(po -> po.getId().toString());
 
 	@Getter
 	@Setter
@@ -65,17 +66,15 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	/**
 	 * Adds permissions to the owner object and to the persistent storage.
 	 *
-	 * @param storage
-	 *            A storage where the permission are added for persistence.
-	 * @param permissions
-	 *            The permissions to add.
+	 * @param storage     A storage where the permission are added for persistence.
+	 * @param permissions The permissions to add.
 	 * @return Returns the added Permission
 	 */
 	//TODO unused?
 	public boolean addPermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
 		boolean ret = false;
 		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size()+ permissions.size());
+			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size() + permissions.size());
 			newSet.addAll(this.permissions);
 			ret = newSet.addAll(permissions);
 			this.permissions = newSet;
@@ -87,7 +86,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	public boolean addPermission(MetaStorage storage, ConqueryPermission permission) {
 		boolean ret = false;
 		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size()+ 1);
+			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size() + 1);
 			newSet.addAll(this.permissions);
 			ret = newSet.add(permission);
 			this.permissions = newSet;
@@ -99,18 +98,15 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	/**
 	 * Removes permissions from the owner object and from the persistent storage.
 	 *
-	 * @param storage
-	 *            A storage where the permission are saved for persistence.
-	 * @param permissions
-	 *            The permission to remove.
+	 * @param storage     A storage where the permission are saved for persistence.
+	 * @param permissions The permission to remove.
 	 * @return Returns the added Permission
 	 */
 	//todo unsed?
 	public boolean removePermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
 		boolean ret = false;
 		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size() - permissions.size());
-			newSet.addAll(this.permissions);
+			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions);
 			ret = newSet.removeAll(permissions);
 			this.permissions = newSet;
 			updateStorage(storage);
@@ -121,8 +117,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	public boolean removePermission(MetaStorage storage, Permission permission) {
 		boolean ret = false;
 		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size() - 1);
-			newSet.addAll(this.permissions);
+			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions);
 			ret = newSet.remove(permission);
 			this.permissions = newSet;
 			updateStorage(storage);
