@@ -66,7 +66,7 @@ public class StoredQueriesProcessor {
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
 						 // However, for other executions we check because those are probably shared.
-						 .filter(q -> AuthorizationHelper.isPermitted(user, q.createPermission(Ability.READ.asSet())))
+						 .filter(q -> AuthorizationHelper.isPermitted(user, q, Ability.READ))
 						 .flatMap(mq -> {
 							 try {
 								 return Stream.of(

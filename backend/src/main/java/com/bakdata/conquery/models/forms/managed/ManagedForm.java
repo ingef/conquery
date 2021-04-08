@@ -48,7 +48,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -115,7 +115,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 	@Override
 	public Set<NamespacedIdentifiable<?>> getUsedNamespacedIds() {
-		NamespacedIdCollector collector = new NamespacedIdCollector();
+		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 
 		for( Map.Entry<String, List<ManagedQuery>> entry : subQueries.entrySet()) {
 			for(ManagedQuery subquery : entry.getValue()) {
@@ -123,7 +123,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			}
 		}
 
-		return collector.getIds();
+		return collector.getIdentifiables();
 	}
 
 	// Executed on Worker

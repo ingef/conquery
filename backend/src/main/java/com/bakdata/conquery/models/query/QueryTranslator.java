@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -29,12 +29,12 @@ public class QueryTranslator {
 		try {
 			String value = Jackson.MAPPER.writeValueAsString(element);
 			
-			NamespacedIdCollector collector = new NamespacedIdCollector();
+			NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 			
 			element.visit(collector);
 
 			Pattern[] patterns =
-					collector.getIds()
+					collector.getIdentifiables()
 							 .stream()
 							 .map(NamespacedIdentifiable::getDataset)
 							 .map(Dataset::getId)

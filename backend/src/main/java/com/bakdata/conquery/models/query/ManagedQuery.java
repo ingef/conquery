@@ -54,7 +54,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -200,9 +200,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	@Override
 	public Set<NamespacedIdentifiable<?>> getUsedNamespacedIds() {
-		NamespacedIdCollector collector = new NamespacedIdCollector();
+		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		query.visit(collector);
-		return collector.getIds();
+		return collector.getIdentifiables();
 	}
 
 	@Override

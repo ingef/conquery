@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -35,6 +36,8 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
@@ -58,7 +61,7 @@ import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
@@ -332,12 +335,18 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	protected void setAdditionalFieldsForStatusWithSource(User user, FullExecutionStatus status) {
 		QueryDescription query = getSubmitted();
-		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
+		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
 		Set<ConqueryPermission> permissions = new HashSet<>();
-		QueryUtils.generateConceptReadPermissions(namespacesIdCollector, permissions);
 
-		boolean canExpand = AuthorizationHelper.isPermittedAll(user, permissions);
+		final Set<Concept> concepts = namespacesIdCollector.getIdentifiables()
+														  .stream()
+														  .filter(ConceptElement.class::isInstance)
+														  .map(ConceptElement.class::cast)
+														  .map(ConceptElement::getConcept)
+														  .collect(Collectors.toSet());
+
+		boolean canExpand = AuthorizationHelper.isPermittedAll(user, concepts, Ability.READ);
 
 		status.setCanExpand(canExpand);
 		status.setQuery(canExpand ? getSubmitted() : null);

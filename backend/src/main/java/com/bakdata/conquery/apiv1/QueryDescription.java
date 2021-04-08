@@ -23,7 +23,7 @@ import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ClassToInstanceMap;
 import lombok.NonNull;
@@ -62,7 +62,7 @@ public interface QueryDescription extends Visitable {
 	 */
 	default void addVisitors(@NonNull ClassToInstanceMap<QueryVisitor> visitors) {
 		// Register visitors for permission checks
-		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
+		visitors.putInstance(NamespacedIdentifiableCollector.class, new NamespacedIdentifiableCollector());
 		visitors.putInstance(QueryUtils.ExternalIdChecker.class, new QueryUtils.ExternalIdChecker());
 	}
 
@@ -70,13 +70,13 @@ public interface QueryDescription extends Visitable {
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
 	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<ConqueryPermission> requiredPermissions, Dataset submittedDataset, MetaStorage storage, User user) {
-		NamespacedIdCollector nsIdCollector = QueryUtils.getVisitor(visitors, QueryUtils.NamespacedIdCollector.class);
+		NamespacedIdentifiableCollector nsIdCollector = QueryUtils.getVisitor(visitors, NamespacedIdentifiableCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, QueryUtils.ExternalIdChecker.class);
 		if(nsIdCollector == null) {
 			throw new IllegalStateException();
 		}
 		// Generate DatasetPermissions
-		nsIdCollector.getIds().stream()
+		nsIdCollector.getIdentifiables().stream()
 					 .map(NamespacedIdentifiable::getDataset)
 					 .distinct()
 					 .map(dId -> dId.createPermission(Ability.READ.asSet()))

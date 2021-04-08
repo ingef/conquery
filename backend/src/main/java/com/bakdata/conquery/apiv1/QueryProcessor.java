@@ -31,7 +31,7 @@ import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.Getter;
@@ -62,7 +62,7 @@ public class QueryProcessor {
 
 		// Initialize checks that need to traverse the query tree
 		visitors.putInstance(QueryUtils.OnlyReusingChecker.class, new QueryUtils.OnlyReusingChecker());
-		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
+		visitors.putInstance(NamespacedIdentifiableCollector.class, new NamespacedIdentifiableCollector());
 
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getName).orElse("none");
 
@@ -84,7 +84,7 @@ public class QueryProcessor {
 
 		AuthorizationHelper.authorize(user, permissions);
 
-		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), primaryGroupName);
+		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdentifiableCollector.class).getIdentifiables(), primaryGroupName);
 
 		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
@@ -161,7 +161,7 @@ public class QueryProcessor {
 				continue;
 			}
 
-			if (AuthorizationHelper.isPermitted(user, targetDataset.createPermission(Ability.READ.asSet()))) {
+			if (AuthorizationHelper.isPermitted(user, targetDataset, Ability.READ)) {
 				continue;
 			}
 

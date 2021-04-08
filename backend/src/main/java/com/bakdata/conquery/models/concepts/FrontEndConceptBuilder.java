@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
@@ -58,19 +57,13 @@ public class FrontEndConceptBuilder {
 		if(allConcepts.isEmpty()) {
 			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
 		}
-		
-		List<ConqueryPermission> permissions = new ArrayList<>(allConcepts.size());
-		for (Concept<?> concept : allConcepts) {
-			// Collect all permission first, instead of submitting one by one to Shiro.
-			permissions.add(concept.createPermission(Ability.READ.asSet()));
-		}
 
 		// Submit all permissions to Shiro
-		boolean[] isPermitted = AuthorizationHelper.isPermitted(user, permissions);
+		boolean[] isPermitted = AuthorizationHelper.isPermitted(user, allConcepts, Ability.READ);
 		
 		for (int i = 0; i<allConcepts.size(); i++) {
 			if(isPermitted[i]) {
-				roots.put(allConcepts.get(i).getId(), createCTRoot(allConcepts.get(i), storage.getStructure()));				
+				roots.put(allConcepts.get(i).getId(), createCTRoot(allConcepts.get(i), storage.getStructure()));
 			}
 		}
 		if(roots.isEmpty()) {

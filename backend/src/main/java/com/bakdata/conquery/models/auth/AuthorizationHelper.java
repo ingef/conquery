@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.auth;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -20,7 +21,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.execution.Owned;
@@ -30,10 +30,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -47,13 +48,13 @@ import org.apache.shiro.authz.Permission;
 @UtilityClass
 public class AuthorizationHelper {
 
-
-	public static boolean isPermittedAll(User user, Set<ConqueryPermission> permissions){
-		return user.isPermittedAll(Collections.unmodifiableSet(permissions));
+	public static boolean isPermittedAll(User user, Collection<? extends Authorized> authorized, Ability ability) {
+		return authorized.stream()
+						 .allMatch(auth -> isPermitted(user, auth, ability));
 	}
 
 	public static void authorize(User user, Authorized object, Ability ability) {
-		if(object instanceof Owned && user.isOwner(((Owned) object))){
+		if (isOwnedBy(user, object)) {
 			return;
 		}
 
@@ -61,19 +62,28 @@ public class AuthorizationHelper {
 	}
 
 	public static boolean isPermitted(User user, Authorized object, Ability ability) {
-		if(object instanceof Owned && user.isOwner(((Owned) object))){
+		if (isOwnedBy(user, object)) {
 			return true;
 		}
 
-		return isPermitted(user, object.createPermission(EnumSet.of(ability)));
+		return user.isPermitted(object.createPermission(EnumSet.of(ability)));
 	}
 
+	public static boolean isOwnedBy(User user, Authorized object) {
+		return object instanceof Owned && user.isOwner(((Owned) object));
+	}
+
+	@Deprecated
 	public static boolean isPermitted(User user, ConqueryPermission permission) {
 		return user.isPermitted(permission);
 	}
 
-	public static boolean[] isPermitted(User user, List<ConqueryPermission> permissions) {
-		return user.isPermitted(Collections.unmodifiableList(permissions));
+
+	public static boolean[] isPermitted(User user, List<? extends Authorized> authorizeds, Ability ability) {
+		return authorizeds.stream()
+						  .map(auth -> isPermitted(user, auth, ability))
+						  .collect(Collectors.toCollection(BooleanArrayList::new))
+						  .toBooleanArray();
 	}
 
 
@@ -91,6 +101,7 @@ public class AuthorizationHelper {
 	 * @param user The subject that needs authorization.
 	 * @param toBeChecked The permission that is checked
 	 */
+	@Deprecated
 	public static void authorize(@NonNull User user, @NonNull Set<ConqueryPermission> toBeChecked) {
 		user.checkPermissions(Collections.unmodifiableSet(toBeChecked));
 	}
@@ -259,9 +270,9 @@ public class AuthorizationHelper {
 	 * This checks all used {@link DatasetId}s for the {@link Ability#READ} on the user.
 	 */
 	public static void authorizeReadDatasets(@NonNull User user, @NonNull Visitable visitable) {
-		NamespacedIdCollector collector = new NamespacedIdCollector();
+		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
-		List<Permission> perms = collector.getIds().stream()
+		List<Permission> perms = collector.getIdentifiables().stream()
 										  .map(NamespacedIdentifiable::getDataset)
 										  .distinct()
 										  .map(d -> d.createPermission(Ability.READ.asSet()))
@@ -277,22 +288,18 @@ public class AuthorizationHelper {
 	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(User user, DatasetRegistry datasetRegistry) {
 		HashMap<DatasetId, Set<Ability>> datasetAbilities = new HashMap<>();
 		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
-			boolean[] abilitiesCheck = isPermitted(user, List.of(
-					DatasetPermission.onInstance(Ability.READ, dataset.getId()),
-					DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId()),
-					DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId())
-			));
+
 			Set<Ability> abilities = datasetAbilities.computeIfAbsent(dataset.getId(), (k) -> new HashSet<>());
-			if(abilitiesCheck[0]) {
-				// READ
+
+			if(isPermitted(user,dataset,Ability.READ)) {
 				abilities.add(Ability.READ);
 			}
-			if (abilitiesCheck[1]){
-				// DOWNLOAD
+
+			if (isPermitted(user,dataset,Ability.DOWNLOAD)){
 				abilities.add(Ability.DOWNLOAD);
 			}
-			if (abilitiesCheck[2]) {
-				// PRESERVE_ID
+
+			if (isPermitted(user,dataset,Ability.PRESERVE_ID)) {
 				abilities.add(Ability.PRESERVE_ID);
 			}
 		}

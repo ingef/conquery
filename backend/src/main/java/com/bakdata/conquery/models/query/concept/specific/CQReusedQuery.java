@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
+import com.bakdata.conquery.models.query.concept.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
@@ -31,7 +31,7 @@ import lombok.Setter;
 @CPSType(id = "SAVED_QUERY", base = CQElement.class)
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
 @Getter @Setter
-public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
+public class CQReusedQuery extends CQElement implements NamespacedIdentifiableHolding {
 
 	public CQReusedQuery(ManagedQuery query){
 		this.query = query;

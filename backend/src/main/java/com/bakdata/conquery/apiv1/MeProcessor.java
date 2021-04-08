@@ -40,12 +40,7 @@ public class MeProcessor {
 		// Compute dataset ablilities
 		Map<DatasetId, FEDatasetAbility> datasetAblilites= new HashMap<>();
 		for(Dataset dataset : datasetRegistry.getAllDatasets()){
-			boolean[] result = AuthorizationHelper.isPermitted(user, List.of(
-					dataset.createPermission(Ability.READ.asSet()),
-					dataset.createPermission(Ability.PRESERVE_ID.asSet())
-			));
-
-			if(!result[0] /* READ */) {
+			if(!AuthorizationHelper.isPermitted(user,dataset,Ability.READ)) {
 				// User is not allowed to use dataset
 				continue;
 			}
@@ -53,9 +48,8 @@ public class MeProcessor {
 			// User can use the dataset and can possibly upload ids for resolving
 			datasetAblilites.put(
 					dataset.getId(),
-					new FEDatasetAbility(
-							result[1] /*PRESERVE_ID*/)
-							);
+					new FEDatasetAbility(AuthorizationHelper.isPermitted(user, dataset, Ability.PRESERVE_ID))
+			);
 		}
 
 		// Build user information

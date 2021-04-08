@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.auth;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -166,7 +165,6 @@ public final class AuthorizationController implements Managed{
 		} while (storage.getUser(new UserId(name)) != null);
 
 		// Retrieve original user and its effective permissions
-		User origin = Objects.requireNonNull(storage.getUser(originUserId), "User to copy cannot be found");
 
 		// Copy inherited permissions
 		Set<ConqueryPermission> copiedPermission = new HashSet<>();
@@ -176,7 +174,7 @@ public final class AuthorizationController implements Managed{
 		// Give read permission to all executions the original user owned
 		copiedPermission.addAll(
 				storage.getAllExecutions().stream()
-					   .filter(origin::isOwner)
+					   .filter(originUser::isOwner)
 					   .map(exc -> exc.createPermission(Ability.READ.asSet()))
 					   .collect(Collectors.toSet())
 		);
@@ -184,13 +182,13 @@ public final class AuthorizationController implements Managed{
 		// Give read permission to all form configs the original user owned
 		copiedPermission.addAll(
 				storage.getAllFormConfigs().stream()
-						.filter(origin::isOwner)
+						.filter(originUser::isOwner)
 						.map(conf -> conf.createPermission(Ability.READ.asSet()))
 						.collect(Collectors.toSet())
 		);
 
 		// Create copied user
-		User copy = new User(name, origin.getLabel());
+		User copy = new User(name, originUser.getLabel());
 		storage.addUser(copy);
 		copy.setPermissions(storage, copiedPermission);
 

@@ -23,7 +23,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
+import com.bakdata.conquery.models.query.concept.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
@@ -140,19 +140,19 @@ public class QueryUtils {
 	}
 
 	/**
-	 * Collects all {@link NamespacedId} references provided by a user from a
+	 * Collects all {@link NamespacedIdentifiable} provided by a user from a
 	 * {@link Visitable}.
 	 */
-	public static class NamespacedIdCollector implements QueryVisitor {
+	public static class NamespacedIdentifiableCollector implements QueryVisitor {
 
 		@Getter
-		private Set<NamespacedIdentifiable<?>> ids = new HashSet<>();
+		private final Set<NamespacedIdentifiable<?>> identifiables = new HashSet<>();
 
 		@Override
 		public void accept(Visitable element) {
-			if (element instanceof NamespacedIdHolding) {
-				NamespacedIdHolding idHolder = (NamespacedIdHolding) element;
-				idHolder.collectNamespacedIds(ids);
+			if (element instanceof NamespacedIdentifiableHolding) {
+				NamespacedIdentifiableHolding idHolder = (NamespacedIdentifiableHolding) element;
+				idHolder.collectNamespacedIds(identifiables);
 			}
 		}
 	}
@@ -189,9 +189,8 @@ public class QueryUtils {
 		}
 	}
 	
-	public static void generateConceptReadPermissions(@NonNull NamespacedIdCollector idCollector, @NonNull Collection<ConqueryPermission> collectPermissions){
-		//TODO id prefer to not use the ids here, instead refactor NamespacedIdCollector to collect the Objects.
-		idCollector.getIds().stream()
+	public static void generateConceptReadPermissions(@NonNull QueryUtils.NamespacedIdentifiableCollector idCollector, @NonNull Collection<ConqueryPermission> collectPermissions){
+		idCollector.getIdentifiables().stream()
 				   .filter(id -> id instanceof ConceptElement)
 				   .map(ConceptElement.class::cast)
 				   .map(ConceptElement::getConcept)
