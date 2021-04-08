@@ -2,8 +2,6 @@ package com.bakdata.conquery.api;
 
 import static com.bakdata.conquery.models.execution.ExecutionState.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,8 +12,12 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationController;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.AbilitySets;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -27,7 +29,6 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -36,13 +37,16 @@ import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class StoredQueriesProcessorTest {
-	private static final MetaStorage STRORAGE = mock(MetaStorage.class);
-	private static final StoredQueriesProcessor processor = new StoredQueriesProcessor(mock(DatasetRegistry.class), STRORAGE, new ConqueryConfig());
+	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
+	// Marked Unused, but does inject itself.
+	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE,new DevelopmentAuthorizationConfig());
+
+	private static final StoredQueriesProcessor processor = new StoredQueriesProcessor(new DatasetRegistry(0), STORAGE, new ConqueryConfig());
 
 	private static final Dataset DATASET_0 = new Dataset() {{setName("dataset0");}};
 	private static final Dataset DATASET_1 = new Dataset() {{setName("dataset1");}};
@@ -57,13 +61,10 @@ public class StoredQueriesProcessorTest {
 	private static final ManagedExecutionId QUERY_ID_7 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000007"));
 	private static final ManagedExecutionId QUERY_ID_8 = new ManagedExecutionId(DATASET_0.getId(), UUID.fromString("00000000-0000-0000-0000-000000000008"));
 
-	private static int USER_COUNT = 0;
 	private static final User[] USERS = new User[] {
-		mockUser(List.of(QUERY_ID_0, QUERY_ID_1,QUERY_ID_2, QUERY_ID_4, QUERY_ID_7)),
-		mockUser(List.of(QUERY_ID_3, QUERY_ID_4))
+		mockUser(0, List.of(QUERY_ID_0, QUERY_ID_1,QUERY_ID_2, QUERY_ID_4, QUERY_ID_7)),
+		mockUser(1, List.of(QUERY_ID_3, QUERY_ID_4))
 	};
-
-
 
 	private static final List<ManagedExecution<?>> queries = ImmutableList.of(
 			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_0, NEW, DATASET_0),            // included
@@ -78,24 +79,12 @@ public class StoredQueriesProcessorTest {
 
 		);
 
-	@BeforeAll
-	public static void beforeAll() {
-		// setup storage mock
-		doAnswer((invocation) -> {
-			UserId id = invocation.getArgument(0);
-			for (User user : USERS) {
-				if(user.getId().equals(id)) {
-					return user;
-				}
-			}
-			return null;
-		}).when(STRORAGE).getUser(any());
-	}
 
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, null, USERS[0], queries).collect(Collectors.toList());
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, null, USERS[0], queries)
+											   .collect(Collectors.toList());
 
 		assertThat(infos)
 				.containsExactly(
@@ -105,14 +94,15 @@ public class StoredQueriesProcessorTest {
 				);
 	}
 
-	private static User mockUser(List<ManagedExecutionId> allowedQueryIds) {
-		User user = mock(User.class);
-		when(user.getId()).thenReturn(new UserId("user" + USER_COUNT++));
+	private static User mockUser(int id, List<ManagedExecutionId> allowedQueryIds) {
+		final User user = new User("user" + id, null);
 
-		doAnswer((invocation) -> {
-			ConqueryPermission perm = (ConqueryPermission) invocation.getArgument(0);
-			return allowedQueryIds.contains(ManagedExecutionId.Parser.INSTANCE.parse(perm.getInstances().iterator().next()));
-		}).when(user).isPermitted(any(ConqueryPermission.class));
+		STORAGE.addUser(user);
+
+		for (ManagedExecutionId queryId : allowedQueryIds) {
+			AuthorizationHelper.addPermission(user, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId), STORAGE);
+		}
+
 		return user;
 
 	}
