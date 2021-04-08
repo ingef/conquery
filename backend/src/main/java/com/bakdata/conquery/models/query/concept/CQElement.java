@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Getter;
 import lombok.Setter;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
@@ -28,6 +29,7 @@ public abstract class CQElement implements Visitable {
 	 * Allows the user to define labels.
 	 */
 	@Setter
+	@Getter
 	private String label = null;
 
 	public String getLabel(Locale locale){

@@ -71,7 +71,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
 	 */
 	@JsonProperty("ids")
-	@Valid
 	@NotEmpty
 	@NsIdRefCollection
 	private List<ConceptElement<?>> elements = Collections.emptyList();
@@ -81,7 +80,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	@JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
 
-	@Valid
 	@NotNull
 	@NsIdRefCollection
 	private List<Select> selects = new ArrayList<>();
