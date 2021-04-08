@@ -43,73 +43,75 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class StoredQueriesProcessor {
 
-    @Getter
-    private final DatasetRegistry datasetRegistry;
-    private final MetaStorage storage;
-    private final ConqueryConfig config;
+	@Getter
+	private final DatasetRegistry datasetRegistry;
+	private final MetaStorage storage;
+	private final ConqueryConfig config;
 
-    public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user) {
-        Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
+	public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user) {
+		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
-        return getQueriesFiltered(namespace.getDataset(), RequestAwareUriBuilder.fromRequest(req), user, allQueries);
-    }
+		return getQueriesFiltered(namespace.getDataset(), RequestAwareUriBuilder.fromRequest(req), user, allQueries);
+	}
 
-    public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, User user, Collection<ManagedExecution<?>> allQueries) {
-        Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
+	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, User user, Collection<ManagedExecution<?>> allQueries) {
+		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
 
-        return allQueries
-                .stream()
-                // to exclude subtypes from somewhere else
-                .filter(StoredQueriesProcessor::canFrontendRender)
-                // The following only checks the dataset, under which the query was submitted, but a query can target more that
-                // one dataset.
-                .filter(q -> q.getDataset().equals(datasetId))
-                .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
-                // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
-                // However, for other executions we check because those are probably shared.
-				.filter(q -> AuthorizationHelper.isPermitted(user, q.createPermission(Ability.READ.asSet())))
-				.flatMap(mq -> {
-                    try {
-                        return Stream.of(
-                                mq.buildStatusOverview(
-                                        storage,
-                                        uriBuilder,
-                                        user,
-                                        datasetRegistry,
-                                        datasetAbilities));
-                    } catch (Exception e) {
-                        log.warn("Could not build status of " + mq, e);
-                        return Stream.empty();
-                    }
-                });
-    }
+		return allQueries.stream()
+						 // to exclude subtypes from somewhere else
+						 .filter(StoredQueriesProcessor::canFrontendRender)
+						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
+						 // one dataset.
+						 .filter(q -> q.getDataset().equals(datasetId))
+						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
+						 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
+						 // However, for other executions we check because those are probably shared.
+						 .filter(q -> AuthorizationHelper.isPermitted(user, q.createPermission(Ability.READ.asSet())))
+						 .flatMap(mq -> {
+							 try {
+								 return Stream.of(
+										 mq.buildStatusOverview(
+												 storage,
+												 uriBuilder,
+												 user,
+												 datasetRegistry,
+												 datasetAbilities
+										 ));
+							 }
+							 catch (Exception e) {
+								 log.warn("Could not build status of " + mq, e);
+								 return Stream.empty();
+							 }
+						 });
+	}
 
-    private static boolean canFrontendRender(ManagedExecution<?> q) {
-        if (!(q instanceof ManagedQuery)) {
-            return false;
-        }
+	private static boolean canFrontendRender(ManagedExecution<?> q) {
+		if (!(q instanceof ManagedQuery)) {
+			return false;
+		}
 
-        if (((ManagedQuery) q).getQuery() instanceof ConceptQuery) {
-            return isFrontendStructure(((ConceptQuery) ((ManagedQuery) q).getQuery()).getRoot());
-        }
+		if (((ManagedQuery) q).getQuery() instanceof ConceptQuery) {
+			return isFrontendStructure(((ConceptQuery) ((ManagedQuery) q).getQuery()).getRoot());
+		}
 
-        if (((ManagedQuery) q).getQuery() instanceof  SecondaryIdQuery) {
-            return isFrontendStructure(((SecondaryIdQuery) ((ManagedQuery) q).getQuery()).getRoot());
-        }
+		if (((ManagedQuery) q).getQuery() instanceof SecondaryIdQuery) {
+			return isFrontendStructure(((SecondaryIdQuery) ((ManagedQuery) q).getQuery()).getRoot());
+		}
 
-        return false;
-    }
+		return false;
+	}
 
 	/**
 	 * Frontend can only render very specific formats properly.
+	 *
 	 * @implNote We filter for just the bare minimum, as the structure of the frontend is very specific and hard to fix in java code.
 	 */
 	public static boolean isFrontendStructure(CQElement root) {
 		return root instanceof CQAnd;
 	}
 
-    public void deleteQuery(User user, ManagedExecutionId executionId) {
-        ManagedExecution<?> execution = storage.getExecution(executionId);
+	public void deleteQuery(User user, ManagedExecutionId executionId) {
+		ManagedExecution<?> execution = storage.getExecution(executionId);
 		if (execution == null) {
 			throw new NotFoundException(executionId.toString());
 		}
@@ -118,49 +120,49 @@ public class StoredQueriesProcessor {
 
 
 		storage.removeExecution(executionId);
-    }
+	}
 
-    public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
-        ManagedExecution<?> query = storage.getExecution(queryId);
+	public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
+		ManagedExecution<?> query = storage.getExecution(queryId);
 
-        if (query == null) {
-            throw new NotFoundException();
-        }
+		if (query == null) {
+			throw new NotFoundException();
+		}
 
 		authorize(user, query, Ability.READ);
 
 		query.initExecutable(datasetRegistry, config);
 
-        Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
-        return query.buildStatusFull(storage, url, user, datasetRegistry, datasetAbilities);
-    }
+		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
+		return query.buildStatusFull(storage, url, user, datasetRegistry, datasetAbilities);
+	}
 
-    public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {
-        ManagedExecution<?> execution = storage.getExecution(executionId);
+	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {
+		ManagedExecution<?> execution = storage.getExecution(executionId);
 
-        if(execution == null){
-        	throw new NotFoundException();
+		if (execution == null) {
+			throw new NotFoundException();
 		}
 
-        authorize(user, execution, Ability.MODIFY);
+		authorize(user, execution, Ability.MODIFY);
 
-        log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
-        patch.applyTo(execution, storage, user, QueryPermission::onInstance);
-        storage.updateExecution(execution);
+		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
+		patch.applyTo(execution, storage, user, QueryPermission::onInstance);
+		storage.updateExecution(execution);
 
-        // Patch this query in other datasets
-        List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets(() -> new ArrayList<>());
-        remainingDatasets.remove(datasetRegistry.get(executionId.getDataset()).getDataset());
-        for (Dataset dataset : remainingDatasets) {
-            ManagedExecutionId id = new ManagedExecutionId(dataset.getId(), executionId.getExecution());
-            execution = storage.getExecution(id);
-            if (execution == null) {
-                continue;
-            }
-            log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), id, patch);
-            patch.applyTo(execution, storage, user, QueryPermission::onInstance);
-            storage.updateExecution(execution);
-        }
-    }
+		// Patch this query in other datasets
+		List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets(() -> new ArrayList<>());
+		remainingDatasets.remove(datasetRegistry.get(executionId.getDataset()).getDataset());
+		for (Dataset dataset : remainingDatasets) {
+			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(), executionId.getExecution());
+			execution = storage.getExecution(id);
+			if (execution == null) {
+				continue;
+			}
+			log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), id, patch);
+			patch.applyTo(execution, storage, user, QueryPermission::onInstance);
+			storage.updateExecution(execution);
+		}
+	}
 
 }
