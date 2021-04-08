@@ -114,13 +114,14 @@ class QueryCleanupTaskTest {
 		managedQuery.setLabel("test1");
 
 		final ManagedQuery managedQueryReused = createManagedQuery();
-		managedQuery.setLabel("test2");
+		managedQueryReused.setLabel("test2");
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused)));
 
-		new QueryCleanupTask(storage, queryExpiration).execute( Map.of(), null);
+		new QueryCleanupTask(storage, queryExpiration).execute(Map.of(), null);
 
-		assertThat(storage.getAllExecutions()).containsExactlyInAnyOrder(managedQuery, managedQueryReused);
+		assertThat(storage.getAllExecutions())
+				.containsExactlyInAnyOrder(managedQuery, managedQueryReused);
 	}
 
 	@Test

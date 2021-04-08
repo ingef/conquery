@@ -87,9 +87,6 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 	@Override
 	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> ids) {
 		checkNotNull(ids);
-//TODO is this needed?
-		//		if (query != null) {
-//			ids.add(resolvedQuery);
-//		}
+		ids.add(query);
 	}
 }

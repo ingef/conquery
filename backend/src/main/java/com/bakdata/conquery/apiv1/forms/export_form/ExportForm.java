@@ -1,7 +1,5 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,11 +17,12 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -37,14 +36,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter
 @CPSType(id="EXPORT_FORM", base=QueryDescription.class)
 public class ExportForm extends Form implements NamespacedIdHolding {
-	@NotNull
-	private ManagedExecutionId queryGroup;
+
+	@MetaIdRef
+	private ManagedQuery queryGroup;
+
 	@NotNull @Valid @JsonManagedReference
 	private Mode timeMode;
 	
@@ -65,12 +67,8 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	}
 
 	@Override
-	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> ids) {
-		checkNotNull(ids);
-//TODO is this needed?
-		//		if(queryGroup != null) {
-//			ids.add(queryGroup);
-//		}
+	public void collectNamespacedIds(@NonNull Set<NamespacedIdentifiable<?>> ids) {
+		ids.add(queryGroup);
 	}
 
 	@Override
@@ -83,14 +81,14 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	}
 
 	@Override
-	public Set<ManagedExecutionId> collectRequiredQueries() {
+	public Set<ManagedExecution> collectRequiredQueries() {
 		return Set.of(queryGroup);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
 		timeMode.resolve(context);
-		prerequisite = Form.resolvePrerequisite(context, queryGroup);
+		prerequisite = queryGroup.getQuery();
 
 
 		if(isAlsoCreateCoarserSubdivisions()) {
