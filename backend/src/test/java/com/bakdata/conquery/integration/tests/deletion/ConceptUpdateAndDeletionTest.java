@@ -146,19 +146,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
 															 .stream()
 															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
-			;
 
-					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
-							.isEmpty();
-
-					assertThat(workerStorage.getAllCBlocks())
-							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
-							.isEmpty();
-				}
-			}
 
 			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
 
