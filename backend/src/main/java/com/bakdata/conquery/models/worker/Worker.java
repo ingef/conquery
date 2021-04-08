@@ -60,16 +60,16 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	
 	
 	private Worker(
-		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-		@NonNull WorkerStorage storage,
-		@NonNull ExecutorService executorService,
-		boolean failOnError
-		) {
+			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+			@NonNull WorkerStorage storage,
+			@NonNull ExecutorService executorService,
+			boolean failOnError, int entityBucketSize
+	) {
 		this.jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		this.storage = storage;
 		this.queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
 		this.executorService = executorService;
-		this.bucketManager = BucketManager.create(this, storage);
+		this.bucketManager = BucketManager.create(this, storage, entityBucketSize);
 		
 	}
 
@@ -79,7 +79,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull WorkerStorage storage,
 			boolean failOnError) {
 
-		return new Worker(queryThreadPoolDefinition, storage, executorService, failOnError);
+		return new Worker(queryThreadPoolDefinition, storage, executorService, failOnError, entityBucketSize);
 	}
 
 	public static Worker newWorker(
@@ -104,7 +104,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, executorService, failOnError);
+		return new Worker(queryThreadPoolDefinition, workerStorage, executorService, failOnError, entityBucketSize);
 	}
 	
 	public ModificationShieldedWorkerStorage getStorage() {

@@ -48,8 +48,8 @@ public class Column extends Labeled<ColumnId> {
 
 	//TODO try to remove this method methods, they are quite leaky
 	public ColumnStore getTypeFor(Import imp) {
-		if (!imp.getTable().equals(getTable().getId())) {
-			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable(), getTable().getId()));
+		if (!imp.getTable().equals(getTable())) {
+			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable().getId(), getTable().getId()));
 		}
 
 		return imp.getColumns()[getPosition()].getTypeDescription();

@@ -170,7 +170,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					// No CBlock associated with import may exist
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getBucket().getImp().getTable().equals(tableId))
+							.filteredOn(cBlock -> cBlock.getBucket().getImp().getTable().getId().equals(tableId))
 							.isEmpty();
 				}
 			}
