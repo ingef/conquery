@@ -63,9 +63,10 @@ public abstract class ConqueryTestSpec {
 
 	public static  <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectInto(
-			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectInto(
-					Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
-			)
+				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
+						.injectInto(
+								Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
+						)
 		);
 
 		T result = mapper.readerFor(expectedType).readValue(node);
@@ -120,7 +121,7 @@ public abstract class ConqueryTestSpec {
 	 */
 	@RequiredArgsConstructor
 	private static class DatasetPlaceHolderFiller extends DeserializationProblemHandler {
-		private final static String DATASET_PLACEHOLDER = "${dataset}";
+		private static final String DATASET_PLACEHOLDER = "${dataset}";
 
 		private final StandaloneSupport support;
 
