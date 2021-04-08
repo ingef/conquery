@@ -126,7 +126,7 @@ public class StoredQueriesProcessor {
 		ManagedExecution<?> query = storage.getExecution(queryId);
 
 		if (query == null) {
-			throw new NotFoundException();
+			throw new NotFoundException(queryId.toString());
 		}
 
 		authorize(user, query, Ability.READ);
@@ -141,7 +141,7 @@ public class StoredQueriesProcessor {
 		ManagedExecution<?> execution = storage.getExecution(executionId);
 
 		if (execution == null) {
-			throw new NotFoundException();
+			throw new NotFoundException(executionId.toString());
 		}
 
 		authorize(user, execution, Ability.MODIFY);

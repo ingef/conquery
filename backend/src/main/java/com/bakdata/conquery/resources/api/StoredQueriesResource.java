@@ -40,7 +40,7 @@ public class StoredQueriesResource extends HDatasets {
 	@GET
 	public List<ExecutionStatus> getAllQueries(DatasetId datasetId) {
 		return processor.getAllQueries(namespace, servletRequest, user)
-			.collect(Collectors.toList());
+						.collect(Collectors.toList());
 	}
 
 	@GET
