@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.concept.filter;
 import java.math.BigDecimal;
 
 import javax.annotation.Nonnull;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -13,7 +12,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +26,11 @@ import lombok.ToString;
 @CPSBase
 @ToString(of = "value")
 public abstract class FilterValue<VALUE> {
-	@Valid
 	@NotNull
 	@Nonnull
 	@NsIdRef
 	private Filter<?> filter;
-	@Valid
+
 	@NotNull
 	@Nonnull
 	private VALUE value;
