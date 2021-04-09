@@ -2,9 +2,10 @@ package com.bakdata.conquery.models.forms.frontendconfiguration;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.forms.Form;
@@ -19,6 +20,7 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableSet;
 import io.dropwizard.servlets.tasks.Task;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -30,10 +32,9 @@ public class FormScanner extends Task {
 		super("form-scanner");
 	}
 
-	private final static String INFO_FORMAT = "\t%-30s %-60s %-20s";
-	private final static ObjectReader READER = Jackson.MAPPER.copy().reader();
+	private static final ObjectReader READER = Jackson.MAPPER.copy().reader();
 	
-	public static Map<String, JsonNode> FRONTEND_FORM_CONFIGS = ImmutableMap.of();
+	public static Set<FormType> FRONTEND_FORM_CONFIGS = Collections.emptySet();
 
 	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
 		Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
@@ -91,11 +92,7 @@ public class FormScanner extends Task {
 		return frontendConfigs.build();
 	}
 
-	private static Map<String, JsonNode> generateFEFormConfigMap() {
-		StringJoiner info = new StringJoiner("\n", "\n", "\n");
-		info.add(String.format(INFO_FORMAT, "Form Type", "Frontend Config", "Backend Class"));
-		
-
+	private static Set<FormType> generateFEFormConfigMap() {
 		// Collect backend implementations for specific forms
 		Map<String, Class<? extends Form>> forms = findBackendMappingClasses();
 
@@ -103,7 +100,9 @@ public class FormScanner extends Task {
 		List<FormFrontendConfigInformation> frontendConfigs = findFrontendFormConfigs();
 
 		// Match frontend form configurations to backend implementations
-		ImmutableMap.Builder<String, JsonNode> result = ImmutableMap.builder();
+		final ImmutableSet.Builder<FormType> result = ImmutableSet.builderWithExpectedSize(frontendConfigs.size());
+
+
 		for (FormFrontendConfigInformation configInfo : frontendConfigs) {
 			JsonNode configTree = configInfo.getConfigTree();
 			JsonNode type = configTree.get("type");
@@ -116,17 +115,15 @@ public class FormScanner extends Task {
 			String fullTypeIdentifier = type.asText();
 			String typeIdentifier = CPSTypeIdResolver.truncateSubTypeInformation(fullTypeIdentifier);
 			if (!forms.containsKey(typeIdentifier)) {
-				log.warn("Frontend form config {} (type = {}) does not map to a backend class.", configInfo, type);
+				log.error("Frontend form config {} (type = {}) does not map to a backend class.", configInfo, type);
 				continue;
 			}
+
+			result.add(new FormType(fullTypeIdentifier, configTree));
 			
-			// Register Fontend config and check if there was already a mapping for this complete type to a frontend config
-			result.put(fullTypeIdentifier, configTree);
-			
-			// Update information string
-			info.add(String.format(INFO_FORMAT, fullTypeIdentifier, configInfo.getOrigin(), forms.get(typeIdentifier).getName()));
+			log.info("Form[{}] from `{}` of Type[{}]", fullTypeIdentifier, configInfo.getOrigin(), forms.get(typeIdentifier).getName());
 		}
-		log.info(info.toString());
+
 		return result.build();
 	}
 

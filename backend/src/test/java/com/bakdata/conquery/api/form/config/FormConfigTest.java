@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepres
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -289,8 +290,7 @@ public class FormConfigTest {
 		FormConfigId formId2 = processor.addConfig(user, datasetId, formConfig2);
 		FormConfigId _formId3 = processor.addConfig(user, datasetId, formConfig3);
 
-		FormScanner.FRONTEND_FORM_CONFIGS = Map.of(
-				form.getFormType(), new TextNode("dummy"));
+		FormScanner.FRONTEND_FORM_CONFIGS = Set.of(new FormType(form.getFormType(), new TextNode("dummy")));
 
 		// EXECUTE
 		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, datasetId, Collections.emptySet());

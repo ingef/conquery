@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.Validator;
+import javax.ws.rs.NotFoundException;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
@@ -19,7 +20,6 @@ import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.auth.permissions.FormPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -68,10 +68,13 @@ public class FormConfigProcessor {
 			// However if a user queries for specific form types, we will show all matching regardless whether
 			// the form config can be used by the user again.
 			Set<String> allowedFormTypes = new HashSet<>();
-			for (String formType : FormScanner.FRONTEND_FORM_CONFIGS.keySet()) {
-				if (AuthorizationHelper.isPermitted(user, FormPermission.onInstance(Ability.CREATE, formType))) {
-					allowedFormTypes.add(formType);
+
+			for (FormType formType : FormScanner.FRONTEND_FORM_CONFIGS) {
+				if (!AuthorizationHelper.isPermitted(user, formType, Ability.CREATE)) {
+					continue;
 				}
+
+				allowedFormTypes.add(formType.getName());
 			}
 			requestedFormType = allowedFormTypes;
 		}
@@ -148,7 +151,11 @@ public class FormConfigProcessor {
 	 * Applies a patch to a configuration that allows to change its label or tags or even share it.
 	 */
 	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, FormConfigPatch patch) {
-		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
+		FormConfig config = storage.getFormConfig(formId);
+
+		if (config == null) {
+			throw new NotFoundException(formId.toString());
+		}
 
 		patch.applyTo(config, storage, user, FormConfigPermission::onInstance);
 		
