@@ -246,7 +246,8 @@ public class AdminProcessor {
 	 * @throws JSONException is thrown on JSON validation form the storage.
 	 */
 	public void deleteRole(RoleId roleId) throws JSONException {
-		storage.removeRole(roleId);
+		final Role role = storage.getRole(roleId);
+		AuthorizationHelper.deleteRole(storage, role);
 	}
 
 	public SortedSet<Role> getAllRoles() {
@@ -452,7 +453,7 @@ public class AdminProcessor {
 			}
 		}
 
-		AuthorizationHelper.deleteRoleFrom(storage, owner, role);
+		AuthorizationHelper.deleteRoleFrom(storage,owner,role);
 	}
 
 	public <ID extends PermissionOwnerId<? extends RoleOwner>> void addRoleTo(ID ownerId, RoleId roleId) {

@@ -49,32 +49,9 @@ public class MetaStorage implements ConqueryStorage{
         authUser = storageFactory.createUserStore(centralRegistry, pathName);
         authRole = storageFactory.createRoleStore(centralRegistry, pathName);
         authGroup = storageFactory.createGroupStore(centralRegistry, pathName);
+    }
 
-		decorateRoleStore(authRole);
-		decorateGroupStore(authGroup);
-	}
-
-	private void decorateGroupStore(IdentifiableStore<Group> authGroup) {
-		// Intentionally left blank
-	}
-
-	private void decorateRoleStore(IdentifiableStore<Role> authRole) {
-		authRole.onRemove(role -> {
-			MetaStorage storage = datasetRegistry.getMetaStorage();
-
-			log.info("Deleting {}", role);
-
-			for (User user : storage.getAllUsers()) {
-				user.removeRole(storage, role);
-			}
-
-			for (Group group : storage.getAllGroups()) {
-				group.removeRole(storage, role);
-			}
-		});
-	}
-
-	@Override
+    @Override
     public void loadData() {
         executions.loadData();
         formConfigs.loadData();
