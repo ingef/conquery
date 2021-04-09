@@ -1,15 +1,15 @@
 package com.bakdata.conquery.apiv1;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -69,30 +69,33 @@ public interface QueryDescription extends Visitable {
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<ConqueryPermission> requiredPermissions, Dataset submittedDataset, MetaStorage storage, User user) {
+	default void authorize(User user, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors) {
 		NamespacedIdentifiableCollector nsIdCollector = QueryUtils.getVisitor(visitors, NamespacedIdentifiableCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, QueryUtils.ExternalIdChecker.class);
 		if(nsIdCollector == null) {
 			throw new IllegalStateException();
 		}
 		// Generate DatasetPermissions
-		nsIdCollector.getIdentifiables().stream()
-					 .map(NamespacedIdentifiable::getDataset)
-					 .distinct()
-					 .map(dId -> dId.createPermission(Ability.READ.asSet()))
-					 .collect(Collectors.toCollection(() -> requiredPermissions));
-		
+		final Set<Dataset> datasets = nsIdCollector.getIdentifiables().stream()
+												  .map(NamespacedIdentifiable::getDataset)
+												  .collect(Collectors.toSet());
+
+		AuthorizationHelper.authorize(user, datasets, Ability.READ);
+
 		// Generate ConceptPermissions
-		QueryUtils.generateConceptReadPermissions(nsIdCollector, requiredPermissions);
-		
-		// Generate permissions for reused queries
-		for (ManagedExecution<?> execution : collectRequiredQueries()) {
-			requiredPermissions.add(execution.createPermission(Ability.READ.asSet()));
-		}
+		final Set<Concept> concepts = nsIdCollector.getIdentifiables().stream()
+												   .filter(ConceptElement.class::isInstance)
+												   .map(ConceptElement.class::cast)
+												   .map(ConceptElement::getConcept)
+												   .collect(Collectors.toSet());
+
+		AuthorizationHelper.authorize(user, concepts, Ability.READ);
+
+		AuthorizationHelper.authorize(user, collectRequiredQueries(), Ability.READ);
 		
 		// Check if the query contains parts that require to resolve external IDs. If so the user must have the preserve_id permission on the dataset.
 		if(externalIdChecker.resolvesExternalIds()) {
-			requiredPermissions.add(submittedDataset.createPermission(Ability.PRESERVE_ID.asSet()));
+			AuthorizationHelper.authorize(user, submittedDataset, Ability.PRESERVE_ID);
 		}
 	}
 

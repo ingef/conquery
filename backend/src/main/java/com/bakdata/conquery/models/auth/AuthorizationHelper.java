@@ -87,17 +87,6 @@ public class AuthorizationHelper {
 						  .toBooleanArray();
 	}
 
-
-	/**
-	 * Helper function for authorizing an ability on a query.
-	 * @param user The subject that needs authorization.
-	 * @param toBeChecked The permission that is checked
-	 */
-	@Deprecated
-	public static void authorize(@NonNull User user, @NonNull Set<ConqueryPermission> toBeChecked) {
-		user.checkPermissions(Collections.unmodifiableSet(toBeChecked));
-	}
-
 	/**
 	 * Utility function to add a permission to a subject (e.g {@link User}).
 	 * @param owner The subject to own the new permission.

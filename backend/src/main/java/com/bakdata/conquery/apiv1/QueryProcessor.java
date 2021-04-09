@@ -2,9 +2,7 @@ package com.bakdata.conquery.apiv1;
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.ws.rs.core.UriBuilder;
@@ -15,7 +13,6 @@ import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -79,10 +76,7 @@ public class QueryProcessor {
 		query.visit(consumerChain);
 
 
-		Set<ConqueryPermission> permissions = new HashSet<>();
-		query.collectPermissions(visitors, permissions, dataset, storage, user);
-
-		AuthorizationHelper.authorize(user, permissions);
+		query.authorize(user, dataset, visitors);
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdentifiableCollector.class).getIdentifiables(), primaryGroupName);
 

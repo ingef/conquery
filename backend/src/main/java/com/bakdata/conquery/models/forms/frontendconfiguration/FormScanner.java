@@ -5,7 +5,6 @@ import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.forms.Form;
@@ -20,7 +19,6 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.ImmutableSet;
 import io.dropwizard.servlets.tasks.Task;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +32,7 @@ public class FormScanner extends Task {
 
 	private static final ObjectReader READER = Jackson.MAPPER.copy().reader();
 	
-	public static Set<FormType> FRONTEND_FORM_CONFIGS = Collections.emptySet();
+	public static Map<String, FormType> FRONTEND_FORM_CONFIGS = Collections.emptyMap();
 
 	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
 		Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
@@ -92,7 +90,7 @@ public class FormScanner extends Task {
 		return frontendConfigs.build();
 	}
 
-	private static Set<FormType> generateFEFormConfigMap() {
+	private static Map<String, FormType> generateFEFormConfigMap() {
 		// Collect backend implementations for specific forms
 		Map<String, Class<? extends Form>> forms = findBackendMappingClasses();
 
@@ -100,7 +98,7 @@ public class FormScanner extends Task {
 		List<FormFrontendConfigInformation> frontendConfigs = findFrontendFormConfigs();
 
 		// Match frontend form configurations to backend implementations
-		final ImmutableSet.Builder<FormType> result = ImmutableSet.builderWithExpectedSize(frontendConfigs.size());
+		final ImmutableMap.Builder<String, FormType> result = ImmutableMap.builderWithExpectedSize(frontendConfigs.size());
 
 
 		for (FormFrontendConfigInformation configInfo : frontendConfigs) {
@@ -119,7 +117,7 @@ public class FormScanner extends Task {
 				continue;
 			}
 
-			result.add(new FormType(fullTypeIdentifier, configTree));
+			result.put(fullTypeIdentifier, new FormType(fullTypeIdentifier, configTree));
 			
 			log.info("Form[{}] from `{}` of Type[{}]", fullTypeIdentifier, configInfo.getOrigin(), forms.get(typeIdentifier).getName());
 		}

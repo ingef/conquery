@@ -69,7 +69,7 @@ public class FormConfigProcessor {
 			// the form config can be used by the user again.
 			Set<String> allowedFormTypes = new HashSet<>();
 
-			for (FormType formType : FormScanner.FRONTEND_FORM_CONFIGS) {
+			for (FormType formType : FormScanner.FRONTEND_FORM_CONFIGS.values()) {
 				if (!AuthorizationHelper.isPermitted(user, formType, Ability.CREATE)) {
 					continue;
 				}

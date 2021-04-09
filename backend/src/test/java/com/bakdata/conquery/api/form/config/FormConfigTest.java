@@ -288,7 +288,7 @@ public class FormConfigTest {
 		FormConfigId formId2 = processor.addConfig(user, datasetId, formConfig2);
 		FormConfigId _formId3 = processor.addConfig(user, datasetId, formConfig3);
 
-		FormScanner.FRONTEND_FORM_CONFIGS = Set.of(new FormType(form.getFormType(), new TextNode("dummy")));
+		FormScanner.FRONTEND_FORM_CONFIGS = Map.of(form.getFormType(), new FormType(form.getFormType(), new TextNode("dummy")));
 
 		// EXECUTE
 		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, datasetId, Collections.emptySet());
