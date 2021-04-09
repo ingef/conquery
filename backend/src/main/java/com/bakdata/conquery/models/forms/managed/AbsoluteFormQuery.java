@@ -14,9 +14,13 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.util.DateContext;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.*;
+import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -70,7 +74,7 @@ public class AbsoluteFormQuery extends IQuery {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
 		query.collectRequiredQueries(requiredQueries);
 		features.collectRequiredQueries(requiredQueries);
 	}

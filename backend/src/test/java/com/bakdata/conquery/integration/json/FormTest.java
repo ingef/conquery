@@ -120,7 +120,7 @@ public class FormTest extends ConqueryTestSpec {
 				.describedAs("Form Validation Errors")
 				.isEmpty();
 		
-		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, dataset, support.getConfig());
+		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, support.getDataset(), support.getConfig());
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {

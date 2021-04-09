@@ -1,24 +1,8 @@
 package com.bakdata.conquery.tasks;
 
-import static com.bakdata.conquery.tasks.PermissionCleanupTask.*;
-
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.AbilitySets;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.query.concept.specific.CQAnd;
-import com.bakdata.conquery.util.NonPersistentStoreFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static com.bakdata.conquery.tasks.PermissionCleanupTask.deletePermissionsOfOwnedInstances;
+import static com.bakdata.conquery.tasks.PermissionCleanupTask.deleteQueryPermissionsWithMissingRef;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -26,7 +10,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AbilitySets;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.concept.ConceptQuery;
+import com.bakdata.conquery.models.query.concept.specific.CQAnd;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 class PermissionCleanupTaskTest {
 
@@ -44,7 +42,7 @@ class PermissionCleanupTaskTest {
 
         ConceptQuery query = new ConceptQuery(root);
 
-        final ManagedQuery managedQuery = new ManagedQuery(query, null, new DatasetId("test"));
+        final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"));
 
         managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
 

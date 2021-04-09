@@ -2,24 +2,24 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
+import com.bakdata.conquery.models.query.concept.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
@@ -31,22 +31,24 @@ import lombok.Setter;
 @CPSType(id = "SAVED_QUERY", base = CQElement.class)
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
 @Getter @Setter
-public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
+public class CQReusedQuery extends CQElement implements NamespacedIdentifiableHolding {
 
-	public CQReusedQuery(ManagedExecutionId query){
+	public CQReusedQuery(ManagedQuery query){
 		this.query = query;
 	}
 
-	@NotNull
+	@Nullable // Null on Shards, therefore resolved on Manager.
 	@Valid
-	private ManagedExecutionId query;
+	@MetaIdRef
+	private ManagedQuery query;
+
 	@InternalOnly
 	private IQuery resolvedQuery;
 
 	private boolean excludeFromSecondaryId = false;
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
 		requiredQueries.add(query);
 	}
 
@@ -63,11 +65,7 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		resolvedQuery = ((ManagedQuery) Objects.requireNonNull(
-				context.getDatasetRegistry().getMetaStorage().getExecution(query),
-				"Unable to resolve stored query"
-		))
-								.getQuery();
+		resolvedQuery = query.getQuery();
 
 		// Yey recursion, because the query might consists of another CQReusedQuery or CQExternal
 		resolvedQuery.resolve(context);
@@ -87,10 +85,8 @@ public class CQReusedQuery extends CQElement implements NamespacedIdHolding {
 	}
 
 	@Override
-	public void collectNamespacedIds(Set<NamespacedId> ids) {
+	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> ids) {
 		checkNotNull(ids);
-		if (query != null) {
-			ids.add(query);
-		}
+		ids.add(query);
 	}
 }

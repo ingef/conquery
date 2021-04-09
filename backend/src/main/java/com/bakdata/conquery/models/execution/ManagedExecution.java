@@ -8,15 +8,16 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -26,17 +27,25 @@ import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.Authorized;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -52,7 +61,7 @@ import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
@@ -75,19 +84,20 @@ import org.jetbrains.annotations.TestOnly;
 @CPSBase
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Authorized, Visitable, NamespacedIdentifiable<ManagedExecutionId> {
 	
 	/**
 	 * Some unusual suffix. Its not too bad if someone actually uses this. 
 	 */
 	public final static String AUTO_LABEL_SUFFIX = "\t@§$";
 
-	protected DatasetId dataset;
+	@NsIdRef
+	protected Dataset dataset;
 	protected UUID queryId;
 	protected String label;
 
 	protected LocalDateTime creationTime = LocalDateTime.now();
-	@Nullable
+	@Nullable //TODO use NsIdRef?
 	protected UserId owner;
 
 	@NotNull
@@ -113,7 +123,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@JsonIgnore
 	private boolean initialized = false;
 
-	public ManagedExecution(UserId owner, DatasetId submittedDataset) {
+	public ManagedExecution(UserId owner, Dataset submittedDataset) {
 		this.owner = owner;
 		this.dataset = submittedDataset;
 	}
@@ -150,7 +160,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		if(queryId == null) {
 			queryId = UUID.randomUUID();
 		}
-		return new ManagedExecutionId(dataset, queryId);
+		return new ManagedExecutionId(dataset.getId(), queryId);
 	}
 
 	/**
@@ -232,12 +242,12 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
-		status.setOwn(owner.equals(user.getId()));
+		status.setOwn(user.isOwner(this));
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStatus(state);
-		status.setOwner(Optional.ofNullable(owner).orElse(null));
-		status.setOwnerName(Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel).orElse(null));
+		status.setOwner(owner);
+		status.setOwnerName(storage.getUser(owner).getLabel());
 		status.setResultUrl(getDownloadURL(url, datasetAbilities).orElse(null));
 	}
 	
@@ -306,7 +316,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		List<GroupId> permittedGroups = new ArrayList<>();
 		for(Group group : storage.getAllGroups()) {
 			for(Permission perm : group.getPermissions()) {
-				if(perm.implies(QueryPermission.onInstance(Ability.READ, this.getId()))) {
+				if(perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
 					continue;
 				}
@@ -325,13 +335,18 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	protected void setAdditionalFieldsForStatusWithSource(User user, FullExecutionStatus status) {
 		QueryDescription query = getSubmitted();
-		NamespacedIdCollector namespacesIdCollector = new NamespacedIdCollector();
+		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
-		List<Permission> permissions = new ArrayList<>();
-		QueryUtils.generateConceptReadPermissions(namespacesIdCollector, permissions);
+		Set<ConqueryPermission> permissions = new HashSet<>();
 
-		boolean canExpand = user.isPermittedAll(permissions);
+		final Set<Concept> concepts = namespacesIdCollector.getIdentifiables()
+														  .stream()
+														  .filter(ConceptElement.class::isInstance)
+														  .map(ConceptElement.class::cast)
+														  .map(ConceptElement::getConcept)
+														  .collect(Collectors.toSet());
 
+		boolean canExpand = AuthorizationHelper.isPermittedAll(user, concepts, Ability.READ);
 
 		status.setCanExpand(canExpand);
 		status.setQuery(canExpand ? getSubmitted() : null);
@@ -343,13 +358,15 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			return false;
 		}
 
+		//TODO this is no longer the case.
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
 		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
+
 		return getUsedNamespacedIds().stream()
-				.map(NamespacedId::getDataset)
+				.map(NamespacedIdentifiable::getDataset)
 				.distinct()
-				.allMatch((id) -> datasetAbilities.get(id).contains(Ability.DOWNLOAD));
+				.allMatch((id) -> datasetAbilities.get(id.getId()).contains(Ability.DOWNLOAD));
 	}
 
 	/**
@@ -364,7 +381,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * @return A List of all {@link NamespacedId}s needed for the execution.
 	 */
 	@JsonIgnore
-	public abstract Set<NamespacedId> getUsedNamespacedIds();
+	public abstract Set<NamespacedIdentifiable<?>> getUsedNamespacedIds();
 
 
 	/**
@@ -380,7 +397,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * matched to its subqueries.
 	 */
 	@JsonIgnore
-	public abstract R getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry);
+	public abstract R getInitializedShardResult(Map.Entry<ManagedExecutionId, QueryPlan> entry);
 
 	/**
 	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
@@ -410,5 +427,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		StringBuilder sb = new StringBuilder();
 		makeDefaultLabel(sb, datasetRegistry, cfg);
 		return sb.append(AUTO_LABEL_SUFFIX).toString();
+	}
+
+	@Override
+	public ConqueryPermission createPermission(Set<Ability> abilities) {
+		return QueryPermission.onInstance(abilities,getId());
 	}
 }

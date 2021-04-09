@@ -9,14 +9,15 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
@@ -59,13 +60,15 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 
 
 		// Id of the lone concept that is used in the test.
-		ConceptId conceptId = conquery.getNamespace().getStorage().getAllConcepts().iterator().next().getId();
+		Concept<?> conceptId = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 
 		IntegrationUtils.assertQueryResult(conquery, query, -1, ExecutionState.FAILED, user, 403);
 
 		// Add the necessary Permission
 		{
-			user.addPermission(storage, ConceptPermission.onInstance(Ability.READ, conceptId));			
+			final ConqueryPermission permission = conceptId.createPermission(Ability.READ.asSet());
+			log.info("Adding the Permission[{}] to User[{}]", permission, user);
+			AuthorizationHelper.addPermission(user, permission, storage);
 		}
 
 		// Only assert permissions

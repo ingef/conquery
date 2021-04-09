@@ -65,7 +65,7 @@ public class LoadingUtil {
 
 			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 
-			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user.getId(), support.getNamespace().getDataset().getId());
+			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user.getId(), support.getNamespace().getDataset());
 			user.addPermission(support.getMetaStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
@@ -79,7 +79,7 @@ public class LoadingUtil {
 			IQuery query = mapper.readerFor(IQuery.class).readValue(queryNode);
 			UUID queryId = new UUID(0L, id++);
 
-			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),query, queryId, user.getId(), support.getNamespace().getDataset().getId());
+			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),query, queryId, user.getId(), support.getNamespace().getDataset());
 			user.addPermission(support.getMetaStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {

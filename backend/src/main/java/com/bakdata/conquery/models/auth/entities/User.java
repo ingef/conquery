@@ -101,8 +101,6 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 		storage.updateUser(this);
 	}
 
-
-
 	@Override
 	public Object getPrincipal() {
 		return getId();

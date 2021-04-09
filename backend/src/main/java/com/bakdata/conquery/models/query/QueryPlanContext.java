@@ -4,8 +4,8 @@ import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.worker.Worker;
 import lombok.AccessLevel;
@@ -29,8 +29,8 @@ public class QueryPlanContext {
 	@Nullable
 	private SecondaryIdDescriptionId selectedSecondaryId;
 
-	public DatasetId getDataset() {
-		return worker.getStorage().getDataset().getId();
+	public Dataset getDataset() {
+		return worker.getStorage().getDataset();
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {

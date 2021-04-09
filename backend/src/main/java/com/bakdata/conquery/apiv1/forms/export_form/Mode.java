@@ -1,7 +1,7 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -23,5 +23,5 @@ public abstract class Mode implements Visitable {
 
 	public abstract void resolve(QueryResolveContext context);
 	
-	public abstract IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset);
+	public abstract IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, Dataset submittedDataset);
 }

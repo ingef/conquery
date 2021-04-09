@@ -2,9 +2,7 @@ package com.bakdata.conquery.apiv1;
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.ws.rs.core.UriBuilder;
@@ -15,15 +13,12 @@ import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
@@ -33,13 +28,12 @@ import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.Permission;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -55,7 +49,7 @@ public class QueryProcessor {
 	 * intended dataset.
 	 */
 	public FullExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
-		authorize(user, dataset.getId(), Ability.READ);
+		authorize(user, dataset, Ability.READ);
 
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
@@ -65,9 +59,9 @@ public class QueryProcessor {
 
 		// Initialize checks that need to traverse the query tree
 		visitors.putInstance(QueryUtils.OnlyReusingChecker.class, new QueryUtils.OnlyReusingChecker());
-		visitors.putInstance(QueryUtils.NamespacedIdCollector.class, new QueryUtils.NamespacedIdCollector());
+		visitors.putInstance(NamespacedIdentifiableCollector.class, new NamespacedIdentifiableCollector());
 
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user.getId(), storage).map(Group::getName).orElse("none");
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getName).orElse("none");
 
 		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter(primaryGroupName));
 
@@ -82,18 +76,16 @@ public class QueryProcessor {
 		query.visit(consumerChain);
 
 
-		Set<Permission> permissions = new HashSet<>();
-		query.collectPermissions(visitors, permissions, dataset.getId(), storage, user);
-		user.checkPermissions(permissions);
+		query.authorize(user, dataset, visitors);
 
-		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdCollector.class).getIds(), primaryGroupName);
+		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdentifiableCollector.class).getIdentifiables(), primaryGroupName);
 
 		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
 
 		// If this is only a re-executing query, try to execute the underlying query instead.
 		{
-			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
+			final Optional<ManagedExecution<?>> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
 			final FullExecutionStatus status = tryReuse(query, executionId, user, storage, datasetRegistry, config, urlb);
 
@@ -103,7 +95,7 @@ public class QueryProcessor {
 		}
 
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset.getId(), config);
+		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset, config);
 
 		if (query instanceof IQuery) {
 			translateToOtherDatasets(dataset, query, user, mq);
@@ -113,17 +105,14 @@ public class QueryProcessor {
 		return getStatus(mq, urlb, user);
 	}
 
-	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
+	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecution<?>> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
 
 		// If this is only a re-executing query, execute the underlying query instead.
 		if (maybeId.isEmpty()) {
 			return null;
 		}
 
-		final ManagedExecutionId executionId = maybeId.get();
-
-
-		final ManagedExecution<?> execution = storage.getExecution(executionId);
+		final ManagedExecution<?> execution = maybeId.get();
 
 		// Direct reuse only works if the queries are of the same type (As reuse reconstructs the Query for different types)
 		if (!query.getClass().equals(execution.getSubmitted().getClass())) {
@@ -149,7 +138,7 @@ public class QueryProcessor {
 		}
 
 
-		log.trace("Re-executing Query {}", executionId);
+		log.trace("Re-executing Query {}", execution);
 
 		final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, execution, config);
 
@@ -161,19 +150,23 @@ public class QueryProcessor {
 		IQuery translateable = (IQuery) query;
 		// translate the query for all other datasets of user and submit it.
 		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
-			if (!user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), targetNamespace.getDataset().getId()))
-					|| targetNamespace.getDataset().equals(dataset)) {
+			final Dataset targetDataset = targetNamespace.getDataset();
+			if (targetDataset.equals(dataset)) {
+				continue;
+			}
+
+			if (AuthorizationHelper.isPermitted(user, targetDataset, Ability.READ)) {
 				continue;
 			}
 
 			try {
-				DatasetId targetDataset = targetNamespace.getDataset().getId();
+
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
 				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
 
 			}
 			catch (Exception e) {
-				log.trace("Could not translate " + query + " to dataset " + targetNamespace.getDataset(), e);
+				log.trace("Could not translate " + query + " to dataset " + targetDataset, e);
 			}
 		}
 	}
@@ -183,8 +176,9 @@ public class QueryProcessor {
 		return query.buildStatusFull(storage, urlb, user, datasetRegistry, AuthorizationHelper.buildDatasetAbilityMap(user,datasetRegistry));
 	}
 
-	public FullExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
+	public FullExecutionStatus cancel(User user, Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
 		// TODO implement query cancel functionality
+		authorize(user,query, Ability.CANCEL);
 		return null;
 	}
 }
