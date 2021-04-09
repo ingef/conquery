@@ -314,13 +314,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	private static String makeLabelWithRootAndChild(DatasetRegistry datasetRegistry, CQConcept cqConcept, PrintSettings cfg) {
-		String cqConceptLabel = cqConcept.getLabel(cfg.getLocale());
-		if (cqConceptLabel == null) {
-			return "";
+		String label = cqConcept.getLabel(cfg.getLocale());
+		if (label == null) {
+			label = cqConcept.getConcept().getLabel();
 		}
 
 		// Concat everything with dashes
-		return cqConceptLabel.replace(" ", "-");
+		return label.replace(" ", "-");
 	}
 
 	@Override
