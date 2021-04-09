@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -60,6 +59,12 @@ public class AuthorizationHelper {
 		}
 
 		user.checkPermission(object.createPermission(EnumSet.of(ability)));
+	}
+
+	public static void authorize(User user, Set<? extends Authorized> objects, Ability ability) {
+		for (Authorized object : objects) {
+			authorize(user, object, ability);
+		}
 	}
 
 	public static boolean isPermitted(User user, Authorized object, Ability ability) {
@@ -240,16 +245,17 @@ public class AuthorizationHelper {
 	 * Checks if an execution is allowed to be downloaded by a user.
 	 * This checks all used {@link DatasetId}s for the {@link Ability#DOWNLOAD} on the user.
 	 */
-	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution<?> exec) {
-		Set<ConqueryPermission> perms =
-				exec.getUsedNamespacedIds()
+	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull Visitable visitable) {
+		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
+		visitable.visit(collector);
+
+		Set<Dataset> perms =
+				collector.getIdentifiables()
 					.stream()
 					.map(NamespacedIdentifiable::getDataset)
-					.distinct()
-					.map(d -> d.createPermission(Ability.READ.asSet()))
 					.collect(Collectors.toSet());
 
-		AuthorizationHelper.authorize(user, perms);
+		AuthorizationHelper.authorize(user, perms, Ability.DOWNLOAD);
 	}
 
 	/**
@@ -259,13 +265,14 @@ public class AuthorizationHelper {
 	public static void authorizeReadDatasets(@NonNull User user, @NonNull Visitable visitable) {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
-		List<Permission> perms = collector.getIdentifiables().stream()
-										  .map(NamespacedIdentifiable::getDataset)
-										  .distinct()
-										  .map(d -> d.createPermission(Ability.READ.asSet()))
-										  .map(Permission.class::cast)
-										  .collect(Collectors.toList());
-		user.checkPermissions(perms);
+
+		Set<Dataset> perms =
+				collector.getIdentifiables()
+						 .stream()
+						 .map(NamespacedIdentifiable::getDataset)
+						 .collect(Collectors.toSet());
+
+		AuthorizationHelper.authorize(user, perms, Ability.READ);
 	}
 
 
