@@ -319,18 +319,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			return "";
 		}
 
-		if (cqConcept.getElements().isEmpty()) {
-			return cqConceptLabel.replace(" ", "-"); // This is usually an illegal case, an CQConcept must have at least one id, but this code should never fail
-		}
-
-		Concept<?> concept = cqConcept.getElements().get(0).getConcept();
-		String conceptLabel = concept.getLabel();
-		if (cqConceptLabel.equalsIgnoreCase(conceptLabel)) {
-			return cqConceptLabel.replace(" ", "-");
-		}
-
 		// Concat everything with dashes
-		return (conceptLabel + "-" + cqConceptLabel).replace(" ", "-");
+		return cqConceptLabel.replace(" ", "-");
 	}
 
 	@Override
