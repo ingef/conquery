@@ -164,7 +164,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					// No bucket should be found referencing the import.
 					assertThat(workerStorage.getAllBuckets())
 							.describedAs("Buckets for Worker %s", value.getInfo().getId())
-							.filteredOn(bucket -> bucket.getImp().getId().getTable().equals(tableId))
+							.filteredOn(bucket -> bucket.getImp().getTable().getId().equals(tableId))
 							.isEmpty();
 
 					// No CBlock associated with import may exist
@@ -229,7 +229,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-					assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().getTable().equals(tableId)))
+					assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getTable().getId().equals(tableId)))
 							.describedAs("Buckets for Worker %s", value.getInfo().getId())
 							.isNotEmpty();
 				}
@@ -265,7 +265,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().getTable().equals(tableId)))
+						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getTable().getId().equals(tableId)))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
 					}

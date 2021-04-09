@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -106,11 +105,6 @@ public class StringTypeNumber implements StringStore {
 	@Override
 	public boolean isDictionaryHolding() {
 		return false;
-	}
-
-	@Override
-	public void setUnderlyingDictionary(DictionaryId newDict) {
-
 	}
 
 	@Override

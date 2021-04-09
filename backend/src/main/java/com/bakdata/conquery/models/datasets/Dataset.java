@@ -24,7 +24,10 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 		setName(name);
 	}
 
-	// TODO: 09.01.2020 fk: Maintain concepts in dataset as well, or get rid of tables, but don't do both.
+	/**
+	 * Used to programmatically generate proper {@link com.bakdata.conquery.models.identifiable.ids.NamespacedId}s.
+	 */
+	public static final Dataset PLACEHOLDER = new Dataset("PLACEHOLDER");
 
 	public static boolean isAllIdsTable(TableId tableId){
 		return tableId.getTable().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);

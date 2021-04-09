@@ -26,7 +26,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
-import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -75,7 +74,9 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryI
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
@@ -180,25 +181,30 @@ public class AdminProcessor {
 	}
 
 	public void addImport(Namespace namespace, File selectedFile) throws IOException {
-		Dataset ds = namespace.getDataset();
 
-		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
-			PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(in, PreprocessedHeader.class);
+		final Dataset ds = namespace.getDataset();
+		final PreprocessedHeader header;
 
-			TableId tableName = new TableId(ds.getId(), header.getTable());
-			Table table = namespace.getStorage().getTable(tableName);
-
-			final ImportId importId = new ImportId(table.getId(), header.getName());
-
-			if (datasetRegistry.get(ds.getId()).getStorage().getImport(importId) != null) {
-				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
-			}
-
-			log.info("Importing {}", selectedFile.getAbsolutePath());
-
-			datasetRegistry.get(ds.getId()).getJobManager()
-						   .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize));
+		// try and read only the header.
+		try (PreprocessedReader parser = Preprocessed.createReader(selectedFile, Collections.emptyMap())) {
+			header = parser.readHeader();
 		}
+
+		Table table = namespace.getStorage().getTable(new TableId(ds.getId(), header.getTable()));
+
+		final ImportId importId = new ImportId(table.getId(), header.getName());
+
+		if (namespace.getStorage().getImport(importId) != null) {
+			throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Status.CONFLICT);
+		}
+
+		header.assertMatch(table);
+
+		log.info("Importing {}", selectedFile.getAbsolutePath());
+
+		final ImportJob job = new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize);
+		datasetRegistry.get(ds.getId()).getJobManager().addSlowJob(job);
+
 	}
 
 	public void addWorker(ShardNodeInformation node, Dataset dataset) {
@@ -581,7 +587,7 @@ public class AdminProcessor {
 
 
 		namespace.getStorage().getAllImports().stream()
-				 .filter(imp -> imp.getTable().equals(table))
+				.filter(imp -> imp.getTable().equals(table))
 				 .map(Import::getId)
 				 .forEach(this::deleteImport);
 

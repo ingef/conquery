@@ -96,7 +96,7 @@ public class BucketManager {
 		}
 
 		tableBuckets
-				.computeIfAbsent(bucket.getImp().getTable().getId(), id -> new Int2ObjectAVLTreeMap<>())
+				.computeIfAbsent(bucket.getTable().getId(), id -> new Int2ObjectAVLTreeMap<>())
 				.computeIfAbsent(bucket.getBucket(), n -> new ArrayList<>())
 				.add(bucket);
 	}
@@ -139,7 +139,7 @@ public class BucketManager {
 							}
 
 							log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
-							job.addCBlock(imp, bucket, cBlockId);
+							job.addCBlock(bucket, cBlockId);
 						}
 					}
 
@@ -163,12 +163,11 @@ public class BucketManager {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());
-					Import imp = bucket.getImp();
 					CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
 
-					if (con.getTable().equals(bucket.getImp().getTable())) {
+					if (con.getTable().equals(bucket.getTable())) {
 						if (storage.getCBlock(cBlockId) == null) {
-							job.addCBlock(imp, bucket, cBlockId);
+							job.addCBlock(bucket, cBlockId);
 						}
 					}
 
@@ -206,7 +205,7 @@ public class BucketManager {
 							continue;
 						}
 
-						job.addCBlock(imp, bucket, cBlockId);
+						job.addCBlock(bucket, cBlockId);
 					}
 				}
 				if (!job.isEmpty()) {
@@ -232,7 +231,7 @@ public class BucketManager {
 			}
 		}
 
-		tableToBuckets.getOrDefault(bucket.getImp().getTable().getId(), Int2ObjectMaps.emptyMap())
+		tableToBuckets.getOrDefault(bucket.getTable().getId(), Int2ObjectMaps.emptyMap())
 					  .getOrDefault(bucket.getBucket(), Collections.emptyList())
 					  .removeIf(bkt -> bkt.getId().equals(bucket.getId()));
 
