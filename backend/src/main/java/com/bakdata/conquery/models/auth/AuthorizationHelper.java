@@ -73,11 +73,6 @@ public class AuthorizationHelper {
 		return object instanceof Owned && user.isOwner(((Owned) object));
 	}
 
-	@Deprecated
-	public static boolean isPermitted(User user, ConqueryPermission permission) {
-		return user.isPermitted(permission);
-	}
-
 
 	public static boolean[] isPermitted(User user, List<? extends Authorized> authorizeds, Ability ability) {
 		return authorizeds.stream()
