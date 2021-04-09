@@ -108,6 +108,10 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 			return null;
 		}
 
+		if(elements.size() == 1 && elements.get(0).equals(getConcept())) {
+			return getConcept().getLabel();
+		}
+
 		final StringBuilder builder = new StringBuilder();
 
 		builder.append(getConcept().getLabel());
@@ -115,6 +119,9 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 		builder.append(" - ");
 
 		for (ConceptElement<?> id : elements) {
+			if (id.equals(getConcept())) {
+				continue;
+			}
 			builder.append(id.getLabel()).append("+");
 		}
 
