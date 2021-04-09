@@ -12,6 +12,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.google.common.collect.ImmutableSet;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -70,14 +71,14 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @param permissions The permissions to add.
 	 * @return Returns the added Permission
 	 */
-	//TODO unused?
 	public boolean addPermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
 		boolean ret = false;
 		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size() + permissions.size());
-			newSet.addAll(this.permissions);
-			ret = newSet.addAll(permissions);
-			this.permissions = newSet;
+			this.permissions = ImmutableSet
+									   .<ConqueryPermission>builder()
+									   .addAll(this.permissions)
+									   .addAll(permissions)
+									   .build();
 			updateStorage(storage);
 		}
 		return ret;
@@ -86,10 +87,11 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	public boolean addPermission(MetaStorage storage, ConqueryPermission permission) {
 		boolean ret = false;
 		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions.size() + 1);
-			newSet.addAll(this.permissions);
-			ret = newSet.add(permission);
-			this.permissions = newSet;
+			this.permissions = ImmutableSet
+									   .<ConqueryPermission>builder()
+									   .addAll(this.permissions)
+									   .add(permission)
+									   .build();
 			updateStorage(storage);
 		}
 		return ret;
@@ -102,7 +104,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @param permissions The permission to remove.
 	 * @return Returns the added Permission
 	 */
-	//todo unsed?
 	public boolean removePermissions(MetaStorage storage, Set<ConqueryPermission> permissions) {
 		boolean ret = false;
 		synchronized (this) {

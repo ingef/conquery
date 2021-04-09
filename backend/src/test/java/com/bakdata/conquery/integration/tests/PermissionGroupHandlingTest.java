@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -38,7 +39,8 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 			storage.addUser(user1);
 			storage.addGroup(group1);
 
-			user1.addRole(storage, role1);
+			AuthorizationHelper.addRoleTo(storage,role1,user1);
+
 			group1.addMember(storage, user1);
 
 			user1.addPermission(storage, QueryPermission.onInstance(Ability.READ, query1));
