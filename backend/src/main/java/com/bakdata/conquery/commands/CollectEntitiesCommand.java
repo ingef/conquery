@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,15 +15,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
 import com.bakdata.conquery.models.preproc.Preprocessed;
-import com.bakdata.conquery.models.preproc.PreprocessedData;
+import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.github.powerlibraries.io.Out;
@@ -115,16 +116,14 @@ public class CollectEntitiesCommand extends Command {
 
 		@Override
 		public void execute() throws Exception {
-			try (HCFile hcFile = new HCFile(file, false)) {
-				PreprocessedHeader header = Jackson.BINARY_MAPPER.readerFor(PreprocessedHeader.class).readValue(hcFile.readHeader());
+			try (final PreprocessedReader parser = Preprocessed.createReader(file, Map.of(Dataset.PLACEHOLDER.getId(), Dataset.PLACEHOLDER))) {
 
-				final PreprocessedData data = Preprocessed.readContainer(hcFile.readContent());
-
+				final PreprocessedHeader header = parser.readHeader();
 				log.info("Reading {}", header.getName());
 
-				log.debug("\tparsing dictionaries");
+				final PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
-				final EncodedDictionary primaryDictionary = new EncodedDictionary(data.getPrimaryDictionary(), StringTypeEncoded.Encoding.UTF8);
+				final EncodedDictionary primaryDictionary = new EncodedDictionary(dictionaries.getPrimaryDictionary(), StringTypeEncoded.Encoding.UTF8);
 
 				add(primaryDictionary, new File(file.getParentFile(), "all_entities.csv"));
 				if (verbose) {

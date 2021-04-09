@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.preproc.parser.specific.string;
 
+import java.util.UUID;
+
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
@@ -20,8 +23,8 @@ public class TrieTypeGuesser extends StringTypeGuesser {
 	public Guess createGuess() {
 		IntegerStore indexType = p.decideIndexType();
 
-		SuccinctTrie trie = new SuccinctTrie(null, "");
-		StringTypeDictionary type = new StringTypeDictionary(indexType, trie, trie.getName());
+		SuccinctTrie trie = new SuccinctTrie(Dataset.PLACEHOLDER, UUID.randomUUID().toString());
+		StringTypeDictionary type = new StringTypeDictionary(indexType, trie);
 
 		for (byte[] v : p.getDecoded()) {
 			trie.add(v);

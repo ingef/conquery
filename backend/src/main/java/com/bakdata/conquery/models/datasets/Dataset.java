@@ -8,12 +8,22 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter
+@NoArgsConstructor
 public class Dataset extends Labeled<DatasetId> implements Injectable {
 
-	// TODO: 09.01.2020 fk: Maintain concepts in dataset as well, or get rid of tables, but don't do both.
+	/**
+	 * Used to programmatically generate proper {@link com.bakdata.conquery.models.identifiable.ids.NamespacedId}s.
+	 */
+	public static final Dataset PLACEHOLDER = new Dataset("PLACEHOLDER");
+
+	public Dataset(String name){
+		setName(name);
+	}
+
 
 	public static boolean isAllIdsTable(TableId tableId){
 		return tableId.getTable().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);

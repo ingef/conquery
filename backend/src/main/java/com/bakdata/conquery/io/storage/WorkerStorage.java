@@ -78,9 +78,7 @@ public class WorkerStorage extends NamespacedStorage {
     }
 
 	private void decorateBucketStore(IdentifiableStore<Bucket> store) {
-		store.onAdd((bucket) -> {
-			bucket.loadDictionaries(this);
-		});
+		// Nothing to decorate
 	}
 
     private void decorateCBlockStore(IdentifiableStore<CBlock> baseStoreCreator) {

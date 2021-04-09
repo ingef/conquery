@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -156,11 +155,6 @@ public enum EmptyStore implements
 	@Override
 	public Dictionary getUnderlyingDictionary() {
 		return null;
-	}
-
-	@Override
-	public void setUnderlyingDictionary(DictionaryId newDict) {
-
 	}
 
 	@Override

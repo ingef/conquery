@@ -7,13 +7,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.BufferUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.AbstractIterator;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectArrayMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
@@ -23,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.mina.core.buffer.IoBuffer;
 
 @CPSType(id="SUCCINCT_TRIE", base=Dictionary.class)
+@Getter
 public class SuccinctTrie extends Dictionary {
 
 	@Getter
@@ -40,6 +40,7 @@ public class SuccinctTrie extends Dictionary {
 	// keyPartArray[x] contains the byte stored in node x
 	private byte[] keyPartArray;
 
+	@JsonIgnore
 	private HelpNode root;
 
 	// caches the the access on select0
@@ -48,9 +49,10 @@ public class SuccinctTrie extends Dictionary {
 	// indicates whether compress() has been performed and if the trie is ready to
 	// query
 	@Getter
+	@JsonIgnore
 	private boolean compressed;
 
-	public SuccinctTrie(DatasetId dataset, String name) {
+	public SuccinctTrie(Dataset dataset, String name) {
 		super(dataset, name);
 		this.root = new HelpNode(null, (byte) 0);
 		this.root.setPositionInArray(0);
@@ -58,22 +60,29 @@ public class SuccinctTrie extends Dictionary {
 		entryCount = 0;
 	}
 
-	@JsonCreator
-	public static SuccinctTrie fromSerialized(SerializedSuccinctTrie serialized) {
-		SuccinctTrie trie = new SuccinctTrie(serialized.getDataset(), serialized.getName());
-		trie.nodeCount = serialized.getNodeCount();
-		trie.entryCount = serialized.getEntryCount();
-		trie.reverseLookup = serialized.getReverseLookup();
-		trie.parentIndex = serialized.getParentIndex();
-		trie.lookup = serialized.getLookup();
-		trie.keyPartArray = serialized.getKeyPartArray();
-		trie.selectZeroCache = serialized.getSelectZeroCache();
-		trie.totalBytesStored = serialized.getTotalBytesStored();
+	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+	public SuccinctTrie(String name,
+						Dataset dataset,
+						int nodeCount,
+						int entryCount,
+						int[] reverseLookup,
+						int[] parentIndex,
+						int[] lookup,
+						byte[] keyPartArray,
+						int[] selectZeroCache,
+						long totalBytesStored) {
+		super(dataset, name);
+		this.nodeCount = nodeCount;
+		this.entryCount = entryCount;
+		this.reverseLookup = reverseLookup;
+		this.parentIndex = parentIndex;
+		this.lookup = lookup;
+		this.keyPartArray = keyPartArray;
+		this.selectZeroCache = selectZeroCache;
+		this.totalBytesStored = totalBytesStored;
 
-		trie.root = null;
-		trie.compressed = true;
-
-		return trie;
+		this.root = null;
+		this.compressed = true;
 	}
 
 	@Override
@@ -99,7 +108,8 @@ public class SuccinctTrie extends Dictionary {
 	}
 
 	private int put(byte[] key, int value, boolean failOnDuplicate) {
-		checkUncompressed("no put allowed after compression");
+		checkUncompressed("No put allowed after compression");
+
 		// insert help nodes
 		int nodeIndex = 0;
 		HelpNode current = root;
@@ -112,8 +122,10 @@ public class SuccinctTrie extends Dictionary {
 				next.setParent(current);
 				current.addChild(next);
 				nodeCount++;
-				if (nodeCount > Integer.MAX_VALUE - 10)
-					throw new IllegalStateException("This dictionary is to large " + nodeCount);
+
+				if (nodeCount > Integer.MAX_VALUE - 10) {
+					throw new IllegalStateException("This dictionary is too large " + nodeCount);
+				}
 			}
 			current = next;
 			nodeIndex++;
@@ -126,17 +138,17 @@ public class SuccinctTrie extends Dictionary {
 			return entryCount++;
 		}
 		else if (failOnDuplicate){
-			throw new IllegalStateException(String.format("the key {} was already part of this trie", new String(key, StandardCharsets.UTF_8)));
+			throw new IllegalStateException(String.format("the key `%s` was already part of this trie", new String(key, StandardCharsets.UTF_8)));
 		}
 		else {
 			return current.getValue();
 		}
 	}
 
-
-
 	public void compress() {
-		checkUncompressed("compress is only allowed once");
+		if(compressed){
+			return;
+		}
 
 		// get the nodes in left right, top down order (level order)
 		List<HelpNode> nodesInOrder = createNodesInOrder();
@@ -277,23 +289,9 @@ public class SuccinctTrie extends Dictionary {
 		return entryCount;
 	}
 
+	@JsonIgnore
 	public boolean isEmpty() {
 		return entryCount == 0;
-	}
-
-	public List<byte[]> getValuesBytes() {
-		List<byte[]> valuesBytes = new ArrayList<>();
-		IoBuffer buffer = IoBuffer.allocate(512);
-		buffer.setAutoExpand(true);
-		for (int i = 0; i < entryCount; i++) {
-			getReverse(i, buffer);
-			byte[] bytes = new byte[buffer.limit() - buffer.position()];
-			buffer.get(bytes);
-			valuesBytes.add(bytes);
-			buffer.clear();
-		}
-		buffer.free();
-		return valuesBytes;
 	}
 
 	@Data @RequiredArgsConstructor
@@ -322,12 +320,6 @@ public class SuccinctTrie extends Dictionary {
 				return new DictionaryEntry(index, result);
 			}
 		};
-	}
-
-	@JsonValue
-	public SerializedSuccinctTrie toSerialized() {
-		checkCompressed("no serialisation allowed before compressing the trie");
-		return new SerializedSuccinctTrie(getName(), getDataset(), nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache, totalBytesStored);
 	}
 
 	@Data

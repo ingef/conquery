@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.RequiredArgsConstructor;
@@ -73,4 +74,7 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getTable(tableId);
 	}
 
+	public Concept<?> getConcept(ConceptId conceptId) {
+		return delegate.getConcept(conceptId);
+	}
 }
