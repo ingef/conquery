@@ -143,8 +143,6 @@ public class AuthorizationHelper {
 		return Optional.of(groups.get(0));
 	}
 
-
-
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
 	 * the permission of the roles it inherits.
@@ -216,21 +214,6 @@ public class AuthorizationHelper {
 
 		log.trace("Deleted role {} from {}", role, owner);
 	}
-
-	public static void deleteRole(MetaStorage storage, Role role) {
-		log.info("Deleting {}", role);
-
-		for (User user : storage.getAllUsers()) {
-			user.removeRole(storage, role);
-		}
-
-		for (Group group : storage.getAllGroups()) {
-			group.removeRole(storage, role);
-		}
-
-		storage.removeRole(role.getId());
-	}
-
 
 
 	public static List<User> getUsersByRole(MetaStorage storage, Role role) {

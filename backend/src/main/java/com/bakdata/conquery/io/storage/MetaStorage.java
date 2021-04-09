@@ -1,5 +1,11 @@
 package com.bakdata.conquery.io.storage;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -7,16 +13,15 @@ import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Validator;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 
 @Slf4j
 public class MetaStorage implements ConqueryStorage{
@@ -44,9 +49,32 @@ public class MetaStorage implements ConqueryStorage{
         authUser = storageFactory.createUserStore(centralRegistry, pathName);
         authRole = storageFactory.createRoleStore(centralRegistry, pathName);
         authGroup = storageFactory.createGroupStore(centralRegistry, pathName);
-    }
 
-    @Override
+		decorateRoleStore(authRole);
+		decorateGroupStore(authGroup);
+	}
+
+	private void decorateGroupStore(IdentifiableStore<Group> authGroup) {
+		// Intentionally left blank
+	}
+
+	private void decorateRoleStore(IdentifiableStore<Role> authRole) {
+		authRole.onRemove(role -> {
+			MetaStorage storage = datasetRegistry.getMetaStorage();
+
+			log.info("Deleting {}", role);
+
+			for (User user : storage.getAllUsers()) {
+				user.removeRole(storage, role);
+			}
+
+			for (Group group : storage.getAllGroups()) {
+				group.removeRole(storage, role);
+			}
+		});
+	}
+
+	@Override
     public void loadData() {
         executions.loadData();
         formConfigs.loadData();
