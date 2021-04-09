@@ -76,6 +76,7 @@ import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
@@ -87,7 +88,6 @@ import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
@@ -187,9 +187,8 @@ public class AdminProcessor {
 		final PreprocessedHeader header;
 
 		// try and read only the header.
-		try (JsonParser parser = Preprocessed.createParser(selectedFile, Collections.emptyMap())) {
-
-			header = parser.readValueAs(PreprocessedHeader.class);
+		try (PreprocessedReader parser = Preprocessed.createReader(selectedFile, Collections.emptyMap())) {
+			header = parser.readHeader();
 		}
 
 		Table table = namespace.getStorage().getTable(new TableId(ds.getId(), header.getTable()));
@@ -199,6 +198,8 @@ public class AdminProcessor {
 		if (namespace.getStorage().getImport(importId) != null) {
 			throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Status.CONFLICT);
 		}
+
+		header.assertMatch(table);
 
 		log.info("Importing {}", selectedFile.getAbsolutePath());
 

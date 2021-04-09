@@ -32,8 +32,6 @@ import com.bakdata.conquery.models.preproc.parser.specific.string.MapTypeGuesser
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -49,8 +47,6 @@ import lombok.extern.slf4j.Slf4j;
 public class Preprocessed {
 
 
-	private static final ObjectReader CONTAINER_READER = Jackson.BINARY_MAPPER.readerFor(PreprocessedData.class);
-	private static final ObjectWriter CONTAINER_WRITER = Jackson.MAPPER.writerFor(PreprocessedData.class);
 	private final PreprocessingJob job;
 	private final String name;
 	/**
@@ -107,17 +103,19 @@ public class Preprocessed {
 	 * Creates a Jackson Parser to read CQPP documents. They consist of a {@link PreprocessedHeader} {@link PreprocessedDictionaries} {@link PreprocessedData} in order. But their order depends on each other.
 	 *
 	 * This is heavily tied to {@link Preprocessed#write(File)} and {@link ImportJob#execute()}
+	 * @return
 	 */
-	public static JsonParser createParser(File importFile, Map<IId<?>, Identifiable<?>> replacements) throws IOException {
+	public static PreprocessedReader createReader(File importFile, Map<IId<?>, Identifiable<?>> replacements) throws IOException {
 		final InputStream in = new GZIPInputStream(new FileInputStream(importFile));
 
 		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
 		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
 
-		return namespaceCollection.injectInto(Jackson.BINARY_MAPPER.copy())
-								  .enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-								  .getFactory()
-								  .createParser(in);
+		final JsonParser parser = namespaceCollection.injectInto(Jackson.BINARY_MAPPER.copy())
+													 .enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+													 .getFactory()
+													 .createParser(in);
+		return new PreprocessedReader(parser);
 	}
 
 

@@ -42,12 +42,12 @@ import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.preproc.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import lombok.RequiredArgsConstructor;
@@ -89,16 +89,16 @@ public class ImportJob extends Job {
 		final Map<String, DictionaryMapping> mappings;
 		final PreprocessedHeader header;
 
-		try (final JsonParser parser = Preprocessed.createParser(importFile, replacements)) {
+		try (final PreprocessedReader parser = Preprocessed.createReader(importFile, replacements)) {
 
-			header = parser.readValueAs(PreprocessedHeader.class);
+			header = parser.readHeader();
 			log.info("Importing {} into {}", header.getName(), table);
 
 			namespace.checkConnections();
 
 			log.trace("Begin reading Dictionaries");
 
-			PreprocessedDictionaries dictionaries = parser.readValueAs(PreprocessedDictionaries.class);
+			PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
 			log.trace("Updating primary dictionary");
 
@@ -127,7 +127,7 @@ public class ImportJob extends Job {
 
 			log.trace("Begin reading data.");
 
-			container = parser.readValueAs(PreprocessedData.class);
+			container = parser.readData();
 		}
 
 		if (container.isEmpty()) {

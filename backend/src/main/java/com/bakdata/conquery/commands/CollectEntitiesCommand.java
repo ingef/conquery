@@ -23,9 +23,9 @@ import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
 import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
-import com.fasterxml.jackson.core.JsonParser;
 import com.github.powerlibraries.io.Out;
 import com.google.common.collect.Sets;
 import io.dropwizard.cli.Command;
@@ -116,12 +116,12 @@ public class CollectEntitiesCommand extends Command {
 
 		@Override
 		public void execute() throws Exception {
-			try (final JsonParser parser = Preprocessed.createParser(file, Map.of(Dataset.PLACEHOLDER.getId(), Dataset.PLACEHOLDER))) {
+			try (final PreprocessedReader parser = Preprocessed.createReader(file, Map.of(Dataset.PLACEHOLDER.getId(), Dataset.PLACEHOLDER))) {
 
-				final PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
+				final PreprocessedHeader header = parser.readHeader();
 				log.info("Reading {}", header.getName());
 
-				final PreprocessedDictionaries dictionaries = parser.readValueAs(PreprocessedDictionaries.class);
+				final PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
 				final EncodedDictionary primaryDictionary = new EncodedDictionary(dictionaries.getPrimaryDictionary(), StringTypeEncoded.Encoding.UTF8);
 

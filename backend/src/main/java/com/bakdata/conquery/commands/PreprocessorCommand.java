@@ -19,6 +19,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.preproc.PreprocessingJob;
 import com.bakdata.conquery.models.preproc.Preprocessor;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
@@ -26,7 +27,6 @@ import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
-import com.fasterxml.jackson.core.JsonParser;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import io.dropwizard.setup.Environment;
 import lombok.SneakyThrows;
@@ -70,9 +70,9 @@ public class PreprocessorCommand extends ConqueryCommand {
 											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 
-			try (final JsonParser parser = Preprocessed.createParser(preprocessingJob.getPreprocessedFile(), Collections.emptyMap())) {
+			try (final PreprocessedReader parser = Preprocessed.createReader(preprocessingJob.getPreprocessedFile(), Collections.emptyMap())) {
 
-				PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
+				PreprocessedHeader header = parser.readHeader();
 
 				if (header.getValidityHash() == currentHash) {
 					log.info("\tHASH STILL VALID");
