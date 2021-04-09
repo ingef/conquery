@@ -19,7 +19,7 @@
     "serve": "ts-node mock-api/server"
   },
   "dependencies": {
-    "@emotion/babel-plugin": "^11.0.0-next.12",
+    "@emotion/babel-plugin": "^11.3.0",
     "@emotion/is-prop-valid": "^1.0.0",
     "@emotion/react": "^11.0.0-next.12",
     "@emotion/styled": "^11.0.0-next.12",
