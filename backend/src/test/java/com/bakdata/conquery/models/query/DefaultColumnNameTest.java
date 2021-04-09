@@ -112,7 +112,7 @@ public class DefaultColumnNameTest {
 				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				true,
 				"TestCQLabel - TestConnectorLabel_0 TestSelectLabel"),
-			// ConnectorSelect with CQLabel, root Ids, one Connector -> Connector label should be suppressed
+			// ConnectorSelect without CQLabel, only root Id, one Connector -> Connector label should be suppressed
 			Arguments.of(
 					TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 0, "Test-Label"),
 					false,
