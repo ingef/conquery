@@ -89,17 +89,6 @@ public class Preprocessed {
 	}
 
 	/**
-	 * Creates a writer for CQPP files.
-	 */
-	public static JsonGenerator createWriter(File file) throws IOException {
-		OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
-		return Jackson.BINARY_MAPPER.copy()
-									.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-									.getFactory()
-									.createGenerator(out);
-	}
-
-	/**
 	 * Creates a Jackson Parser to read CQPP documents. They consist of a {@link PreprocessedHeader} {@link PreprocessedDictionaries} {@link PreprocessedData} in order. But their order depends on each other.
 	 *
 	 * This is heavily tied to {@link Preprocessed#write(File)} and {@link ImportJob#execute()}
@@ -153,7 +142,15 @@ public class Preprocessed {
 		final PreprocessedData data = new PreprocessedData(entityStart, entityLength, columnStores);
 
 
-		try (JsonGenerator generator = createWriter(file)) {
+		writePreprocessed(file, header, dictionaries, data);
+	}
+
+	private static void writePreprocessed(File file, PreprocessedHeader header, PreprocessedDictionaries dictionaries, PreprocessedData data) throws IOException {
+		OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
+		try (JsonGenerator generator = Jackson.BINARY_MAPPER.copy()
+															.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+															.getFactory()
+															.createGenerator(out)) {
 
 			log.debug("Writing header");
 
@@ -168,7 +165,6 @@ public class Preprocessed {
 			generator.writeObject(data);
 		}
 	}
-
 
 
 	/**
