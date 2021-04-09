@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -81,15 +82,6 @@ public class AuthorizationHelper {
 						  .toBooleanArray();
 	}
 
-
-	/**
-	 * Helper function for authorizing an ability on a query.
-	 * @param user The subject that needs authorization.
-	 * @param toBeChecked The permission that is checked
-	 */
-	public static void authorize(@NonNull User user, @NonNull ConqueryPermission toBeChecked) {
-		user.checkPermission(toBeChecked);
-	}
 
 	/**
 	 * Helper function for authorizing an ability on a query.
@@ -302,5 +294,7 @@ public class AuthorizationHelper {
 	}
 
 
-
+	public static void authorizeAdmin(User user) {
+		user.checkPermission(AdminPermission.onDomain());
+	}
 }
