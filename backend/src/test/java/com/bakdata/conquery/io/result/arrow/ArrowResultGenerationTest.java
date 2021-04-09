@@ -47,6 +47,7 @@ import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
+import org.apache.arrow.vector.util.JsonStringArrayList;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
@@ -123,9 +124,7 @@ public class ArrowResultGenerationTest {
                                 )),
                         new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
-                        // TODO: We represent a list as a flat string at the moment. See ResultType.ListT::getArrowFieldType
-                        new Field("LIST[BOOLEAN]", FieldType.nullable(new ArrowType.Utf8()), null)
-                        // new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("elem", FieldType.nullable(ArrowType.Bool.INSTANCE), null)))
+                        new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("elem", FieldType.nullable(ArrowType.Bool.INSTANCE), null)))
                 )
         );
 
@@ -194,7 +193,6 @@ public class ArrowResultGenerationTest {
                     sb.append(
                             vectors.stream()
                                     .map(vec -> vec.getObject(currentRow))
-                                    .map(o -> o == null ? "null" : o)
                                     .map(ArrowResultGenerationTest::getPrintValue)
                                     .collect(Collectors.joining("\t")))
                             .append("\n");
@@ -239,12 +237,9 @@ public class ArrowResultGenerationTest {
     }
 
     private static String getPrintValue(Object obj) {
-        if (ResultType.isArray(obj)) {
-            StringJoiner joiner = new StringJoiner(",", "[", "]");
-            for (Object nested : (Object[]) obj) {
-                joiner.add(getPrintValue(nested));
-            }
-            return joiner.toString();
+        if(obj instanceof JsonStringArrayList) {
+            // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
+            return getPrintValue(new ArrayList<>((JsonStringArrayList)obj));
         }
         return Objects.toString(obj);
     }
