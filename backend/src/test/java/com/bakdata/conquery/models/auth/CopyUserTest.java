@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +19,12 @@ public class CopyUserTest {
 
 	@Test
 	void testUserCopy(){
-		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), null);
+		final DatasetRegistry registry = new DatasetRegistry(0);
+
+
+		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), registry);
+
+		registry.setMetaStorage(storage);
 
 		// Create test role
 		Role role = new Role("role", "role");
