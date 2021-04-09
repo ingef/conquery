@@ -81,8 +81,8 @@ public class FormConfigTest {
 	private AuthorizationController controller;
 	private Validator validator = Validators.newValidatorFactory().getValidator();
 	
-	private Dataset dataset = new Dataset();
-	private Dataset dataset1 = new Dataset();
+	private Dataset dataset = new Dataset("test");
+	private Dataset dataset1 = new Dataset("test1");
 	private DatasetId datasetId;
 	private DatasetId datasetId1;
 	private ExportForm form;
@@ -90,8 +90,6 @@ public class FormConfigTest {
 	@BeforeAll
 	public void setupTestClass() throws Exception{
 
-		dataset.setName("test");
-		dataset1.setName("test1");
 		datasetId = dataset.getId();
 		datasetId1 = dataset1.getId();
 
