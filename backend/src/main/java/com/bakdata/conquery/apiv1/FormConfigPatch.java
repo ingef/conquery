@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
@@ -25,13 +24,13 @@ import lombok.experimental.SuperBuilder;
 public class FormConfigPatch extends MetaDataPatch {
 	private JsonNode values;
 	
-	public void applyTo(FormConfig instance, MetaStorage storage, User user, PermissionCreator<FormConfigId> permissionCreator){
-		chain(QueryUtils.getNoOpEntryPoint(), storage, user, instance, permissionCreator)
+	public void applyTo(FormConfig instance, MetaStorage storage, User user){
+		chain(QueryUtils.getNoOpEntryPoint(), storage, user, instance)
 			.accept(this);		
 	}
 	
-	protected Consumer<FormConfigPatch> chain(Consumer<FormConfigPatch> patchConsumerChain, MetaStorage storage, User user, FormConfig instance, PermissionCreator<FormConfigId> permissionCreator) {
-		patchConsumerChain = super.buildChain(patchConsumerChain, storage, user, instance, permissionCreator);
+	protected Consumer<FormConfigPatch> chain(Consumer<FormConfigPatch> patchConsumerChain, MetaStorage storage, User user, FormConfig instance) {
+		patchConsumerChain = super.buildChain(patchConsumerChain, storage, user, instance);
 
 		if(getValues() != null && AuthorizationHelper.isPermitted(user,instance,Ability.MODIFY)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.valueSetter());

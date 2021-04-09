@@ -19,6 +19,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -39,7 +40,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.Permission;
 import org.jetbrains.annotations.TestOnly;
 
 /**
@@ -157,7 +157,7 @@ public class FormConfigProcessor {
 			throw new NotFoundException(formId.toString());
 		}
 
-		patch.applyTo(config, storage, user, FormConfigPermission::onInstance);
+		patch.applyTo(config, storage, user);
 		
 		storage.updateFormConfig(config);
 		
@@ -172,8 +172,10 @@ public class FormConfigProcessor {
 		AuthorizationHelper.authorize(user,config,Ability.DELETE);
 		storage.removeFormConfig(formId);
 		// Delete corresponding permissions (Maybe better to put it into a slow job)
-		for(Permission permission : user.getPermissions()) {
+		for(ConqueryPermission permission : user.getPermissions()) {
+
 			WildcardPermission wpermission = (WildcardPermission) permission;
+
 			if(!wpermission.getDomains().contains(FormConfigPermission.DOMAIN.toLowerCase())) {
 				continue;
 			}
@@ -185,7 +187,8 @@ public class FormConfigProcessor {
 				// Create new permission if it was a composite permission
 				Set<String> instancesCleared = new HashSet<>(wpermission.getInstances());
 				instancesCleared.remove(formId.toString());
-				WildcardPermission clearedPermission = new WildcardPermission(List.of(wpermission.getDomains(),wpermission.getAbilities(),instancesCleared), Instant.now());
+				WildcardPermission clearedPermission =
+						new WildcardPermission(List.of(wpermission.getDomains(), wpermission.getAbilities(), instancesCleared), Instant.now());
 				user.addPermission(storage, clearedPermission);
 			}
 			

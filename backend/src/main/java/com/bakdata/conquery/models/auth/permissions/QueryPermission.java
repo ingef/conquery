@@ -3,10 +3,8 @@ package com.bakdata.conquery.models.auth.permissions;
 import java.util.EnumSet;
 import java.util.Set;
 
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 
-@CPSType(id = "QUERY", base = StringPermissionBuilder.class)
 public class QueryPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "queries";
@@ -43,6 +41,7 @@ public class QueryPermission extends StringPermissionBuilder {
 	}
 
 	//// Helper functions
+	@Deprecated
 	public static ConqueryPermission onInstance(Ability ability, ManagedExecutionId instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}

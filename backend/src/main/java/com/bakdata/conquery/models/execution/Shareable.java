@@ -1,15 +1,17 @@
 package com.bakdata.conquery.models.execution;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.MetaDataPatch;
-import com.bakdata.conquery.apiv1.MetaDataPatch.PermissionCreator;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
+import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -22,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * Interface for classes that are able to be patched with an {@link MetaDataPatch}.
  * Allows sharing of implementations among groups of a given user.
  */
-public interface  Shareable {
+public interface  Shareable extends Authorized {
 	static final Logger log = LoggerFactory.getLogger(Shareable.class);
 
 	/**
@@ -30,10 +32,9 @@ public interface  Shareable {
 	 */
 	void setShared(boolean shared);
 	
-	default  <ID extends IId<?>, S extends Identifiable<? extends ID> & Shareable> Consumer<ShareInformation> sharer(
+	default  <ID extends IId<?>, S extends Identifiable<? extends ID> & Shareable & Authorized> Consumer<ShareInformation> sharer(
 		MetaStorage storage,
-		User user,
-		PermissionCreator<ID> sharedPermissionCreator) {
+		User user) {
 		if(!(this instanceof Identifiable<?>)) {
 			log.warn("Cannot share {} ({}) because it does not implement Identifiable", this.getClass(), this.toString());
 			return QueryUtils.getNoOpEntryPoint();
@@ -42,18 +43,25 @@ public interface  Shareable {
 			if(patch != null && patch.getGroups() != null) {
 				S shareable = (S) this;
 				// Collect groups that do not have access to this instance and remove their probable permission
-				storage.getAllGroups().stream()
-						.filter(group -> !patch.getGroups().contains(group.getId()))
-						.peek(group -> log.trace("User {} unshares instance {} ({}) from owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), group))
-						.forEach(group -> group.removePermission(storage, sharedPermissionCreator.apply(AbilitySets.SHAREHOLDER, shareable.getId())));
+				for (Group group1 : storage.getAllGroups()) {
+					if (patch.getGroups().contains(group1.getId())) {
+						continue;
+					}
+
+					log.trace("User {} unshares instance {} ({}) from owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), group1);
+
+					AuthorizationHelper.removePermission(group1, shareable.createPermission(AbilitySets.SHAREHOLDER), storage);
+				}
 
 
 				if(!patch.getGroups().isEmpty()) {
 					// Resolve the provided groups
-					List<Group> groups = patch.getGroups().stream().map(id -> storage.getGroup(id)).collect(Collectors.toList());
+					Set<Group> groups = patch.getGroups().stream().map(storage::getGroup).collect(Collectors.toSet());
+
 					for(Group group : groups) {
-						ConqueryPermission sharePermission = sharedPermissionCreator.apply(AbilitySets.SHAREHOLDER, shareable.getId());
-						group.addPermission(storage, sharePermission);
+						ConqueryPermission sharePermission = shareable.createPermission(AbilitySets.SHAREHOLDER);
+						AuthorizationHelper.addPermission(group, sharePermission, storage);
+
 						log.trace("User {} shares instance {} ({}). Adding permission {} to owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, group);
 					}
 				}

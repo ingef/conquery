@@ -34,6 +34,7 @@ public class FormPermission extends StringPermissionBuilder {
 		return INSTANCE.instancePermission(abilities, instance);
 	}
 
+	@Deprecated
 	public static ConqueryPermission onInstance(Ability ability, String instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}

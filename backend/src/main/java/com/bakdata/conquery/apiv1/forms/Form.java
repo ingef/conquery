@@ -46,6 +46,7 @@ public abstract class Form implements QueryDescription {
 	public void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<ConqueryPermission> requiredPermissions, Dataset submittedDataset, MetaStorage storage, User user) {
 		QueryDescription.super.collectPermissions(visitors, requiredPermissions, submittedDataset, storage, user);
 		// Check if user is allowed to create this form
+		//TODO use FormConfigType instead
 		requiredPermissions.add(FormPermission.onInstance(Ability.CREATE, getFormType()));
 	}
 

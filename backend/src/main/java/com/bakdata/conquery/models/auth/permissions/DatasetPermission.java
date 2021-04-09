@@ -2,10 +2,8 @@ package com.bakdata.conquery.models.auth.permissions;
 
 import java.util.Set;
 
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 
-@CPSType(id = "DATASETS", base = StringPermissionBuilder.class)
 public class DatasetPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "datasets";
@@ -34,7 +32,6 @@ public class DatasetPermission extends StringPermissionBuilder {
 	
 	
 	//// Helper functions
-	@Deprecated
 	public static ConqueryPermission onInstance(Set<Ability> abilities, DatasetId instance) {
 		return INSTANCE.instancePermission(abilities, instance);
 	}

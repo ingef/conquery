@@ -18,7 +18,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -147,7 +146,7 @@ public class StoredQueriesProcessor {
 		authorize(user, execution, Ability.MODIFY);
 
 		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
-		patch.applyTo(execution, storage, user, QueryPermission::onInstance);
+		patch.applyTo(execution, storage, user);
 		storage.updateExecution(execution);
 
 		// Patch this query in other datasets
@@ -160,7 +159,7 @@ public class StoredQueriesProcessor {
 				continue;
 			}
 			log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), id, patch);
-			patch.applyTo(execution, storage, user, QueryPermission::onInstance);
+			patch.applyTo(execution, storage, user);
 			storage.updateExecution(execution);
 		}
 	}

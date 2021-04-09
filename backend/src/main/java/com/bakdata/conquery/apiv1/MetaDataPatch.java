@@ -45,21 +45,18 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 	 * @param instance          The instance to patch
 	 * @param storage           Storage that persists the instance and also auth information.
 	 * @param user              The user on whose behalf the patch is executed
-	 * @param permissionCreator A function that produces a {@link Permission} that targets the given instance (e.g QueryPermission, FormConfigPermission).
 	 * @param <INST>            Type of the instance that is patched
 	 */
-	public <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, User user, PermissionCreator<ID> permissionCreator) {
-		buildChain(
-				QueryUtils.getNoOpEntryPoint(),
-				storage,
-				user,
-				instance,
-				permissionCreator
+	public <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, User user) {
+		buildChain(QueryUtils.getNoOpEntryPoint(),
+				   storage,
+				   user,
+				   instance
 		)
 				.accept(this);
 	}
 
-	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, User user, INST instance, PermissionCreator<ID> permissionCreator) {
+	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, User user, INST instance) {
 		if (getTags() != null && AuthorizationHelper.isPermitted(user, instance, Ability.TAG)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}
@@ -67,7 +64,7 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 			patchConsumerChain = patchConsumerChain.andThen(instance.labeler());
 		}
 		if (getGroups() != null && AuthorizationHelper.isPermitted(user, instance, Ability.SHARE)) {
-			patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, user, permissionCreator));
+			patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, user));
 		}
 		return patchConsumerChain;
 	}
