@@ -221,23 +221,28 @@ public class ArrowRenderer {
             vector.setIndexDefined(rowNumber);
         };
     }
-    private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer, Function<Object[], Object[]> resultExtractor){
+    private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer, Function<Object[], List> resultExtractor){
         // This is not used at the moment see ResultType.ListT::getArrowFieldType
         return (rowNumber, line) -> {
             // Values is a vertical list
-            Object[] values = resultExtractor.apply(line);
+            List values = resultExtractor.apply(line);
             if (values == null) {
                 vector.setNull(rowNumber);
                 return;
             }
 
-            vector.startNewValue(rowNumber);
-            for (int i = 0; i < values.length; i++) {
+            int start = vector.startNewValue(rowNumber);
+            for (int i = 0; i < values.size(); i++) {
                 // These short lived one value arrays are a workaround at the moment
-                nestedConsumer.accept(i, new Object[] {values[i]});
+                nestedConsumer.accept(start + i, new Object[] {values.get(i)});
             }
 
-            vector.endValue(rowNumber,values.length);
+            // Workaround for https://issues.apache.org/jira/browse/ARROW-8842
+            final FieldVector innerVector = vector.getDataVector();
+            int valueCount = innerVector.getValueCount();
+            innerVector.setValueCount(valueCount + values.size());
+
+            vector.endValue(rowNumber,values.size());
        };
     }
 
@@ -307,7 +312,7 @@ public class ArrowRenderer {
             ValueVector nestedVector = listVector.getDataVector();
 
             // pos = 0 is a workaround for now
-            return listVectorFiller(listVector, generateVectorFiller(0, nestedVector), (line) -> (Object[]) line[pos]);
+            return listVectorFiller(listVector, generateVectorFiller(0, nestedVector), (line) -> (List) line[pos]);
         }
 
         throw new IllegalArgumentException("Unsupported vector type " + vector);
