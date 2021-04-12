@@ -7,8 +7,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.util.Locale;
-
 @Getter
 @AllArgsConstructor
 @ToString
@@ -19,7 +17,7 @@ public class SimpleResultInfo extends ResultInfo {
 	private final ResultType type;
 
 	@Override
-	public String userColumnName(Locale locale) {
+	public String userColumnName(PrintSettings printSettings) {
 		return null;
 	}
 

@@ -10,8 +10,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Locale;
-
 @Getter
 @EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
@@ -31,26 +29,28 @@ public class SelectResultInfo extends ResultInfo {
 		return ColumnDescriptor.builder()
 				.label(getUniqueName(settings))
 				.defaultLabel(defaultColumnName(settings))
-				.userConceptLabel(userColumnName(settings.getLocale()))
+				.userConceptLabel(userColumnName(settings))
 				.type(getType().typeInfo())
 				.selectId(select.getId())
 				.build();
 	}
 
 	@Override
-	public String userColumnName(Locale locale) {
+	public String userColumnName(PrintSettings printSettings) {
+
+		if (printSettings.getColumnNamer() != null) {
+			// override user labels if column namer is set, TODO clean this up when userConceptLabel is removed
+			return printSettings.getColumnNamer().apply(this);
+		}
+
 		StringBuilder sb = new StringBuilder();
-		String label = getCqConcept().getLabel(locale);
+		String label = getCqConcept().getLabel(printSettings.getLocale());
 
 		return select.appendColumnName(sb, label);
 	}
 
 	@Override
 	public String defaultColumnName(PrintSettings printSettings) {
-		if (printSettings.getColumnNamer() != null) {
-			return printSettings.getColumnNamer().apply(this);
-		}
-
 
 		StringBuilder sb = new StringBuilder();
 		String cqLabel = getCqConcept().getDefaultLabel();

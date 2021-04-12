@@ -39,7 +39,7 @@ public class LocalizedSimpleResultInfo extends ResultInfo {
 	private final ResultType type;
 
 	@Override
-	public String userColumnName(Locale locale) {
+	public String userColumnName(PrintSettings printSettings) {
 		return null;
 	}
 

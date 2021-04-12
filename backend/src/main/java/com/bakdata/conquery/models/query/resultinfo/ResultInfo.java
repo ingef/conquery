@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Objects;
 
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -43,7 +42,7 @@ public abstract class ResultInfo {
 	@NonNull
 	@JsonIgnore
 	public final String getUniqueName(PrintSettings settings) {
-		@NonNull String label = Objects.requireNonNullElse(userColumnName(settings.getLocale()), defaultColumnName(settings));
+		@NonNull String label = Objects.requireNonNullElse(userColumnName(settings), defaultColumnName(settings));
 		if (ocurrenceCounter == null) {
 			return label;
 		}
@@ -61,7 +60,7 @@ public abstract class ResultInfo {
 		return uniqueName;
 	}
 
-	public abstract String userColumnName(Locale locale);
+	public abstract String userColumnName(PrintSettings printSettings);
 	public abstract String defaultColumnName(PrintSettings printSettings);
 
 	@ToString.Include
@@ -75,7 +74,7 @@ public abstract class ResultInfo {
 		return ColumnDescriptor.builder()
 				.label(getUniqueName(settings))
 				.defaultLabel(defaultColumnName(settings))
-				.userConceptLabel(userColumnName(settings.getLocale()))
+				.userConceptLabel(userColumnName(settings))
 				.type(getType().typeInfo())
 				.build();
 	}
