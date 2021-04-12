@@ -92,12 +92,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	private boolean aggregateEventDates;
 
 	@Override
-	public String getLabel(Locale locale) {
-		final String label = super.getLabel(locale);
-		if (!Strings.isNullOrEmpty(label)) {
-			return label;
-		}
-
+	public String defaultLabel(Locale locale) {
 		return getDefaultLabel();
 	}
 

@@ -25,7 +25,7 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
-import com.bakdata.conquery.models.query.resultinfo.LocalizedSimpleResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.util.QueryUtils;
 import com.google.common.base.Preconditions;
@@ -115,20 +115,14 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 		}
 
 		if (createExists) {
-			collector.add(new LocalizedSimpleResultInfo(this::getLabel, ResultType.BooleanT.INSTANCE));
+			collector.add(new LocalizedDefaultResultInfo(getLabel(), this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}
 
 	@Override
-	public String getLabel(Locale locale) {
-		String label = super.getLabel(locale);
-		if (label != null) {
-			return label;
-		}
-
+	public String defaultLabel(Locale locale) {
 		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).or() + " ", locale);
 	}
-
 
 
 	@Override

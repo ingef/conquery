@@ -44,7 +44,7 @@ public class SelectResultInfo extends ResultInfo {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		String label = getCqConcept().getLabel(printSettings.getLocale());
+		String label = getCqConcept().getUserOrDefaultLabel(printSettings.getLocale());
 
 		return select.appendColumnName(sb, label);
 	}

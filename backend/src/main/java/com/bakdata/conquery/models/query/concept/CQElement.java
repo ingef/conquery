@@ -19,7 +19,10 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
+
+import javax.validation.constraints.NotNull;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
@@ -32,8 +35,16 @@ public abstract class CQElement implements Visitable {
 	@Getter
 	private String label = null;
 
-	public String getLabel(Locale locale){
-		return label;
+	public String getUserOrDefaultLabel(Locale locale){
+		if (label != null){
+			return label;
+		}
+		return defaultLabel(locale);
+	}
+
+	@NotNull
+	public String defaultLabel(Locale locale) {
+		return "";
 	}
 
 	/**
