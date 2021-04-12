@@ -53,7 +53,7 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class ArrowResultGenerationTest {
 
-    private static final int BATCH_SIZE = 1;
+    private static final int BATCH_SIZE = 2;
     final IdMappingConfig idMapping = new IdMappingConfig() {
 
         @Getter
@@ -137,10 +137,12 @@ public class ArrowResultGenerationTest {
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = List.of(
                 new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),
-                new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, null}),
+                new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of()}),
+                new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false)}),
                 new MultilineEntityResult(3, List.of(
+                        new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false)},
                         new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, null}
+                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false)}
                 )));
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
