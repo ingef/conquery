@@ -5,7 +5,6 @@ import java.util.function.Function;
 
 import c10n.C10N;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +38,12 @@ public class LocalizedSimpleResultInfo extends ResultInfo {
 	private final ResultType type;
 
 	@Override
-	protected String getName(PrintSettings settings) {
-		return localizedNameProvider.apply(settings.getLocale());
+	public String userColumnName(Locale locale) {
+		return null;
+	}
+
+	@Override
+	public String defaultColumnName(Locale locale) {
+		return localizedNameProvider.apply(locale);
 	}
 }

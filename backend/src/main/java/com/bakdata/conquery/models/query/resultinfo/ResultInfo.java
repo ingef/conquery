@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.Objects;
 
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
@@ -41,17 +43,17 @@ public abstract class ResultInfo {
 	@NonNull
 	@JsonIgnore
 	public final String getUniqueName(PrintSettings settings) {
-		String name = getName(settings);
+		@NonNull String label = Objects.requireNonNullElse(userColumnName(settings.getLocale()), defaultColumnName(settings.getLocale()));
 		if (ocurrenceCounter == null) {
-			return name;
+			return label;
 		}
 		// lookup if prefix is needed and computed it if necessary
 		synchronized (ocurrenceCounter) {
 			if (postfix == UNSET_PREFIX) {
-				postfix = ocurrenceCounter.compute(name, (k, v) -> (v == null) ? 0 : ++v);
+				postfix = ocurrenceCounter.compute(label, (k, v) -> (v == null) ? 0 : ++v);
 			}
 		}
-		String uniqueName = (postfix > 0) ? name + "_" + postfix : name;
+		String uniqueName = (postfix > 0) ? label + "_" + postfix : label;
 		if (ocurrenceCounter.containsKey(uniqueName) && ocurrenceCounter.get(uniqueName) > 0) {
 			log.warn(
 				"Even with postfixing the result will contain column name duplicates. This might be caused by another column that is having a number postfix by default.");
@@ -59,7 +61,8 @@ public abstract class ResultInfo {
 		return uniqueName;
 	}
 
-	protected abstract String getName(PrintSettings settings);
+	public abstract String userColumnName(Locale locale);
+	public abstract String defaultColumnName(Locale locale);
 
 	@ToString.Include
 	public abstract ResultType getType();
@@ -70,8 +73,10 @@ public abstract class ResultInfo {
 
 	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
 		return ColumnDescriptor.builder()
-			.label(getUniqueName(settings))
-			.type(getType().typeInfo())
-			.build();
+				.label(getUniqueName(settings))
+				.defaultLabel(defaultColumnName(settings.getLocale()))
+				.userConceptLabel(userColumnName(settings.getLocale()))
+				.type(getType().typeInfo())
+				.build();
 	}
 }

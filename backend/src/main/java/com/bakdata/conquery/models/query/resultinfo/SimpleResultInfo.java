@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+
+import java.util.Locale;
 
 @Getter
 @AllArgsConstructor
@@ -17,7 +18,12 @@ public class SimpleResultInfo extends ResultInfo {
 	private final ResultType type;
 
 	@Override
-	public String getName(PrintSettings settings) {
+	public String userColumnName(Locale locale) {
+		return null;
+	}
+
+	@Override
+	public String defaultColumnName(Locale locale) {
 		return name;
 	}
 }
