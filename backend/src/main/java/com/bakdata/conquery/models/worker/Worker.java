@@ -127,7 +127,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public ObjectMapper inject(ObjectMapper binaryMapper) {
-		return new SingletonNamespaceCollection(storage.getCentralRegistry()).injectInto(binaryMapper);
+		return new SingletonNamespaceCollection(storage.getCentralRegistry())
+					   .injectInto(binaryMapper);
 	}
 
 	@Override
@@ -169,8 +170,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	public void removeImport(ImportId importId) {
 		final Import imp = storage.getImport(importId);
 
-		for (DictionaryId dictionaryId : imp.getDictionaries()) {
-			storage.removeDictionary(dictionaryId);
+		for (DictionaryId dictionary : imp.getDictionaries()) {
+			storage.removeDictionary(dictionary);
 		}
 
 		storage.removeImport(importId);

@@ -20,57 +20,65 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> implements ContextualDeserializer {
 
 	private Class<ID> idClass;
 	private Parser<ID> idParser;
 	private boolean checkForInjectedPrefix;
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public ID deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
-		if(parser.getCurrentToken()==JsonToken.VALUE_STRING) {
-			String text = parser.getText();
-			try {
-				if(checkForInjectedPrefix) {
-					//check if there was a dataset injected and if it is already a prefix
-					Dataset dataset = (Dataset) ctxt.findInjectableValue(Dataset.class.getName(), null, null);
-					if(dataset != null) {
-						return idParser.parsePrefixed(dataset.getName(), text);
-					}
-				}
-				return idParser.parse(text);
-			} catch(Exception e) {
-				return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse an "+idClass.getSimpleName()+" from "+text);
+		if (parser.getCurrentToken() != JsonToken.VALUE_STRING) {
+			return (ID) ctxt.handleUnexpectedToken(IId.class, parser.getCurrentToken(), parser, "name references should be strings");
+		}
+		String text = parser.getText();
+
+		try {
+			return deserializeId(text, idParser, checkForInjectedPrefix, ctxt);
+		}
+		catch (Exception e) {
+			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse an " + idClass.getSimpleName() + " from " + text);
+		}
+	}
+
+	public static <ID extends IId<?>> ID deserializeId(String text, Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
+			throws JsonMappingException {
+		if (checkForInjectedPrefix) {
+			//check if there was a dataset injected and if it is already a prefix
+			Dataset dataset = (Dataset) ctx.findInjectableValue(Dataset.class.getName(), null, null);
+
+			if (dataset != null) {
+				return idParser.parsePrefixed(dataset.getName(), text);
 			}
 		}
-		return (ID) ctxt.handleUnexpectedToken(IId.class, parser.getCurrentToken(), parser, "name references should be strings");
+		return idParser.parse(text);
 	}
-	
+
 	@Override
 	public ID deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
 		return this.deserialize(p, ctxt);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
 	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
-		JavaType type = Optional
-				.ofNullable(ctxt.getContextualType())
-				.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
+		JavaType type = Optional.ofNullable(ctxt.getContextualType())
+								.orElseGet(Optional.ofNullable(property).map(BeanProperty::getType)::get);
 
-		while(type.isContainerType()) {
+		while (type.isContainerType()) {
 			type = type.getContentType();
 		}
 		Class<IId<?>> idClass = (Class<IId<?>>) type.getRawClass();
-		Parser<IId<Identifiable<?>>> parser = IId.<IId<Identifiable<?>>>createParser((Class)idClass);
-		
+		Parser<IId<Identifiable<?>>> parser = IId.<IId<Identifiable<?>>>createParser((Class) idClass);
+
 		return new IdDeserializer(
-			idClass,
-			parser,
-			//we only need to check for the dataset prefix if the id requires it
-			NamespacedId.class.isAssignableFrom(idClass)
+				idClass,
+				parser,
+				//we only need to check for the dataset prefix if the id requires it
+				NamespacedId.class.isAssignableFrom(idClass)
 		);
 	}
 }

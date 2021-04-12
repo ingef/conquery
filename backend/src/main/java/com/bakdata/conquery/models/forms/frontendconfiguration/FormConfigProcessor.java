@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.Validator;
+import javax.ws.rs.NotFoundException;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
@@ -18,9 +19,8 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.auth.permissions.FormPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -39,7 +40,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.Permission;
 import org.jetbrains.annotations.TestOnly;
 
 /**
@@ -68,10 +68,13 @@ public class FormConfigProcessor {
 			// However if a user queries for specific form types, we will show all matching regardless whether
 			// the form config can be used by the user again.
 			Set<String> allowedFormTypes = new HashSet<>();
-			for (String formType : FormScanner.FRONTEND_FORM_CONFIGS.keySet()) {
-				if (user.isPermitted(FormPermission.onInstance(Ability.CREATE, formType))) {
-					allowedFormTypes.add(formType);
+
+			for (FormType formType : FormScanner.FRONTEND_FORM_CONFIGS.values()) {
+				if (!AuthorizationHelper.isPermitted(user, formType, Ability.CREATE)) {
+					continue;
 				}
+
+				allowedFormTypes.add(formType.getName());
 			}
 			requestedFormType = allowedFormTypes;
 		}
@@ -79,9 +82,9 @@ public class FormConfigProcessor {
 		final Set<String> formTypesFinal = requestedFormType;
 
 		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
-				.filter(c -> dataset.equals(c.getDataset()))
-				.filter(c -> formTypesFinal.contains(c.getFormType()))
-				.filter(c -> user.isOwner(c) || user.isPermitted(FormConfigPermission.onInstance(Ability.READ, c.getId())));
+										   .filter(c -> dataset.equals(c.getDataset()))
+										   .filter(c -> formTypesFinal.contains(c.getFormType()))
+										   .filter(c -> AuthorizationHelper.isPermitted(user, c, Ability.READ));
 
 
 		return stream.map(c -> c.overview(storage, user));
@@ -104,12 +107,17 @@ public class FormConfigProcessor {
 	 * translatable to those.
 	 */
 	public FormConfigId addConfig(User user, DatasetId targetDataset, FormConfigAPI config) {
-		user.checkPermission(DatasetPermission.onInstance(Ability.READ.asSet(), targetDataset));
 
-		List<DatasetId> translateToDatasets = storage.getDatasetRegistry().getAllDatasets().stream()
-			.map(Identifiable::getId)
-			.filter(dId -> user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), dId)))
-			.collect(Collectors.toList());
+		//TODO clear this up
+		final Namespace namespace = storage.getDatasetRegistry().get(targetDataset);
+
+		AuthorizationHelper.authorize(user, namespace.getDataset(), Ability.READ);
+
+		List<DatasetId> translateToDatasets = storage.getDatasetRegistry().getAllDatasets()
+													 .stream()
+													 .filter(dId -> AuthorizationHelper.isPermitted(user, dId, Ability.READ))
+													 .map(Identifiable::getId)
+													 .collect(Collectors.toList());
 
 		translateToDatasets.remove(targetDataset);
 
@@ -143,9 +151,13 @@ public class FormConfigProcessor {
 	 * Applies a patch to a configuration that allows to change its label or tags or even share it.
 	 */
 	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, FormConfigPatch patch) {
-		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
-		
-		patch.applyTo(config, storage, user, FormConfigPermission::onInstance);
+		FormConfig config = storage.getFormConfig(formId);
+
+		if (config == null) {
+			throw new NotFoundException(formId.toString());
+		}
+
+		patch.applyTo(config, storage, user);
 		
 		storage.updateFormConfig(config);
 		
@@ -160,8 +172,10 @@ public class FormConfigProcessor {
 		AuthorizationHelper.authorize(user,config,Ability.DELETE);
 		storage.removeFormConfig(formId);
 		// Delete corresponding permissions (Maybe better to put it into a slow job)
-		for(Permission permission : user.getPermissions()) {
+		for(ConqueryPermission permission : user.getPermissions()) {
+
 			WildcardPermission wpermission = (WildcardPermission) permission;
+
 			if(!wpermission.getDomains().contains(FormConfigPermission.DOMAIN.toLowerCase())) {
 				continue;
 			}
@@ -173,7 +187,8 @@ public class FormConfigProcessor {
 				// Create new permission if it was a composite permission
 				Set<String> instancesCleared = new HashSet<>(wpermission.getInstances());
 				instancesCleared.remove(formId.toString());
-				WildcardPermission clearedPermission = new WildcardPermission(List.of(wpermission.getDomains(),wpermission.getAbilities(),instancesCleared), Instant.now());
+				WildcardPermission clearedPermission =
+						new WildcardPermission(List.of(wpermission.getDomains(), wpermission.getAbilities(), instancesCleared), Instant.now());
 				user.addPermission(storage, clearedPermission);
 			}
 			

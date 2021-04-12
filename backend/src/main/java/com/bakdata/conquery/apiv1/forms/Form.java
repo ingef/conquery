@@ -1,66 +1,46 @@
 package com.bakdata.conquery.apiv1.forms;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.FormPermission;
-import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ClassToInstanceMap;
 import lombok.NonNull;
-import org.apache.shiro.authz.Permission;
 
 /**
  * API representation of a form query.
  */
-public interface Form extends QueryDescription {
+public abstract class Form implements QueryDescription {
 	
 	@JsonIgnore
-	default String getFormType() {
+	public String getFormType() {
 		return this.getClass().getAnnotation(CPSType.class).id();
 	}
 
-	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset);
+	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, Dataset submittedDataset);
 	
 	@Override
-	public default ManagedForm toManagedExecution(UserId userId, DatasetId submittedDataset) {
+	public ManagedForm toManagedExecution(UserId userId, Dataset submittedDataset) {
 		return new ManagedForm(this, userId, submittedDataset);
 	}
-		
-	@Override
-	public default void collectPermissions(@NonNull ClassToInstanceMap<QueryVisitor> visitors, Collection<Permission> requiredPermissions, DatasetId submittedDataset, MetaStorage storage, User user) {
-		QueryDescription.super.collectPermissions(visitors, requiredPermissions, submittedDataset, storage, user);
-		// Check if user is allowed to create this form
-		requiredPermissions.add(FormPermission.onInstance(Ability.CREATE, getFormType()));
-	}
 
-	/**
-	 * Utility function for forms that usually have at least one query as a prerequisite.
-	 */
-	public static IQuery resolvePrerequisite(QueryResolveContext context, ManagedExecutionId prerequisiteId) {
-		// Resolve the prerequisite
-		ManagedExecution<?> prerequisiteExe = context.getDatasetRegistry().getMetaStorage().getExecution(prerequisiteId);
-		if(!(prerequisiteExe instanceof ManagedQuery)) {
-			throw new IllegalArgumentException("The prerequisite query must be of type " + ManagedQuery.class.getName());
-		}
-		IQuery query = ((ManagedQuery)prerequisiteExe).getQuery();
-		query.resolve(context);
-		return query;
+	@Override
+	public void authorize(User user, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors) {
+		QueryDescription.super.authorize(user, submittedDataset, visitors);
+		// Check if user is allowed to create this form
+		AuthorizationHelper.authorize(user, FormScanner.FRONTEND_FORM_CONFIGS.get(getFormType()), Ability.CREATE);
 	}
 
 
@@ -72,5 +52,5 @@ public interface Form extends QueryDescription {
 	 * </code>
 	 */
 	@JsonIgnore
-	abstract public String getLocalizedTypeLabel();
+	public abstract String getLocalizedTypeLabel();
 }

@@ -11,15 +11,12 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.github.powerlibraries.io.In;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -35,22 +32,6 @@ public class SuccinctTrieTest {
 		return new long[]{0L, 7L};
 	}
 
-	@Test
-	public void replicationTest() throws IOException {
-		SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
-		MapDictionary direct = new MapDictionary(new DatasetId("dataset"), "name2");
-
-		data().forEach(entry -> direct.put(entry.getBytes()));
-
-		dict.compress();
-
-		SuccinctTrie replicatedDict = SuccinctTrie.fromSerialized(dict.toSerialized());
-
-		assertThat(IntStream.range(0, dict.size())).allSatisfy(id -> {
-			assertThat(replicatedDict.getElement(id)).isEqualTo(dict.getElement(id));
-		});
-
-	}
 
 	public static Stream<String> data() throws IOException {
 		return In.resource(SuccinctTrieTest.class, "SuccinctTrieTest.data").streamLines();
@@ -67,7 +48,7 @@ public class SuccinctTrieTest {
 		words.add("ha");
 		words.add("hat");
 
-		SuccinctTrie direct = new SuccinctTrie(new DatasetId("dataset"), "name");
+		SuccinctTrie direct = new SuccinctTrie(Dataset.PLACEHOLDER,"name");
 
 
 		int distinctValues = 0;
@@ -91,23 +72,26 @@ public class SuccinctTrieTest {
 
 	@Test
 	public void serializationTest()
-			throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
+			throws IOException, JSONException {
 
-		SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
-		dict.setDataset(new DatasetId("test"));
-		dict.setName("testDict");
+		final CentralRegistry registry = new CentralRegistry();
+		registry.register(Dataset.PLACEHOLDER);
+
+		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER,"testDict");
+
 		data().forEach(value -> dict.put(value.getBytes()));
 
 		dict.compress();
 		SerializationTestUtil
 				.forType(Dictionary.class)
+				.registry(registry)
 				.test(dict);
 	}
 
 	@ParameterizedTest(name = "seed: {0}")
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
-		final SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
+		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER,"name");
 		EncodedDictionary direct = new EncodedDictionary(dict, StringTypeEncoded.Encoding.UTF8);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 

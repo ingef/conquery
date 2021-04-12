@@ -17,6 +17,7 @@ public interface RoleOwner {
 	 *
 	 * @return A set of the roles hold by the owner.
 	 */
+	//TODO migrate to NsIdRef Role
 	@JsonIgnore
 	Set<RoleId> getRoles();
 }

@@ -9,6 +9,8 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -58,5 +60,10 @@ public class Column extends Labeled<ColumnId> {
 	@Override
 	public String toString() {
 		return String.format("Column[%s](type = %s)", getId(), getType());
+	}
+
+	@ValidationMethod(message = "Only STRING columns can be part of shared Dictionaries.") @JsonIgnore
+	public boolean isSharedString() {
+		return sharedDictionary == null || type.equals(MajorTypeId.STRING);
 	}
 }

@@ -4,20 +4,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class QueryTranslator {
 
-	public <T extends IQuery> T replaceDataset(DatasetRegistry namespaces, T element, DatasetId target) {
+	public <T extends IQuery> T replaceDataset(DatasetRegistry namespaces, T element, Dataset target) {
 		if(element instanceof ConceptQuery) {
-			CQElement root = replaceDataset(namespaces, ((ConceptQuery) element).getRoot(), target);
+			CQElement root = replaceDataset(namespaces, ((ConceptQuery) element).getRoot(), target.getId());
 			return (T) new ConceptQuery(root, ((ConceptQuery) element).getDateAggregationMode());
 		}
 		throw new IllegalStateException(String.format("Can't translate non ConceptQuery IQueries: %s", element.getClass()));
@@ -27,18 +29,20 @@ public class QueryTranslator {
 		try {
 			String value = Jackson.MAPPER.writeValueAsString(element);
 			
-			NamespacedIdCollector collector = new NamespacedIdCollector();
+			NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 			
 			element.visit(collector);
-	
-			Pattern[] patterns = collector.getIds()
-				.stream()
-				.map(NamespacedId::getDataset)
-				.map(DatasetId::toString)
-				// ?<= -- non-capturing assertion, to start with "
-				// ?= --  non-capturing assertion to end with [."]
-				.map(n -> Pattern.compile("(?<=(\"))" + Pattern.quote(n) + "(?=([.\"]))"))
-				.toArray(Pattern[]::new);
+
+			Pattern[] patterns =
+					collector.getIdentifiables()
+							 .stream()
+							 .map(NamespacedIdentifiable::getDataset)
+							 .map(Dataset::getId)
+							 .map(IId::toString)
+							 // ?<= -- non-capturing assertion, to start with "
+							 // ?= --  non-capturing assertion to end with [."]
+							 .map(n -> Pattern.compile("(?<=(\"))" + Pattern.quote(n) + "(?=([.\"]))"))
+							 .toArray(Pattern[]::new);
 	
 			String replacement = Matcher.quoteReplacement(target.toString());
 			for (Pattern pattern : patterns) {

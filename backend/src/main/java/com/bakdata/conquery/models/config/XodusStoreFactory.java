@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.Store;
@@ -48,6 +49,7 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
@@ -241,14 +243,29 @@ public class XodusStoreFactory implements StoreFactory {
         return TABLES.identifiable(createStore(findEnvironment(pathName), validator, TABLES), centralRegistry);
     }
 
-    @Override
-    public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, List<String> pathName) {
-        if (useWeakDictionaryCaching) {
-            return StoreInfo.DICTIONARIES.identifiableCachedStore(createBigWeakStore(findEnvironment(pathName), validator, StoreInfo.DICTIONARIES), centralRegistry);
-        } else {
-            return StoreInfo.DICTIONARIES.identifiable(createBigStore(findEnvironment(pathName), validator, StoreInfo.DICTIONARIES), centralRegistry);
-        }
-    }
+	@Override
+	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, List<String> pathName) {
+		final Environment environment = findEnvironment(pathName);
+
+		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(centralRegistry);
+
+		final BigStore<IId<Dictionary>, Dictionary> bigStore;
+
+		synchronized (openStoresInEnv) {
+			bigStore = new BigStore<>(this, validator, environment, DICTIONARIES, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, namespaceCollection.injectInto(Jackson.BINARY_MAPPER));
+		}
+
+		final Store<IId<Dictionary>, Dictionary> result;
+
+		if (useWeakDictionaryCaching) {
+			result = new WeakCachedStore<>(bigStore, getWeakCacheDuration());
+		}
+		else {
+			result = DICTIONARIES.cached(bigStore);
+		}
+
+		return DICTIONARIES.identifiableCachedStore(result, centralRegistry);
+	}
 
     @Override
     public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, List<String> pathName) {
@@ -379,22 +396,4 @@ public class XodusStoreFactory implements StoreFactory {
         }
     }
 
-    public <KEY, VALUE> Store<KEY, VALUE> createBigStore(Environment environment, Validator validator, StoreInfo storeId) {
-        synchronized (openStoresInEnv) {
-
-            return storeId.cached(
-                    new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment)
-            );
-        }
-    }
-
-    public <KEY, VALUE> Store<KEY, VALUE> createBigWeakStore(Environment environment, Validator validator, StoreInfo storeId) {
-        synchronized (openStoresInEnv) {
-
-            return new WeakCachedStore<>(
-                    new BigStore<>(this, validator, environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
-                    getWeakCacheDuration()
-            );
-        }
-    }
 }

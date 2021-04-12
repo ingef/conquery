@@ -2,14 +2,11 @@ package com.bakdata.conquery.models.auth.permissions;
 
 import java.util.Set;
 
-import com.bakdata.conquery.io.cps.CPSType;
-
 /**
  * Permission to restrict the usage of a specific form type.
  * The forms are programmatically distinguished from their CPSType.
  *
  */
-@CPSType(id = "FORM", base = StringPermissionBuilder.class)
 public class FormPermission extends StringPermissionBuilder {
 	
 	public static final String DOMAIN = "forms";
@@ -34,6 +31,7 @@ public class FormPermission extends StringPermissionBuilder {
 		return INSTANCE.instancePermission(abilities, instance);
 	}
 
+	@Deprecated
 	public static ConqueryPermission onInstance(Ability ability, String instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}

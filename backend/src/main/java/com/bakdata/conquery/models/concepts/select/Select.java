@@ -3,8 +3,10 @@ package com.bakdata.conquery.models.concepts.select;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.SelectHolder;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
@@ -18,10 +20,16 @@ import lombok.Setter;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public abstract class Select extends Labeled<SelectId> {
+public abstract class Select extends Labeled<SelectId> implements NamespacedIdentifiable<SelectId> {
 
 	@JsonBackReference @Getter @Setter
 	private SelectHolder<?> holder;
+
+	@JsonIgnore
+	@Override
+	public Dataset getDataset() {
+		return getHolder().findConcept().getDataset();
+	}
 
 	@Setter @Getter
 	private String description;

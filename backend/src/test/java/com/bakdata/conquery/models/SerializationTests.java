@@ -217,13 +217,19 @@ public class SerializationTests {
 	
 	@Test
 	public void managedQuery() throws JSONException, IOException {
-		
-		ManagedQuery execution = new ManagedQuery(null, new UserId("test-user"), new DatasetId("test-dataset"));
+
+		final CentralRegistry registry = new CentralRegistry();
+
+		final Dataset dataset = new Dataset("test-dataset");
+
+		registry.register(dataset);
+
+		ManagedQuery execution = new ManagedQuery(null, new UserId("test-user"), dataset);
 		execution.setTags(new String[] {"test-tag"});
-		
-		SerializationTestUtil
-			.forType(ManagedExecution.class)
-			.test(execution);
+
+		SerializationTestUtil.forType(ManagedExecution.class)
+							 .registry(registry)
+							 .test(execution);
 	}
 	
 	@Test

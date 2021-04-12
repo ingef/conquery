@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Iterators;
 import lombok.Getter;
@@ -95,11 +94,6 @@ public class StringTypeSingleton implements StringStore {
 	@Override
 	public boolean isDictionaryHolding() {
 		return false;
-	}
-
-	@Override
-	public void setUnderlyingDictionary(DictionaryId newDict) {
-
 	}
 
 	@Override

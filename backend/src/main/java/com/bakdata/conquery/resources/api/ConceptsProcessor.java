@@ -21,9 +21,9 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEList;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
@@ -93,15 +93,14 @@ public class ConceptsProcessor {
 			throw new RuntimeException("failed to create frontend node for "+concept, e);
 		}
 	}
-	
+
 	public List<IdLabel<DatasetId>> getDatasets(User user) {
-		return namespaces
-			.getAllDatasets()
-			.stream()
-			.filter(d -> user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), d.getId())))
-			.map(d -> new IdLabel<DatasetId>(d.getId(), d.getLabel()))
-			.sorted()
-			.collect(Collectors.toList());
+		return namespaces.getAllDatasets()
+						 .stream()
+						 .filter(d -> AuthorizationHelper.isPermitted(user, d, Ability.READ))
+						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
+						 .sorted()
+						 .collect(Collectors.toList());
 	}
 
 	/**

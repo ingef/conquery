@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.auth;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -19,26 +19,24 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AdminPermission;
+import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.execution.Owned;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
@@ -47,49 +45,46 @@ import org.apache.shiro.authz.Permission;
  *
  */
 @Slf4j
+@UtilityClass
 public class AuthorizationHelper {
 
-	// Dataset Instances
-	/**
-	 * Helper function for authorizing an ability on a dataset.
-	 * @param user The subject that needs authorization.
-	 * @param dataset The id of the object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
-	 */
-	public static void authorize(@NonNull User user, @NonNull DatasetId dataset, @NonNull Ability ability) {
-		authorize(user, dataset, EnumSet.of(ability));
+	public static boolean isPermittedAll(User user, Collection<? extends Authorized> authorized, Ability ability) {
+		return authorized.stream()
+						 .allMatch(auth -> isPermitted(user, auth, ability));
 	}
 
-	/**
-	 * Helper function for authorizing an ability on a dataset.
-	 * @param user The subject that needs authorization.
-	 * @param dataset The id of the object that needs to be checked.
-	 * @param abilities The kind of ability that is checked.
-	 */
-	public static void authorize(@NonNull User user, @NonNull DatasetId dataset, @NonNull EnumSet<Ability> abilities) {
-		user.checkPermission(DatasetPermission.onInstance(abilities, dataset));
+	public static void authorize(User user, Authorized object, Ability ability) {
+		if (isOwnedBy(user, object)) {
+			return;
+		}
+
+		user.checkPermission(object.createPermission(EnumSet.of(ability)));
 	}
 
-	// Query Instances
-	/**
-	 * Helper function for authorizing an ability on a query.
-	 * @param user The subject that needs authorization.
-	 * @param query The id of the object that needs to be checked.
-	 * @param ability The kind of ability that is checked.
-	 */
-	public static void authorize(@NonNull User user, @NonNull ManagedExecution<?> query, @NonNull Ability ability) {
-		if(!user.isOwner(query)) {
-			user.checkPermission(QueryPermission.onInstance(ability, query.getId()));
+	public static void authorize(User user, Set<? extends Authorized> objects, Ability ability) {
+		for (Authorized object : objects) {
+			authorize(user, object, ability);
 		}
 	}
 
-	/**
-	 * Helper function for authorizing an ability on a query.
-	 * @param user The subject that needs authorization.
-	 * @param toBeChecked The permission that is checked
-	 */
-	public static void authorize(@NonNull User user, @NonNull ConqueryPermission toBeChecked) {
-		user.checkPermission(toBeChecked);
+	public static boolean isPermitted(User user, Authorized object, Ability ability) {
+		if (isOwnedBy(user, object)) {
+			return true;
+		}
+
+		return user.isPermitted(object.createPermission(EnumSet.of(ability)));
+	}
+
+	public static boolean isOwnedBy(User user, Authorized object) {
+		return object instanceof Owned && user.isOwner(((Owned) object));
+	}
+
+
+	public static boolean[] isPermitted(User user, List<? extends Authorized> authorizeds, Ability ability) {
+		return authorizeds.stream()
+						  .map(auth -> isPermitted(user, auth, ability))
+						  .collect(Collectors.toCollection(BooleanArrayList::new))
+						  .toBooleanArray();
 	}
 
 	/**
@@ -112,10 +107,12 @@ public class AuthorizationHelper {
 		owner.removePermission(storage, permission);
 	}
 
-	public static List<Group> getGroupsOf(@NonNull UserId userId, @NonNull MetaStorage storage){
+	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MetaStorage storage){
+		final UserId id = user.getId();
+
 		List<Group> userGroups = new ArrayList<>();
 		for (Group group : storage.getAllGroups()) {
-			if(group.containsMember(userId)) {
+			if(group.containsMember(id)) {
 				userGroups.add(group);
 			}
 		}
@@ -126,8 +123,8 @@ public class AuthorizationHelper {
 	 * Find the primary group of the user. All users must have a primary group.
 	 * @implNote Currently this is the first group of a user and should also be the only group.
 	 */
-	public static Optional<Group> getPrimaryGroup(@NonNull UserId userId, @NonNull MetaStorage storage) {
-		List<Group> groups = getGroupsOf(userId, storage);
+	public static Optional<Group> getPrimaryGroup(@NonNull User user, @NonNull MetaStorage storage) {
+		List<Group> groups = getGroupsOf(user, storage);
 		if(groups.isEmpty()) {
 			return Optional.empty();
 		}
@@ -142,15 +139,13 @@ public class AuthorizationHelper {
 	 * the permission of the roles it inherits.
 	 * @return Owned and inherited permissions.
 	 */
-	public static Set<Permission> getEffectiveUserPermissions(UserId userId, MetaStorage storage) {
-		User user = Objects.requireNonNull(storage.getUser(userId), () -> String.format("User with id %s was not found", userId));
-
-		Set<Permission> tmpView = collectRolePermissions(storage, user, user.getPermissions());
+	public static Set<ConqueryPermission> getEffectiveUserPermissions(User user, MetaStorage storage) {
+		Set<ConqueryPermission> tmpView = collectRolePermissions(storage, user, user.getPermissions());
 
 		for (Group group : storage.getAllGroups()) {
 			if (group.containsMember(user.getId())) {
 				// Get effective permissions of the group
-				tmpView = Sets.union(tmpView, getEffectiveGroupPermissions(group.getId(), storage));
+				tmpView = Sets.union(tmpView, getEffectiveGroupPermissions(group, storage));
 			}
 		}
 		return tmpView;
@@ -159,21 +154,13 @@ public class AuthorizationHelper {
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
 	 * the permission of the roles it inherits.
-	 * @param groupId
-	 * @param storage
-	 * @return
 	 */
-	public static Set<Permission> getEffectiveGroupPermissions(GroupId groupId, MetaStorage storage) {
-		Group group = Objects.requireNonNull(
-				storage.getGroup(groupId),
-				() -> String.format("Group with id %s was not found", groupId));
-
-		Set<Permission> tmpView = collectRolePermissions(storage, group, group.getPermissions());
-
-		return tmpView;
+	public static Set<ConqueryPermission> getEffectiveGroupPermissions(Group group, MetaStorage storage) {
+		// Combine permissions held by the group with those inherited from roles
+		return collectRolePermissions(storage, group, group.getPermissions());
 	}
 
-	private static Set<Permission> collectRolePermissions(MetaStorage storage, RoleOwner roleOwner, Set<Permission> tmpView) {
+	private static Set<ConqueryPermission> collectRolePermissions(MetaStorage storage, RoleOwner roleOwner, Set<ConqueryPermission> tmpView) {
 		for (RoleId roleId : roleOwner.getRoles()) {
 			Role role = storage.getRole(roleId);
 			if (role == null) {
@@ -191,8 +178,8 @@ public class AuthorizationHelper {
 	 * the permission of the roles it inherits. The query can be filtered by the Permission domain.
 	 * @return Owned and inherited permissions.
 	 */
-	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(UserId userId, List<String> domainSpecifier, MetaStorage storage) {
-		Set<Permission> permissions = getEffectiveUserPermissions(userId, storage);
+	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(User user, List<String> domainSpecifier, MetaStorage storage) {
+		Set<ConqueryPermission> permissions = getEffectiveUserPermissions(user, storage);
 		Multimap<String, ConqueryPermission> mappedPerms = ArrayListMultimap.create();
 		for(Permission perm : permissions) {
 			ConqueryPermission cPerm = (ConqueryPermission) perm;
@@ -207,42 +194,30 @@ public class AuthorizationHelper {
 	}
 
 
-
-	public static <P extends PermissionOwner<?>> void addRoleTo(MetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
-		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
-		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
-
-		if(!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
-		}
-
-		((RoleOwner)owner).addRole(storage, role);
+	public static void addRoleTo(MetaStorage storage, Role role, RoleOwner owner) {
+		owner.addRole(storage, role);
 		log.trace("Added role {} to {}", role, owner);
 	}
 
-	public static <P extends PermissionOwner<?>> void deleteRoleFrom(MetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
-		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
-		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
+	public static void deleteRoleFrom(MetaStorage storage, RoleOwner owner, Role role) {
 
-		if(!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
-		}
-
-		((RoleOwner)owner).removeRole(storage,role);
+		owner.removeRole(storage, role);
 
 		log.trace("Deleted role {} from {}", role, owner);
 	}
 
-	public static void deleteRole(MetaStorage storage, RoleId roleId) {
-		log.info("Deleting mandator: {}", roleId);
-		Role role = storage.getRole(roleId);
+	public static void deleteRole(MetaStorage storage, Role role) {
+		log.info("Deleting {}", role);
+
 		for (User user : storage.getAllUsers()) {
 			user.removeRole(storage, role);
 		}
+
 		for (Group group : storage.getAllGroups()) {
 			group.removeRole(storage, role);
 		}
-		storage.removeRole(roleId);
+
+		storage.removeRole(role.getId());
 	}
 
 
@@ -259,14 +234,17 @@ public class AuthorizationHelper {
 	 * Checks if an execution is allowed to be downloaded by a user.
 	 * This checks all used {@link DatasetId}s for the {@link Ability#DOWNLOAD} on the user.
 	 */
-	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution<?> exec) {
-		List<Permission> perms = exec.getUsedNamespacedIds().stream()
-				.map(NamespacedId::getDataset)
-				.distinct()
-				.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
-				.map(Permission.class::cast)
-				.collect(Collectors.toList());
-		user.checkPermissions(perms);
+	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull Visitable visitable) {
+		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
+		visitable.visit(collector);
+
+		Set<Dataset> perms =
+				collector.getIdentifiables()
+					.stream()
+					.map(NamespacedIdentifiable::getDataset)
+					.collect(Collectors.toSet());
+
+		AuthorizationHelper.authorize(user, perms, Ability.DOWNLOAD);
 	}
 
 	/**
@@ -274,15 +252,16 @@ public class AuthorizationHelper {
 	 * This checks all used {@link DatasetId}s for the {@link Ability#READ} on the user.
 	 */
 	public static void authorizeReadDatasets(@NonNull User user, @NonNull Visitable visitable) {
-		NamespacedIdCollector collector = new NamespacedIdCollector();
+		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
-		List<Permission> perms = collector.getIds().stream()
-				.map(NamespacedId::getDataset)
-				.distinct()
-				.map(d -> DatasetPermission.onInstance(Ability.READ, d))
-				.map(Permission.class::cast)
-				.collect(Collectors.toList());
-		user.checkPermissions(perms);
+
+		Set<Dataset> perms =
+				collector.getIdentifiables()
+						 .stream()
+						 .map(NamespacedIdentifiable::getDataset)
+						 .collect(Collectors.toSet());
+
+		AuthorizationHelper.authorize(user, perms, Ability.READ);
 	}
 
 
@@ -292,31 +271,26 @@ public class AuthorizationHelper {
 	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(User user, DatasetRegistry datasetRegistry) {
 		HashMap<DatasetId, Set<Ability>> datasetAbilities = new HashMap<>();
 		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
-			boolean[] abilitiesCheck = user.isPermitted(List.of(
-					DatasetPermission.onInstance(Ability.READ, dataset.getId()),
-					DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId()),
-					DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId())
-			));
+
 			Set<Ability> abilities = datasetAbilities.computeIfAbsent(dataset.getId(), (k) -> new HashSet<>());
-			if(abilitiesCheck[0]) {
-				// READ
+
+			if(isPermitted(user,dataset,Ability.READ)) {
 				abilities.add(Ability.READ);
 			}
-			if (abilitiesCheck[1]){
-				// DOWNLOAD
+
+			if (isPermitted(user,dataset,Ability.DOWNLOAD)){
 				abilities.add(Ability.DOWNLOAD);
 			}
-			if (abilitiesCheck[2]) {
-				// PRESERVE_ID
+
+			if (isPermitted(user,dataset,Ability.PRESERVE_ID)) {
 				abilities.add(Ability.PRESERVE_ID);
 			}
 		}
 		return datasetAbilities;
 	}
 
-	public static void authorize(User user, FormConfig form, Ability ability) {
-		if(!user.isOwner(form)) {
-			user.checkPermission(FormConfigPermission.onInstance(Set.of(ability), form.getId()));
-		}
+
+	public static void authorizeAdmin(User user) {
+		user.checkPermission(AdminPermission.onDomain());
 	}
 }

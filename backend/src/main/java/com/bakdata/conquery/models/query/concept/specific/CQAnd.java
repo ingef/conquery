@@ -1,12 +1,21 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -22,11 +31,6 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import java.util.*;
-import java.util.function.Consumer;
 
 @CPSType(id = "AND", base = CQElement.class)
 public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable {
@@ -72,7 +76,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
 		for (CQElement c : children) {
 			c.collectRequiredQueries(requiredQueries);
 		}

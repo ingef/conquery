@@ -3,10 +3,8 @@ package com.bakdata.conquery.models.auth.permissions;
 import java.util.EnumSet;
 import java.util.Set;
 
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 
-@CPSType(id = "FORM_CONFIG", base = StringPermissionBuilder.class)
 public class FormConfigPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "form-config";
@@ -36,10 +34,7 @@ public class FormConfigPermission extends StringPermissionBuilder {
 	}
 
 	//// Helper functions
-	public static ConqueryPermission onInstance(Ability ability, FormConfigId instance) {
-		return INSTANCE.instancePermission(ability, instance);
-	}
-
+	@Deprecated
 	public static ConqueryPermission onInstance(Set<Ability> abilities, FormConfigId instance) {
 		return INSTANCE.instancePermission(abilities, instance);
 	}
