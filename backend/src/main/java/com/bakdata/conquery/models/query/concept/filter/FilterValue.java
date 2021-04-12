@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -44,6 +43,13 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = "BIG_MULTI_SELECT", base = FilterValue.class)
 	public static class CQMultiSelectFilter extends FilterValue<String[]> {
 		public CQMultiSelectFilter(@NsIdRef Filter<?> filter, String[] value) {
+			super(filter, value);
+		}
+	}
+
+	@CPSType(id = "BIG_MULTI_SELECT", base = FilterValue.class)
+	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
+		public CQBigMultiSelectFilter(@NsIdRef Filter<?> filter, String[] value) {
 			super(filter, value);
 		}
 	}
