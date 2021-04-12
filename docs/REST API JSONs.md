@@ -578,19 +578,19 @@ Supported Fields:
 Different types of FilterValue can be used by setting `type` to one of the following values:
 
 
-### BIG_MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/filter/FilterValue$CQMultiSelectFilter.java)</sup></sub></sup>
+### BIG_MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/filter/FilterValue$CQBigMultiSelectFilter.java)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQMultiSelectFilter`
+Java Type: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQBigMultiSelectFilter`
 
 Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/filter/FilterValue.java#L31) | filter | ID of `@Valid @NotNull @NsIdRef Filter<?>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/filter/FilterValue.java#L36) | value | `@Valid @NotNull VALUE` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/filter/FilterValue.java#L31) | filter | ID of `@Valid @NotNull @NsIdRef Filter<?>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/filter/FilterValue.java#L36) | value | `@Valid @NotNull VALUE` | ? |  |  | 
 </p></details>
 
 ### INTEGER_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/concept/filter/FilterValue$CQIntegerRangeFilter.java)</sup></sub></sup>
