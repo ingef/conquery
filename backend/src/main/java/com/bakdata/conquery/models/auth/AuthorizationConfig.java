@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
@@ -20,6 +22,7 @@ public interface AuthorizationConfig {
 	 * A list of initial users that are loaded on start of the application.
 	 * Users that are defined in the configuration will override the users in the storage if they have the same id.
 	 */
+	@NotEmpty
 	List<ProtoUser> getInitialUsers();
 
 	/**
