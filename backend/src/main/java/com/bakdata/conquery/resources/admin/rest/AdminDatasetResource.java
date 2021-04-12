@@ -39,6 +39,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import com.bakdata.conquery.util.ResourceUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -62,9 +63,7 @@ public class AdminDatasetResource extends HAdmin {
 		super.init();
 		this.namespace = processor.getDatasetRegistry().get(datasetId);
 
-		if (namespace == null) {
-			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
-		}
+		ResourceUtil.throwNotFoundIfNull(datasetId, namespace);
 	}
 
 	@POST
@@ -146,7 +145,7 @@ public class AdminDatasetResource extends HAdmin {
 
 	@GET
 	@Path("tables")
-	public List<TableId> listTables(){
+	public List<TableId> listTables() {
 		return namespace.getStorage().getTables().stream().map(Table::getId).collect(Collectors.toList());
 	}
 
