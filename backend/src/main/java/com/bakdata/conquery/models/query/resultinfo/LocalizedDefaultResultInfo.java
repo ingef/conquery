@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * Allows to generate result names, e.g. for CSV-headers, depending on the
  * provided locale.
- * The {@link LocalizedDefaultResultInfo#localizedNameProvider} is expected to
+ * The {@link LocalizedDefaultResultInfo#localizedDefaultProvider} is expected to
  * use {@link C10N} (Cosmopolitan) like this:
  * <pre>
  *  (locale) -> C10N.get(ExampleC10n.class, locale).example()
@@ -35,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class LocalizedDefaultResultInfo extends ResultInfo {
 
 	private final String userLabel;
-	private final Function<Locale, String> localizedNameProvider;
+	private final Function<Locale, String> localizedDefaultProvider;
 	@Getter
 	private final ResultType type;
 
@@ -46,6 +46,6 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 
 	@Override
 	public String defaultColumnName(PrintSettings printSettings) {
-		return localizedNameProvider.apply(printSettings.getLocale());
+		return localizedDefaultProvider.apply(printSettings.getLocale());
 	}
 }

@@ -43,8 +43,12 @@ public class SelectResultInfo extends ResultInfo {
 			return printSettings.getColumnNamer().apply(this);
 		}
 
+		String label = getCqConcept().getLabel();
+		if (label == null) {
+			return null;
+		}
+
 		StringBuilder sb = new StringBuilder();
-		String label = getCqConcept().getUserOrDefaultLabel(printSettings.getLocale());
 
 		return select.appendColumnName(sb, label);
 	}

@@ -36,6 +36,7 @@ public abstract class CQElement implements Visitable {
 	private String label = null;
 
 	public String getUserOrDefaultLabel(Locale locale){
+		// Prefer the user label
 		if (label != null){
 			return label;
 		}
@@ -44,7 +45,8 @@ public abstract class CQElement implements Visitable {
 
 	@NotNull
 	public String defaultLabel(Locale locale) {
-		return "";
+		// Fallback to user label if no default label implementation is provided
+		return label;
 	}
 
 	/**
