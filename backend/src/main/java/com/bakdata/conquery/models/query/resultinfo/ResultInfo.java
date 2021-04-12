@@ -43,7 +43,7 @@ public abstract class ResultInfo {
 	@NonNull
 	@JsonIgnore
 	public final String getUniqueName(PrintSettings settings) {
-		@NonNull String label = Objects.requireNonNullElse(userColumnName(settings.getLocale()), defaultColumnName(settings.getLocale()));
+		@NonNull String label = Objects.requireNonNullElse(userColumnName(settings.getLocale()), defaultColumnName(settings));
 		if (ocurrenceCounter == null) {
 			return label;
 		}
@@ -62,7 +62,7 @@ public abstract class ResultInfo {
 	}
 
 	public abstract String userColumnName(Locale locale);
-	public abstract String defaultColumnName(Locale locale);
+	public abstract String defaultColumnName(PrintSettings printSettings);
 
 	@ToString.Include
 	public abstract ResultType getType();
@@ -74,7 +74,7 @@ public abstract class ResultInfo {
 	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
 		return ColumnDescriptor.builder()
 				.label(getUniqueName(settings))
-				.defaultLabel(defaultColumnName(settings.getLocale()))
+				.defaultLabel(defaultColumnName(settings))
 				.userConceptLabel(userColumnName(settings.getLocale()))
 				.type(getType().typeInfo())
 				.build();
