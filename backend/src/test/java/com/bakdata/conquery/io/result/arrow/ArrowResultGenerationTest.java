@@ -48,12 +48,13 @@ import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
+import org.apache.arrow.vector.util.JsonStringArrayList;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
 public class ArrowResultGenerationTest {
 
-    private static final int BATCH_SIZE = 1;
+    private static final int BATCH_SIZE = 2;
     public static final ConqueryConfig CONFIG = new ConqueryConfig();
     final IdMappingConfig idMapping = new IdMappingConfig() {
 
@@ -125,9 +126,7 @@ public class ArrowResultGenerationTest {
                                 )),
                         new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
-                        // TODO: We represent a list as a flat string at the moment. See ResultType.ListT::getArrowFieldType
-                        new Field("LIST[BOOLEAN]", FieldType.nullable(new ArrowType.Utf8()), null)
-                        // new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("elem", FieldType.nullable(ArrowType.Bool.INSTANCE), null)))
+                        new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("elem", FieldType.nullable(ArrowType.Bool.INSTANCE), null)))
                 )
         );
 
@@ -140,10 +139,12 @@ public class ArrowResultGenerationTest {
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = List.of(
                 new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),
-                new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, null}),
+                new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of()}),
+                new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false)}),
                 new MultilineEntityResult(3, List.of(
+                        new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false)},
                         new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, null}
+                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false)}
                 )));
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
@@ -196,7 +197,6 @@ public class ArrowResultGenerationTest {
                     sb.append(
                             vectors.stream()
                                     .map(vec -> vec.getObject(currentRow))
-                                    .map(o -> o == null ? "null" : o)
                                     .map(ArrowResultGenerationTest::getPrintValue)
                                     .collect(Collectors.joining("\t")))
                             .append("\n");
@@ -241,12 +241,9 @@ public class ArrowResultGenerationTest {
     }
 
     private static String getPrintValue(Object obj) {
-        if (ResultType.isArray(obj)) {
-            StringJoiner joiner = new StringJoiner(",", "[", "]");
-            for (Object nested : (Object[]) obj) {
-                joiner.add(getPrintValue(nested));
-            }
-            return joiner.toString();
+        if(obj instanceof JsonStringArrayList) {
+            // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
+            return getPrintValue(new ArrayList<>((JsonStringArrayList)obj));
         }
         return Objects.toString(obj);
     }
