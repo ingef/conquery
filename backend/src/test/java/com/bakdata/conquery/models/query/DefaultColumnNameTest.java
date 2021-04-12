@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
@@ -37,7 +38,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class DefaultColumnNameTest {
 	private final static DatasetRegistry DATASET_REGISTRY = mock(DatasetRegistry.class);
-	private final static PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, DATASET_REGISTRY);
+	private final static PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, DATASET_REGISTRY, new ConqueryConfig());
 	private final static Validator VALIDATOR = Validators.newValidator();
 	
 	private final static Function<TestConcept,Select> FIRST_CONCEPT_SELECT_EXTRACTOR = (concept) -> concept.getSelects().get(0);
