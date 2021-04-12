@@ -8,9 +8,9 @@ import javax.inject.Inject;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
-import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.ResourceUtil;
 import lombok.Getter;
@@ -21,9 +21,8 @@ import lombok.Setter;
 @Path("datasets/{" + DATASET + "}")
 public abstract class HDatasets extends HAuthorized {
 
-	//TODO this isn't properly injected here, inject the DSRegistry instead
 	@Inject
-	protected QueryProcessor processor;
+	protected DatasetRegistry datasetRegistry;
 
 	@PathParam(DATASET)
 	private DatasetId datasetId;
@@ -34,7 +33,7 @@ public abstract class HDatasets extends HAuthorized {
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getDatasetRegistry().get(datasetId);
+		this.namespace = datasetRegistry.get(datasetId);
 		ResourceUtil.throwNotFoundIfNull(datasetId, namespace);
 
 		authorize(user, namespace.getDataset(), Ability.READ);
