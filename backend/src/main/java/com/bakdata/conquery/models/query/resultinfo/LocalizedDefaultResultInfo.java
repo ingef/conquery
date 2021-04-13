@@ -40,6 +40,10 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	@Getter
 	private final ResultType type;
 
+	public LocalizedDefaultResultInfo(String userLabel, Function<Locale, String> localizedDefaultProvider, ResultType type) {
+		this(userLabel, localizedDefaultProvider, localizedDefaultProvider, type);
+	}
+
 	@Override
 	public String userColumnName(PrintSettings printSettings) {
 		return userLabel;
