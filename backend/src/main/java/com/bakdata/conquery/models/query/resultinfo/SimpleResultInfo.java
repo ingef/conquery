@@ -25,9 +25,4 @@ public class SimpleResultInfo extends ResultInfo {
 	public String defaultColumnName(PrintSettings printSettings) {
 		return name;
 	}
-
-	@Override
-	public String totalDefaultColumnName(PrintSettings printSettings) {
-		return name;
-	}
 }
