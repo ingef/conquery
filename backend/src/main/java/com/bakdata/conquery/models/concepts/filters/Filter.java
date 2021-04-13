@@ -12,10 +12,11 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.lang3.ArrayUtils;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class is the abstract superclass for all filters.
@@ -25,6 +26,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
+@Slf4j
 public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
 
 	private String unit;
@@ -39,10 +41,6 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
 	@JsonIgnore
 	public abstract Column[] getRequiredColumns();
 
-	public final boolean requiresColumn(Column c) {
-		return ArrayUtils.contains(getRequiredColumns(), c);
-	}
-
 	public abstract FilterNode createAggregator(FE_TYPE filterValue);
 
 	@Override
@@ -55,7 +53,27 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
 	 * concerns this filter. Use this to collect metadata from the import. It is not guaranteed that
 	 * any blocks or cBlocks exist at this time. Any data created by this method should be volatile
 	 * and @JsonIgnore.
+	 *
 	 * @param imp the import added
 	 */
-	public void addImport(Import imp) {}
+	public void addImport(Import imp) {
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Not all Filters are for Connector's table.")
+	public boolean isForConnectorsTable() {
+		boolean valid = true;
+
+		for (Column column : getRequiredColumns()) {
+			if (column == null || column.getTable() == connector.getTable()) {
+				continue;
+			}
+
+			log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable().getId());
+
+			valid = false;
+		}
+
+		return valid;
+	}
 }

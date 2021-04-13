@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
@@ -47,7 +46,7 @@ public class ArrowRenderer {
             Function<VectorSchemaRoot, ArrowWriter> writerProducer,
             PrintSettings cfg,
             ManagedExecution<?> exec,
-            Function<ContainedEntityResult, String[]> idMapper,
+            Function<EntityResult, String[]> idMapper,
             String[] idHeaders,
             int batchsize) throws IOException {
         // Test the execution if the result is renderable into one table
@@ -94,7 +93,7 @@ public class ArrowRenderer {
             VectorSchemaRoot root,
             RowConsumer[] idWriter,
             RowConsumer[] valueWriter,
-            Function<ContainedEntityResult, String[]> idMapper,
+            Function<EntityResult, String[]> idMapper,
             Stream<EntityResult> results,
             int batchSize) throws IOException {
         Preconditions.checkArgument(batchSize > 0, "Batchsize needs be larger than 0.");
@@ -107,11 +106,7 @@ public class ArrowRenderer {
         root.setRowCount(batchSize);
         Iterator<EntityResult> resultIter = results.iterator();
         while (resultIter.hasNext()) {
-            EntityResult result = resultIter.next();
-            if (!result.isContained()) {
-                continue;
-            }
-            ContainedEntityResult cer = result.asContained();
+            EntityResult cer = resultIter.next();
             for (Object[] line : cer.listResultLines()) {
                 if(line.length != valueWriter.length) {
                     throw new IllegalStateException("The number of value writers and values in a result line differs. Writers: " + valueWriter.length + " Line: " + line.length);

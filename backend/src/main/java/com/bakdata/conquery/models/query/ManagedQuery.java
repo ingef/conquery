@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
@@ -28,7 +27,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
@@ -47,7 +45,6 @@ import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -152,10 +149,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		}
 	}
 
-	public Stream<ContainedEntityResult> fetchContainedEntityResult() {
-		return results.stream().flatMap(ContainedEntityResult::filterCast);
-	}
-
 	@Override
 	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
 		super.setStatusBase(storage, user, status, url, datasetAbilities);
@@ -237,7 +230,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public StreamingOutput getResult(Function<ContainedEntityResult, ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
+	public StreamingOutput getResult(Function<EntityResult, ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
 		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), idMapper, charset, lineSeparator);
 	}
 
@@ -319,23 +312,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	private static String makeLabelWithRootAndChild(DatasetRegistry datasetRegistry, CQConcept cqConcept, PrintSettings cfg) {
-		String cqConceptLabel = cqConcept.getLabel(cfg.getLocale());
-		if (cqConceptLabel == null) {
-			return "";
-		}
-
-		if (cqConcept.getElements().isEmpty()) {
-			return cqConceptLabel.replace(" ", "-"); // This is usually an illegal case, an CQConcept must have at least one id, but this code should never fail
-		}
-
-		Concept<?> concept = cqConcept.getElements().get(0).getConcept();
-		String conceptLabel = concept.getLabel();
-		if (cqConceptLabel.equalsIgnoreCase(conceptLabel)) {
-			return cqConceptLabel.replace(" ", "-");
+		String label = cqConcept.getUserOrDefaultLabel(cfg.getLocale());
+		if (label == null) {
+			label = cqConcept.getConcept().getLabel();
 		}
 
 		// Concat everything with dashes
-		return (conceptLabel + "-" + cqConceptLabel).replace(" ", "-");
+		return label.replace(" ", "-");
 	}
 
 	@Override

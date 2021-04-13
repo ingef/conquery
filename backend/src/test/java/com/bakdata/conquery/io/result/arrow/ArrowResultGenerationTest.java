@@ -32,10 +32,9 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
-import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.FieldVector;
@@ -106,7 +105,7 @@ public class ArrowResultGenerationTest {
         List<Field> fields = generateFieldsFromResultType(
                 resultInfos,
                 // Custom column namer so we don't require a dataset registry
-                new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel()));
+                new PrintSettings(false, Locale.ROOT, null, (selectInfo) -> selectInfo.getSelect().getLabel()));
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -135,16 +134,15 @@ public class ArrowResultGenerationTest {
     @Test
     void writeAndRead() throws IOException {
         // Prepare every input data
-        PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, (selectInfo, datasetRegistry) -> selectInfo.getSelect().getLabel());
+        PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = List.of(
-                new SinglelineContainedEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),
-                new SinglelineContainedEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, null}),
-                new MultilineContainedEntityResult(3, List.of(
+                new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),
+                new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, null}),
+                new MultilineEntityResult(3, List.of(
                         new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
                         new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, null}
-                )),
-                EntityResult.notContained());
+                )));
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
             public ResultInfoCollector collectResultInfos() {
@@ -208,8 +206,7 @@ public class ArrowResultGenerationTest {
 
     private String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos) {
         String expected = results.stream()
-                .filter(EntityResult::isContained)
-                .map(ContainedEntityResult.class::cast)
+                .map(EntityResult.class::cast)
                 .map(res -> {
                     StringJoiner lineJoiner = new StringJoiner("\n");
 

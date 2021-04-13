@@ -7,6 +7,7 @@ import QueryRunner from "../query-runner/QueryRunner";
 import { DatasetIdT } from "../api/types";
 import { QueryRunnerStateT } from "../query-runner/reducer";
 import { useStartQuery, useStopQuery } from "../query-runner/actions";
+import { useDatasetId } from "../dataset/selectors";
 
 import transformQueryToApi from "./transformQueryToApi";
 import {
@@ -31,7 +32,7 @@ const isActiveFormValid = (state: StateT) => {
 };
 
 const selectIsButtonEnabled = (
-  datasetId: DatasetIdT,
+  datasetId: DatasetIdT | null,
   queryRunner: QueryRunnerStateT | null
 ) => (state: StateT) => {
   if (!queryRunner) return false;
@@ -44,11 +45,8 @@ const selectIsButtonEnabled = (
   );
 };
 
-interface PropsT {
-  datasetId: DatasetIdT;
-}
-
-const FormQueryRunner: FC<PropsT> = ({ datasetId }) => {
+const FormQueryRunner: FC = () => {
+  const datasetId = useDatasetId();
   const queryRunner = useSelector<StateT, QueryRunnerStateT | null>(
     selectQueryRunner
   );
@@ -79,12 +77,15 @@ const FormQueryRunner: FC<PropsT> = ({ datasetId }) => {
   const startExternalFormsQuery = useStartQuery("externalForms");
   const stopExternalFormsQuery = useStopQuery("externalForms");
 
-  const startQuery = () =>
-    startExternalFormsQuery(datasetId, query, {
-      formQueryTransformation,
-    });
+  const startQuery = () => {
+    if (datasetId) {
+      startExternalFormsQuery(datasetId, query, {
+        formQueryTransformation,
+      });
+    }
+  };
   const stopQuery = () => {
-    if (queryId) {
+    if (datasetId && queryId) {
       stopExternalFormsQuery(datasetId, queryId);
     }
   };

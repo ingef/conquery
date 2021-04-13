@@ -1,9 +1,10 @@
 import type {
+  ConceptQueryNodeType,
   PreviousQueryQueryNodeType,
-  QueryNodeType,
-  StandardQueryType,
+  StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import { TIMEBASED_OPERATOR_TYPES } from "../common/constants/timebasedQueryOperatorTypes";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
 function isTimebasedQuery(node: PreviousQueryQueryNodeType) {
   const queryString = JSON.stringify(node.query);
@@ -22,7 +23,7 @@ function isExternalQuery(node: PreviousQueryQueryNodeType) {
   );
 }
 
-export function isQueryExpandable(node: QueryNodeType) {
+export function isQueryExpandable(node: StandardQueryNodeT) {
   if (!node.isPreviousQuery || !node.query || !node.canExpand) return false;
 
   return !isTimebasedQuery(node) && !isExternalQuery(node);
@@ -30,7 +31,7 @@ export function isQueryExpandable(node: QueryNodeType) {
 
 // Validation
 
-export function validateQueryLength(query: StandardQueryType) {
+export function validateQueryLength(query: StandardQueryStateT) {
   return query.length > 0;
 }
 
@@ -42,6 +43,12 @@ function groupHasValidDates(group) {
   return !group.exclude && group.elements.some(elementHasValidDates);
 }
 
-export function validateQueryDates(query: StandardQueryType) {
+export function validateQueryDates(query: StandardQueryStateT) {
   return !query || query.length === 0 || query.some(groupHasValidDates);
+}
+
+export function isConceptQueryNode(
+  node: StandardQueryNodeT
+): node is ConceptQueryNodeType {
+  return !node.isPreviousQuery;
 }

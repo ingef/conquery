@@ -1,11 +1,14 @@
 package com.bakdata.conquery.models.concepts.select.connector.specific;
 
+import java.util.EnumSet;
+
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
@@ -18,6 +21,8 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -88,5 +93,21 @@ public class SumSelect extends Select {
 			default:
 				throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
 		}
+	}
+
+
+	private static final EnumSet<MajorTypeId> NUMBER_COMPATIBLE = EnumSet.of(MajorTypeId.INTEGER, MajorTypeId.MONEY, MajorTypeId.DECIMAL, MajorTypeId.REAL);
+
+
+	@ValidationMethod(message = "Column is not of Summable Type.")
+	@JsonIgnore
+	public boolean isSummableColumnType() {
+		return  NUMBER_COMPATIBLE.contains(getColumn().getType());
+	}
+
+	@ValidationMethod(message = "Columns are not of same Type.")
+	@JsonIgnore
+	public boolean isColumnsOfSameType() {
+		return getSubtractColumn() == null || getSubtractColumn().getType().equals(getColumn().getType());
 	}
 }

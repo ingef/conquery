@@ -29,13 +29,13 @@
     "concepts": [
         {
           "label": "geschlecht_select",
-            "type": "VIRTUAL",
+            "type": "TREE",
             "connectors": [
                 {
                     "label": "geschlecht_connector",
                     "table": "table1",
                     "validityDates": {"label": "datum" ,"column": "table1.datum"},
-                    "filter": {
+                    "filters": {
                       "label": "geschlecht",
                         "description": "Geschlecht zur gegebenen Datumseinschränkung",
                         "column": "table1.geschlecht",

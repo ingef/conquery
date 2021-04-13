@@ -1,7 +1,6 @@
-import React from "react";
+import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
-import type { TabType } from "./reducer";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
   margin-bottom: 10px;
@@ -25,7 +24,7 @@ const Headline = styled("h2")<{ active: boolean }>`
   transition: color ${({ theme }) => theme.transitionTime},
     border-bottom ${({ theme }) => theme.transitionTime};
   cursor: pointer;
-  margin-right: 15px;
+  margin-right: 5px;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.gray};
   border-bottom: 3px solid
@@ -40,26 +39,36 @@ const Headline = styled("h2")<{ active: boolean }>`
   }
 `;
 
-interface PropsT {
-  onClickTab: (tab: string) => void;
-  activeTab: string;
-  tabs: TabType[];
+export interface TabNavigationTab {
+  key: string;
+  label: string;
+  tooltip?: string;
 }
 
-const TabNavigation: React.FC<PropsT> = (props) => {
+interface PropsT {
+  onClickTab: (tab: string) => void;
+  activeTab: string | null;
+  tabs: TabNavigationTab[];
+}
+
+const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab }) => {
   return (
     <Root>
-      {Object.values(props.tabs).map(({ label, key }) => (
-        <Headline
-          key={key}
-          active={props.activeTab === key}
-          onClick={() => {
-            if (key !== props.activeTab) props.onClickTab(key);
-          }}
-        >
-          {T.translate(label)}
-        </Headline>
-      ))}
+      {tabs.map(({ key, label, tooltip }) => {
+        return (
+          <WithTooltip text={tooltip} lazy>
+            <Headline
+              key={key}
+              active={activeTab === key}
+              onClick={() => {
+                if (key !== activeTab) onClickTab(key);
+              }}
+            >
+              {label}
+            </Headline>
+          </WithTooltip>
+        );
+      })}
     </Root>
   );
 };

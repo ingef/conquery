@@ -1,31 +1,33 @@
 package com.bakdata.conquery.models.query.queryplan;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.EmptyBucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Getter
 @Setter
 @ToString
 @Slf4j
-public class ConceptQueryPlan implements QueryPlan {
+public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
+	public static final int VALIDITY_DATE_POSITION = 0;
 	@Getter
 	@Setter
 	private ThreadLocal<Set<TableId>> requiredTables = new ThreadLocal<>();
@@ -87,29 +89,29 @@ public class ConceptQueryPlan implements QueryPlan {
 		getChild().acceptEvent(bucket, event);
 	}
 
-	protected SinglelineContainedEntityResult result() {
+	protected SinglelineEntityResult result() {
 		Object[] values = new Object[aggregators.size()];
 
 		for (int i = 0; i < values.length; i++) {
 			values[i] = aggregators.get(i).getAggregationResult();
 		}
 
-		return EntityResult.of(entity.getId(), values);
+		return new SinglelineEntityResult(entity.getId(), values);
 	}
 
 	@Override
-	public SinglelineEntityResult execute(QueryExecutionContext ctx, Entity entity) {
+	public Optional<SinglelineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
  		checkRequiredTables(ctx.getStorage());
 
 		if (requiredTables.get().isEmpty()) {
-			return EntityResult.notContained();
+			return Optional.empty();
 		}
 
 		init(entity, ctx);
 
 		if(!isOfInterest(entity)){
-			return EntityResult.notContained();
+			return Optional.empty();
 		}
 
 		// Always do one go-round with ALL_IDS_TABLE.
@@ -153,9 +155,9 @@ public class ConceptQueryPlan implements QueryPlan {
 		}
 
 		if (isContained()) {
-			return result();
+			return Optional.of(result());
 		}
-		return EntityResult.notContained();
+		return Optional.empty();
 	}
 
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
@@ -181,6 +183,24 @@ public class ConceptQueryPlan implements QueryPlan {
 	@Override
 	public boolean isOfInterest(Entity entity) {
 		return child.isOfInterest(entity);
+	}
+
+	@Override
+	public CDateSet getValidityDates(SinglelineEntityResult result) {
+		if(!isAggregateValidityDates()) {
+			// The date aggregator was not added to the plan, so we don't collect a validity date
+			return CDateSet.create();
+		}
+
+		Object dates = result.getValues()[VALIDITY_DATE_POSITION];
+		if(dates == null) {
+			return CDateSet.create();
+		}
+		return (CDateSet) dates;
+	}
+
+	public boolean isAggregateValidityDates() {
+		return dateAggregator.equals(aggregators.get(0));
 	}
 
 	public boolean isOfInterest(Bucket bucket) {

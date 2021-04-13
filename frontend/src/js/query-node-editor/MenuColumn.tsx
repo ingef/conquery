@@ -1,5 +1,5 @@
-import React from "react";
-import T from "i18n-react";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 
 import EditableText from "../form-components/EditableText";
@@ -8,7 +8,7 @@ import ResetAllFiltersButton from "./ResetAllFiltersButton";
 import MenuColumnItem from "./MenuColumnItem";
 import MenuColumnButton from "./MenuColumnButton";
 
-import type { PropsType } from "./QueryNodeEditor";
+import type { QueryNodeEditorPropsT } from "./QueryNodeEditor";
 
 const FixedColumn = styled("div")`
   height: 100%;
@@ -39,18 +39,17 @@ const NodeName = styled("div")`
   border-bottom: 1px solid #ccc;
 `;
 
-const MenuColumn = (props: PropsType) => {
-  const {
-    node,
-    editorState,
-    showTables,
-    blocklistedTables,
-    allowlistedTables,
-    onToggleTable,
-    onResetAllFilters,
-    onUpdateLabel,
-  } = props;
-
+const MenuColumn: FC<QueryNodeEditorPropsT> = ({
+  node,
+  editorState,
+  showTables,
+  blocklistedTables,
+  allowlistedTables,
+  onToggleTable,
+  onResetAllFilters,
+  onUpdateLabel,
+}) => {
+  const { t } = useTranslation();
   const isOnlyOneTableIncluded =
     !node.isPreviousQuery &&
     node.tables.filter((table) => !table.exclude).length === 1;
@@ -63,6 +62,7 @@ const MenuColumn = (props: PropsType) => {
             large
             loading={false}
             text={node.label}
+            tooltip={t("help.editConceptName")}
             selectTextOnMount={true}
             editing={editorState.editingLabel}
             onSubmit={(value) => {
@@ -78,12 +78,12 @@ const MenuColumn = (props: PropsType) => {
         active={editorState.detailsViewActive}
         onClick={editorState.onSelectDetailsView}
       >
-        {T.translate("queryNodeEditor.properties")}
+        {t("queryNodeEditor.properties")}
       </MenuColumnButton>
       {!node.isPreviousQuery && showTables && (
         <div>
           <CategoryHeader>
-            {T.translate("queryNodeEditor.conceptNodeTables")}
+            {t("queryNodeEditor.conceptNodeTables")}
           </CategoryHeader>
           {node.tables.map((table, tableIdx) => (
             <MenuColumnItem

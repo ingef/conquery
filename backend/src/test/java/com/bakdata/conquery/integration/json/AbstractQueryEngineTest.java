@@ -23,8 +23,8 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
-import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
+import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -71,15 +71,15 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		ResultInfoCollector resultInfos = managed.collectResultInfos();
 
 		assertThat(
-				managed.fetchContainedEntityResult()
-					   .flatMap(ContainedEntityResult::streamValues)
+				managed.getResults().stream()
+					   .flatMap(EntityResult::streamValues)
 		)
 				.as("Should have same size as result infos")
 				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
 
 		PrintSettings
 				PRINT_SETTINGS =
-				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), (columnInfo, dr) -> columnInfo.getSelect()
+				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), (columnInfo) -> columnInfo.getSelect()
 																																		 .getId()
 																																		 .toStringWithoutDataset());
 		IdMappingState mappingState = standaloneSupport.getConfig().getIdMapping().initToExternal(standaloneSupport.getTestUser(), managed);
@@ -99,7 +99,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		assertThat(actual).as("Results for %s are not as expected.", this).containsExactlyInAnyOrderElementsOf(expected);
 		// check that getLastResultCount returns the correct size
-		if (managed.fetchContainedEntityResult().noneMatch(MultilineContainedEntityResult.class::isInstance)) {
+		if (managed.getResults().stream().noneMatch(MultilineEntityResult.class::isInstance)) {
 			assertThat(managed.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
 		}
 

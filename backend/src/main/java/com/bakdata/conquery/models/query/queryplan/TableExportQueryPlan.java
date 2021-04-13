@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -14,6 +15,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +24,7 @@ import lombok.RequiredArgsConstructor;
  * date range.
  */
 @RequiredArgsConstructor
-public class TableExportQueryPlan implements QueryPlan {
+public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final QueryPlan subPlan;
 	private final CDateRange dateRange;
@@ -40,17 +42,18 @@ public class TableExportQueryPlan implements QueryPlan {
 	}
 
 	@Override
-	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-		EntityResult result = subPlan.execute(ctx, entity);
+	public CDateSet getValidityDates(MultilineEntityResult result) {
+		// TODO figure out where the dates are
+		return CDateSet.create();
+	}
 
-		if (!result.isContained()) {
-			return result;
+	@Override
+	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+		Optional<EntityResult> result = subPlan.execute(ctx, entity);
+
+		if (result.isEmpty() || tables.isEmpty()) {
+			return Optional.empty();
 		}
-
-		if (tables.isEmpty()) {
-			return EntityResult.notContained();
-		}
-
 
 		List<Object[]> results = new ArrayList<>();
 		for (TableExportDescription exportDescription : tables) {
@@ -91,10 +94,10 @@ public class TableExportQueryPlan implements QueryPlan {
 			}
 		}
 
-		return EntityResult.multilineOf(
+		return Optional.of(new MultilineEntityResult(
 				entity.getId(),
 				results
-		);
+		));
 	}
 
 	@RequiredArgsConstructor

@@ -39,7 +39,7 @@ const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
   }
 `;
 
-interface PropsT extends React.HTMLAttributes<HTMLButtonElement> {
+interface PropsT extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   iconProps?: IconStyleProps;
   active?: boolean;
   large?: boolean;

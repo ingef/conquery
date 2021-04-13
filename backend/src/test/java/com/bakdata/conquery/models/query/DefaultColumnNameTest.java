@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.conditions.EqualCondition;
 import com.bakdata.conquery.models.concepts.select.Select;
@@ -23,18 +24,22 @@ import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+@Slf4j
 public class DefaultColumnNameTest {
 	private final static DatasetRegistry DATASET_REGISTRY = mock(DatasetRegistry.class);
 	private final static PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, DATASET_REGISTRY);
@@ -106,7 +111,13 @@ public class DefaultColumnNameTest {
 			Arguments.of(
 				TestConcept.create(3, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 3),
 				true,
-				"TestCQLabel - TestConnectorLabel_0 TestSelectLabel")
+				"TestCQLabel - TestConnectorLabel_0 TestSelectLabel"),
+			// ConnectorSelect without CQLabel, only root Id, one Connector -> Connector label should be suppressed
+			Arguments.of(
+					TestConcept.create(1, FIRST_CONNECTOR_FIRST_SELECT_EXTRACTOR, 0, "Test-Label"),
+					false,
+					"Test-Label - TestSelectLabel")
+
 			);
 	}
 	
@@ -124,7 +135,7 @@ public class DefaultColumnNameTest {
 		
 		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(), concept.createCQConcept(hasCQConceptLabel));
 		
-		assertThat(SETTINGS.columnName(info)).isEqualTo(expectedColumnName);
+		assertThat(info.getUniqueName(SETTINGS)).isEqualTo(expectedColumnName);
 	}
 
 	
@@ -136,21 +147,41 @@ public class DefaultColumnNameTest {
 			}
 
 
+			List<ConceptElement<?>> elements = concept.getChildren().stream()
+					.sorted(Comparator.comparing(ctc -> ctc.getId().toString()))
+					.collect(Collectors.toList());
+
+			if (elements.isEmpty()) {
+				elements = List.of(concept);
+			}
 			cqConcept.setElements(
-					concept.getChildren().stream()
-							.sorted(Comparator.comparing(ctc -> ctc.getId().toString()))
-							.collect(Collectors.toList())
+					elements
 			);
+
+			List<CQTable> tables = concept.getConnectors().stream()
+					.map(con -> {
+						CQTable table = new CQTable();
+						table.setConnector(con);
+						table.setConcept(cqConcept);
+						return table;
+					})
+					.collect(Collectors.toList());
+			cqConcept.setTables(tables);
 
 			cqConcept.setSelects(List.of(concept.extractSelect()));
 
+			ValidatorHelper.failOnError(log, VALIDATOR.validate(cqConcept));
 			return cqConcept;
 		}
 	}
 	
 	private static class TestConcept extends TreeConcept {
 
-		private static final DatasetId DATASET = new DatasetId("test");
+		private static final Dataset DATASET = new Dataset(){
+			{
+				setName("test");
+			}
+		};
 		private final Function<TestConcept,Select> selectExtractor;
 		
 		private TestConcept(Function<TestConcept,Select> selectExtractor) {
@@ -169,13 +200,25 @@ public class DefaultColumnNameTest {
 			return TestCQConcept.create(hasCQConceptLabel, this);
 		}
 
-		@SneakyThrows
+
 		public static TestConcept create(int countConnectors, Function<TestConcept,Select> selectExtractor, int countIds) {
+			return create(countConnectors,  selectExtractor, countIds, null);
+		}
+
+		@SneakyThrows
+		public static TestConcept create(int countConnectors, Function<TestConcept,Select> selectExtractor, int countIds, String overwriteLabel) {
 			TestConcept concept = new TestConcept(selectExtractor);
+			if (overwriteLabel != null) {
+				concept.setLabel(overwriteLabel);
+			}
 			ArrayList<ConceptTreeConnector> connectors = new ArrayList<>();
 			concept.setConnectors(connectors);
 			for (; countConnectors > 0; countConnectors--) {
-				connectors.add(new TestConnector(concept));
+				TestConnector con = new TestConnector(concept);
+				if (overwriteLabel != null) {
+					con.setLabel(overwriteLabel);
+				}
+				connectors.add(con);
 			}
 
 			ArrayList<ConceptTreeChild> children = new ArrayList<>();
@@ -184,6 +227,9 @@ public class DefaultColumnNameTest {
 				ConceptTreeChild child = new ConceptTreeChild();
 				child.setParent(concept);
 				child.setName(childName);
+				if (overwriteLabel != null) {
+					child.setLabel(overwriteLabel);
+				}
 				child.setCondition(new EqualCondition(Set.of(childName)));
 				children.add(child);
 			}

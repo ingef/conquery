@@ -1,11 +1,7 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 import PaneTabNavigation from "./PaneTabNavigation";
-
-interface PropsT {
-  right?: boolean;
-  left?: boolean;
-}
+import { TabNavigationTab } from "./TabNavigation";
 
 const Root = styled("div")<{ left?: boolean; right?: boolean }>`
   width: 100%;
@@ -22,13 +18,19 @@ const Container = styled("div")`
   position: relative;
 `;
 
-const Pane: FC<PropsT> = ({ left, right, children }) => {
+interface PropsT {
+  tabs: TabNavigationTab[];
+  right?: boolean;
+  left?: boolean;
+}
+
+const Pane: FC<PropsT> = ({ tabs, left, right, children }) => {
   const paneType = left ? "left" : "right";
 
   return (
     <Root left={left} right={right}>
       <Container>
-        <PaneTabNavigation paneType={paneType} />
+        <PaneTabNavigation tabs={tabs} paneType={paneType} />
         <Container>{children}</Container>
       </Container>
     </Root>

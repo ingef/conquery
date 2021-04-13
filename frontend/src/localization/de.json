@@ -3,7 +3,7 @@
   "headline": "Anfragen und Analyse",
   "errorCodes": {
     "EXAMPLE_ERROR": "Dies ist eine Beispiel-Fehlermeldung",
-    "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {adjective} Beispiel-Fehlermeldung"
+    "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {{adjective}} Beispiel-Fehlermeldung"
   },
   "leftPane": {
     "conceptTrees": "Konzeptbäume",
@@ -17,8 +17,8 @@
   },
   "conceptTreeList": {
     "loading": "Lade Konzeptbäume",
-    "loadingTree": "Lade Konzeptbaum: {tree}",
-    "error": "Konnte Konzeptbaum {tree} nicht laden.",
+    "loadingTree": "Lade Konzeptbaum: {{tree}}",
+    "error": "Konnte Konzeptbaum {{tree}} nicht laden.",
     "noTrees": "Keine Konzeptbäume",
     "noTreesExplanation": "Wahrscheinlich ist beim Laden etwas schiefgelaufen. Bitte erneut laden.",
     "openAll": "Alle aufklappen",
@@ -55,7 +55,10 @@
     "loadingPreviousQuery": "Lade Anfragedetails",
     "secondaryId": "Analyse-Ebene",
     "secondaryIdStandard": "Standard",
-    "hasSecondaryId": "Analyse-Ebene aktiv"
+    "hasSecondaryId": "Analyse-Ebene aktiv",
+    "removeNode": "Knoten entfernen",
+    "removeColumn": "Spalte entfernen",
+    "clear": "Editor-Oberfläche zurücksetzen"
   },
   "expandPreviousQueryModal": {
     "headline": "Anfrage wirklich expandieren?",
@@ -73,8 +76,9 @@
     "intoThisArea": "in diesen Bereich"
   },
   "datasetSelector": {
-    "pleaseChoose": "Datenbank auswählen",
-    "error": "Konnte Datenbanken nicht laden"
+    "label": "Datensatz",
+    "pleaseChoose": "Datensatz auswählen",
+    "error": "Konnte Datensätze nicht laden"
   },
   "queryNodeEditor": {
     "conceptTree": "Konzeptbaum",
@@ -91,9 +95,9 @@
     "description": "Beschreibung",
     "noDescriptionProvided": "Keine Beschreibung verfügbar.",
     "selectAFilter": "Kein Filter ausgewählt.",
-    "dropConcept": "Füge ein weiteres Konzept hinzu",
+    "dropConcept": "Füge weitere Konzepte des selben Konzeptbaumes hinzu",
     "includeSubnodes": "Untergeordnete Konzepte einbeziehen",
-    "tooManyValues": "{count} Werte ausgewählt",
+    "tooManyValues": "{{count}} Werte ausgewählt",
     "filters": "Filter",
     "selects": "Zusatzwerte",
     "nodeNotFound": "Konzept nicht gefunden",
@@ -145,10 +149,8 @@
   "tooltip": {
     "headline": "Info",
     "placeholder": "Weitere Informationen zu Konzepten ...",
-    "entriesFound": {
-      "1": "Eintrag",
-      "_": "Einträge"
-    },
+    "entriesFound": "Eintrag",
+    "entriesFound_plural": "Einträge",
     "date": {
       "daterange": "Zeitraum",
       "from": "Von",
@@ -162,8 +164,8 @@
     "dndPlaceholder": "Auswählen oder Datei hochladen ...",
     "backspaceToRemove": "Backspace zum Entfernen drücken",
     "noResults": "Keine Werte gefunden",
-    "createTag": "Schlagwort erstellen: {label}",
-    "searchFor": "Suchen nach: {label}",
+    "createTag": "Schlagwort erstellen: {{label}}",
+    "searchFor": "Suchen nach: {{label}}",
     "clearAll": "Alle entfernen",
     "clearValue": "Wert entfernen"
   },
@@ -316,14 +318,10 @@
     "selectConceptRootNode": "Konzeptbaum-Wurzel auswählen",
     "insertNode": "Jetzt einfügen",
     "result": "Ergebnis",
-    "resolvedCodes": {
-      "1": "1 Wert aufgelöst.",
-      "_": "{context} Werte aufgelöst."
-    },
-    "unknownCodes": {
-      "1": "1 Wert nicht aufgelöst",
-      "_": "{context} Werte nicht aufgelöst"
-    },
+    "resolvedCodes": "1 Wert aufgelöst.",
+    "resolvedCodes_plural": "{{count}} Werte aufgelöst.",
+    "unknownCodes": "1 Wert nicht aufgelöst",
+    "unknownCodes_plural": "{{count}} Werte nicht aufgelöst",
     "error": "Beim Auflösen der Werte ist ein Fehler aufgetreten.",
     "nothingResolved": "Kein Konzept konnte aufgelöst werden."
   },
@@ -342,13 +340,13 @@
   },
   "search": {
     "placeholder": "Suchen ...",
-    "resultLabel": "{totalResults} Ergebnisse ({duration} s)"
+    "resultLabel": "{{totalResults}} Ergebnisse ({{duration}} s)"
   },
   "preview": {
     "preview": "Vorschau",
     "headline": "Ergebnisvorschau",
     "previewHeadline": "Ergebnis-CSV",
-    "previewSubline": "Auszug der ersten {count} Zeilen",
+    "previewSubline": "Auszug der ersten {{count}} Zeilen",
     "statisticsHeadline": "Spaltenstatistik",
     "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werten als 0 interpretiert.",
     "total": "Zeilen",
@@ -381,5 +379,22 @@
   "conceptTreesOpen": {
     "resetAll": "Zurück zu Standardansicht",
     "closeAll": "Alle Konzepte schließen"
+  },
+  "help": {
+    "tabConceptTrees": "Auswahl der Konzepte aus den Konzeptbäumen zur Verwendung in Editor oder Formular-Editor.",
+    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung in Editor, Zeit-Editor oder Formular-Editor.",
+    "tabFormConfigs": "Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
+    "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
+    "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",
+    "tabFormEditor": "Hier können Auswertungen und Analysen zu bestehenden Anfragen erstellt werden.",
+    "datasetSelector": "Auswahl des Datensatzes – die jeweiligen Konzeptbäume, Anfragen und Formulare werden geladen.",
+    "excludeTimestamps": "Auswahl führt dazu, dass die Datumswerte des Konzepts bei der Weiterverarbeitung nicht berücksichtigt werden.",
+    "excludeFromSecondaryIdQuery": "Auswahl führt dazu, dass dieses Konzept nicht in der Analyse-Ebene berücksichtigt wird, falls eine Analyse-Ebene gewählt wurde.",
+    "editConceptName": "Konzeptname bearbeiten",
+    "queryEditorExclude": "Auswahl führt dazu dass Ergebnisse selektiert werden, die die Konzepte in dieser Spalte nicht enthalten.",
+    "queryEditorDate": "Auswahl des Datumsbereiches für alle Konzepte in dieser Spalte.",
+    "editorDropzoneAnd": "Konzepte hier ablegen um sie per UND zu verknüpfen. Via Klick kann eine Konzeptliste ausgewählt werden.",
+    "editorDropzoneOr": "Konzepte hier ablegen um sie per ODER zu verknüpfen. Via Klick kann eine Konzeptliste ausgewählt werden.",
+    "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   }
 }

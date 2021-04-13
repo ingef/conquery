@@ -2,20 +2,10 @@ import React from "react";
 import styled from "@emotion/styled";
 
 import InputSelect from "../form-components/InputSelect";
-import InputRange from "../form-components/InputRange";
+import InputRange, { ModeT } from "../form-components/InputRange";
 import InputText from "../form-components/InputText";
 
 import ResolvableMultiSelect from "./ResolvableMultiSelect";
-
-import {
-  SELECT,
-  MULTI_SELECT,
-  INTEGER_RANGE,
-  REAL_RANGE,
-  MONEY_RANGE,
-  STRING,
-  BIG_MULTI_SELECT,
-} from "../form-components/filterTypes";
 
 import type { FilterWithValueType } from "../standard-query-editor/types";
 
@@ -24,6 +14,7 @@ import type {
   DatasetIdT,
   ConceptIdT,
   TableIdT,
+  FilterIdT,
 } from "../api/types";
 
 export interface FiltersContextT {
@@ -36,12 +27,15 @@ interface PropsT {
   className?: string;
   context: FiltersContextT;
   filters: FilterWithValueType[] | null;
-  excludeTable: boolean;
-  onSwitchFilterMode: Function;
+  excludeTable?: boolean;
+  onSwitchFilterMode: (filterIdx: number, mode: ModeT) => void;
   onSetFilterValue: Function;
-  onLoadFilterSuggestions: Function;
-  onShowDescription: Function;
-  suggestions: Object | null;
+  onLoadFilterSuggestions: (
+    tableIdx: number,
+    filterId: FilterIdT,
+    prefix: string
+  ) => void;
+  onShowDescription: (filterIdx: number) => void;
   currencyConfig: CurrencyConfigT;
 }
 
@@ -57,7 +51,7 @@ const TableFilters = (props: PropsT) => {
       {props.filters
         .map((filter, filterIdx) => {
           switch (filter.type) {
-            case SELECT:
+            case "SELECT":
               return (
                 <InputSelect
                   input={{
@@ -72,7 +66,7 @@ const TableFilters = (props: PropsT) => {
                   disabled={props.excludeTable}
                 />
               );
-            case MULTI_SELECT:
+            case "MULTI_SELECT":
               return (
                 <ResolvableMultiSelect
                   context={{ ...props.context, filterId: filter.id }}
@@ -88,40 +82,28 @@ const TableFilters = (props: PropsT) => {
                   allowDropFile={!!filter.allowDropFile}
                 />
               );
-            case BIG_MULTI_SELECT:
+            case "BIG_MULTI_SELECT":
               return (
                 <ResolvableMultiSelect
                   context={{ ...props.context, filterId: filter.id }}
                   input={{
-                    value: filter.value,
-                    defaultValue: filter.defaultValue,
+                    value: filter.value || [],
+                    defaultValue: filter.defaultValue || [],
                     onChange: (value) =>
                       props.onSetFilterValue(filterIdx, value),
                   }}
                   label={filter.label}
-                  options={
-                    filter.options ||
-                    (props.suggestions &&
-                    props.suggestions[filterIdx] &&
-                    props.suggestions[filterIdx].options
-                      ? props.suggestions[filterIdx].options
-                      : [])
-                  }
+                  options={filter.options}
                   disabled={!!props.excludeTable}
                   allowDropFile={!!filter.allowDropFile}
-                  isLoading={
-                    filter.isLoading ||
-                    (props.suggestions &&
-                      props.suggestions[filterIdx] &&
-                      props.suggestions[filterIdx].isLoading)
-                  }
+                  isLoading={filter.isLoading}
                   startLoadingThreshold={filter.threshold || 1}
-                  onLoad={(prefix) =>
+                  onLoad={(prefix: string) =>
                     props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)
                   }
                 />
               );
-            case INTEGER_RANGE:
+            case "INTEGER_RANGE":
               return (
                 <InputRange
                   inputType="number"
@@ -143,7 +125,7 @@ const TableFilters = (props: PropsT) => {
                   pattern={filter.pattern}
                 />
               );
-            case REAL_RANGE:
+            case "REAL_RANGE":
               return (
                 <InputRange
                   inputType="number"
@@ -166,11 +148,11 @@ const TableFilters = (props: PropsT) => {
                   pattern={filter.pattern}
                 />
               );
-            case MONEY_RANGE:
+            case "MONEY_RANGE":
               return (
                 <InputRange
                   inputType="number"
-                  valueType={MONEY_RANGE}
+                  valueType="MONEY_RANGE"
                   input={{
                     value: filter.value,
                     onChange: (value) =>
@@ -187,7 +169,7 @@ const TableFilters = (props: PropsT) => {
                   currencyConfig={props.currencyConfig}
                 />
               );
-            case STRING:
+            case "STRING":
               return (
                 <InputText
                   inputType="text"

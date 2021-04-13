@@ -13,6 +13,7 @@ import {
   loadFormConfigsSuccess,
   patchFormConfigSuccess,
 } from "./actions";
+import { useTranslation } from "react-i18next";
 
 const configHasTag = (config: FormConfigT, searchTerm: string) => {
   return (
@@ -123,6 +124,7 @@ export const useLoadFormConfigs = () => {
 };
 
 export const useLoadFormConfig = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
   const getFormConfig = useGetFormConfig();
@@ -135,11 +137,11 @@ export const useLoadFormConfig = () => {
 
         dispatch(patchFormConfigSuccess(id, data));
       } catch (e) {
-        dispatch(setMessage("formConfig.loadError"));
+        dispatch(setMessage(t("formConfig.loadError")));
       }
       setLoading(false);
     },
-    [dispatch]
+    [t, dispatch]
   );
 
   return {

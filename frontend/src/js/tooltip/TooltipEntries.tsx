@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 
@@ -84,12 +84,13 @@ const Suffix = styled("span")`
 `;
 
 const TooltipEntries = (props: PropsType) => {
+  const { t } = useTranslation();
   const { matchingEntries, dateRange } = props;
 
   const isZero = props.matchingEntries === 0;
 
   const dateFormat = "yyyy-MM-dd";
-  const displayDateFormat = T.translate("inputDateRange.dateFormat");
+  const displayDateFormat = t("inputDateRange.dateFormat");
 
   return (
     <Root className={props.className}>
@@ -106,9 +107,9 @@ const TooltipEntries = (props: PropsType) => {
             )}
           </Number>
           <Text zero={isZero}>
-            {T.translate(
+            {t(
               "tooltip.entriesFound",
-              { context: matchingEntries || 2 } // For pluralization
+              { count: matchingEntries || 2 } // For pluralization
             )}
           </Text>
         </Info>
@@ -123,7 +124,7 @@ const TooltipEntries = (props: PropsType) => {
                   displayDateFormat
                 )
               : "- - - - - - - -"}
-            <Suffix>{`${T.translate("tooltip.date.from")}`}</Suffix>
+            <Suffix>{`${t("tooltip.date.from")}`}</Suffix>
           </Date>
           <Date>
             {dateRange && dateRange.max
@@ -132,7 +133,7 @@ const TooltipEntries = (props: PropsType) => {
                   displayDateFormat
                 )
               : "- - - - - - - -"}
-            <Suffix>{`${T.translate("tooltip.date.to")}`}</Suffix>
+            <Suffix>{`${t("tooltip.date.to")}`}</Suffix>
           </Date>
         </Info>
       </ConceptDateRangeTooltip>

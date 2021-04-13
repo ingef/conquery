@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import DownloadButton from "../button/DownloadButton";
 import PreviewButton from "../button/PreviewButton";
@@ -49,6 +49,7 @@ const QueryResults: FC<PropsT> = ({
   resultColumns,
   queryType,
 }) => {
+  const { t } = useTranslation();
   const isDownloadAllowed = !!resultUrl;
   const ending = isDownloadAllowed ? resultUrl.split(".").reverse()[0] : null;
 
@@ -57,14 +58,14 @@ const QueryResults: FC<PropsT> = ({
       {isEmpty(resultCount) ? (
         <Text>
           <FaIcon icon="check" left />
-          {T.translate("queryRunner.endSuccess")}
+          {t("queryRunner.endSuccess")}
         </Text>
       ) : (
         <LgText>
           <Bold>{resultCount}</Bold>{" "}
           {queryType === "SECONDARY_ID_QUERY"
-            ? T.translate("queryRunner.resultCountSecondaryIdQuery")
-            : T.translate("queryRunner.resultCount")}
+            ? t("queryRunner.resultCountSecondaryIdQuery")
+            : t("queryRunner.resultCount")}
         </LgText>
       )}
       {ending === "csv" && (

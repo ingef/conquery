@@ -89,7 +89,6 @@ import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvWriter;
@@ -142,7 +141,7 @@ public class AdminProcessor {
 	}
 
 	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) throws JSONException {
-		concept.setDataset(dataset.getId());
+		concept.setDataset(dataset);
 		ValidatorHelper.failOnError(log, validator.validate(concept));
 		// Register the Concept in the ManagerNode and Workers
 		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
@@ -193,14 +192,14 @@ public class AdminProcessor {
 
 			final ImportId importId = new ImportId(table.getId(), header.getName());
 
-			if(datasetRegistry.get(ds.getId()).getStorage().getImport(importId) != null){
+			if (datasetRegistry.get(ds.getId()).getStorage().getImport(importId) != null) {
 				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
 			}
 
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 
 			datasetRegistry.get(ds.getId()).getJobManager()
-					  .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize));
+						   .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize));
 		}
 	}
 
@@ -210,9 +209,9 @@ public class AdminProcessor {
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
 		CsvParser parser = new CsvParser(config.getCsv()
-				.withSkipHeader(false)
-				.withParseHeaders(false)
-				.createCsvParserSettings());
+											   .withSkipHeader(false)
+											   .withParseHeaders(false)
+											   .createCsvParserSettings());
 
 		PersistentIdMap mapping = config.getIdMapping().generateIdMapping(parser.iterate(data).iterator());
 
@@ -245,10 +244,8 @@ public class AdminProcessor {
 	 * Deletes the mandator, that is identified by the id. Its references are
 	 * removed from the users, the groups, and from the storage.
 	 *
-	 * @param roleId
-	 *            The id belonging to the mandator
-	 * @throws JSONException
-	 *             is thrown on JSON validation form the storage.
+	 * @param roleId The id belonging to the mandator
+	 * @throws JSONException is thrown on JSON validation form the storage.
 	 */
 	public void deleteRole(RoleId roleId) throws JSONException {
 		AuthorizationHelper.deleteRole(storage, roleId);
@@ -271,13 +268,13 @@ public class AdminProcessor {
 	public FERoleContent getRoleContent(RoleId roleId) {
 		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
 		return FERoleContent
-				.builder()
-				.permissions(wrapInFEPermission(role.getPermissions()))
-				.permissionTemplateMap(preparePermissionTemplate())
-				.users(getUsers(role))
-				.groups(getGroups(role))
-				.owner(role)
-				.build();
+					   .builder()
+					   .permissions(wrapInFEPermission(role.getPermissions()))
+					   .permissionTemplateMap(preparePermissionTemplate())
+					   .users(getUsers(role))
+					   .groups(getGroups(role))
+					   .owner(role)
+					   .build();
 	}
 
 	private SortedSet<FEPermission> wrapInFEPermission(Collection<Permission> permissions) {
@@ -285,7 +282,7 @@ public class AdminProcessor {
 
 		for (Permission permission : permissions) {
 			if (permission instanceof ConqueryPermission) {
-				fePermissions.add(FEPermission.from((ConqueryPermission)permission));
+				fePermissions.add(FEPermission.from((ConqueryPermission) permission));
 
 			}
 			else {
@@ -300,7 +297,7 @@ public class AdminProcessor {
 
 		// Grab all possible permission types for the "Create Permission" section
 		Set<Class<? extends StringPermissionBuilder>> permissionTypes = CPSTypeIdResolver
-				.listImplementations(StringPermissionBuilder.class);
+																				.listImplementations(StringPermissionBuilder.class);
 		for (Class<? extends StringPermissionBuilder> permissionType : permissionTypes) {
 			try {
 				StringPermissionBuilder instance = (StringPermissionBuilder) permissionType.getField("INSTANCE").get(null);
@@ -319,10 +316,8 @@ public class AdminProcessor {
 	/**
 	 * Handles creation of permissions.
 	 *
-	 * @param permission
-	 *            The permission to create.
-	 * @throws JSONException
-	 *             is thrown upon processing JSONs.
+	 * @param permission The permission to create.
+	 * @throws JSONException is thrown upon processing JSONs.
 	 */
 	public void createPermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.addPermission(ownerId.getPermissionOwner(storage), permission, storage);
@@ -331,10 +326,8 @@ public class AdminProcessor {
 	/**
 	 * Handles deletion of permissions.
 	 *
-	 * @param permission
-	 *            The permission to delete.
-	 * @throws JSONException
-	 *             is thrown upon processing JSONs.
+	 * @param permission The permission to delete.
+	 * @throws JSONException is thrown upon processing JSONs.
 	 */
 	public void deletePermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.removePermission(ownerId.getPermissionOwner(storage), permission, storage);
@@ -351,13 +344,13 @@ public class AdminProcessor {
 	public FEUserContent getUserContent(UserId userId) {
 		User user = Objects.requireNonNull(storage.getUser(userId));
 		return FEUserContent
-				.builder()
-				.owner(user)
-				.roles(user.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
-				.availableRoles(storage.getAllRoles())
-				.permissions(wrapInFEPermission(user.getPermissions()))
-				.permissionTemplateMap(preparePermissionTemplate())
-				.build();
+					   .builder()
+					   .owner(user)
+					   .roles(user.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
+					   .availableRoles(storage.getAllRoles())
+					   .permissions(wrapInFEPermission(user.getPermissions()))
+					   .permissionTemplateMap(preparePermissionTemplate())
+					   .build();
 	}
 
 	public synchronized void deleteUser(UserId userId) {
@@ -397,15 +390,15 @@ public class AdminProcessor {
 		ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
 		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
 		return FEGroupContent
-				.builder()
-				.owner(group)
-				.members(membersIds.stream().map(storage::getUser).collect(Collectors.toList()))
-				.availableMembers(availableMembers)
-				.roles(group.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
-				.availableRoles(storage.getAllRoles())
-				.permissions(wrapInFEPermission(group.getPermissions()))
-				.permissionTemplateMap(preparePermissionTemplate())
-				.build();
+					   .builder()
+					   .owner(group)
+					   .members(membersIds.stream().map(storage::getUser).collect(Collectors.toList()))
+					   .availableMembers(availableMembers)
+					   .roles(group.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
+					   .availableRoles(storage.getAllRoles())
+					   .permissions(wrapInFEPermission(group.getPermissions()))
+					   .permissionTemplateMap(preparePermissionTemplate())
+					   .build();
 	}
 
 	public synchronized void addGroup(Group group) throws JSONException {
@@ -505,8 +498,8 @@ public class AdminProcessor {
 		StringWriter sWriter = new StringWriter();
 		CsvWriter writer = CsvIo.createWriter(sWriter);
 		List<String> scope = config
-				.getAuthorization()
-				.getOverviewScope();
+									 .getAuthorization()
+									 .getOverviewScope();
 		// Header
 		writeAuthOverviewHeader(writer, scope);
 		// Body
@@ -534,11 +527,11 @@ public class AdminProcessor {
 		writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
 
 		// Print the permission per domain in the remaining columns
-		Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , storage);
-		for(String domain : scope) {
+		Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope, storage);
+		for (String domain : scope) {
 			writer.addValue(permissions.get(domain).stream()
-					.map(Object::toString)
-					.collect(Collectors.joining(config.getCsv().getLineSeparator())));
+									   .map(Object::toString)
+									   .collect(Collectors.joining(config.getCsv().getLineSeparator())));
 		}
 		writer.writeValuesToRow();
 	}
@@ -556,25 +549,35 @@ public class AdminProcessor {
 		namespace.removeBucketAssignmentsForImportFormWorkers(importId);
 	}
 
-	public synchronized void deleteTable(TableId tableId)  {
+	public synchronized List<ConceptId> deleteTable(TableId tableId, boolean force) {
 		final Namespace namespace = datasetRegistry.get(tableId.getDataset());
+		final Table table = namespace.getStorage().getTable(tableId);
 
-		final List<? extends Connector> connectors = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-				.filter(con -> con.getTable().getId().equals(tableId))
-				.collect(Collectors.toList());
+		final List<ConceptId> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
+														   .filter(con -> con.getTable().equals(table))
+														   .map(Connector::getConcept)
+														   .map(Concept::getId)
+														   .collect(Collectors.toList());
 
-		if(!connectors.isEmpty()) {
-			throw new IllegalArgumentException(String.format("Cannot delete table `%s`, because it still has connectors for Concepts: `%s`", tableId, connectors.stream().map(Connector::getConcept).collect(Collectors.toList())));
+		if (force) {
+			for (ConceptId concept : dependentConcepts) {
+				deleteConcept(concept);
+			}
+		}
+		else if (!dependentConcepts.isEmpty()) {
+			return dependentConcepts;
 		}
 
 
 		namespace.getStorage().getAllImports().stream()
-				.filter(imp -> imp.getTable().equals(tableId))
-				.map(Import::getId)
-				.forEach(this::deleteImport);
+				 .filter(imp -> imp.getTable().equals(table))
+				 .map(Import::getId)
+				 .forEach(this::deleteImport);
 
 		namespace.getStorage().removeTable(tableId);
 		namespace.sendToAll(new RemoveTable(tableId));
+
+		return dependentConcepts;
 	}
 
 	public synchronized void deleteConcept(ConceptId conceptId) {
@@ -588,20 +591,21 @@ public class AdminProcessor {
 	public synchronized void deleteDataset(DatasetId datasetId) {
 		final Namespace namespace = datasetRegistry.get(datasetId);
 
-		if(!namespace.getStorage().getTables().isEmpty()){
+		if (!namespace.getStorage().getTables().isEmpty()) {
 			throw new IllegalArgumentException(
-					String.format("Cannot delete dataset `%s`, because it still has tables: `%s`",
+					String.format(
+							"Cannot delete dataset `%s`, because it still has tables: `%s`",
 							datasetId,
 							namespace.getStorage().getTables().stream()
-									.map(Table::getId)
-									.map(Objects::toString)
-									.collect(Collectors.joining(","))
+									 .map(Table::getId)
+									 .map(Objects::toString)
+									 .collect(Collectors.joining(","))
 					));
 		}
 
 		namespace.close();
 		datasetRegistry.removeNamespace(datasetId);
-		datasetRegistry.getShardNodes().values().forEach( shardNode -> shardNode.send(new RemoveWorker(datasetId)));
+		datasetRegistry.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(datasetId)));
 
 	}
 
@@ -628,12 +632,12 @@ public class AdminProcessor {
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents = namespace.getStorage().getTables().stream()
-				.map(Table::getColumns).flatMap(Arrays::stream)
-				.filter(column -> column.getSecondaryId() != null)
-				.filter(column -> column.getSecondaryId().getId().equals(secondaryId))
-				.collect(Collectors.toList());
+												 .map(Table::getColumns).flatMap(Arrays::stream)
+												 .filter(column -> column.getSecondaryId() != null)
+												 .filter(column -> column.getSecondaryId().getId().equals(secondaryId))
+												 .collect(Collectors.toList());
 
-		if(!dependents.isEmpty()){
+		if (!dependents.isEmpty()) {
 			log.error(
 					"SecondaryId[{}] still present on {}",
 					secondaryId,

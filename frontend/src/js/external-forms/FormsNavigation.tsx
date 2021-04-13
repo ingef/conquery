@@ -1,14 +1,15 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
 
 import { setExternalForm } from "./actions";
 
 import InputSelect from "../form-components/InputSelect";
-import { T, getLocale } from "../localization";
 import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
 import type { StateT } from "app-types";
 import { Form } from "./config-types";
+import { useActiveLang } from "../localization/useActiveLang";
 
 const Root = styled("div")`
   flex-shrink: 0;
@@ -26,6 +27,9 @@ const SxInputSelect = styled(InputSelect)`
 `;
 
 const FormsNavigation: FC = () => {
+  const language = useActiveLang();
+  const { t } = useTranslation();
+
   const availableForms = useSelector<
     StateT,
     {
@@ -41,10 +45,9 @@ const FormsNavigation: FC = () => {
 
   const onItemClick = (form: string) => dispatch(setExternalForm(form));
 
-  const locale = getLocale();
   const options = Object.values(availableForms)
     .map((formType) => ({
-      label: formType.headline[locale]!,
+      label: formType.headline[language]!,
       value: formType.type,
     }))
     .sort((a, b) => (a.label < b.label ? -1 : 1));
@@ -52,7 +55,7 @@ const FormsNavigation: FC = () => {
   return (
     <Root>
       <SxInputSelect
-        label={T.translate("externalForms.forms")}
+        label={t("externalForms.forms")}
         options={options}
         input={{
           value: activeForm,

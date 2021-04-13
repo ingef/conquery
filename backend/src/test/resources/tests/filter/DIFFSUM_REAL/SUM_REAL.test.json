@@ -30,7 +30,7 @@
       "label": "Datum",
       "column": "table.datum"
     },
-    "filter": {
+    "filters": {
       "column": "table.plus",
       "subtractColumn": "table.minus",
       "type": "SUM"

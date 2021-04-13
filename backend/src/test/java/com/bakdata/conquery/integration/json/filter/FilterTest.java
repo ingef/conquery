@@ -16,8 +16,8 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -65,7 +65,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 	@JsonIgnore
 	private Connector connector;
-	private VirtualConcept concept;
+	private TreeConcept concept;
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
@@ -91,24 +91,24 @@ public class FilterTest extends AbstractQueryEngineTest {
 	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
 		Dataset dataset = support.getDataset();
 
-		concept = new VirtualConcept();
+		concept = new TreeConcept();
 		concept.setLabel("concept");
 
-		concept.setDataset(support.getDataset().getId());
+		concept.setDataset(support.getDataset());
 
 		rawConnector.put("name", "connector");
 		rawConnector.put("table", "table");
 
-		((ObjectNode) rawConnector.get("filter")).put("name", "filter");
+		((ObjectNode) rawConnector.get("filters")).put("name", "filter");
 
 		connector = parseSubTree(
 				support,
 				rawConnector,
-				VirtualConceptConnector.class,
+				ConceptTreeConnector.class,
 				conn -> conn.setConcept(concept)
 		);
 
-		concept.setConnectors(Collections.singletonList((VirtualConceptConnector) connector));
+		concept.setConnectors(Collections.singletonList((ConceptTreeConnector) connector));
 		support.getDatasetsProcessor().addConcept(dataset, concept);
 	}
 

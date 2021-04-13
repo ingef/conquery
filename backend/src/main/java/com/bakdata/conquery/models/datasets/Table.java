@@ -55,7 +55,7 @@ public class Table extends Labeled<TableId> {
 		return storage
 					   .getAllImports()
 					   .stream()
-					   .filter(imp -> imp.getTable().equals(this.getId()))
+					   .filter(imp -> imp.getTable().equals(this))
 					   .collect(Collectors.toList());
 	}
 }

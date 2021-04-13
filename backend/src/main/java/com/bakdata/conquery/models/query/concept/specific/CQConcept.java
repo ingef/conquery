@@ -58,6 +58,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Setter
@@ -70,7 +71,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
 	 */
 	@JsonProperty("ids")
-	@Valid
 	@NotEmpty
 	@NsIdRefCollection
 	private List<ConceptElement<?>> elements = Collections.emptyList();
@@ -80,7 +80,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	@JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
 
-	@Valid
 	@NotNull
 	@NsIdRefCollection
 	private List<Select> selects = new ArrayList<>();
@@ -93,28 +92,28 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	private boolean aggregateEventDates;
 
 	@Override
-	public String getLabel(Locale cfg) {
-		final String label = super.getLabel(cfg);
-		if (!Strings.isNullOrEmpty(label)) {
-			return label;
-		}
-
+	public String defaultLabel(Locale locale) {
 		if (elements.isEmpty()) {
 			return null;
+		}
+
+		if(elements.size() == 1 && elements.get(0).equals(getConcept())) {
+			return getConcept().getLabel();
 		}
 
 		final StringBuilder builder = new StringBuilder();
 
 		builder.append(getConcept().getLabel());
-
 		builder.append(" - ");
 
 		for (ConceptElement<?> id : elements) {
+			if (id.equals(getConcept())) {
+				continue;
+			}
 			builder.append(id.getLabel()).append("+");
 		}
 
 		builder.deleteCharAt(builder.length() - 1);
-
 
 		return builder.toString();
 	}
@@ -226,7 +225,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 		}
 
 		// We always merge on concept level
-		final QPNode outNode = OrNode.of(tableNodes, DateAggregationAction.MERGE);
+		final QPNode outNode = OrNode.of(tableNodes, aggregateEventDates ? DateAggregationAction.MERGE : DateAggregationAction.BLOCK);
 
 		for (Iterator<Aggregator<?>> iterator = conceptAggregators.iterator(); iterator.hasNext(); ) {
 			Aggregator<?> aggregator = iterator.next();

@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -39,7 +40,7 @@ public class ShardResult {
 	@ToString.Include
 	private LocalDateTime finishTime;
 	@JsonIgnore
-	private ListenableFuture<List<EntityResult>> future;
+	private ListenableFuture<List<Optional<EntityResult>>> future;
 
 	private Optional<ConqueryError> error = Optional.empty();
 
@@ -61,25 +62,9 @@ public class ShardResult {
 		}
 
 		try {
-			final List<EntityResult> entityResults = Uninterruptibles.getUninterruptibly(future);
-			results = new ArrayList<>(entityResults.size());
-
-			// Filter the results, skipping not contained results and sending failed results when they appear.
-			for (EntityResult entityResult : entityResults) {
-				// If any Entity breaks the Execution the whole Query is invalid and we abort anyway.
-				if(entityResult.isFailed()) {
-					// Set the first encountered Error as failure of the whole result.
-					error = Optional.of(entityResult.asFailed().getError());
-					results.clear();
-					break;
-				}
-				else if (!entityResult.isContained()){
-					continue;
-				}
-
-				results.add(entityResult);
-			}
-
+			results =  Uninterruptibles.getUninterruptibly(future).stream()
+					.flatMap(Optional::stream)
+					.collect(Collectors.toList());
 		} catch (ConqueryError e) {
 			error = Optional.of(e);
 		} catch (Exception e) {

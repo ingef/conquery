@@ -48,7 +48,7 @@
   "concepts": [
     {
       "name": "concept",
-      "type": "VIRTUAL",
+      "type": "TREE",
       "connectors": [
         {
           "name": "connector1",
@@ -57,7 +57,7 @@
             "name": "datum",
             "column": "table1.datum"
           },
-          "filter": {
+          "filters": {
             "name": "value",
             "column": "table1.value",
             "type": "COUNT"

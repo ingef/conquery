@@ -1,6 +1,6 @@
 import React, { useRef, FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import { useDrag } from "react-dnd";
 import { useSelector } from "react-redux";
 import { StateT } from "app-types";
@@ -16,7 +16,7 @@ import QueryNodeActions from "./QueryNodeActions";
 
 import { getRootNodeLabel } from "./helper";
 import type {
-  QueryNodeType,
+  StandardQueryNodeT,
   DraggedNodeType,
   DraggedQueryType,
   PreviousQueryQueryNodeType,
@@ -93,7 +93,7 @@ const RootNode = styled("p")`
 `;
 
 interface PropsT {
-  node: QueryNodeType;
+  node: StandardQueryNodeT;
   andIdx: number;
   orIdx: number;
   onDeleteNode: () => void;
@@ -104,7 +104,7 @@ interface PropsT {
 }
 
 const nodeHasActiveSecondaryId = (
-  node: QueryNodeType,
+  node: StandardQueryNodeT,
   activeSecondaryId: string | null
 ) => {
   if (!activeSecondaryId) {
@@ -136,6 +136,7 @@ const QueryNode: FC<PropsT> = ({
   onToggleTimestamps,
   onToggleSecondaryIdExclude,
 }) => {
+  const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(node);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -205,7 +206,7 @@ const QueryNode: FC<PropsT> = ({
       <Node>
         {node.isPreviousQuery && (
           <PreviousQueryLabel>
-            {T.translate("queryEditor.previousQuery")}
+            {t("queryEditor.previousQuery")}
           </PreviousQueryLabel>
         )}
         {node.error ? (

@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryNode from "./QueryNode";
@@ -59,15 +59,18 @@ interface PropsT {
 }
 
 const QueryGroup = (props: PropsT) => {
+  const { t } = useTranslation();
+
   return (
     <Root>
       <QueryEditorDropzone
         key={props.group.elements.length + 1}
+        tooltip={t("help.editorDropzoneOr")}
         onDropNode={props.onDropNode}
         onDropFile={props.onDropFile}
         onLoadPreviousQuery={props.onLoadPreviousQuery}
       />
-      <QueryOrConnector>{T.translate("common.or")}</QueryOrConnector>
+      <QueryOrConnector>{t("common.or")}</QueryOrConnector>
       <Group excluded={props.group.exclude}>
         <QueryGroupActions
           excludeActive={!!props.group.exclude}
@@ -92,7 +95,7 @@ const QueryGroup = (props: PropsT) => {
             />
             {orIdx !== props.group.elements.length - 1 && (
               <QueryOrConnector key={"last-or"}>
-                {T.translate("common.or")}
+                {t("common.or")}
               </QueryOrConnector>
             )}
           </div>

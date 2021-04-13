@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
-import com.bakdata.conquery.models.query.resultinfo.LocalizedSimpleResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.util.QueryUtils;
 import com.google.common.base.Preconditions;
@@ -107,18 +107,23 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 		}
 
 		if(createExists){
-			collector.add(new LocalizedSimpleResultInfo(this::getLabel, ResultType.BooleanT.INSTANCE));
+			collector.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}
 
 	@Override
-	public String getLabel(Locale locale) {
-		String label = super.getLabel(locale);
-		if (label != null) {
-			return label;
+	public String getUserOrDefaultLabel(Locale locale) {
+		// Prefer the user label
+		if (getLabel() != null){
+			return getLabel();
 		}
-
 		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).and() + " ", locale);
+	}
+
+	@Override
+	public String defaultLabel(Locale locale) {
+		// This forces the default label on children even if there was a user label
+		return QueryUtils.createTotalDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).and() + " ", locale);
 	}
 
 	@Override

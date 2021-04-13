@@ -52,7 +52,7 @@
    "concepts":[  
       {  
          "label":"alter",
-         "type":"VIRTUAL",
+         "type":"TREE",
          "connectors":[  
             {  
                "label":"alterxy",
@@ -61,7 +61,7 @@
                   "label":"erster",
                   "column":"table1.erster"
                },
-               "filter":{  
+               "filters":{
                   "label":"alterseinschrankung",
                   "description":"Geburtsdatum",
                   "column":"table1.geburtsdatum",

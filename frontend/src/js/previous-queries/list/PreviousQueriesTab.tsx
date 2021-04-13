@@ -1,7 +1,8 @@
 import React, { useEffect } from "react";
 import styled from "@emotion/styled";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { StateT } from "app-types";
+import { useTranslation } from "react-i18next";
 
 import type { DatasetIdT } from "../../api/types";
 import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
@@ -12,8 +13,6 @@ import UploadQueryResults from "../upload/UploadQueryResults";
 import { useLoadPreviousQueries } from "./actions";
 import { selectPreviousQueries } from "./selector";
 import { canUploadResult } from "../../user/selectors";
-
-import { T } from "../../localization";
 
 import EmptyList from "../../list/EmptyList";
 import Loading from "../../list/Loading";
@@ -30,6 +29,7 @@ interface PropsT {
 }
 
 const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
+  const { t } = useTranslation();
   const queries = useSelector<StateT, PreviousQueryT[]>((state) =>
     selectPreviousQueries(
       state.previousQueries.queries,
@@ -60,13 +60,9 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
       <PreviousQueriesSearchBox />
       {hasPermissionToUpload && <UploadQueryResults datasetId={datasetId} />}
       <Container>
-        {loading && (
-          <Loading message={T.translate("previousQueries.loading")} />
-        )}
+        {loading && <Loading message={t("previousQueries.loading")} />}
         {queries.length === 0 && !loading && (
-          <EmptyList
-            emptyMessage={T.translate("previousQueries.noQueriesFound")}
-          />
+          <EmptyList emptyMessage={t("previousQueries.noQueriesFound")} />
         )}
       </Container>
       {hasQueries && (

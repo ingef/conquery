@@ -13,6 +13,7 @@ import lombok.ToString;
 
 
 @Getter @Setter @NoArgsConstructor @EqualsAndHashCode(callSuper=true) @AllArgsConstructor
+@ToString
 public abstract class Labeled<ID extends IId<? extends Labeled<? extends ID>>> extends NamedImpl<ID> {
 	
 	private static final CharMatcher DEFAULT_NAME_UNWANTED = CharMatcher.is(IId.JOIN_CHAR).or(CharMatcher.whitespace());

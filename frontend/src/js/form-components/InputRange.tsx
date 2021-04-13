@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import type { WrappedFieldProps } from "redux-form";
 
 import type { CurrencyConfigT } from "../api/types";
@@ -25,6 +25,7 @@ const StyledInputText = styled(InputText)`
   }
 `;
 
+export type ModeT = "range" | "exact";
 interface PropsType extends WrappedFieldProps {
   inputType: string;
   valueType?: string;
@@ -38,7 +39,7 @@ interface PropsType extends WrappedFieldProps {
   mode: "range" | "exact";
   stepSize?: number;
   placeholder: string;
-  onSwitchMode: Function;
+  onSwitchMode: (mode: ModeT) => void;
   tooltip?: string;
   pattern?: string;
   input: {
@@ -61,23 +62,23 @@ function getMinMaxExact(value) {
   };
 }
 
-const InputRange = (props: PropsType) => {
-  const {
-    limits,
-    stepSize,
-    currencyConfig,
-    pattern,
-    mode,
-    inputType,
-    valueType,
-    placeholder,
-    disabled,
-    label,
-    unit,
-    tooltip,
-    onSwitchMode,
-    input: { value, onChange },
-  } = props;
+const InputRange = ({
+  limits,
+  stepSize,
+  currencyConfig,
+  pattern,
+  mode,
+  inputType,
+  valueType,
+  placeholder,
+  disabled,
+  label,
+  unit,
+  tooltip,
+  onSwitchMode,
+  input: { value, onChange },
+}: PropsType) => {
+  const { t } = useTranslation();
   // Make sure undefined / null is never set as a value, but an empty string instead
   const val = getMinMaxExact(value);
   const isRangeMode = mode === "range";
@@ -125,8 +126,8 @@ const InputRange = (props: PropsType) => {
           onChange: (mode) => onSwitchMode(mode),
         }}
         options={[
-          { value: "range", label: T.translate("inputRange.range") },
-          { value: "exact", label: T.translate("inputRange.exact") },
+          { value: "range", label: t("inputRange.range") },
+          { value: "exact", label: t("inputRange.exact") },
         ]}
       />
       <Container>
@@ -137,7 +138,7 @@ const InputRange = (props: PropsType) => {
               currencyConfig={currencyConfig}
               valueType={valueType}
               placeholder={placeholder}
-              label={T.translate("inputRange.minLabel")}
+              label={t("inputRange.minLabel")}
               tinyLabel={true}
               input={{
                 value: val.min,
@@ -150,7 +151,7 @@ const InputRange = (props: PropsType) => {
               currencyConfig={currencyConfig}
               valueType={valueType}
               placeholder={placeholder}
-              label={T.translate("inputRange.maxLabel")}
+              label={t("inputRange.maxLabel")}
               tinyLabel={true}
               input={{
                 value: val.max,
@@ -165,7 +166,7 @@ const InputRange = (props: PropsType) => {
             currencyConfig={currencyConfig}
             valueType={valueType}
             placeholder="-"
-            label={T.translate("inputRange.exactLabel")}
+            label={t("inputRange.exactLabel")}
             tinyLabel={true}
             input={{
               value: val.exact,

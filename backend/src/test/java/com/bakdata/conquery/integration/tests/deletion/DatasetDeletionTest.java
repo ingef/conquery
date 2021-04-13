@@ -13,7 +13,6 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -103,17 +102,10 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteDataset(dataset.getId()))
 					.isInstanceOf(IllegalArgumentException.class);
 
-			// Now properly clean-up before deleting:
-			// First delete all concepts, so that we can then delete all tables.
-			conquery.getNamespace().getStorage().getAllConcepts().stream()
-					.map(Concept::getId)
-					.forEach(conquery.getDatasetsProcessor()::deleteConcept);
-
-			conquery.waitUntilWorkDone();
 
 			conquery.getNamespace().getStorage().getTables().stream()
 					.map(Table::getId)
-					.forEach(conquery.getDatasetsProcessor()::deleteTable);
+					.forEach(tableId -> conquery.getDatasetsProcessor().deleteTable(tableId, true));
 
 			conquery.waitUntilWorkDone();
 
@@ -154,7 +146,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					// No CBlock associated with import may exist
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getBucket().getImp().getTable().getDataset().equals(dataset.getId()))
+							.filteredOn(cBlock -> cBlock.getBucket().getImp().getTable().getDataset().getId().equals(dataset.getId()))
 							.isEmpty();
 				}
 			}
@@ -246,7 +238,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getTable().getDataset().equals(dataset.getId())))
+						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getTable().getDataset().getId().equals(dataset.getId())))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
 					}

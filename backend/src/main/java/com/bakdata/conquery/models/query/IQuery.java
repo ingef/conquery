@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -63,6 +62,6 @@ public abstract class IQuery implements QueryDescription {
 	 * @return the number of results in the result List.
 	 */
 	public long countResults(List<EntityResult> results) {
-		return results.stream().flatMap(ContainedEntityResult::filterCast).count();
+		return results.size();
 	}
 }

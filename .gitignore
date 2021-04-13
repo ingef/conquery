@@ -63,3 +63,5 @@ nbactions.xml
 **/.idea
 /storage/
 *.iml
+
+/workspace.code-workspace

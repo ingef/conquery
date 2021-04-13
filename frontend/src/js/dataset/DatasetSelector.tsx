@@ -1,23 +1,38 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { css } from "@emotion/react";
 import { useSelector } from "react-redux";
+import { StateT } from "app-types";
+import { useTranslation } from "react-i18next";
 
-import { isEmpty } from "../common/helpers";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import { exists } from "../common/helpers/exists";
 import ReactSelect from "../form-components/ReactSelect";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import { DatasetT } from "./reducer";
 import { useSelectDataset } from "./actions";
-import { StateT } from "app-types";
-import { StandardQueryType } from "../standard-query-editor/types";
 
-const Root = styled("div")`
-  min-width: 300px;
-  padding: 0px 0 0 20px;
+const becauseWeCantStyleReactSelectWithGenericProps = css`
+  > div {
+    min-width: 300px;
+  }
+`;
+const Root = styled("label")`
   color: ${({ theme }) => theme.col.black};
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  ${becauseWeCantStyleReactSelectWithGenericProps};
+`;
+
+const Headline = styled("span")`
+  font-size: ${({ theme }) => theme.col.grayLight};
+  padding-right: 20px;
 `;
 
 const DatasetSelector: FC = () => {
+  const { t } = useTranslation();
   const selectedDatasetId = useSelector<StateT, string | null>(
     (state) => state.datasets.selectedDatasetId
   );
@@ -27,7 +42,7 @@ const DatasetSelector: FC = () => {
   const error = useSelector<StateT, string | null>(
     (state) => state.datasets.error
   );
-  const query = useSelector<StateT, StandardQueryType>(
+  const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query
   );
 
@@ -38,25 +53,26 @@ const DatasetSelector: FC = () => {
 
   const options =
     datasets && datasets.map((db) => ({ value: db.id, label: db.label }));
-  const selected = options.filter((set) => selectedDatasetId === set.value);
+  const selected = options.find((set) => selectedDatasetId === set.value);
 
   return (
-    <Root>
-      <ReactSelect
-        name="dataset-selector"
-        value={error ? -1 : selected}
-        onChange={(value) =>
-          !isEmpty(value) ? onSelectDataset(value.value) : onSelectDataset(null)
-        }
-        placeholder={
-          error
-            ? T.translate("datasetSelector.error")
-            : T.translate("reactSelect.placeholder")
-        }
-        isDisabled={!!error}
-        options={options}
-      />
-    </Root>
+    <WithTooltip text={t("help.datasetSelector")} lazy>
+      <Root>
+        <Headline>{t("datasetSelector.label")}</Headline>
+        <ReactSelect<false>
+          name="dataset-selector"
+          value={error ? null : selected}
+          onChange={(value) =>
+            exists(value) ? onSelectDataset(value.value) : onSelectDataset(null)
+          }
+          placeholder={
+            error ? t("datasetSelector.error") : t("reactSelect.placeholder")
+          }
+          isDisabled={!!error}
+          options={options}
+        />
+      </Root>
+    </WithTooltip>
   );
 };
 

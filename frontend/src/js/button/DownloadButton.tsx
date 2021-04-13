@@ -1,6 +1,6 @@
 import React, { ReactNode, FC } from "react";
 
-import { getStoredAuthToken } from "../authorization/helper";
+import { useAuthToken } from "../api/useApi";
 
 import IconButton from "./IconButton";
 
@@ -32,10 +32,10 @@ const DownloadButton: FC<PropsT> = ({
   ending,
   ...restProps
 }) => {
-  const authToken = getStoredAuthToken();
+  const authToken = useAuthToken();
 
   const href = `${url}?access_token=${encodeURIComponent(
-    authToken || ""
+    authToken
   )}&charset=ISO_8859_1`;
 
   const icon = getIcon(ending);

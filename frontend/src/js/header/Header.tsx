@@ -1,8 +1,9 @@
 import React, { FC } from "react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
 import { StateT } from "app-types";
+import preval from "preval.macro";
 
 import { useHideLogoutButton } from "../user/selectors";
 import DatasetSelector from "../dataset/DatasetSelector";
@@ -10,7 +11,6 @@ import LogoutButton from "./LogoutButton";
 
 const Root = styled("header")`
   background-color: ${({ theme }) => theme.col.graySuperLight};
-  color: ${({ theme }) => theme.col.blueGrayDark};
   border-bottom: 1px solid ${({ theme }) => theme.col.grayMediumLight};
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
   padding: 0 20px;
@@ -42,7 +42,7 @@ const OverflowHidden = styled("div")`
 `;
 
 const Spacer = styled("span")`
-  margin: 0 10px;
+  margin: 0 5px;
   height: 20px;
 `;
 
@@ -59,26 +59,65 @@ const Headline = styled("h1")`
   margin: 0 auto 0 0;
   line-height: 2;
   font-size: ${({ theme }) => theme.font.md};
-  font-weight: 300;
+  font-weight: 700;
+  font-size: 12px;
+  opacity: 0.3;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
 const SxLogoutButton = styled(LogoutButton)`
   margin-left: 5px;
 `;
 
-const Header: FC = () => {
-  const version = useSelector<StateT, string>(
+const useVersion = () => {
+  const backendVersion = useSelector<StateT, string>(
     (state) => state.startup.config.version
   );
 
+  const frontendDateTimeStamp = preval`module.exports = new Date().toISOString();`;
+  // TODO: GET THIS TO WORK WHEN BUILDING INSIDE A DODCKER CONTAINER
+  // const frontendGitCommit = preval`
+  //   const { execSync } = require('child_process');
+  //   module.exports = execSync('git rev-parse --short HEAD').toString();
+  // `;
+  // const frontendGitTag = preval`
+  //   const { execSync } = require('child_process');
+  //   module.exports = execSync('git describe --all --exact-match \`git rev-parse HEAD\`').toString();
+  // `;
+
+  return {
+    backendVersion,
+    frontendGitCommit: "",
+    frontendDateTimeStamp,
+    frontendGitTag: "",
+  };
+};
+
+const Header: FC = () => {
+  const { t } = useTranslation();
+  const {
+    backendVersion,
+    frontendDateTimeStamp,
+    frontendGitTag,
+    frontendGitCommit,
+  } = useVersion();
   const hideLogoutButton = useHideLogoutButton();
+
+  const versionString = `BE: ${backendVersion}, FE: ${frontendGitTag} ${frontendGitCommit} ${frontendDateTimeStamp}`;
+
+  const copyVersionToClipboard = () => {
+    navigator.clipboard.writeText(
+      `${backendVersion} ${frontendGitTag} ${frontendGitCommit}`
+    );
+  };
 
   return (
     <Root>
       <OverflowHidden>
-        <Logo title={version} />
+        <Logo title={versionString} onClick={copyVersionToClipboard} />
         <Spacer />
-        <Headline>{T.translate("headline")}</Headline>
+        <Headline>{t("headline")}</Headline>
       </OverflowHidden>
       <Right>
         <DatasetSelector />

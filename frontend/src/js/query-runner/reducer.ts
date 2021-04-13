@@ -2,9 +2,7 @@ import type {
   ColumnDescription,
   DatasetIdT,
   GetQueryResponseDoneT,
-  ErrorResponseT,
 } from "../api/types";
-import { getErrorCodeMessageKey } from "../api/errorCodes";
 import { QueryTypeT } from "./actions";
 import {
   QUERY_RESULT_ERROR,
@@ -22,7 +20,7 @@ import {
 interface APICallType {
   loading?: boolean;
   success?: boolean;
-  error?: string;
+  error?: string | boolean;
   errorContext?: Record<string, string>;
 }
 
@@ -65,23 +63,6 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
       resultColumns: data.columnDescriptions,
       queryType: data.queryType,
     };
-  };
-
-  const getQueryError = ({
-    status,
-    error,
-  }: {
-    status: "CANCELED" | "FAILED";
-    error: ErrorResponseT | null;
-  }): string => {
-    if (status === "CANCELED") {
-      return "queryRunner.queryCanceled";
-    }
-
-    return (
-      (error && error.code && getErrorCodeMessageKey(error.code)) ||
-      "queryRunner.queryFailed"
-    );
   };
 
   return (
@@ -155,8 +136,6 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
         };
       case QUERY_RESULT_ERROR:
         const { payload } = action;
-        const error = getQueryError(payload);
-        const errorContext = (payload.error && payload.error.context) || {};
 
         return {
           ...state,
@@ -164,8 +143,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
           queryRunning: false,
           queryResult: {
             loading: false,
-            error,
-            errorContext,
+            error: payload.error,
           },
         };
       default:

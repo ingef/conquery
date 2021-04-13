@@ -1,31 +1,29 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.util.List;
-
-import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+
 @Getter @RequiredArgsConstructor
-public class AbsoluteFormQueryPlan implements QueryPlan {
+public class AbsoluteFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final QueryPlan query;
-	private final List<DateContext> dateContexts;
-	private final ArrayConceptQueryPlan features;
+	private final FormQueryPlan subPlan;
 	
 	@Override
-	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
-		EntityResult preResult = query.execute(ctx, entity);
-		if (preResult.isFailed() || !preResult.isContained()) {
-			return preResult;
+	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+		Optional<EntityResult> preResult = query.execute(ctx, entity);
+		if (preResult.isEmpty()) {
+			return Optional.empty();
 		}
-		FormQueryPlan subPlan = new FormQueryPlan(dateContexts, features);
 		return subPlan.execute(ctx, entity);
 	}
 
@@ -33,13 +31,17 @@ public class AbsoluteFormQueryPlan implements QueryPlan {
 	public AbsoluteFormQueryPlan clone(CloneContext ctx) {
 		return new AbsoluteFormQueryPlan(
 			query.clone(ctx),
-			dateContexts,
-			features.clone(ctx)
+			subPlan
 		);
 	}
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
 		return query.isOfInterest(entity);
+	}
+
+	@Override
+	public CDateSet getValidityDates(MultilineEntityResult result) {
+		return subPlan.getValidityDates(result);
 	}
 }

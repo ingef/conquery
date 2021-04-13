@@ -25,18 +25,52 @@ public class SelectResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public String getName(PrintSettings settings) {
-		return settings.columnName(this);
+	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
+		return ColumnDescriptor.builder()
+				.label(getUniqueName(settings))
+				.defaultLabel(defaultColumnName(settings))
+				.userConceptLabel(userColumnName(settings))
+				.type(getType().typeInfo())
+				.selectId(select.getId())
+				.build();
 	}
 
 	@Override
-	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
-		return ColumnDescriptor.builder()
-							   .label(getUniqueName(settings))
-							   .userConceptLabel(cqConcept.getLabel(settings.getLocale()))
-							   .type(getType().typeInfo())
-							   .selectId(select.getId())
-							   .build();
+	public String userColumnName(PrintSettings printSettings) {
+
+		if (printSettings.getColumnNamer() != null) {
+			// override user labels if column namer is set, TODO clean this up when userConceptLabel is removed
+			return printSettings.getColumnNamer().apply(this);
+		}
+
+		String label = getCqConcept().getLabel();
+		if (label == null) {
+			return null;
+		}
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(label);
+		sb.append(" - ");
+
+		select.appendColumnName(sb);
+		return sb.toString();
+	}
+
+	@Override
+	public String defaultColumnName(PrintSettings printSettings) {
+
+		StringBuilder sb = new StringBuilder();
+		String cqLabel = getCqConcept().defaultLabel(printSettings.getLocale());
+
+		if (cqLabel != null) {
+			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
+			sb.append(cqLabel);
+			sb.append(" - ");
+		}
+
+		select.appendColumnName(sb);
+		return sb.toString();
 	}
 
 	@Override

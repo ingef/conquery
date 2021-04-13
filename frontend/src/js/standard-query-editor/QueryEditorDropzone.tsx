@@ -1,7 +1,8 @@
 import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
+import { DropTargetMonitor } from "react-dnd";
 
 import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
 import FaIcon from "../icon/FaIcon";
@@ -13,8 +14,9 @@ import {
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../common/constants/dndTypes";
 import type { QueryIdT } from "../api/types";
+import WithTooltip from "../tooltip/WithTooltip";
+
 import type { DraggedNodeType, DraggedQueryType } from "./types";
-import { DropTargetMonitor } from "react-dnd";
 
 const DROP_TYPES = [
   CONCEPT_TREE_NODE,
@@ -81,6 +83,7 @@ const Row = styled("div")`
 interface PropsT {
   isInitial?: boolean;
   isAnd?: boolean;
+  tooltip?: string;
   onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
   onDropFile: (file: File) => void;
   onLoadPreviousQuery: (id: QueryIdT) => void;
@@ -89,10 +92,13 @@ interface PropsT {
 const QueryEditorDropzone: FC<PropsT> = ({
   isAnd,
   isInitial,
+  tooltip,
   onLoadPreviousQuery,
   onDropFile,
   onDropNode,
 }) => {
+  const { t } = useTranslation();
+
   const onDrop = (_: any, monitor: DropTargetMonitor) => {
     const item = monitor.getItem();
 
@@ -116,28 +122,26 @@ const QueryEditorDropzone: FC<PropsT> = ({
       showFileSelectButton={isInitial}
     >
       {() => (
-        <>
+        <WithTooltip text={tooltip} lazy>
           {isInitial && (
             <TextInitial>
-              <h2>{T.translate("dropzone.explanation")}</h2>
+              <h2>{t("dropzone.explanation")}</h2>
               <Row>
                 <ArrowRight icon="arrow-right" />
                 <div>
-                  <p>{T.translate("dropzone.drop")}</p>
+                  <p>{t("dropzone.drop")}</p>
                   <ul>
-                    <li>{T.translate("dropzone.aConcept")}</li>
-                    <li>{T.translate("dropzone.aQuery")}</li>
-                    <li>{T.translate("dropzone.aConceptList")}</li>
+                    <li>{t("dropzone.aConcept")}</li>
+                    <li>{t("dropzone.aQuery")}</li>
+                    <li>{t("dropzone.aConceptList")}</li>
                   </ul>
-                  <p>{T.translate("dropzone.intoThisArea")}</p>
+                  <p>{t("dropzone.intoThisArea")}</p>
                 </div>
               </Row>
             </TextInitial>
           )}
-          {!isInitial && (
-            <Text>{T.translate("dropzone.dragElementPlease")}</Text>
-          )}
-        </>
+          {!isInitial && <Text>{t("dropzone.dragElementPlease")}</Text>}
+        </WithTooltip>
       )}
     </SxDropzoneWithFileInput>
   );
