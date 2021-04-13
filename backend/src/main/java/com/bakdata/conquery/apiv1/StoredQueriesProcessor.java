@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -27,11 +28,13 @@ import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
@@ -72,7 +75,7 @@ public class StoredQueriesProcessor {
                         return Stream.of(
                                 mq.buildStatusOverview(
                                         storage,
-                                        uriBuilder,
+                                        uriBuilder.clone(),
                                         user,
                                         datasetRegistry,
                                         datasetAbilities));
@@ -88,12 +91,14 @@ public class StoredQueriesProcessor {
             return false;
         }
 
-        if (((ManagedQuery) q).getQuery() instanceof ConceptQuery) {
-            return isFrontendStructure(((ConceptQuery) ((ManagedQuery) q).getQuery()).getRoot());
+		final IQuery query = ((ManagedQuery) q).getQuery();
+
+		if (query instanceof ConceptQuery) {
+            return isFrontendStructure(((ConceptQuery) query).getRoot());
         }
 
-        if (((ManagedQuery) q).getQuery() instanceof  SecondaryIdQuery) {
-            return isFrontendStructure(((SecondaryIdQuery) ((ManagedQuery) q).getQuery()).getRoot());
+        if (query instanceof  SecondaryIdQuery) {
+            return isFrontendStructure(((SecondaryIdQuery) query).getRoot());
         }
 
         return false;
@@ -104,23 +109,28 @@ public class StoredQueriesProcessor {
 	 * @implNote We filter for just the bare minimum, as the structure of the frontend is very specific and hard to fix in java code.
 	 */
 	public static boolean isFrontendStructure(CQElement root) {
-		return root instanceof CQAnd;
+		return root instanceof CQAnd || root instanceof CQExternal;
 	}
 
     public void deleteQuery(ManagedExecutionId executionId, User user) {
-        ManagedExecution<?> execution = Objects.requireNonNull(storage.getExecution(executionId));
+		final ManagedExecution<?> execution = storage.getExecution(executionId);
 
-        storage.removeExecution(executionId);
+		if(execution == null){
+			throw new NotFoundException(String.format("Execution[%s] not found.", executionId));
+		}
+
+		storage.removeExecution(executionId);
     }
 
     public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
         ManagedExecution<?> query = storage.getExecution(queryId);
 
+        if (query == null) {
+			return null;
+		}
+
         authorize(user, query, Ability.READ);
 
-        if (query == null) {
-            return null;
-        }
         query.initExecutable(datasetRegistry, config);
 
         Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
