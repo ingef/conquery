@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -34,7 +35,9 @@ import lombok.RequiredArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 public class LocalizedDefaultResultInfo extends ResultInfo {
 
+	@NonNull
 	private final Function<Locale, String> localizedLabelProvider;
+	@NonNull
 	private final Function<Locale, String> localizedDefaultLabelProvider;
 	@Getter
 	private final ResultType type;
