@@ -381,8 +381,8 @@
     "closeAll": "Alle Konzepte schließen"
   },
   "help": {
-    "tabConceptTrees": "Auswahl der Konzepte aus den Konzeptbäumen zur Verwendung in Editor, Zeit-Editor, oder Formular-Editor.",
-    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung in Editor oder Formular-Editor.",
+    "tabConceptTrees": "Auswahl der Konzepte aus den Konzeptbäumen zur Verwendung in Editor oder Formular-Editor.",
+    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung in Editor, Zeit-Editor oder Formular-Editor.",
     "tabFormConfigs": "Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
     "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
     "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",
