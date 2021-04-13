@@ -36,6 +36,7 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 
 	private final String userLabel;
 	private final Function<Locale, String> localizedDefaultProvider;
+	private final Function<Locale, String> localizedTotalDefaultProvider;
 	@Getter
 	private final ResultType type;
 
@@ -47,5 +48,10 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	@Override
 	public String defaultColumnName(PrintSettings printSettings) {
 		return localizedDefaultProvider.apply(printSettings.getLocale());
+	}
+
+	@Override
+	public String totalDefaultColumnName(PrintSettings printSettings) {
+		return localizedTotalDefaultProvider.apply(printSettings.getLocale());
 	}
 }

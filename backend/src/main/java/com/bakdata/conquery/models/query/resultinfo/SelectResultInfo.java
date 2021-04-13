@@ -63,6 +63,11 @@ public class SelectResultInfo extends ResultInfo {
 	}
 
 	@Override
+	public String totalDefaultColumnName(PrintSettings printSettings) {
+		return defaultColumnName(printSettings);
+	}
+
+	@Override
 	public String toString(){
 		return "SelectResultInfo[" + select.getName() + ", " + select.getResultType() + "]";
 	}

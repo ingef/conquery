@@ -107,13 +107,17 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 		}
 
 		if(createExists){
-			collector.add(new LocalizedDefaultResultInfo(getLabel(),this::defaultLabel, ResultType.BooleanT.INSTANCE));
+			collector.add(new LocalizedDefaultResultInfo(getLabel(), this::defaultLabel, this::totalDefaultLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}
 
 	@Override
 	public String defaultLabel(Locale locale) {
 		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).and() + " ", locale);
+	}
+
+	public String totalDefaultLabel(Locale locale) {
+		return QueryUtils.createTotalDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).and() + " ", locale);
 	}
 
 	@Override

@@ -55,7 +55,11 @@ public class QueryUtils {
 	}
 
 	public static String createDefaultMultiLabel(List<CQElement> elements, String delimiter, Locale locale) {
-		return elements.stream().map(elt -> elt.getUserOrDefaultLabel(locale)).collect(Collectors.joining(delimiter));
+			return elements.stream().map(elt -> elt.getUserOrDefaultLabel(locale)).collect(Collectors.joining(delimiter));
+	}
+
+	public static String createTotalDefaultMultiLabel(List<CQElement> elements, String delimiter, Locale locale) {
+		return elements.stream().map(elt -> elt.defaultLabel(locale)).collect(Collectors.joining(delimiter));
 	}
 
 	/**

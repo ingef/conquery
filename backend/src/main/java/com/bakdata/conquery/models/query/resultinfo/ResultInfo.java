@@ -61,7 +61,15 @@ public abstract class ResultInfo {
 	}
 
 	public abstract String userColumnName(PrintSettings printSettings);
+
+	/**
+	 * Use default label schema for the generating class, but children use their best fitting label.
+	 */
 	public abstract String defaultColumnName(PrintSettings printSettings);
+	/**
+	 * Use default label schema for the generating class and children that contribute to the label label.
+	 */
+	public abstract String totalDefaultColumnName(PrintSettings printSettings);
 
 	@ToString.Include
 	public abstract ResultType getType();
@@ -73,7 +81,7 @@ public abstract class ResultInfo {
 	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
 		return ColumnDescriptor.builder()
 				.label(getUniqueName(settings))
-				.defaultLabel(defaultColumnName(settings))
+				.defaultLabel(totalDefaultColumnName(settings))
 				.userConceptLabel(userColumnName(settings))
 				.type(getType().typeInfo())
 				.build();
