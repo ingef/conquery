@@ -92,18 +92,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	private boolean aggregateEventDates;
 
 	@Override
-	public String getLabel(Locale cfg) {
-		final String label = super.getLabel(cfg);
-		if (!Strings.isNullOrEmpty(label)) {
-			return label;
-		}
-
-		return getDefaultLabel();
-	}
-
-	@Nullable
-	@JsonIgnore
-	public String getDefaultLabel() {
+	public String defaultLabel(Locale locale) {
 		if (elements.isEmpty()) {
 			return null;
 		}
@@ -115,7 +104,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 		final StringBuilder builder = new StringBuilder();
 
 		builder.append(getConcept().getLabel());
-
 		builder.append(" - ");
 
 		for (ConceptElement<?> id : elements) {
@@ -126,7 +114,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 		}
 
 		builder.deleteCharAt(builder.length() - 1);
-
 
 		return builder.toString();
 	}

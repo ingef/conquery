@@ -135,7 +135,7 @@ public class DefaultColumnNameTest {
 		
 		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(), concept.createCQConcept(hasCQConceptLabel));
 		
-		assertThat(SETTINGS.columnName(info)).isEqualTo(expectedColumnName);
+		assertThat(info.getUniqueName(SETTINGS)).isEqualTo(expectedColumnName);
 	}
 
 	

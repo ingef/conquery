@@ -8,12 +8,13 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
  * Allows to generate result names, e.g. for CSV-headers, depending on the
  * provided locale.
- * The {@link LocalizedSimpleResultInfo#localizedNameProvider} is expected to
+ * The {@link LocalizedDefaultResultInfo#localizedDefaultLabelProvider} is expected to
  * use {@link C10N} (Cosmopolitan) like this:
  * <pre>
  *  (locale) -> C10N.get(ExampleC10n.class, locale).example()
@@ -32,14 +33,26 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class LocalizedSimpleResultInfo extends ResultInfo {
-	
-	private final Function<Locale, String> localizedNameProvider;
+public class LocalizedDefaultResultInfo extends ResultInfo {
+
+	@NonNull
+	private final Function<Locale, String> localizedLabelProvider;
+	@NonNull
+	private final Function<Locale, String> localizedDefaultLabelProvider;
 	@Getter
 	private final ResultType type;
 
+	public LocalizedDefaultResultInfo(Function<Locale, String> localizedLabelProvider, ResultType type) {
+		this(localizedLabelProvider,localizedLabelProvider, type);
+	}
+
 	@Override
-	protected String getName(PrintSettings settings) {
-		return localizedNameProvider.apply(settings.getLocale());
+	public String userColumnName(PrintSettings printSettings) {
+		return localizedLabelProvider.apply(printSettings.getLocale());
+	}
+
+	@Override
+	public String defaultColumnName(PrintSettings printSettings) {
+		return localizedDefaultLabelProvider.apply(printSettings.getLocale());
 	}
 }

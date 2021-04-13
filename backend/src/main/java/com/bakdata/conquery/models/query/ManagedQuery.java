@@ -15,7 +15,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
@@ -28,7 +27,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
@@ -314,7 +312,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	private static String makeLabelWithRootAndChild(DatasetRegistry datasetRegistry, CQConcept cqConcept, PrintSettings cfg) {
-		String label = cqConcept.getLabel(cfg.getLocale());
+		String label = cqConcept.getUserOrDefaultLabel(cfg.getLocale());
 		if (label == null) {
 			label = cqConcept.getConcept().getLabel();
 		}
