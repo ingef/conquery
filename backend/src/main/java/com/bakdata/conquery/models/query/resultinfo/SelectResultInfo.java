@@ -50,21 +50,27 @@ public class SelectResultInfo extends ResultInfo {
 
 		StringBuilder sb = new StringBuilder();
 
-		return select.appendColumnName(sb, label);
+		sb.append(label);
+		sb.append(" - ");
+
+		select.appendColumnName(sb);
+		return sb.toString();
 	}
 
 	@Override
 	public String defaultColumnName(PrintSettings printSettings) {
 
 		StringBuilder sb = new StringBuilder();
-		String cqLabel = getCqConcept().getDefaultLabel();
+		String cqLabel = getCqConcept().defaultLabel(printSettings.getLocale());
 
-		return select.appendColumnName(sb, cqLabel);
-	}
+		if (cqLabel != null) {
+			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
+			sb.append(cqLabel);
+			sb.append(" - ");
+		}
 
-	@Override
-	public String totalDefaultColumnName(PrintSettings printSettings) {
-		return defaultColumnName(printSettings);
+		select.appendColumnName(sb);
+		return sb.toString();
 	}
 
 	@Override

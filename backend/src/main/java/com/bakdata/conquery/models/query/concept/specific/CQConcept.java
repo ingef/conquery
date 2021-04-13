@@ -93,12 +93,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 
 	@Override
 	public String defaultLabel(Locale locale) {
-		return getDefaultLabel();
-	}
-
-	@Nullable
-	@JsonIgnore
-	public String getDefaultLabel() {
 		if (elements.isEmpty()) {
 			return null;
 		}
@@ -110,7 +104,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 		final StringBuilder builder = new StringBuilder();
 
 		builder.append(getConcept().getLabel());
-
 		builder.append(" - ");
 
 		for (ConceptElement<?> id : elements) {
@@ -121,7 +114,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 		}
 
 		builder.deleteCharAt(builder.length() - 1);
-
 
 		return builder.toString();
 	}

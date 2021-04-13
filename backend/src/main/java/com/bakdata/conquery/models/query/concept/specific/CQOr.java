@@ -115,15 +115,24 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 		}
 
 		if (createExists) {
-			collector.add(new LocalizedDefaultResultInfo(getLabel(), this::defaultLabel, ResultType.BooleanT.INSTANCE));
+			collector.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}
 
 	@Override
-	public String defaultLabel(Locale locale) {
+	public String getUserOrDefaultLabel(Locale locale) {
+		// Prefer the user label
+		if (getLabel() != null){
+			return getLabel();
+		}
 		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).or() + " ", locale);
 	}
 
+	@Override
+	public String defaultLabel(Locale locale) {
+		// This forces the default label on children even if there was a user label
+		return QueryUtils.createTotalDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).or() + " ", locale);
+	}
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {

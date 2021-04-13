@@ -45,18 +45,12 @@ public abstract class Select extends Labeled<SelectId> {
 
 
 	@NotNull
-	public String appendColumnName(StringBuilder sb, String cqLabel) {
-		if (cqLabel != null) {
-			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
-			sb.append(cqLabel);
-			sb.append(" - ");
-		}
+	public void appendColumnName(StringBuilder sb) {
 		if (getHolder() instanceof Connector && getHolder().findConcept().getConnectors().size() > 1) {
 			// The select originates from a connector and the corresponding concept has more than one connector -> Print also the connector
 			sb.append(((Connector) getHolder()).getLabel());
 			sb.append(' ');
 		}
 		sb.append(getLabel());
-		return sb.toString();
 	}
 }

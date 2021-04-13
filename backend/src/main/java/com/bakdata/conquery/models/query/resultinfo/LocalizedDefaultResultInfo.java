@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 /**
  * Allows to generate result names, e.g. for CSV-headers, depending on the
  * provided locale.
- * The {@link LocalizedDefaultResultInfo#localizedDefaultProvider} is expected to
+ * The {@link LocalizedDefaultResultInfo#localizedDefaultLabelProvider} is expected to
  * use {@link C10N} (Cosmopolitan) like this:
  * <pre>
  *  (locale) -> C10N.get(ExampleC10n.class, locale).example()
@@ -34,28 +34,22 @@ import lombok.RequiredArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 public class LocalizedDefaultResultInfo extends ResultInfo {
 
-	private final String userLabel;
-	private final Function<Locale, String> localizedDefaultProvider;
-	private final Function<Locale, String> localizedTotalDefaultProvider;
+	private final Function<Locale, String> localizedLabelProvider;
+	private final Function<Locale, String> localizedDefaultLabelProvider;
 	@Getter
 	private final ResultType type;
 
-	public LocalizedDefaultResultInfo(String userLabel, Function<Locale, String> localizedDefaultProvider, ResultType type) {
-		this(userLabel, localizedDefaultProvider, localizedDefaultProvider, type);
+	public LocalizedDefaultResultInfo(Function<Locale, String> localizedLabelProvider, ResultType type) {
+		this(localizedLabelProvider,localizedLabelProvider, type);
 	}
 
 	@Override
 	public String userColumnName(PrintSettings printSettings) {
-		return userLabel;
+		return localizedLabelProvider.apply(printSettings.getLocale());
 	}
 
 	@Override
 	public String defaultColumnName(PrintSettings printSettings) {
-		return localizedDefaultProvider.apply(printSettings.getLocale());
-	}
-
-	@Override
-	public String totalDefaultColumnName(PrintSettings printSettings) {
-		return localizedTotalDefaultProvider.apply(printSettings.getLocale());
+		return localizedDefaultLabelProvider.apply(printSettings.getLocale());
 	}
 }
