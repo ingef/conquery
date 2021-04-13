@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -45,8 +46,12 @@ public abstract class CQElement implements Visitable {
 
 	@NotNull
 	public String defaultLabel(Locale locale) {
-		// Fallback to user label if no default label implementation is provided
-		return label;
+		// Fallback to CPSType#id() implementation is provided or class name
+		CPSType type = this.getClass().getAnnotation(CPSType.class);
+		if(type != null) {
+			return type.id();
+		}
+		return this.getClass().getSimpleName();
 	}
 
 	/**
