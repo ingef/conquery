@@ -12,7 +12,6 @@ import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.function.Function;
 
 import javax.ws.rs.WebApplicationException;
@@ -35,6 +34,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.google.common.base.Strings;
@@ -64,7 +64,9 @@ public class ResultProcessor {
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
 		authorize(user, namespace.getDataset(), Ability.READ);
 
-		ManagedExecution<?> exec = Objects.requireNonNull(datasetRegistry.getMetaStorage().getExecution(queryId));
+		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
+
+		ResourceUtil.throwNotFoundIfNull(queryId, exec);
 
 		authorize(user, exec, Ability.READ);
 
@@ -145,7 +147,9 @@ public class ResultProcessor {
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
 		authorize(user, namespace.getDataset(), Ability.READ);
 
-		ManagedExecution<?> exec = Objects.requireNonNull(datasetRegistry.getMetaStorage().getExecution(queryId));
+		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
+
+		ResourceUtil.throwNotFoundIfNull(queryId,exec);
 
 		authorize(user, exec, Ability.READ);
 

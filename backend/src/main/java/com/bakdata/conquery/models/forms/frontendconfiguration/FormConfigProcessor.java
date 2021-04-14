@@ -4,13 +4,11 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.Validator;
-import javax.ws.rs.NotFoundException;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
@@ -32,6 +30,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.FormConfigResource;
+import com.bakdata.conquery.util.ResourceUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.AllArgsConstructor;
@@ -95,12 +94,14 @@ public class FormConfigProcessor {
 	 * It also tried to convert all {@link NamespacedId}s into the given dataset, so that the frontend can resolve them.
 	 */
 	public FormConfigFullRepresentation getConfig(DatasetId datasetId, User user, FormConfigId formId) {
-		FormConfig form = Objects.requireNonNull(storage.getFormConfig(formId));
+		FormConfig form = storage.getFormConfig(formId);
+
+		ResourceUtil.throwNotFoundIfNull(formId, form);
+
 		AuthorizationHelper.authorize(user,form,Ability.READ);
-		return Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId))
-			.fullRepresentation(storage, user);
+		return form.fullRepresentation(storage, user);
 	}
-	
+
 	/**
 	 * Adds the provided config to the desired dataset and the datasets that the
 	 * user has access to (has the READ ability on the Dataset), if the config is
@@ -153,9 +154,7 @@ public class FormConfigProcessor {
 	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, FormConfigPatch patch) {
 		FormConfig config = storage.getFormConfig(formId);
 
-		if (config == null) {
-			throw new NotFoundException(formId.toString());
-		}
+		ResourceUtil.throwNotFoundIfNull(formId, config);
 
 		patch.applyTo(config, storage, user);
 		
@@ -168,8 +167,11 @@ public class FormConfigProcessor {
 	 * Deletes a configuration from the storage and all permissions, that have this configuration as target.
 	 */
 	public void deleteConfig(User user, FormConfigId formId) {
-		FormConfig config = Objects.requireNonNull(storage.getFormConfig(formId), String.format("Could not find form config %s", formId));
-		AuthorizationHelper.authorize(user,config,Ability.DELETE);
+		FormConfig config = storage.getFormConfig(formId);
+
+		ResourceUtil.throwNotFoundIfNull(formId, config);
+		AuthorizationHelper.authorize(user, config, Ability.DELETE);
+
 		storage.removeFormConfig(formId);
 		// Delete corresponding permissions (Maybe better to put it into a slow job)
 		for(ConqueryPermission permission : user.getPermissions()) {

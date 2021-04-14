@@ -6,6 +6,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 import java.util.Collection;
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -32,7 +33,7 @@ public class RoleResource extends HAdmin {
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response postRoles(List<Role> roles) {
+	public Response postRoles(@NotEmpty List<Role> roles) {
 		processor.addRoles(roles);
 		return Response.ok().build();
 	}

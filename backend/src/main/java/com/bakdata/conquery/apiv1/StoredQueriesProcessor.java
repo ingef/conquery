@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -36,6 +35,7 @@ import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.ResourceUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -113,15 +113,13 @@ public class StoredQueriesProcessor {
 		return root instanceof CQAnd || root instanceof CQExternal;
 	}
 
-    public void deleteQuery(ManagedExecutionId executionId, User user) {
+
+  public void deleteQuery(ManagedExecutionId executionId, User user) {
 		final ManagedExecution<?> execution = storage.getExecution(executionId);
 
-		if(execution == null){
-			throw new NotFoundException(String.format("Execution[%s] not found.", executionId));
-		}
+		ResourceUtil.throwNotFoundIfNull(executionId, execution);
 
 		authorize(user, execution, Ability.DELETE);
-
 
 		storage.removeExecution(executionId);
 	}
@@ -129,9 +127,7 @@ public class StoredQueriesProcessor {
 	public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
 
-		if (query == null) {
-			throw new NotFoundException(queryId.toString());
-		}
+		ResourceUtil.throwNotFoundIfNull(queryId, query);
 
 		authorize(user, query, Ability.READ);
 
@@ -144,9 +140,7 @@ public class StoredQueriesProcessor {
 	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {
 		ManagedExecution<?> execution = storage.getExecution(executionId);
 
-		if (execution == null) {
-			throw new NotFoundException(executionId.toString());
-		}
+		ResourceUtil.throwNotFoundIfNull(executionId, execution);
 
 		authorize(user, execution, Ability.MODIFY);
 
