@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.concept.filter;
 import java.math.BigDecimal;
 
 import javax.annotation.Nonnull;
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -27,12 +26,11 @@ import lombok.ToString;
 @CPSBase
 @ToString(of = "value")
 public abstract class FilterValue<VALUE> {
-	@Valid
 	@NotNull
 	@Nonnull
 	@NsIdRef
 	private Filter<?> filter;
-	@Valid
+
 	@NotNull
 	@Nonnull
 	private VALUE value;
