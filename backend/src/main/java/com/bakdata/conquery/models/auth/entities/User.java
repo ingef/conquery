@@ -81,7 +81,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 			return;
 		}
 
-		shiroUserAdapter.checkPermission(object.createPermission(EnumSet.of(ability)));
+		shiroUserAdapter.checkPermission(object.createPermission(ability == null? Collections.emptySet() : EnumSet.of(ability)));
 	}
 
 	public void authorize(Set<? extends Authorized> objects, Ability ability) {
