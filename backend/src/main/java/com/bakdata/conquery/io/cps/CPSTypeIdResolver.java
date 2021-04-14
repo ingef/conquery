@@ -72,7 +72,10 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 				.enableClassInfo()
 				.enableAnnotationInfo()
 				//TODO if ever necessary, use an environment variable also
-				.acceptPackages("com.bakdata")
+				.acceptPackages(
+						"com.bakdata",
+						"tests"
+				)
 				.scan();
 		
 		log.info("Scanned: {} classes in classpath", SCAN_RESULT.getAllClasses().size());
