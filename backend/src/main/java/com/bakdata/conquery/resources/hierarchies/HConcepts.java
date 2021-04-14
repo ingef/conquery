@@ -35,6 +35,6 @@ public abstract class HConcepts extends HDatasets {
 			throw new NotFoundException(String.format("Could not find Concept[%s]",  conceptId));
 		}
 
-		AuthorizationHelper.authorize(user,concept, Ability.READ);
+		user.authorize(concept, Ability.READ);
 	}
 }

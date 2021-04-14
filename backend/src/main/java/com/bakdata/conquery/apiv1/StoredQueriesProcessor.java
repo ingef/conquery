@@ -1,19 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -39,6 +25,14 @@ import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.UriBuilder;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -67,7 +61,7 @@ public class StoredQueriesProcessor {
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
 						 // However, for other executions we check because those are probably shared.
-						 .filter(q -> AuthorizationHelper.isPermitted(user, q, Ability.READ))
+						 .filter(q -> user.isPermitted(q, Ability.READ))
 						 .flatMap(mq -> {
 							 try {
 								 return Stream.of(
@@ -120,7 +114,7 @@ public class StoredQueriesProcessor {
 			throw new NotFoundException(String.format("Execution[%s] not found.", executionId));
 		}
 
-		authorize(user, execution, Ability.DELETE);
+		user.authorize(execution, Ability.DELETE);
 
 
 		storage.removeExecution(executionId);
@@ -133,7 +127,7 @@ public class StoredQueriesProcessor {
 			throw new NotFoundException(queryId.toString());
 		}
 
-		authorize(user, query, Ability.READ);
+		user.authorize(query, Ability.READ);
 
 		query.initExecutable(datasetRegistry, config);
 
@@ -148,7 +142,7 @@ public class StoredQueriesProcessor {
 			throw new NotFoundException(executionId.toString());
 		}
 
-		authorize(user, execution, Ability.MODIFY);
+		user.authorize(execution, Ability.MODIFY);
 
 		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
 		patch.applyTo(execution, storage, user);

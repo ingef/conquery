@@ -17,7 +17,7 @@ public class FormProcessor {
 		List<JsonNode> allowedForms = new ArrayList<>();
 
 		for (FormType formMapping : FRONTEND_FORM_CONFIGS.values()) {
-			if (!AuthorizationHelper.isPermitted(user, formMapping, Ability.CREATE)) {
+			if (!user.isPermitted(formMapping, Ability.CREATE)) {
 				continue;
 			}
 

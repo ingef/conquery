@@ -57,13 +57,13 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 	}
 
 	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, User user, INST instance) {
-		if (getTags() != null && AuthorizationHelper.isPermitted(user, instance, Ability.TAG)) {
+		if (getTags() != null && user.isPermitted(instance, Ability.TAG)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}
-		if (getLabel() != null && AuthorizationHelper.isPermitted(user, instance, Ability.LABEL)) {
+		if (getLabel() != null && user.isPermitted(instance, Ability.LABEL)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.labeler());
 		}
-		if (getGroups() != null && AuthorizationHelper.isPermitted(user, instance, Ability.SHARE)) {
+		if (getGroups() != null && user.isPermitted(instance, Ability.SHARE)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, user));
 		}
 		return patchConsumerChain;

@@ -4,13 +4,20 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AdminPermission;
+import com.bakdata.conquery.models.auth.permissions.Authorized;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * This class ensures that all users have the admin permission in order to
  * access admin resources.
  */
-public abstract class HAdmin extends HAuthorized {
+public abstract class HAdmin extends HAuthorized implements Authorized {
 
 	@Inject
 	protected AdminProcessor processor;
@@ -19,7 +26,11 @@ public abstract class HAdmin extends HAuthorized {
 	@PostConstruct
 	public void init() {
 		super.init();
-		AuthorizationHelper.authorizeAdmin(user);
+		user.authorize(this, null);
 	}
 
+	@Override
+	public ConqueryPermission createPermission(Set<Ability> abilities) {
+		return AdminPermission.onDomain();
+	}
 }

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.execution;
 
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
@@ -62,11 +61,11 @@ public class ResultProcessor {
 		final Namespace namespace = datasetRegistry.get(datasetId);
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
-		authorize(user, namespace.getDataset(), Ability.READ);
+		user.authorize(namespace.getDataset(), Ability.READ);
 
 		ManagedExecution<?> exec = Objects.requireNonNull(datasetRegistry.getMetaStorage().getExecution(queryId));
 
-		authorize(user, exec, Ability.READ);
+		user.authorize(exec, Ability.READ);
 
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
@@ -143,11 +142,11 @@ public class ResultProcessor {
 
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
-		authorize(user, namespace.getDataset(), Ability.READ);
+		user.authorize(namespace.getDataset(), Ability.READ);
 
 		ManagedExecution<?> exec = Objects.requireNonNull(datasetRegistry.getMetaStorage().getExecution(queryId));
 
-		authorize(user, exec, Ability.READ);
+		user.authorize(exec, Ability.READ);
 
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);

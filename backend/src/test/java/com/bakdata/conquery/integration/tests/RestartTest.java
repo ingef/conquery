@@ -138,12 +138,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			assertThat(storage.getRole(roleToDelete.getId())).as("deleted role should stay deleted").isNull();
 			assertThat(storage.getGroup(groupToDelete.getId())).as("deleted group should stay deleted").isNull();
 
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")))).isTrue();
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")))).isFalse(); // Was never permitted
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")))).isTrue();
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")))).isFalse(); // Was permitted by deleted role
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")))).isTrue();
-			assertThat(userStored.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")))).isFalse(); // Was permitted by deleted group
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId("testDataset1")).getDataset(),Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId("testDataset2")).getDataset(),Ability.READ)).isFalse(); // Was never permitted
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId("testDataset3")).getDataset(),Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId("testDataset4")).getDataset(),Ability.READ)).isFalse(); // Was permitted by deleted role
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId("testDataset5")).getDataset(),Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId("testDataset6")).getDataset(),Ability.READ)).isFalse(); // Was permitted by deleted group
 
 		}
 

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.hierarchies;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import javax.annotation.PostConstruct;
@@ -36,6 +35,6 @@ public abstract class HDatasets extends HAuthorized {
 			throw new NotFoundException(String.format("Could not find Dataset[%s]",  datasetId));
 		}
 
-		authorize(user, namespace.getDataset(), Ability.READ);
+		user.authorize(namespace.getDataset(), Ability.READ);
 	}
 }
