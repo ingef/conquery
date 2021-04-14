@@ -69,7 +69,6 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
 	 */
 	@JsonProperty("ids")
-	@Valid
 	@NotEmpty
 	@NsIdRefCollection
 	private List<ConceptElement<?>> elements = Collections.emptyList();
@@ -79,7 +78,6 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
 
-	@Valid
 	@NotNull
 	@NsIdRefCollection
 	private List<Select> selects = new ArrayList<>();
@@ -92,34 +90,28 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	private boolean aggregateEventDates;
 
 	@Override
-	public String getLabel(Locale cfg) {
-		final String label = super.getLabel(cfg);
-		if (!Strings.isNullOrEmpty(label)) {
-			return label;
-		}
-
-		return getDefaultLabel();
-	}
-
-	@Nullable
-	@JsonIgnore
-	public String getDefaultLabel() {
+	public String defaultLabel(Locale locale) {
 		if (elements.isEmpty()) {
 			return null;
+		}
+
+		if(elements.size() == 1 && elements.get(0).equals(getConcept())) {
+			return getConcept().getLabel();
 		}
 
 		final StringBuilder builder = new StringBuilder();
 
 		builder.append(getConcept().getLabel());
-
 		builder.append(" - ");
 
 		for (ConceptElement<?> id : elements) {
+			if (id.equals(getConcept())) {
+				continue;
+			}
 			builder.append(id.getLabel()).append("+");
 		}
 
 		builder.deleteCharAt(builder.length() - 1);
-
 
 		return builder.toString();
 	}

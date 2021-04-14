@@ -58,6 +58,6 @@ public class StoredQueriesResource extends HDatasets {
 	@DELETE
 	@Path("{" + QUERY + "}")
 	public void deleteQuery(@PathParam(QUERY) ManagedExecutionId queryId) {
-		processor.deleteQuery(user, queryId);
+		processor.deleteQuery(queryId, user);
 	}
 }

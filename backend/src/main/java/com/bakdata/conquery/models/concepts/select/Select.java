@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
@@ -48,5 +49,16 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 			return new ConnectorSelectId(((Connector)holder).getId(), getName());
 		}
 		return new ConceptSelectId(holder.findConcept().getId(), getName());
+	}
+
+
+	@NotNull
+	public void appendColumnName(StringBuilder sb) {
+		if (getHolder() instanceof Connector && getHolder().findConcept().getConnectors().size() > 1) {
+			// The select originates from a connector and the corresponding concept has more than one connector -> Print also the connector
+			sb.append(((Connector) getHolder()).getLabel());
+			sb.append(' ');
+		}
+		sb.append(getLabel());
 	}
 }

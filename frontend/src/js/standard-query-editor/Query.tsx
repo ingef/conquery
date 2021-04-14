@@ -68,9 +68,9 @@ const Query = () => {
   const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query
   );
-  const isEmptyQuery = useSelector<StateT, boolean>(
-    (state) => state.queryEditor.query.length === 0
-  );
+  const isEmptyQuery = query.length === 0;
+  const isQueryWithSingleElement =
+    query.length === 1 && query[0].elements.length === 1;
 
   // only used by other actions
   const rootConcepts = useSelector<StateT, TreesT>(
@@ -113,8 +113,17 @@ const Query = () => {
     setQueryToExpand,
   ] = useState<PreviousQueryQueryNodeType | null>(null);
 
-  const onExpandPreviousQuery = (q: PreviousQueryQueryNodeType) =>
-    setQueryToExpand(q);
+  if (!datasetId) {
+    return null;
+  }
+
+  const onExpandPreviousQuery = (q: PreviousQueryQueryNodeType) => {
+    if (isQueryWithSingleElement) {
+      expandPreviousQuery(datasetId, rootConcepts, q);
+    } else {
+      setQueryToExpand(q);
+    }
+  };
 
   return (
     <Container>
