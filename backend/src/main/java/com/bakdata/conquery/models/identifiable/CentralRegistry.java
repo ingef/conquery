@@ -17,17 +17,19 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-@SuppressWarnings({"rawtypes", "unchecked"}) @NoArgsConstructor
+@SuppressWarnings({"rawtypes", "unchecked"})
+@NoArgsConstructor
 public class CentralRegistry implements Injectable {
-	
+
 	private final IdMap map = new IdMap<>();
-	private final ConcurrentMap<IId<?>, Function<IId,Identifiable>> cacheables = new ConcurrentHashMap<>();
-	
-	public synchronized void register(Identifiable<?> ident) {
+	private final ConcurrentMap<IId<?>, Function<IId, Identifiable>> cacheables = new ConcurrentHashMap<>();
+
+	public synchronized CentralRegistry register(Identifiable<?> ident) {
 		map.add(ident);
+		return this;
 	}
-	
-	public synchronized void registerCacheable(IId id, Function<IId,Identifiable> supplier) {
+
+	public synchronized void registerCacheable(IId id, Function<IId, Identifiable> supplier) {
 		cacheables.put(id, supplier);
 	}
 
@@ -73,9 +75,9 @@ public class CentralRegistry implements Injectable {
 
 	public static CentralRegistry get(DeserializationContext ctxt) throws JsonMappingException {
 		CentralRegistry result = (CentralRegistry) ctxt.findInjectableValue(CentralRegistry.class.getName(), null, null);
-		if(result == null) {
-			IdResolveContext alternative = (IdResolveContext)ctxt.findInjectableValue(IdResolveContext.class.getName(), null, null);
-			if(alternative == null) {
+		if (result == null) {
+			IdResolveContext alternative = (IdResolveContext) ctxt.findInjectableValue(IdResolveContext.class.getName(), null, null);
+			if (alternative == null) {
 				return null;
 			}
 			return alternative.getMetaRegistry();

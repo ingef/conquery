@@ -39,7 +39,7 @@ import lombok.ToString;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-@ToString(of = {"name", "connectors"})
+@ToString(of = {"connectors"})
 @Getter
 @Setter
 public abstract class Concept<CONNECTOR extends Connector> extends ConceptElement<ConceptId> implements Authorized {
