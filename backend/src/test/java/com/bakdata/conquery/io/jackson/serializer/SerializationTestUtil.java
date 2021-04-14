@@ -62,7 +62,7 @@ public class SerializationTestUtil<T> {
 
 	private void test(T value, T expected, ObjectMapper mapper) throws JSONException, IOException {
 		if (registry != null) {
-			mapper = new SingletonNamespaceCollection(registry).injectInto(mapper);
+			mapper = new SingletonNamespaceCollection(registry, registry).injectInto(mapper);
 		}
 		ObjectWriter writer = mapper.writerFor(type).withView(InternalOnly.class);
 		ObjectReader reader = mapper.readerFor(type).withView(InternalOnly.class);
