@@ -34,4 +34,8 @@ public final class AdminPermission extends StringPermissionBuilder {
 	public static ConqueryPermission onDomain() {
 		return INSTANCE.domainPermission();
 	}
+
+	public static ConqueryPermission onDomain(Set<Ability> abilities) {
+		return INSTANCE.abilityPermission(abilities);
+	}
 }

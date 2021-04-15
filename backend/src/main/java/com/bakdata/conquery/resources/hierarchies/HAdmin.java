@@ -26,11 +26,12 @@ public abstract class HAdmin extends HAuthorized implements Authorized {
 	@PostConstruct
 	public void init() {
 		super.init();
-		user.authorize(this, null);
+
+		user.authorize(this, Ability.READ);
 	}
 
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
-		return AdminPermission.onDomain();
+		return AdminPermission.onDomain(abilities);
 	}
 }

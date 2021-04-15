@@ -9,12 +9,12 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.execution.Owned;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -34,17 +34,12 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	private transient boolean displayLogout = true;
 
 	// protected for testing purposes
-	@JsonIgnore
-	protected transient ShiroUserAdapter shiroUserAdapter;
+	@JsonIgnore @Getter(AccessLevel.PROTECTED)
+	private transient ShiroUserAdapter shiroUserAdapter;
 
 	public User(String name, String label) {
 		super(name, label);
 		this.shiroUserAdapter = new ShiroUserAdapter();
-	}
-	
-
-	public boolean isOwner(@NonNull Owned owned) {
-		return getId().equals(owned.getOwner());
 	}
 	
 	@Override
@@ -76,12 +71,12 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		storage.updateUser(this);
 	}
 
-	public void authorize(Authorized object, Ability ability) {
-		if (isOwnedBy(this, object)) {
+	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
+		if (isOwner(object)) {
 			return;
 		}
 
-		shiroUserAdapter.checkPermission(object.createPermission(ability == null? Collections.emptySet() : EnumSet.of(ability)));
+		shiroUserAdapter.checkPermission(object.createPermission(EnumSet.of(ability)));
 	}
 
 	public void authorize(Set<? extends Authorized> objects, Ability ability) {
@@ -91,7 +86,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	public boolean isPermitted(Authorized object, Ability ability) {
-		if (isOwnedBy(this, object)) {
+		if (isOwner(object)) {
 			return true;
 		}
 
@@ -113,10 +108,14 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 
-	public static boolean isOwnedBy(User user, Authorized object) {
-		return object instanceof Owned && user.isOwner(((Owned) object));
+	public boolean isOwner(Authorized object) {
+		return object instanceof Owned && getId().equals(((Owned)object).getOwner());
 	}
 
+	/**
+	 * This class is non static so its a fixed part of the enclosing User object.
+	 * Its protected for testing purposes only.
+	 */
 	protected class ShiroUserAdapter extends FilteredUser {
 
 		@Override

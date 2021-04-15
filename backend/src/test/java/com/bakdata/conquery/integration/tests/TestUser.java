@@ -13,14 +13,14 @@ public class TestUser extends User {
     }
 
     public boolean isPermitted(Permission permission) {
-        return shiroUserAdapter.isPermitted(permission);
+        return getShiroUserAdapter().isPermitted(permission);
     }
 
     public boolean[] isPermitted(List<Permission> permissions) {
-        return shiroUserAdapter.isPermitted(permissions);
+        return getShiroUserAdapter().isPermitted(permissions);
     }
 
     public boolean isPermittedAll(Collection<Permission> permissions) {
-        return shiroUserAdapter.isPermittedAll(permissions);
+        return getShiroUserAdapter().isPermittedAll(permissions);
     }
 }
