@@ -87,9 +87,9 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecution<?>> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final FullExecutionStatus status = tryReuse(query, executionId, user, storage, datasetRegistry, config, urlb);
+			final FullExecutionStatus status = tryReuse(query, executionId, user, datasetRegistry, config, urlb);
 
-			if(status != null){
+			if (status != null) {
 				return status;
 			}
 		}
@@ -105,7 +105,7 @@ public class QueryProcessor {
 		return getStatus(mq, urlb, user);
 	}
 
-	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecution<?>> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
+	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecution<?>> maybeId, User user, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
 
 		// If this is only a re-executing query, execute the underlying query instead.
 		if (maybeId.isEmpty()) {
@@ -120,11 +120,11 @@ public class QueryProcessor {
 		}
 
 		// If SecondaryIds differ from selected and prior, we cannot reuse them.
-		if(query instanceof SecondaryIdQuery){
+		if (query instanceof SecondaryIdQuery) {
 			final SecondaryIdDescription selectedSecondaryId = ((SecondaryIdQuery) query).getSecondaryId();
 			final SecondaryIdDescription reusedSecondaryId = ((SecondaryIdQuery) execution.getSubmitted()).getSecondaryId();
 
-			if(!selectedSecondaryId.equals(reusedSecondaryId)){
+			if (!selectedSecondaryId.equals(reusedSecondaryId)) {
 				return null;
 			}
 		}
@@ -132,17 +132,16 @@ public class QueryProcessor {
 		FullExecutionStatus status = getStatus(execution, urlb, user);
 
 		ExecutionState state = status.getStatus();
-		if (state.equals(ExecutionState.RUNNING)){
+		if (state.equals(ExecutionState.RUNNING)) {
 			log.trace("The execution({}) was already started and its state is: {}", execution.getId(), state);
 			return status;
 		}
 
-
 		log.trace("Re-executing Query {}", execution);
 
-		final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, execution, config);
+		ExecutionManager.execute(datasetRegistry, execution, config);
 
-		return getStatus(mq, urlb, user);
+		return getStatus(execution, urlb, user);
 
 	}
 
@@ -173,12 +172,20 @@ public class QueryProcessor {
 
 	public FullExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
 		query.initExecutable(datasetRegistry, config);
-		return query.buildStatusFull(storage, urlb, user, datasetRegistry, AuthorizationHelper.buildDatasetAbilityMap(user,datasetRegistry));
+		return query.buildStatusFull(storage, urlb, user, datasetRegistry, AuthorizationHelper.buildDatasetAbilityMap(user, datasetRegistry));
 	}
 
 	public FullExecutionStatus cancel(User user, Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
 		// TODO implement query cancel functionality
-		authorize(user,query, Ability.CANCEL);
+		authorize(user, query, Ability.CANCEL);
 		return null;
+	}
+
+	public FullExecutionStatus reexecute(User user, ManagedExecution<?> query, UriBuilder responseBuilder) {
+		if(query.getState().equals(ExecutionState.RUNNING))
+
+		ExecutionManager.execute(getDatasetRegistry(), query, config);
+
+		return query.buildStatusFull(storage, responseBuilder, user, getDatasetRegistry(), AuthorizationHelper.buildDatasetAbilityMap(user, getDatasetRegistry()));
 	}
 }

@@ -28,6 +28,7 @@ import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -70,10 +71,18 @@ public class QueryResource {
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) {
 
+		final ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
+
+		ResourceUtil.throwNotFoundIfNull(queryId, query);
+
+		final Dataset dataset = dsUtil.getDataset(datasetId);
+
+		ResourceUtil.throwNotFoundIfNull(datasetId, dataset);
+
 		return processor.cancel(
 				user,
-				dsUtil.getDataset(datasetId),
-				dsUtil.getManagedQuery(queryId),
+				dataset,
+				query,
 				RequestAwareUriBuilder.fromRequest(req)
 		);
 	}
@@ -85,6 +94,8 @@ public class QueryResource {
 
 		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
 
+		ResourceUtil.throwNotFoundIfNull(queryId, query);
+
 		authorize(user, query, Ability.READ);
 
 		query.awaitDone(10, TimeUnit.SECONDS);
@@ -94,5 +105,18 @@ public class QueryResource {
 				RequestAwareUriBuilder.fromRequest(req),
 				user
 		);
+	}
+
+	@POST
+	@Path("{" + QUERY + "}/reexecute")
+	public FullExecutionStatus reexecute(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) {
+
+		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
+
+		ResourceUtil.throwNotFoundIfNull(queryId, query);
+
+		authorize(user, query, Ability.READ);
+
+		return processor.reexecute(user, query, RequestAwareUriBuilder.fromRequest(req));
 	}
 }

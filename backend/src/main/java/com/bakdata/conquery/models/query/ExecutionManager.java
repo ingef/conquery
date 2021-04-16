@@ -30,10 +30,13 @@ public class ExecutionManager {
 	private final Namespace namespace;
 
 	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UserId userId, Dataset submittedDataset, ConqueryConfig config) {
-		return execute(datasets, createExecution(datasets, query, userId, submittedDataset), config);
+		final ManagedExecution<?> execution = createExecution(datasets, query, userId, submittedDataset);
+		execute(datasets, execution, config);
+
+		return execution;
 	}
 
-	public static ManagedExecution<?> execute(DatasetRegistry datasets, ManagedExecution<?> execution, ConqueryConfig config) {
+	public static void execute(DatasetRegistry datasets, ManagedExecution<?> execution, ConqueryConfig config) {
 		// Initialize the query / create subqueries
 		execution.initExecutable(datasets, config);
 
@@ -49,7 +52,6 @@ public class ExecutionManager {
 		for (Namespace namespace : execution.getRequiredDatasets()) {
 			namespace.getQueryManager().executeQueryInNamespace(execution);
 		}
-		return execution;
 	}
 
 	public static ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, UserId userId, Dataset submittedDataset) {
@@ -76,9 +78,6 @@ public class ExecutionManager {
 		return managed;
 	}
 
-	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, Dataset submittedDataset, ConqueryConfig config) {
-		return execute(datasets, createQuery(datasets, query, queryId, userId, submittedDataset), config);
-	}
 
 	/**
 	 * Receive part of query result and store into query.
