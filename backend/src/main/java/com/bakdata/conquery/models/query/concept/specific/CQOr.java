@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -46,7 +43,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 
 	@Getter
 	@Setter
-	private boolean createExists = false;
+	private Optional<Boolean> createExists = Optional.empty();
 
 	@InternalOnly
 	@Getter @Setter
@@ -54,7 +51,9 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 
 	@Override
 	public void setDefaultExists() {
-		createExists = true;
+		if (createExists.isEmpty()){
+			createExists = Optional.of(true);
+		}
 	}
 
 	@Override
@@ -69,7 +68,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 
 		final QPNode or = OrNode.of(Arrays.asList(nodes), dateAction);
 
-		if (createExists) {
+		if (createExists.orElse(false)) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(or.collectRequiredTables());
 			existsAggregator.setReference(or);
 			plan.addAggregator(existsAggregator);
@@ -114,7 +113,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 			c.collectResultInfos(collector);
 		}
 
-		if (createExists) {
+		if (createExists.orElse(false)) {
 			collector.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}

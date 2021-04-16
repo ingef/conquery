@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -42,7 +39,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	private List<CQElement> children;
 
 	@Getter @Setter
-	boolean createExists = false;
+	private Optional<Boolean> createExists = Optional.empty();
 
 	@InternalOnly
 	@Getter @Setter
@@ -50,7 +47,9 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 
 	@Override
 	public void setDefaultExists() {
-		createExists = true;
+		if (createExists.isEmpty()){
+			createExists = Optional.of(true);
+		}
 	}
 
 	@Override
@@ -62,15 +61,13 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 			nodes[i] = children.get(i).createQueryPlan(context, plan);
 		}
 
-
 		final QPNode node = AndNode.of(Arrays.asList(nodes), dateAction);
 
-		if (createExists) {
+		if (createExists.orElse(false)) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(node.collectRequiredTables());
 			existsAggregator.setReference(node);
 			plan.addAggregator(existsAggregator);
 		}
-
 
 		return node;
 	}
@@ -110,7 +107,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 			c.collectResultInfos(collector);
 		}
 
-		if(createExists){
+		if(createExists.orElse(false)){
 			collector.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}
