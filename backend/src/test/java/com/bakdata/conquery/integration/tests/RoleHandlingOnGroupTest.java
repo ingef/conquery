@@ -6,7 +6,6 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -21,7 +20,7 @@ public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements P
 
 	private final Group group1 = new Group("company", "company");
 	private final Role role = new Role("role1", "role1");
-	private final User user1 = new User("user", "user");
+	private final TestUser user1 = new TestUser();
 	
 
 	@Override

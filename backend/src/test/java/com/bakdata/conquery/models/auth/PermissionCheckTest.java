@@ -19,6 +19,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.integration.common.PermissionToCheck;
 import com.bakdata.conquery.integration.common.RequiredUser;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.integration.tests.TestUser;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -89,7 +90,7 @@ public class PermissionCheckTest extends ConqueryTestSpec  {
 	public Map<ConqueryPermission, Collection<UserId>> getGrantedElementwiseCheck() {
 		HashMultimap<ConqueryPermission, UserId> granted = HashMultimap.create();
 		for(RequiredUser rUser: rUsers){
-			User user = rUser.getUser();
+			TestUser user = rUser.getUser();
 			for(ConqueryPermission permission : expectedPermitts.keys()) {
 				if(user.isPermitted(permission)){
 					granted.put(permission, user.getId());
@@ -123,7 +124,7 @@ public class PermissionCheckTest extends ConqueryTestSpec  {
 	public List<UserId> getGrantedListedCheck() {
 		List<UserId> ret = new ArrayList<>();
 		for(RequiredUser rUser: rUsers){
-			User user = rUser.getUser();
+			TestUser user = rUser.getUser();
 			if(user.isPermittedAll(new ArrayList<Permission>(expectedPermitts.keys().elementSet()))) {
 				ret.add(user.getId());
 			}

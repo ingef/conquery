@@ -84,7 +84,7 @@ import org.jetbrains.annotations.TestOnly;
 @CPSBase
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Authorized, Visitable, NamespacedIdentifiable<ManagedExecutionId> {
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable, NamespacedIdentifiable<ManagedExecutionId> {
 	
 	/**
 	 * Some unusual suffix. Its not too bad if someone actually uses this. 
@@ -346,7 +346,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 														  .map(ConceptElement::getConcept)
 														  .collect(Collectors.toSet());
 
-		boolean canExpand = AuthorizationHelper.isPermittedAll(user, concepts, Ability.READ);
+		boolean canExpand = user.isPermittedAll(concepts, Ability.READ);
 
 		status.setCanExpand(canExpand);
 		status.setQuery(canExpand ? getSubmitted() : null);
