@@ -32,7 +32,6 @@ public class CalculateCBlocksJob extends Job {
 	private final WorkerStorage storage;
 	private final BucketManager bucketManager;
 	private final Connector connector;
-	private final Table table;
 
 	@Override
 	public String getLabel() {
@@ -66,10 +65,9 @@ public class CalculateCBlocksJob extends Job {
 			catch (Exception e) {
 				throw new Exception(
 						String.format(
-								"Exception in CalculateCBlocksJob (CBlock=%s, connector=%s, table=%s)",
+								"Exception in CalculateCBlocksJob (CBlock=%s, connector=%s)",
 								info.getCBlockId(),
-								connector,
-								table
+								connector
 						),
 						e
 				);

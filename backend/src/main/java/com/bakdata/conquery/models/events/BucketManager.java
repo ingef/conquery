@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.IdMutex.Locked;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
@@ -112,28 +111,21 @@ public class BucketManager {
 			for (Connector con : c.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
 
-					Table t = con.getTable();
-					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
+					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con);
 
-					for (Import imp : t.findImports(storage)) {
-						for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
-							BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
-							Bucket bucket = storage.getBucket(bucketId);
-							if (bucket == null) {
-								continue;
-							}
+					for (Bucket bucket : storage.getAllBuckets()) {
 
-							CBlockId cBlockId = new CBlockId(bucketId, con.getId());
+						CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
 
-							if (storage.getCBlock(cBlockId) != null) {
-								log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.", cBlockId);
-								continue;
-							}
-
-							log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
-							job.addCBlock(bucket, cBlockId);
+						if (hasCBlock(cBlockId)) {
+							log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.", cBlockId);
+							continue;
 						}
+
+						log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
+						job.addCBlock(bucket, cBlockId);
 					}
+
 
 					if (!job.isEmpty()) {
 						jobManager.addSlowJob(job);
@@ -151,55 +143,49 @@ public class BucketManager {
 		storage.addBucket(bucket);
 		registerBucket(bucket, entities, tableToBuckets);
 
-		for (Concept<?> c : storage.getAllConcepts()) {
-			for (Connector con : c.getConnectors()) {
-				try (Locked lock = cBlockLocks.acquire(con.getId())) {
-					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());
-					CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
+		for (Concept<?> concept : storage.getAllConcepts()) {
+			for (Connector connector : concept.getConnectors()) {
+				try (Locked lock = cBlockLocks.acquire(connector.getId())) {
+					CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
 
-					if (con.getTable().equals(bucket.getTable())) {
-						if (storage.getCBlock(cBlockId) == null) {
-							job.addCBlock(bucket, cBlockId);
-						}
+					if (!connector.getTable().equals(bucket.getTable())) {
+						continue;
+					}
+					if (hasCBlock(cBlockId)) {
+						continue;
 					}
 
-					if (!job.isEmpty()) {
-						jobManager.addSlowJob(job);
-					}
-					else {
-						log.trace("CBlocksJob[{}] is empty", cBlockId);
-					}
+					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, connector);
+
+					job.addCBlock(bucket, cBlockId);
+					jobManager.addSlowJob(job);
 				}
 			}
 		}
 	}
 
-	public void addConcept(Concept<?> c) {
-		storage.updateConcept(c);
+	public void addConcept(Concept<?> concept) {
+		storage.updateConcept(concept);
 
-		for (Connector con : c.getConnectors()) {
-			try (Locked lock = cBlockLocks.acquire(con.getId())) {
-				Table t = con.getTable();
-				CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
-				for (Import imp : t.findImports(storage)) {
-					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
+		for (Connector connector : concept.getConnectors()) {
+			try (Locked lock = cBlockLocks.acquire(connector.getId())) {
+				Table table = connector.getTable();
+				CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, connector);
 
-						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
-						Bucket bucket = storage.getBucket(bucketId);
-
-						if (storage.getBucket(bucketId) == null) {
-							continue;
-						}
-
-						CBlockId cBlockId = new CBlockId(bucketId, con.getId());
-
-						if (storage.getCBlock(cBlockId) != null) {
-							continue;
-						}
-
-						job.addCBlock(bucket, cBlockId);
+				for (Bucket bucket : storage.getAllBuckets()) {
+					if (!bucket.getTable().equals(table)) {
+						continue;
 					}
+
+					final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
+
+					if (!hasCBlock(cBlockId)) {
+						continue;
+					}
+
+					job.addCBlock(bucket, cBlockId);
 				}
+
 				if (!job.isEmpty()) {
 					jobManager.addSlowJob(job);
 				}
