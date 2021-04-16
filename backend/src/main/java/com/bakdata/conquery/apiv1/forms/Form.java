@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -29,11 +28,11 @@ public abstract class Form implements QueryDescription {
 		return this.getClass().getAnnotation(CPSType.class).id();
 	}
 
-	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, Dataset submittedDataset);
+	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset);
 	
 	@Override
-	public ManagedForm toManagedExecution(UserId userId, Dataset submittedDataset) {
-		return new ManagedForm(this, userId, submittedDataset);
+	public ManagedForm toManagedExecution(User user, Dataset submittedDataset) {
+		return new ManagedForm(this, user, submittedDataset);
 	}
 
 	@Override

@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
@@ -43,7 +42,6 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
-		UserId userId = standaloneSupport.getTestUser().getId();
 		DatasetId dataset = standaloneSupport.getNamespace().getDataset().getId();
 
 		IQuery query = getQuery();
@@ -54,7 +52,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		log.info("{} QUERY INIT", getLabel());
 
-		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, userId, standaloneSupport.getDataset(), standaloneSupport.getConfig());
+		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, standaloneSupport.getTestUser(), standaloneSupport.getDataset(), standaloneSupport.getConfig());
 
 		managed.awaitDone(10, TimeUnit.SECONDS);
 		while (managed.getState() != ExecutionState.DONE && managed.getState() != ExecutionState.FAILED) {

@@ -27,6 +27,7 @@ import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -49,7 +50,6 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -75,7 +75,6 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
-import org.jetbrains.annotations.TestOnly;
 
 @Getter
 @Setter
@@ -97,8 +96,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected String label;
 
 	protected LocalDateTime creationTime = LocalDateTime.now();
-	@Nullable //TODO use NsIdRef?
-	protected UserId owner;
+
+	@Nullable
+	@MetaIdRef
+	protected User owner;
 
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
@@ -123,7 +124,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@JsonIgnore
 	private boolean initialized = false;
 
-	public ManagedExecution(UserId owner, Dataset submittedDataset) {
+	public ManagedExecution(User owner, Dataset submittedDataset) {
 		this.owner = owner;
 		this.dataset = submittedDataset;
 	}
@@ -236,7 +237,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 	}
 
-	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
+	protected void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -246,8 +247,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStatus(state);
-		status.setOwner(owner);
-		status.setOwnerName(storage.getUser(owner).getLabel());
+		status.setOwner(owner.getId());
+		status.setOwnerName(owner.getLabel());
 		status.setResultUrl(getDownloadURL(url, datasetAbilities).orElse(null));
 	}
 	
@@ -270,9 +271,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public OverviewExecutionStatus buildStatusOverview(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
+	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, User user, Map<DatasetId, Set<Ability>> datasetAbilities) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
-		setStatusBase(storage, user, status, url, datasetAbilities);
+		setStatusBase(user, status, url, datasetAbilities);
 
 		return status;
 	}
@@ -284,7 +285,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		FullExecutionStatus status = new FullExecutionStatus();
-		setStatusBase(storage, user, status, url, datasetAbilities);
+		setStatusBase(user, status, url, datasetAbilities);
 
 		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
 		setAdditionalFieldsForStatusWithSource(user, status);

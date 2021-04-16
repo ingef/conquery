@@ -44,7 +44,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		test.importRequiredData(conquery);
 
 		// Create execution for download
-		ManagedQuery exec = new ManagedQuery(test.getQuery(), user.getId(), conquery.getDataset());
+		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset());
 
 		DatasetRegistry datasetRegistry = conquery.getDatasetsProcessor().getDatasetRegistry();
 		{			

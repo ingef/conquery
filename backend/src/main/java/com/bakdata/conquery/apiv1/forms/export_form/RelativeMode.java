@@ -10,11 +10,11 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.DateContext;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -64,7 +64,7 @@ public class RelativeMode extends Mode {
 	}
 	
 	@Override
-	public RelativeFormQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, Dataset submittedDataset) {
+	public RelativeFormQuery createSpecializedQuery(DatasetRegistry datasets, User user, Dataset submittedDataset) {
 		return RelExportGenerator.generate(this);
 	}
 

@@ -18,12 +18,12 @@ import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -72,12 +72,12 @@ public class ExportForm extends Form implements NamespacedIdentifiableHolding {
 	}
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, Dataset submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
 		return Map.of(
 			ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
 			List.of(
-				timeMode.createSpecializedQuery(datasets, userId, submittedDataset)
-					.toManagedExecution(userId, submittedDataset)));
+				timeMode.createSpecializedQuery(datasets, user, submittedDataset)
+					.toManagedExecution(user, submittedDataset)));
 	}
 
 	@Override

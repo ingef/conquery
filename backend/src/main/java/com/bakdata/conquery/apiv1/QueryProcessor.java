@@ -95,7 +95,7 @@ public class QueryProcessor {
 		}
 
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset, config);
+		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user, dataset, config);
 
 		if (query instanceof IQuery) {
 			translateToOtherDatasets(dataset, query, user, mq);
@@ -161,8 +161,7 @@ public class QueryProcessor {
 			try {
 
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
-				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
-
+				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
 			}
 			catch (Exception e) {
 				log.trace("Could not translate " + query + " to dataset " + targetDataset, e);
