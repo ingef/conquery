@@ -6,10 +6,10 @@ import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,7 +34,7 @@ public class QueryExecutionContext {
 	 */
 	private SecondaryIdDescriptionId activeSecondaryId = null;
 
-	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId id) {
-		return bucketManager.getEntityBucketsForTable(entity, id);
+	public List<Bucket> getEntityBucketsForTable(Entity entity, Table table) {
+		return bucketManager.getEntityBucketsForTable(entity, table);
 	}
 }

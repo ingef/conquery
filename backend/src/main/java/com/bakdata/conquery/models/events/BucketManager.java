@@ -360,9 +360,10 @@ public class BucketManager {
 		return storage.getCBlock(id) != null;
 	}
 
-	public List<Bucket> getEntityBucketsForTable(Entity entity, TableId tableId) {
+	public List<Bucket> getEntityBucketsForTable(Entity entity, Table table) {
 		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
-		return tableToBuckets.getOrDefault(tableId, Int2ObjectMaps.emptyMap())
+
+		return tableToBuckets.getOrDefault(table.getId(), Int2ObjectMaps.emptyMap())
 							 .getOrDefault(bucketId, Collections.emptyList());
 	}
 

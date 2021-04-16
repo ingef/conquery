@@ -50,13 +50,11 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Strings;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Setter
@@ -185,7 +183,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
 			if(aggregateEventDates){
-				aggregators.add(new EventDateUnionAggregator(Set.of(table.getConnector().getTable().getId())));
+				aggregators.add(new EventDateUnionAggregator(Set.of(table.getConnector().getTable())));
 			}
 
 			final QPNode filtersNode = concept.createConceptQuery(context, filters, aggregators);

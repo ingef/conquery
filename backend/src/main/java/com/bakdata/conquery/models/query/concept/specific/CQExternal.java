@@ -1,5 +1,16 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import javax.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -19,7 +30,6 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.util.DateFormats;
@@ -29,10 +39,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.constraints.NotEmpty;
-import java.time.LocalDate;
-import java.util.*;
 
 @Slf4j
 @CPSType(id = "EXTERNAL", base = CQElement.class)
@@ -55,7 +61,7 @@ public class CQExternal extends CQElement {
 		if (valuesResolved == null) {
 			throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
 		}
-		return new ExternalNode(context.getStorage().getDataset().getAllIdsTableId(), valuesResolved);
+		return new ExternalNode(context.getStorage().getDataset().getAllIdsTable(), valuesResolved);
 	}
 
 

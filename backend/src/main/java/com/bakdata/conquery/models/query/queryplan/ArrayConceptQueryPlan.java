@@ -1,9 +1,14 @@
 package com.bakdata.conquery.models.query.queryplan;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
+
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
@@ -14,11 +19,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
 import lombok.ToString;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 /**
  * Represents the QueryPlan for corresponding to the {@link ArrayConceptQuery}.
@@ -208,7 +208,8 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 		return length;
 	}
 
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	//TODO unused?
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		childPlans.forEach(plan -> plan.nextTable(ctx, currentTable));
 	}
 
