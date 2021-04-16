@@ -10,6 +10,7 @@ import lombok.Data;
 @Data
 @AllArgsConstructor(onConstructor_ = @JsonCreator )
 public class ValidityDateContainer {
+	//TODO NsIdRef?
 	@NotNull
 	private ValidityDateId value;
 }

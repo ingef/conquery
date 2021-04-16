@@ -14,9 +14,9 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.google.common.base.Preconditions;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,6 +28,7 @@ public class Table extends Labeled<TableId> {
 	// TODO: 10.01.2020 fk: register imports here?
 
 	@NsIdRef
+	@NonNull //Null may be null at load time
 	private Dataset dataset;
 	@NotNull @Valid @JsonManagedReference
 	private Column[] columns = new Column[0];
@@ -48,7 +49,7 @@ public class Table extends Labeled<TableId> {
 
 	@Override
 	public TableId createId() {
-		return new TableId(Preconditions.checkNotNull(dataset.getId()), getName());
+		return new TableId(dataset.getId(), getName());
 	}
 
 	public List<Import> findImports(NamespacedStorage storage) {

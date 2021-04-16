@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -195,7 +194,6 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 					Arrays.stream(table.getConnector().getTable().getColumns())
 						  .map(Column::getSecondaryId)
 						  .filter(Objects::nonNull)
-						  .map(SecondaryIdDescription::getId)
 						  .anyMatch(o -> Objects.equals(context.getSelectedSecondaryId(), o));
 
 			tableNodes.add(

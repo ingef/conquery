@@ -21,9 +21,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -167,27 +165,29 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.addImport(imp);
 	}
 
-	public void removeImport(ImportId importId) {
-		final Import imp = storage.getImport(importId);
+	public void removeImport(Import imp) {
 
 		for (DictionaryId dictionary : imp.getDictionaries()) {
 			storage.removeDictionary(dictionary);
 		}
 
-		storage.removeImport(importId);
-		bucketManager.removeImport(importId);
+		bucketManager.removeImport(imp);
 	}
 
 	public void addBucket(Bucket bucket) {
 		bucketManager.addBucket(bucket);
 	}
 
-	public void removeConcept(ConceptId conceptId) {
+	public void removeConcept(Concept<?> conceptId) {
 		bucketManager.removeConcept(conceptId);
 	}
 
 	public void updateConcept(Concept<?> concept) {
-		bucketManager.removeConcept(concept.getId());
+		final Concept<?> prior = storage.getConcept(concept.getId());
+		if(prior != null) {
+			bucketManager.removeConcept(prior);
+		}
+
 		bucketManager.addConcept(concept);
 	}
 

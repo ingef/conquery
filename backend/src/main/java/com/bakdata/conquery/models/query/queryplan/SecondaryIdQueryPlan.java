@@ -9,6 +9,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -37,7 +38,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;
 	private final ConceptQueryPlan query;
-	private final SecondaryIdDescriptionId secondaryId;
+	private final SecondaryIdDescription secondaryId;
 
 	private final Set<Column> tablesWithSecondaryId;
 	private final Set<Table> tablesWithoutSecondaryId;

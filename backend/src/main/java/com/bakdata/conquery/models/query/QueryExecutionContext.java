@@ -6,6 +6,7 @@ import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
@@ -32,7 +33,7 @@ public class QueryExecutionContext {
 	/**
 	 * Only set when in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the selected {@link SecondaryIdDescriptionId}.
 	 */
-	private SecondaryIdDescriptionId activeSecondaryId = null;
+	private SecondaryIdDescription activeSecondaryId = null;
 
 	public List<Bucket> getEntityBucketsForTable(Entity entity, Table table) {
 		return bucketManager.getEntityBucketsForTable(entity, table);

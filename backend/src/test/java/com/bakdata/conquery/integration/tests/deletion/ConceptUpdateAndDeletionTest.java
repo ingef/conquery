@@ -15,11 +15,9 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -51,7 +49,6 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 		final QueryTest test2 = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson2);
-
 
 		// Manually import data, so we can do our own work.
 		{
@@ -112,13 +109,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		{
 			log.info("Issuing deletion of import {}", conceptId);
 
-			namespace.getStorage().removeConcept(conceptId);
+			conquery.getDatasetsProcessor().deleteConcept(conceptId);
 
-			for (WorkerInformation w : namespace.getWorkers()) {
-				w.send(new RemoveConcept(conceptId));
-			}
-
-			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
 		}
 

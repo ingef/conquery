@@ -126,6 +126,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 		return (T) allFiltersMap.getOrFail(id);
 	}
 
+	//TODO migrate to NsIdRef?
 	public Column getValidityDateColumn(ValidityDateId id) {
 		for (ValidityDate vDate : validityDates) {
 			if (vDate.getId().equals(id)) {
