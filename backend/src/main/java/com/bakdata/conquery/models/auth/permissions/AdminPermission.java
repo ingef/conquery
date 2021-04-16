@@ -28,7 +28,7 @@ public final class AdminPermission extends StringPermissionBuilder {
 	 */
 	@Override
 	public Set<Ability> getAllowedAbilities() {
-		return Collections.emptySet();
+		return Set.of(Ability.READ);
 	}
 
 	public static ConqueryPermission onDomain() {
