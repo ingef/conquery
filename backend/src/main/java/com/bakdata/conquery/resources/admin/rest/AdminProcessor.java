@@ -129,6 +129,8 @@ public class AdminProcessor {
 			throw new IllegalArgumentException();
 		}
 
+		ValidatorHelper.failOnError(log, validator.validate(table));
+
 		for (int p = 0; p < table.getColumns().length; p++) {
 			table.getColumns()[p].setPosition(p);
 		}
