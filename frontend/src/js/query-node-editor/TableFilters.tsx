@@ -1,13 +1,5 @@
-import React from "react";
 import styled from "@emotion/styled";
-
-import InputSelect from "../form-components/InputSelect";
-import InputRange, { ModeT } from "../form-components/InputRange";
-import InputText from "../form-components/InputText";
-
-import ResolvableMultiSelect from "./ResolvableMultiSelect";
-
-import type { FilterWithValueType } from "../standard-query-editor/types";
+import React from "react";
 
 import type {
   CurrencyConfigT,
@@ -16,6 +8,12 @@ import type {
   TableIdT,
   FilterIdT,
 } from "../api/types";
+import InputRange, { ModeT } from "../form-components/InputRange";
+import InputSelect from "../form-components/InputSelect";
+import InputText from "../form-components/InputText";
+import type { FilterWithValueType } from "../standard-query-editor/types";
+
+import ResolvableMultiSelect from "./ResolvableMultiSelect";
 
 export interface FiltersContextT {
   datasetId: DatasetIdT;
@@ -33,7 +31,7 @@ interface PropsT {
   onLoadFilterSuggestions: (
     tableIdx: number,
     filterId: FilterIdT,
-    prefix: string
+    prefix: string,
   ) => void;
   onShowDescription: (filterIdx: number) => void;
   currencyConfig: CurrencyConfigT;

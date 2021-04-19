@@ -1,28 +1,27 @@
-import React from "react";
-
-import { toUpperCaseUnderscore } from "../../common/helpers";
-
-import {
-  selectReduxFormState,
-  selectEditedConceptPosition,
-  selectEditedConcept,
-  selectFormContextState,
-} from "../stateSelectors";
-import { tableIsEditable } from "../../model/table";
-import { FormStateMap } from "redux-form";
-import { useSelector } from "react-redux";
 import { StateT } from "app-types";
-import { FormContextStateT } from "../reducer";
+import React from "react";
+import { useSelector } from "react-redux";
+import { FormStateMap } from "redux-form";
+
+import type { PostPrefixForSuggestionsParams } from "../../api/api";
 import {
   ConceptIdT,
   CurrencyConfigT,
   DatasetIdT,
   SelectOptionT,
 } from "../../api/types";
-import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
-import type { PostPrefixForSuggestionsParams } from "../../api/api";
-import { DraggedNodeType } from "../../standard-query-editor/types";
+import { toUpperCaseUnderscore } from "../../common/helpers";
 import { ModeT } from "../../form-components/InputRange";
+import { tableIsEditable } from "../../model/table";
+import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
+import { DraggedNodeType } from "../../standard-query-editor/types";
+import { FormContextStateT } from "../reducer";
+import {
+  selectReduxFormState,
+  selectEditedConceptPosition,
+  selectEditedConcept,
+  selectFormContextState,
+} from "../stateSelectors";
 
 interface PropsT {
   formType: string;
@@ -35,71 +34,71 @@ interface PropsT {
     valueIdx: number,
     conceptIdx: number,
     tableIdx: number,
-    isExcluded: boolean
+    isExcluded: boolean,
   ) => void;
   onDropConcept: (
     valueIdx: number,
     conceptIdx: number,
-    concept: DraggedNodeType
+    concept: DraggedNodeType,
   ) => void;
   onRemoveConcept: (
     valueIdx: number,
     conceptIdx: number,
-    conceptId: ConceptIdT
+    conceptId: ConceptIdT,
   ) => void;
   onSetFilterValue: (
     valueIdx: number,
     conceptIdx: number,
     tableIdx: number,
     filterIdx: number,
-    filterValue: any
+    filterValue: any,
   ) => void;
   onSwitchFilterMode: (
     valueIdx: number,
     conceptIdx: number,
     tableIdx: number,
     filterIdx: number,
-    mode: ModeT
+    mode: ModeT,
   ) => void;
   onResetAllFilters: (valueIdx: number, conceptIdx: number) => void;
   onSelectSelects: (
     valueIdx: number,
     conceptIdx: number,
-    selectedSelects: SelectOptionT[]
+    selectedSelects: SelectOptionT[],
   ) => void;
   onSelectTableSelects: (
     valueIdx: number,
     conceptIdx: number,
     tableIdx: number,
-    selectedSelects: SelectOptionT[]
+    selectedSelects: SelectOptionT[],
   ) => void;
   onLoadFilterSuggestions: (
     andIdx: number,
     orIdx: number,
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
-    filterIdx: number
+    filterIdx: number,
   ) => void;
   onSetDateColumn: (
     valueIdx: number,
     conceptIdx: number,
     tableIdx: number,
-    dateColumnValue: string | null
+    dateColumnValue: string | null,
   ) => void;
 }
 
 const FormQueryNodeEditor = (props: PropsT) => {
   const reduxFormState = useSelector<StateT, FormStateMap | null>(
-    selectReduxFormState
+    selectReduxFormState,
   );
   const conceptPosition = selectEditedConceptPosition(
     reduxFormState,
     props.formType,
-    props.fieldName
+    props.fieldName,
   );
 
   const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId,
   );
 
   const node = conceptPosition
@@ -109,7 +108,7 @@ const FormQueryNodeEditor = (props: PropsT) => {
         props.fieldName,
         conceptPosition,
         props.blocklistedTables,
-        props.allowlistedTables
+        props.allowlistedTables,
       )
     : null;
 
@@ -122,11 +121,11 @@ const FormQueryNodeEditor = (props: PropsT) => {
     node.tables.some((table) => tableIsEditable(table));
 
   const formState = useSelector<StateT, FormContextStateT | null>((state) =>
-    selectFormContextState(state, props.formType)
+    selectFormContextState(state, props.formType),
   );
 
   const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-    (state) => state.startup.config.currency
+    (state) => state.startup.config.currency,
   );
   const editorState = formState ? formState[props.fieldName] : null;
 

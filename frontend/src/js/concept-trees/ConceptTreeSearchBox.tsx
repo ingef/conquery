@@ -1,23 +1,19 @@
-import React, { FC, useState, useEffect } from "react";
 import styled from "@emotion/styled";
-import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
-
-import TransparentButton from "../button/TransparentButton";
-import IconButton from "../button/IconButton";
-
-import { isEmpty } from "../common/helpers";
-import AnimatedDots from "../common/components/AnimatedDots";
-
-import BaseInput from "../form-components/BaseInput";
+import React, { FC, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useSelector, useDispatch } from "react-redux";
 
 import type { DatasetIdT } from "../api/types";
+import IconButton from "../button/IconButton";
+import TransparentButton from "../button/TransparentButton";
+import AnimatedDots from "../common/components/AnimatedDots";
+import { isEmpty } from "../common/helpers";
+import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
+import BaseInput from "../form-components/BaseInput";
 
 import { searchTrees, clearSearchQuery, toggleShowMismatches } from "./actions";
-
 import type { SearchT, TreesT } from "./reducer";
-import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
-import { useTranslation } from "react-i18next";
 
 const Root = styled("div")`
   position: relative;
@@ -93,13 +89,13 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
   const [localQuery, setLocalQuery] = useState("");
 
   const showMismatches = useSelector<StateT, boolean>(
-    (state) => state.conceptTrees.search.showMismatches
+    (state) => state.conceptTrees.search.showMismatches,
   );
   const search = useSelector<StateT, SearchT>(
-    (state) => state.conceptTrees.search
+    (state) => state.conceptTrees.search,
   );
   const trees = useSelector<StateT, TreesT>(
-    (state) => state.conceptTrees.trees
+    (state) => state.conceptTrees.trees,
   );
 
   const dispatch = useDispatch();

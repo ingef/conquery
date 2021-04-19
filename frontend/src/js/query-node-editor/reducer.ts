@@ -25,7 +25,7 @@ export const createQueryNodeEditorReducer = (type: string) => {
 
   return (
     state: QueryNodeEditorStateT = initialState,
-    action: any
+    action: any,
   ): QueryNodeEditorStateT => {
     switch (action.type) {
       case SET_DETAILS_VIEW_ACTIVE:

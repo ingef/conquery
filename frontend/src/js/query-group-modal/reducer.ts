@@ -1,6 +1,6 @@
 import {
   QUERY_GROUP_MODAL_SET_NODE,
-  QUERY_GROUP_MODAL_CLEAR_NODE
+  QUERY_GROUP_MODAL_CLEAR_NODE,
 } from "./actionTypes";
 
 const initialState = {};
@@ -10,7 +10,7 @@ const queryGroupModal = (state = initialState, action) => {
     case QUERY_GROUP_MODAL_SET_NODE:
       return {
         ...state,
-        andIdx: action.payload.andIdx
+        andIdx: action.payload.andIdx,
       };
     case QUERY_GROUP_MODAL_CLEAR_NODE:
       return { ...state, andIdx: undefined };

@@ -1,13 +1,14 @@
+import { StateT } from "app-types";
 import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+
 import Tags from "../../tags/Tags";
 
 import { addTagToFormConfigsSearch } from "./search/actions";
-import { useSelector, useDispatch } from "react-redux";
-import { StateT } from "app-types";
 
 const tagContainsAnySearch = (tag: string, search: string[]) => {
   return search.some(
-    (str) => tag.toLowerCase().indexOf(str.toLowerCase()) !== -1
+    (str) => tag.toLowerCase().indexOf(str.toLowerCase()) !== -1,
   );
 };
 
@@ -17,7 +18,7 @@ interface PropsT {
 
 const FormConfigTags: React.FC<PropsT> = ({ tags }) => {
   const search = useSelector<StateT, string[]>(
-    (state) => state.formConfigsSearch
+    (state) => state.formConfigsSearch,
   );
 
   const dispatch = useDispatch();

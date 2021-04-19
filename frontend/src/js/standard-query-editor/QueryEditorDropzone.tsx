@@ -1,19 +1,18 @@
-import React, { FC } from "react";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-import { useTranslation } from "react-i18next";
+import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { DropTargetMonitor } from "react-dnd";
+import { useTranslation } from "react-i18next";
 
-import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
-import FaIcon from "../icon/FaIcon";
-
+import type { QueryIdT } from "../api/types";
 import {
   CONCEPT_TREE_NODE,
   QUERY_NODE,
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../common/constants/dndTypes";
-import type { QueryIdT } from "../api/types";
+import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
+import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import type { DraggedNodeType, DraggedQueryType } from "./types";

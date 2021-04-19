@@ -1,8 +1,8 @@
-import React, { useRef } from "react";
-import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
+import React, { useRef } from "react";
 import { DropTarget } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
+import { useTranslation } from "react-i18next";
 
 /*
   Can't use the dynamic <Dropzone> from './Dropzone' (the default export),
@@ -54,7 +54,7 @@ const collect = (connect, monitor) => ({
 export default DropTarget(
   [NativeTypes.FILE],
   target,
-  collect
+  collect,
 )(({ onDropFile, children, isOver, canDrop, connectDropTarget }) => {
   const { t } = useTranslation();
   const fileInputRef = useRef(null);

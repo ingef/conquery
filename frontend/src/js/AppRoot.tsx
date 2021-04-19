@@ -1,11 +1,10 @@
+import { StateT } from "app-types";
 import React, { FC } from "react";
 import { Provider } from "react-redux";
-import { StateT } from "app-types";
-
-import type { TabT } from "./pane/types";
+import { Store } from "redux";
 
 import AppRouter from "./app/AppRouter";
-import { Store } from "redux";
+import type { TabT } from "./pane/types";
 
 interface PropsT {
   store: Store<StateT>;

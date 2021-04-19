@@ -4,17 +4,16 @@ import {
   FormReducerMapObject,
   FormStateMap,
 } from "redux-form";
+
+import type { QueryNodeEditorStateT } from "../query-node-editor/reducer";
 import createQueryRunnerReducer, {
   QueryRunnerStateT,
 } from "../query-runner/reducer";
-import type { QueryNodeEditorStateT } from "../query-node-editor/reducer";
 
 import { SET_EXTERNAL_FORM, LOAD_EXTERNAL_FORM_VALUES } from "./actionTypes";
-
+import type { Form } from "./config-types";
 import { createFormQueryNodeEditorReducer } from "./form-query-node-editor/reducer";
 import { collectAllFormFields } from "./helper";
-
-import type { Form } from "./config-types";
 
 function collectConceptListFieldNames(config: Form) {
   const fieldNames = collectAllFormFields(config.fields)
@@ -38,7 +37,7 @@ function buildFormReducer(form: Form) {
       combined[name] = createFormQueryNodeEditorReducer(form.type, name);
 
       return combined;
-    }, {})
+    }, {}),
   );
 }
 
@@ -78,7 +77,7 @@ const buildExternalFormsReducer = (availableForms: {
 
   const activeFormReducer = (
     state: string | null = defaultFormType,
-    action: any
+    action: any,
   ): string | null => {
     switch (action.type) {
       case SET_EXTERNAL_FORM:
@@ -120,7 +119,7 @@ const buildExternalFormsReducer = (availableForms: {
         }
       },
     }),
-    {}
+    {},
   );
 
   return combineReducers({

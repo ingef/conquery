@@ -1,5 +1,5 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 import { DropTarget, DropTargetMonitor, DropTargetSpec } from "react-dnd";
 
 const Root = styled("div")<{
@@ -94,7 +94,7 @@ const Dropzone = <TargetProps extends {}>({
   const FinalZone = DropTarget(
     acceptedDropTypes,
     dropzoneTarget,
-    collect
+    collect,
   )(InnerZone);
 
   return <FinalZone {...restProps} />;

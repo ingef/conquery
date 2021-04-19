@@ -1,10 +1,11 @@
-import React, { FC, useState, useRef, FormEvent } from "react";
 import styled from "@emotion/styled";
+import React, { FC, useState, useRef, FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 import PrimaryButton from "../button/PrimaryButton";
-import ReactSelect from "./ReactSelect";
 import { useClickOutside } from "../common/helpers/useClickOutside";
+
+import ReactSelect from "./ReactSelect";
 
 interface PropsT {
   className?: string;
@@ -35,7 +36,7 @@ const EditableTagsForm: FC<PropsT> = ({
   const { t } = useTranslation();
   const ref = useRef(null);
   const [values, setValues] = useState<ValueT[]>(
-    tags ? tags.map((t) => ({ label: t, value: t })) : []
+    tags ? tags.map((t) => ({ label: t, value: t })) : [],
   );
   useClickOutside(ref, onCancel);
 

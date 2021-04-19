@@ -1,14 +1,14 @@
-import React from "react";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
-import keycloak from "../../keycloak";
+import React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
-import type { TabT } from "../pane/types";
 
+import keycloak from "../../keycloak";
 import LoginPage from "../authorization/LoginPage";
 import WithAuthToken from "../authorization/WithAuthToken";
+import { basename, isIDPEnabled } from "../environment";
+import type { TabT } from "../pane/types";
 
 import App from "./App";
-import { basename, isIDPEnabled } from "../environment";
 
 interface PropsT {
   rightTabs: TabT[];

@@ -1,20 +1,20 @@
 // @ts-nocheck
-/* eslint-disable */
 
-import "core-js/features/promise";
-import "core-js/features/symbol";
-import "core-js/features/set";
-import "core-js/features/object/assign";
-import "core-js/web/url";
-import "core-js/web/url-search-params";
-import "core-js/features/object/values";
-import "core-js/features/object/entries";
+/* eslint-disable */
 import "core-js/features/array/find";
 import "core-js/features/array/flat-map";
-import "core-js/features/array/includes";
 import "core-js/features/array/from";
+import "core-js/features/array/includes";
 import "core-js/features/array/iterator";
+import "core-js/features/object/assign";
+import "core-js/features/object/entries";
+import "core-js/features/object/values";
+import "core-js/features/promise";
+import "core-js/features/set";
 import "core-js/features/string/ends-with";
+import "core-js/features/symbol";
+import "core-js/web/url";
+import "core-js/web/url-search-params";
 
 // Remove fetch from window object so polyfill is used
 if (window.navigator.userAgent.indexOf("Edge") > -1) window.fetch = undefined;
@@ -43,7 +43,7 @@ if (!"".trim)
         throw new DOMException(
           "Failed to execute '" +
             O +
-            "' on 'DOMTokenList': The token provided must not be empty."
+            "' on 'DOMTokenList': The token provided must not be empty.",
         );
       if ((wsIndex = V.search(wsRE)) !== -1)
         throw new DOMException(
@@ -52,7 +52,7 @@ if (!"".trim)
             "' on 'DOMTokenList': " +
             "The token provided ('" +
             V[wsIndex] +
-            "') contains HTML space characters, which are not valid in tokens."
+            "') contains HTML space characters, which are not valid in tokens.",
         );
     };
   // 2. Implement the barebones DOMTokenList livelyness polyfill
@@ -257,7 +257,7 @@ if (!"".trim)
         window[" uCL"] = polyfillClassList;
         // the below code ensures polyfillClassList is applied to all current and future elements in the doc.
         document.documentElement.firstChild.appendChild(
-          document.createElement("style")
+          document.createElement("style"),
         ).styleSheet.cssText =
           '_*{x-uCLp:expression(!this.hasOwnProperty("classList")&&window[" uCL"](this))}' + //  IE6
           '[class]{x-uCLp/**/:expression(!this.hasOwnProperty("classList")&&window[" uCL"](this))}'; //IE7-8
@@ -352,6 +352,6 @@ if (!"".trim)
       };
   })(
     window.DOMTokenList.prototype,
-    window.document.createElement("div").classList
+    window.document.createElement("div").classList,
   );
 })(window);

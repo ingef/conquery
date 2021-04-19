@@ -1,9 +1,10 @@
 import { combineReducers } from "redux";
 
-import { OPEN_UPLOAD_MODAL, CLOSE_UPLOAD_MODAL } from "./actionTypes";
 import createQueryRunnerReducer, {
   QueryRunnerStateT,
 } from "../../query-runner/reducer";
+
+import { OPEN_UPLOAD_MODAL, CLOSE_UPLOAD_MODAL } from "./actionTypes";
 
 export interface UploadQueryResultsStateT {
   isModalOpen: boolean;

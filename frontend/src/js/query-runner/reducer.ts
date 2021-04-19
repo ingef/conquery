@@ -3,7 +3,7 @@ import type {
   DatasetIdT,
   GetQueryResponseDoneT,
 } from "../api/types";
-import { QueryTypeT } from "./actions";
+
 import {
   QUERY_RESULT_ERROR,
   QUERY_RESULT_RESET,
@@ -16,6 +16,7 @@ import {
   STOP_QUERY_START,
   STOP_QUERY_SUCCESS,
 } from "./actionTypes";
+import { QueryTypeT } from "./actions";
 
 interface APICallType {
   loading?: boolean;
@@ -51,7 +52,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
 
   const getQueryResult = (
     data: GetQueryResponseDoneT,
-    datasetId: DatasetIdT
+    datasetId: DatasetIdT,
   ) => {
     return {
       datasetId,
@@ -67,7 +68,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
 
   return (
     state: QueryRunnerStateT = initialState,
-    action: Object
+    action: Object,
   ): QueryRunnerStateT => {
     if (!action.payload || action.payload.queryType !== type) {
       return state;
@@ -125,7 +126,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
       case QUERY_RESULT_SUCCESS:
         const queryResult = getQueryResult(
           action.payload.data,
-          action.payload.datasetId
+          action.payload.datasetId,
         );
 
         return {

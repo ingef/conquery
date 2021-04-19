@@ -1,13 +1,12 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
-
-import Form from "./form/Form";
-
-import { selectFormConfig } from "./stateSelectors";
-import type { Form as FormType } from "./config-types";
-import { useSelector } from "react-redux";
 import { StateT } from "app-types";
+import React, { FC } from "react";
+import { useSelector } from "react-redux";
+
 import FormConfigSaver from "./FormConfigSaver";
+import type { Form as FormType } from "./config-types";
+import Form from "./form/Form";
+import { selectFormConfig } from "./stateSelectors";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -18,7 +17,7 @@ const Root = styled("div")`
 
 const FormsContainer: FC = () => {
   const formConfig = useSelector<StateT, FormType | null>((state) =>
-    selectFormConfig(state)
+    selectFormConfig(state),
   );
 
   return (

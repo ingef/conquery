@@ -1,10 +1,10 @@
-import { createQueryNodeEditorReducer } from "../../query-node-editor/reducer";
 import { toUpperCaseUnderscore } from "../../common/helpers";
+import { createQueryNodeEditorReducer } from "../../query-node-editor/reducer";
 
 export const createFormQueryNodeEditorReducer = (
   formType: string,
-  fieldName: string
+  fieldName: string,
 ) =>
   createQueryNodeEditorReducer(
-    `${formType}_${toUpperCaseUnderscore(fieldName)}`
+    `${formType}_${toUpperCaseUnderscore(fieldName)}`,
   );

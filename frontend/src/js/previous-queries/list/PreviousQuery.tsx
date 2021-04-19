@@ -1,34 +1,30 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-
-import { useTranslation } from "react-i18next";
+import styled from "@emotion/styled";
+import type { StateT } from "app-types";
 import { parseISO } from "date-fns";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { useSelector, useDispatch } from "react-redux";
 
-import ErrorMessage from "../../error-message/ErrorMessage";
-import { isEmpty } from "../../common/helpers/commonHelper";
-
+import type { DatasetIdT, SecondaryId } from "../../api/types";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
+import { useFormatDateDistance } from "../../common/helpers";
+import { isEmpty } from "../../common/helpers/commonHelper";
+import ErrorMessage from "../../error-message/ErrorMessage";
+import EditableTags from "../../form-components/EditableTags";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 
-import EditableTags from "../../form-components/EditableTags";
-
+import PreviousQueriesLabel from "./PreviousQueriesLabel";
+import PreviousQueryTags from "./PreviousQueryTags";
 import {
   toggleEditPreviousQueryLabel,
   toggleEditPreviousQueryTags,
   useRenamePreviousQuery,
   useRetagPreviousQuery,
 } from "./actions";
-
-import PreviousQueryTags from "./PreviousQueryTags";
-import { useFormatDateDistance } from "../../common/helpers";
 import { PreviousQueryT } from "./reducer";
-import PreviousQueriesLabel from "./PreviousQueriesLabel";
-import type { DatasetIdT, SecondaryId } from "../../api/types";
-import type { StateT } from "app-types";
 import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
 const Root = styled("div")<{ own?: boolean; system?: boolean }>`
@@ -102,15 +98,15 @@ interface PropsT {
 const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
   function PreviousQueryComponent(
     { query, datasetId, onIndicateDeletion, onIndicateShare },
-    ref
+    ref,
   ) {
     const { t } = useTranslation();
     const availableTags = useSelector<StateT, string[]>(
-      (state) => state.previousQueries.tags
+      (state) => state.previousQueries.tags,
     );
 
     const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
-      (state) => state.conceptTrees.secondaryIds
+      (state) => state.conceptTrees.secondaryIds,
     );
 
     const formatDateDistance = useFormatDateDistance();
@@ -144,7 +140,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     const executedAt = formatDateDistance(
       parseISO(query.createdAt),
       new Date(),
-      true
+      true,
     );
     const isShared = query.shared || (query.groups && query.groups.length > 0);
     const label = query.label || query.id.toString();
@@ -241,7 +237,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
         {!!query.error && <StyledErrorMessage message={query.error} />}
       </Root>
     );
-  }
+  },
 );
 
 export default PreviousQuery;

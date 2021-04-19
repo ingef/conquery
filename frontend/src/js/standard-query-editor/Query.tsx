@@ -1,16 +1,22 @@
-import React, { FC, useState } from "react";
 import styled from "@emotion/styled";
-
-import { useDispatch, useSelector } from "react-redux";
+import { StateT } from "app-types";
+import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../api/types";
 import { exists } from "../common/helpers/exists";
-
-import { queryGroupModalSetNode } from "../query-group-modal/actions";
+import { TreesT } from "../concept-trees/reducer";
 import { useLoadPreviousQuery } from "../previous-queries/list/actions";
+import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
 
+import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
+import QueryEditorDropzone from "./QueryEditorDropzone";
+import QueryFooter from "./QueryFooter";
+import QueryGroup from "./QueryGroup";
+import QueryHeader from "./QueryHeader";
 import {
   dropAndNode,
   dropOrNode,
@@ -22,21 +28,12 @@ import {
   toggleTimestamps,
   toggleSecondaryIdExclude,
 } from "./actions";
-
+import type { StandardQueryStateT } from "./queryReducer";
 import type {
   DraggedNodeType,
   DraggedQueryType,
   PreviousQueryQueryNodeType,
 } from "./types";
-import QueryEditorDropzone from "./QueryEditorDropzone";
-import QueryGroup from "./QueryGroup";
-import { StateT } from "app-types";
-import { TreesT } from "../concept-trees/reducer";
-import { PreviousQueryIdT } from "../previous-queries/list/reducer";
-import QueryHeader from "./QueryHeader";
-import QueryFooter from "./QueryFooter";
-import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
-import type { StandardQueryStateT } from "./queryReducer";
 
 const Container = styled("div")`
   height: 100%;
@@ -63,10 +60,10 @@ const QueryGroupConnector = styled("p")`
 const Query = () => {
   const { t } = useTranslation();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId,
   );
   const query = useSelector<StateT, StandardQueryStateT>(
-    (state) => state.queryEditor.query
+    (state) => state.queryEditor.query,
   );
   const isEmptyQuery = query.length === 0;
   const isQueryWithSingleElement =
@@ -74,7 +71,7 @@ const Query = () => {
 
   // only used by other actions
   const rootConcepts = useSelector<StateT, TreesT>(
-    (state) => state.conceptTrees.trees
+    (state) => state.conceptTrees.trees,
   );
 
   const dispatch = useDispatch();
@@ -87,7 +84,7 @@ const Query = () => {
     dispatch(openQueryUploadConceptListModal(andIdx, file));
   const onDropOrNode = (
     item: DraggedNodeType | DraggedQueryType,
-    andIdx: number
+    andIdx: number,
   ) => dispatch(dropOrNode(item, andIdx));
   const onDeleteNode = (andIdx: number, orIdx: number) =>
     dispatch(deleteNode(andIdx, orIdx));

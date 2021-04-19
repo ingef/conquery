@@ -1,9 +1,9 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { nodeHasActiveFilters } from "../model/node";
 
 import IconButton from "../button/IconButton";
+import { nodeHasActiveFilters } from "../model/node";
 import type { StandardQueryNodeT } from "../standard-query-editor/types";
 
 const Container = styled("div")`

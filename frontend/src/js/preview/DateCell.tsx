@@ -1,7 +1,9 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
-import { Cell } from "./Cell";
+import React, { FC } from "react";
+
 import { parseStdDate, getDiffInDays } from "../common/helpers";
+
+import { Cell } from "./Cell";
 
 const Span = styled("div")`
   position: absolute;

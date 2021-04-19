@@ -1,7 +1,6 @@
-import React, { FC, ReactNode } from "react";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-
+import styled from "@emotion/styled";
+import React, { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import type { WrappedFieldProps } from "redux-form";
 
@@ -13,9 +12,9 @@ import {
 } from "../common/helpers/dateHelper";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
+import BaseInput from "./BaseInput";
 import Label from "./Label";
 import Labeled from "./Labeled";
-import BaseInput from "./BaseInput";
 
 const Root = styled("div")<{ center?: boolean }>`
   text-align: ${({ center }) => (center ? "center" : "left")};

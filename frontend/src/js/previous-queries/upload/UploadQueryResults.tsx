@@ -1,13 +1,13 @@
-import React from "react";
 import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
 import { StateT } from "app-types";
+import React from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../../api/types";
 import IconButton from "../../button/IconButton";
-import { QueryRunnerStateT } from "../../query-runner/reducer";
 import { queryResultReset, useStartQuery } from "../../query-runner/actions";
+import { QueryRunnerStateT } from "../../query-runner/reducer";
 
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
 import { openUploadModal, closeUploadModal } from "./actions";
@@ -24,10 +24,10 @@ const Root = styled("div")`
 const UploadQueryResults = ({ datasetId }: PropsT) => {
   const { t } = useTranslation();
   const queryRunner = useSelector<StateT, QueryRunnerStateT>(
-    (state) => state.uploadQueryResults.queryRunner
+    (state) => state.uploadQueryResults.queryRunner,
   );
   const isModalOpen = useSelector<StateT, boolean>(
-    (state) => state.uploadQueryResults.isModalOpen
+    (state) => state.uploadQueryResults.isModalOpen,
   );
 
   const loading = queryRunner.startQuery.loading || !!queryRunner.runningQuery;

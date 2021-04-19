@@ -1,16 +1,16 @@
+import { TIMEBASED_OPERATOR_TYPES } from "../common/constants/timebasedQueryOperatorTypes";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
   ConceptQueryNodeType,
   PreviousQueryQueryNodeType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import { TIMEBASED_OPERATOR_TYPES } from "../common/constants/timebasedQueryOperatorTypes";
-import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
 function isTimebasedQuery(node: PreviousQueryQueryNodeType) {
   const queryString = JSON.stringify(node.query);
 
   return Object.values(TIMEBASED_OPERATOR_TYPES).some(
-    (op) => queryString.indexOf(op) !== -1
+    (op) => queryString.indexOf(op) !== -1,
   );
 }
 

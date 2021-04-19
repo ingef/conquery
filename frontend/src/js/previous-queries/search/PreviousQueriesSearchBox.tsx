@@ -1,12 +1,12 @@
-import * as React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
+import { StateT } from "app-types";
+import * as React from "react";
+import { useTranslation } from "react-i18next";
+import { useSelector, useDispatch } from "react-redux";
 
 import ReactSelect from "../../form-components/ReactSelect";
 
 import { updatePreviousQueriesSearch } from "./actions";
-import { StateT } from "app-types";
 
 const Root = styled("div")`
   margin: 0 10px 5px;
@@ -16,10 +16,10 @@ const Root = styled("div")`
 const PreviousQueriesSearchBox: React.FC = () => {
   const { t } = useTranslation();
   const search = useSelector<StateT, string[]>(
-    (state) => state.previousQueriesSearch
+    (state) => state.previousQueriesSearch,
   );
   const options = useSelector<StateT, string[]>(
-    (state) => state.previousQueries.names
+    (state) => state.previousQueries.names,
   );
 
   const dispatch = useDispatch();

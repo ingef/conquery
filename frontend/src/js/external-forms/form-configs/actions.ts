@@ -1,11 +1,12 @@
-import { FormConfigT } from "./reducer";
 import { defaultError, defaultSuccess } from "../../common/actions";
+
 import {
   LOAD_CONFIGS_ERROR,
   LOAD_CONFIGS_SUCCESS,
   PATCH_CONFIG_SUCCESS,
   DELETE_CONFIG_SUCCESS,
 } from "./actionTypes";
+import { FormConfigT } from "./reducer";
 
 export const loadFormConfigsSuccess = (response: FormConfigT[]) =>
   defaultSuccess(LOAD_CONFIGS_SUCCESS, response);
@@ -14,7 +15,7 @@ export const loadFormConfigsError = (err: Error) =>
 
 export const patchFormConfigSuccess = (
   configId: string,
-  values: Partial<FormConfigT>
+  values: Partial<FormConfigT>,
 ) => defaultSuccess(PATCH_CONFIG_SUCCESS, null, { id: configId, values });
 
 export const deleteFormConfigSuccess = (configId: string) =>

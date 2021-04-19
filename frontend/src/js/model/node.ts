@@ -1,14 +1,14 @@
+import { ConceptElementT, ConceptT } from "../api/types";
 import type {
   ConceptQueryNodeType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 
-import { tablesHaveActiveFilter } from "./table";
 import { objectHasSelectedSelects } from "./select";
-import { ConceptElementT, ConceptT } from "../api/types";
+import { tablesHaveActiveFilter } from "./table";
 
 export const nodeIsConceptQueryNode = (
-  node: StandardQueryNodeT
+  node: StandardQueryNodeT,
 ): node is ConceptQueryNodeType => !node.isPreviousQuery;
 
 export const nodeHasActiveFilters = (node: StandardQueryNodeT) =>
@@ -35,7 +35,7 @@ export const nodeHasExludedTable = (node: ConceptQueryNodeType) => {
 export function nodeIsInvalid(
   node: ConceptQueryNodeType,
   blocklistedConceptIds?: string[],
-  allowlistedConceptIds?: string[]
+  allowlistedConceptIds?: string[],
 ) {
   return (
     (!!allowlistedConceptIds &&
@@ -46,24 +46,24 @@ export function nodeIsInvalid(
 
 export function nodeIsBlocklisted(
   node: ConceptQueryNodeType,
-  blocklistedConceptIds: string[]
+  blocklistedConceptIds: string[],
 ) {
   return (
     !!node.ids &&
     blocklistedConceptIds.some((id) =>
-      node.ids.some((conceptId) => conceptId.indexOf(id.toLowerCase()) !== -1)
+      node.ids.some((conceptId) => conceptId.indexOf(id.toLowerCase()) !== -1),
     )
   );
 }
 
 export function nodeIsAllowlisted(
   node: ConceptQueryNodeType,
-  allowlistedConceptIds: string[]
+  allowlistedConceptIds: string[],
 ) {
   return (
     !!node.ids &&
     allowlistedConceptIds.some((id) =>
-      node.ids.every((conceptId) => conceptId.indexOf(id.toLowerCase()) !== -1)
+      node.ids.every((conceptId) => conceptId.indexOf(id.toLowerCase()) !== -1),
     )
   );
 }

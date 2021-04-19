@@ -1,19 +1,19 @@
-import React, { useRef, FC } from "react";
-import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
+import React, { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
+import { useTranslation } from "react-i18next";
 
-import VerticalToggleButton, {
-  Option,
-} from "../form-components/VerticalToggleButton";
+import { getWidthAndHeight } from "../app/DndProvider";
+import IconButton from "../button/IconButton";
+import { TIMEBASED_NODE } from "../common/constants/dndTypes";
 import {
   EARLIEST,
   LATEST,
   RANDOM,
 } from "../common/constants/timebasedQueryTimestampTypes";
-import { TIMEBASED_NODE } from "../common/constants/dndTypes";
-import IconButton from "../button/IconButton";
-import { getWidthAndHeight } from "../app/DndProvider";
+import VerticalToggleButton, {
+  Option,
+} from "../form-components/VerticalToggleButton";
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;

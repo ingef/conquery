@@ -1,18 +1,16 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 
 import type { ConceptIdT, InfoT, DateRangeT, ConceptT } from "../api/types";
-
+import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 import { selectsWithDefaults } from "../model/select";
 import { tablesWithDefaults } from "../model/table";
-
 import type { DraggedNodeType } from "../standard-query-editor/types";
-import type { SearchT } from "./reducer";
 
-import { getConceptById } from "./globalTreeStoreHelper";
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
+import { getConceptById } from "./globalTreeStoreHelper";
+import type { SearchT } from "./reducer";
 import { isNodeInSearchResult } from "./selectors";
-import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};

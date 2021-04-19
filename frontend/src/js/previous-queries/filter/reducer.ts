@@ -6,7 +6,7 @@ const initialState: PreviousQueriesFilterStateT = "all";
 
 const previousQueriesFilter = (
   state: PreviousQueriesFilterStateT = initialState,
-  action: Object
+  action: Object,
 ): PreviousQueriesFilterStateT => {
   switch (action.type) {
     case SET_PREVIOUS_QUERIES_FILTER:

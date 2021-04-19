@@ -4,12 +4,9 @@ import type { ConceptT, ConceptIdT } from "../api/types";
 
 import ConceptTree from "./ConceptTree";
 import ConceptTreeFolder from "./ConceptTreeFolder";
-
 import { getConceptById } from "./globalTreeStoreHelper";
-
-import { isNodeInSearchResult } from "./selectors";
-
 import type { TreesT, SearchT } from "./reducer";
+import { isNodeInSearchResult } from "./selectors";
 
 interface PropsT {
   trees: TreesT;

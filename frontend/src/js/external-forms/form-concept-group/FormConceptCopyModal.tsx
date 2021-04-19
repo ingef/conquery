@@ -1,20 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
-import Modal from "../../modal/Modal";
 import BasicButton from "../../button/BasicButton";
 import PrimaryButton from "../../button/PrimaryButton";
+import InputCheckbox from "../../form-components/InputCheckbox";
+import InputSelect from "../../form-components/InputSelect";
+import { useActiveLang } from "../../localization/useActiveLang";
+import Modal from "../../modal/Modal";
 import {
   selectActiveFormValues,
   useVisibleConceptListFields,
 } from "../stateSelectors";
-
-import InputSelect from "../../form-components/InputSelect";
-import InputCheckbox from "../../form-components/InputCheckbox";
-import { useActiveLang } from "../../localization/useActiveLang";
 
 const Buttons = styled("div")`
   display: flex;
@@ -53,7 +52,7 @@ const FormConceptCopyModal = ({
   const { t } = useTranslation();
   const activeLang = useActiveLang();
   const formValues = useSelector<StateT, Record<string, any>>((state) =>
-    selectActiveFormValues(state)
+    selectActiveFormValues(state),
   );
   const visibleConceptListFields = useVisibleConceptListFields();
 
@@ -67,7 +66,7 @@ const FormConceptCopyModal = ({
   // Since the modal is only rendered when there exists more than one concept list field
   // we can assume that `conceptListFieldOptions` still has length >= 1
   const [selectedOption, setSelectedOption] = useState<string>(
-    conceptListFieldOptions[0].value
+    conceptListFieldOptions[0].value,
   );
 
   const [valuesChecked, setValuesChecked] = useState<{
@@ -85,11 +84,11 @@ const FormConceptCopyModal = ({
   }, [selectedOption]);
 
   const allConceptsSelected = Object.keys(valuesChecked).every(
-    (key) => valuesChecked[key]
+    (key) => valuesChecked[key],
   );
 
   const isAcceptDisabled = Object.keys(valuesChecked).every(
-    (key) => !valuesChecked[key]
+    (key) => !valuesChecked[key],
   );
 
   function idxHasConcepts(idx: number) {
@@ -165,7 +164,7 @@ const FormConceptCopyModal = ({
                 onChange: (checked: boolean) => onToggleConcept(idx, checked),
               }}
             />
-          ) : null
+          ) : null,
         )}
       </Options>
       <Buttons>
