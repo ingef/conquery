@@ -16,8 +16,10 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -111,9 +113,10 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			final CQTable cqTable = new CQTable();
 			cqTable.setConcept(cqConcept);
 
-			final Connector connector = conquery.getNamespaceStorage().getCentralRegistry().resolve(new ConnectorId(conceptId,"connector1"));
+			final CentralRegistry centralRegistry = conquery.getNamespaceStorage().getCentralRegistry();
+			final Connector connector = centralRegistry.resolve(new ConnectorId(conceptId, "connector1"));
 			cqTable.setConnector(connector);
-			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter(connector.getFilterByName("filter"), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
+			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter(centralRegistry.resolve(new FilterId(connector.getId(),"filter")), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
 
 			cqConcept.setTables(List.of(cqTable));
 			cqConcept.setExcludeFromSecondaryIdQuery(false);

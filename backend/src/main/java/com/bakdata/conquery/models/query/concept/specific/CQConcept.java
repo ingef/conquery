@@ -249,8 +249,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	private Column selectValidityDateColumn(CQTable table) {
 		if (table.getDateColumn() != null) {
-			return table.getConnector()
-						.getValidityDateColumn(table.getDateColumn().getValue());
+			return table.getDateColumn().getValue().getColumn();
 		}
 
 		//else use this first defined validity date column

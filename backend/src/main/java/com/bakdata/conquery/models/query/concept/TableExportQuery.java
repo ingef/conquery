@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -70,7 +71,7 @@ public class TableExportQuery extends IQuery {
 			// if no dateColumn is provided, we use the default instead which is always the first one.
 			// Set to null if none-available in the connector.
 			if (table.getDateColumn() != null) {
-				validityDateColumn = connector.getValidityDateColumn(table.getDateColumn().getValue());
+				validityDateColumn = table.getDateColumn().getValue().getColumn();
 			}
 			else if (!connector.getValidityDates().isEmpty()) {
 				validityDateColumn = connector.getValidityDates().get(0).getColumn();
@@ -111,10 +112,7 @@ public class TableExportQuery extends IQuery {
 		for (CQUnfilteredTable table : tables) {
 			Connector connector = table.getTable();
 
-			for (Column col : connector.getTable().getColumns()) {
-				resolvedHeader.add(col);
-			}
-
+			resolvedHeader.addAll(Arrays.asList(connector.getTable().getColumns()));
 		}
 	}
 
