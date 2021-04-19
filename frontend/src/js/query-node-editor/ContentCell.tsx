@@ -1,5 +1,6 @@
-import React, { FC, forwardRef, ReactNode } from "react";
 import styled from "@emotion/styled";
+import React, { FC, forwardRef, ReactNode } from "react";
+
 import { Heading4 } from "../headings/Headings";
 
 const Root = styled("div")`
@@ -30,7 +31,7 @@ const ContentCell = forwardRef<HTMLDivElement, PropsT>(
       {headline && <Headline>{headline}</Headline>}
       <Content>{children}</Content>
     </Root>
-  )
+  ),
 );
 
 export default ContentCell;

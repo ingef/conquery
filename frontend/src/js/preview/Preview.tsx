@@ -1,21 +1,21 @@
-import * as React from "react";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-import { useSelector, useDispatch } from "react-redux";
+import styled from "@emotion/styled";
+import { StateT } from "app-types";
+import * as React from "react";
 import Hotkeys from "react-hot-keys";
 import { useTranslation } from "react-i18next";
+import { useSelector, useDispatch } from "react-redux";
 
+import type { ColumnDescription, ColumnDescriptionKind } from "../api/types";
 import { getDiffInDays, parseStdDate } from "../common/helpers/dateHelper";
 
-import type { PreviewStateT } from "./reducer";
-import { closePreview } from "./actions";
-import { StateT } from "app-types";
-import type { ColumnDescription, ColumnDescriptionKind } from "../api/types";
-import DateCell from "./DateCell";
 import { Cell } from "./Cell";
+import DateCell from "./DateCell";
 import PreviewInfo from "./PreviewInfo";
 import { StatsHeadline } from "./StatsHeadline";
 import StatsSubline from "./StatsSubline";
+import { closePreview } from "./actions";
+import type { PreviewStateT } from "./reducer";
 
 const Root = styled("div")`
   height: 100%;
@@ -82,7 +82,7 @@ const SUPPORTED_COLUMN_DESCRIPTION_KINDS = new Set<ColumnDescriptionKind>([
 
 function detectColumnType(
   cell: string,
-  resultColumns: ColumnDescription[]
+  resultColumns: ColumnDescription[],
 ): ColumnDescriptionType {
   if (cell === "dates") return "DATE_RANGE";
 
@@ -100,7 +100,7 @@ function detectColumnType(
 
 function detectColumnTypesByHeader(
   line: string[],
-  resultColumns: ColumnDescription[]
+  resultColumns: ColumnDescription[],
 ) {
   return line.map((cell) => detectColumnType(cell, resultColumns));
 }
@@ -117,7 +117,7 @@ function getFirstAndLastDateOfRange(dateStr: string) {
 
 function getMinMaxDates(
   rows: string[][],
-  columns: string[]
+  columns: string[],
 ): {
   min: Date | null;
   max: Date | null;
@@ -168,7 +168,7 @@ const Preview: React.FC = () => {
 
   const columns = detectColumnTypesByHeader(
     previewData[0],
-    preview.resultColumns
+    preview.resultColumns,
   );
 
   const { min, max, diff } = getMinMaxDates(previewData.slice(1), columns);

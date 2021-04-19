@@ -1,20 +1,17 @@
-import { reset } from "redux-form";
-import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+import { reset } from "redux-form";
 
+import { useGetDatasets } from "../api/api";
 import type { DatasetIdT } from "../api/types";
-
 import { defaultError, defaultSuccess } from "../common/actions";
+import { exists } from "../common/helpers/exists";
 import { useLoadTrees } from "../concept-trees/actions";
 import { useLoadPreviousQueries } from "../previous-queries/list/actions";
-import { loadQuery, clearQuery } from "../standard-query-editor/actions";
 import { setMessage } from "../snack-message/actions";
+import { loadQuery, clearQuery } from "../standard-query-editor/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
-import { exists } from "../common/helpers/exists";
-import { useGetDatasets } from "../api/api";
-
-import { setDatasetId } from "./globalDatasetHelper";
 
 import {
   LOAD_DATASETS_START,
@@ -23,7 +20,7 @@ import {
   SELECT_DATASET,
   SAVE_QUERY,
 } from "./actionTypes";
-
+import { setDatasetId } from "./globalDatasetHelper";
 import type { DatasetT } from "./reducer";
 
 export const loadDatasetsStart = () => ({ type: LOAD_DATASETS_START });
@@ -72,7 +69,7 @@ export const selectDatasetInput = (id: DatasetIdT | null) => {
 
 export const saveQuery = (
   query: StandardQueryStateT,
-  previouslySelectedDatasetId: DatasetIdT
+  previouslySelectedDatasetId: DatasetIdT,
 ) => {
   return { type: SAVE_QUERY, payload: { query, previouslySelectedDatasetId } };
 };
@@ -91,7 +88,7 @@ export const useSelectDataset = () => {
     datasets: DatasetT[],
     datasetId: DatasetIdT | null,
     previouslySelectedDatasetId: DatasetIdT | null,
-    query: StandardQueryStateT
+    query: StandardQueryStateT,
   ) => {
     if (previouslySelectedDatasetId) {
       dispatch(saveQuery(query, previouslySelectedDatasetId));

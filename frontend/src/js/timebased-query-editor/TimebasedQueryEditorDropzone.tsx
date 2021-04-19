@@ -1,7 +1,7 @@
-import React from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { connect } from "react-redux";
 
 import { PREVIOUS_QUERY, TIMEBASED_NODE } from "../common/constants/dndTypes";
 import Dropzone from "../form-components/Dropzone";
@@ -53,5 +53,5 @@ export default connect(
   (dispatch) => ({
     onRemoveTimebasedNode: (conditionIdx, resultIdx, moved) =>
       dispatch(removeTimebasedNode(conditionIdx, resultIdx, moved)),
-  })
+  }),
 )(TimebasedQueryEditorDropzone);

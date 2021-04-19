@@ -6,7 +6,7 @@ const initialState: FormConfigsFilterStateT = "all";
 
 const formConfigsFilter = (
   state: FormConfigsFilterStateT = initialState,
-  action: any
+  action: any,
 ): FormConfigsFilterStateT => {
   switch (action.type) {
     case SET_FORM_CONFIGS_FILTER:

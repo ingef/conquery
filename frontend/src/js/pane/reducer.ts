@@ -17,7 +17,7 @@ const initialState: PanesStateT = {
 
 const reducer = (
   state: PanesStateT = initialState,
-  action: any
+  action: any,
 ): PanesStateT => {
   switch (action.type) {
     case CLICK_PANE_TAB:

@@ -1,9 +1,10 @@
-import { useSelector } from "react-redux";
 import { StateT } from "app-types";
+import { useSelector } from "react-redux";
 
-import { initTables } from "./transformers";
-import { Form } from "./config-types";
 import { useActiveLang } from "../localization/useActiveLang";
+
+import { Form } from "./config-types";
+import { initTables } from "./transformers";
 
 const selectFormField = (state, formName: string, fieldName: string) => {
   if (
@@ -26,7 +27,7 @@ export const selectEditedConceptPosition = (state, formName, fieldName) => {
         ...acc,
         ...group.concepts.map((concept, orIdx) => ({ andIdx, orIdx, concept })),
       ],
-      []
+      [],
     )
     .filter(({ concept }) => concept && concept.isEditing)
     .map(({ andIdx, orIdx }) => ({ andIdx, orIdx }));
@@ -40,7 +41,7 @@ export const selectEditedConcept = (
   fieldName,
   { andIdx, orIdx },
   blocklistedTables: string[],
-  allowlistedTables: string[]
+  allowlistedTables: string[],
 ) => {
   const formField = selectFormField(state, formName, fieldName);
   const concept = formField[andIdx].concepts[orIdx];
@@ -81,7 +82,7 @@ export const selectFormConfig = (state: StateT): Form | null => {
 
 export const useSelectActiveFormName = (): string => {
   const formConfig = useSelector<StateT, Form | null>((state) =>
-    selectFormConfig(state)
+    selectFormConfig(state),
   );
   const activeLang = useActiveLang();
 
@@ -102,7 +103,7 @@ export const selectRunningQuery = (state: StateT) => {
 
 function getVisibleConceptListFields(config, values) {
   const topLevelFields = config.fields.filter(
-    (field) => field.type === "CONCEPT_LIST"
+    (field) => field.type === "CONCEPT_LIST",
   );
   const tabFields = config.fields.filter((field) => field.type === "TABS");
 
@@ -132,7 +133,7 @@ export const useVisibleConceptListFields = () => {
 export const useAllowExtendedCopying = (targetFieldname: string) => {
   const values = useSelector((state) => selectActiveFormValues(state));
   const otherConceptListFields = useVisibleConceptListFields().filter(
-    (field) => field.name !== targetFieldname
+    (field) => field.name !== targetFieldname,
   );
 
   // Need to have min 2 fields to copy from one to another
@@ -141,7 +142,7 @@ export const useAllowExtendedCopying = (targetFieldname: string) => {
   const fieldHasFilledConcept = (field) =>
     !!values[field.name] &&
     values[field.name].some((value) =>
-      value.concepts.some((concept) => !!concept)
+      value.concepts.some((concept) => !!concept),
     );
 
   return otherConceptListFields.some(fieldHasFilledConcept);
@@ -149,7 +150,7 @@ export const useAllowExtendedCopying = (targetFieldname: string) => {
 
 export const useFormLabelByType = (formType: string) => {
   const availableForms = useSelector<StateT, { [formName: string]: Form }>(
-    (state) => selectAvailableForms(state)
+    (state) => selectAvailableForms(state),
   );
   const activeLang = useActiveLang();
 

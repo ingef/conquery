@@ -1,8 +1,10 @@
-import React, { FC } from "react";
-import { storeAuthToken, getStoredAuthToken } from "./helper";
-import { isLoginDisabled, isIDPEnabled } from "../environment";
-import { useHistory } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
+import React, { FC } from "react";
+import { useHistory } from "react-router-dom";
+
+import { isLoginDisabled, isIDPEnabled } from "../environment";
+
+import { storeAuthToken, getStoredAuthToken } from "./helper";
 
 interface PropsT {
   location: {

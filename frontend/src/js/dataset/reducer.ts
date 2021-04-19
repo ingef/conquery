@@ -1,5 +1,5 @@
-import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type { DatasetIdT } from "../api/types";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
 import {
   LOAD_DATASETS_START,
@@ -38,14 +38,14 @@ const saveQuery = (
       query: StandardQueryStateT;
       previouslySelectedDatasetId: DatasetIdT;
     };
-  }
+  },
 ): DatasetStateT => {
   const { query, previouslySelectedDatasetId } = action.payload;
 
   if (!query || query.length === 0) return state;
 
   const selectedDataset = state.data.find(
-    (db) => db.id === previouslySelectedDatasetId
+    (db) => db.id === previouslySelectedDatasetId,
   );
 
   if (!selectedDataset) return state;
@@ -68,7 +68,7 @@ const saveQuery = (
 
 const datasets = (
   state: DatasetStateT = initialState,
-  action: any
+  action: any,
 ): DatasetStateT => {
   switch (action.type) {
     case LOAD_DATASETS_START:

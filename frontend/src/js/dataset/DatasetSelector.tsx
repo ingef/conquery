@@ -1,17 +1,17 @@
-import React, { FC } from "react";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-import { useSelector } from "react-redux";
+import styled from "@emotion/styled";
 import { StateT } from "app-types";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
-import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { exists } from "../common/helpers/exists";
 import ReactSelect from "../form-components/ReactSelect";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import WithTooltip from "../tooltip/WithTooltip";
 
-import { DatasetT } from "./reducer";
 import { useSelectDataset } from "./actions";
+import { DatasetT } from "./reducer";
 
 const becauseWeCantStyleReactSelectWithGenericProps = css`
   > div {
@@ -34,16 +34,16 @@ const Headline = styled("span")`
 const DatasetSelector: FC = () => {
   const { t } = useTranslation();
   const selectedDatasetId = useSelector<StateT, string | null>(
-    (state) => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId,
   );
   const datasets = useSelector<StateT, DatasetT[]>(
-    (state) => state.datasets.data
+    (state) => state.datasets.data,
   );
   const error = useSelector<StateT, string | null>(
-    (state) => state.datasets.error
+    (state) => state.datasets.error,
   );
   const query = useSelector<StateT, StandardQueryStateT>(
-    (state) => state.queryEditor.query
+    (state) => state.queryEditor.query,
   );
 
   const selectDataset = useSelectDataset();

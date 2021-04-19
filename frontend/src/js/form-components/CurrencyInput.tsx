@@ -1,9 +1,9 @@
 import React, { FC, useState, useEffect } from "react";
 import NumberFormat from "react-number-format";
 
+import type { CurrencyConfigT } from "../api/types";
 import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
-import type { CurrencyConfigT } from "../api/types";
 
 interface PropsT {
   value: number | null;

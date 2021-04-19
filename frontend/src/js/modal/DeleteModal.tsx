@@ -1,10 +1,11 @@
-import React, { ReactNode } from "react";
 import styled from "@emotion/styled";
+import React, { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import Modal from "./Modal";
 import PrimaryButton from "../button/PrimaryButton";
 import TransparentButton from "../button/TransparentButton";
+
+import Modal from "./Modal";
 
 const Root = styled("div")`
   text-align: center;

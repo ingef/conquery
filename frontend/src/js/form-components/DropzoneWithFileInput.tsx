@@ -1,10 +1,10 @@
-import React, { FC, useRef } from "react";
 import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
+import React, { FC, useRef } from "react";
+import { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
+import { useTranslation } from "react-i18next";
 
 import Dropzone, { ChildArgs } from "./Dropzone";
-import { DropTargetMonitor } from "react-dnd";
 
 const FileInput = styled("input")`
   display: none;

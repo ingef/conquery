@@ -1,6 +1,6 @@
-import * as React from "react";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
+import styled from "@emotion/styled";
+import * as React from "react";
 
 import Label from "./Label";
 
@@ -35,7 +35,7 @@ const Labeled = ({
   label,
   tinyLabel,
   largeLabel,
-  children
+  children,
 }: PropsType) => {
   return (
     <Root

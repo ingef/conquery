@@ -1,10 +1,9 @@
 import type { TableT } from "../api/types";
+import { isEmpty, compose } from "../common/helpers";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
-import { isEmpty, compose } from "../common/helpers";
-
-import { objectHasSelectedSelects, selectsWithDefaults } from "./select";
 import { filtersWithDefaults } from "./filter";
+import { objectHasSelectedSelects, selectsWithDefaults } from "./select";
 
 export const tableIsEditable = (table: TableWithFilterValueT) =>
   (!!table.filters && table.filters.length > 0) ||
@@ -19,7 +18,8 @@ export const tableHasActiveFilters = (table: TableWithFilterValueT) =>
   tableHasNonDefaultDateColumn(table) ||
   (table.filters &&
     table.filters.some(
-      (filter) => !isEmpty(filter.value) && filter.value !== filter.defaultValue
+      (filter) =>
+        !isEmpty(filter.value) && filter.value !== filter.defaultValue,
     ));
 
 const tableHasNonDefaultDateColumn = (table: TableWithFilterValueT) =>
@@ -31,7 +31,7 @@ const tableHasNonDefaultDateColumn = (table: TableWithFilterValueT) =>
 export function tableIsDisabled(
   table: TableWithFilterValueT,
   blocklistedTables?: string[],
-  allowlistedTables?: string[]
+  allowlistedTables?: string[],
 ) {
   return (
     (!!allowlistedTables && !tableIsAllowlisted(table, allowlistedTables)) ||
@@ -41,21 +41,21 @@ export function tableIsDisabled(
 
 export function tableIsBlocklisted(
   table: TableWithFilterValueT,
-  blocklistedTables: string[]
+  blocklistedTables: string[],
 ) {
   return blocklistedTables.some(
     (tableName) =>
-      table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
+      table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1,
   );
 }
 
 export function tableIsAllowlisted(
   table: TableWithFilterValueT,
-  allowlistedTables: string[]
+  allowlistedTables: string[],
 ) {
   return allowlistedTables.some(
     (tableName) =>
-      table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
+      table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1,
   );
 }
 
@@ -94,7 +94,7 @@ const tableWithDefaults = (table: TableT) =>
   compose(
     tableWithDefaultDateColumn,
     tableWithDefaultSelects,
-    tableWithDefaultFilters
+    tableWithDefaultFilters,
   )({
     ...table,
     exclude: false,

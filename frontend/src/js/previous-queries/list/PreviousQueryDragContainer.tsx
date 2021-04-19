@@ -1,17 +1,16 @@
 import React, { FC, useRef } from "react";
-
 import { useDrag } from "react-dnd";
 
+import { DatasetIdT } from "../../api/types";
+import { getWidthAndHeight } from "../../app/DndProvider";
 import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../../common/constants/dndTypes";
-import { DatasetIdT } from "../../api/types";
-
-import { getWidthAndHeight } from "../../app/DndProvider";
 import type { DraggedQueryType } from "../../standard-query-editor/types";
-import { PreviousQueryT } from "./reducer";
+
 import PreviousQuery from "./PreviousQuery";
+import { PreviousQueryT } from "./reducer";
 
 interface PropsT {
   query: PreviousQueryT;

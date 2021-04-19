@@ -1,15 +1,13 @@
-import { RENAME_PREVIOUS_QUERY_SUCCESS } from "../previous-queries/list/actionTypes";
-
 import {
   BEFORE,
   DAYS_OR_NO_EVENT_BEFORE,
-  TIMEBASED_OPERATOR_TYPES
+  TIMEBASED_OPERATOR_TYPES,
 } from "../common/constants/timebasedQueryOperatorTypes";
-
 import {
   EARLIEST,
-  TIMEBASED_TIMESTAMP_TYPES
+  TIMEBASED_TIMESTAMP_TYPES,
 } from "../common/constants/timebasedQueryTimestampTypes";
+import { RENAME_PREVIOUS_QUERY_SUCCESS } from "../previous-queries/list/actionTypes";
 
 import {
   DROP_TIMEBASED_NODE,
@@ -22,7 +20,7 @@ import {
   SET_TIMEBASED_INDEX_RESULT,
   ADD_TIMEBASED_CONDITION,
   REMOVE_TIMEBASED_CONDITION,
-  CLEAR_TIMEBASED_QUERY
+  CLEAR_TIMEBASED_QUERY,
 } from "./actionTypes";
 
 type ResultType = {
@@ -44,7 +42,7 @@ export type TimebasedQueryStateT = {
 const getEmptyNode = () => ({
   operator: BEFORE,
   result0: null,
-  result1: null
+  result1: null,
 });
 
 const setTimebasedConditionAttributes = (state, action, attributes) => {
@@ -56,10 +54,10 @@ const setTimebasedConditionAttributes = (state, action, attributes) => {
       ...state.conditions.slice(0, conditionIdx),
       {
         ...state.conditions[conditionIdx],
-        ...attributes
+        ...attributes,
       },
-      ...state.conditions.slice(conditionIdx + 1)
-    ]
+      ...state.conditions.slice(conditionIdx + 1),
+    ],
   };
 };
 
@@ -69,14 +67,14 @@ const setNode = (state, action, node) => {
   const attributes = {
     [`result${resultIdx}`]: {
       ...node,
-      timestamp: node.timestamp || EARLIEST
-    }
+      timestamp: node.timestamp || EARLIEST,
+    },
   };
 
   return setTimebasedConditionAttributes(state, action, attributes);
 };
 
-const conditionResultsToArray = conditions => {
+const conditionResultsToArray = (conditions) => {
   return conditions.reduce((results, c) => {
     if (c.result0) results.push(c.result0);
     if (c.result1) results.push(c.result1);
@@ -85,7 +83,7 @@ const conditionResultsToArray = conditions => {
   }, []);
 };
 
-const getPossibleIndexResults = conditions => {
+const getPossibleIndexResults = (conditions) => {
   return conditions.reduce((possibleResults, condition, i) => {
     if (condition.operator === DAYS_OR_NO_EVENT_BEFORE && condition.result1)
       possibleResults.push(condition.result1);
@@ -100,7 +98,7 @@ const getPossibleIndexResults = conditions => {
   }, []);
 };
 
-const ensureIndexResult = state => {
+const ensureIndexResult = (state) => {
   // Return if there is already an indexResult
   if (state.indexResult) return state;
 
@@ -133,13 +131,13 @@ const removeTimebasedNode = (state, action) => {
   const node = state.conditions[conditionIdx][`result${resultIdx}`];
 
   const attributes = {
-    [`result${resultIdx}`]: null
+    [`result${resultIdx}`]: null,
   };
 
   const stateWithoutNode = setTimebasedConditionAttributes(
     state,
     action,
-    attributes
+    attributes,
   );
 
   if (moved) return stateWithoutNode;
@@ -159,8 +157,8 @@ const setTimebasedNodeTimestamp = (state, action) => {
   const attributes = {
     [`result${resultIdx}`]: {
       ...state.conditions[conditionIdx][`result${resultIdx}`],
-      timestamp
-    }
+      timestamp,
+    },
   };
 
   return setTimebasedConditionAttributes(state, action, attributes);
@@ -173,7 +171,7 @@ const setTimebasedConditionOperator = (state, action) => {
   // But IF IN FACT we do, check if the indexResult is somewhere else than on the left result
   // Then we're also good.
   const nextState = setTimebasedConditionAttributes(state, action, {
-    operator
+    operator,
   });
 
   if (
@@ -197,7 +195,7 @@ const setTimebasedConditionOperator = (state, action) => {
     : // Nice, take the first result
       {
         ...nextState,
-        indexResult: possibleResults[0].id
+        indexResult: possibleResults[0].id,
       };
 };
 
@@ -217,7 +215,7 @@ const setTimebasedConditionMinDaysOrNoEvent = (state, action) => {
   const { days } = action.payload;
 
   return setTimebasedConditionAttributes(state, action, {
-    minDaysOrNoEvent: days
+    minDaysOrNoEvent: days,
   });
 };
 
@@ -226,14 +224,14 @@ const setTimebasedIndexResult = (state, action) => {
 
   return {
     ...state,
-    indexResult
+    indexResult,
   };
 };
 
 const addTimebasedCondition = (state, action) => {
   return {
     ...state,
-    conditions: [...state.conditions, getEmptyNode()]
+    conditions: [...state.conditions, getEmptyNode()],
   };
 };
 
@@ -244,8 +242,8 @@ const removeTimebasedCondition = (state, action) => {
     ...state,
     conditions: [
       ...state.conditions.slice(0, conditionIdx),
-      ...state.conditions.slice(conditionIdx + 1)
-    ]
+      ...state.conditions.slice(conditionIdx + 1),
+    ],
   };
 
   // if no node was indexed
@@ -267,7 +265,7 @@ const removeTimebasedCondition = (state, action) => {
 const renamePreviousQueries = (state, action) => {
   return {
     ...state,
-    conditions: state.conditions.map(c => {
+    conditions: state.conditions.map((c) => {
       const result0 =
         c.result0 && c.result0.id === action.payload.queryId
           ? { ...c.result0, label: action.payload.label }
@@ -281,15 +279,15 @@ const renamePreviousQueries = (state, action) => {
       return {
         ...c,
         result0,
-        result1
+        result1,
       };
-    })
+    }),
   };
 };
 
 const initialState = {
   indexResult: null,
-  conditions: [getEmptyNode()]
+  conditions: [getEmptyNode()],
 };
 
 // This state contains multiple and-conditions.
@@ -339,7 +337,7 @@ const initialState = {
 // }
 const timebasedQuery = (
   state: TimebasedQueryStateT = initialState,
-  action: Object
+  action: Object,
 ): TimebasedQueryStateT => {
   switch (action.type) {
     case DROP_TIMEBASED_NODE:

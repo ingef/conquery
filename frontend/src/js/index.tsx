@@ -1,16 +1,14 @@
-import "./browserShimsAndPolyfills";
-
+import { ThemeProvider, Theme } from "@emotion/react";
+import { StateT } from "app-types";
 import React from "react";
 import ReactDOM from "react-dom";
-import { ThemeProvider, Theme } from "@emotion/react";
-
-import { makeStore } from "./store";
-import AppRoot from "./AppRoot";
-
-import { initializeEnvironment, Environment } from "./environment";
 import { Store } from "redux";
-import { StateT } from "app-types";
+
+import AppRoot from "./AppRoot";
+import "./browserShimsAndPolyfills";
+import { initializeEnvironment, Environment } from "./environment";
 import { TabT } from "./pane/types";
+import { makeStore } from "./store";
 
 // TODO: OG image required?
 // require('../../images/og.png');
@@ -28,7 +26,7 @@ const renderRoot = (tabs: TabT[], theme: Theme) => {
     <ThemeProvider theme={theme}>
       <AppRoot store={store} rightTabs={tabs} />
     </ThemeProvider>,
-    document.getElementById("root")
+    document.getElementById("root"),
   );
 };
 

@@ -1,15 +1,16 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import { StateT } from "app-types";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import WithTooltip from "../tooltip/WithTooltip";
 import IconButton from "../button/IconButton";
-import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
-import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
-import { ConceptTreesOpenStateT } from "./reducer";
-import { StateT } from "app-types";
 import { clearSearchQuery } from "../concept-trees/actions";
-import { useTranslation } from "react-i18next";
+import { useRootConceptIds } from "../concept-trees/useRootConceptIds";
+import WithTooltip from "../tooltip/WithTooltip";
+
+import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
+import { ConceptTreesOpenStateT } from "./reducer";
 
 const SxWithTooltip = styled(WithTooltip)`
   margin-right: 5px;
@@ -35,7 +36,7 @@ const ConceptTreesOpenButtons: FC<PropsT> = ({ className }) => {
   const { t } = useTranslation();
 
   const conceptTreesOpen = useSelector<StateT, ConceptTreesOpenStateT>(
-    (state) => state.conceptTreesOpen
+    (state) => state.conceptTreesOpen,
   );
   const rootConceptIds = useRootConceptIds();
 
@@ -47,11 +48,11 @@ const ConceptTreesOpenButtons: FC<PropsT> = ({ className }) => {
   };
 
   const areAllClosed = rootConceptIds.every(
-    (id) => conceptTreesOpen[id] === false
+    (id) => conceptTreesOpen[id] === false,
   );
 
   const hasSearch = useSelector<StateT, boolean>(
-    (state) => !!state.conceptTrees.search.result
+    (state) => !!state.conceptTrees.search.result,
   );
 
   const isCloseAllDisabled = areAllClosed || hasSearch;

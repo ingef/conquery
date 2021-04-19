@@ -5,11 +5,10 @@ import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../../common/constants/dndTypes";
-
 import type { ChildArgs } from "../../form-components/Dropzone";
 import { PreviousQueryT } from "../../previous-queries/list/reducer";
-
 import DropzoneList from "../form-components/DropzoneList";
+
 import FormQueryResult from "./FormQueryResult";
 
 interface PropsT extends WrappedFieldProps {

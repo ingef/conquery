@@ -1,13 +1,12 @@
-import React, { FC, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
-
-import type { TabT } from "../pane/types";
+import React, { FC, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
 
 import Pane from "../pane/Pane";
-import { useTranslation } from "react-i18next";
 import { clickPaneTab } from "../pane/actions";
+import type { TabT } from "../pane/types";
 
 interface PropsT {
   tabs: TabT[];
@@ -26,7 +25,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const activeTab = useSelector<StateT, string | null>(
-    (state) => state.panes.right.activeTab
+    (state) => state.panes.right.activeTab,
   );
 
   useEffect(() => {

@@ -1,15 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-import { DatasetIdT } from "../../api/types";
 
 import {
   useGetStoredQueries,
   usePatchStoredQuery,
   useGetStoredQuery,
 } from "../../api/api";
-
+import { DatasetIdT } from "../../api/types";
 import { defaultSuccess, defaultError } from "../../common/actions";
-
 import { setMessage } from "../../snack-message/actions";
 
 import {
@@ -83,8 +81,8 @@ export const useLoadPreviousQuery = () => {
         dispatch(
           loadPreviousQueryError(queryId, {
             message: t("previousQuery.loadError"),
-          })
-        )
+          }),
+        ),
     );
   };
 };
@@ -119,8 +117,8 @@ export const useRenamePreviousQuery = () => {
         dispatch(
           renamePreviousQueryError(queryId, {
             message: t("previousQuery.renameError"),
-          })
-        )
+          }),
+        ),
     );
   };
 };
@@ -155,15 +153,15 @@ export const useRetagPreviousQuery = () => {
         dispatch(
           retagPreviousQueryError(queryId, {
             message: t("previousQuery.retagError"),
-          })
-        )
+          }),
+        ),
     );
   };
 };
 
 export const sharePreviousQuerySuccess = (
   queryId: string,
-  groups: PreviousQueryIdT[]
+  groups: PreviousQueryIdT[],
 ) =>
   defaultSuccess(TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS, null, {
     queryId,

@@ -1,5 +1,5 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 
 import BasicButton from "./BasicButton";
 
@@ -20,4 +20,4 @@ const TransparentButton = styled(BasicButton)`
   }
 `;
 
-export default props => <TransparentButton {...props} />;
+export default (props) => <TransparentButton {...props} />;

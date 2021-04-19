@@ -1,32 +1,26 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
+import { useTranslation } from "react-i18next";
 import { Field as RxFormField } from "redux-form";
 
-import { nodeIsInvalid } from "../../model/node";
-
+import type { SelectOptionT } from "../../api/types";
+import InputCheckbox from "../../form-components/InputCheckbox";
+import InputDateRange from "../../form-components/InputDateRange";
 import InputSelect from "../../form-components/InputSelect";
 import InputText from "../../form-components/InputText";
-import InputDateRange from "../../form-components/InputDateRange";
-import InputCheckbox from "../../form-components/InputCheckbox";
 import ToggleButton from "../../form-components/ToggleButton";
-
-import type { SelectOptionT } from "../../api/types";
-
+import { nodeIsInvalid } from "../../model/node";
+import FormField from "../common/FormField";
+import type { GeneralField } from "../config-types";
+import { Description } from "../form-components/Description";
+import { Headline } from "../form-components/Headline";
+import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 import {
   FormQueryDropzone,
   FormMultiQueryDropzone,
 } from "../form-query-dropzone";
-import FormConceptGroup from "../form-concept-group/FormConceptGroup";
-
-import type { GeneralField } from "../config-types";
-
-import FormField from "../common/FormField";
-import { isFormField } from "../helper";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
-
-import { Headline } from "../form-components/Headline";
-import { Description } from "../form-components/Description";
-import { useTranslation } from "react-i18next";
+import { isFormField } from "../helper";
 
 const TabsField = styled("div")``;
 
@@ -171,7 +165,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
       );
     case "TABS":
       const tabToShow = field.tabs.find(
-        (tab) => tab.name === getFieldValue(field.name)
+        (tab) => tab.name === getFieldValue(field.name),
       );
 
       return (
@@ -222,7 +216,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               !nodeIsInvalid(
                 item,
                 field.blocklistedConceptIds,
-                field.allowlistedConceptIds
+                field.allowlistedConceptIds,
               ),
             // What follows is VERY custom
             // Concept Group supports rendering a prefix field

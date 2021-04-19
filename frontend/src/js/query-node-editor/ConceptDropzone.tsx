@@ -1,5 +1,5 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";

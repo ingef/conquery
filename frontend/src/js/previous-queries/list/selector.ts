@@ -3,7 +3,7 @@ import { PreviousQueryT } from "./reducer";
 const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
   return (
     !!query.tags &&
-    query.tags.some(tag => {
+    query.tags.some((tag) => {
       return tag.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1;
     })
   );
@@ -36,14 +36,14 @@ const queryHasFilterType = (query: PreviousQueryT, filter: string) => {
 export const selectPreviousQueries = (
   queries: PreviousQueryT[],
   search: string[],
-  filter: string
+  filter: string,
 ) => {
   if (search.length === 0 && filter === "all") return queries;
 
-  return queries.filter(query => {
+  return queries.filter((query) => {
     return (
       queryHasFilterType(query, filter) &&
-      search.every(searchTerm => {
+      search.every((searchTerm) => {
         return (
           queryHasId(query, searchTerm) ||
           queryHasLabel(query, searchTerm) ||

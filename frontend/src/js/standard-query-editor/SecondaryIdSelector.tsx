@@ -1,17 +1,17 @@
+import styled from "@emotion/styled";
+import { StateT } from "app-types";
 import React, { FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { StateT } from "app-types";
-import styled from "@emotion/styled";
 import { useDispatch, useSelector } from "react-redux";
 
+import { SecondaryId } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import ToggleButton from "../form-components/ToggleButton";
-
-import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
-import { setSelectedSecondaryId } from "./actions";
-import { SecondaryId } from "../api/types";
 import FaIcon from "../icon/FaIcon";
+
+import { setSelectedSecondaryId } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
+import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
 
 const Headline = styled.h3<{ active?: boolean }>`
   font-size: ${({ theme }) => theme.font.sm};
@@ -31,14 +31,14 @@ const SxFaIcon = styled(FaIcon)<{ active?: boolean }>`
 const SecondaryIdSelector: FC = () => {
   const { t } = useTranslation();
   const query = useSelector<StateT, StandardQueryStateT>(
-    (state) => state.queryEditor.query
+    (state) => state.queryEditor.query,
   );
 
   const selectedSecondaryId = useSelector<StateT, SelectedSecondaryIdStateT>(
-    (state) => state.queryEditor.selectedSecondaryId
+    (state) => state.queryEditor.selectedSecondaryId,
   );
   const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
-    (state) => state.conceptTrees.secondaryIds
+    (state) => state.conceptTrees.secondaryIds,
   );
 
   const dispatch = useDispatch();
@@ -58,9 +58,9 @@ const SecondaryIdSelector: FC = () => {
               .flatMap((table) => table.supportedSecondaryIds)
               .filter(exists);
           }
-        })
-      )
-    )
+        }),
+      ),
+    ),
   )
     .map((id) => loadedSecondaryIds.find((secId) => secId.id === id))
     .filter(exists);

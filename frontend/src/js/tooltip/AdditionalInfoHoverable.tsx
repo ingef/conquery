@@ -1,10 +1,10 @@
 import { connect } from "react-redux";
 
 import type { DateRangeT, InfoT } from "../api/types";
-
 import { isEmpty } from "../common/helpers";
-import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
+
 import HoverableBase from "./HoverableBase";
+import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
 
 export type AdditionalInfoHoverableNodeType = {
   label: string;
@@ -34,7 +34,7 @@ const AdditionalInfoHoverable = (Component: any) => {
 
   const mapDispatchToProps = (
     dispatch: Dispatch,
-    ownProps: { node: AdditionalInfoHoverableNodeType }
+    ownProps: { node: AdditionalInfoHoverableNodeType },
   ) => ({
     onDisplayAdditionalInfos: () => {
       const node = ownProps.node;

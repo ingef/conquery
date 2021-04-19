@@ -1,5 +1,5 @@
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
+import styled from "@emotion/styled";
 
 export const Cell = styled("code")<{ isDates?: boolean; isHeader?: boolean }>`
   padding: 1px 5px;

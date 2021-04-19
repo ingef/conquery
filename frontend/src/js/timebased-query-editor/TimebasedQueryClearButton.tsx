@@ -1,8 +1,10 @@
-import React from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { connect } from "react-redux";
+
 import IconButton from "../button/IconButton";
+
 import { clearTimebasedQuery } from "./actions";
 import { anyConditionFilled } from "./helpers";
 
@@ -45,5 +47,5 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(TimebasedQueryClearButton);

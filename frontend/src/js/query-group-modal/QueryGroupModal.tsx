@@ -1,10 +1,10 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { connect } from "react-redux";
 
-import InputDateRange from "../form-components/InputDateRange";
 import IconButton from "../button/IconButton";
+import InputDateRange from "../form-components/InputDateRange";
 import Modal from "../modal/Modal";
 
 import {
@@ -69,7 +69,7 @@ const QueryGroupModal = (props: PropsType) => {
             <HeadlinePart key={-1}>
               {t("queryGroupModal.headlineStart")}
             </HeadlinePart>,
-          ]
+          ],
         )}
       </Elements>
       <InputDateRange
@@ -123,5 +123,5 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-  mergeProps
+  mergeProps,
 )(QueryGroupModal);

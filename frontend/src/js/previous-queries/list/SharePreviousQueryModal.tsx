@@ -1,21 +1,21 @@
+import styled from "@emotion/styled";
+import { StateT } from "app-types";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import styled from "@emotion/styled";
 import { useDispatch, useSelector } from "react-redux";
-import { StateT } from "app-types";
 
-import Modal from "../../modal/Modal";
 import { usePatchStoredQuery } from "../../api/api";
 import type { DatasetIdT, UserGroupT } from "../../api/types";
-import { setMessage } from "../../snack-message/actions";
-import TransparentButton from "../../button/TransparentButton";
 import PrimaryButton from "../../button/PrimaryButton";
-import InputMultiSelect from "../../form-components/InputMultiSelect";
-import { usePrevious } from "../../common/helpers/usePrevious";
+import TransparentButton from "../../button/TransparentButton";
 import { exists } from "../../common/helpers/exists";
+import { usePrevious } from "../../common/helpers/usePrevious";
+import InputMultiSelect from "../../form-components/InputMultiSelect";
+import Modal from "../../modal/Modal";
+import { setMessage } from "../../snack-message/actions";
 
-import { PreviousQueryT } from "./reducer";
 import { useLoadPreviousQuery, sharePreviousQuerySuccess } from "./actions";
+import { PreviousQueryT } from "./reducer";
 
 const Buttons = styled("div")`
   text-align: center;
@@ -51,7 +51,7 @@ interface PropsT {
 
 const getUserGroupsValue = (
   userGroups: UserGroupT[],
-  previousQuery?: PreviousQueryT
+  previousQuery?: PreviousQueryT,
 ) => {
   return previousQuery && previousQuery.groups
     ? userGroups
@@ -70,21 +70,21 @@ const SharePreviousQueryModal = ({
 }: PropsT) => {
   const { t } = useTranslation();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId,
   );
   const userGroups = useSelector<StateT, UserGroupT[]>((state) =>
-    state.user.me ? state.user.me.groups : []
+    state.user.me ? state.user.me.groups : [],
   );
   const previousQuery = useSelector<StateT, PreviousQueryT | undefined>(
     (state) =>
       state.previousQueries.queries.find(
-        (query) => query.id === previousQueryId
-      )
+        (query) => query.id === previousQueryId,
+      ),
   );
   const initialUserGroupsValue = getUserGroupsValue(userGroups, previousQuery);
 
   const [userGroupsValue, setUserGroupsValue] = useState<SelectValueT[]>(
-    initialUserGroupsValue
+    initialUserGroupsValue,
   );
 
   const previousPreviousQueryId = usePrevious(previousQueryId);

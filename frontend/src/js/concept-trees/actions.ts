@@ -1,13 +1,12 @@
-import { Sema } from "../common/helpers/rateLimitHelper";
+import { useDispatch } from "react-redux";
 
+import { useGetConcepts, useGetConcept } from "../api/api";
 import type { DatasetIdT, ConceptIdT } from "../api/types";
-import type { TreesT } from "./reducer";
-
 import { defaultSuccess, defaultError } from "../common/actions";
 import { isEmpty } from "../common/helpers";
-
-import { resetAllTrees, globalSearch } from "./globalTreeStoreHelper";
+import { Sema } from "../common/helpers/rateLimitHelper";
 import { getDatasetId } from "../dataset/globalDatasetHelper";
+
 import {
   LOAD_TREES_START,
   LOAD_TREES_SUCCESS,
@@ -22,8 +21,8 @@ import {
   CLEAR_SEARCH_QUERY,
   TOGGLE_SHOW_MISMATCHES,
 } from "./actionTypes";
-import { useDispatch } from "react-redux";
-import { useGetConcepts, useGetConcept } from "../api/api";
+import { resetAllTrees, globalSearch } from "./globalTreeStoreHelper";
+import type { TreesT } from "./reducer";
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
 
@@ -117,7 +116,7 @@ export const searchTreesError = (query: string, err: any) =>
 export const searchTrees = (
   datasetId: DatasetIdT,
   trees: TreesT,
-  query: string
+  query: string,
 ) => {
   return async (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query));

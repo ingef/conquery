@@ -1,15 +1,14 @@
 import React from "react";
 
-import { sortSelects } from "../model/select";
-
-import InputMultiSelect from "../form-components/InputMultiSelect";
-import { SelectedSelectorT } from "../standard-query-editor/types";
 import type { FilterSuggestion, SelectOptionT } from "../api/types";
+import InputMultiSelect from "../form-components/InputMultiSelect";
+import { sortSelects } from "../model/select";
+import { SelectedSelectorT } from "../standard-query-editor/types";
 
 interface PropsT {
   selects: SelectedSelectorT[];
   onSelectTableSelects: (
-    value: SelectOptionT[] | FilterSuggestion[] | null
+    value: SelectOptionT[] | FilterSuggestion[] | null,
   ) => void;
   excludeTable?: boolean;
 }

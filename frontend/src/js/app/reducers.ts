@@ -1,56 +1,50 @@
 import { combineReducers } from "redux";
 
-import conceptTrees, { ConceptTreesStateT } from "../concept-trees/reducer";
 import conceptTreesOpen, {
   ConceptTreesOpenStateT,
 } from "../concept-trees-open/reducer";
-
+import conceptTrees, { ConceptTreesStateT } from "../concept-trees/reducer";
 import datasets, { DatasetStateT } from "../dataset/reducer";
-import tooltip, { TooltipStateT } from "../tooltip/reducer";
-
-import user, { UserStateT } from "../user/reducer";
-
-import type { TabT } from "../pane/types";
-
-import startup, { StartupStateT } from "../startup/reducer";
-import panes, { PanesStateT } from "../pane/reducer";
-import queryGroupModal from "../query-group-modal/reducer";
-import previousQueries, {
-  PreviousQueriesStateT,
-} from "../previous-queries/list/reducer";
-import previousQueriesSearch, {
-  PreviousQueriesSearchStateT,
-} from "../previous-queries/search/reducer";
-import previousQueriesFilter, {
-  PreviousQueriesFilterStateT,
-} from "../previous-queries/filter/reducer";
-import uploadQueryResults, {
-  UploadQueryResultsStateT,
-} from "../previous-queries/upload/reducer";
-import snackMessage, { SnackMessageStateT } from "../snack-message/reducer";
-import preview, { PreviewStateT } from "../preview/reducer";
-import queryUploadConceptListModal, {
-  QueryUploadConceptListModalStateT,
-} from "../query-upload-concept-list-modal/reducer";
-import uploadConceptListModal, {
-  UploadConceptListModalStateT,
-} from "../upload-concept-list-modal/reducer";
-
-import {
-  createQueryNodeEditorReducer,
-  QueryNodeEditorStateT,
-} from "../query-node-editor/reducer";
-
-import type { StandardQueryEditorStateT } from "../standard-query-editor";
+import formConfigsFilter, {
+  FormConfigsFilterStateT,
+} from "../external-forms/form-configs/filter/reducer";
 import formConfigs, {
   FormConfigsStateT,
 } from "../external-forms/form-configs/reducer";
 import formConfigsSearch, {
   FormConfigsSearchStateT,
 } from "../external-forms/form-configs/search/reducer";
-import formConfigsFilter, {
-  FormConfigsFilterStateT,
-} from "../external-forms/form-configs/filter/reducer";
+import panes, { PanesStateT } from "../pane/reducer";
+import type { TabT } from "../pane/types";
+import preview, { PreviewStateT } from "../preview/reducer";
+import previousQueriesFilter, {
+  PreviousQueriesFilterStateT,
+} from "../previous-queries/filter/reducer";
+import previousQueries, {
+  PreviousQueriesStateT,
+} from "../previous-queries/list/reducer";
+import previousQueriesSearch, {
+  PreviousQueriesSearchStateT,
+} from "../previous-queries/search/reducer";
+import uploadQueryResults, {
+  UploadQueryResultsStateT,
+} from "../previous-queries/upload/reducer";
+import queryGroupModal from "../query-group-modal/reducer";
+import {
+  createQueryNodeEditorReducer,
+  QueryNodeEditorStateT,
+} from "../query-node-editor/reducer";
+import queryUploadConceptListModal, {
+  QueryUploadConceptListModalStateT,
+} from "../query-upload-concept-list-modal/reducer";
+import snackMessage, { SnackMessageStateT } from "../snack-message/reducer";
+import type { StandardQueryEditorStateT } from "../standard-query-editor";
+import startup, { StartupStateT } from "../startup/reducer";
+import tooltip, { TooltipStateT } from "../tooltip/reducer";
+import uploadConceptListModal, {
+  UploadConceptListModalStateT,
+} from "../upload-concept-list-modal/reducer";
+import user, { UserStateT } from "../user/reducer";
 
 // TODO: Introduce more StateTypes gradually
 export type StateT = {

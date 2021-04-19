@@ -1,11 +1,11 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
+import { useTranslation } from "react-i18next";
 
 import FaIcon from "../icon/FaIcon";
 
-import type { TreesT } from "./reducer";
 import { getConceptById } from "./globalTreeStoreHelper";
-import { useTranslation } from "react-i18next";
+import type { TreesT } from "./reducer";
 
 const Root = styled("div")`
   margin: 10px;

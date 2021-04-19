@@ -1,10 +1,11 @@
-import React from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { connect } from "react-redux";
 
 import IconButton from "../button/IconButton";
 
+import TimebasedCondition from "./TimebasedCondition";
 import {
   addTimebasedCondition,
   removeTimebasedCondition,
@@ -17,8 +18,6 @@ import {
   setTimebasedConditionMaxDays,
   setTimebasedConditionMinDaysOrNoEvent,
 } from "./actions";
-
-import TimebasedCondition from "./TimebasedCondition";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -125,5 +124,5 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(TimebasedQueryEditor);
