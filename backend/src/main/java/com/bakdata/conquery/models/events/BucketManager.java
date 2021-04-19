@@ -179,7 +179,7 @@ public class BucketManager {
 
 					final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
 
-					if (!hasCBlock(cBlockId)) {
+					if (hasCBlock(cBlockId)) {
 						continue;
 					}
 

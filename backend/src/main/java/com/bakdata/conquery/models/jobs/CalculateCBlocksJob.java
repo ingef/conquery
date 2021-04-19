@@ -43,6 +43,10 @@ public class CalculateCBlocksJob extends Job {
 
 	@Override
 	public void execute() throws Exception {
+		if(infos.isEmpty()){
+			return;
+		}
+
 		getProgressReporter().setMax(infos.size());
 
 		// todo compute in parallel.
