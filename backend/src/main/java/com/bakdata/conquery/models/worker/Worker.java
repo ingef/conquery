@@ -183,12 +183,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public void updateConcept(Concept<?> concept) {
-		final Concept<?> prior = storage.getConcept(concept.getId());
-		if(prior != null) {
-			bucketManager.removeConcept(prior);
-		}
-
-		bucketManager.addConcept(concept);
+		bucketManager.updateConcept(concept);
 	}
 
 	public void updateDataset(Dataset dataset) {

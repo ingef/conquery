@@ -320,4 +320,13 @@ public class BucketManager {
 		return connectorToCblocks.getOrDefault(connector, Int2ObjectMaps.emptyMap())
 								 .containsKey(bucketId);
 	}
+
+	public void updateConcept(Concept<?> incoming) {
+		final Concept<?> prior = storage.getConcept(incoming.getId());
+		if(prior != null) {
+			removeConcept(prior);
+		}
+
+		addConcept(incoming);
+	}
 }
