@@ -3,8 +3,6 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.FORM_CONFIG;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -29,8 +27,6 @@ import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepres
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor.PostResponse;
-import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfigProvider;
-import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import io.dropwizard.auth.Auth;
@@ -45,10 +41,7 @@ public class FormConfigResource {
 	private DatasetId dataset;
 	@Inject
 	private FormConfigProcessor processor;
-	
-	@PathParam(DATASET)
-	private DatasetId datasetId;
-	
+
 	@POST
 	public Response postConfig(@Auth User user, @Valid FormConfigAPI config) {
 		return Response.ok(new PostResponse(processor.addConfig(user, dataset, config))).status(Status.CREATED).build();
@@ -62,13 +55,13 @@ public class FormConfigResource {
 	@GET
 	@Path("{" + FORM_CONFIG + "}")
 	public FormConfigFullRepresentation getConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId) {
-		return processor.getConfig(datasetId, user, formId);
+		return processor.getConfig(dataset, user, formId);
 	}
 	
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
 	public FormConfigFullRepresentation patchConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId, FormConfigPatch patch ) {
-		return processor.patchConfig(user, datasetId, formId, patch);
+		return processor.patchConfig(user, dataset, formId, patch);
 	}
 	
 	@DELETE

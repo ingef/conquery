@@ -12,14 +12,17 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Provides a view on the storage that does not allow modification of the storage (update, delete).
  */
 @RequiredArgsConstructor
+@ToString(of = "delegate")
 public class ModificationShieldedWorkerStorage {
 
 	private final WorkerStorage delegate;
@@ -71,4 +74,7 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getTable(tableId);
 	}
 
+	public Concept<?> getConcept(ConceptId conceptId) {
+		return delegate.getConcept(conceptId);
+	}
 }

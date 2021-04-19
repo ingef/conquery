@@ -19,9 +19,9 @@ import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.api.description.FEValidityDate;
 import com.bakdata.conquery.models.api.description.FEValue;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
@@ -37,7 +37,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.shiro.authz.Permission;
 
 /**
  * This class constructs the concept tree as it is presented to the front end.
@@ -58,19 +57,13 @@ public class FrontEndConceptBuilder {
 		if(allConcepts.isEmpty()) {
 			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
 		}
-		
-		List<Permission> permissions = new ArrayList<>(allConcepts.size());
-		for (Concept<?> concept : allConcepts) {
-			// Collect all permission first, instead of submitting one by one to Shiro.
-			permissions.add(ConceptPermission.onInstance(Ability.READ, concept.getId()));
-		}
-		
+
 		// Submit all permissions to Shiro
-		boolean[] isPermitted = user.isPermitted(permissions);
+		boolean[] isPermitted = user.isPermitted(allConcepts, Ability.READ);
 		
 		for (int i = 0; i<allConcepts.size(); i++) {
 			if(isPermitted[i]) {
-				roots.put(allConcepts.get(i).getId(), createCTRoot(allConcepts.get(i), storage.getStructure()));				
+				roots.put(allConcepts.get(i).getId(), createCTRoot(allConcepts.get(i), storage.getStructure()));
 			}
 		}
 		if(roots.isEmpty()) {

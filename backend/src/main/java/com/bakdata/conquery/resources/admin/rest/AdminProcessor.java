@@ -25,7 +25,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
-import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -33,7 +32,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -75,7 +73,9 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryI
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
@@ -87,6 +87,7 @@ import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
+import com.bakdata.conquery.util.ResourceUtil;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
@@ -97,7 +98,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.shiro.authz.Permission;
 
 /**
  * This class holds the logic for several admin http endpoints.
@@ -119,11 +119,9 @@ public class AdminProcessor {
 	@Nullable
 	private final String storagePrefix;
 
-	public synchronized void addTable(Table table, Namespace namespace) throws JSONException {
+	public synchronized void addTable(@NonNull Table table, Namespace namespace) throws JSONException {
 		Dataset dataset = namespace.getDataset();
 
-		Objects.requireNonNull(dataset);
-		Objects.requireNonNull(table);
 		if (table.getDataset() == null) {
 			table.setDataset(dataset);
 		}
@@ -181,25 +179,30 @@ public class AdminProcessor {
 	}
 
 	public void addImport(Namespace namespace, File selectedFile) throws IOException {
-		Dataset ds = namespace.getDataset();
 
-		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
-			PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(in, PreprocessedHeader.class);
+		final Dataset ds = namespace.getDataset();
+		final PreprocessedHeader header;
 
-			TableId tableName = new TableId(ds.getId(), header.getTable());
-			Table table = namespace.getStorage().getTable(tableName);
-
-			final ImportId importId = new ImportId(table.getId(), header.getName());
-
-			if (datasetRegistry.get(ds.getId()).getStorage().getImport(importId) != null) {
-				throw new IllegalArgumentException(String.format("Import[%s] is already present.", importId));
-			}
-
-			log.info("Importing {}", selectedFile.getAbsolutePath());
-
-			datasetRegistry.get(ds.getId()).getJobManager()
-						   .addSlowJob(new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize));
+		// try and read only the header.
+		try (PreprocessedReader parser = Preprocessed.createReader(selectedFile, Collections.emptyMap())) {
+			header = parser.readHeader();
 		}
+
+		Table table = namespace.getStorage().getTable(new TableId(ds.getId(), header.getTable()));
+
+		final ImportId importId = new ImportId(table.getId(), header.getName());
+
+		if (namespace.getStorage().getImport(importId) != null) {
+			throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Status.CONFLICT);
+		}
+
+		header.assertMatch(table);
+
+		log.info("Importing {}", selectedFile.getAbsolutePath());
+
+		final ImportJob job = new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize);
+		datasetRegistry.get(ds.getId()).getJobManager().addSlowJob(job);
+
 	}
 
 	public void addWorker(ShardNodeInformation node, Dataset dataset) {
@@ -228,7 +231,7 @@ public class AdminProcessor {
 	}
 
 	public void addRoles(List<Role> roles) {
-		Objects.requireNonNull(roles, "Role list was empty.");
+
 		for (Role role : roles) {
 			try {
 				addRole(role);
@@ -247,7 +250,8 @@ public class AdminProcessor {
 	 * @throws JSONException is thrown on JSON validation form the storage.
 	 */
 	public void deleteRole(RoleId roleId) throws JSONException {
-		AuthorizationHelper.deleteRole(storage, roleId);
+		final Role role = storage.getRole(roleId);
+		AuthorizationHelper.deleteRole(storage, role);
 	}
 
 	public SortedSet<Role> getAllRoles() {
@@ -265,7 +269,10 @@ public class AdminProcessor {
 	}
 
 	public FERoleContent getRoleContent(RoleId roleId) {
-		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
+		Role role = storage.getRole(roleId);
+
+		ResourceUtil.throwNotFoundIfNull(roleId,role);
+
 		return FERoleContent
 					   .builder()
 					   .permissions(wrapInFEPermission(role.getPermissions()))
@@ -276,17 +283,11 @@ public class AdminProcessor {
 					   .build();
 	}
 
-	private SortedSet<FEPermission> wrapInFEPermission(Collection<Permission> permissions) {
+	private SortedSet<FEPermission> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
 		TreeSet<FEPermission> fePermissions = new TreeSet<>();
 
-		for (Permission permission : permissions) {
-			if (permission instanceof ConqueryPermission) {
-				fePermissions.add(FEPermission.from((ConqueryPermission) permission));
-
-			}
-			else {
-				log.warn("Could not create frontend representation for permission {}", permission);
-			}
+		for (ConqueryPermission permission : permissions) {
+			fePermissions.add(FEPermission.from(permission));
 		}
 		return fePermissions;
 	}
@@ -341,7 +342,10 @@ public class AdminProcessor {
 	}
 
 	public FEUserContent getUserContent(UserId userId) {
-		User user = Objects.requireNonNull(storage.getUser(userId));
+		User user = storage.getUser(userId);
+
+		ResourceUtil.throwNotFoundIfNull(userId,user);
+
 		return FEUserContent
 					   .builder()
 					   .owner(user)
@@ -368,7 +372,7 @@ public class AdminProcessor {
 	}
 
 	public void addUsers(List<User> users) {
-		Objects.requireNonNull(users, "User list was empty.");
+
 		for (User user : users) {
 			try {
 				addUser(user);
@@ -384,7 +388,10 @@ public class AdminProcessor {
 	}
 
 	public FEGroupContent getGroupContent(GroupId groupId) {
-		Group group = Objects.requireNonNull(storage.getGroup(groupId));
+		Group group = storage.getGroup(groupId);
+
+		ResourceUtil.throwNotFoundIfNull(groupId, group);
+
 		Set<UserId> membersIds = group.getMembers();
 		ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
 		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
@@ -408,7 +415,7 @@ public class AdminProcessor {
 	}
 
 	public void addGroups(List<Group> groups) {
-		Objects.requireNonNull(groups, "Group list was null.");
+
 		for (Group group : groups) {
 			try {
 				addGroup(group);
@@ -421,18 +428,29 @@ public class AdminProcessor {
 
 	public void addUserToGroup(GroupId groupId, UserId userId) {
 		synchronized (storage) {
-			Objects
-					.requireNonNull(groupId.getPermissionOwner(storage))
-					.addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+
+
+			final Group group = storage.getGroup(groupId);
+			final User user = storage.getUser(userId);
+
+			ResourceUtil.throwNotFoundIfNull(groupId, group);
+			ResourceUtil.throwNotFoundIfNull(userId, user);
+
+			group.addMember(storage, user);
+
+			log.trace("Added user {} to group {}", user, group);
 		}
-		log.trace("Added user {} to group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(storage));
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) {
 		synchronized (storage) {
-			Objects
-					.requireNonNull(groupId.getPermissionOwner(storage))
-					.removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+			final User user = storage.getUser(userId);
+			final Group group = storage.getGroup(groupId);
+
+			ResourceUtil.throwNotFoundIfNull(userId,user);
+			ResourceUtil.throwNotFoundIfNull(groupId,group);
+
+			group.removeMember(storage,user);
 		}
 		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(storage));
 	}
@@ -442,28 +460,39 @@ public class AdminProcessor {
 		log.trace("Removed group {}", groupId.getPermissionOwner(storage));
 	}
 
-	public void deleteRoleFrom(PermissionOwnerId<?> ownerId, RoleId roleId) {
-		PermissionOwner<?> owner = null;
-		Role role = null;
+	public <ID extends PermissionOwnerId<? extends RoleOwner>> void  deleteRoleFrom(ID ownerId, RoleId roleId) {
+		final RoleOwner owner;
+		final Role role;
 		synchronized (storage) {
-			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
-			role = Objects.requireNonNull(storage.getRole(roleId));
+			owner = ownerId.getPermissionOwner(storage);
+
+			ResourceUtil.throwNotFoundIfNull(ownerId,owner);
+
+			role = storage.getRole(roleId);
+
+			ResourceUtil.throwNotFoundIfNull(roleId,role);
+
+			AuthorizationHelper.deleteRoleFrom(storage, owner, role);
 		}
-		if (!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
-		}
-		((RoleOwner) owner).removeRole(storage, role);
-		log.trace("Deleted role {} from {}", role, owner);
+
 	}
 
-	public void addRoleTo(PermissionOwnerId<?> ownerId, RoleId roleId) {
-		AuthorizationHelper.addRoleTo(getStorage(), ownerId, roleId);
+	public <ID extends PermissionOwnerId<? extends RoleOwner>> void addRoleTo(ID ownerId, RoleId roleId) {
+		final Role role = roleId.getPermissionOwner(getStorage());
+
+		ResourceUtil.throwNotFoundIfNull(roleId,role);
+
+		final RoleOwner owner = ownerId.getPermissionOwner(getStorage());
+
+		ResourceUtil.throwNotFoundIfNull(ownerId, owner);
+
+		AuthorizationHelper.addRoleTo(getStorage(), role, owner);
 	}
 
 	public FEAuthOverview getAuthOverview() {
 		Collection<OverviewRow> overview = new TreeSet<>();
 		for (User user : storage.getAllUsers()) {
-			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user.getId(), storage);
+			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, storage);
 			List<Role> effectiveRoles = user.getRoles().stream().map(storage::getRole).collect(Collectors.toList());
 			userGroups.forEach(g -> {
 				effectiveRoles.addAll(g.getRoles().stream().map(storage::getRole).collect(Collectors.toList()));
@@ -486,7 +515,9 @@ public class AdminProcessor {
 	 * Renders the permission overview for all users in a certain {@link Group} in form of a CSV.
 	 */
 	public String getPermissionOverviewAsCSV(GroupId groupId) {
-		Group group = Objects.requireNonNull(storage.getGroup(groupId), "The group was not found");
+		final Group group = storage.getGroup(groupId);
+		ResourceUtil.throwNotFoundIfNull(groupId,group);
+
 		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser).collect(Collectors.toList()));
 	}
 
@@ -526,7 +557,7 @@ public class AdminProcessor {
 		writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
 
 		// Print the permission per domain in the remaining columns
-		Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope, storage);
+		Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user, scope, storage);
 		for (String domain : scope) {
 			writer.addValue(permissions.get(domain).stream()
 									   .map(Object::toString)
@@ -550,9 +581,10 @@ public class AdminProcessor {
 
 	public synchronized List<ConceptId> deleteTable(TableId tableId, boolean force) {
 		final Namespace namespace = datasetRegistry.get(tableId.getDataset());
+		final Table table = namespace.getStorage().getTable(tableId);
 
 		final List<ConceptId> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-														   .filter(con -> con.getTable().getId().equals(tableId))
+														   .filter(con -> con.getTable().equals(table))
 														   .map(Connector::getConcept)
 														   .map(Concept::getId)
 														   .collect(Collectors.toList());
@@ -568,7 +600,7 @@ public class AdminProcessor {
 
 
 		namespace.getStorage().getAllImports().stream()
-				 .filter(imp -> imp.getTable().equals(tableId))
+				.filter(imp -> imp.getTable().equals(table))
 				 .map(Import::getId)
 				 .forEach(this::deleteImport);
 

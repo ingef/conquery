@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.concepts;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,12 +13,14 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
@@ -41,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Valid
 @Slf4j
-public abstract class Connector extends Labeled<ConnectorId> implements Serializable, SelectHolder<Select> {
+public abstract class Connector extends Labeled<ConnectorId> implements SelectHolder<Select>, NamespacedIdentifiable<ConnectorId> {
 
 	public static final int[] NOT_CONTAINED = new int[]{-1};
 	private static final long serialVersionUID = 1L;
@@ -143,6 +144,12 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 	public static boolean isNotContained(int[] mostSpecificChildren) {
 		return Arrays.equals(mostSpecificChildren, NOT_CONTAINED);
+	}
+
+	@JsonIgnore
+	@Override
+	public Dataset getDataset() {
+		return getConcept().getDataset();
 	}
 
 	/**

@@ -5,6 +5,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 import java.util.Collection;
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -37,7 +38,7 @@ public class UserResource extends HUsers {
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response postUsers(List<User> users) {
+	public Response postUsers(@NotEmpty List<User> users) {
 		processor.addUsers(users);
 		return Response.ok().build();
 	}

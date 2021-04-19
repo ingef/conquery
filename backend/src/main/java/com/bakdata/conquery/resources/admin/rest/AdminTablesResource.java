@@ -14,7 +14,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -28,6 +27,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import com.bakdata.conquery.util.ResourceUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -51,9 +51,7 @@ public class AdminTablesResource extends HAdmin {
 		super.init();
 		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		this.table = namespace.getStorage().getTable(tableId);
-		if (this.table == null) {
-			throw new WebApplicationException("Could not find table " + tableId, Status.NOT_FOUND);
-		}
+		ResourceUtil.throwNotFoundIfNull(tableId, table);
 	}
 
 	/**
@@ -83,7 +81,7 @@ public class AdminTablesResource extends HAdmin {
 		return namespace.getStorage()
 						.getAllImports()
 						.stream()
-						.filter(imp -> imp.getTable().equals(table.getId()))
+						.filter(imp -> imp.getTable().equals(table))
 						.map(Import::getId)
 						.collect(Collectors.toList());
 	}

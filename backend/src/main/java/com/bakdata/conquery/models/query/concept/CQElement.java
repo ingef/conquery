@@ -8,8 +8,9 @@ import java.util.function.Consumer;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -18,7 +19,11 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
+
+import javax.validation.constraints.NotNull;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
@@ -28,10 +33,25 @@ public abstract class CQElement implements Visitable {
 	 * Allows the user to define labels.
 	 */
 	@Setter
+	@Getter
 	private String label = null;
 
-	public String getLabel(Locale locale){
-		return label;
+	public String getUserOrDefaultLabel(Locale locale){
+		// Prefer the user label
+		if (label != null){
+			return label;
+		}
+		return defaultLabel(locale);
+	}
+
+	@NotNull
+	public String defaultLabel(Locale locale) {
+		// Fallback to CPSType#id() implementation is provided or class name
+		CPSType type = this.getClass().getAnnotation(CPSType.class);
+		if(type != null) {
+			return type.id();
+		}
+		return this.getClass().getSimpleName();
 	}
 
 	/**
@@ -46,11 +66,11 @@ public abstract class CQElement implements Visitable {
 
 	public abstract QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {}
+	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {}
 	
 	
-	public Set<ManagedExecutionId> collectRequiredQueries() {
-		HashSet<ManagedExecutionId> set = new HashSet<>();
+	public Set<ManagedExecution> collectRequiredQueries() {
+		HashSet<ManagedExecution> set = new HashSet<>();
 		this.collectRequiredQueries(set);
 		return set;
 	}

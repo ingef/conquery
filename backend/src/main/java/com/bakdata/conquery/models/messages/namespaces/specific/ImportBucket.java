@@ -35,7 +35,7 @@ public class ImportBucket extends WorkerMessage.Slow {
 
 	@Override
 	public void react(Worker context) throws Exception {
-		final ObjectMapper objectMapper = context.inject(Jackson.BINARY_MAPPER);
+		final ObjectMapper objectMapper = context.getStorage().getDataset().injectInto(context.inject(Jackson.BINARY_MAPPER));
 
 		final Bucket bucket = objectMapper.readValue(rawBucket, Bucket.class);
 

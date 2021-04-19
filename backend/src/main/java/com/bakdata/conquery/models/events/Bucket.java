@@ -12,11 +12,11 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.Int2IntArrayMapDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.Int2IntMapSerializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -55,6 +56,8 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	@Min(0)
 	private final int numberOfEvents;
 	private final ColumnStore[] stores;
+
+	//TODO migrate these back to arrays again, like CBlock#getEntityIndex (and unify those)
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
@@ -67,9 +70,16 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	@JsonSerialize(using = Int2IntMapSerializer.class)
 	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
 	private final Int2IntMap length;
-	private final int bucketSize;
+
+
+
 	@NsIdRef
 	private final Import imp;
+
+	@JsonIgnore
+	public Table getTable() {
+		return imp.getTable();
+	}
 
 	@Override
 	public BucketId createId() {
@@ -171,18 +181,10 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 			if (!store.has(event)) {
 				continue;
 			}
-			// todo rework this to use table directly
-			out.put(imp.getColumns()[i].getName(), store.createScriptValue(event));
+			out.put(getTable().getColumns()[i].getName(), store.createScriptValue(event));
 		}
 
 		return out;
 	}
 
-	public void loadDictionaries(NamespacedStorage storage) {
-		for (ColumnStore store : getStores()) {
-			if (store instanceof StringStore) {
-				((StringStore) store).loadDictionaries(storage);
-			}
-		}
-	}
 }

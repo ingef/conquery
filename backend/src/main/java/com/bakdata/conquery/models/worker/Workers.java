@@ -56,7 +56,7 @@ public class Workers extends IdResolveContext {
 	}
 
 	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
-		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, failOnError);
+		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, failOnError, entityBucketSize);
 
 		addWorker(worker);
 
@@ -92,7 +92,7 @@ public class Workers extends IdResolveContext {
 
 	@Override
 	public CentralRegistry getMetaRegistry() {
-		throw new UnsupportedOperationException("Workers should never be asked about the meta registry");
+		return null; // Workers simply have no MetaRegistry.
 	}
 
 	public void removeWorkersFor(DatasetId dataset) {

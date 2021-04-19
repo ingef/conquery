@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.auth;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -16,12 +15,8 @@ import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Strings;
@@ -152,11 +147,13 @@ public final class AuthorizationController implements Managed{
 	 * Creates a copy of an existing user. The copied user has the same effective permissions as the original user
 	 * at the time of copying, but these are flatted. This means that the original user might hold certain permissions
 	 * through inheritance from roles or groups, the copy will hold the permissions directly.
-	 * @param originUserId The id of the user to make a flat copy from
+	 * @param originUser The user to make a flat copy of
 	 * @param namePrefix The prefix for the id of the new copied user
 	 * @return A flat copy of the referenced user
 	 */
-	public static User flatCopyUser(@NonNull UserId originUserId, String namePrefix, @NonNull MetaStorage storage) {
+	public static User flatCopyUser(@NonNull User originUser, String namePrefix, @NonNull MetaStorage storage) {
+		final UserId originUserId = originUser.getId();
+
 		if(Strings.isNullOrEmpty(namePrefix)) {
 			throw new IllegalArgumentException("There must be a prefix");
 		}
@@ -165,34 +162,33 @@ public final class AuthorizationController implements Managed{
 		String name = null;
 		do {
 			name = namePrefix + UUID.randomUUID() + originUserId.getEmail();
-		} while (name == null || storage.getUser(new UserId(name)) != null);
+		} while (storage.getUser(new UserId(name)) != null);
 
 		// Retrieve original user and its effective permissions
-		User origin = Objects.requireNonNull(storage.getUser(originUserId), "User to copy cannot be found");
 
 		// Copy inherited permissions
-		Set<ConqueryPermission> copiedPermission = new HashSet(AuthorizationHelper.getEffectiveUserPermissions(originUserId, storage));
+		Set<ConqueryPermission> copiedPermission = new HashSet<>();
+
+		copiedPermission.addAll(AuthorizationHelper.getEffectiveUserPermissions(originUser, storage));
 
 		// Give read permission to all executions the original user owned
 		copiedPermission.addAll(
-			storage.getAllExecutions().stream()
-					.filter(e -> origin.isOwner(e))
-					.map(ManagedExecution::getId)
-					.map(id -> QueryPermission.onInstance(Ability.READ,id))
-					.collect(Collectors.toSet())
+				storage.getAllExecutions().stream()
+					   .filter(originUser::isOwner)
+					   .map(exc -> exc.createPermission(Ability.READ.asSet()))
+					   .collect(Collectors.toSet())
 		);
 
 		// Give read permission to all form configs the original user owned
 		copiedPermission.addAll(
 				storage.getAllFormConfigs().stream()
-						.filter(e -> origin.isOwner(e))
-						.map(FormConfig::getId)
-						.map(id -> FormConfigPermission.onInstance(Ability.READ,id))
+						.filter(originUser::isOwner)
+						.map(conf -> conf.createPermission(Ability.READ.asSet()))
 						.collect(Collectors.toSet())
 		);
 
 		// Create copied user
-		User copy = new User(name, origin.getLabel());
+		User copy = new User(name, originUser.getLabel());
 		storage.addUser(copy);
 		copy.setPermissions(storage, copiedPermission);
 
@@ -200,10 +196,10 @@ public final class AuthorizationController implements Managed{
 	}
 
 	/**
-	 * @see AuthorizationController#flatCopyUser(UserId, String, MetaStorage)
+	 * @see AuthorizationController#flatCopyUser(User, String, MetaStorage)
 	 */
-	public User flatCopyUser(@NonNull UserId originUserId, String namePrefix) {
-		return flatCopyUser(originUserId, namePrefix, storage);
+	public User flatCopyUser(@NonNull User originUser, String namePrefix) {
+		return flatCopyUser(originUser, namePrefix, storage);
 	}
 
 }

@@ -25,7 +25,6 @@ public class CQTable {
 	@NotNull
 	private List<FilterValue<?>> filters = Collections.emptyList();
 
-	@Valid
 	@NotNull
 	@NsIdRefCollection
 	private List<Select> selects = Collections.emptyList();

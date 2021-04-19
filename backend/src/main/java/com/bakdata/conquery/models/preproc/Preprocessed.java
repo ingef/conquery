@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,8 +12,8 @@ import java.util.IntSummaryStatistics;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
-import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -19,12 +21,17 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
+import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.bakdata.conquery.models.preproc.parser.specific.string.MapTypeGuesser;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -34,15 +41,12 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntLists;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
 @Data
 @Slf4j
 public class Preprocessed {
 
 
-	private static final ObjectReader CONTAINER_READER = Jackson.BINARY_MAPPER.readerFor(PreprocessedData.class);
-	private static final ObjectWriter CONTAINER_WRITER = Jackson.BINARY_MAPPER.writerFor(PreprocessedData.class);
 	private final PreprocessingJob job;
 	private final String name;
 	/**
@@ -85,16 +89,26 @@ public class Preprocessed {
 	}
 
 	/**
-	 * Read the data section of a CQPP file.
+	 * Creates a Jackson Parser to read CQPP documents. They consist of a {@link PreprocessedHeader} {@link PreprocessedDictionaries} {@link PreprocessedData} in order. But their order depends on each other.
+	 *
+	 * This is heavily tied to {@link Preprocessed#write(File)} and {@link ImportJob#execute()}
+	 * @return
 	 */
-	public static PreprocessedData readContainer(InputStream in) throws IOException {
-		return CONTAINER_READER.readValue(new GZIPInputStream(in));
+	public static PreprocessedReader createReader(File importFile, Map<IId<?>, Identifiable<?>> replacements) throws IOException {
+		final InputStream in = new GZIPInputStream(new FileInputStream(importFile));
+
+		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
+		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
+
+		final JsonParser parser = namespaceCollection.injectInto(Jackson.BINARY_MAPPER.copy())
+													 .enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+													 .getFactory()
+													 .createParser(in);
+		return new PreprocessedReader(parser);
 	}
 
-	public void write(HCFile outFile) throws IOException {
-		if (!outFile.isWrite()) {
-			throw new IllegalArgumentException("outfile was opened in read-only mode.");
-		}
+
+	public void write(File file) throws IOException {
 
 		Int2IntMap entityStart = new Int2IntAVLTreeMap();
 		Int2IntMap entityLength = new Int2IntAVLTreeMap();
@@ -113,12 +127,45 @@ public class Preprocessed {
 
 		log.debug("Writing Headers");
 
-		writeHeader(outFile.writeHeader());
+		int hash = descriptor.calculateValidityHash(job.getCsvDirectory(), job.getTag());
 
-		log.debug("Writing data");
+		PreprocessedHeader header = new PreprocessedHeader(
+				descriptor.getName(),
+				descriptor.getTable(),
+				rows,
+				columns,
+				hash
+		);
 
-		writeData(outFile.writeContent(), entityStart, entityLength, columnStores, primaryDictionary, dicts);
+		final PreprocessedDictionaries dictionaries = new PreprocessedDictionaries(primaryDictionary, dicts);
+
+		final PreprocessedData data = new PreprocessedData(entityStart, entityLength, columnStores);
+
+
+		writePreprocessed(file, header, dictionaries, data);
 	}
+
+	private static void writePreprocessed(File file, PreprocessedHeader header, PreprocessedDictionaries dictionaries, PreprocessedData data) throws IOException {
+		OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
+		try (JsonGenerator generator = Jackson.BINARY_MAPPER.copy()
+															.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+															.getFactory()
+															.createGenerator(out)) {
+
+			log.debug("Writing header");
+
+			generator.writeObject(header);
+
+			log.debug("Writing Dictionaries");
+
+			generator.writeObject(dictionaries);
+
+			log.debug("Writing data");
+
+			generator.writeObject(data);
+		}
+	}
+
 
 	/**
 	 * Calculate beginning and length of entities in output data.
@@ -215,34 +262,6 @@ public class Preprocessed {
 		}
 
 		return collect;
-	}
-
-	private void writeHeader(OutputStream out) throws IOException {
-		int hash = descriptor.calculateValidityHash(job.getCsvDirectory(), job.getTag());
-
-		PreprocessedHeader header = new PreprocessedHeader(
-				descriptor.getName(),
-				descriptor.getTable(),
-				rows,
-				columns,
-				hash
-		);
-
-		try {
-			Jackson.BINARY_MAPPER.writeValue(out, header);
-			out.flush();
-		}
-		catch (Exception e) {
-			throw new RuntimeException("Failed to serialize header " + header, e);
-		}
-	}
-
-	public static void writeData(OutputStream out1, Int2IntMap entityStart, Int2IntMap entityLength, Map<String, ColumnStore> columnStores, Dictionary primaryDictionary, Map<String, Dictionary> dicts)
-			throws IOException {
-		try (OutputStream out = new BufferedOutputStream(new GzipCompressorOutputStream(out1))) {
-			final PreprocessedData value = new PreprocessedData(entityStart, entityLength, columnStores, primaryDictionary, dicts);
-			CONTAINER_WRITER.writeValue(out, value);
-		}
 	}
 
 	public synchronized int addPrimary(int primary) {

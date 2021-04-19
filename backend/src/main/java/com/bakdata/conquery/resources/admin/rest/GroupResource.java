@@ -1,14 +1,11 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.GROUP_ID;
-import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
-import static com.bakdata.conquery.resources.ResourceConstants.ROLE_PATH_ELEMENT;
-import static com.bakdata.conquery.resources.ResourceConstants.USER_ID;
-import static com.bakdata.conquery.resources.ResourceConstants.USER_PATH_ELEMENT;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.Collection;
 import java.util.List;
 
+import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -43,7 +40,7 @@ public class GroupResource extends HGroups {
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response postGroups(List<Group> groups) throws JSONException {
+	public Response postGroups(@NotEmpty List<Group> groups) throws JSONException {
 		processor.addGroups(groups);
 		return Response.ok().build();
 	}

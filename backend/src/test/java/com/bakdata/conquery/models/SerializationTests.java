@@ -40,6 +40,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -214,18 +215,60 @@ public class SerializationTests {
 			.forType(FormConfig.class)
 			.test(formConfig);
 	}
-	
+
 	@Test
 	public void managedQuery() throws JSONException, IOException {
-		
-		ManagedQuery execution = new ManagedQuery(null, new UserId("test-user"), new DatasetId("test-dataset"));
+
+		final CentralRegistry registry = new CentralRegistry();
+
+		final Dataset dataset = new Dataset("test-dataset");
+
+		registry.register(dataset);
+
+		ManagedQuery execution = new ManagedQuery(null, new UserId("test-user"), dataset);
 		execution.setTags(new String[] {"test-tag"});
-		
-		SerializationTestUtil
-			.forType(ManagedExecution.class)
-			.test(execution);
+
+		SerializationTestUtil.forType(ManagedExecution.class)
+							 .registry(registry)
+							 .test(execution);
 	}
-	
+
+	@Test
+	public void cqConcept() throws JSONException, IOException {
+
+		final Dataset dataset = new Dataset();
+		dataset.setName("dataset");
+
+		final TreeConcept concept = new TreeConcept();
+		concept.setName("concept");
+		concept.setDataset(dataset);
+
+		final ConceptTreeConnector connector = new ConceptTreeConnector();
+		connector.setConcept(concept);
+		concept.setConnectors(List.of(connector));
+
+		final CQConcept cqConcept = new CQConcept();
+		cqConcept.setElements(List.of(concept));
+		cqConcept.setLabel("Label");
+
+		final CQTable cqTable = new CQTable();
+		cqTable.setConnector(connector);
+		cqTable.setFilters(List.of());
+		cqTable.setConcept(cqConcept);
+
+		cqConcept.setTables(List.of(cqTable));
+
+		final CentralRegistry registry = new CentralRegistry();
+		registry.register(dataset);
+		registry.register(concept);
+		registry.register(connector);
+
+		SerializationTestUtil
+				.forType(CQConcept.class)
+				.registry(registry)
+				.test(cqConcept);
+	}
+
 	@Test
 	public void executionCreationPlanError() throws JSONException, IOException {
 		ConqueryError error = new ConqueryError.ExecutionCreationPlanError();

@@ -6,7 +6,11 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -25,16 +29,21 @@ import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.*;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AbilitySets;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.auth.permissions.FormPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -49,7 +58,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.dropwizard.jersey.validation.Validators;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.Mockito;
 
@@ -68,8 +81,8 @@ public class FormConfigTest {
 	private AuthorizationController controller;
 	private Validator validator = Validators.newValidatorFactory().getValidator();
 	
-	private Dataset dataset = new Dataset();
-	private Dataset dataset1 = new Dataset();
+	private Dataset dataset = new Dataset("test");
+	private Dataset dataset1 = new Dataset("test1");
 	private DatasetId datasetId;
 	private DatasetId datasetId1;
 	private ExportForm form;
@@ -77,8 +90,6 @@ public class FormConfigTest {
 	@BeforeAll
 	public void setupTestClass() throws Exception{
 
-		dataset.setName("test");
-		dataset1.setName("test1");
 		datasetId = dataset.getId();
 		datasetId1 = dataset1.getId();
 
@@ -118,10 +129,13 @@ public class FormConfigTest {
 	@BeforeEach
 	public void setupTest(){
 
+		final ManagedQuery managedQuery = new ManagedQuery(null, null, dataset);
+		managedQuery.setQueryId(UUID.randomUUID());
+
 		form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
 		form.setTimeMode(mode);
-		form.setQueryGroup(new ManagedExecutionId(datasetId, UUID.randomUUID()));
+		form.setQueryGroup(managedQuery);
 		mode.setForm(form);
 		mode.setFeatures(List.of(new CQConcept()));
 	}
@@ -180,7 +194,7 @@ public class FormConfigTest {
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		formConfig.setOwner(user.getId());
-		user.addPermission(storage, FormConfigPermission.onInstance(Ability.READ, formConfig.getId()));
+		user.addPermission(storage, formConfig.createPermission(Ability.READ.asSet()));
 		storage.addFormConfig(formConfig);
 		
 		// EXECUTE
@@ -204,7 +218,7 @@ public class FormConfigTest {
 
 	}
 
-	private static class TestForm implements Form {
+	private static class TestForm extends Form {
 
 		@Override
 		public String getFormType() {
@@ -212,7 +226,7 @@ public class FormConfigTest {
 		}
 
 		@Override
-		public Set<ManagedExecutionId> collectRequiredQueries() {
+		public Set<ManagedExecution> collectRequiredQueries() {
 			return Collections.emptySet();
 		}
 
@@ -222,7 +236,7 @@ public class FormConfigTest {
 		}
 
 		@Override
-		public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+		public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, Dataset submittedDataset) {
 			return Collections.emptyMap();
 		}
 
@@ -274,8 +288,7 @@ public class FormConfigTest {
 		FormConfigId formId2 = processor.addConfig(user, datasetId, formConfig2);
 		FormConfigId _formId3 = processor.addConfig(user, datasetId, formConfig3);
 
-		FormScanner.FRONTEND_FORM_CONFIGS = Map.of(
-				form.getFormType(), new TextNode("dummy"));
+		FormScanner.FRONTEND_FORM_CONFIGS = Map.of(form.getFormType(), new FormType(form.getFormType(), new TextNode("dummy")));
 
 		// EXECUTE
 		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, datasetId, Collections.emptySet());

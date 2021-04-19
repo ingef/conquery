@@ -307,13 +307,12 @@ public interface ResultType {
 
         @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-
-            // This is a workaround right now because currently the ArrowWriter does not write the underlying DataVector
-            // of the List vector or the ArrowReader does not read it correctly. So we print the list as a flat String.
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-
-            // This is the intended way of handling list values -> putting them in a ListVector
-            //return new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field ("elem", elementType.getArrowFieldType(info, settings).getFieldType(),null)));
+            final FieldType nestedType = elementType.getArrowFieldType(info, settings).getFieldType();
+            return new Field(
+                    info.getUniqueName(settings),
+                    FieldType.nullable(ArrowType.List.INSTANCE),
+                    List.of(new Field ("elem", nestedType,null))
+            );
         }
 
         @Override

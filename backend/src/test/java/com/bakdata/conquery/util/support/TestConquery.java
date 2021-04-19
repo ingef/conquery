@@ -169,9 +169,6 @@ public class TestConquery {
 
 	@SneakyThrows
 	public synchronized void shutdown(StandaloneSupport support) {
-		log.info("Tearing down dataset");
-
-
 		DatasetId dataset = support.getDataset().getId();
 
 		standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();
@@ -208,7 +205,6 @@ public class TestConquery {
 
 	public void afterEach() throws Exception {
 		for (StandaloneSupport openSupport : openSupports) {
-			log.info("Tearing down dataset");
 			openSupport.close();
 			removeSupportDataset(openSupport);
 		}

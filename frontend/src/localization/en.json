@@ -383,8 +383,8 @@
     "closeAll": "Close all concepts"
   },
   "help": {
-    "tabConceptTrees": "Select concepts from concepts trees and use them in the Editor, Timebased Editor and Form Editor",
-    "tabPreviousQueries": "Select previous queries and use them in the Editor and Form Editor",
+    "tabConceptTrees": "Select concepts from concepts trees and use them in the Editor and Form Editor",
+    "tabPreviousQueries": "Select previous queries and use them in the Editor, Timebased Editor and Form Editor",
     "tabFormConfigs": "Select the stored forms and use them in the Form Editor",
     "tabQueryEditor": "In the Editor, a query may be built and sent.",
     "tabTimebasedEditor": "In the Timebased Editor, a time-based query may be built and sent. That means, previous queries may be combined using time based relations, such as 'before' and 'after'.",

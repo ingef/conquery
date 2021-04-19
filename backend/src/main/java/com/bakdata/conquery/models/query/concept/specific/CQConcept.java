@@ -27,12 +27,12 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
+import com.bakdata.conquery.models.query.concept.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -63,13 +63,12 @@ import org.jetbrains.annotations.Nullable;
 @CPSType(id = "CONCEPT", base = CQElement.class)
 @Slf4j
 @ToString
-public class CQConcept extends CQElement implements NamespacedIdHolding, ExportForm.DefaultSelectSettable {
+public class CQConcept extends CQElement implements NamespacedIdentifiableHolding, ExportForm.DefaultSelectSettable {
 
 	/**
 	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
 	 */
 	@JsonProperty("ids")
-	@Valid
 	@NotEmpty
 	@NsIdRefCollection
 	private List<ConceptElement<?>> elements = Collections.emptyList();
@@ -79,7 +78,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	@JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
 
-	@Valid
 	@NotNull
 	@NsIdRefCollection
 	private List<Select> selects = new ArrayList<>();
@@ -92,34 +90,28 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	private boolean aggregateEventDates;
 
 	@Override
-	public String getLabel(Locale cfg) {
-		final String label = super.getLabel(cfg);
-		if (!Strings.isNullOrEmpty(label)) {
-			return label;
-		}
-
-		return getDefaultLabel();
-	}
-
-	@Nullable
-	@JsonIgnore
-	public String getDefaultLabel() {
+	public String defaultLabel(Locale locale) {
 		if (elements.isEmpty()) {
 			return null;
+		}
+
+		if(elements.size() == 1 && elements.get(0).equals(getConcept())) {
+			return getConcept().getLabel();
 		}
 
 		final StringBuilder builder = new StringBuilder();
 
 		builder.append(getConcept().getLabel());
-
 		builder.append(" - ");
 
 		for (ConceptElement<?> id : elements) {
+			if (id.equals(getConcept())) {
+				continue;
+			}
 			builder.append(id.getLabel()).append("+");
 		}
 
 		builder.deleteCharAt(builder.length() - 1);
-
 
 		return builder.toString();
 	}
@@ -283,11 +275,11 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	}
 
 	@Override
-	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> namespacedIds) {
 		checkNotNull(namespacedIds);
-		elements.forEach(ce -> namespacedIds.add(ce.getId()));
-		selects.forEach(select -> namespacedIds.add(select.getId()));
-		tables.forEach(table -> namespacedIds.add(table.getConnector().getId()));
+		namespacedIds.addAll(elements);
+		namespacedIds.addAll(selects);
+		tables.forEach(table -> namespacedIds.add(table.getConnector()));
 	}
 
 	@Override
