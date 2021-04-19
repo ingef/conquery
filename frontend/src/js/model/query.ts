@@ -46,9 +46,3 @@ function groupHasValidDates(group) {
 export function validateQueryDates(query: StandardQueryStateT) {
   return !query || query.length === 0 || query.some(groupHasValidDates);
 }
-
-export function isConceptQueryNode(
-  node: StandardQueryNodeT
-): node is ConceptQueryNodeType {
-  return !node.isPreviousQuery;
-}
