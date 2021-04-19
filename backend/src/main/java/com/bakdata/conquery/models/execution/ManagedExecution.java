@@ -138,7 +138,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				return;
 			}
 			if(label == null) {
-				label = makeAutoLabel(datasetRegistry, new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry));
+				label = makeAutoLabel(datasetRegistry, new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config));
 			}
 			doInitExecutable(datasetRegistry, config);
 			initialized = true;

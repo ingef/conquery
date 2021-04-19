@@ -75,7 +75,7 @@ public class ResultProcessor {
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
 		
 		// Get the locale extracted by the LocaleFilter
-		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry);
+		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry, config);
 		Charset charset = determineCharset(userAgent, queryCharset);
 
 		try {
@@ -160,7 +160,7 @@ public class ResultProcessor {
 		}
 
 		// Get the locale extracted by the LocaleFilter
-		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry);
+		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry, config);
 		
 		IdMappingConfig idMappingConf = config.getIdMapping();
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);

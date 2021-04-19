@@ -106,7 +106,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.involvedWorkers = namespace.getWorkers().size();
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, null));
 		if (label == null) {
-			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces));
+			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces, config));
 		}
 	}
 
@@ -185,7 +185,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 												   .build());
 		}
 		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry);
+		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config);
 
 		collectResultInfos().getInfos()
 							.forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));

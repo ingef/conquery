@@ -26,9 +26,10 @@ public class ResultTypeTest {
 		I18n.init();
 	}
 
-	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH, null);
-	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMAN, null);
-	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null);
+	public static final ConqueryConfig CONFIG = new ConqueryConfig();
+	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH, null, CONFIG);
+	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMAN, null, CONFIG);
+	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG);
 	
 	public static Stream<Arguments> testData() {
 		//init global default config

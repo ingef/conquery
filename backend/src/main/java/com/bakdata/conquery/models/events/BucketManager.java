@@ -123,7 +123,7 @@ public class BucketManager {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
 					ConnectorId conName = con.getId();
 
-					for (Import imp : t.findImports(storage)) {
+					t.findImports(storage).forEach( imp -> {
 						for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 							BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 							Bucket bucket = storage.getBucket(bucketId);
@@ -141,7 +141,7 @@ public class BucketManager {
 							log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
 							job.addCBlock(bucket, cBlockId);
 						}
-					}
+					});
 
 					if (!job.isEmpty()) {
 						jobManager.addSlowJob(job);
@@ -189,7 +189,7 @@ public class BucketManager {
 			try (Locked lock = cBlockLocks.acquire(con.getId())) {
 				Table t = con.getTable();
 				CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
-				for (Import imp : t.findImports(storage)) {
+				t.findImports(storage).forEach( imp -> {
 					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
@@ -207,7 +207,7 @@ public class BucketManager {
 
 						job.addCBlock(bucket, cBlockId);
 					}
-				}
+				});
 				if (!job.isEmpty()) {
 					jobManager.addSlowJob(job);
 				}
@@ -264,7 +264,7 @@ public class BucketManager {
 		}
 
 		for (Connector con : c.getConnectors()) {
-			for (Import imp : con.getTable().findImports(storage)) {
+			con.getTable().findImports(storage).forEach(imp -> {
 				for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 					BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
@@ -276,7 +276,7 @@ public class BucketManager {
 
 					removeCBlock(new CBlockId(bucketId, con.getId()));
 				}
-			}
+			});
 		}
 
 		storage.removeConcept(conceptId);

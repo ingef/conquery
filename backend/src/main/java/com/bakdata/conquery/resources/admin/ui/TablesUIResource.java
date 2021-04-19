@@ -5,6 +5,8 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
@@ -68,7 +70,7 @@ public class TablesUIResource extends HAdmin {
 
 	@GET
 	public View getTableView() {
-		List<Import> imports = table.findImports(namespace.getStorage());
+		List<Import> imports = table.findImports(namespace.getStorage()).collect(Collectors.toList());
 
 		final long entries = imports.stream().mapToLong(Import::getNumberOfEntries).sum();
 
