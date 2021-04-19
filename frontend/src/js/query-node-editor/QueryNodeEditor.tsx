@@ -25,6 +25,7 @@ import ContentColumn from "./ContentColumn";
 import EditableText from "../form-components/EditableText";
 import ResetAllFiltersButton from "./ResetAllFiltersButton";
 import TransparentButton from "../button/TransparentButton";
+import { nodeIsConceptQueryNode } from "../model/node";
 
 const Root = styled("div")`
   padding: 0 20px 10px;
@@ -168,7 +169,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
         <Hotkeys keyName="escape" onKeyDown={close} />
         <Header>
           <NodeName>
-            {!node.isPreviousQuery && (
+            {nodeIsConceptQueryNode(node) && (
               <EditableText
                 large
                 loading={false}
@@ -192,7 +193,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             />
             <WithTooltip text={t("common.closeEsc")}>
               <CloseButton small onClick={close}>
-                {t("common.done")}
+                {t("common.close")}
               </CloseButton>
             </WithTooltip>
           </Row>

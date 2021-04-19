@@ -26,7 +26,7 @@ import {
 } from "./actions";
 import { StandardQueryNodeT } from "./types";
 import type { StandardQueryStateT } from "./queryReducer";
-import { isConceptQueryNode } from "../model/query";
+import { nodeIsConceptQueryNode } from "../model/node";
 
 const findNodeBeingEdited = (query: StandardQueryStateT) =>
   query
@@ -45,7 +45,7 @@ const StandardQueryNodeEditor = () => {
   );
   const showTables =
     !!node &&
-    isConceptQueryNode(node) &&
+    nodeIsConceptQueryNode(node) &&
     !!node.tables &&
     node.tables.length > 1 &&
     node.tables.some((table) => tableIsEditable(table));

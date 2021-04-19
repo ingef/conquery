@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { nodeHasActiveFilters } from "../model/node";
 
 import IconButton from "../button/IconButton";
-import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+import type { StandardQueryNodeT } from "../standard-query-editor/types";
 
 const Container = styled("div")`
   text-transform: uppercase;
@@ -12,7 +12,7 @@ const Container = styled("div")`
 `;
 
 interface Props {
-  node: ConceptQueryNodeType;
+  node: StandardQueryNodeT;
   onResetAllFilters: () => void;
 }
 

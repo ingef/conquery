@@ -1,15 +1,24 @@
-import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+import type {
+  ConceptQueryNodeType,
+  StandardQueryNodeT,
+} from "../standard-query-editor/types";
 
 import { tablesHaveActiveFilter } from "./table";
 import { objectHasSelectedSelects } from "./select";
 import { ConceptElementT, ConceptT } from "../api/types";
 
-export const nodeHasActiveFilters = (node: ConceptQueryNodeType) =>
+export const nodeIsConceptQueryNode = (
+  node: StandardQueryNodeT
+): node is ConceptQueryNodeType => !node.isPreviousQuery;
+
+export const nodeHasActiveFilters = (node: StandardQueryNodeT) =>
   node.excludeTimestamps ||
-  node.includeSubnodes ||
-  objectHasSelectedSelects(node) ||
-  nodeHasActiveTableFilters(node) ||
-  nodeHasExludedTable(node);
+  node.excludeFromSecondaryIdQuery ||
+  (nodeIsConceptQueryNode(node) &&
+    (node.includeSubnodes || // TODO REFACTOR / TYPE THIS ONE
+      objectHasSelectedSelects(node) ||
+      nodeHasActiveTableFilters(node) ||
+      nodeHasExludedTable(node)));
 
 export const nodeHasActiveTableFilters = (node: ConceptQueryNodeType) => {
   if (!node.tables) return false;

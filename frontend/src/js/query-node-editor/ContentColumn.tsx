@@ -7,13 +7,13 @@ import {
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import InputCheckbox from "../form-components/InputCheckbox";
-import { isConceptQueryNode } from "../model/query";
 import InputMultiSelect from "../form-components/InputMultiSelect";
 import { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
 import { sortSelects } from "../model/select";
 import type { ModeT } from "../form-components/InputRange";
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import { Heading3 } from "../headings/Headings";
+import { nodeIsConceptQueryNode } from "../model/node";
 
 import ContentCell from "./ContentCell";
 import TableView from "./TableView";
@@ -78,7 +78,7 @@ const ContentColumn: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
 
-  const tables = isConceptQueryNode(node) ? node.tables : [];
+  const tables = nodeIsConceptQueryNode(node) ? node.tables : [];
 
   const itemsRef = useRef<(HTMLDivElement | null)[]>(new Array(tables.length));
 
@@ -126,8 +126,8 @@ const ContentColumn: FC<PropsT> = ({
             </Row>
           )}
         </CommonSettingsContainer>
-        {node.selects && (
-          <ContentCell headline={t("queryNodeEditor.selects")}>
+        {nodeIsConceptQueryNode(node) && node.selects && (
+          <ContentCell headline={t("queryNodeEditor.commonSelects")}>
             <InputMultiSelect
               input={{
                 onChange: onSelectSelects,
