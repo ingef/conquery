@@ -68,7 +68,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 
 		final QPNode or = OrNode.of(Arrays.asList(nodes), dateAction);
 
-		if (createExists.orElse(false)) {
+		if (createExists()) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(or.collectRequiredTables());
 			existsAggregator.setReference(or);
 			plan.addAggregator(existsAggregator);
@@ -113,7 +113,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 			c.collectResultInfos(collector);
 		}
 
-		if (createExists.orElse(false)) {
+		if (createExists()) {
 			collector.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}
@@ -139,5 +139,9 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 		for (CQElement c : children) {
 			c.visit(visitor);
 		}
+	}
+
+	private boolean createExists(){
+		return createExists.orElse(false);
 	}
 }
