@@ -2,8 +2,6 @@ package com.bakdata.conquery.resources.hierarchies;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
-import java.util.NoSuchElementException;
-
 import javax.annotation.PostConstruct;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -30,16 +28,11 @@ public abstract class HConnectors extends HConcepts {
 	@Override
 	public void init() {
 		super.init();
-		try {
-			connector = concept.getConnectors()
-							   .stream()
-							   .filter(con -> con.getTable().getId().equals(tableId))
-							   .collect(MoreCollectors.toOptional())
-							   .orElseThrow(() -> new NoSuchElementException("No connector of " + conceptId + " maps to table " + tableId));
-			connectorId = connector.getId();
-		}
-		catch (NoSuchElementException e) {
-			throw new NotFoundException(String.format("Could not find Connector[%s] in Concept[%s]", connector, concept));
-		}
+		connector = concept.getConnectors()
+						   .stream()
+						   .filter(con -> con.getTable().getId().equals(tableId))
+						   .collect(MoreCollectors.toOptional())
+						   .orElseThrow(() -> new NotFoundException(String.format("Could not find Connector for Table[%s] in Concept[%s]", connector, concept)));
+		connectorId = connector.getId();
 	}
 }

@@ -59,7 +59,7 @@ public class FrontEndConceptBuilder {
 		}
 
 		// Submit all permissions to Shiro
-		boolean[] isPermitted = AuthorizationHelper.isPermitted(user, allConcepts, Ability.READ);
+		boolean[] isPermitted = user.isPermitted(allConcepts, Ability.READ);
 		
 		for (int i = 0; i<allConcepts.size(); i++) {
 			if(isPermitted[i]) {

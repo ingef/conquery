@@ -13,8 +13,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
@@ -39,20 +37,14 @@ public class StoredQueriesResource extends HDatasets {
 
 	@GET
 	public List<ExecutionStatus> getAllQueries(DatasetId datasetId) {
-		return processor.getAllQueries(namespace, servletRequest, user)
+		return processor.getAllQueries(getNamespace(), servletRequest, user)
 						.collect(Collectors.toList());
 	}
 
 	@GET
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecutionId queryId) {
-
-		// Permission to see the actual query is checked in the processor
-		FullExecutionStatus status = processor.getQueryFullStatus(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
-		if (status == null) {
-			throw new WebApplicationException("Unknown query " + queryId, Status.NOT_FOUND);
-		}
-		return status;
+		return processor.getQueryFullStatus(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
 	}
 
 	@PATCH
@@ -66,6 +58,6 @@ public class StoredQueriesResource extends HDatasets {
 	@DELETE
 	@Path("{" + QUERY + "}")
 	public void deleteQuery(@PathParam(QUERY) ManagedExecutionId queryId) {
-		processor.deleteQuery(user, queryId);
+		processor.deleteQuery(queryId, user);
 	}
 }

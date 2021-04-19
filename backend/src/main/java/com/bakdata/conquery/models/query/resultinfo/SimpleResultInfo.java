@@ -17,7 +17,12 @@ public class SimpleResultInfo extends ResultInfo {
 	private final ResultType type;
 
 	@Override
-	public String getName(PrintSettings settings) {
+	public String userColumnName(PrintSettings printSettings) {
+		return null;
+	}
+
+	@Override
+	public String defaultColumnName(PrintSettings printSettings) {
 		return name;
 	}
 }
