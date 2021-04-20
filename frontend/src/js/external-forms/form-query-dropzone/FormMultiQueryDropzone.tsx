@@ -1,4 +1,3 @@
-import { DragItemQuery } from "js/standard-query-editor/types";
 import React, { FC, ReactNode } from "react";
 import type { WrappedFieldProps } from "redux-form";
 
@@ -8,6 +7,7 @@ import {
 } from "../../common/constants/dndTypes";
 import type { ChildArgs } from "../../form-components/Dropzone";
 import { PreviousQueryT } from "../../previous-queries/list/reducer";
+import type { DragItemQuery } from "../../standard-query-editor/types";
 import DropzoneList from "../form-components/DropzoneList";
 
 import FormQueryResult from "./FormQueryResult";
