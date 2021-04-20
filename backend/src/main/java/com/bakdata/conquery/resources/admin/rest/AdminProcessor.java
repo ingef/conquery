@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
@@ -190,7 +191,12 @@ public class AdminProcessor {
 			header = parser.readHeader();
 		}
 
-		Table table = namespace.getStorage().getTable(new TableId(ds.getId(), header.getTable()));
+		final TableId tableId = new TableId(ds.getId(), header.getTable());
+		Table table = namespace.getStorage().getTable(tableId);
+
+		if(table == null){
+			throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
+		}
 
 		final ImportId importId = new ImportId(table.getId(), header.getName());
 
