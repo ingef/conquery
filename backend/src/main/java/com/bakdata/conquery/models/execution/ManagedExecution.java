@@ -66,6 +66,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.univocity.parsers.csv.CsvWriterSettings;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -374,7 +375,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
 	 */
 	@JsonIgnore
-	public abstract StreamingOutput getResult(Function<EntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator);
+	public abstract StreamingOutput getResult(Function<EntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator, CsvWriterSettings csvWriterSettings, List<String> header);
 	
 	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.

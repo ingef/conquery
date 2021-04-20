@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -17,8 +18,8 @@ public class NoIdMapping extends IdMappingConfig {
 	}
 
 	@Override
-	public String[] getPrintIdFields(){
-		return HEADER;
+	public List<String> getPrintIdFields(){
+		return Arrays.asList(HEADER);
 	}
 
 	@Override

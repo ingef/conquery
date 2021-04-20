@@ -528,7 +528,7 @@ public class AdminProcessor {
 	 */
 	public String getPermissionOverviewAsCSV(Collection<User> users) {
 		StringWriter sWriter = new StringWriter();
-		CsvWriter writer = CsvIo.createWriter(sWriter);
+		CsvWriter writer = CsvIo.createWriter(config.getCsv().createCsvWriterSettings());
 		List<String> scope = config
 									 .getAuthorization()
 									 .getOverviewScope();
@@ -645,7 +645,7 @@ public class AdminProcessor {
 		final Namespace ns = getDatasetRegistry().get(datasetId);
 
 		ns.sendToAll(new UpdateMatchingStatsMessage());
-		FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager());
+		FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createCsvParserSettings());
 	}
 
 	public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {

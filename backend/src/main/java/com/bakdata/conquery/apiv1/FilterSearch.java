@@ -18,6 +18,7 @@ import com.github.powerlibraries.io.In;
 import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -86,21 +87,22 @@ public class FilterSearch {
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
-	public static void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager) {
+	public static void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager, CsvParserSettings csvParserSettings) {
 		datasetsToUpdate.stream()
 				.flatMap(ds -> datasets.get(ds.getId()).getStorage().getAllConcepts().stream())
 				.flatMap(c -> c.getConnectors().stream())
 				.flatMap(co -> co.collectAllFilters().stream())
 				.filter(f -> f instanceof AbstractSelectFilter && ((AbstractSelectFilter<?>) f).getTemplate() != null)
 				.map(AbstractSelectFilter.class::cast)
-				.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(f))));
+				.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(f, csvParserSettings))));
 	}
 
 	/***
 	 * Create interactive Search for the selected filter based on its Template.
 	 * @param filter
+	 * @param csvParserSettings
 	 */
-	public static void createSourceSearch(AbstractSelectFilter<?> filter) {
+	public static void createSourceSearch(AbstractSelectFilter<?> filter, CsvParserSettings csvParserSettings) {
 		FilterTemplate template = filter.getTemplate();
 
 		List<String> templateColumns = new ArrayList<>(template.getColumns());
@@ -128,7 +130,7 @@ public class FilterSearch {
 							   .build();
 
 		try {
-			CsvParser parser = CsvIo.createParser();
+			CsvParser parser = CsvIo.createParser(csvParserSettings);
 			IterableResult<String[], ParsingContext> it = parser.iterate(In.file(file).withUTF8().asReader());
 			String[] header = it.getContext().parsedHeaders();
 

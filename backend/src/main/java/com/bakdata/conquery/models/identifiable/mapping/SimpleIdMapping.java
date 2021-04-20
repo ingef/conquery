@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.identifiable.mapping;
 import com.bakdata.conquery.io.cps.CPSType;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.util.List;
+
 @CPSType(base = IdMappingConfig.class, id = "SIMPLE")
 public class SimpleIdMapping extends IdMappingConfig {
 
@@ -24,8 +26,8 @@ public class SimpleIdMapping extends IdMappingConfig {
 	}
 
 	@Override
-	public String[] getPrintIdFields() {
-		return new String[]{"result"};
+	public List<String> getPrintIdFields() {
+		return List.of("result");
 	}
 
 	@Override

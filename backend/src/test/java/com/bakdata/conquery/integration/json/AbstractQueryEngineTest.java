@@ -89,8 +89,9 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 											  PRINT_SETTINGS,
 											  managed,
 											  cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, standaloneSupport.getConfig()
-																																 .getIdMapping(), mappingState)
-									  )
+																																 .getIdMapping(), mappingState),
+											  standaloneSupport.getConfig().getCsv().createCsvWriterSettings(),
+											  standaloneSupport.getConfig().getIdMapping().getPrintIdFields())
 									  .collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();

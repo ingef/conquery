@@ -47,7 +47,7 @@ public class ArrowRenderer {
             PrintSettings cfg,
             ManagedExecution<?> exec,
             Function<EntityResult, String[]> idMapper,
-            String[] idHeaders,
+            List<String> idHeaders,
             int batchsize) throws IOException {
         // Test the execution if the result is renderable into one table
         Stream<EntityResult> results = getResults(exec);
@@ -59,8 +59,8 @@ public class ArrowRenderer {
         VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 
         // Build separate pipelines for id and value, as they have different sources but the same target
-        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.length);
-        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.length, resultInfos.size());
+        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size());
+        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfos.size());
 
         // Write the data
         try (ArrowWriter writer = writerProducer.apply(root)) {
@@ -318,8 +318,8 @@ public class ArrowRenderer {
         throw new IllegalArgumentException("Unsupported vector type " + vector);
     }
 
-    public static List<Field> generateFieldsFromIdMapping(String[] idHeaders) {
-        Preconditions.checkArgument(idHeaders != null && idHeaders.length > 0, "No id headers given");
+    public static List<Field> generateFieldsFromIdMapping(List<String> idHeaders) {
+        Preconditions.checkArgument(idHeaders != null && idHeaders.size() > 0, "No id headers given");
 
         ImmutableList.Builder<Field> fields = ImmutableList.builder();
 

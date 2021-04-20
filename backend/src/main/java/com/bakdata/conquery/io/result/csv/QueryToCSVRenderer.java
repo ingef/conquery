@@ -19,20 +19,18 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.tuple.Pair;
 
 @UtilityClass
 public class QueryToCSVRenderer {
-
-	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
-	private static final Collection<String> HEADER = Arrays.asList(ID_MAPPING.getPrintIdFields());
 	
-	public static Stream<String> toCSV(PrintSettings cfg, ManagedQuery query, Function<EntityResult,ExternalEntityId> idMapper) {
-		return toCSV(cfg, List.of(query), idMapper);
+	public static Stream<String> toCSV(PrintSettings cfg, ManagedQuery query, Function<EntityResult, ExternalEntityId> idMapper, CsvWriterSettings settings, Collection<String> header) {
+		return toCSV(cfg, List.of(query), idMapper, settings, header);
 	}
 	
-	public static Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries, Function<EntityResult,ExternalEntityId> idMapper) {
+	public static Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries, Function<EntityResult, ExternalEntityId> idMapper, CsvWriterSettings settings, Collection<String> header) {
 		if (queries.stream()
 			.anyMatch(q -> q.getState() != ExecutionState.DONE)) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
@@ -41,8 +39,8 @@ public class QueryToCSVRenderer {
 		ResultInfoCollector infos = queries.iterator().next().collectResultInfos();
 		
 		//build header
-		CsvWriter writer = CsvIo.createWriter();
-		writer.addStringValues(HEADER);
+		CsvWriter writer = CsvIo.createWriter(settings);
+		writer.addStringValues(header);
 		for(ResultInfo info : infos.getInfos()) {
 			writer.addValue(info.getUniqueName(cfg));
 		}

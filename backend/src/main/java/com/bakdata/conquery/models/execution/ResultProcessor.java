@@ -80,10 +80,12 @@ public class ResultProcessor {
 
 		try {
 			StreamingOutput out = exec.getResult(
-				cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState),
-				settings,
-				charset,
-				config.getCsv().getLineSeparator());
+					cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState),
+					settings,
+					charset,
+					config.getCsv().getLineSeparator(),
+					config.getCsv().createCsvWriterSettings(),
+					config.getIdMapping().getPrintIdFields());
 			
 			return makeResponseWithFileName(fileExtension, exec, out);
 		}
