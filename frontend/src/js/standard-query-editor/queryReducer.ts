@@ -11,6 +11,7 @@ import type {
   FilterConfigT,
   RangeFilterValueT,
   FilterIdT,
+  ConceptIdT,
 } from "../api/types";
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
@@ -60,9 +61,10 @@ import {
 } from "./actionTypes";
 import type {
   StandardQueryNodeT,
-  DraggedNodeType,
-  DraggedQueryType,
+  DragItemQuery,
   QueryGroupType,
+  DragItemNode,
+  DragItemConceptTreeNode,
 } from "./types";
 
 export type StandardQueryStateT = QueryGroupType[];
@@ -70,7 +72,7 @@ export type StandardQueryStateT = QueryGroupType[];
 const initialState: StandardQueryStateT = [];
 
 const filterItem = (
-  item: DraggedNodeType | DraggedQueryType,
+  item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
 ): StandardQueryNodeT => {
   // This sort of mapping might be a problem when adding new optional properties to
   // either Nodes or Queries: Flow won't complain when we omit those optional
@@ -158,7 +160,7 @@ const dropAndNode = (
   state: StandardQueryStateT,
   action: {
     payload: {
-      item: DraggedNodeType | DraggedQueryType;
+      item: DragItemNode | DragItemQuery | DragItemConceptTreeNode;
     };
   },
 ) => {
@@ -185,7 +187,7 @@ const dropOrNode = (
   state: StandardQueryStateT,
   action: {
     payload: {
-      item: DraggedNodeType | DraggedQueryType;
+      item: DragItemNode | DragItemQuery | DragItemConceptTreeNode;
       andIdx: number;
     };
   },
@@ -827,10 +829,10 @@ const loadFilterSuggestionsError = (state: StandardQueryStateT, action: any) =>
   setNodeFilterProperties(state, action, { isLoading: false });
 
 const createQueryNodeFromConceptListUploadResult = (
-  label,
-  rootConcepts,
-  resolvedConcepts,
-): DraggedNodeType => {
+  label: string,
+  rootConcepts: TreesT,
+  resolvedConcepts: ConceptIdT[],
+): DragItemConceptTreeNode | null => {
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
     rootConcepts,
     resolvedConcepts,
@@ -838,6 +840,9 @@ const createQueryNodeFromConceptListUploadResult = (
 
   return lookupResult
     ? {
+        type: "CONCEPT_TREE_NODE",
+        height: 0,
+        width: 0,
         label,
         ids: resolvedConcepts,
         tables: lookupResult.tables,
@@ -888,7 +893,7 @@ const updateNodeLabel = (state: StandardQueryStateT, action: any) => {
 
 const addConceptToNode = (
   state: StandardQueryStateT,
-  action: { payload: { concept: DraggedNodeType } },
+  action: { payload: { concept: DragItemConceptTreeNode } },
 ) => {
   const nodePosition = selectEditedNodePosition(state);
 

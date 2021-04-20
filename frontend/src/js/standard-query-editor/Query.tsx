@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -30,8 +30,9 @@ import {
 } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
 import type {
-  DraggedNodeType,
-  DraggedQueryType,
+  DragItemConceptTreeNode,
+  DragItemNode,
+  DragItemQuery,
   PreviousQueryQueryNodeType,
 } from "./types";
 
@@ -78,12 +79,13 @@ const Query = () => {
   const loadPreviousQuery = useLoadPreviousQuery();
   const expandPreviousQuery = useExpandPreviousQuery();
 
-  const onDropAndNode = (item: DraggedNodeType | DraggedQueryType) =>
-    dispatch(dropAndNode(item));
+  const onDropAndNode = (
+    item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
+  ) => dispatch(dropAndNode(item));
   const onDropConceptListFile = (file: File, andIdx: number | null) =>
     dispatch(openQueryUploadConceptListModal(andIdx, file));
   const onDropOrNode = (
-    item: DraggedNodeType | DraggedQueryType,
+    item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
     andIdx: number,
   ) => dispatch(dropOrNode(item, andIdx));
   const onDeleteNode = (andIdx: number, orIdx: number) =>

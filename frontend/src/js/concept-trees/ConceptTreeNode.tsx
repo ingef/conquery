@@ -5,7 +5,7 @@ import type { ConceptIdT, InfoT, DateRangeT, ConceptT } from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 import { selectsWithDefaults } from "../model/select";
 import { tablesWithDefaults } from "../model/table";
-import type { DraggedNodeType } from "../standard-query-editor/types";
+import type { ConceptQueryNodeType } from "../standard-query-editor/types";
 
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 import { getConceptById } from "./globalTreeStoreHelper";
@@ -82,7 +82,7 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
 
           children: data.children,
         }}
-        createQueryElement={(): DraggedNodeType => {
+        createQueryElement={(): ConceptQueryNodeType => {
           const { tables, selects } = getConceptById(data.tree);
 
           const description = data.description

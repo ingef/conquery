@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { useState, useEffect } from "react";
+import React, { FC, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -20,7 +20,7 @@ import FaIcon from "../icon/FaIcon";
 import { setMessage } from "../snack-message/actions";
 
 import { loadExternalFormValues, setExternalForm } from "./actions";
-import { FormConfigDragItem } from "./form-configs/FormConfig";
+import { DragItemFormConfig } from "./form-configs/FormConfig";
 import { useLoadFormConfigs } from "./form-configs/selectors";
 import {
   selectActiveFormValues,
@@ -76,7 +76,7 @@ const hasChanged = (a: any, b: any) => {
   return JSON.stringify(a) !== JSON.stringify(b);
 };
 
-const FormConfigSaver: React.FC = () => {
+const FormConfigSaver: FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const datasetId = useDatasetId();
@@ -154,7 +154,7 @@ const FormConfigSaver: React.FC = () => {
     setIsSaving(false);
   }
 
-  async function onLoad(dragItem: FormConfigDragItem) {
+  async function onLoad(dragItem: DragItemFormConfig) {
     if (!datasetId) return;
 
     setIsLoading(true);
@@ -175,15 +175,12 @@ const FormConfigSaver: React.FC = () => {
     setIsLoading(false);
   }
 
-  function onDropConfig(props: any, monitor: any) {
-    const dragItem = monitor.getItem();
-
-    onLoad(dragItem);
-  }
-
   return (
     <Root>
-      <SxDropzone onDrop={onDropConfig} acceptedDropTypes={[FORM_CONFIG]}>
+      <SxDropzone<FC<DropzoneProps<DragItemFormConfig>>>
+        onDrop={onLoad}
+        acceptedDropTypes={[FORM_CONFIG]}
+      >
         {() => (
           <SpacedRow>
             <div>

@@ -63,14 +63,6 @@ const UploadQueryResultsModal: FC<PropsT> = ({
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
 
-  function onDrop(_: any, monitor: DropTargetMonitor) {
-    const item = monitor.getItem();
-
-    if (item.files) {
-      setFile(item.files[0]);
-    }
-  }
-
   return (
     <Modal
       onClose={onClose}
@@ -101,7 +93,14 @@ const UploadQueryResultsModal: FC<PropsT> = ({
               />
             )}
             {!file && (
-              <SxDropzoneWithFileInput onDrop={onDrop} onSelectFile={setFile}>
+              <SxDropzoneWithFileInput
+                onDrop={(item) => {
+                  if (item.files) {
+                    setFile(item.files[0]);
+                  }
+                }}
+                onSelectFile={setFile}
+              >
                 {() => t("uploadQueryResultsModal.dropzone")}
               </SxDropzoneWithFileInput>
             )}

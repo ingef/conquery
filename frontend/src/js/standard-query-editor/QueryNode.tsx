@@ -14,11 +14,11 @@ import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import QueryNodeActions from "./QueryNodeActions";
 import { getRootNodeLabel } from "./helper";
-import type {
+import {
   StandardQueryNodeT,
-  DraggedNodeType,
-  DraggedQueryType,
+  DragItemQuery,
   PreviousQueryQueryNodeType,
+  DragItemNode,
 } from "./types";
 
 const Root = styled("div")<{
@@ -165,10 +165,6 @@ const QueryNode: FC<PropsT> = ({
     excludeTimestamps: node.excludeTimestamps,
     excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
 
-    additionalInfos: node.additionalInfos,
-    matchingEntries: node.matchingEntries,
-    dateRange: node.dateRange,
-
     loading: node.loading,
     error: node.error,
     ...(node.isPreviousQuery
@@ -183,11 +179,15 @@ const QueryNode: FC<PropsT> = ({
           tree: node.tree,
           tables: node.tables,
           selects: node.selects,
+
+          additionalInfos: node.additionalInfos,
+          matchingEntries: node.matchingEntries,
+          dateRange: node.dateRange,
         }),
   };
-  const [, drag] = useDrag({
+  const [, drag] = useDrag<DragItemNode, void, {}>({
     item,
-    begin: (): DraggedNodeType | DraggedQueryType => ({
+    begin: () => ({
       ...item,
       ...getWidthAndHeight(ref),
     }),

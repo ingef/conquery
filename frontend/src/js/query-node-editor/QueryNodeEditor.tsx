@@ -16,7 +16,7 @@ import EditableText from "../form-components/EditableText";
 import type { ModeT } from "../form-components/InputRange";
 import { nodeIsConceptQueryNode } from "../model/node";
 import type {
-  DraggedNodeType,
+  DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -107,7 +107,7 @@ export interface QueryNodeEditorPropsT {
 
   onCloseModal: () => void;
   onUpdateLabel: (label: string) => void;
-  onDropConcept: (node: DraggedNodeType) => void;
+  onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
   onResetAllFilters: () => void;

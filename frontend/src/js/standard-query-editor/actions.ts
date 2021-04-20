@@ -47,15 +47,21 @@ import {
   TOGGLE_SECONDARY_ID_EXCLUDE,
 } from "./actionTypes";
 import { StandardQueryStateT } from "./queryReducer";
-import type { DraggedNodeType, DraggedQueryType } from "./types";
+import type {
+  DragItemConceptTreeNode,
+  DragItemNode,
+  DragItemQuery,
+} from "./types";
 
-export const dropAndNode = (item: DraggedNodeType | DraggedQueryType) => ({
+export const dropAndNode = (
+  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode,
+) => ({
   type: DROP_AND_NODE,
   payload: { item },
 });
 
 export const dropOrNode = (
-  item: DraggedNodeType | DraggedQueryType,
+  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode,
   andIdx: number,
 ) => ({
   type: DROP_OR_NODE,
@@ -155,7 +161,7 @@ export const updateNodeLabel = (label: string) => ({
   type: UPDATE_NODE_LABEL,
   payload: { label },
 });
-export const addConceptToNode = (concept: DraggedNodeType) => ({
+export const addConceptToNode = (concept: DragItemConceptTreeNode) => ({
   type: ADD_CONCEPT_TO_NODE,
   payload: { concept },
 });

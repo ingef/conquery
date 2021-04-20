@@ -24,6 +24,7 @@ import { nodeHasActiveFilters } from "../../model/node";
 import { selectsWithDefaults } from "../../model/select";
 import { resetAllFiltersInTables } from "../../model/table";
 import { tablesWithDefaults } from "../../model/table";
+import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import {
   initUploadConceptListModal,
@@ -41,7 +42,7 @@ import {
 } from "../transformers";
 
 import FormConceptCopyModal from "./FormConceptCopyModal";
-import FormConceptNode from "./FormConceptNode";
+import FormConceptNode, { DragItemFormConceptNode } from "./FormConceptNode";
 
 interface PropsType extends WrappedFieldProps {
   formType: string;
@@ -490,7 +491,7 @@ const FormConceptGroup = (props: PropsType) => {
 
   return (
     <div>
-      <DropzoneList
+      <DropzoneList<DragItemConceptTreeNode | DragItemFormConceptNode>
         label={
           <>
             {props.label}
@@ -515,16 +516,14 @@ const FormConceptGroup = (props: PropsType) => {
           props.input.onChange(removeValue(props.input.value, i))
         }
         onDropFile={(file) => onDropFile(file, props.input.value.length)}
-        onDrop={(dropzoneProps, monitor) => {
-          const item = monitor.getItem();
-
-          if (item.files) {
+        onDrop={(item) => {
+          if ("files" in item && item.files) {
             onDropFile(item.files[0], props.input.value.length);
 
             return;
           }
 
-          if (monitor.getItemType() === FORM_CONCEPT_NODE) {
+          if (item.type === FORM_CONCEPT_NODE) {
             return props.input.onChange(
               addConcept(
                 addValue(props.input.value, newValue),
@@ -619,19 +618,19 @@ const FormConceptGroup = (props: PropsType) => {
                     }}
                   />
                 ) : (
-                  <DropzoneWithFileInput
+                  <DropzoneWithFileInput<
+                    DragItemConceptTreeNode | DragItemFormConceptNode
+                  >
                     acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
                     onSelectFile={(file) => onDropFile(file, i, j)}
-                    onDrop={(_, monitor) => {
-                      const item = monitor.getItem();
-
-                      if (item.files) {
+                    onDrop={(item) => {
+                      if ("files" in item && item.files) {
                         onDropFile(item.files[0], i, j);
 
                         return;
                       }
 
-                      if (monitor.getItemType() === FORM_CONCEPT_NODE) {
+                      if (item.type === FORM_CONCEPT_NODE) {
                         return props.input.onChange(
                           setConcept(
                             props.input.value,

@@ -208,7 +208,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
         />
       )}
       {!hasTooManyValues && !allowDropFile && Select}
-      {!hasTooManyValues && allowDropFile && (
+      {!hasTooManyValues && allowDropFile && props.onDropFile && (
         <SxInputMultiSelectDropzone onDropFile={props.onDropFile}>
           {() => Select}
         </SxInputMultiSelectDropzone>

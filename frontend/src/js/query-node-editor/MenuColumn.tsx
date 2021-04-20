@@ -6,7 +6,7 @@ import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { Heading3, Heading4 } from "../headings/Headings";
 import type {
-  DraggedNodeType,
+  DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 
@@ -58,7 +58,7 @@ interface PropsT {
   allowlistedTables?: string[];
   blocklistedTables?: string[];
 
-  onDropConcept: (node: DraggedNodeType) => void;
+  onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
 }
