@@ -114,7 +114,7 @@ public class QueryResource {
 
 		ResourceUtil.throwNotFoundIfNull(queryId, query);
 
-		authorize(user, query, Ability.READ);
+		user.authorize(query, Ability.READ);
 
 		return processor.reexecute(user, query, RequestAwareUriBuilder.fromRequest(req));
 	}
