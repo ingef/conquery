@@ -1,8 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.ws.rs.core.UriBuilder;
@@ -19,7 +17,6 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
@@ -181,12 +178,5 @@ public class QueryProcessor {
 		return null;
 	}
 
-	public FullExecutionStatus reexecute(User user, ManagedExecution<?> query, UriBuilder responseBuilder) {
-		if(!query.getState().equals(ExecutionState.RUNNING)) {
-			ExecutionManager.execute(getDatasetRegistry(), query, config);
-		}
 
-		final Map<DatasetId, Set<Ability>> datasetAbilities = AuthorizationHelper.buildDatasetAbilityMap(user, getDatasetRegistry());
-		return query.buildStatusFull(storage, responseBuilder, user, getDatasetRegistry(), datasetAbilities);
-	}
 }

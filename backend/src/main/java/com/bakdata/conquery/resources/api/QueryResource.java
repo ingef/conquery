@@ -105,17 +105,4 @@ public class QueryResource {
 				user
 		);
 	}
-
-	@POST
-	@Path("{" + QUERY + "}/reexecute")
-	public FullExecutionStatus reexecute(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) {
-
-		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
-
-		ResourceUtil.throwNotFoundIfNull(queryId, query);
-
-		user.authorize(query, Ability.READ);
-
-		return processor.reexecute(user, query, RequestAwareUriBuilder.fromRequest(req));
-	}
 }

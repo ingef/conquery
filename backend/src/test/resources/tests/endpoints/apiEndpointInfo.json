@@ -26,8 +26,8 @@
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/queries/{query}/reexecute",
-    "clazz": "QueryResource"
+    "path": "/datasets/{dataset}/stored-queries/{query}/reexecute",
+    "clazz": "StoredQueriesResource"
   },
   {
     "method": "GET",
