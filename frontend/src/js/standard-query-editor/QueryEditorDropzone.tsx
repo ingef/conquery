@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import React, { FC } from "react";
-import { DropTargetMonitor } from "react-dnd";
+import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 
 import type { QueryIdT } from "../api/types";
@@ -11,11 +11,16 @@ import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../common/constants/dndTypes";
+import { DropzoneProps } from "../form-components/Dropzone";
 import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
 import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
 
-import type { DraggedNodeType, DraggedQueryType } from "./types";
+import type {
+  DragItemConceptTreeNode,
+  DragItemNode,
+  DragItemQuery,
+} from "./types";
 
 const DROP_TYPES = [
   CONCEPT_TREE_NODE,
@@ -83,7 +88,9 @@ interface PropsT {
   isInitial?: boolean;
   isAnd?: boolean;
   tooltip?: string;
-  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
+  onDropNode: (
+    node: DragItemQuery | DragItemNode | DragItemConceptTreeNode,
+  ) => void;
   onDropFile: (file: File) => void;
   onLoadPreviousQuery: (id: QueryIdT) => void;
 }
@@ -98,24 +105,22 @@ const QueryEditorDropzone: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
 
-  const onDrop = (_: any, monitor: DropTargetMonitor) => {
-    const item = monitor.getItem();
-
-    if (item.files) {
-      onDropFile(item.files[0]);
-    } else {
-      onDropNode(item);
-
-      if (item.isPreviousQuery) onLoadPreviousQuery(item.id);
-    }
-  };
-
   return (
-    <SxDropzoneWithFileInput
+    <SxDropzoneWithFileInput<
+      FC<DropzoneProps<DragItemConceptTreeNode | DragItemNode | DragItemQuery>>
+    >
       isAnd={isAnd}
       isInitial={isInitial}
       acceptedDropTypes={DROP_TYPES}
-      onDrop={onDrop}
+      onDrop={(item) => {
+        if (item.type === NativeTypes.FILE && item.files) {
+          onDropFile(item.files[0]);
+        } else {
+          onDropNode(item);
+
+          if (item.isPreviousQuery) onLoadPreviousQuery(item.id);
+        }
+      }}
       onSelectFile={onDropFile}
       disableClick={isInitial}
       showFileSelectButton={isInitial}

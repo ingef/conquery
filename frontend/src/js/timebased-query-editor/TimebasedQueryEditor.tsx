@@ -18,6 +18,7 @@ import {
   setTimebasedConditionMaxDays,
   setTimebasedConditionMinDaysOrNoEvent,
 } from "./actions";
+import type { TimebasedQueryStateT } from "./reducer";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -37,7 +38,7 @@ const AddBtn = styled(IconButton)`
 `;
 
 type PropsType = {
-  query: Object;
+  query: TimebasedQueryStateT;
   onDropTimebasedNode: () => void;
   onRemoveTimebasedNode: () => void;
   onAddTimebasedCondition: () => void;

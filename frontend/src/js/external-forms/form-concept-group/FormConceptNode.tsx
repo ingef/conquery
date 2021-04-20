@@ -7,7 +7,15 @@ import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
 import { FORM_CONCEPT_NODE } from "../../common/constants/dndTypes";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
+import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
+
+export interface DragItemFormConceptNode {
+  type: "FORM_CONCEPT_NODE";
+  width: number;
+  height: number;
+  conceptNode: DragItemConceptTreeNode; // TODO: VERIFY THIS
+}
 
 const Root = styled("div")<{ active?: boolean }>`
   padding: 5px 10px;
@@ -91,11 +99,13 @@ const FormConceptNode: FC<PropsT> = ({
   const rootNodeLabel = getRootNodeLabel(conceptNode);
   const ref = useRef<HTMLDivElement | null>(null);
 
-  const item = {
+  const item: DragItemFormConceptNode = {
     type: FORM_CONCEPT_NODE,
+    width: 0,
+    height: 0,
     conceptNode,
   };
-  const [, drag] = useDrag({
+  const [, drag] = useDrag<DragItemFormConceptNode, void, {}>({
     item,
     begin: () => {
       return {
