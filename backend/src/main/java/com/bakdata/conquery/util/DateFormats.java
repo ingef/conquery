@@ -74,7 +74,7 @@ public class DateFormats {
 	private static LocalDate tryParse(String value) {
 
 		if (formats == null) {
-			initializeFormatters();
+			throw new IllegalStateException("DateFormats was not initialized before parsing");
 		}
 
 		final DateTimeFormatter formatter = lastFormat.get();
@@ -108,12 +108,11 @@ public class DateFormats {
 	/**
 	 * Lazy-initialize all formatters. Load additional formatters via ConqueryConfig.
 	 */
-	private static void initializeFormatters() {
+	public static void initializeFormatters(List<String> formats) {
+		Preconditions.checkArgument(!formats.isEmpty(), "No Dateformats were provided.");
+
 		final Set<DateTimeFormatter> formatters = new HashSet<>();
 
-		final List<String> formats = ConqueryConfig.getInstance().getDateFormats();
-
-		Preconditions.checkArgument(!formats.isEmpty(), "No Dateformats were provided.");
 
 		for (String p : formats) {
 			formatters.add(createFormatter(p));

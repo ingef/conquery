@@ -74,7 +74,7 @@ public class CQExternal extends CQElement {
 
 		valuesResolved = new Int2ObjectOpenHashMap<>();
 
-		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
+		IdMappingConfig mapping = context.getConfig().getIdMapping();
 
 		IdAccessor idAccessor = mapping.mappingFromCsvHeader(
 				IdAccessorImpl.selectIdFields(values[0], format),

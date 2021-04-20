@@ -26,9 +26,6 @@ import lombok.Setter;
 @Setter
 public class ConqueryConfig extends Configuration {
 
-	@Getter
-	private static ConqueryConfig instance = new ConqueryConfig();
-
 	@Valid
 	@NotNull
 	private ClusterConfig cluster = new ClusterConfig();
@@ -86,7 +83,6 @@ public class ConqueryConfig extends Configuration {
 	//this is needed to force start the REST backend on /api/
 	public ConqueryConfig() {
 		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
-		ConqueryConfig.instance = this;
 	}
 
 	@Override
