@@ -85,6 +85,7 @@ const Row = styled("div")`
 `;
 
 interface PropsT {
+  className?: string;
   isInitial?: boolean;
   isAnd?: boolean;
   tooltip?: string;
@@ -96,6 +97,7 @@ interface PropsT {
 }
 
 const QueryEditorDropzone: FC<PropsT> = ({
+  className,
   isAnd,
   isInitial,
   tooltip,
@@ -109,6 +111,7 @@ const QueryEditorDropzone: FC<PropsT> = ({
     <SxDropzoneWithFileInput<
       FC<DropzoneProps<DragItemConceptTreeNode | DragItemNode | DragItemQuery>>
     >
+      className={className}
       isAnd={isAnd}
       isInitial={isInitial}
       acceptedDropTypes={DROP_TYPES}

@@ -54,6 +54,7 @@ interface PropsT<DroppableObject> {
   disableClick?: boolean;
   showFileSelectButton?: boolean;
   isInitial?: boolean;
+  className?: string;
 }
 
 /*
@@ -74,6 +75,7 @@ const DropzoneWithFileInput = <
   children,
   onDrop,
   isInitial,
+  className,
 }: PropsT<DroppableObject>) => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -96,6 +98,7 @@ const DropzoneWithFileInput = <
       }}
       onDrop={onDrop}
       isInitial={isInitial}
+      className={className}
     >
       {(args: ChildArgs) => (
         <>
