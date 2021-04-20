@@ -10,32 +10,36 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
-import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.Data;
 
 /**
  * Aggregator, counting the number of days present.
  */
-public class QuarterAggregator extends SingleColumnAggregator<Integer> {
+@Data
+public class QuarterAggregator implements Aggregator<Integer> {
 
 	private final TemporalSampler sampler;
 
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
 
-	public QuarterAggregator(Column column, TemporalSampler sampler) {
-		super(column);
+	private Column column;
+
+	public QuarterAggregator(TemporalSampler sampler) {
 		this.sampler = sampler;
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+		column = ctx.getValidityDateColumn();
 		dateRestriction = ctx.getDateRestriction();
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (!bucket.has(event, getColumn())) {
+		if (getColumn() == null || !bucket.has(event, getColumn())) {
 			return;
 		}
 
@@ -45,13 +49,12 @@ public class QuarterAggregator extends SingleColumnAggregator<Integer> {
 			return;
 		}
 
-
 		set.maskedAdd(value, dateRestriction);
 	}
 
 	@Override
 	public QuarterAggregator doClone(CloneContext ctx) {
-		return new QuarterAggregator(getColumn(), sampler);
+		return new QuarterAggregator(sampler);
 	}
 
 	@Override
