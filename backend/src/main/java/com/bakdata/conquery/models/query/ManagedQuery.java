@@ -105,7 +105,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.config = config;
 		this.namespace = namespaces.get(getDataset().getId());
 		this.involvedWorkers = namespace.getWorkers().size();
-		query.resolve(new QueryResolveContext(getDataset(), namespaces, null));
+		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
 		if (label == null) {
 			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces, config));
 		}

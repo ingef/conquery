@@ -115,7 +115,6 @@ public class AdminProcessor {
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
-	private final int entityBucketSize;
 	@Nullable
 	private final String storagePrefix;
 
@@ -202,7 +201,7 @@ public class AdminProcessor {
 
 		log.info("Importing {}", selectedFile.getAbsolutePath());
 
-		final ImportJob job = new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize);
+		final ImportJob job = new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, config.getCluster().getEntityBucketSize());
 		datasetRegistry.get(ds.getId()).getJobManager().addSlowJob(job);
 
 	}

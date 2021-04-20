@@ -59,7 +59,7 @@ public class ArrowResultGenerationTest {
     final IdMappingConfig idMapping = new IdMappingConfig() {
 
         @Getter
-        String[] printIdFields = new String[]{"id1", "id2"};
+        List<String> printIdFields = List.of("id1", "id2");
 
         @Override
         public IdMappingAccessor[] getIdAccessors() {

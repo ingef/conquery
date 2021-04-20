@@ -52,7 +52,7 @@ public class PrintSettings {
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
 		this.datasetRegistry = datasetRegistry;
-		this.currency = config.getLocale().getCurrency();
+		this.currency = config.getPreprocessor().getParsers().getCurrency();
 
 		this.columnNamer = columnNamer;
 
