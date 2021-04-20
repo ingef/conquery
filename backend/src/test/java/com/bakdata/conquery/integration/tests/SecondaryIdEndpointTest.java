@@ -16,8 +16,10 @@ import com.bakdata.conquery.models.api.description.FESecondaryId;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -86,12 +88,16 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 		}
 
 		{
+			//First one fails because table depends on it
+			assertThat(deleteDescription(conquery, id))
+					.returns(Response.Status.Family.CLIENT_ERROR, response -> response.getStatusInfo().getFamily());
 
-			final Response delete = deleteDescription(conquery, id);
+			deleteTable(conquery, new TableId(conquery.getDataset().getId(),"table"));
 
-			assertThat(delete)
-					.describedAs("Response = `%s`", delete)
+			// We've deleted the table, now it should be successful
+			assertThat(deleteDescription(conquery, id))
 					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
+
 			final Set<FESecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
 			log.info("{}", secondaryIds);
@@ -157,6 +163,20 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 									   .buildFromMap(Map.of(
 											   "dataset", conquery.getDataset().getName(),
 											   "secondaryId", id
+									   ));
+
+
+		return conquery.getClient()
+					   .target(uri)
+					   .request()
+					   .delete();
+	}
+
+	private static Response deleteTable(StandaloneSupport conquery, TableId id) {
+		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "remove")
+									   .buildFromMap(Map.of(
+											   "dataset", conquery.getDataset().getName(),
+											   "table", id
 									   ));
 
 

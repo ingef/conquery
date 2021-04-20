@@ -676,13 +676,14 @@ public class AdminProcessor {
 												 .collect(Collectors.toList());
 
 		if (!dependents.isEmpty()) {
+			final Set<TableId> tables = dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet());
 			log.error(
 					"SecondaryId[{}] still present on {}",
 					secondaryId,
-					dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet())
+					tables
 			);
 
-			throw new ForbiddenException("SecondaryId still has dependencies.");
+			throw new ForbiddenException(String.format("SecondaryId still has dependencies. %s", tables));
 		}
 
 		log.info("Deleting SecondaryId[{}]", secondaryId);
