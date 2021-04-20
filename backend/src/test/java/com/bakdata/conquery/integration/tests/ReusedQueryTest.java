@@ -106,7 +106,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 																	.post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE))
 																	.readEntity(FullExecutionStatus.class);
 
-			assertThat(status.getStatus()).isEqualTo(ExecutionState.RUNNING);
+			assertThat(status.getStatus()).isIn(ExecutionState.RUNNING, ExecutionState.DONE);
 
 		}
 
