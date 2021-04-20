@@ -1,11 +1,12 @@
+import styled from "@emotion/styled";
+import { StateT } from "app-types";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-
-import styled from "@emotion/styled";
 import { useSelector, useDispatch } from "react-redux";
-import { StateT } from "app-types";
-import { setPreviousQueriesFilter } from "./actions";
+
 import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
+
+import { setPreviousQueriesFilter } from "./actions";
 
 const SxSmallTabNavigation = styled(SmallTabNavigation)`
   margin-bottom: 5px;
@@ -34,7 +35,7 @@ const PreviousQueriesFilter: FC = () => {
   ];
 
   const selectedFilter = useSelector<StateT, string>(
-    (state) => state.previousQueriesFilter
+    (state) => state.previousQueriesFilter,
   );
   const dispatch = useDispatch();
   const setFilter = (filter: string) =>

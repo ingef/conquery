@@ -1,19 +1,18 @@
-import React, { useRef, FC } from "react";
 import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
-import { useDrag } from "react-dnd";
-import { useSelector } from "react-redux";
 import { StateT } from "app-types";
+import React, { useRef, FC } from "react";
+import { useDrag } from "react-dnd";
+import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
-import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
+import { getWidthAndHeight } from "../app/DndProvider";
 import { QUERY_NODE } from "../common/constants/dndTypes";
 import ErrorMessage from "../error-message/ErrorMessage";
 import { nodeHasActiveFilters } from "../model/node";
 import { isQueryExpandable } from "../model/query";
-import { getWidthAndHeight } from "../app/DndProvider";
+import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import QueryNodeActions from "./QueryNodeActions";
-
 import { getRootNodeLabel } from "./helper";
 import type {
   StandardQueryNodeT,
@@ -105,7 +104,7 @@ interface PropsT {
 
 const nodeHasActiveSecondaryId = (
   node: StandardQueryNodeT,
-  activeSecondaryId: string | null
+  activeSecondaryId: string | null,
 ) => {
   if (!activeSecondaryId) {
     return false;
@@ -121,7 +120,7 @@ const nodeHasActiveSecondaryId = (
       (table) =>
         !table.exclude &&
         table.supportedSecondaryIds &&
-        table.supportedSecondaryIds.includes(activeSecondaryId)
+        table.supportedSecondaryIds.includes(activeSecondaryId),
     );
   }
 };
@@ -141,13 +140,13 @@ const QueryNode: FC<PropsT> = ({
   const ref = useRef<HTMLDivElement | null>(null);
 
   const activeSecondaryId = useSelector<StateT, string | null>(
-    (state) => state.queryEditor.selectedSecondaryId
+    (state) => state.queryEditor.selectedSecondaryId,
   );
 
   const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
   const hasActiveSecondaryId = nodeHasActiveSecondaryId(
     node,
-    activeSecondaryId
+    activeSecondaryId,
   );
 
   const item = {

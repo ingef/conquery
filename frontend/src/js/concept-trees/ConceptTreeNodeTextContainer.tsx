@@ -1,16 +1,15 @@
 import React, { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 
-import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
-import { isEmpty } from "../common/helpers";
+import { getWidthAndHeight } from "../app/DndProvider";
 import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";
-
-import type { AdditionalInfoHoverableNodeType } from "../tooltip/AdditionalInfoHoverable";
+import { isEmpty } from "../common/helpers";
 import type { DraggedNodeType } from "../standard-query-editor/types";
-import type { SearchT } from "./reducer";
+import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
+import type { AdditionalInfoHoverableNodeType } from "../tooltip/AdditionalInfoHoverable";
 
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
-import { getWidthAndHeight } from "../app/DndProvider";
+import type { SearchT } from "./reducer";
 
 interface PropsT {
   node: AdditionalInfoHoverableNodeType & {

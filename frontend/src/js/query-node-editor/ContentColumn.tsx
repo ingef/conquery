@@ -1,19 +1,19 @@
-import React, { FC, useEffect, useRef } from "react";
 import styled from "@emotion/styled";
+import React, { FC, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
+import type { PostPrefixForSuggestionsParams } from "../api/api";
+import { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
+import InputCheckbox from "../form-components/InputCheckbox";
+import InputMultiSelect from "../form-components/InputMultiSelect";
+import type { ModeT } from "../form-components/InputRange";
+import { Heading3 } from "../headings/Headings";
+import { nodeIsConceptQueryNode } from "../model/node";
+import { sortSelects } from "../model/select";
 import {
   ConceptQueryNodeType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import InputCheckbox from "../form-components/InputCheckbox";
-import { isConceptQueryNode } from "../model/query";
-import InputMultiSelect from "../form-components/InputMultiSelect";
-import { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
-import { sortSelects } from "../model/select";
-import type { ModeT } from "../form-components/InputRange";
-import type { PostPrefixForSuggestionsParams } from "../api/api";
-import { Heading3 } from "../headings/Headings";
 
 import ContentCell from "./ContentCell";
 import TableView from "./TableView";
@@ -51,12 +51,12 @@ interface PropsT {
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,
-    mode: ModeT
+    mode: ModeT,
   ) => void;
   onLoadFilterSuggestions: (
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
-    filterIdx: number
+    filterIdx: number,
   ) => void;
   onSetDateColumn: (tableIdx: number, value: string | null) => void;
 }
@@ -78,7 +78,7 @@ const ContentColumn: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
 
-  const tables = isConceptQueryNode(node) ? node.tables : [];
+  const tables = nodeIsConceptQueryNode(node) ? node.tables : [];
 
   const itemsRef = useRef<(HTMLDivElement | null)[]>(new Array(tables.length));
 
@@ -126,8 +126,8 @@ const ContentColumn: FC<PropsT> = ({
             </Row>
           )}
         </CommonSettingsContainer>
-        {node.selects && (
-          <ContentCell headline={t("queryNodeEditor.selects")}>
+        {nodeIsConceptQueryNode(node) && node.selects && (
+          <ContentCell headline={t("queryNodeEditor.commonSelects")}>
             <InputMultiSelect
               input={{
                 onChange: onSelectSelects,

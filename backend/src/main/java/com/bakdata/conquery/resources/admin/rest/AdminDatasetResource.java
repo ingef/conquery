@@ -83,7 +83,7 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("tables")
-	public void addTable(@Valid Table table) throws IOException, JSONException {
+	public void addTable(Table table) throws IOException, JSONException {
 		processor.addTable(table, namespace);
 	}
 

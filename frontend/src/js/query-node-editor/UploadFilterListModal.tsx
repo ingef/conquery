@@ -1,11 +1,11 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 
+import type { PostFilterResolveResponseT } from "../api/types";
+import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
-import FaIcon from "../icon/FaIcon";
-import type { PostFilterResolveResponseT } from "../api/types";
 
 const Root = styled("div")`
   padding: 0 0 10px;
@@ -38,7 +38,7 @@ interface PropsT {
 }
 
 const selectResolvedItemsCount = (
-  resolved: PostFilterResolveResponseT | null
+  resolved: PostFilterResolveResponseT | null,
 ) => {
   return resolved &&
     resolved.resolvedFilter &&
@@ -49,7 +49,7 @@ const selectResolvedItemsCount = (
 };
 
 const selectUnresolvedItemsCount = (
-  resolved: PostFilterResolveResponseT | null
+  resolved: PostFilterResolveResponseT | null,
 ) => {
   return resolved && resolved.unknownCodes && resolved.unknownCodes.length
     ? resolved.unknownCodes.length

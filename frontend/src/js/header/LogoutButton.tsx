@@ -1,13 +1,13 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
-import { useHistory } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
 
-import IconButton from "../button/IconButton";
 import { deleteStoredAuthToken } from "../authorization/helper";
-import WithTooltip from "../tooltip/WithTooltip";
+import IconButton from "../button/IconButton";
 import { isIDPEnabled } from "../environment";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const SxIconButton = styled(IconButton)`
   padding: 10px 6px;

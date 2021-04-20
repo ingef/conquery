@@ -1,4 +1,5 @@
 import React from "react";
+
 import InputMultiSelect, { InputMultiSelectProps } from "./InputMultiSelect";
 
 interface PropsType extends InputMultiSelectProps {

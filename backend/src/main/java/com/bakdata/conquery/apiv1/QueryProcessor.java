@@ -1,12 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-
-import java.util.Optional;
-import java.util.function.Consumer;
-
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -35,6 +28,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.ws.rs.core.UriBuilder;
+import java.util.Optional;
+import java.util.function.Consumer;
+
 @Slf4j
 @RequiredArgsConstructor
 public class QueryProcessor {
@@ -49,7 +46,7 @@ public class QueryProcessor {
 	 * intended dataset.
 	 */
 	public FullExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
-		authorize(user, dataset, Ability.READ);
+		user.authorize(dataset, Ability.READ);
 
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
@@ -154,7 +151,7 @@ public class QueryProcessor {
 				continue;
 			}
 
-			if (AuthorizationHelper.isPermitted(user, targetDataset, Ability.READ)) {
+			if (user.isPermitted(targetDataset, Ability.READ)) {
 				continue;
 			}
 
@@ -176,7 +173,7 @@ public class QueryProcessor {
 
 	public FullExecutionStatus cancel(User user, Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
 		// TODO implement query cancel functionality
-		authorize(user, query, Ability.CANCEL);
+		user.authorize(query, Ability.CANCEL);
 		return null;
 	}
 

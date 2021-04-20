@@ -14,7 +14,6 @@ import {
   CLEAR_SEARCH_QUERY,
   TOGGLE_SHOW_MISMATCHES,
 } from "./actionTypes";
-
 import { setTree } from "./globalTreeStoreHelper";
 
 export interface TreesT {
@@ -61,7 +60,7 @@ const initialState: ConceptTreesStateT = {
 
 const setSearchTreesSuccess = (
   state: ConceptTreesStateT,
-  action: Object
+  action: Object,
 ): ConceptTreesStateT => {
   const { query, result } = action.payload;
 
@@ -88,7 +87,7 @@ const setSearchTreesSuccess = (
 
 const setSearchTreesStart = (
   state: ConceptTreesStateT,
-  action: Object
+  action: Object,
 ): ConceptTreesStateT => {
   const { query } = action.payload;
 
@@ -109,7 +108,7 @@ const setSearchTreesStart = (
 const updateTree = (
   state: ConceptTreesStateT,
   action: Object,
-  attributes: Object
+  attributes: Object,
 ): ConceptTreesStateT => {
   return {
     ...state,
@@ -125,14 +124,14 @@ const updateTree = (
 
 const setTreeLoading = (
   state: ConceptTreesStateT,
-  action: Object
+  action: Object,
 ): ConceptTreesStateT => {
   return updateTree(state, action, { loading: true });
 };
 
 const setTreeSuccess = (
   state: ConceptTreesStateT,
-  action: Object
+  action: Object,
 ): ConceptTreesStateT => {
   // Side effect in a reducer.
   // Globally store the huge (1-5 MB) trees for read only
@@ -149,7 +148,7 @@ const setTreeSuccess = (
 
 const setTreeError = (
   state: ConceptTreesStateT,
-  action: Object
+  action: Object,
 ): ConceptTreesStateT => {
   return updateTree(state, action, {
     loading: false,
@@ -159,7 +158,7 @@ const setTreeError = (
 
 const setLoadTreesSuccess = (
   state: ConceptTreesStateT,
-  action: Object
+  action: Object,
 ): ConceptTreesStateT => {
   const { concepts, secondaryIds, version } = action.payload.data;
 
@@ -180,7 +179,7 @@ const setLoadTreesSuccess = (
 
 const conceptTrees = (
   state: ConceptTreesStateT = initialState,
-  action: Object
+  action: Object,
 ): ConceptTreesStateT => {
   switch (action.type) {
     // All trees

@@ -9,7 +9,7 @@ const initialState: FormConfigsSearchStateT = [];
 
 const formConfigSearch = (
   state: FormConfigsSearchStateT = initialState,
-  action: Object
+  action: Object,
 ): FormConfigsSearchStateT => {
   switch (action.type) {
     case SET_FORM_CONFIGS_SEARCH:

@@ -1,18 +1,19 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 import { useTranslation } from "react-i18next";
 
+import { DateRangeT } from "../api/types";
+import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+
 import QueryEditorDropzone from "./QueryEditorDropzone";
-import QueryNode from "./QueryNode";
 import QueryGroupActions from "./QueryGroupActions";
+import QueryNode from "./QueryNode";
 import type {
   DraggedNodeType,
   DraggedQueryType,
   PreviousQueryQueryNodeType,
   QueryGroupType,
 } from "./types";
-import { PreviousQueryIdT } from "../previous-queries/list/reducer";
-import { DateRangeT } from "../api/types";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};

@@ -1,5 +1,5 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
@@ -7,8 +7,9 @@ import {
   formatStdDate,
   useFormatDateDistance,
 } from "../common/helpers/dateHelper";
-import type { ColumnDescriptionType } from "./Preview";
+
 import ColumnStats from "./ColumnStats";
+import type { ColumnDescriptionType } from "./Preview";
 import { StatsHeadline } from "./StatsHeadline";
 import StatsSubline from "./StatsSubline";
 
@@ -83,7 +84,7 @@ const PreviewInfo: FC<PropsT> = ({
   if (rawPreviewData.length < 2) return null;
 
   const showStats = columns.some((column) =>
-    COLUMN_TYPES_WITH_SUPPORTED_STATS.has(column)
+    COLUMN_TYPES_WITH_SUPPORTED_STATS.has(column),
   );
 
   return (

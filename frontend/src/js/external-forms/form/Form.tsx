@@ -1,10 +1,17 @@
 import React from "react";
-import { reduxForm, formValueSelector } from "redux-form";
+import { TFunction, useTranslation } from "react-i18next";
 import { connect } from "react-redux";
+import { reduxForm, formValueSelector } from "redux-form";
 
 import type { SelectOptionT } from "../../api/types";
 import { useActiveLang } from "../../localization/useActiveLang";
-
+import FormsHeader from "../FormsHeader";
+import type {
+  Form as FormType,
+  FormField as FormFieldType,
+} from "../config-types";
+import { collectAllFormFields, isFormField } from "../helper";
+import { selectReduxFormState } from "../stateSelectors";
 import {
   validateRequired,
   validateDateRange,
@@ -12,17 +19,8 @@ import {
   validateConceptGroupFilled,
   validateDateRangeRequired,
 } from "../validators";
-import { collectAllFormFields, isFormField } from "../helper";
-import { selectReduxFormState } from "../stateSelectors";
-import FormsHeader from "../FormsHeader";
-
-import type {
-  Form as FormType,
-  FormField as FormFieldType,
-} from "../config-types";
 
 import Field from "./Field";
-import { TFunction, useTranslation } from "react-i18next";
 
 const DEFAULT_VALUE_BY_TYPE = {
   STRING: "",
@@ -148,7 +146,7 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
   const allFields = collectAllFormFields(config.fields);
   const fieldValueSelector = formValueSelector(
     config.type,
-    selectReduxFormState
+    selectReduxFormState,
   );
 
   const ReduxFormConnectedForm = reduxForm({

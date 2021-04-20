@@ -2,7 +2,6 @@ import {
   setFilterValue,
   loadFilterSuggestionsSuccess,
 } from "../../js/standard-query-editor/actions";
-
 import reducer from "../../js/standard-query-editor/queryReducer";
 
 const createQueryStateWithOneBigMultiSelect = () => [
@@ -43,7 +42,7 @@ describe("standard query editor", () => {
       const updatedState = reducer(state, action);
 
       expect(updatedState[0].elements[0].tables[0].filters[0].value).toEqual(
-        []
+        [],
       );
     });
   });
@@ -61,7 +60,7 @@ describe("standard query editor", () => {
       const updatedState = reducer(state, action);
 
       expect(updatedState[0].elements[0].tables[0].filters[0].options).toEqual(
-        options
+        options,
       );
     });
 
@@ -79,7 +78,7 @@ describe("standard query editor", () => {
       const updatedState = reducer(state, action);
 
       expect(updatedState[0].elements[0].tables[0].filters[0].options).toEqual(
-        options
+        options,
       );
     });
   });

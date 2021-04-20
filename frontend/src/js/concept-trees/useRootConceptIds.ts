@@ -1,7 +1,8 @@
-import { useSelector } from "react-redux";
 import { StateT } from "app-types";
-import { TreesT } from "./reducer";
 import { useMemo } from "react";
+import { useSelector } from "react-redux";
+
+import { TreesT } from "./reducer";
 
 const isRootTreeId = (trees: TreesT) => (treeId: string) => {
   // Those that don't have a parent, must be root
@@ -11,7 +12,7 @@ const isRootTreeId = (trees: TreesT) => (treeId: string) => {
 
 export const useRootConceptIds = () => {
   const trees = useSelector<StateT, TreesT>(
-    (state) => state.conceptTrees.trees
+    (state) => state.conceptTrees.trees,
   );
 
   return useMemo(() => Object.keys(trees).filter(isRootTreeId(trees)), [trees]);

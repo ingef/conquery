@@ -1,22 +1,21 @@
-import React, { useEffect } from "react";
 import styled from "@emotion/styled";
-import { useSelector } from "react-redux";
 import { StateT } from "app-types";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../../api/types";
-import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
-import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
-import PreviousQueries from "./PreviousQueries";
-import UploadQueryResults from "../upload/UploadQueryResults";
-
-import { useLoadPreviousQueries } from "./actions";
-import { selectPreviousQueries } from "./selector";
-import { canUploadResult } from "../../user/selectors";
-
 import EmptyList from "../../list/EmptyList";
 import Loading from "../../list/Loading";
+import { canUploadResult } from "../../user/selectors";
+import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
+import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
+import UploadQueryResults from "../upload/UploadQueryResults";
+
+import PreviousQueries from "./PreviousQueries";
+import { useLoadPreviousQueries } from "./actions";
 import { PreviousQueryT } from "./reducer";
+import { selectPreviousQueries } from "./selector";
 
 const Container = styled("div")`
   overflow-y: auto;
@@ -35,14 +34,14 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
     selectPreviousQueries(
       state.previousQueries.queries,
       state.previousQueriesSearch,
-      state.previousQueriesFilter
-    )
+      state.previousQueriesFilter,
+    ),
   );
   const loading = useSelector<StateT, boolean>(
-    (state) => state.previousQueries.loading
+    (state) => state.previousQueries.loading,
   );
   const hasPermissionToUpload = useSelector<StateT, boolean>((state) =>
-    canUploadResult(state)
+    canUploadResult(state),
   );
 
   const loadPreviousQueries = useLoadPreviousQueries();

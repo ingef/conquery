@@ -1,8 +1,8 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
+import { useTranslation } from "react-i18next";
 
 import FaIcon from "../icon/FaIcon";
-import { useTranslation } from "react-i18next";
 
 const Container = styled("div")`
   display: flex;

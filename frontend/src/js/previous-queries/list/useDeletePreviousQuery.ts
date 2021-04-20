@@ -1,20 +1,21 @@
-import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
-
-import type { DatasetIdT } from "../../api/types";
-import { useDeleteStoredQuery } from "../../api/api";
-import { setMessage } from "../../snack-message/actions";
-import type { PreviousQueryIdT } from "./reducer";
-import { deletePreviousQuerySuccess } from "./actions";
 import { useTranslation } from "react-i18next";
+import { useSelector, useDispatch } from "react-redux";
+
+import { useDeleteStoredQuery } from "../../api/api";
+import type { DatasetIdT } from "../../api/types";
+import { setMessage } from "../../snack-message/actions";
+
+import { deletePreviousQuerySuccess } from "./actions";
+import type { PreviousQueryIdT } from "./reducer";
 
 export const useDeletePreviousQuery = (
   previousQueryId: PreviousQueryIdT,
-  onSuccess?: () => void
+  onSuccess?: () => void,
 ) => {
   const { t } = useTranslation();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId,
   );
   const dispatch = useDispatch();
   const deleteStoredQuery = useDeleteStoredQuery();

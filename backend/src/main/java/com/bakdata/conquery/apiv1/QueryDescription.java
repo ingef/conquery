@@ -79,7 +79,7 @@ public interface QueryDescription extends Visitable {
 												  .map(NamespacedIdentifiable::getDataset)
 												  .collect(Collectors.toSet());
 
-		AuthorizationHelper.authorize(user, datasets, Ability.READ);
+		user.authorize(datasets, Ability.READ);
 
 		// Generate ConceptPermissions
 		final Set<Concept> concepts = nsIdCollector.getIdentifiables().stream()
@@ -88,13 +88,13 @@ public interface QueryDescription extends Visitable {
 												   .map(ConceptElement::getConcept)
 												   .collect(Collectors.toSet());
 
-		AuthorizationHelper.authorize(user, concepts, Ability.READ);
+		user.authorize(concepts, Ability.READ);
 
-		AuthorizationHelper.authorize(user, collectRequiredQueries(), Ability.READ);
+		user.authorize(collectRequiredQueries(), Ability.READ);
 		
 		// Check if the query contains parts that require to resolve external IDs. If so the user must have the preserve_id permission on the dataset.
 		if(externalIdChecker.resolvesExternalIds()) {
-			AuthorizationHelper.authorize(user, submittedDataset, Ability.PRESERVE_ID);
+			user.authorize(submittedDataset, Ability.PRESERVE_ID);
 		}
 	}
 

@@ -1,19 +1,19 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
-import { components } from "react-select";
-import Markdown from "react-markdown";
 import Mustache from "mustache";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
+import Markdown from "react-markdown";
+import { components } from "react-select";
 
 import type { FilterSuggestion, SelectOptionT } from "../api/types";
-import { exists } from "../common/helpers/exists";
 import TransparentButton from "../button/TransparentButton";
+import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 import InputMultiSelectDropzone from "./InputMultiSelectDropzone";
-import TooManyValues from "./TooManyValues";
-import ReactSelect from "./ReactSelect";
 import Labeled from "./Labeled";
+import ReactSelect from "./ReactSelect";
+import TooManyValues from "./TooManyValues";
 
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
@@ -92,7 +92,7 @@ export interface InputMultiSelectProps {
 }
 
 const isFilterSuggestion = (
-  val: SelectOptionT | FilterSuggestion
+  val: SelectOptionT | FilterSuggestion,
 ): val is FilterSuggestion => {
   return (
     exists((val as any).optionValue) && exists((val as any).templateValues!)
@@ -129,7 +129,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
             disabled={!props.options || props.options.length === 0}
             onClick={() => {
               const visibleOptions = props.options.filter(
-                optionContainsStr(ownProps.selectProps.inputValue)
+                optionContainsStr(ownProps.selectProps.inputValue),
               );
 
               ownProps.setValue(visibleOptions);

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.execution;
 
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
@@ -62,13 +61,13 @@ public class ResultProcessor {
 		final Namespace namespace = datasetRegistry.get(datasetId);
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
-		authorize(user, namespace.getDataset(), Ability.READ);
+		user.authorize(namespace.getDataset(), Ability.READ);
 
 		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
 
 		ResourceUtil.throwNotFoundIfNull(queryId, exec);
 
-		authorize(user, exec, Ability.READ);
+		user.authorize(exec, Ability.READ);
 
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
@@ -76,7 +75,7 @@ public class ResultProcessor {
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
 		
 		// Get the locale extracted by the LocaleFilter
-		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry);
+		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry, config);
 		Charset charset = determineCharset(userAgent, queryCharset);
 
 		try {
@@ -145,13 +144,13 @@ public class ResultProcessor {
 
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
-		authorize(user, namespace.getDataset(), Ability.READ);
+		user.authorize(namespace.getDataset(), Ability.READ);
 
 		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
 
 		ResourceUtil.throwNotFoundIfNull(queryId,exec);
 
-		authorize(user, exec, Ability.READ);
+		user.authorize(exec, Ability.READ);
 
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
@@ -161,7 +160,7 @@ public class ResultProcessor {
 		}
 
 		// Get the locale extracted by the LocaleFilter
-		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry);
+		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry, config);
 		
 		IdMappingConfig idMappingConf = config.getIdMapping();
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);

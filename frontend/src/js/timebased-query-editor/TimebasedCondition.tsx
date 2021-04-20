@@ -1,7 +1,8 @@
+import styled from "@emotion/styled";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import styled from "@emotion/styled";
 
+import IconButton from "../button/IconButton";
 import {
   BEFORE,
   BEFORE_OR_SAME,
@@ -10,14 +11,11 @@ import {
   DAYS_OR_NO_EVENT_BEFORE,
 } from "../common/constants/timebasedQueryOperatorTypes";
 import { isEmpty } from "../common/helpers";
-
-import IconButton from "../button/IconButton";
-
 import VerticalToggleButton from "../form-components/VerticalToggleButton";
 
-import TimebasedQueryEditorDropzone from "./TimebasedQueryEditorDropzone";
 import TimebasedConditionDayRange from "./TimebasedConditionDayRange";
 import TimebasedNode from "./TimebasedNode";
+import TimebasedQueryEditorDropzone from "./TimebasedQueryEditorDropzone";
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;

@@ -1,7 +1,9 @@
-import * as React from "react";
-import BasicButton from "./BasicButton";
-import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
 import styled from "@emotion/styled";
+import * as React from "react";
+
+import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
+
+import BasicButton from "./BasicButton";
 
 interface StyledFaIconProps extends FaIconPropsT {
   tight?: boolean;

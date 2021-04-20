@@ -1,5 +1,5 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 import type { WrappedFieldProps } from "redux-form";
 
 import WithTooltip from "../tooltip/WithTooltip";

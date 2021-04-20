@@ -1,10 +1,11 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 
-import HighlightableLabel from "../highlightable-label/HighlightableLabel";
-import EditableTextForm from "./EditableTextForm";
 import IconButton from "../button/IconButton";
+import HighlightableLabel from "../highlightable-label/HighlightableLabel";
 import WithTooltip from "../tooltip/WithTooltip";
+
+import EditableTextForm from "./EditableTextForm";
 
 interface PropsT {
   className?: string;

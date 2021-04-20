@@ -9,7 +9,7 @@ export interface Environment {
   getExternalSupportedErrorMessage?: (
     t: TFunction,
     code: string,
-    context?: Record<string, string>
+    context?: Record<string, string>,
   ) => string | undefined;
 }
 
@@ -28,7 +28,7 @@ export const isIDPEnabled = () => !!environment && environment.enableIDP;
 export const getExternalSupportedErrorMessage = (
   t: TFunction,
   code: string,
-  context?: Record<string, string>
+  context?: Record<string, string>,
 ) =>
   environment && environment.getExternalSupportedErrorMessage
     ? environment.getExternalSupportedErrorMessage(t, code, context)

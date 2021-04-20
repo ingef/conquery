@@ -1,3 +1,6 @@
+import { useDispatch } from "react-redux";
+
+import { useGetFrontendConfig } from "../api/api";
 import { defaultError, defaultSuccess } from "../common/actions";
 
 import {
@@ -5,8 +8,6 @@ import {
   LOAD_CONFIG_ERROR,
   LOAD_CONFIG_SUCCESS,
 } from "./actionTypes";
-import { useDispatch } from "react-redux";
-import { useGetFrontendConfig } from "../api/api";
 
 export const loadConfigStart = () => ({ type: LOAD_CONFIG_START });
 export const loadConfigError = (err: any) =>

@@ -74,10 +74,9 @@ public class DatasetsUIResource extends HAdmin {
 										 table.getName(),
 										 table.getLabel(),
 										 StringUtils.abbreviate(table.findImports(namespace.getStorage())
-																	 .stream()
 																	 .map(Import::getName)
 																	 .collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
-										 table.findImports(namespace.getStorage()).stream().mapToLong(Import::getNumberOfEntries).sum()
+										 table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
 								 ))
 								 .collect(Collectors.toList()),
 						namespace.getStorage().getAllConcepts(),
@@ -96,7 +95,7 @@ public class DatasetsUIResource extends HAdmin {
 						namespace
 								.getStorage().getTables()
 								.stream()
-								.flatMap(table -> table.findImports(namespace.getStorage()).stream())
+								.flatMap(table -> table.findImports(namespace.getStorage()))
 								.mapToLong(imp -> TablesUIResource.calculateCBlocksSizeBytes(
 										imp, getNamespace().getStorage().getAllConcepts()
 								))

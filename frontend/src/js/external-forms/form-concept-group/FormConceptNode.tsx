@@ -1,14 +1,13 @@
+import styled from "@emotion/styled";
 import React, { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
-import styled from "@emotion/styled";
-
-import IconButton from "../../button/IconButton";
-import WithTooltip from "../../tooltip/WithTooltip";
-
-import { getRootNodeLabel } from "../../standard-query-editor/helper";
-import { FORM_CONCEPT_NODE } from "../../common/constants/dndTypes";
-import { getWidthAndHeight } from "../../app/DndProvider";
 import { useTranslation } from "react-i18next";
+
+import { getWidthAndHeight } from "../../app/DndProvider";
+import IconButton from "../../button/IconButton";
+import { FORM_CONCEPT_NODE } from "../../common/constants/dndTypes";
+import { getRootNodeLabel } from "../../standard-query-editor/helper";
+import WithTooltip from "../../tooltip/WithTooltip";
 
 const Root = styled("div")<{ active?: boolean }>`
   padding: 5px 10px;

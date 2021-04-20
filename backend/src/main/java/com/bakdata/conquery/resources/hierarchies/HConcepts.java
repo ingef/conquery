@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -31,5 +32,7 @@ public abstract class HConcepts extends HDatasets {
 		super.init();
 		this.concept = getNamespace().getStorage().getConcept(conceptId);
 		ResourceUtil.throwNotFoundIfNull(conceptId, concept);
+
+		user.authorize(concept, Ability.READ);
 	}
 }

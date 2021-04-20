@@ -3,7 +3,7 @@ export const concat = (arr: []) => arr.reduce((a, b) => a.concat(b), []);
 export const compose = (...fns: Function[]) =>
   fns.reduceRight(
     (prevFn, nextFn) => (...args) => nextFn(prevFn(...args)),
-    (v) => v
+    (v) => v,
   );
 
 export const objectWithoutKey = (key: string) => (obj: Object) => {
@@ -80,6 +80,6 @@ export const isObject = (item: any) =>
 export const getNestedObject = (nestedObj, pathArr) => {
   return pathArr.reduce(
     (obj, key) => (obj && obj[key] !== "undefined" ? obj[key] : undefined),
-    nestedObj
+    nestedObj,
   );
 };

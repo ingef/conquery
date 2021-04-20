@@ -1,6 +1,7 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
+
 import type { QueryRunnerStateT } from "./reducer";
 
 const Status = styled("p")<{ success?: boolean; error?: boolean }>`

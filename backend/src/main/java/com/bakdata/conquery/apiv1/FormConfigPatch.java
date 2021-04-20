@@ -32,7 +32,7 @@ public class FormConfigPatch extends MetaDataPatch {
 	protected Consumer<FormConfigPatch> chain(Consumer<FormConfigPatch> patchConsumerChain, MetaStorage storage, User user, FormConfig instance) {
 		patchConsumerChain = super.buildChain(patchConsumerChain, storage, user, instance);
 
-		if(getValues() != null && AuthorizationHelper.isPermitted(user,instance,Ability.MODIFY)) {
+		if(getValues() != null && user.isPermitted(instance,Ability.MODIFY)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.valueSetter());
 		}
 		return patchConsumerChain;

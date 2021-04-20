@@ -1,6 +1,6 @@
-import * as React from "react";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
+import styled from "@emotion/styled";
+import * as React from "react";
 import Highlighter from "react-highlight-words";
 
 import FaIcon from "../icon/FaIcon";
@@ -116,7 +116,7 @@ export default React.forwardRef<HTMLDivElement, PropsT>(
 
       onClick,
     },
-    ref
+    ref,
   ) => (
     <Root ref={ref} className={className} depth={depth}>
       <Text onClick={onClick} isOpen={isOpen} red={red} disabled={disabled}>
@@ -176,5 +176,5 @@ export default React.forwardRef<HTMLDivElement, PropsT>(
         )}
       </Text>
     </Root>
-  )
+  ),
 );

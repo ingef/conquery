@@ -3,7 +3,6 @@ import React, { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Tags from "../../tags/Tags";
-
 import { addTagToPreviousQueriesSearch } from "../search/actions";
 import type { PreviousQueriesSearchStateT } from "../search/reducer";
 
@@ -13,10 +12,10 @@ interface PropsT {
 
 const tagContainsAnySearch = (
   tag: string,
-  searches: PreviousQueriesSearchStateT
+  searches: PreviousQueriesSearchStateT,
 ) => {
   return searches.some(
-    (search) => tag.toLowerCase().indexOf(search.toLowerCase()) !== -1
+    (search) => tag.toLowerCase().indexOf(search.toLowerCase()) !== -1,
   );
 };
 

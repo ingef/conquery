@@ -3,7 +3,7 @@
 // to make it compatible with the backend API
 export const transformFormQueryToApi = (
   query: { form: string; formName: string },
-  formQueryTransformation: Function
+  formQueryTransformation: Function,
 ): Object => {
   const { form, formName } = query;
 

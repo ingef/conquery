@@ -1,16 +1,14 @@
 import React, { FC } from "react";
-
 import type { WrappedFieldProps } from "redux-form";
-
-import FormQueryResult from "./FormQueryResult";
 
 import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../../common/constants/dndTypes";
-
 import Dropzone from "../../form-components/Dropzone";
 import Label from "../../form-components/Label";
+
+import FormQueryResult from "./FormQueryResult";
 
 interface PropsT extends WrappedFieldProps {
   label: string;

@@ -1,12 +1,12 @@
-import React, { useRef, memo, FC } from "react";
 import styled from "@emotion/styled";
+import { StateT } from "app-types";
+import React, { useRef, memo, FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
+import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
 
 import { setMessage } from "./actions";
-import { StateT } from "app-types";
-import { useClickOutside } from "../common/helpers/useClickOutside";
 
 const Root = styled("div")`
   position: fixed;
@@ -42,7 +42,7 @@ const ClearZone = styled("div")`
 const SnackMessage: FC = memo(function SnackMessageComponent() {
   const ref = useRef(null);
   const message = useSelector<StateT, string | null>(
-    (state) => state.snackMessage.message
+    (state) => state.snackMessage.message,
   );
   const dispatch = useDispatch();
   const resetMessage = () => dispatch(setMessage(null));

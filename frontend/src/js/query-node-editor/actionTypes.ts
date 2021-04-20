@@ -10,6 +10,6 @@ export const createActionTypes = (type: string) => {
     TOGGLE_EDIT_LABEL: `query-node-editor/TOGGLE_${uppercasedType}_EDIT_LABEL`,
     UPDATE_NAME: `query-node-editor/UPDATE_${uppercasedType}_NAME`,
     RESET: `query-node-editor/RESET_${uppercasedType}`,
-    RESOLVE_FILTER_VALUES: `query-node-editor/RESOLVE_${uppercasedType}_FILTER_VALUES`
+    RESOLVE_FILTER_VALUES: `query-node-editor/RESOLVE_${uppercasedType}_FILTER_VALUES`,
   };
 };

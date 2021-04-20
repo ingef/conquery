@@ -1,17 +1,17 @@
+import type { SelectorT } from "../api/types";
+import { tableIsDisabled } from "../model/table";
 import type {
   ConceptQueryNodeType,
   TableWithFilterValueT,
 } from "../standard-query-editor/types";
-import type { SelectorT } from "../api/types";
-import type { ConnectorDefault as ConnectorDefaultType } from "./config-types";
 
-import { tableIsDisabled } from "../model/table";
+import type { ConnectorDefault as ConnectorDefaultType } from "./config-types";
 
 function setDefaultSelects(selects: SelectorT[], defaultSelects: string[]) {
   return selects.map((select) => ({
     ...select,
     selected: defaultSelects.some(
-      (s) => select.id.toLowerCase().indexOf(s.toLowerCase()) !== -1
+      (s) => select.id.toLowerCase().indexOf(s.toLowerCase()) !== -1,
     ),
   }));
 }
@@ -31,7 +31,7 @@ export const initTables = ({
           const isDisabled = tableIsDisabled(
             table,
             blocklistedTables,
-            allowlistedTables
+            allowlistedTables,
           );
 
           return isDisabled ? { ...table, exclude: true } : table;
@@ -40,7 +40,7 @@ export const initTables = ({
 };
 
 export const initTablesWithDefaults = (
-  connectorDefaults?: ConnectorDefaultType[]
+  connectorDefaults?: ConnectorDefaultType[],
 ) => (node: ConceptQueryNodeType) => {
   return !node.tables
     ? node
@@ -50,7 +50,7 @@ export const initTablesWithDefaults = (
           if (!table.selects || !connectorDefaults) return table;
 
           const connectorDefault = connectorDefaults.find(
-            (c) => table.id.toLowerCase().indexOf(c.name.toLowerCase()) !== -1
+            (c) => table.id.toLowerCase().indexOf(c.name.toLowerCase()) !== -1,
           );
 
           if (!connectorDefault) return table;
@@ -61,7 +61,7 @@ export const initTablesWithDefaults = (
 };
 
 export const initSelectsWithDefaults = (defaultSelects: string[]) => (
-  node: ConceptQueryNodeType | TableWithFilterValueT
+  node: ConceptQueryNodeType | TableWithFilterValueT,
 ) => {
   return !node.selects || !defaultSelects
     ? node

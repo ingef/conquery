@@ -2,6 +2,7 @@ import {
   initUploadConceptListModal,
   resetUploadConceptListModal,
 } from "../upload-concept-list-modal/actions";
+
 import { MODAL_OPEN, MODAL_CLOSE, MODAL_ACCEPT } from "./actionTypes";
 
 const openModal = (andIdx: number | null = null) => ({
@@ -11,7 +12,7 @@ const openModal = (andIdx: number | null = null) => ({
 
 export const openQueryUploadConceptListModal = (
   andIdx: number | null,
-  file: File
+  file: File,
 ) => async (dispatch) => {
   // Need to wait until file is processed.
   // Because if file is empty, modal would close automatically
@@ -33,7 +34,7 @@ export const acceptQueryUploadConceptListModal = (
   andIdx,
   label,
   rootConcepts,
-  resolvedConcepts
+  resolvedConcepts,
 ) => {
   return {
     type: MODAL_ACCEPT,
