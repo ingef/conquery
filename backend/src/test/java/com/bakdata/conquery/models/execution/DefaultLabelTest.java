@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.execution;
 
 import static com.bakdata.conquery.models.execution.ManagedExecution.AUTO_LABEL_SUFFIX;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 
 import java.time.LocalDateTime;
@@ -11,14 +10,12 @@ import java.util.Locale;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.DefaultColumnNameTest;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
@@ -34,9 +31,8 @@ import org.mockito.Mockito;
 
 public class DefaultLabelTest {
 	private static final DatasetRegistry DATASET_REGISTRY = Mockito.mock(DatasetRegistry.class);
-	private static final Dataset DATASET = new Dataset() {{
-		setName("dataset");
-	}};
+	private static final Dataset DATASET = new Dataset("dataset");
+	private static final User user = new User("user","user");
 
 	private static final TreeConcept CONCEPT = new TreeConcept() {
 		{
@@ -48,14 +44,15 @@ public class DefaultLabelTest {
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
 
 	@BeforeAll
-	static void beforeAll() {
+	public static void beforeAll() {
 
 		I18n.init();
 
 		doAnswer((invocation -> {
 			return CONCEPT;
 
-		})).when(DATASET_REGISTRY).resolve(any(ConceptId.class));
+		})).when(DATASET_REGISTRY)
+		   .resolve(CONCEPT.getId());
 	}
 
 	@ParameterizedTest
@@ -68,7 +65,7 @@ public class DefaultLabelTest {
 
 		CQConcept concept = makeCQConcept("Concept");
 		ConceptQuery cq = new ConceptQuery(concept);
-		ManagedQuery mQuery = cq.toManagedExecution(new UserId("User"), DATASET);
+		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
 
@@ -96,7 +93,7 @@ public class DefaultLabelTest {
 		concept.setLabel(null);
 		concept.setElements(List.of(CONCEPT));
 		ConceptQuery cq = new ConceptQuery(concept);
-		ManagedQuery mQuery = cq.toManagedExecution(new UserId("User"), DATASET);
+		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 		UUID uuid = UUID.randomUUID();
 		mQuery.setQueryId(uuid);
 
@@ -120,7 +117,7 @@ public class DefaultLabelTest {
 
 		CQReusedQuery reused = new CQReusedQuery(managedQuery);
 		ConceptQuery cq = new ConceptQuery(reused);
-		ManagedQuery mQuery = cq.toManagedExecution(new UserId("User"), DATASET);
+		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
 
@@ -139,7 +136,7 @@ public class DefaultLabelTest {
 
 		CQExternal external = new CQExternal(List.of(), new String[0][0]);
 		ConceptQuery cq = new ConceptQuery(external);
-		ManagedQuery mQuery = cq.toManagedExecution(new UserId("User"), DATASET);
+		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG )));
 
@@ -171,7 +168,7 @@ public class DefaultLabelTest {
 				concept3
 		));
 		ConceptQuery cq = new ConceptQuery(and);
-		ManagedQuery mQuery = cq.toManagedExecution(new UserId("User"), DATASET);
+		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
 
@@ -205,7 +202,7 @@ public class DefaultLabelTest {
 				concept3
 		));
 		ConceptQuery cq = new ConceptQuery(and);
-		ManagedQuery mQuery = cq.toManagedExecution(new UserId("User"), DATASET);
+		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
 		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
 
@@ -222,7 +219,7 @@ public class DefaultLabelTest {
 		I18n.LOCALE.set(locale);
 
 		ExportForm form = new ExportForm();
-		ManagedForm mForm = form.toManagedExecution(new UserId("User"), DATASET);
+		ManagedForm mForm = form.toManagedExecution(user, DATASET);
 		mForm.setCreationTime(LocalDateTime.of(2020, 10, 30, 12, 37));
 
 		mForm.setLabel(mForm.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));

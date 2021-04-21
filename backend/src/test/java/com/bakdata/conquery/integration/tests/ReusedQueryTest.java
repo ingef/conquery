@@ -4,7 +4,12 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -16,6 +21,7 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -28,6 +34,9 @@ import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.api.StoredQueriesResource;
+import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -81,6 +90,24 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			final ConceptQuery reused = new ConceptQuery(new CQReusedQuery(execution));
 
 			IntegrationUtils.assertQueryResult(conquery, reused, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+		}
+
+		// Reuse by API
+		{
+			final URI reexecuteUri =
+					HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), StoredQueriesResource.class, "reexecute")
+								   .buildFromMap(Map.of(
+										   ResourceConstants.DATASET, conquery.getDataset().getName(),
+										   ResourceConstants.QUERY, execution.getId().toString()
+								   ));
+
+			final FullExecutionStatus status = conquery.getClient().target(reexecuteUri)
+																	.request(MediaType.APPLICATION_JSON)
+																	.post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE))
+																	.readEntity(FullExecutionStatus.class);
+
+			assertThat(status.getStatus()).isIn(ExecutionState.RUNNING, ExecutionState.DONE);
+
 		}
 
 		// Reuse in SecondaryId
@@ -141,7 +168,9 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				reused2.setSecondaryId(query.getSecondaryId());
 
-				final ManagedExecutionId reused2Id = IntegrationUtils.assertQueryResult(conquery, reused2, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				final ManagedExecutionId
+						reused2Id =
+						IntegrationUtils.assertQueryResult(conquery, reused2, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
 				final ManagedQuery execution2 = (ManagedQuery) conquery.getMetaStorage().getExecution(reused2Id);
 
 				assertThat(reused2Id)
@@ -163,7 +192,9 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 													.getStorage()
 													.getSecondaryId(new SecondaryIdDescriptionId(conquery.getDataset().getId(), "ignored")));
 
-				final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(conquery, reusedDiffId, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				final ManagedExecutionId
+						executionId =
+						IntegrationUtils.assertQueryResult(conquery, reusedDiffId, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 
 				assertThat(executionId)
 						.as("Query should NOT be reused.")

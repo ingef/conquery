@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
@@ -39,11 +38,11 @@ public interface QueryDescription extends Visitable {
 	 * should be done in an extra init procedure (see {@link ManagedForm#doInitExecutable(DatasetRegistry, ConqueryConfig)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
 	 *
-	 * @param userId
+	 * @param user
 	 * @param submittedDataset
 	 * @return
 	 */
-	ManagedExecution<?> toManagedExecution(UserId userId, Dataset submittedDataset);
+	ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset);
 
 	
 	Set<ManagedExecution> collectRequiredQueries();

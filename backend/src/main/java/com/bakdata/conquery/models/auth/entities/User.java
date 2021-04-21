@@ -1,7 +1,12 @@
 package com.bakdata.conquery.models.auth.entities;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -28,44 +33,47 @@ import org.apache.shiro.subject.PrincipalCollection;
 public class User extends PermissionOwner<UserId> implements Principal, RoleOwner {
 
 	@JsonProperty
-	private Set<RoleId> roles = Collections.synchronizedSet( new HashSet<>());
+	private Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
 
-	@Getter @Setter @JsonIgnore
+	@Getter
+	@Setter
+	@JsonIgnore
 	private transient boolean displayLogout = true;
 
 	// protected for testing purposes
-	@JsonIgnore @Getter(AccessLevel.PROTECTED)
-	private transient ShiroUserAdapter shiroUserAdapter;
+	@JsonIgnore
+	@Getter(AccessLevel.PROTECTED)
+	private final transient ShiroUserAdapter shiroUserAdapter;
 
 	public User(String name, String label) {
 		super(name, label);
 		this.shiroUserAdapter = new ShiroUserAdapter();
 	}
-	
+
 	@Override
 	public UserId createId() {
 		return new UserId(name);
 	}
 
 	public void addRole(MetaStorage storage, Role role) {
-		if(roles.add(role.getId())) {
+		if (roles.add(role.getId())) {
 			log.trace("Added role {} to user {}", role.getId(), getId());
 			updateStorage(storage);
 		}
 	}
-	
+
 	@Override
 	public void removeRole(MetaStorage storage, Role role) {
-		if(roles.remove(role.getId())) {
-			log.trace("Removed role {} from user {}", role.getId(), getId());				
+		if (roles.remove(role.getId())) {
+			log.trace("Removed role {} from user {}", role.getId(), getId());
 			updateStorage(storage);
 		}
 	}
 
-	public Set<RoleId> getRoles(){
+	public Set<RoleId> getRoles() {
 		return Collections.unmodifiableSet(roles);
 	}
-	
+
 	@Override
 	protected void updateStorage(MetaStorage storage) {
 		storage.updateUser(this);
@@ -96,20 +104,20 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 	public boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability) {
 		return authorized.stream()
-				.allMatch(auth -> isPermitted(auth, ability));
+						 .allMatch(auth -> isPermitted(auth, ability));
 	}
 
 
 	public boolean[] isPermitted(List<? extends Authorized> authorizeds, Ability ability) {
 		return authorizeds.stream()
-				.map(auth -> isPermitted(auth, ability))
-				.collect(Collectors.toCollection(BooleanArrayList::new))
-				.toBooleanArray();
+						  .map(auth -> isPermitted(auth, ability))
+						  .collect(Collectors.toCollection(BooleanArrayList::new))
+						  .toBooleanArray();
 	}
 
 
 	public boolean isOwner(Authorized object) {
-		return object instanceof Owned && getId().equals(((Owned)object).getOwner());
+		return object instanceof Owned && equals(((Owned) object).getOwner());
 	}
 
 	/**
@@ -148,10 +156,12 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 			return SecurityUtils.getSecurityManager().isPermittedAll(getPrincipals(), permissions);
 		}
 
+
 		@Override
 		public Object getPrincipal() {
 			return getId();
 		}
+
 
 	}
 }

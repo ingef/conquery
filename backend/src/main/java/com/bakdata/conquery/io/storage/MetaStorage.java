@@ -44,11 +44,12 @@ public class MetaStorage implements ConqueryStorage{
         this.datasetRegistry = datasetRegistry;
         this.validator = validator;
 
-        executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, pathName);
-        formConfigs = storageFactory.createFormConfigStore(centralRegistry, pathName);
-        authUser = storageFactory.createUserStore(centralRegistry, pathName);
-        authRole = storageFactory.createRoleStore(centralRegistry, pathName);
-        authGroup = storageFactory.createGroupStore(centralRegistry, pathName);
+		authUser = storageFactory.createUserStore(centralRegistry, pathName);
+		authRole = storageFactory.createRoleStore(centralRegistry, pathName);
+		authGroup = storageFactory.createGroupStore(centralRegistry, pathName);
+
+		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, pathName);
+		formConfigs = storageFactory.createFormConfigStore(centralRegistry, pathName);
     }
 
     @Override

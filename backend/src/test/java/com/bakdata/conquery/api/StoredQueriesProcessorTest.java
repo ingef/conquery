@@ -1,5 +1,17 @@
 package com.bakdata.conquery.api;
 
+import static com.bakdata.conquery.models.execution.ExecutionState.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -35,17 +47,6 @@ import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
-
-import javax.ws.rs.core.UriBuilder;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static com.bakdata.conquery.models.execution.ExecutionState.*;
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class StoredQueriesProcessorTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
@@ -126,7 +127,7 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedForm mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
-		return new ManagedForm(new ExportForm(), user.getId(), dataset) {
+		return new ManagedForm(new ExportForm(), user, dataset) {
 			{
 				state = execState;
 				creationTime = LocalDateTime.MIN;
@@ -161,7 +162,7 @@ public class StoredQueriesProcessorTest {
 
 
 	private static ManagedQuery mockManagedQuery(IQuery queryDescription, User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
-		return new ManagedQuery(queryDescription, user.getId(), dataset) {
+		return new ManagedQuery(queryDescription, user, dataset) {
 			{
 				state = execState;
 				creationTime = LocalDateTime.MIN;
