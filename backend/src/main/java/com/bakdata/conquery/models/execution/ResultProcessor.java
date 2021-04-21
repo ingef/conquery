@@ -84,7 +84,7 @@ public class ResultProcessor {
 					settings,
 					charset,
 					config.getCsv().getLineSeparator(),
-					config.getCsv().createCsvWriterSettings(),
+					config.getCsv().createWriter(),
 					config.getIdMapping().getPrintIdFields());
 			
 			return makeResponseWithFileName(fileExtension, exec, out);

@@ -1,13 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -18,10 +10,12 @@ import com.github.powerlibraries.io.In;
 import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.File;
+import java.util.*;
 
 
 @Slf4j
@@ -87,14 +81,14 @@ public class FilterSearch {
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
-	public static void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager, CsvParserSettings csvParserSettings) {
+	public static void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager, CsvParser parser) {
 		datasetsToUpdate.stream()
 				.flatMap(ds -> datasets.get(ds.getId()).getStorage().getAllConcepts().stream())
 				.flatMap(c -> c.getConnectors().stream())
 				.flatMap(co -> co.collectAllFilters().stream())
 				.filter(f -> f instanceof AbstractSelectFilter && ((AbstractSelectFilter<?>) f).getTemplate() != null)
 				.map(AbstractSelectFilter.class::cast)
-				.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(f, csvParserSettings))));
+				.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(f, parser))));
 	}
 
 	/***
@@ -102,7 +96,7 @@ public class FilterSearch {
 	 * @param filter
 	 * @param csvParserSettings
 	 */
-	public static void createSourceSearch(AbstractSelectFilter<?> filter, CsvParserSettings csvParserSettings) {
+	public static void createSourceSearch(AbstractSelectFilter<?> filter, CsvParser parser) {
 		FilterTemplate template = filter.getTemplate();
 
 		List<String> templateColumns = new ArrayList<>(template.getColumns());
@@ -130,7 +124,6 @@ public class FilterSearch {
 							   .build();
 
 		try {
-			CsvParser parser = CsvIo.createParser(csvParserSettings);
 			IterableResult<String[], ParsingContext> it = parser.iterate(In.file(file).withUTF8().asReader());
 			String[] header = it.getContext().parsedHeaders();
 

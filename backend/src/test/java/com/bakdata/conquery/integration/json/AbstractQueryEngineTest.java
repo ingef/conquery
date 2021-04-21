@@ -87,10 +87,10 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		List<String> actual = QueryToCSVRenderer
 									  .toCSV(
 											  PRINT_SETTINGS,
-											  managed,
+											  List.of(managed),
 											  cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, standaloneSupport.getConfig()
 																																 .getIdMapping(), mappingState),
-											  standaloneSupport.getConfig().getCsv().createCsvWriterSettings(),
+											  standaloneSupport.getConfig().getCsv().createWriter(),
 											  standaloneSupport.getConfig().getIdMapping().getPrintIdFields())
 									  .collect(Collectors.toList());
 

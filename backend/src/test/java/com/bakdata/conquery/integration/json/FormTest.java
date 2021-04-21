@@ -147,7 +147,7 @@ public class FormTest extends ConqueryTestSpec {
 				.toCSV(
 					new PrintSettings(true,Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), standaloneSupport.getConfig()),
 					managed.getValue(),
-					cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, idMappingConfig, mappingState), standaloneSupport.getConfig().getCsv().createCsvWriterSettings(), standaloneSupport.getConfig().getIdMapping().getPrintIdFields())
+					cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, idMappingConfig, mappingState), standaloneSupport.getConfig().getCsv().createWriter(), standaloneSupport.getConfig().getIdMapping().getPrintIdFields())
 				.collect(Collectors.toList());
 			
 			assertThat(actual)

@@ -55,7 +55,7 @@ public class FilterResolutionExactTest extends IntegrationTest.Simple implements
 		
 		test.importRequiredData(conquery);
 		FilterSearch
-				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf.createCsvParserSettings());
+				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf.createParser());
 
 		conquery.waitUntilWorkDone();
 
@@ -71,7 +71,7 @@ public class FilterResolutionExactTest extends IntegrationTest.Simple implements
 		filter.setSearchType(FilterSearch.FilterSearchType.EXACT);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
 
-		FilterSearch.createSourceSearch(filter, csvConf.createCsvParserSettings());
+		FilterSearch.createSourceSearch(filter, csvConf.createParser());
 
 		assertThat(filter.getSourceSearch()).isNotNull();
 

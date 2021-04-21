@@ -53,7 +53,7 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 		test.importRequiredData(conquery);
 		CSVConfig csvConf = conquery.getConfig().getCsv();
 		FilterSearch
-				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf.createCsvParserSettings());
+				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf.createParser());
 
 		conquery.waitUntilWorkDone();
 
@@ -68,7 +68,7 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 		filter.setSearchType(FilterSearch.FilterSearchType.PREFIX);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
 
-		FilterSearch.createSourceSearch(filter, csvConf.createCsvParserSettings());
+		FilterSearch.createSourceSearch(filter, csvConf.createParser());
 
 		assertThat(filter.getSourceSearch()).isNotNull();
 
