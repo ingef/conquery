@@ -63,6 +63,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	private Workers workers;
 	@Setter
 	private ScheduledExecutorService scheduler;
+	private Environment environment;
 
 	/**
 	 * Flags if the instance name should be a prefix for the instances storage.
@@ -84,6 +85,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+		this.environment = environment;
 		connector = new NioSocketConnector();
 
 		jobManager = new JobManager(getName(), config.isFailOnError());
@@ -198,8 +200,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
+		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, environment.getObjectMapper());
+		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, environment.getObjectMapper())));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
 

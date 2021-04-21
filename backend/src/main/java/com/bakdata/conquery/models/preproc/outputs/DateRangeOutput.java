@@ -43,7 +43,7 @@ public class DateRangeOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers) {
+	public Output createForHeaders(Object2IntArrayMap<String> headers, DateFormats dateFormats) {
 		assertRequiredHeaders(headers, startColumn, endColumn);
 
 		final int startIndex = headers.getInt(startColumn);
@@ -61,8 +61,8 @@ public class DateRangeOutput extends OutputDescription {
 					throw new IllegalArgumentException("Open Ranges are not allowed.");
 				}
 
-				LocalDate start = DateFormats.parseToLocalDate(row[startIndex]);
-				LocalDate end = DateFormats.parseToLocalDate(row[endIndex]);
+				LocalDate start = dateFormats.parseToLocalDate(row[startIndex]);
+				LocalDate end = dateFormats.parseToLocalDate(row[endIndex]);
 
 				return CDateRange.of(start, end);
 			}

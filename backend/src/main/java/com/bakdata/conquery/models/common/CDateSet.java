@@ -18,6 +18,8 @@ import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
+import com.bakdata.conquery.util.DateFormats;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -26,9 +28,10 @@ import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
 import lombok.EqualsAndHashCode;
 
+/**
+ * (De-)Serializers are are registered programmatically because they depend on {@link com.bakdata.conquery.util.DateFormats}
+ */
 @EqualsAndHashCode
-@JsonSerialize(using=CDateSetSerializer.class)
-@JsonDeserialize(using=CDateSetDeserializer.class)
 public class CDateSet {
 
 	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)((\\d{4}-\\d{2}-\\d{2})?/(\\d{4}-\\d{2}-\\d{2})?)");
@@ -447,13 +450,13 @@ public class CDateSet {
 		return rangesByLowerBound.lastEntry().getValue().getMaxValue();
 	}
 	
-	public static CDateSet parse(String value) {
+	public static CDateSet parse(String value, DateFormats dateFormats) {
 		List<CDateRange> ranges = PARSE_PATTERN
 			.matcher(value)
 			.results()
 			.map(mr -> {
 				try {
-					return DateRangeParser.parseISORange(mr.group(2));
+					return DateRangeParser.parseISORange(mr.group(2), dateFormats);
 				}
 				catch(Exception e) {
 					throw new RuntimeException(e);

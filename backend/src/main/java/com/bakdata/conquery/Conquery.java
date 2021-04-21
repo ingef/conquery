@@ -68,6 +68,7 @@ public class Conquery extends Application<ConqueryConfig> {
 
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
+				Jackson.configure(environment.getObjectMapper(),configuration);
 			}
 
 			@Override
@@ -105,7 +106,6 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-		DateFormats.initializeFormatters(configuration.getDateFormats());
 		if (manager == null) {
 			manager = new ManagerNode();
 		}

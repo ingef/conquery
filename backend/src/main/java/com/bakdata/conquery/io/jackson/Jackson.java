@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.jackson;
 import java.util.Locale;
 
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -28,7 +29,7 @@ public class Jackson {
 		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
 	}
 
-	public static <T extends ObjectMapper> T configure(T objectMapper) {
+	public static <T extends ObjectMapper> T configure(T objectMapper){
 
 		objectMapper
 			.enable(MapperFeature.PROPAGATE_TRANSIENT_MARKER)
@@ -61,8 +62,12 @@ public class Jackson {
 			.addMixIn(Permission.class, ConqueryPermission.class);
 
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(Object.class));
-
 		return objectMapper;
+	}
+
+
+	public static void configure(ObjectMapper objectMapper, ConqueryConfig config) {
+		objectMapper.registerModule(new ConqueryConfig.ConfiguredModule(config));
 	}
 
 	public static <T> T findInjectable(DeserializationContext ctxt, Class<T> clazz) throws JsonMappingException {

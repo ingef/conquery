@@ -45,4 +45,10 @@ public class ParserConfig {
 	 */
 	@NotNull
 	private Currency currency = Currency.getInstance("EUR");
+
+	/**
+	 * Date formats that are available for parsing.
+	 */
+	@NotNull
+	private DateFormats dateFormats = new DateFormats();
 }

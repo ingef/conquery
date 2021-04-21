@@ -11,6 +11,7 @@ import java.util.UUID;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.powerlibraries.io.Out;
 import lombok.Getter;
@@ -29,6 +30,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 	private static final AttributeKey MESSAGE_MANAGER = new AttributeKey(BinaryJacksonCoder.class, "messageManager");
 	
 	private final CQCoder<?> coder;
+	private final ObjectMapper mapper;
 	
 	@Override
 	protected boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out) {
@@ -68,9 +70,9 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 				);
 				
 				try (InputStream is = chunkedMessage.createInputStream()) {
-					JsonNode tree = Jackson.BINARY_MAPPER.readTree(is);
+					JsonNode tree = mapper.readTree(is);
 					try(OutputStream os = Out.file("dumps/reading_"+id+"_"+Math.random()+".json").asStream()) {
-						Jackson.MAPPER.copy().enable(SerializationFeature.INDENT_OUTPUT).writeValue(os, tree);
+						mapper.copy().enable(SerializationFeature.INDENT_OUTPUT).writeValue(os, tree);
 					}
 				} catch (Exception e1) {
 					log.error("Failed to write the error json dump "+id+".json, trying as bin", e1);

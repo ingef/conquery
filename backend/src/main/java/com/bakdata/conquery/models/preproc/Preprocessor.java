@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.preproc.parser.Parser;
+import com.bakdata.conquery.util.DateFormats;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.bakdata.conquery.util.io.LogUtil;
@@ -123,12 +124,13 @@ public class Preprocessor {
 				final GroovyPredicate filter = input.createFilter(headers);
 
 
-				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap);
+				DateFormats dateFormats = config.getPreprocessor().getParsers().getDateFormats();
+				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateFormats);
 				final List<OutputDescription.Output> outputs = new ArrayList<>();
 
 				// Instantiate Outputs based on descriptors (apply header positions)
 				for (OutputDescription op : input.getOutput()) {
-					outputs.add(op.createForHeaders(headerMap));
+					outputs.add(op.createForHeaders(headerMap, dateFormats));
 				}
 
 				String[] row;

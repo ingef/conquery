@@ -16,11 +16,16 @@ import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 
 @Provider
 @Produces(ExtraMimeTypes.SMILE_STRING)
 @Consumes(ExtraMimeTypes.SMILE_STRING)
+@RequiredArgsConstructor
 public class MessagePackProvider<T> implements MessageBodyReader<T>, MessageBodyWriter<T> {
+
+	private final ObjectMapper objectMapper;
 
 	@Override
 	public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
@@ -34,7 +39,7 @@ public class MessagePackProvider<T> implements MessageBodyReader<T>, MessageBody
 
 	@Override
 	public void writeTo(T t, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
-		Jackson.BINARY_MAPPER.writeValue(entityStream, t);
+		objectMapper.writeValue(entityStream, t);
 		entityStream.flush();
 	}
 
@@ -45,7 +50,7 @@ public class MessagePackProvider<T> implements MessageBodyReader<T>, MessageBody
 
 	@Override
 	public T readFrom(Class<T> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
-		return Jackson.BINARY_MAPPER.readValue(entityStream, type);
+		return objectMapper.readValue(entityStream, type);
 	}
 	
 	
