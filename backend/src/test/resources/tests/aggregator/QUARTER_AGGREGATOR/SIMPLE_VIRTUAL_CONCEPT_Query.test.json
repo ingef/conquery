@@ -1,6 +1,6 @@
 {
   "type": "QUERY_TEST",
-  "label": "QUARTERS_AGGREGATOR",
+  "label": "QUARTER_AGGREGATOR",
   "expectedCsv": "tests/aggregator/QUARTER_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
