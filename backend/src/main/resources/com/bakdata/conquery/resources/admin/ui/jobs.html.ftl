@@ -46,7 +46,7 @@
 	
 	<div class="row">
 		<div class="col">
-            <input type="checkbox" id="update" name="update" checked="checked">
+            <input type="checkbox" id="update" name="update" checked>
             <label for="update">Reload automatically.</label><br>
 			<script type="text/javascript">
 				setTimeout(function () {
