@@ -1,19 +1,19 @@
+import styled from "@emotion/styled";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import styled from "@emotion/styled";
 
+import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
+import { Heading3, Heading4 } from "../headings/Headings";
 import type {
-  DraggedNodeType,
+  DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import type { ConceptIdT } from "../api/types";
-import { Heading3, Heading4 } from "../headings/Headings";
 
 import ConceptDropzone from "./ConceptDropzone";
 import ConceptEntry from "./ConceptEntry";
-import { QueryNodeEditorStateT } from "./reducer";
 import MenuColumnItem from "./MenuColumnItem";
+import { QueryNodeEditorStateT } from "./reducer";
 
 const FixedColumn = styled("div")<{ isEmpty?: boolean }>`
   display: flex;
@@ -58,7 +58,7 @@ interface PropsT {
   allowlistedTables?: string[];
   blocklistedTables?: string[];
 
-  onDropConcept: (node: DraggedNodeType) => void;
+  onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
 }

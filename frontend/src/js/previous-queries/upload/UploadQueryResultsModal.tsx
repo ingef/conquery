@@ -1,17 +1,15 @@
-import React, { FC, useState } from "react";
 import styled from "@emotion/styled";
+import React, { FC, useState } from "react";
+import { DropTargetMonitor } from "react-dnd";
 import { useTranslation } from "react-i18next";
 
+import ErrorMessage from "../../error-message/ErrorMessage";
+import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
+import FaIcon from "../../icon/FaIcon";
+import Modal from "../../modal/Modal";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 
-import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
-
-import Modal from "../../modal/Modal";
-import ErrorMessage from "../../error-message/ErrorMessage";
-import FaIcon from "../../icon/FaIcon";
-
 import CSVColumnPicker, { ExternalQueryT } from "./CSVColumnPicker";
-import { DropTargetMonitor } from "react-dnd";
 
 const Root = styled("div")`
   text-align: center;
@@ -65,14 +63,6 @@ const UploadQueryResultsModal: FC<PropsT> = ({
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
 
-  function onDrop(_: any, monitor: DropTargetMonitor) {
-    const item = monitor.getItem();
-
-    if (item.files) {
-      setFile(item.files[0]);
-    }
-  }
-
   return (
     <Modal
       onClose={onClose}
@@ -103,7 +93,14 @@ const UploadQueryResultsModal: FC<PropsT> = ({
               />
             )}
             {!file && (
-              <SxDropzoneWithFileInput onDrop={onDrop} onSelectFile={setFile}>
+              <SxDropzoneWithFileInput
+                onDrop={(item) => {
+                  if (item.files) {
+                    setFile(item.files[0]);
+                  }
+                }}
+                onSelectFile={setFile}
+              >
                 {() => t("uploadQueryResultsModal.dropzone")}
               </SxDropzoneWithFileInput>
             )}

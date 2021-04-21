@@ -1,9 +1,9 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 import { useTranslation } from "react-i18next";
 
-import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 import IconButton from "../button/IconButton";
+import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 const Concept = styled("div")`
   background-color: white;
@@ -69,7 +69,7 @@ const ConceptEntry = AdditionalInfoHoverable(
         )}
       </Concept>
     );
-  }
+  },
 );
 
 export default ConceptEntry;

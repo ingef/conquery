@@ -1,19 +1,17 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { useSelector } from "react-redux";
 
-import { useLoadTree } from "./actions";
-
+import type { DatasetIdT } from "../api/types";
 import type { StateT } from "../app/reducers";
 
+import ConceptTreeListItem from "./ConceptTreeListItem";
+import ConceptTreesLoading from "./ConceptTreesLoading";
+import EmptyConceptTreeList from "./EmptyConceptTreeList";
+import ProgressBar from "./ProgressBar";
+import { useLoadTree } from "./actions";
 import type { TreesT, SearchT } from "./reducer";
 import { getAreTreesAvailable } from "./selectors";
-
-import EmptyConceptTreeList from "./EmptyConceptTreeList";
-import ConceptTreesLoading from "./ConceptTreesLoading";
-import ProgressBar from "./ProgressBar";
-import ConceptTreeListItem from "./ConceptTreeListItem";
-import type { DatasetIdT } from "../api/types";
 import { useRootConceptIds } from "./useRootConceptIds";
 
 const Root = styled("div")<{ show?: boolean }>`
@@ -45,22 +43,22 @@ interface PropsT {
 
 const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
   const trees = useSelector<StateT, TreesT>(
-    (state) => state.conceptTrees.trees
+    (state) => state.conceptTrees.trees,
   );
   const loading = useSelector<StateT, boolean>(
-    (state) => state.conceptTrees.loading
+    (state) => state.conceptTrees.loading,
   );
   const areTreesAvailable = useSelector<StateT, boolean>((state) =>
-    getAreTreesAvailable(state)
+    getAreTreesAvailable(state),
   );
   const areDatasetsPristineOrLoading = useSelector<StateT, boolean>(
-    (state) => state.datasets.pristine || state.datasets.loading
+    (state) => state.datasets.pristine || state.datasets.loading,
   );
   const activeTab = useSelector<StateT, string>(
-    (state) => state.panes.left.activeTab
+    (state) => state.panes.left.activeTab,
   );
   const search = useSelector<StateT, SearchT>(
-    (state) => state.conceptTrees.search
+    (state) => state.conceptTrees.search,
   );
 
   const loadTree = useLoadTree();
@@ -75,7 +73,7 @@ const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
   if (search.loading) return null;
 
   const anyTreeLoading = Object.keys(trees).some(
-    (treeId) => trees[treeId].loading
+    (treeId) => trees[treeId].loading,
   );
 
   return (

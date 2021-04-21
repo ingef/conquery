@@ -4,20 +4,14 @@
 // Mainly, certain keys are allowlisted
 // (to exclude others that are relevant to the frontend only)
 // Some keys are added (e.g. the query type attribute)
-
+import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
-import {
-  DAYS_BEFORE,
-  DAYS_OR_NO_EVENT_BEFORE,
-} from "../common/constants/timebasedQueryOperatorTypes";
-
+import { isLabelPristine } from "../standard-query-editor/helper";
 import type {
   TableWithFilterValueT,
   SelectedSelectorT,
   SelectedDateColumnT,
 } from "../standard-query-editor/types";
-import { isEmpty } from "../common/helpers";
-import { isLabelPristine } from "../standard-query-editor/helper";
 
 export const transformFilterValueToApi = (filter: any) => {
   const { value, mode } = filter;
@@ -63,7 +57,7 @@ export const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
         filters: table.filters
           ? table.filters
               .filter(
-                (filter) => exists(filter.value) && !isEmpty(filter.value)
+                (filter) => exists(filter.value) && !isEmpty(filter.value),
               ) // Only send filters with a value
               .map((filter) => ({
                 filter: filter.id,
@@ -80,7 +74,7 @@ export const transformElementsToApi = (conceptGroup: any) =>
 
 const transformStandardQueryToApi = (
   query: any,
-  selectedSecondaryId?: string | null
+  selectedSecondaryId?: string | null,
 ) => {
   const queryAnd = createAnd(createQueryConcepts(query));
 
@@ -150,16 +144,16 @@ const createQueryConcepts = (query: any) => {
 };
 
 // TODO: Use, once feature is complete
-const getDays = (condition: any) => {
+const getDays = (condition: ConditionT) => {
   switch (condition.operator) {
-    case DAYS_BEFORE:
+    case "DAYS_BEFORE":
       return {
         days: {
           min: condition.minDays,
           max: condition.maxDays,
         },
       };
-    case DAYS_OR_NO_EVENT_BEFORE:
+    case "DAYS_OR_NO_EVENT_BEFORE":
       return {
         days: condition.minDaysOrNoEvent,
       };
@@ -186,8 +180,8 @@ const transformTimebasedQueryToApi = (query: any) =>
             child: createSavedQuery(condition.result1.id),
           },
         };
-      })
-    )
+      }),
+    ),
   );
 
 const transformExternalQueryToApi = (query: any) =>
@@ -206,7 +200,7 @@ const createExternal = (query: any) => {
 // to make it compatible with the backend API
 export const transformQueryToApi = (
   query: Object,
-  options: { queryType: string; selectedSecondaryId?: string | null }
+  options: { queryType: string; selectedSecondaryId?: string | null },
 ) => {
   switch (options.queryType) {
     case "timebased":

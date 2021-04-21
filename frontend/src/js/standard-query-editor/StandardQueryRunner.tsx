@@ -1,16 +1,15 @@
-import React, { FC } from "react";
-import { useSelector } from "react-redux";
 import { StateT } from "app-types";
-
-import QueryRunner from "../query-runner/QueryRunner";
-
-import { validateQueryLength, validateQueryDates } from "../model/query";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../api/types";
-import type { QueryRunnerStateT } from "../query-runner/reducer";
+import { validateQueryLength, validateQueryDates } from "../model/query";
+import QueryRunner from "../query-runner/QueryRunner";
 import { useStartQuery, useStopQuery } from "../query-runner/actions";
+import type { QueryRunnerStateT } from "../query-runner/reducer";
+
 import type { StandardQueryStateT } from "./queryReducer";
-import { useTranslation } from "react-i18next";
 
 function validateQueryStartStop({ startQuery, stopQuery }: QueryRunnerStateT) {
   return !startQuery.loading && !stopQuery.loading;
@@ -34,16 +33,16 @@ function useButtonTooltip(hasQueryValidDates: boolean) {
 
 const StandardQueryRunner = () => {
   const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId,
   );
   const query = useSelector<StateT, StandardQueryStateT>(
-    (state) => state.queryEditor.query
+    (state) => state.queryEditor.query,
   );
   const queryRunner = useSelector<StateT, QueryRunnerStateT>(
-    (state) => state.queryEditor.queryRunner
+    (state) => state.queryEditor.queryRunner,
   );
   const selectedSecondaryId = useSelector<StateT, string | null>(
-    (state) => state.queryEditor.selectedSecondaryId
+    (state) => state.queryEditor.selectedSecondaryId,
   );
 
   const queryId = queryRunner.runningQuery;

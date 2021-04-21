@@ -1,23 +1,15 @@
+import styled from "@emotion/styled";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import styled from "@emotion/styled";
-
-import {
-  BEFORE,
-  BEFORE_OR_SAME,
-  DAYS_BEFORE,
-  SAME,
-  DAYS_OR_NO_EVENT_BEFORE,
-} from "../common/constants/timebasedQueryOperatorTypes";
-import { isEmpty } from "../common/helpers";
 
 import IconButton from "../button/IconButton";
-
+import { isEmpty } from "../common/helpers";
 import VerticalToggleButton from "../form-components/VerticalToggleButton";
 
-import TimebasedQueryEditorDropzone from "./TimebasedQueryEditorDropzone";
 import TimebasedConditionDayRange from "./TimebasedConditionDayRange";
 import TimebasedNode from "./TimebasedNode";
+import TimebasedQueryEditorDropzone from "./TimebasedQueryEditorDropzone";
+import type { TimebasedConditionT } from "./reducer";
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
@@ -72,7 +64,7 @@ const Operator = styled("div")`
 `;
 
 type PropsType = {
-  condition: Object;
+  condition: TimebasedConditionT;
   conditionIdx: number;
   indexResult: number | string | null;
   removable: boolean;
@@ -117,7 +109,7 @@ const TimebasedCondition = (props: PropsType) => {
           props.onSetTimebasedIndexResult(props.condition[`result${idx}`].id);
         }}
         isIndexResultDisabled={
-          idx === 0 && props.condition.operator === DAYS_OR_NO_EVENT_BEFORE
+          idx === 0 && props.condition.operator === "DAYS_OR_NO_EVENT_BEFORE"
         }
       />
     ) : (
@@ -148,23 +140,23 @@ const TimebasedCondition = (props: PropsType) => {
               options={[
                 {
                   label: t("timebasedQueryEditor.opBefore"),
-                  value: BEFORE,
+                  value: "BEFORE",
                 },
                 {
                   label: t("timebasedQueryEditor.opBeforeOrSame"),
-                  value: BEFORE_OR_SAME,
+                  value: "BEFORE_OR_SAME",
                 },
                 {
                   label: t("timebasedQueryEditor.opDays"),
-                  value: DAYS_BEFORE,
+                  value: "DAYS_BEFORE",
                 },
                 {
                   label: t("timebasedQueryEditor.opSame"),
-                  value: SAME,
+                  value: "SAME",
                 },
                 {
                   label: t("timebasedQueryEditor.opDaysOrNoEventBefore"),
-                  value: DAYS_OR_NO_EVENT_BEFORE,
+                  value: "DAYS_OR_NO_EVENT_BEFORE",
                 },
               ]}
             />
@@ -172,7 +164,7 @@ const TimebasedCondition = (props: PropsType) => {
           {result1}
         </Nodes>
       </NodesContainer>
-      {props.condition.operator === DAYS_BEFORE && (
+      {props.condition.operator === "DAYS_BEFORE" && (
         <TimebasedConditionDayRange
           minDays={minDays}
           maxDays={maxDays}
@@ -180,7 +172,7 @@ const TimebasedCondition = (props: PropsType) => {
           onSetTimebasedConditionMaxDays={props.onSetTimebasedConditionMaxDays}
         />
       )}
-      {props.condition.operator === DAYS_OR_NO_EVENT_BEFORE && (
+      {props.condition.operator === "DAYS_OR_NO_EVENT_BEFORE" && (
         <TimebasedConditionDayRange
           minDays={minDaysOrNoEvent}
           onSetTimebasedConditionMinDays={

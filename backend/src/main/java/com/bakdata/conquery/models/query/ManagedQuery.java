@@ -27,7 +27,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -107,7 +106,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.involvedWorkers = namespace.getWorkers().size();
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, null));
 		if (label == null) {
-			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces));
+			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces, config));
 		}
 	}
 
@@ -186,7 +185,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 												   .build());
 		}
 		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry);
+		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config);
 
 		collectResultInfos().getInfos()
 							.forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
@@ -314,23 +313,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {
-		String cqConceptLabel = cqConcept.getLabel(cfg.getLocale());
-		if (cqConceptLabel == null) {
-			return "";
-		}
-
-		if (cqConcept.getElements().isEmpty()) {
-			return cqConceptLabel.replace(" ", "-"); // This is usually an illegal case, an CQConcept must have at least one id, but this code should never fail
-		}
-
-		Concept<?> concept = cqConcept.getElements().get(0).getConcept();
-		String conceptLabel = concept.getLabel();
-		if (cqConceptLabel.equalsIgnoreCase(conceptLabel)) {
-			return cqConceptLabel.replace(" ", "-");
+		String label = cqConcept.getUserOrDefaultLabel(cfg.getLocale());
+		if (label == null) {
+			label = cqConcept.getConcept().getLabel();
 		}
 
 		// Concat everything with dashes
-		return (conceptLabel + "-" + cqConceptLabel).replace(" ", "-");
+		return label.replace(" ", "-");
 	}
 
 	@Override

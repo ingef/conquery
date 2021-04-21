@@ -5,6 +5,8 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
@@ -31,6 +33,7 @@ import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.Setter;
@@ -62,14 +65,12 @@ public class TablesUIResource extends HAdmin {
 							 .getStorage()
 							 .getTable(tableId);
 
-		if (table == null) {
-			throw new NotFoundException("Could not find Table " + tableId.toString());
-		}
+		ResourceUtil.throwNotFoundIfNull(tableId, table);
 	}
 
 	@GET
 	public View getTableView() {
-		List<Import> imports = table.findImports(namespace.getStorage());
+		List<Import> imports = table.findImports(namespace.getStorage()).collect(Collectors.toList());
 
 		final long entries = imports.stream().mapToLong(Import::getNumberOfEntries).sum();
 

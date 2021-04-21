@@ -2,8 +2,8 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
-import WithTooltip from "../tooltip/WithTooltip";
 import IconButton from "../button/IconButton";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import { clearQuery } from "./actions";
 

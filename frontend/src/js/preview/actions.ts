@@ -1,3 +1,5 @@
+import type { ColumnDescription } from "../api/types";
+import { defaultError } from "../common/actions";
 import { loadCSV } from "../file/csv";
 
 import {
@@ -6,9 +8,6 @@ import {
   LOAD_CSV_START,
   LOAD_CSV_ERROR,
 } from "./actionTypes";
-
-import { defaultError } from "../common/actions";
-import type { ColumnDescription } from "../api/types";
 
 export function closePreview() {
   return {
@@ -20,7 +19,7 @@ const loadCSVStart = () => ({ type: LOAD_CSV_START });
 const loadCSVError = (err: any) => defaultError(LOAD_CSV_ERROR, err);
 const loadCSVSuccess = (
   parsed: { result: { data: string[][] } },
-  columns: ColumnDescription[]
+  columns: ColumnDescription[],
 ) => ({
   type: OPEN_PREVIEW,
   payload: {

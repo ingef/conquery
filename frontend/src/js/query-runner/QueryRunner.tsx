@@ -1,14 +1,14 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import Hotkeys from "react-hot-keys";
 
 import Preview from "../preview/Preview";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryResults from "./QueryResults";
-import QueryRunningSpinner from "./QueryRunningSpinner";
-import QueryRunnerInfo from "./QueryRunnerInfo";
 import QueryRunnerButton from "./QueryRunnerButton";
+import QueryRunnerInfo from "./QueryRunnerInfo";
+import QueryRunningSpinner from "./QueryRunningSpinner";
 import type { QueryRunnerStateT } from "./reducer";
 
 const Root = styled("div")`

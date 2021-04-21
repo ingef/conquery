@@ -1,5 +1,6 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
+
 import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`

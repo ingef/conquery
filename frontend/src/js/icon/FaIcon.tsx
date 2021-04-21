@@ -1,11 +1,10 @@
-import React from "react";
 import isPropValid from "@emotion/is-prop-valid";
 import styled from "@emotion/styled";
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { far } from "@fortawesome/free-regular-svg-icons";
 import { fas } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 
 library.add(fas, far);
 
@@ -31,9 +30,9 @@ export interface FaIconPropsT extends IconStyleProps {
 const shouldForwardProp = (prop: keyof FaIconPropsT) =>
   isPropValid(prop) || prop === "icon" || prop === "className";
 
-export const Icon = styled(FontAwesomeIcon, { shouldForwardProp })<
-  IconStyleProps
->`
+export const Icon = styled(FontAwesomeIcon, {
+  shouldForwardProp,
+})<IconStyleProps>`
   padding-right: ${({ left }) => (left ? "10px" : "0")};
   padding-left: ${({ right }) => (right ? "10px" : "0")};
   text-align: ${({ center }) => (center ? "center" : "left")};

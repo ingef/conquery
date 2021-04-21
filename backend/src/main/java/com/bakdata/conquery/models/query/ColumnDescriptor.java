@@ -33,6 +33,7 @@ public class ColumnDescriptor {
 	 * Beware that this label must not be unique among the columns
 	 */
 	private String defaultLabel;
+
 	/**
 	 * The datatype that corresponds to this column.
 	 */

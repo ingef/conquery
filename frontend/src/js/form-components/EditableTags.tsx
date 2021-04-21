@@ -1,8 +1,9 @@
-import React, { ReactNode, FC } from "react";
 import styled from "@emotion/styled";
+import React, { ReactNode, FC } from "react";
+
+import IconButton from "../button/IconButton";
 
 import EditableTagsForm from "./EditableTagsForm";
-import IconButton from "../button/IconButton";
 
 interface PropsT {
   className?: string;

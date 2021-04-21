@@ -97,7 +97,7 @@ public class ConceptsProcessor {
 	public List<IdLabel<DatasetId>> getDatasets(User user) {
 		return namespaces.getAllDatasets()
 						 .stream()
-						 .filter(d -> AuthorizationHelper.isPermitted(user, d, Ability.READ))
+						 .filter(d -> user.isPermitted(d, Ability.READ))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
 						 .sorted()
 						 .collect(Collectors.toList());

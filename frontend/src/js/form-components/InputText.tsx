@@ -1,12 +1,11 @@
 import React from "react";
 import type { WrappedFieldProps } from "redux-form";
 
+import type { CurrencyConfigT } from "../api/types";
 import { isEmpty } from "../common/helpers";
 
 import BaseInput from "./BaseInput";
 import Labeled from "./Labeled";
-
-import type { CurrencyConfigT } from "../api/types";
 
 interface PropsT extends WrappedFieldProps {
   label: string;

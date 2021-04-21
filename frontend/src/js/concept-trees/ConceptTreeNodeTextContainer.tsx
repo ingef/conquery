@@ -1,16 +1,18 @@
 import React, { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 
-import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
-import { isEmpty } from "../common/helpers";
+import { getWidthAndHeight } from "../app/DndProvider";
 import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";
-
+import { isEmpty } from "../common/helpers";
+import type {
+  ConceptQueryNodeType,
+  DragItemConceptTreeNode,
+} from "../standard-query-editor/types";
+import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 import type { AdditionalInfoHoverableNodeType } from "../tooltip/AdditionalInfoHoverable";
-import type { DraggedNodeType } from "../standard-query-editor/types";
-import type { SearchT } from "./reducer";
 
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
-import { getWidthAndHeight } from "../app/DndProvider";
+import type { SearchT } from "./reducer";
 
 interface PropsT {
   node: AdditionalInfoHoverableNodeType & {
@@ -22,7 +24,7 @@ interface PropsT {
   depth: number;
   active?: boolean;
   onTextClick?: Function;
-  createQueryElement: () => DraggedNodeType;
+  createQueryElement: () => ConceptQueryNodeType;
   search?: SearchT;
   isStructFolder?: boolean;
 }
@@ -52,13 +54,13 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   const resultCount = getResultCount(search, node);
   const hasChildren = !!node.children && node.children.length > 0;
 
-  const item = {
+  const item: DragItemConceptTreeNode = {
     height: 0,
     width: 0,
     type: CONCEPT_TREE_NODE,
     ...createQueryElement(),
   };
-  const [, drag] = useDrag({
+  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
     item,
     begin: () => ({
       ...item,

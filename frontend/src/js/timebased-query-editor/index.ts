@@ -4,11 +4,12 @@ import type { TabT } from "../pane/types";
 import createQueryRunnerReducer, {
   QueryRunnerStateT,
 } from "../query-runner/reducer";
+
+import TimebasedQueryEditorTab from "./TimebasedQueryEditorTab";
 import {
   default as timebasedQueryReducer,
   TimebasedQueryStateT,
 } from "./reducer";
-import TimebasedQueryEditorTab from "./TimebasedQueryEditorTab";
 
 const timebasedQueryRunnerReducer = createQueryRunnerReducer("timebased");
 

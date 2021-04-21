@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -25,7 +22,7 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
-import com.bakdata.conquery.models.query.resultinfo.LocalizedSimpleResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.util.QueryUtils;
 import com.google.common.base.Preconditions;
@@ -42,7 +39,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	private List<CQElement> children;
 
 	@Getter @Setter
-	boolean createExists = false;
+	private Optional<Boolean> createExists = Optional.empty();
 
 	@InternalOnly
 	@Getter @Setter
@@ -50,7 +47,9 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 
 	@Override
 	public void setDefaultExists() {
-		createExists = true;
+		if (createExists.isEmpty()){
+			createExists = Optional.of(true);
+		}
 	}
 
 	@Override
@@ -62,15 +61,13 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 			nodes[i] = children.get(i).createQueryPlan(context, plan);
 		}
 
-
 		final QPNode node = AndNode.of(Arrays.asList(nodes), dateAction);
 
-		if (createExists) {
+		if (createExists()) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(node.collectRequiredTables());
 			existsAggregator.setReference(node);
 			plan.addAggregator(existsAggregator);
 		}
-
 
 		return node;
 	}
@@ -110,19 +107,24 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 			c.collectResultInfos(collector);
 		}
 
-		if(createExists){
-			collector.add(new LocalizedSimpleResultInfo(this::getLabel, ResultType.BooleanT.INSTANCE));
+		if(createExists()){
+			collector.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}
 
 	@Override
-	public String getLabel(Locale locale) {
-		String label = super.getLabel(locale);
-		if (label != null) {
-			return label;
+	public String getUserOrDefaultLabel(Locale locale) {
+		// Prefer the user label
+		if (getLabel() != null){
+			return getLabel();
 		}
-
 		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).and() + " ", locale);
+	}
+
+	@Override
+	public String defaultLabel(Locale locale) {
+		// This forces the default label on children even if there was a user label
+		return QueryUtils.createTotalDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).and() + " ", locale);
 	}
 
 	@Override
@@ -131,5 +133,9 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 		for (CQElement c : children) {
 			c.visit(visitor);
 		}
+	}
+
+	private boolean createExists(){
+		return createExists.orElse(false);
 	}
 }

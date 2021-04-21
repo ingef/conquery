@@ -1,4 +1,5 @@
 import { UserGroupIdT } from "../../api/types";
+
 import {
   LOAD_CONFIGS_SUCCESS,
   LOAD_CONFIGS_ERROR,
@@ -72,7 +73,7 @@ const findUniqueNames = (queries: FormConfigT[]) => {
 
 const updateFormConfig = (
   configs: FormConfigT[],
-  { id, values }: { id: string; values: Partial<FormConfigT> }
+  { id, values }: { id: string; values: Partial<FormConfigT> },
 ) => {
   const config = configs.find((conf) => conf.id === id);
 
@@ -94,7 +95,7 @@ const updateFormConfig = (
 
 const formConfigs = (
   state: FormConfigsStateT = initialState,
-  action: any
+  action: any,
 ): FormConfigsStateT => {
   switch (action.type) {
     case LOAD_CONFIGS_SUCCESS:

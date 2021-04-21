@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
@@ -88,6 +87,7 @@ import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
+import com.bakdata.conquery.util.ResourceUtil;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
@@ -119,17 +119,17 @@ public class AdminProcessor {
 	@Nullable
 	private final String storagePrefix;
 
-	public synchronized void addTable(Table table, Namespace namespace) throws JSONException {
+	public synchronized void addTable(@NonNull Table table, Namespace namespace) throws JSONException {
 		Dataset dataset = namespace.getDataset();
 
-		Objects.requireNonNull(dataset);
-		Objects.requireNonNull(table);
 		if (table.getDataset() == null) {
 			table.setDataset(dataset);
 		}
 		else if (!table.getDataset().equals(dataset)) {
 			throw new IllegalArgumentException();
 		}
+
+		ValidatorHelper.failOnError(log, validator.validate(table));
 
 		for (int p = 0; p < table.getColumns().length; p++) {
 			table.getColumns()[p].setPosition(p);
@@ -233,7 +233,7 @@ public class AdminProcessor {
 	}
 
 	public void addRoles(List<Role> roles) {
-		Objects.requireNonNull(roles, "Role list was empty.");
+
 		for (Role role : roles) {
 			try {
 				addRole(role);
@@ -271,7 +271,10 @@ public class AdminProcessor {
 	}
 
 	public FERoleContent getRoleContent(RoleId roleId) {
-		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
+		Role role = storage.getRole(roleId);
+
+		ResourceUtil.throwNotFoundIfNull(roleId,role);
+
 		return FERoleContent
 					   .builder()
 					   .permissions(wrapInFEPermission(role.getPermissions()))
@@ -341,7 +344,10 @@ public class AdminProcessor {
 	}
 
 	public FEUserContent getUserContent(UserId userId) {
-		User user = Objects.requireNonNull(storage.getUser(userId));
+		User user = storage.getUser(userId);
+
+		ResourceUtil.throwNotFoundIfNull(userId,user);
+
 		return FEUserContent
 					   .builder()
 					   .owner(user)
@@ -368,7 +374,7 @@ public class AdminProcessor {
 	}
 
 	public void addUsers(List<User> users) {
-		Objects.requireNonNull(users, "User list was empty.");
+
 		for (User user : users) {
 			try {
 				addUser(user);
@@ -384,7 +390,10 @@ public class AdminProcessor {
 	}
 
 	public FEGroupContent getGroupContent(GroupId groupId) {
-		Group group = Objects.requireNonNull(storage.getGroup(groupId));
+		Group group = storage.getGroup(groupId);
+
+		ResourceUtil.throwNotFoundIfNull(groupId, group);
+
 		Set<UserId> membersIds = group.getMembers();
 		ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
 		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
@@ -408,7 +417,7 @@ public class AdminProcessor {
 	}
 
 	public void addGroups(List<Group> groups) {
-		Objects.requireNonNull(groups, "Group list was null.");
+
 		for (Group group : groups) {
 			try {
 				addGroup(group);
@@ -421,18 +430,29 @@ public class AdminProcessor {
 
 	public void addUserToGroup(GroupId groupId, UserId userId) {
 		synchronized (storage) {
-			Objects
-					.requireNonNull(groupId.getPermissionOwner(storage))
-					.addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+
+
+			final Group group = storage.getGroup(groupId);
+			final User user = storage.getUser(userId);
+
+			ResourceUtil.throwNotFoundIfNull(groupId, group);
+			ResourceUtil.throwNotFoundIfNull(userId, user);
+
+			group.addMember(storage, user);
+
+			log.trace("Added user {} to group {}", user, group);
 		}
-		log.trace("Added user {} to group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(storage));
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) {
 		synchronized (storage) {
-			Objects
-					.requireNonNull(groupId.getPermissionOwner(storage))
-					.removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+			final User user = storage.getUser(userId);
+			final Group group = storage.getGroup(groupId);
+
+			ResourceUtil.throwNotFoundIfNull(userId,user);
+			ResourceUtil.throwNotFoundIfNull(groupId,group);
+
+			group.removeMember(storage,user);
 		}
 		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(storage));
 	}
@@ -448,32 +468,25 @@ public class AdminProcessor {
 		synchronized (storage) {
 			owner = ownerId.getPermissionOwner(storage);
 
-			if(owner == null){
-				throw new NotFoundException("Owner does not exist.");
-			}
+			ResourceUtil.throwNotFoundIfNull(ownerId,owner);
 
 			role = storage.getRole(roleId);
 
-			if(role == null){
-				throw new NotFoundException("Role does not exist.");
-			}
+			ResourceUtil.throwNotFoundIfNull(roleId,role);
+
+			AuthorizationHelper.deleteRoleFrom(storage, owner, role);
 		}
 
-		AuthorizationHelper.deleteRoleFrom(storage,owner,role);
 	}
 
 	public <ID extends PermissionOwnerId<? extends RoleOwner>> void addRoleTo(ID ownerId, RoleId roleId) {
 		final Role role = roleId.getPermissionOwner(getStorage());
 
-		if(role == null){
-			throw new NotFoundException("Role does not exist.");
-		}
+		ResourceUtil.throwNotFoundIfNull(roleId,role);
 
 		final RoleOwner owner = ownerId.getPermissionOwner(getStorage());
 
-		if(owner == null){
-			throw new NotFoundException("Owner does not exist.");
-		}
+		ResourceUtil.throwNotFoundIfNull(ownerId, owner);
 
 		AuthorizationHelper.addRoleTo(getStorage(), role, owner);
 	}
@@ -504,7 +517,9 @@ public class AdminProcessor {
 	 * Renders the permission overview for all users in a certain {@link Group} in form of a CSV.
 	 */
 	public String getPermissionOverviewAsCSV(GroupId groupId) {
-		Group group = Objects.requireNonNull(storage.getGroup(groupId), "The group was not found");
+		final Group group = storage.getGroup(groupId);
+		ResourceUtil.throwNotFoundIfNull(groupId,group);
+
 		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser).collect(Collectors.toList()));
 	}
 

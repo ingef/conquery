@@ -1,5 +1,6 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
+
 import QueryClearButton from "./QueryClearButton";
 
 const Container = styled("div")`

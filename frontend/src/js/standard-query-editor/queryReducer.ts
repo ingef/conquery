@@ -1,8 +1,3 @@
-import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
-
-import { isEmpty, objectWithoutKey } from "../common/helpers";
-import { exists } from "../common/helpers/exists";
-
 import type {
   AndQueryT,
   TableT,
@@ -16,26 +11,26 @@ import type {
   FilterConfigT,
   RangeFilterValueT,
   FilterIdT,
+  ConceptIdT,
 } from "../api/types";
-
-import { resetAllFiltersInTables } from "../model/table";
+import { isEmpty, objectWithoutKey } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
+import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
+import type { TreesT } from "../concept-trees/reducer";
+import { isMultiSelectFilter } from "../model/filter";
 import { selectsWithDefaults } from "../model/select";
-
-import {
-  QUERY_GROUP_MODAL_SET_DATE,
-  QUERY_GROUP_MODAL_RESET_ALL_DATES,
-} from "../query-group-modal/actionTypes";
-
+import { resetAllFiltersInTables } from "../model/table";
 import {
   LOAD_PREVIOUS_QUERY_START,
   LOAD_PREVIOUS_QUERY_SUCCESS,
   LOAD_PREVIOUS_QUERY_ERROR,
   RENAME_PREVIOUS_QUERY_SUCCESS,
 } from "../previous-queries/list/actionTypes";
-
+import {
+  QUERY_GROUP_MODAL_SET_DATE,
+  QUERY_GROUP_MODAL_RESET_ALL_DATES,
+} from "../query-group-modal/actionTypes";
 import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
-
-import type { TreesT } from "../concept-trees/reducer";
 
 import {
   DROP_AND_NODE,
@@ -64,21 +59,20 @@ import {
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_DATE_COLUMN,
 } from "./actionTypes";
-
 import type {
   StandardQueryNodeT,
-  DraggedNodeType,
-  DraggedQueryType,
+  DragItemQuery,
   QueryGroupType,
+  DragItemNode,
+  DragItemConceptTreeNode,
 } from "./types";
-import { isMultiSelectFilter } from "../model/filter";
 
 export type StandardQueryStateT = QueryGroupType[];
 
 const initialState: StandardQueryStateT = [];
 
 const filterItem = (
-  item: DraggedNodeType | DraggedQueryType
+  item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
 ): StandardQueryNodeT => {
   // This sort of mapping might be a problem when adding new optional properties to
   // either Nodes or Queries: Flow won't complain when we omit those optional
@@ -136,7 +130,7 @@ const setElementProperties = (
   node: StandardQueryStateT,
   andIdx: number,
   orIdx: number,
-  properties: Partial<StandardQueryNodeT>
+  properties: Partial<StandardQueryNodeT>,
 ) => {
   const groupProperties = {
     elements: [
@@ -166,9 +160,9 @@ const dropAndNode = (
   state: StandardQueryStateT,
   action: {
     payload: {
-      item: DraggedNodeType | DraggedQueryType;
+      item: DragItemNode | DragItemQuery | DragItemConceptTreeNode;
     };
-  }
+  },
 ) => {
   const group = state[state.length - 1];
   const dateRangeOfLastGroup = group ? group.dateRange : undefined;
@@ -193,10 +187,10 @@ const dropOrNode = (
   state: StandardQueryStateT,
   action: {
     payload: {
-      item: DraggedNodeType | DraggedQueryType;
+      item: DragItemNode | DragItemQuery | DragItemConceptTreeNode;
       andIdx: number;
     };
-  }
+  },
 ) => {
   const { item, andIdx } = action.payload;
 
@@ -223,7 +217,7 @@ const dropOrNode = (
 // Delete a single Node (concept inside a group)
 const deleteNode = (
   state: StandardQueryStateT,
-  action: { payload: { andIdx: number; orIdx: number } }
+  action: { payload: { andIdx: number; orIdx: number } },
 ) => {
   const { andIdx, orIdx } = action.payload;
 
@@ -271,7 +265,7 @@ const updateNodeTable = (
   andIdx: number,
   orIdx: number,
   tableIdx: number,
-  table: TableT
+  table: TableT,
 ) => {
   const node = state[andIdx].elements[orIdx];
   const tables = [
@@ -287,7 +281,7 @@ const updateNodeTables = (
   state: StandardQueryStateT,
   andIdx: number,
   orIdx: number,
-  tables
+  tables,
 ) => {
   return setElementProperties(state, andIdx, orIdx, { tables });
 };
@@ -459,7 +453,7 @@ const resetGroupDates = (state: StandardQueryStateT, action: any) => {
 };
 
 const isRangeFilterConfig = (
-  filter: FilterConfigT
+  filter: FilterConfigT,
 ): filter is {
   filter: FilterIdT;
   value: RangeFilterValueT;
@@ -470,7 +464,7 @@ const isRangeFilterConfig = (
   filter.type === "MONEY_RANGE";
 
 const isMultiSelectFilterConfig = (
-  filter: FilterConfigT
+  filter: FilterConfigT,
 ): filter is {
   filter: FilterIdT;
   value: FilterIdT[];
@@ -488,7 +482,7 @@ const isMultiSelectFilterConfig = (
 // if so, we will need to merge them in.
 const mergeFiltersFromSavedConcept = (
   savedTable: TableT,
-  table?: TableConfigT
+  table?: TableConfigT,
 ) => {
   if (!table || !table.filters) return savedTable.filters || null;
 
@@ -522,7 +516,7 @@ const mergeFiltersFromSavedConcept = (
           .map((val) => {
             if (!isMultiSelectFilter(filter)) {
               console.error(
-                `Filter: ${filter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`
+                `Filter: ${filter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`,
               );
               return val;
             } else {
@@ -536,7 +530,7 @@ const mergeFiltersFromSavedConcept = (
         defaultValue: matchingFilter.value.filter((val) => {
           if (!isMultiSelectFilter(filter)) {
             console.error(
-              `Filter: ${filter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`
+              `Filter: ${filter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`,
             );
             return false;
           }
@@ -554,7 +548,7 @@ const mergeFiltersFromSavedConcept = (
 
 const mergeSelects = (
   savedSelects?: SelectorT[],
-  conceptOrTable?: QueryConceptNodeT | TableT
+  conceptOrTable?: QueryConceptNodeT | TableT,
 ) => {
   if (!conceptOrTable || !conceptOrTable.selects) {
     return savedSelects || null;
@@ -564,7 +558,7 @@ const mergeSelects = (
 
   return savedSelects.map((select) => {
     const selectedSelect = conceptOrTable.selects.find(
-      (id) => id === select.id
+      (id) => id === select.id,
     );
 
     return { ...select, selected: !!selectedSelect };
@@ -587,7 +581,7 @@ const mergeTables = (savedTables: TableT[], concept: QueryConceptNodeT) => {
         // Find corresponding table in previous queryObject
         // TODO: Disentangle id / connectorId mixing
         const table = concept.tables.find(
-          (t) => t.id === savedTable.connectorId
+          (t) => t.id === savedTable.connectorId,
         );
         const filters = mergeFiltersFromSavedConcept(savedTable, table);
         const selects = mergeSelects(savedTable.selects, table);
@@ -609,7 +603,7 @@ const mergeTables = (savedTables: TableT[], concept: QueryConceptNodeT) => {
 // Also, apply all necessary filters
 const mergeFromSavedConceptIntoNode = (
   node: QueryConceptNodeT,
-  { tables, selects }: { tables: TableT[]; selects: SelectorT[] }
+  { tables, selects }: { tables: TableT[]; selects: SelectorT[] },
 ) => {
   return {
     selects: mergeSelects(selects, node),
@@ -625,14 +619,14 @@ const expandNode = (
     | OrNodeT
     | QueryConceptNodeT
     | SavedQueryNodeT,
-  expandErrorMessage: string
+  expandErrorMessage: string,
 ) => {
   switch (node.type) {
     case "OR":
       return {
         type: "OR",
         elements: node.children.map((c) =>
-          expandNode(rootConcepts, c, expandErrorMessage)
+          expandNode(rootConcepts, c, expandErrorMessage),
         ),
       };
     case "SAVED_QUERY":
@@ -654,7 +648,7 @@ const expandNode = (
     default:
       const lookupResult = getConceptsByIdsWithTablesAndSelects(
         rootConcepts,
-        node.ids
+        node.ids,
       );
 
       if (!lookupResult)
@@ -697,7 +691,7 @@ const expandPreviousQuery = (action: {
   const { rootConcepts, query, expandErrorMessage } = action.payload;
 
   return query.root.children.map((child) =>
-    expandNode(rootConcepts, child, expandErrorMessage)
+    expandNode(rootConcepts, child, expandErrorMessage),
   );
 };
 
@@ -709,7 +703,7 @@ const findPreviousQueries = (state: StandardQueryStateT, action: any) => {
         .map((concept, orIdx) => ({ ...concept, orIdx }))
         .filter(
           (concept) =>
-            concept.isPreviousQuery && concept.id === action.payload.queryId
+            concept.isPreviousQuery && concept.id === action.payload.queryId,
         )
         .map((concept) => ({
           andIdx,
@@ -725,7 +719,7 @@ const findPreviousQueries = (state: StandardQueryStateT, action: any) => {
 const updatePreviousQueries = (
   state: StandardQueryStateT,
   action: any,
-  attributes: any
+  attributes: any,
 ) => {
   const queries = findPreviousQueries(state, action);
 
@@ -782,7 +776,7 @@ const renamePreviousQuery = (state: StandardQueryStateT, action: any) => {
 
 function getPositionFromActionOrEditedNode(
   state: StandardQueryStateT,
-  action: any
+  action: any,
 ) {
   const { andIdx, orIdx } = action.payload;
 
@@ -819,7 +813,7 @@ const loadFilterSuggestionsStart = (state: StandardQueryStateT, action: any) =>
 
 const loadFilterSuggestionsSuccess = (
   state: StandardQueryStateT,
-  action: any
+  action: any,
 ) => {
   // When [] comes back from the API, don't touch the current options
   if (!action.payload.data || action.payload.data.length === 0)
@@ -835,17 +829,20 @@ const loadFilterSuggestionsError = (state: StandardQueryStateT, action: any) =>
   setNodeFilterProperties(state, action, { isLoading: false });
 
 const createQueryNodeFromConceptListUploadResult = (
-  label,
-  rootConcepts,
-  resolvedConcepts
-): DraggedNodeType => {
+  label: string,
+  rootConcepts: TreesT,
+  resolvedConcepts: ConceptIdT[],
+): DragItemConceptTreeNode | null => {
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
     rootConcepts,
-    resolvedConcepts
+    resolvedConcepts,
   );
 
   return lookupResult
     ? {
+        type: "CONCEPT_TREE_NODE",
+        height: 0,
+        width: 0,
         label,
         ids: resolvedConcepts,
         tables: lookupResult.tables,
@@ -861,7 +858,7 @@ const insertUploadedConceptList = (state: StandardQueryStateT, action: any) => {
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
     rootConcepts,
-    resolvedConcepts
+    resolvedConcepts,
   );
 
   if (!queryElement) return state;
@@ -877,7 +874,7 @@ const insertUploadedConceptList = (state: StandardQueryStateT, action: any) => {
 
 const selectNodeForEditing = (
   state: StandardQueryStateT,
-  { payload: { andIdx, orIdx } }: any
+  { payload: { andIdx, orIdx } }: any,
 ) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
 };
@@ -896,7 +893,7 @@ const updateNodeLabel = (state: StandardQueryStateT, action: any) => {
 
 const addConceptToNode = (
   state: StandardQueryStateT,
-  action: { payload: { concept: DraggedNodeType } }
+  action: { payload: { concept: DragItemConceptTreeNode } },
 ) => {
   const nodePosition = selectEditedNodePosition(state);
 
@@ -1015,7 +1012,7 @@ const removeConceptFromNode = (state: StandardQueryStateT, action: any) => {
 // ]
 const query = (
   state: StandardQueryStateT = initialState,
-  action: any
+  action: any,
 ): StandardQueryStateT => {
   switch (action.type) {
     case DROP_AND_NODE:

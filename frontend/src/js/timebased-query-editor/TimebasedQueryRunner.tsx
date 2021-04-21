@@ -1,18 +1,18 @@
+import { StateT } from "app-types";
 import React, { FC } from "react";
 import { useSelector } from "react-redux";
-import { StateT } from "app-types";
 
 import { DatasetIdT, QueryIdT } from "../api/types";
-import { QueryRunnerStateT } from "../query-runner/reducer";
-import { useStartQuery, useStopQuery } from "../query-runner/actions";
 import QueryRunner from "../query-runner/QueryRunner";
+import { useStartQuery, useStopQuery } from "../query-runner/actions";
+import { QueryRunnerStateT } from "../query-runner/reducer";
 
 import { allConditionsFilled } from "./helpers";
 import { TimebasedQueryStateT } from "./reducer";
 
 const selectIsButtonEnabled = (
   datasetId: DatasetIdT | null,
-  queryRunner: QueryRunnerStateT | null
+  queryRunner: QueryRunnerStateT | null,
 ) => (state: StateT) => {
   if (!queryRunner) return false;
 
@@ -26,21 +26,21 @@ const selectIsButtonEnabled = (
 
 const TimebasedQueryRunner = () => {
   const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId,
   );
   const queryRunner = useSelector<StateT, QueryRunnerStateT>(
-    (state) => state.timebasedQueryEditor.timebasedQueryRunner
+    (state) => state.timebasedQueryEditor.timebasedQueryRunner,
   );
   const isButtonEnabled = useSelector<StateT, boolean>(
-    selectIsButtonEnabled(datasetId, queryRunner)
+    selectIsButtonEnabled(datasetId, queryRunner),
   );
   const isQueryRunning = !!queryRunner.runningQuery;
   // Following ones only needed in dispatch functions
   const queryId = useSelector<StateT, QueryIdT | null>(
-    (state) => state.timebasedQueryEditor.timebasedQueryRunner.runningQuery
+    (state) => state.timebasedQueryEditor.timebasedQueryRunner.runningQuery,
   );
   const query = useSelector<StateT, TimebasedQueryStateT>(
-    (state) => state.timebasedQueryEditor.timebasedQuery
+    (state) => state.timebasedQueryEditor.timebasedQuery,
   );
 
   const startTimebasedQuery = useStartQuery("timebased");

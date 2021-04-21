@@ -1,30 +1,31 @@
-import React from "react";
 import styled from "@emotion/styled";
-import { useDispatch } from "react-redux";
-import { useTranslation } from "react-i18next";
+import React from "react";
 import Hotkeys from "react-hot-keys";
+import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
 
-import type {
-  DraggedNodeType,
-  StandardQueryNodeT,
-} from "../standard-query-editor/types";
-import WithTooltip from "../tooltip/WithTooltip";
+import type { PostPrefixForSuggestionsParams } from "../api/api";
 import {
   ConceptIdT,
   CurrencyConfigT,
   DatasetIdT,
   SelectOptionT,
 } from "../api/types";
-import type { ModeT } from "../form-components/InputRange";
-
-import MenuColumn from "./MenuColumn";
-import { createQueryNodeEditorActions } from "./actions";
-import type { PostPrefixForSuggestionsParams } from "../api/api";
-import { QueryNodeEditorStateT } from "./reducer";
-import ContentColumn from "./ContentColumn";
-import EditableText from "../form-components/EditableText";
-import ResetAllFiltersButton from "./ResetAllFiltersButton";
 import TransparentButton from "../button/TransparentButton";
+import EditableText from "../form-components/EditableText";
+import type { ModeT } from "../form-components/InputRange";
+import { nodeIsConceptQueryNode } from "../model/node";
+import type {
+  DragItemConceptTreeNode,
+  StandardQueryNodeT,
+} from "../standard-query-editor/types";
+import WithTooltip from "../tooltip/WithTooltip";
+
+import ContentColumn from "./ContentColumn";
+import MenuColumn from "./MenuColumn";
+import ResetAllFiltersButton from "./ResetAllFiltersButton";
+import { createQueryNodeEditorActions } from "./actions";
+import { QueryNodeEditorStateT } from "./reducer";
 
 const Root = styled("div")`
   padding: 0 20px 10px;
@@ -106,7 +107,7 @@ export interface QueryNodeEditorPropsT {
 
   onCloseModal: () => void;
   onUpdateLabel: (label: string) => void;
-  onDropConcept: (node: DraggedNodeType) => void;
+  onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
   onResetAllFilters: () => void;
@@ -116,12 +117,12 @@ export interface QueryNodeEditorPropsT {
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,
-    mode: ModeT
+    mode: ModeT,
   ) => void;
   onLoadFilterSuggestions: (
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
-    filterIdx: number
+    filterIdx: number,
   ) => void;
   onSetDateColumn: (tableIdx: number, value: string | null) => void;
   onSelectSelects: (value: SelectOptionT[]) => void;
@@ -168,7 +169,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
         <Hotkeys keyName="escape" onKeyDown={close} />
         <Header>
           <NodeName>
-            {!node.isPreviousQuery && (
+            {nodeIsConceptQueryNode(node) && (
               <EditableText
                 large
                 loading={false}
@@ -192,7 +193,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             />
             <WithTooltip text={t("common.closeEsc")}>
               <CloseButton small onClick={close}>
-                {t("common.done")}
+                {t("common.close")}
               </CloseButton>
             </WithTooltip>
           </Row>

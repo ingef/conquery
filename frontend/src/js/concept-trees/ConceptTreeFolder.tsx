@@ -1,14 +1,13 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 
 import type { ConceptT, ConceptIdT } from "../api/types";
-
-import { getConceptById } from "./globalTreeStoreHelper";
-import type { SearchT, TreesT } from "./reducer";
+import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 
 import ConceptTree from "./ConceptTree";
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
-import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
+import { getConceptById } from "./globalTreeStoreHelper";
+import type { SearchT, TreesT } from "./reducer";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};

@@ -10,7 +10,7 @@ const initialState: SnackMessageStateT = {
 
 export default (
   state: SnackMessageStateT = initialState,
-  action: Object
+  action: Object,
 ): SnackMessageStateT => {
   switch (action.type) {
     case SET_MESSAGE:

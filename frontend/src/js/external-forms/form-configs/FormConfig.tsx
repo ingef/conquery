@@ -1,34 +1,30 @@
-import React, { useState, useRef } from "react";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-import { useTranslation } from "react-i18next";
-
-import { useDrag } from "react-dnd";
-import { useSelector, useDispatch } from "react-redux";
-import { parseISO } from "date-fns";
-
+import styled from "@emotion/styled";
 import type { StateT } from "app-types";
-import type { DatasetIdT } from "../../api/types";
+import { parseISO } from "date-fns";
+import React, { useState, useRef } from "react";
+import { useDrag } from "react-dnd";
+import { useTranslation } from "react-i18next";
+import { useSelector, useDispatch } from "react-redux";
 
-import { FORM_CONFIG } from "../../common/constants/dndTypes";
-import SelectableLabel from "../../highlightable-label/HighlightableLabel";
-
-import IconButton from "../../button/IconButton";
-import FaIcon from "../../icon/FaIcon";
-import WithTooltip from "../../tooltip/WithTooltip";
-
-import EditableText from "../../form-components/EditableText";
-import EditableTags from "../../form-components/EditableTags";
-
-import { useFormatDateDistance } from "../../common/helpers";
-import { FormConfigT } from "./reducer";
 import { usePatchFormConfig } from "../../api/api";
+import type { DatasetIdT } from "../../api/types";
+import { getWidthAndHeight } from "../../app/DndProvider";
+import IconButton from "../../button/IconButton";
+import { FORM_CONFIG } from "../../common/constants/dndTypes";
+import { useFormatDateDistance } from "../../common/helpers";
+import EditableTags from "../../form-components/EditableTags";
+import EditableText from "../../form-components/EditableText";
+import SelectableLabel from "../../highlightable-label/HighlightableLabel";
+import FaIcon from "../../icon/FaIcon";
+import { setMessage } from "../../snack-message/actions";
+import WithTooltip from "../../tooltip/WithTooltip";
+import { useFormLabelByType } from "../stateSelectors";
+
 import FormConfigTags from "./FormConfigTags";
 import { patchFormConfigSuccess } from "./actions";
-import { setMessage } from "../../snack-message/actions";
+import { FormConfigT } from "./reducer";
 import { useIsLabelHighlighted } from "./selectors";
-import { useFormLabelByType } from "../stateSelectors";
-import { getWidthAndHeight } from "../../app/DndProvider";
 
 const Root = styled("div")<{ own: boolean; system: boolean; shared: boolean }>`
   margin: 0;
@@ -102,10 +98,10 @@ const StyledWithTooltip = styled(WithTooltip)`
   margin-left: 10px;
 `;
 
-export interface FormConfigDragItem {
+export interface DragItemFormConfig {
   width: number;
   height: number;
-  type: string;
+  type: "FORM_CONFIG";
   id: string;
   label: string;
 }
@@ -127,7 +123,7 @@ const FormConfig: React.FC<PropsT> = ({
   const ref = useRef<HTMLDivElement | null>(null);
   const formLabel = useFormLabelByType(config.formType);
   const availableTags = useSelector<StateT, string[]>(
-    (state) => state.formConfigs.tags
+    (state) => state.formConfigs.tags,
   );
 
   const formatDateDistance = useFormatDateDistance();
@@ -156,7 +152,7 @@ const FormConfig: React.FC<PropsT> = ({
       label?: string;
       tags?: string[];
     },
-    errorMessage: string
+    errorMessage: string,
   ) => {
     setIsLoading(true);
     try {
@@ -181,16 +177,16 @@ const FormConfig: React.FC<PropsT> = ({
     setIsEditingTags(false);
   };
 
-  const item: FormConfigDragItem = {
+  const item: DragItemFormConfig = {
     height: 0,
     width: 0,
     type: FORM_CONFIG,
     id: config.id,
     label: config.label,
   };
-  const [, drag] = useDrag({
+  const [, drag] = useDrag<DragItemFormConfig, void, {}>({
     item,
-    begin: (): FormConfigDragItem => ({
+    begin: () => ({
       ...item,
       ...getWidthAndHeight(ref),
     }),

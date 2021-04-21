@@ -1,41 +1,40 @@
 package com.bakdata.conquery.resources.hierarchies;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
-import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.bakdata.conquery.util.ResourceUtil;
+import lombok.Getter;
 import lombok.Setter;
 
 @Setter
+@Getter
 @Path("datasets/{" + DATASET + "}")
 public abstract class HDatasets extends HAuthorized {
-	
+
 	@Inject
-	protected QueryProcessor processor;
+	protected DatasetRegistry datasetRegistry;
+
 	@PathParam(DATASET)
-	protected DatasetId datasetId;
-	protected Namespace namespace;
-	protected ObjectMapper mapper;
-	
+	private DatasetId datasetId;
+
+	private Namespace namespace;
+
 	@PostConstruct
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getDatasetRegistry().get(datasetId);
-		if(namespace == null) {
-			throw new NotFoundException(String.format("Could not find Dataset[%s]",  datasetId));
-		}
+		this.namespace = datasetRegistry.get(datasetId);
+		ResourceUtil.throwNotFoundIfNull(datasetId, namespace);
 
-		authorize(user, namespace.getDataset(), Ability.READ);
+		user.authorize(namespace.getDataset(), Ability.READ);
 	}
 }

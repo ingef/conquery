@@ -1,21 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -27,16 +12,26 @@ import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.ResourceUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriBuilder;
+import java.util.*;
+import java.util.stream.Stream;
+
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -65,13 +60,13 @@ public class StoredQueriesProcessor {
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
 						 // However, for other executions we check because those are probably shared.
-						 .filter(q -> AuthorizationHelper.isPermitted(user, q, Ability.READ))
+						 .filter(q -> user.isPermitted(q, Ability.READ))
 						 .flatMap(mq -> {
 							 try {
 								 return Stream.of(
 										 mq.buildStatusOverview(
 												 storage,
-												 uriBuilder,
+												 uriBuilder.clone(),
 												 user,
 												 datasetRegistry,
 												 datasetAbilities
@@ -89,12 +84,14 @@ public class StoredQueriesProcessor {
 			return false;
 		}
 
-		if (((ManagedQuery) q).getQuery() instanceof ConceptQuery) {
-			return isFrontendStructure(((ConceptQuery) ((ManagedQuery) q).getQuery()).getRoot());
+		final IQuery query = ((ManagedQuery) q).getQuery();
+
+		if (query instanceof ConceptQuery) {
+			return isFrontendStructure(((ConceptQuery) query).getRoot());
 		}
 
-		if (((ManagedQuery) q).getQuery() instanceof SecondaryIdQuery) {
-			return isFrontendStructure(((SecondaryIdQuery) ((ManagedQuery) q).getQuery()).getRoot());
+		if (query instanceof SecondaryIdQuery) {
+			return isFrontendStructure(((SecondaryIdQuery) query).getRoot());
 		}
 
 		return false;
@@ -106,17 +103,16 @@ public class StoredQueriesProcessor {
 	 * @implNote We filter for just the bare minimum, as the structure of the frontend is very specific and hard to fix in java code.
 	 */
 	public static boolean isFrontendStructure(CQElement root) {
-		return root instanceof CQAnd;
+		return root instanceof CQAnd || root instanceof CQExternal;
 	}
 
-	public void deleteQuery(User user, ManagedExecutionId executionId) {
-		ManagedExecution<?> execution = storage.getExecution(executionId);
-		if (execution == null) {
-			throw new NotFoundException(executionId.toString());
-		}
 
-		authorize(user, execution, Ability.DELETE);
+  public void deleteQuery(ManagedExecutionId executionId, User user) {
+		final ManagedExecution<?> execution = storage.getExecution(executionId);
 
+		ResourceUtil.throwNotFoundIfNull(executionId, execution);
+
+		user.authorize(execution, Ability.DELETE);
 
 		storage.removeExecution(executionId);
 	}
@@ -124,11 +120,9 @@ public class StoredQueriesProcessor {
 	public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
 		ManagedExecution<?> query = storage.getExecution(queryId);
 
-		if (query == null) {
-			throw new NotFoundException(queryId.toString());
-		}
+		ResourceUtil.throwNotFoundIfNull(queryId, query);
 
-		authorize(user, query, Ability.READ);
+		user.authorize(query, Ability.READ);
 
 		query.initExecutable(datasetRegistry, config);
 
@@ -139,11 +133,9 @@ public class StoredQueriesProcessor {
 	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {
 		ManagedExecution<?> execution = storage.getExecution(executionId);
 
-		if (execution == null) {
-			throw new NotFoundException(executionId.toString());
-		}
+		ResourceUtil.throwNotFoundIfNull(executionId, execution);
 
-		authorize(user, execution, Ability.MODIFY);
+		user.authorize(execution, Ability.MODIFY);
 
 		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
 		patch.applyTo(execution, storage, user);

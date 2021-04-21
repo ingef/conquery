@@ -1,14 +1,15 @@
-import React, { useState } from "react";
 import styled from "@emotion/styled";
-
-import InputText from "../form-components/InputText";
-import PrimaryButton from "../button/PrimaryButton";
-import FaIcon from "../icon/FaIcon";
-import { storeAuthToken } from "./helper";
-import ErrorMessage from "../error-message/ErrorMessage";
-import { usePostLogin } from "../api/api";
-import { useHistory } from "react-router-dom";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
+
+import { usePostLogin } from "../api/api";
+import PrimaryButton from "../button/PrimaryButton";
+import ErrorMessage from "../error-message/ErrorMessage";
+import InputText from "../form-components/InputText";
+import FaIcon from "../icon/FaIcon";
+
+import { storeAuthToken } from "./helper";
 
 const Root = styled("div")`
   display: flex;

@@ -1,7 +1,7 @@
 import React from "react";
 
-import TimebasedQueryEditor from "./TimebasedQueryEditor";
 import TimebasedQueryClearButton from "./TimebasedQueryClearButton";
+import TimebasedQueryEditor from "./TimebasedQueryEditor";
 import TimebasedQueryRunner from "./TimebasedQueryRunner";
 
 const TimebasedQueryEditorTab = () => (

@@ -1,6 +1,10 @@
-import { defaultSuccess, defaultError } from "../common/actions";
-import { getUniqueFileRows } from "../common/helpers/fileHelper";
+import { useDispatch } from "react-redux";
+
+import { usePostConceptsListToResolve } from "../api/api";
 import type { ConceptIdT } from "../api/types";
+import { defaultSuccess, defaultError } from "../common/actions";
+import { exists } from "../common/helpers/exists";
+import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import { useDatasetId } from "../dataset/selectors";
 
 import {
@@ -11,9 +15,6 @@ import {
   INIT,
   RESET,
 } from "./actionTypes";
-import { useDispatch } from "react-redux";
-import { usePostConceptsListToResolve } from "../api/api";
-import { exists } from "../common/helpers/exists";
 
 export const resolveConceptsStart = () => ({ type: RESOLVE_CONCEPTS_START });
 export const resolveConceptsSuccess = (res: any, payload?: Object) =>
@@ -46,7 +47,7 @@ export const useSelectConceptRootNodeAndResolveCodes = () => {
 
     return postConceptsListToResolve(datasetId, treeId, conceptCodes).then(
       (r) => dispatch(resolveConceptsSuccess(r)),
-      (e) => dispatch(resolveConceptsError(e))
+      (e) => dispatch(resolveConceptsError(e)),
     );
   };
 };

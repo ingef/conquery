@@ -1,6 +1,6 @@
+import styled from "@emotion/styled";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import styled from "@emotion/styled";
 
 import IconButton from "../button/IconButton";
 

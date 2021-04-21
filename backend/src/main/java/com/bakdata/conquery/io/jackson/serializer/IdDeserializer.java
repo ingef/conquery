@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IId.Parser;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -48,13 +49,29 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 			throws JsonMappingException {
 		if (checkForInjectedPrefix) {
 			//check if there was a dataset injected and if it is already a prefix
-			Dataset dataset = (Dataset) ctx.findInjectableValue(Dataset.class.getName(), null, null);
+			String datasetName = findDatasetName(ctx);
 
-			if (dataset != null) {
-				return idParser.parsePrefixed(dataset.getName(), text);
+			if (datasetName != null) {
+				return idParser.parsePrefixed(datasetName, text);
 			}
 		}
 		return idParser.parse(text);
+	}
+
+	private static String findDatasetName(DeserializationContext ctx) throws JsonMappingException {
+		Dataset dataset = (Dataset) ctx.findInjectableValue(Dataset.class.getName(), null, null);
+
+		if(dataset != null){
+			return dataset.getName();
+		}
+
+		// Sometimes injected via @PathParam
+		DatasetId id = (DatasetId) ctx.findInjectableValue(DatasetId.class.getName(), null, null);
+
+		if(id != null) {
+			return id.getName();
+		}
+		return null;
 	}
 
 	@Override

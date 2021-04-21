@@ -12,9 +12,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -28,6 +26,7 @@ import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.views.View;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -58,9 +57,7 @@ public class DatasetsUIResource extends HAdmin {
 	public void init() {
 		super.init();
 		this.namespace = processor.getDatasetRegistry().get(datasetId);
-		if (namespace == null) {
-			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
-		}
+		ResourceUtil.throwNotFoundIfNull(datasetId,namespace);
 	}
 
 	@GET
@@ -77,10 +74,9 @@ public class DatasetsUIResource extends HAdmin {
 										 table.getName(),
 										 table.getLabel(),
 										 StringUtils.abbreviate(table.findImports(namespace.getStorage())
-																	 .stream()
 																	 .map(Import::getName)
 																	 .collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
-										 table.findImports(namespace.getStorage()).stream().mapToLong(Import::getNumberOfEntries).sum()
+										 table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
 								 ))
 								 .collect(Collectors.toList()),
 						namespace.getStorage().getAllConcepts(),
@@ -99,7 +95,7 @@ public class DatasetsUIResource extends HAdmin {
 						namespace
 								.getStorage().getTables()
 								.stream()
-								.flatMap(table -> table.findImports(namespace.getStorage()).stream())
+								.flatMap(table -> table.findImports(namespace.getStorage()))
 								.mapToLong(imp -> TablesUIResource.calculateCBlocksSizeBytes(
 										imp, getNamespace().getStorage().getAllConcepts()
 								))

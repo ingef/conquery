@@ -1,14 +1,14 @@
 import { useSelector } from "react-redux";
 
-import type { StateT } from "../app/reducers";
 import type { PermissionsT, GetMeResponseT, DatasetIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
 
 interface ContextT {
   datasetId?: string;
 }
 
 export function selectPermissions(
-  state: StateT
+  state: StateT,
 ): Record<DatasetIdT, PermissionsT> | null {
   return !!state.user.me && !!state.user.me.datasetAbilities
     ? state.user.me.datasetAbilities
@@ -17,7 +17,7 @@ export function selectPermissions(
 
 function canDoNothing(
   permissions: Record<DatasetIdT, PermissionsT>,
-  datasetId: string
+  datasetId: string,
 ) {
   return !permissions[datasetId];
 }
@@ -26,9 +26,9 @@ function canDo(
   state: StateT,
   canDoWithPermissions: (
     permissions: Record<DatasetIdT, PermissionsT>,
-    datasetId: string
+    datasetId: string,
   ) => boolean,
-  context?: ContextT
+  context?: ContextT,
 ) {
   const permissions = selectPermissions(state);
 
@@ -66,7 +66,7 @@ export function canUploadResult(state: StateT) {
 
 export function useHideLogoutButton() {
   const me = useSelector<StateT, GetMeResponseT | null>(
-    (state) => state.user.me
+    (state) => state.user.me,
   );
 
   return !!me && (me.hideLogoutButton === undefined || !!me.hideLogoutButton);

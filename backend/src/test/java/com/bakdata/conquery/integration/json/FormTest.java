@@ -145,7 +145,7 @@ public class FormTest extends ConqueryTestSpec {
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
 			List<String> actual = QueryToCSVRenderer
 				.toCSV(
-					new PrintSettings(true,Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces()),
+					new PrintSettings(true,Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), standaloneSupport.getConfig()),
 					managed.getValue(),
 					cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, idMappingConfig, mappingState))
 				.collect(Collectors.toList());

@@ -1,7 +1,9 @@
+import { DateRangeT } from "../api/types";
+
 import {
   TOGGLE_DISPLAY_TOOLTIP,
   DISPLAY_ADDITIONAL_INFOS,
-  TOGGLE_ADDITIONAL_INFOS
+  TOGGLE_ADDITIONAL_INFOS,
 } from "./actionTypes";
 
 type InfoType = {
@@ -14,7 +16,7 @@ export type AdditionalInfosType = {
   description: string | null;
   isFolder: boolean;
   matchingEntries: number | null;
-  dateRange: Object | null;
+  dateRange: DateRangeT | null;
   infos: InfoType[] | null;
 };
 
@@ -33,14 +35,14 @@ const initialState = {
     isFolder: false,
     matchingEntries: null,
     dateRange: null,
-    infos: null
-  }
+    infos: null,
+  },
 };
 
 const setAdditionalInfos = (state, action) => {
   if (state.toggleAdditionalInfos)
     return {
-      ...state
+      ...state,
     };
 
   return {
@@ -51,14 +53,14 @@ const setAdditionalInfos = (state, action) => {
       isFolder: false,
       matchingEntries: null,
       dateRange: null,
-      infos: null
-    }
+      infos: null,
+    },
   };
 };
 
 const tooltip = (
   state: TooltipStateT = initialState,
-  action: Object
+  action: Object,
 ): TooltipStateT => {
   switch (action.type) {
     case DISPLAY_ADDITIONAL_INFOS:
@@ -66,12 +68,12 @@ const tooltip = (
     case TOGGLE_ADDITIONAL_INFOS:
       return {
         ...state,
-        toggleAdditionalInfos: !state.toggleAdditionalInfos
+        toggleAdditionalInfos: !state.toggleAdditionalInfos,
       };
     case TOGGLE_DISPLAY_TOOLTIP:
       return {
         ...state,
-        displayTooltip: !state.displayTooltip
+        displayTooltip: !state.displayTooltip,
       };
     default:
       return state;

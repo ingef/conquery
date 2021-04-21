@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
@@ -32,7 +33,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonDeserialize(using = CBlockDeserializer.class)
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class CBlock extends IdentifiableImpl<CBlockId> {
 
 	/**

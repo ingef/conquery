@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -85,7 +84,7 @@ public class QueryResource {
 
 		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
 
-		authorize(user, query, Ability.READ);
+		user.authorize(query, Ability.READ);
 
 		query.awaitDone(10, TimeUnit.SECONDS);
 

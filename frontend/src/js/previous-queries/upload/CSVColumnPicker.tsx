@@ -1,15 +1,13 @@
-import React, { useState, useEffect, FC } from "react";
 import styled from "@emotion/styled";
+import React, { useState, useEffect, FC } from "react";
 import { useTranslation } from "react-i18next";
 
-import { parseCSV } from "../../file/csv";
-
-import PrimaryButton from "../../button/PrimaryButton";
 import IconButton from "../../button/IconButton";
-import FaIcon from "../../icon/FaIcon";
-
-import ReactSelect from "../../form-components/ReactSelect";
+import PrimaryButton from "../../button/PrimaryButton";
+import { parseCSV } from "../../file/csv";
 import InputSelect from "../../form-components/InputSelect";
+import ReactSelect from "../../form-components/ReactSelect";
+import FaIcon from "../../icon/FaIcon";
 
 const Row = styled("div")`
   display: flex;
@@ -124,7 +122,7 @@ const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
             // We simply assume that the data is in this format by default
             result.data[0].length >= 4
               ? ["ID", "ID", "START_DATE", "END_DATE"]
-              : ["ID", "ID", "DATE_SET"]
+              : ["ID", "ID", "DATE_SET"],
           );
         }
       } catch (e) {

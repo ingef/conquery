@@ -24,6 +24,6 @@ export const filtersWithDefaults = (filters?: FilterT[]) =>
   filters ? filters.map(filterWithDefaults) : [];
 
 export const isMultiSelectFilter = (
-  filter: FilterT
+  filter: FilterT,
 ): filter is BigMultiSelectFilterT | MultiSelectFilterT =>
   filter.type === "MULTI_SELECT" || filter.type === "BIG_MULTI_SELECT";

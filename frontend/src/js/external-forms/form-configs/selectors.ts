@@ -1,19 +1,19 @@
-import { useCallback, useState } from "react";
 import { StateT } from "app-types";
-
-import type { DatasetIdT } from "../../api/types";
-import { useGetFormConfig, useGetFormConfigs } from "../../api/api";
-import { setMessage } from "../../snack-message/actions";
-
-import { FormConfigT } from "./reducer";
+import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
+
+import { useGetFormConfig, useGetFormConfigs } from "../../api/api";
+import type { DatasetIdT } from "../../api/types";
+import { setMessage } from "../../snack-message/actions";
 import { useActiveFormType } from "../stateSelectors";
+
 import {
   loadFormConfigsError,
   loadFormConfigsSuccess,
   patchFormConfigSuccess,
 } from "./actions";
-import { useTranslation } from "react-i18next";
+import { FormConfigT } from "./reducer";
 
 const configHasTag = (config: FormConfigT, searchTerm: string) => {
   return (
@@ -38,7 +38,7 @@ const configHasId = (config: FormConfigT, searchTerm: string) => {
 const configHasFilterType = (
   config: FormConfigT,
   filter: string,
-  { activeFormType }: { activeFormType: string | null }
+  { activeFormType }: { activeFormType: string | null },
 ) => {
   if (filter === "all") return true;
 
@@ -57,13 +57,13 @@ const configHasFilterType = (
 
 export const useFilteredFormConfigs = () => {
   const formConfigs = useSelector<StateT, FormConfigT[]>(
-    (state) => state.formConfigs.data
+    (state) => state.formConfigs.data,
   );
   const search = useSelector<StateT, string[]>(
-    (state) => state.formConfigsSearch
+    (state) => state.formConfigsSearch,
   );
   const filter = useSelector<StateT, string>(
-    (state) => state.formConfigsFilter
+    (state) => state.formConfigsFilter,
   );
 
   const activeFormType = useActiveFormType();
@@ -86,12 +86,12 @@ export const useFilteredFormConfigs = () => {
 
 const labelContainsAnySearch = (label: string, searches: string[]) =>
   searches.some(
-    (search) => label.toLowerCase().indexOf(search.toLowerCase()) !== -1
+    (search) => label.toLowerCase().indexOf(search.toLowerCase()) !== -1,
   );
 
 export const useIsLabelHighlighted = (label: string) => {
   const formConfigsSearch = useSelector<StateT, string[]>(
-    (state) => state.formConfigsSearch
+    (state) => state.formConfigsSearch,
   );
 
   return labelContainsAnySearch(label, formConfigsSearch);
@@ -114,7 +114,7 @@ export const useLoadFormConfigs = () => {
       }
       setLoading(false);
     },
-    [dispatch]
+    [dispatch],
   );
 
   return {
@@ -141,7 +141,7 @@ export const useLoadFormConfig = () => {
       }
       setLoading(false);
     },
-    [t, dispatch]
+    [t, dispatch],
   );
 
   return {

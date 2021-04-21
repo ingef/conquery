@@ -1,18 +1,14 @@
+import "./app-styles.sass";
+import { theme } from "./app-theme";
 import conquery from "./js";
-
+import { Environment } from "./js/environment";
+import FormsTab from "./js/external-forms";
 import i18next from "./js/localization/i18next";
-import translationsDe from "./localization/de.json";
-import translationsEn from "./localization/en.json";
-
+import { TabT } from "./js/pane/types";
 import StandardQueryEditorTab from "./js/standard-query-editor";
 import TimebasedQueryEditorTab from "./js/timebased-query-editor";
-import FormsTab from "./js/external-forms";
-
-import { theme } from "./app-theme";
-
-import "./app-styles.sass";
-import { TabT } from "./js/pane/types";
-import { Environment } from "./js/environment";
+import translationsDe from "./localization/de.json";
+import translationsEn from "./localization/en.json";
 
 const isProduction = process.env.NODE_ENV === "production";
 const disableLogin = process.env.REACT_APP_DISABLE_LOGIN === "true";

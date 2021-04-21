@@ -1,15 +1,15 @@
-import React, { FC } from "react";
 import { StateT } from "app-types";
+import React, { FC } from "react";
 import { useSelector } from "react-redux";
 import { isValid, isPristine, getFormValues, FormStateMap } from "redux-form";
 
-import QueryRunner from "../query-runner/QueryRunner";
 import { DatasetIdT } from "../api/types";
-import { QueryRunnerStateT } from "../query-runner/reducer";
-import { useStartQuery, useStopQuery } from "../query-runner/actions";
 import { useDatasetId } from "../dataset/selectors";
+import QueryRunner from "../query-runner/QueryRunner";
+import { useStartQuery, useStopQuery } from "../query-runner/actions";
+import { QueryRunnerStateT } from "../query-runner/reducer";
 
-import transformQueryToApi from "./transformQueryToApi";
+import { Form } from "./config-types";
 import {
   selectReduxFormState,
   selectFormConfig,
@@ -17,7 +17,7 @@ import {
   selectRunningQuery,
   selectActiveFormType,
 } from "./stateSelectors";
-import { Form } from "./config-types";
+import transformQueryToApi from "./transformQueryToApi";
 
 const isActiveFormValid = (state: StateT) => {
   const activeForm = selectActiveFormType(state);
@@ -33,7 +33,7 @@ const isActiveFormValid = (state: StateT) => {
 
 const selectIsButtonEnabled = (
   datasetId: DatasetIdT | null,
-  queryRunner: QueryRunnerStateT | null
+  queryRunner: QueryRunnerStateT | null,
 ) => (state: StateT) => {
   if (!queryRunner) return false;
 
@@ -48,23 +48,23 @@ const selectIsButtonEnabled = (
 const FormQueryRunner: FC = () => {
   const datasetId = useDatasetId();
   const queryRunner = useSelector<StateT, QueryRunnerStateT | null>(
-    selectQueryRunner
+    selectQueryRunner,
   );
   const queryId = useSelector<StateT, string | null>(selectRunningQuery);
   const isQueryRunning = !!queryId;
 
   const isButtonEnabled = useSelector<StateT, boolean>(
-    selectIsButtonEnabled(datasetId, queryRunner)
+    selectIsButtonEnabled(datasetId, queryRunner),
   );
 
   const formName = useSelector<StateT, string | null>(selectActiveFormType);
   const reduxFormState = useSelector<StateT, FormStateMap | null>(
-    selectReduxFormState
+    selectReduxFormState,
   );
   const form = useSelector<StateT, unknown>((state) =>
     formName && reduxFormState
       ? getFormValues(formName, () => reduxFormState)(state)
-      : {}
+      : {},
   );
 
   const formConfig = useSelector<StateT, Form | null>(selectFormConfig);

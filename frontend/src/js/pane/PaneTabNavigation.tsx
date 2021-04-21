@@ -1,10 +1,9 @@
+import { StateT } from "app-types";
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 
-import { clickPaneTab } from "./actions";
-
 import TabNavigation, { TabNavigationTab } from "./TabNavigation";
-import { StateT } from "app-types";
+import { clickPaneTab } from "./actions";
 
 interface PropsT {
   paneType: "left" | "right";
@@ -13,7 +12,7 @@ interface PropsT {
 
 const PaneTabNavigation: React.FC<PropsT> = ({ tabs, paneType }) => {
   const activeTab = useSelector<StateT, string | null>(
-    (state) => state.panes[paneType].activeTab
+    (state) => state.panes[paneType].activeTab,
   );
   const dispatch = useDispatch();
 
