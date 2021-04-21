@@ -1,12 +1,13 @@
 package com.bakdata.conquery.models.concepts.conditions;
 
-import java.util.Map;
+import java.util.*;
 
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Ordering;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
@@ -40,4 +41,42 @@ public class PrefixRangeCondition implements CTCondition {
 		return false;
 	}
 
+
+	@Override
+	public boolean covers(Collection<CTCondition> childConditions) {
+
+		for (CTCondition childCondition : childConditions) {
+			if (childCondition instanceof PrefixCondition) {
+				// All child prefixes must be in range
+				PrefixCondition condition = (PrefixCondition) childCondition;
+				for (String childPrefix : condition.getPrefixes()) {
+					if(	   (childPrefix.startsWith(min) || Ordering.natural().isOrdered(List.of(min, childPrefix)))
+						&& (childPrefix.startsWith(max) || Ordering.natural().isOrdered(List.of(childPrefix, max))) ) {
+						continue;
+					}
+					return false;
+				}
+			}
+			else if (childCondition instanceof PrefixRangeCondition) {
+				PrefixRangeCondition condition = (PrefixRangeCondition) childCondition;
+				if(	   (condition.getMin().startsWith(min) || Ordering.natural().isOrdered(List.of(min, condition.getMin())))
+					&& (condition.getMax().startsWith(max) || Ordering.natural().isOrdered(List.of(condition.getMax(), max))) ) {
+					// Go on with the next condition
+					continue;
+				}
+				return false;
+			}
+			else if (childCondition instanceof EqualCondition) {
+				EqualCondition condition = (EqualCondition) childCondition;
+				for (String value : condition.getValues()) {
+					if(	   (value.startsWith(min) || Ordering.natural().isOrdered(List.of(min, value)))
+						&& (value.startsWith(max) || Ordering.natural().isOrdered(List.of(value, max))) ) {
+						continue;
+					}
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 }

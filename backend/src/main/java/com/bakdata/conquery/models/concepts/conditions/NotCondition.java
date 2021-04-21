@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.concepts.conditions;
 
+import java.util.Collection;
 import java.util.Map;
 
 import javax.validation.Valid;
@@ -29,5 +30,10 @@ public class NotCondition implements CTCondition {
 	@Override
 	public void init(ConceptTreeNode node) throws ConceptConfigurationException {
 		condition.init(node);
+	}
+
+	@Override
+	public boolean covers(Collection<CTCondition> childConditions) {
+		return !condition.covers(childConditions);
 	}
 }

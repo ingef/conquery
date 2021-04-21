@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.concepts.conditions;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.validation.constraints.NotEmpty;
@@ -30,5 +32,41 @@ public class PrefixCondition implements CTCondition {
 		return false;
 	}
 
-	
+	@Override
+	public boolean covers(Collection<CTCondition> childConditions) {
+		condition_loop:
+		for (CTCondition childCondition : childConditions) {
+			if (childCondition instanceof PrefixCondition) {
+				// All child prefixes must be covered by any of this conditions prefixes
+				PrefixCondition condition = (PrefixCondition) childCondition;
+				for (String childPrefix : condition.getPrefixes()) {
+					if(Arrays.stream(prefixes).anyMatch(prefix -> prefix.startsWith(childPrefix))){
+						continue;
+					}
+					return false;
+				}
+			}
+			else if (childCondition instanceof PrefixRangeCondition) {
+				PrefixRangeCondition condition = (PrefixRangeCondition) childCondition;
+				for (String prefix : prefixes) {
+					// Min and Max must be covered by a single prefix not multiple
+					if(condition.getMin().startsWith(prefix) && condition.getMax().startsWith(prefix)) {
+						// Go on with the next condition
+						break condition_loop;
+					}
+				}
+				return false;
+			}
+			else if (childCondition instanceof EqualCondition) {
+				EqualCondition condition = (EqualCondition) childCondition;
+				for (String value : condition.getValues()) {
+					if (Arrays.stream(prefixes).anyMatch(prefixes -> value.startsWith(prefixes))){
+						continue;
+					}
+					return false;
+				}
+			}
+		}
+		return true;
+	}
 }

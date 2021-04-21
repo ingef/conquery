@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.concepts.tree;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import javax.validation.constraints.NotNull;
 
@@ -14,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,6 +45,13 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Getter
 	@Setter
 	private TreeChildPrefixIndex childIndex;
+
+	@ValidationMethod
+	public boolean isContainedCondition(){
+		Set<CTCondition> childConditions = new HashSet<>();
+		children.forEach(child -> childConditions.add(child.getCondition()));
+		return condition.covers(childConditions);
+	}
 
 	@Override
 	@JsonIgnore

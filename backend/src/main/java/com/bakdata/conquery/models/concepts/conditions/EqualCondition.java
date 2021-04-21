@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.concepts.conditions;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.CollectionsUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,5 +35,22 @@ public class EqualCondition implements CTCondition {
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) {
 		return values.contains(value);
+	}
+
+	@Override
+	public boolean covers(Collection<CTCondition> childConditions) {
+		for (CTCondition childCondition : childConditions) {
+			if (!(childCondition instanceof EqualCondition)) {
+				// Equals condition can only contain equals eonditions
+				return false;
+			}
+			EqualCondition condition = (EqualCondition) childCondition;
+
+			if(Sets.union(values, condition.getValues()).size() != values.size()){
+				// The child contained more children that the parent
+				return false;
+			}
+		}
+		return true;
 	}
 }

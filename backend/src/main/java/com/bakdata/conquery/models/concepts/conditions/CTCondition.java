@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.concepts.conditions;
 
+import java.util.Collection;
 import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -17,5 +18,9 @@ public interface CTCondition {
 	public default void init(ConceptTreeNode node) throws ConceptConfigurationException {}
 	
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException;
+
+	public default boolean covers(Collection<CTCondition> childConditions) {
+		return true;
+	}
 
 }

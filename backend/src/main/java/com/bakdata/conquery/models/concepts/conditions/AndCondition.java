@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.concepts.conditions;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -37,5 +38,11 @@ public class AndCondition implements CTCondition {
 		for(CTCondition cond:conditions) {
 			cond.init(node);
 		}
+	}
+
+
+	@Override
+	public boolean covers(Collection<CTCondition> childConditions) {
+		return conditions.stream().allMatch(cond -> cond.covers(childConditions));
 	}
 }
