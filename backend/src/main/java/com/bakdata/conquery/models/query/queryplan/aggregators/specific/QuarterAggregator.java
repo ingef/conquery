@@ -1,8 +1,11 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.time.LocalDate;
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -18,7 +21,7 @@ import lombok.Data;
  * Aggregator, counting the number of days present.
  */
 @Data
-public class QuarterAggregator implements Aggregator<Integer> {
+public class QuarterAggregator implements Aggregator<String> {
 
 	private final TemporalSampler sampler;
 
@@ -58,21 +61,26 @@ public class QuarterAggregator implements Aggregator<Integer> {
 	}
 
 	@Override
-	public Integer getAggregationResult() {
+	public String getAggregationResult() {
 		if (set.isEmpty()) {
 			return null;
 		}
+
 		final OptionalInt sampled = sampler.sample(set);
 
 		if (sampled.isEmpty()) {
 			return null;
 		}
 
-		return sampled.getAsInt();
+		final LocalDate date = CDate.toLocalDate(sampled.getAsInt());
+		final int quarter = QuarterUtils.getQuarter(date);
+		final int year = date.getYear();
+
+		return year + "-Q" + quarter;
 	}
 
 	@Override
 	public ResultType getResultType() {
-		return ResultType.DateT.INSTANCE;
+		return ResultType.StringT.INSTANCE;
 	}
 }
