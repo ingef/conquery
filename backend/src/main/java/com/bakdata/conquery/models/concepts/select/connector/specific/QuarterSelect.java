@@ -12,7 +12,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Entity is included when the the number of quarters with events is within a specified range.
+ * Output first, last or random Year-Quarter in time
  */
 @CPSType(id = "QUARTER", base = Select.class)
 @Data
@@ -21,7 +21,6 @@ public class QuarterSelect extends Select {
 
 	@NotNull
 	private final TemporalSampler sample;
-
 
 	@Override
 	public Aggregator<?> createAggregator() {

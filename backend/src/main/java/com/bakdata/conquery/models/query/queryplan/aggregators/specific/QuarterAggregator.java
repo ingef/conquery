@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Data;
 
 /**
- * Aggregator, counting the number of days present.
+ * Samples the incoming dates outputting the year-quarter of the sample.
  */
 @Data
 public class QuarterAggregator implements Aggregator<String> {
