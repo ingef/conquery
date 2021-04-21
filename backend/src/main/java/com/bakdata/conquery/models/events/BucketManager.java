@@ -206,7 +206,7 @@ public class BucketManager {
 
 		tableToBuckets.getOrDefault(bucket.getTable(), Int2ObjectMaps.emptyMap())
 					  .getOrDefault(bucket.getBucket(), Collections.emptyList())
-					  .removeIf(bkt -> bkt.getId().equals(bucket.getId()));
+					  .remove(bucket);
 
 	}
 
@@ -243,7 +243,7 @@ public class BucketManager {
 		connectorToCblocks.getOrDefault(cBlock.getConnector(), Int2ObjectMaps.emptyMap())
 						  .getOrDefault(cBlock.getBucket().getBucket(), Collections.emptyMap())
 						  .values()
-						  .removeIf(cBlock::equals);
+						  .remove(cBlock);
 
 		for (int entityId : bucket.entities()) {
 			final Entity entity = entities.get(entityId);
