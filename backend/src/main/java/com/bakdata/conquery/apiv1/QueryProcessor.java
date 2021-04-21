@@ -1,7 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -49,7 +47,7 @@ public class QueryProcessor {
 	 * intended dataset.
 	 */
 	public FullExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
-		authorize(user, dataset, Ability.READ);
+		user.authorize(dataset, Ability.READ);
 
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
@@ -87,15 +85,15 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecution<?>> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final FullExecutionStatus status = tryReuse(query, executionId, user, storage, datasetRegistry, config, urlb);
+			final FullExecutionStatus status = tryReuse(query, executionId, user, datasetRegistry, config, urlb);
 
-			if(status != null){
+			if (status != null) {
 				return status;
 			}
 		}
 
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user.getId(), dataset, config);
+		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user, dataset, config);
 
 		if (query instanceof IQuery) {
 			translateToOtherDatasets(dataset, query, user, mq);
@@ -105,7 +103,7 @@ public class QueryProcessor {
 		return getStatus(mq, urlb, user);
 	}
 
-	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecution<?>> maybeId, User user, MetaStorage storage, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
+	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecution<?>> maybeId, User user, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
 
 		// If this is only a re-executing query, execute the underlying query instead.
 		if (maybeId.isEmpty()) {
@@ -120,11 +118,11 @@ public class QueryProcessor {
 		}
 
 		// If SecondaryIds differ from selected and prior, we cannot reuse them.
-		if(query instanceof SecondaryIdQuery){
+		if (query instanceof SecondaryIdQuery) {
 			final SecondaryIdDescription selectedSecondaryId = ((SecondaryIdQuery) query).getSecondaryId();
 			final SecondaryIdDescription reusedSecondaryId = ((SecondaryIdQuery) execution.getSubmitted()).getSecondaryId();
 
-			if(!selectedSecondaryId.equals(reusedSecondaryId)){
+			if (!selectedSecondaryId.equals(reusedSecondaryId)) {
 				return null;
 			}
 		}
@@ -132,17 +130,16 @@ public class QueryProcessor {
 		FullExecutionStatus status = getStatus(execution, urlb, user);
 
 		ExecutionState state = status.getStatus();
-		if (state.equals(ExecutionState.RUNNING)){
+		if (state.equals(ExecutionState.RUNNING)) {
 			log.trace("The Execution[{}] was already started and its state is: {}", execution.getId(), state);
 			return status;
 		}
 
-
 		log.trace("Re-executing Query {}", execution);
 
-		final ManagedExecution<?> mq = ExecutionManager.execute(datasetRegistry, execution, config);
+		ExecutionManager.execute(datasetRegistry, execution, config);
 
-		return getStatus(mq, urlb, user);
+		return getStatus(execution, urlb, user);
 
 	}
 
@@ -155,15 +152,14 @@ public class QueryProcessor {
 				continue;
 			}
 
-			if (AuthorizationHelper.isPermitted(user, targetDataset, Ability.READ)) {
+			if (user.isPermitted(targetDataset, Ability.READ)) {
 				continue;
 			}
 
 			try {
 
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
-				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user.getId(), targetDataset);
-
+				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
 			}
 			catch (Exception e) {
 				log.trace("Could not translate " + query + " to dataset " + targetDataset, e);
@@ -173,12 +169,14 @@ public class QueryProcessor {
 
 	public FullExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
 		query.initExecutable(datasetRegistry, config);
-		return query.buildStatusFull(storage, urlb, user, datasetRegistry, AuthorizationHelper.buildDatasetAbilityMap(user,datasetRegistry));
+		return query.buildStatusFull(storage, urlb, user, datasetRegistry, AuthorizationHelper.buildDatasetAbilityMap(user, datasetRegistry));
 	}
 
 	public FullExecutionStatus cancel(User user, Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
 		// TODO implement query cancel functionality
-		authorize(user,query, Ability.CANCEL);
+		user.authorize(query, Ability.CANCEL);
 		return null;
 	}
+
+
 }

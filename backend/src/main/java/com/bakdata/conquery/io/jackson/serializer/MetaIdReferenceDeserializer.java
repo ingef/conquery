@@ -38,7 +38,7 @@ public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiab
 			return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
 		}
 
-		ID id = parser.readValueAs(idClass);
+		ID id = ctxt.readValue(parser, idClass);
 
 		try {
 			final CentralRegistry centralRegistry = CentralRegistry.get(ctxt);

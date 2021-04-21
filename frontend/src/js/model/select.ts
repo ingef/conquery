@@ -1,5 +1,4 @@
 // flow
-
 import type { SelectorT } from "../api/types";
 import type { SelectedSelectorT } from "../standard-query-editor/types";
 
@@ -10,7 +9,7 @@ export function objectHasSelectedSelects(obj) {
     obj.selects.some(
       (select) =>
         (select.selected && !select.default) ||
-        (!select.selected && !!select.default)
+        (!select.selected && !!select.default),
     )
   );
 }
@@ -27,5 +26,5 @@ const withDefaultSelect = (select: SelectorT) => ({
 });
 
 export const selectsWithDefaults = (
-  selects?: SelectorT[]
+  selects?: SelectorT[],
 ): SelectedSelectorT[] => (selects ? selects.map(withDefaultSelect) : []);

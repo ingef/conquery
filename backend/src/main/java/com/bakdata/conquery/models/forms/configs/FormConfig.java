@@ -15,6 +15,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
+import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -30,7 +31,6 @@ import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
@@ -53,7 +53,7 @@ import org.apache.shiro.authz.Permission;
 @ToString
 @EqualsAndHashCode(callSuper = false)
 @FieldNameConstants
-public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned, Authorized {
+public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
 
 	protected DatasetId dataset;
 	@NotEmpty
@@ -71,7 +71,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 */
 	@NotNull
 	private JsonNode values;
-	private UserId owner;
+	@MetaIdRef
+	private User owner;
 	@VariableDefaultValue
 	private LocalDateTime creationTime = LocalDateTime.now();
 	
@@ -90,8 +91,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * Provides an overview (meta data) of this form configuration without the
 	 * actual form field values.
 	 */
-	public FormConfigOverviewRepresentation overview(MetaStorage storage, User user) {
-		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
+	public FormConfigOverviewRepresentation overview(User user) {
+		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
 
 		return FormConfigOverviewRepresentation.builder()
 			.id(getId())
@@ -99,7 +100,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			.label(label)
 			.tags(tags)
 			.ownerName(ownerName)
-			.own(owner.equals(user.getId()))
+			.own(owner.equals(user))
 			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.shared(shared)
 			// system?
@@ -110,7 +111,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * Return the full representation of the configuration with the configured form fields and meta data.
 	 */
 	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, User requestingUser){
-		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
+		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
 
 		/* Calculate which groups can see this query.
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.

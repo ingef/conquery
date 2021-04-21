@@ -1,6 +1,6 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
+import React, { FC } from "react";
 import { useSelector } from "react-redux";
 
 import EditableText from "../../form-components/EditableText";
@@ -19,12 +19,12 @@ const StyledEditableText = styled(EditableText)`
 
 const labelContainsAnySearch = (label: string, searches: string[]) =>
   searches.some(
-    (search) => label.toLowerCase().indexOf(search.toLowerCase()) !== -1
+    (search) => label.toLowerCase().indexOf(search.toLowerCase()) !== -1,
   );
 
 const useIsHighlightedLabel = (label: string) => {
   const previousQueriesSearch = useSelector<StateT, string[]>(
-    (state) => state.previousQueriesSearch
+    (state) => state.previousQueriesSearch,
   );
 
   return labelContainsAnySearch(label, previousQueriesSearch);

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 import java.util.ArrayList;
@@ -26,6 +25,7 @@ import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -67,15 +67,13 @@ public class StoredQueriesProcessor {
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
 						 // However, for other executions we check because those are probably shared.
-						 .filter(q -> AuthorizationHelper.isPermitted(user, q, Ability.READ))
+						 .filter(q -> user.isPermitted(q, Ability.READ))
 						 .flatMap(mq -> {
 							 try {
 								 return Stream.of(
 										 mq.buildStatusOverview(
-												 storage,
 												 uriBuilder.clone(),
 												 user,
-												 datasetRegistry,
 												 datasetAbilities
 										 ));
 							 }
@@ -119,7 +117,7 @@ public class StoredQueriesProcessor {
 
 		ResourceUtil.throwNotFoundIfNull(executionId, execution);
 
-		authorize(user, execution, Ability.DELETE);
+		user.authorize(execution, Ability.DELETE);
 
 		storage.removeExecution(executionId);
 	}
@@ -129,7 +127,7 @@ public class StoredQueriesProcessor {
 
 		ResourceUtil.throwNotFoundIfNull(queryId, query);
 
-		authorize(user, query, Ability.READ);
+		user.authorize(query, Ability.READ);
 
 		query.initExecutable(datasetRegistry, config);
 
@@ -142,7 +140,7 @@ public class StoredQueriesProcessor {
 
 		ResourceUtil.throwNotFoundIfNull(executionId, execution);
 
-		authorize(user, execution, Ability.MODIFY);
+		user.authorize(execution, Ability.MODIFY);
 
 		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
 		patch.applyTo(execution, storage, user);
@@ -161,6 +159,15 @@ public class StoredQueriesProcessor {
 			patch.applyTo(execution, storage, user);
 			storage.updateExecution(execution);
 		}
+	}
+
+	public FullExecutionStatus reexecute(User user, ManagedExecution<?> query, UriBuilder responseBuilder) {
+		if(!query.getState().equals(ExecutionState.RUNNING)) {
+			ExecutionManager.execute(getDatasetRegistry(), query, config);
+		}
+
+		final Map<DatasetId, Set<Ability>> datasetAbilities = AuthorizationHelper.buildDatasetAbilityMap(user, getDatasetRegistry());
+		return query.buildStatusFull(storage, responseBuilder, user, getDatasetRegistry(), datasetAbilities);
 	}
 
 }

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.forms.frontendconfiguration;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,7 +68,7 @@ public class FormConfigProcessor {
 			Set<String> allowedFormTypes = new HashSet<>();
 
 			for (FormType formType : FormScanner.FRONTEND_FORM_CONFIGS.values()) {
-				if (!AuthorizationHelper.isPermitted(user, formType, Ability.CREATE)) {
+				if (!user.isPermitted(formType, Ability.CREATE)) {
 					continue;
 				}
 
@@ -83,10 +82,10 @@ public class FormConfigProcessor {
 		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
 										   .filter(c -> dataset.equals(c.getDataset()))
 										   .filter(c -> formTypesFinal.contains(c.getFormType()))
-										   .filter(c -> AuthorizationHelper.isPermitted(user, c, Ability.READ));
+										   .filter(c -> user.isPermitted(c, Ability.READ));
 
 
-		return stream.map(c -> c.overview(storage, user));
+		return stream.map(c -> c.overview(user));
 	}
 
 	/**
@@ -98,7 +97,7 @@ public class FormConfigProcessor {
 
 		ResourceUtil.throwNotFoundIfNull(formId, form);
 
-		AuthorizationHelper.authorize(user,form,Ability.READ);
+		user.authorize(form,Ability.READ);
 		return form.fullRepresentation(storage, user);
 	}
 
@@ -112,25 +111,25 @@ public class FormConfigProcessor {
 		//TODO clear this up
 		final Namespace namespace = storage.getDatasetRegistry().get(targetDataset);
 
-		AuthorizationHelper.authorize(user, namespace.getDataset(), Ability.READ);
+		user.authorize(namespace.getDataset(), Ability.READ);
 
 		List<DatasetId> translateToDatasets = storage.getDatasetRegistry().getAllDatasets()
 													 .stream()
-													 .filter(dId -> AuthorizationHelper.isPermitted(user, dId, Ability.READ))
+													 .filter(dId -> user.isPermitted(dId, Ability.READ))
 													 .map(Identifiable::getId)
 													 .collect(Collectors.toList());
 
 		translateToDatasets.remove(targetDataset);
 
-		return addConfigAndTranslations(user, targetDataset, translateToDatasets, config);
+		return addConfigAndTranslations(user, targetDataset, config);
 	}
 	
 	/**
 	 * Adds the config to the dataset it was submitted under and also to all other datasets it can be translated to.
 	 * This method does not check permissions.
 	 */
-	public FormConfigId addConfigAndTranslations(User user, DatasetId targetDataset, Collection<DatasetId> translateTo, FormConfigAPI config) {
-		FormConfig internalConfig = FormConfigAPI.intern(config, user.getId(), targetDataset);
+	public FormConfigId addConfigAndTranslations(User user, DatasetId targetDataset, FormConfigAPI config) {
+		FormConfig internalConfig = FormConfigAPI.intern(config, user, targetDataset);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 
@@ -170,8 +169,7 @@ public class FormConfigProcessor {
 		FormConfig config = storage.getFormConfig(formId);
 
 		ResourceUtil.throwNotFoundIfNull(formId, config);
-		AuthorizationHelper.authorize(user, config, Ability.DELETE);
-
+		user.authorize( config, Ability.DELETE);
 		storage.removeFormConfig(formId);
 		// Delete corresponding permissions (Maybe better to put it into a slow job)
 		for(ConqueryPermission permission : user.getPermissions()) {

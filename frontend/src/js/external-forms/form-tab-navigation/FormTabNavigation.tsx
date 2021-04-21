@@ -1,7 +1,7 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
-
+import React, { FC } from "react";
 import type { WrappedFieldProps } from "redux-form";
+
 import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
 
 interface OptionsT {

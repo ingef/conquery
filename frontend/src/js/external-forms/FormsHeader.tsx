@@ -1,12 +1,13 @@
-import React from "react";
 import styled from "@emotion/styled";
+import { StateT } from "app-types";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
 import { reset } from "redux-form";
 
 import IconButton from "../button/IconButton";
-import { useDispatch, useSelector } from "react-redux";
+
 import { selectActiveFormType } from "./stateSelectors";
-import { StateT } from "app-types";
-import { useTranslation } from "react-i18next";
 
 const Root = styled("div")`
   display: flex;
@@ -19,7 +20,7 @@ const Root = styled("div")`
 const FormsHeader: React.FC = () => {
   const { t } = useTranslation();
   const activeFormType = useSelector<StateT, string | null>((state) =>
-    selectActiveFormType(state)
+    selectActiveFormType(state),
   );
 
   const dispatch = useDispatch();

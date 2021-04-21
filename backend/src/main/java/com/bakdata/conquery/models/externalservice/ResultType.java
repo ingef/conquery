@@ -4,6 +4,7 @@ import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DA
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Currency;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -18,10 +19,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
@@ -268,7 +266,7 @@ public interface ResultType {
         @Override
         public String print(PrintSettings cfg, Object f) {
             if (cfg.isPrettyPrint()) {
-                return cfg.getDecimalFormat().format(new BigDecimal(((Number) f).longValue()).movePointLeft(CURRENCY_DIGITS));
+                return cfg.getDecimalFormat().format(new BigDecimal(((Number) f).longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits()));
             }
             return IntegerT.INSTANCE.print(cfg, f);
         }

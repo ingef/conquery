@@ -7,6 +7,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
 import com.bakdata.conquery.models.execution.ResultProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
@@ -41,6 +42,8 @@ public class ApiV1 implements ResourcesProvider {
 			@Override
 			protected void configure() {
 				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+				bind(manager.getStorage()).to(MetaStorage.class);
+
 				bind(new ConceptsProcessor(manager.getDatasetRegistry())).to(ConceptsProcessor.class);
 				bind(new MeProcessor(manager.getStorage(), datasets)).to(MeProcessor.class);
 				bind(new QueryProcessor(datasets, manager.getStorage(), manager.getConfig())).to(QueryProcessor.class);

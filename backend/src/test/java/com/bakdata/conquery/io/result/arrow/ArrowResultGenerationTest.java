@@ -19,6 +19,7 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.forms.util.DateContext;
@@ -54,6 +55,7 @@ import org.junit.jupiter.api.Test;
 public class ArrowResultGenerationTest {
 
     private static final int BATCH_SIZE = 2;
+    public static final ConqueryConfig CONFIG = new ConqueryConfig();
     final IdMappingConfig idMapping = new IdMappingConfig() {
 
         @Getter
@@ -106,7 +108,7 @@ public class ArrowResultGenerationTest {
         List<Field> fields = generateFieldsFromResultType(
                 resultInfos,
                 // Custom column namer so we don't require a dataset registry
-                new PrintSettings(false, Locale.ROOT, null, (selectInfo) -> selectInfo.getSelect().getLabel()));
+                new PrintSettings(false, Locale.ROOT, null, CONFIG, (selectInfo) -> selectInfo.getSelect().getLabel()));
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -133,7 +135,7 @@ public class ArrowResultGenerationTest {
     @Test
     void writeAndRead() throws IOException {
         // Prepare every input data
-        PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, (selectInfo) -> selectInfo.getSelect().getLabel());
+        PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, CONFIG, (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = List.of(
                 new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),

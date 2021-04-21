@@ -1,10 +1,11 @@
-import React from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { connect } from "react-redux";
 
 import IconButton from "../button/IconButton";
 
+import TimebasedCondition from "./TimebasedCondition";
 import {
   addTimebasedCondition,
   removeTimebasedCondition,
@@ -17,8 +18,7 @@ import {
   setTimebasedConditionMaxDays,
   setTimebasedConditionMinDaysOrNoEvent,
 } from "./actions";
-
-import TimebasedCondition from "./TimebasedCondition";
+import type { TimebasedQueryStateT } from "./reducer";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -38,7 +38,7 @@ const AddBtn = styled(IconButton)`
 `;
 
 type PropsType = {
-  query: Object;
+  query: TimebasedQueryStateT;
   onDropTimebasedNode: () => void;
   onRemoveTimebasedNode: () => void;
   onAddTimebasedCondition: () => void;
@@ -125,5 +125,5 @@ const mapDispatchToProps = (dispatch) => ({
 
 export default connect(
   mapStateToProps,
-  mapDispatchToProps
+  mapDispatchToProps,
 )(TimebasedQueryEditor);

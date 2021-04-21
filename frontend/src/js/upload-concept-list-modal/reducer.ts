@@ -7,7 +7,7 @@ import {
   RESOLVE_CONCEPTS_SUCCESS,
   RESOLVE_CONCEPTS_ERROR,
   INIT,
-  RESET
+  RESET,
 } from "./actionTypes";
 
 export type UploadConceptListModalStateT = {
@@ -25,12 +25,12 @@ const initialState: UploadConceptListModalStateT = {
   selectedConceptRootNode: "",
   loading: false,
   resolved: {},
-  error: null
+  error: null,
 };
 
 const uploadConcepts = (
   state: UploadConceptListModalStateT = initialState,
-  action: Object
+  action: Object,
 ) => {
   switch (action.type) {
     case INIT:
@@ -41,33 +41,33 @@ const uploadConcepts = (
         filename: stripFilename(filename),
         conceptCodesFromFile: rows,
         selectedConceptRootNode: null,
-        resolved: null
+        resolved: null,
       };
     case SELECT_CONCEPT_ROOT_NODE:
       return {
         ...state,
         selectedConceptRootNode: action.conceptId,
-        resolved: null
+        resolved: null,
       };
     case RESOLVE_CONCEPTS_START:
       return {
         ...state,
         loading: true,
-        error: null
+        error: null,
       };
     case RESOLVE_CONCEPTS_ERROR:
       return {
         ...state,
         loading: false,
         resolved: null,
-        error: action.payload
+        error: action.payload,
       };
     case RESOLVE_CONCEPTS_SUCCESS:
       return {
         ...state,
         loading: false,
         error: null,
-        resolved: action.payload.data
+        resolved: action.payload.data,
       };
     case RESET:
       return initialState;

@@ -14,7 +14,7 @@ export interface ErrorObject {
 export const defaultError = (
   type: string,
   error: ErrorObject,
-  context?: Record<string, any>
+  context?: Record<string, any>,
 ): ActionT => ({
   type,
   error: true,
@@ -28,7 +28,7 @@ export const defaultError = (
 export const defaultSuccess = (
   type: string,
   results: any,
-  context?: Record<string, any>
+  context?: Record<string, any>,
 ): ActionT => ({
   type,
   payload: {

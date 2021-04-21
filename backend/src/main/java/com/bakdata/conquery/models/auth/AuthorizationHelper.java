@@ -47,45 +47,6 @@ import org.apache.shiro.authz.Permission;
 @UtilityClass
 public class AuthorizationHelper {
 
-	public static boolean isPermittedAll(User user, Collection<? extends Authorized> authorized, Ability ability) {
-		return authorized.stream()
-						 .allMatch(auth -> isPermitted(user, auth, ability));
-	}
-
-	public static void authorize(User user, Authorized object, Ability ability) {
-		if (isOwnedBy(user, object)) {
-			return;
-		}
-
-		user.checkPermission(object.createPermission(EnumSet.of(ability)));
-	}
-
-	public static void authorize(User user, Set<? extends Authorized> objects, Ability ability) {
-		for (Authorized object : objects) {
-			authorize(user, object, ability);
-		}
-	}
-
-	public static boolean isPermitted(User user, Authorized object, Ability ability) {
-		if (isOwnedBy(user, object)) {
-			return true;
-		}
-
-		return user.isPermitted(object.createPermission(EnumSet.of(ability)));
-	}
-
-	public static boolean isOwnedBy(User user, Authorized object) {
-		return object instanceof Owned && user.isOwner(((Owned) object));
-	}
-
-
-	public static boolean[] isPermitted(User user, List<? extends Authorized> authorizeds, Ability ability) {
-		return authorizeds.stream()
-						  .map(auth -> isPermitted(user, auth, ability))
-						  .collect(Collectors.toCollection(BooleanArrayList::new))
-						  .toBooleanArray();
-	}
-
 	/**
 	 * Utility function to add a permission to a subject (e.g {@link User}).
 	 * @param owner The subject to own the new permission.
@@ -237,13 +198,13 @@ public class AuthorizationHelper {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
 
-		Set<Dataset> perms =
+		Set<Dataset> datasets =
 				collector.getIdentifiables()
 					.stream()
 					.map(NamespacedIdentifiable::getDataset)
 					.collect(Collectors.toSet());
 
-		AuthorizationHelper.authorize(user, perms, Ability.DOWNLOAD);
+		user.authorize(datasets, Ability.DOWNLOAD);
 	}
 
 	/**
@@ -254,13 +215,13 @@ public class AuthorizationHelper {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
 
-		Set<Dataset> perms =
+		Set<Dataset> datasets =
 				collector.getIdentifiables()
 						 .stream()
 						 .map(NamespacedIdentifiable::getDataset)
 						 .collect(Collectors.toSet());
 
-		AuthorizationHelper.authorize(user, perms, Ability.READ);
+		user.authorize(datasets, Ability.READ);
 	}
 
 
@@ -273,23 +234,18 @@ public class AuthorizationHelper {
 
 			Set<Ability> abilities = datasetAbilities.computeIfAbsent(dataset.getId(), (k) -> new HashSet<>());
 
-			if(isPermitted(user,dataset,Ability.READ)) {
+			if(user.isPermitted(dataset,Ability.READ)) {
 				abilities.add(Ability.READ);
 			}
 
-			if (isPermitted(user,dataset,Ability.DOWNLOAD)){
+			if (user.isPermitted(dataset,Ability.DOWNLOAD)){
 				abilities.add(Ability.DOWNLOAD);
 			}
 
-			if (isPermitted(user,dataset,Ability.PRESERVE_ID)) {
+			if (user.isPermitted(dataset,Ability.PRESERVE_ID)) {
 				abilities.add(Ability.PRESERVE_ID);
 			}
 		}
 		return datasetAbilities;
-	}
-
-
-	public static void authorizeAdmin(User user) {
-		user.checkPermission(AdminPermission.onDomain());
 	}
 }

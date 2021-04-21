@@ -1,5 +1,6 @@
-import { useGetMe } from "../api/api";
 import { useDispatch } from "react-redux";
+
+import { useGetMe } from "../api/api";
 import { defaultError, defaultSuccess } from "../common/actions";
 
 import { LOAD_ME_START, LOAD_ME_ERROR, LOAD_ME_SUCCESS } from "./actionTypes";
@@ -17,7 +18,7 @@ export const useLoadMe = () => {
 
     return getMe().then(
       (r) => dispatch(loadMeSuccess(r)),
-      (e) => dispatch(loadMeError(e))
+      (e) => dispatch(loadMeError(e)),
     );
   };
 };

@@ -9,7 +9,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -19,7 +18,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 public class PermissionGroupHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	private final Role role1 = new Role("role", "role");
-	private final User user1 = new User("user", "user");
+	private final TestUser user1 = new TestUser();
 	private final Group group1 = new Group("company", "company");
 
 	/**

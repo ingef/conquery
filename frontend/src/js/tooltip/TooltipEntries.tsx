@@ -1,9 +1,9 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 import { useTranslation } from "react-i18next";
-import { formatDate, parseDate } from "../common/helpers/dateHelper";
-import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 
+import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
+import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import FaIcon from "../icon/FaIcon";
 
 type PropsType = {
@@ -109,7 +109,7 @@ const TooltipEntries = (props: PropsType) => {
           <Text zero={isZero}>
             {t(
               "tooltip.entriesFound",
-              { count: matchingEntries || 2 } // For pluralization
+              { count: matchingEntries || 2 }, // For pluralization
             )}
           </Text>
         </Info>
@@ -121,7 +121,7 @@ const TooltipEntries = (props: PropsType) => {
             {dateRange && dateRange.min
               ? formatDate(
                   parseDate(dateRange.min, dateFormat),
-                  displayDateFormat
+                  displayDateFormat,
                 )
               : "- - - - - - - -"}
             <Suffix>{`${t("tooltip.date.from")}`}</Suffix>
@@ -130,7 +130,7 @@ const TooltipEntries = (props: PropsType) => {
             {dateRange && dateRange.max
               ? formatDate(
                   parseDate(dateRange.max, dateFormat),
-                  displayDateFormat
+                  displayDateFormat,
                 )
               : "- - - - - - - -"}
             <Suffix>{`${t("tooltip.date.to")}`}</Suffix>

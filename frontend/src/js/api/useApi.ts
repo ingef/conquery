@@ -1,9 +1,9 @@
+import { useKeycloak } from "@react-keycloak/web";
 import axios, { AxiosRequestConfig } from "axios";
 import { useHistory } from "react-router-dom";
 
-import { isIDPEnabled, isLoginDisabled } from "../environment";
 import { getStoredAuthToken } from "../authorization/helper";
-import { useKeycloak } from "@react-keycloak/web";
+import { isIDPEnabled, isLoginDisabled } from "../environment";
 
 export const useAuthToken = () => {
   const idpEnabled = isIDPEnabled();
@@ -13,7 +13,7 @@ export const useAuthToken = () => {
 };
 
 export const useApiUnauthorized = <T>(
-  requestConfig: Partial<AxiosRequestConfig> = {}
+  requestConfig: Partial<AxiosRequestConfig> = {},
 ) => {
   return (finalRequestConfig: Partial<AxiosRequestConfig> = {}): Promise<T> =>
     fetchJsonUnauthorized({
@@ -30,7 +30,7 @@ export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
   const authToken = useAuthToken();
 
   return async (
-    finalRequestConfig: Partial<AxiosRequestConfig> = {}
+    finalRequestConfig: Partial<AxiosRequestConfig> = {},
   ): Promise<T> => {
     try {
       const response = await fetchJson(authToken, {
@@ -56,7 +56,7 @@ export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
 
 export async function fetchJsonUnauthorized(
   request?: Partial<AxiosRequestConfig>,
-  rawBody: boolean = false
+  rawBody: boolean = false,
 ) {
   const finalRequest: AxiosRequestConfig = request
     ? {

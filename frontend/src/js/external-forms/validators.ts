@@ -1,5 +1,6 @@
-import { isEmpty } from "../common/helpers";
 import { TFunction } from "react-i18next";
+
+import { isEmpty } from "../common/helpers";
 
 export const validateRequired = (t: TFunction, value: any): string | null => {
   return isEmpty(value) ? t("externalForms.formValidation.isRequired") : null;
@@ -13,7 +14,7 @@ export const validatePositive = (t: TFunction, value: any) => {
 
 export const validateDateRange = (
   t: TFunction,
-  value: { min: string; max: string }
+  value: { min: string; max: string },
 ) => {
   // May be empty
   if (!value || (!value.min && !value.max)) return null;
@@ -32,7 +33,7 @@ export const validateDateRangeRequired = (
   value: {
     min: string;
     max: string;
-  } | null
+  } | null,
 ): string | null => {
   if (!value || !value.min || !value.max)
     return t("externalForms.formValidation.isRequired");
@@ -42,13 +43,13 @@ export const validateDateRangeRequired = (
 
 export const validateConceptGroupFilled = (
   t: TFunction,
-  group: { concepts: [] }[]
+  group: { concepts: [] }[],
 ): string | null => {
   if (!group || group.length === 0)
     return t("externalForms.formValidation.isRequired");
 
   return group.some(
-    (e) => e.concepts.length === 0 || e.concepts.some((c) => !c)
+    (e) => e.concepts.length === 0 || e.concepts.some((c) => !c),
   )
     ? t("externalForms.formValidation.isRequired")
     : null;

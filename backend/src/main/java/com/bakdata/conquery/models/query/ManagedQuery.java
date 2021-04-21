@@ -38,7 +38,6 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
@@ -58,6 +57,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -68,6 +68,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(callSuper = true)
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
+@NoArgsConstructor
 public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 70;
@@ -94,7 +95,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@JsonIgnore
 	private transient List<EntityResult> results = new ArrayList<>();
 
-	public ManagedQuery(IQuery query, UserId owner, Dataset submittedDataset) {
+	public ManagedQuery(IQuery query, User owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
 		this.query = query;
 	}
@@ -106,7 +107,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.involvedWorkers = namespace.getWorkers().size();
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, null));
 		if (label == null) {
-			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces));
+			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces, config));
 		}
 	}
 
@@ -151,8 +152,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	protected void setStatusBase(@NonNull MetaStorage storage, @NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
-		super.setStatusBase(storage, user, status, url, datasetAbilities);
+	protected void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
+		super.setStatusBase(user, status, url, datasetAbilities);
 		status.setNumberOfResults(lastResultCount);
 
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
@@ -185,7 +186,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 												   .build());
 		}
 		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry);
+		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config);
 
 		collectResultInfos().getInfos()
 							.forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));

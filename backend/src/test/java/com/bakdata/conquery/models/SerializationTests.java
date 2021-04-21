@@ -37,7 +37,6 @@ import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -223,9 +222,12 @@ public class SerializationTests {
 
 		final Dataset dataset = new Dataset("test-dataset");
 
-		registry.register(dataset);
+		final User user = new User("test-user","test-user");
 
-		ManagedQuery execution = new ManagedQuery(null, new UserId("test-user"), dataset);
+		registry.register(dataset);
+		registry.register(user);
+
+		ManagedQuery execution = new ManagedQuery(null, user, dataset);
 		execution.setTags(new String[] {"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)

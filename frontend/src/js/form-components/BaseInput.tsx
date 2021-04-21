@@ -1,11 +1,10 @@
-import * as React from "react";
 import styled from "@emotion/styled";
+import * as React from "react";
 import { useTranslation } from "react-i18next";
 
-import IconButton from "../button/IconButton";
-
-import { isEmpty } from "../common/helpers";
 import type { CurrencyConfigT } from "../api/types";
+import IconButton from "../button/IconButton";
+import { isEmpty } from "../common/helpers";
 
 import CurrencyInput from "./CurrencyInput";
 
@@ -65,7 +64,7 @@ const BaseInput = (props: PropsT) => {
 
     const regex = new RegExp(pattern);
     const key = String.fromCharCode(
-      !event.charCode ? event.which : event.charCode
+      !event.charCode ? event.which : event.charCode,
     );
 
     if (!regex.test(key)) {

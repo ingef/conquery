@@ -1,6 +1,17 @@
-import React from "react";
 import styled from "@emotion/styled";
-import { DropTarget, DropTargetMonitor, DropTargetSpec } from "react-dnd";
+import React from "react";
+import { DropTargetMonitor, useDrop } from "react-dnd";
+
+import type { DragItemFormConceptNode } from "../external-forms/form-concept-group/FormConceptNode";
+import type { DragItemFormConfig } from "../external-forms/form-configs/FormConfig";
+import type {
+  DragItemConceptTreeNode,
+  DragItemNode,
+  DragItemQuery,
+} from "../standard-query-editor/types";
+import type { DragItemTimebasedNode } from "../timebased-query-editor/TimebasedNode";
+
+import type { DragItemFile } from "./DropzoneWithFileInput";
 
 const Root = styled("div")<{
   isOver?: boolean;
@@ -18,6 +29,8 @@ const Root = styled("div")<{
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: ${({ theme, canDrop }) =>
+    canDrop ? theme.col.grayVeryLight : theme.col.bg};
   width: 100%;
   color: ${({ theme, isOver, canDrop }) =>
     isOver && !canDrop
@@ -30,74 +43,61 @@ const Root = styled("div")<{
 export interface ChildArgs {
   isOver: boolean;
   canDrop: boolean;
-  itemType: String;
+  itemType: string | symbol | null;
 }
 
-interface InnerZonePropsType {
+export interface DropzoneProps<DroppableObject> {
   className?: string;
-  children?: (args: ChildArgs) => React.ReactNode;
-  connectDropTarget: Function;
-  isOver: boolean;
-  canDrop: boolean;
-  itemType: string;
+  acceptedDropTypes: string[];
+  onDrop: (props: DroppableObject, monitor: DropTargetMonitor) => void;
+  canDrop?: (props: DroppableObject, monitor: DropTargetMonitor) => boolean;
   onClick?: () => void;
+  children?: (args: ChildArgs) => React.ReactNode;
 }
 
-export const InnerZone = ({
-  children,
+export type PossibleDroppableObject =
+  | DragItemFile
+  | DragItemNode
+  | DragItemTimebasedNode
+  | DragItemQuery
+  | DragItemConceptTreeNode
+  | DragItemFormConfig
+  | DragItemFormConceptNode;
+
+const Dropzone = <DroppableObject extends PossibleDroppableObject>({
   className,
-  onClick,
-  isOver,
+  acceptedDropTypes,
   canDrop,
-  itemType,
-  connectDropTarget,
-}: InnerZonePropsType) => {
+  onDrop,
+  onClick,
+  children,
+}: DropzoneProps<DroppableObject>) => {
+  const [{ canDrop: canDropResult, isOver, itemType }, dropRef] = useDrop<
+    DroppableObject,
+    void,
+    ChildArgs
+  >({
+    accept: acceptedDropTypes,
+    drop: onDrop,
+    canDrop,
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+      itemType: monitor.getItemType(),
+    }),
+  });
+
   return (
     <Root
-      ref={(instance) => connectDropTarget(instance)}
+      ref={dropRef}
       isOver={isOver}
-      canDrop={canDrop}
+      canDrop={canDropResult}
       className={className}
       onClick={onClick}
     >
-      {children && children({ isOver, canDrop, itemType })}
+      {children && children({ isOver, canDrop: canDropResult, itemType })}
     </Root>
   );
-};
-
-interface PropsT<TargetProps> {
-  acceptedDropTypes: string[];
-  children?: (args: ChildArgs) => React.ReactNode;
-  onDrop: (props: TargetProps, monitor: DropTargetMonitor) => void;
-  onClick?: () => void;
-  target?: TargetProps;
-}
-
-const collect = (connect, monitor) => ({
-  connectDropTarget: connect.dropTarget(),
-  isOver: monitor.isOver(),
-  canDrop: monitor.canDrop(),
-  itemType: monitor.getItemType(),
-});
-
-const Dropzone = <TargetProps extends {}>({
-  acceptedDropTypes,
-  onDrop,
-  target,
-  ...restProps
-}: PropsT<TargetProps>) => {
-  const dropzoneTarget: DropTargetSpec<TargetProps> = {
-    drop: onDrop,
-    ...target,
-  };
-
-  const FinalZone = DropTarget(
-    acceptedDropTypes,
-    dropzoneTarget,
-    collect
-  )(InnerZone);
-
-  return <FinalZone {...restProps} />;
 };
 
 export default Dropzone;

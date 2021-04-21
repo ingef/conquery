@@ -1,10 +1,19 @@
-import React, { FC, useRef } from "react";
 import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
-import { NativeTypes } from "react-dnd-html5-backend";
-
-import Dropzone, { ChildArgs } from "./Dropzone";
+import React, { FC, useRef } from "react";
 import { DropTargetMonitor } from "react-dnd";
+import { NativeTypes } from "react-dnd-html5-backend";
+import { useTranslation } from "react-i18next";
+
+import Dropzone, {
+  ChildArgs,
+  DropzoneProps,
+  PossibleDroppableObject,
+} from "./Dropzone";
+
+export interface DragItemFile {
+  type: "__NATIVE_FILE__";
+  files: File[];
+}
 
 const FileInput = styled("input")`
   display: none;
@@ -34,14 +43,18 @@ const TopRight = styled("p")`
   }
 `;
 
-interface PropsT {
+interface PropsT<DroppableObject> {
   children: (args: ChildArgs) => React.ReactNode;
   onSelectFile: (file: File) => void;
-  onDrop: (props: any, monitor: DropTargetMonitor) => void;
+  onDrop: (
+    item: DroppableObject | DragItemFile,
+    monitor: DropTargetMonitor,
+  ) => void;
   acceptedDropTypes?: string[];
   disableClick?: boolean;
   showFileSelectButton?: boolean;
   isInitial?: boolean;
+  className?: string;
 }
 
 /*
@@ -52,14 +65,18 @@ interface PropsT {
 
   => The "onDrop"-prop needs to handle the file drop itself, though!
 */
-const DropzoneWithFileInput: FC<PropsT> = ({
+const DropzoneWithFileInput = <
+  DroppableObject extends PossibleDroppableObject = DragItemFile
+>({
   onSelectFile,
   acceptedDropTypes,
   disableClick,
   showFileSelectButton,
   children,
-  ...props
-}) => {
+  onDrop,
+  isInitial,
+  className,
+}: PropsT<DroppableObject>) => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -72,14 +89,16 @@ const DropzoneWithFileInput: FC<PropsT> = ({
   }
 
   return (
-    <SxDropzone
+    <SxDropzone<FC<DropzoneProps<DroppableObject | DragItemFile>>>
       acceptedDropTypes={dropTypes}
       onClick={() => {
         if (disableClick) return;
 
         onOpenFileDialog();
       }}
-      {...props}
+      onDrop={onDrop}
+      isInitial={isInitial}
+      className={className}
     >
       {(args: ChildArgs) => (
         <>

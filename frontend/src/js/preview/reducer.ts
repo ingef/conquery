@@ -1,10 +1,11 @@
+import type { ColumnDescription } from "../api/types";
+
 import {
   OPEN_PREVIEW,
   CLOSE_PREVIEW,
   LOAD_CSV_START,
   LOAD_CSV_ERROR,
 } from "./actionTypes";
-import type { ColumnDescription } from "../api/types";
 
 export type PreviewStateT = {
   csv: string[][] | null;
@@ -20,7 +21,7 @@ const initialState: PreviewStateT = {
 
 export default (
   state: PreviewStateT = initialState,
-  action: any
+  action: any,
 ): PreviewStateT => {
   switch (action.type) {
     case LOAD_CSV_START:

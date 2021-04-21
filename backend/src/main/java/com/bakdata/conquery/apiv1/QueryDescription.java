@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
@@ -39,11 +38,11 @@ public interface QueryDescription extends Visitable {
 	 * should be done in an extra init procedure (see {@link ManagedForm#doInitExecutable(DatasetRegistry, ConqueryConfig)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
 	 *
-	 * @param userId
+	 * @param user
 	 * @param submittedDataset
 	 * @return
 	 */
-	ManagedExecution<?> toManagedExecution(UserId userId, Dataset submittedDataset);
+	ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset);
 
 	
 	Set<ManagedExecution> collectRequiredQueries();
@@ -80,7 +79,7 @@ public interface QueryDescription extends Visitable {
 												  .map(NamespacedIdentifiable::getDataset)
 												  .collect(Collectors.toSet());
 
-		AuthorizationHelper.authorize(user, datasets, Ability.READ);
+		user.authorize(datasets, Ability.READ);
 
 		// Generate ConceptPermissions
 		final Set<Concept> concepts = nsIdCollector.getIdentifiables().stream()
@@ -89,13 +88,13 @@ public interface QueryDescription extends Visitable {
 												   .map(ConceptElement::getConcept)
 												   .collect(Collectors.toSet());
 
-		AuthorizationHelper.authorize(user, concepts, Ability.READ);
+		user.authorize(concepts, Ability.READ);
 
-		AuthorizationHelper.authorize(user, collectRequiredQueries(), Ability.READ);
+		user.authorize(collectRequiredQueries(), Ability.READ);
 		
 		// Check if the query contains parts that require to resolve external IDs. If so the user must have the preserve_id permission on the dataset.
 		if(externalIdChecker.resolvesExternalIds()) {
-			AuthorizationHelper.authorize(user, submittedDataset, Ability.PRESERVE_ID);
+			user.authorize(submittedDataset, Ability.PRESERVE_ID);
 		}
 	}
 

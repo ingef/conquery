@@ -1,19 +1,17 @@
 import React, { FC, useEffect, useState } from "react";
 
+import { usePostFilterValuesResolve } from "../api/api";
 import type {
   FilterIdT,
   PostFilterResolveResponseT,
   SelectOptionT,
 } from "../api/types";
-
+import { getUniqueFileRows } from "../common/helpers/fileHelper";
+import { usePrevious } from "../common/helpers/usePrevious";
 import AsyncInputMultiSelect from "../form-components/AsyncInputMultiSelect";
 import InputMultiSelect, {
   MultiSelectInputProps,
 } from "../form-components/InputMultiSelect";
-import { getUniqueFileRows } from "../common/helpers/fileHelper";
-
-import { usePostFilterValuesResolve } from "../api/api";
-import { usePrevious } from "../common/helpers/usePrevious";
 
 import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
@@ -51,7 +49,7 @@ const ResolvableMultiSelect: FC<PropsT> = ({
   isLoading,
 }) => {
   const [resolved, setResolved] = useState<PostFilterResolveResponseT | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
@@ -74,7 +72,7 @@ const ResolvableMultiSelect: FC<PropsT> = ({
         context.treeId,
         context.tableId,
         context.filterId,
-        rows
+        rows,
       );
 
       setResolved(r);
@@ -108,7 +106,7 @@ const ResolvableMultiSelect: FC<PropsT> = ({
           context.treeId,
           context.tableId,
           context.filterId,
-          input.defaultValue as string[]
+          input.defaultValue as string[],
         );
 
         if (

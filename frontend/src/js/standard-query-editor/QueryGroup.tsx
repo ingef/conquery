@@ -1,18 +1,20 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 import { useTranslation } from "react-i18next";
 
+import { DateRangeT } from "../api/types";
+import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+
 import QueryEditorDropzone from "./QueryEditorDropzone";
-import QueryNode from "./QueryNode";
 import QueryGroupActions from "./QueryGroupActions";
+import QueryNode from "./QueryNode";
 import type {
-  DraggedNodeType,
-  DraggedQueryType,
+  DragItemConceptTreeNode,
+  DragItemNode,
+  DragItemQuery,
   PreviousQueryQueryNodeType,
   QueryGroupType,
 } from "./types";
-import { PreviousQueryIdT } from "../previous-queries/list/reducer";
-import { DateRangeT } from "../api/types";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -45,7 +47,9 @@ const isDateActive = (dateRange?: DateRangeT) => {
 interface PropsT {
   group: QueryGroupType;
   andIdx: number;
-  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
+  onDropNode: (
+    node: DragItemQuery | DragItemNode | DragItemConceptTreeNode,
+  ) => void;
   onDropFile: (file: File) => void;
   onDeleteNode: (idx: number) => void;
   onEditClick: (orIdx: number) => void;

@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -52,11 +53,10 @@ public class Table extends Labeled<TableId> {
 		return new TableId(dataset.getId(), getName());
 	}
 
-	public List<Import> findImports(NamespacedStorage storage) {
+	public Stream<Import> findImports(NamespacedStorage storage) {
 		return storage
 					   .getAllImports()
 					   .stream()
-					   .filter(imp -> imp.getTable().equals(this))
-					   .collect(Collectors.toList());
+					   .filter(imp -> imp.getTable().equals(this));
 	}
 }

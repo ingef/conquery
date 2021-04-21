@@ -1,15 +1,16 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 
-import TableFilters from "./TableFilters";
-import TableSelects from "./TableSelects";
+import type { PostPrefixForSuggestionsParams } from "../api/api";
+import type { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
+import type { ModeT } from "../form-components/InputRange";
+import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+
 import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";
-import type { ConceptQueryNodeType } from "../standard-query-editor/types";
-import type { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
-import type { PostPrefixForSuggestionsParams } from "../api/api";
-import type { ModeT } from "../form-components/InputRange";
+import TableFilters from "./TableFilters";
+import TableSelects from "./TableSelects";
 
 const Column = styled("div")`
   display: flex;
@@ -34,12 +35,12 @@ interface PropsT {
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,
-    mode: ModeT
+    mode: ModeT,
   ) => void;
   onLoadFilterSuggestions: (
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
-    filterIdx: number
+    filterIdx: number,
   ) => void;
 }
 
@@ -118,7 +119,7 @@ const TableView: FC<PropsT> = ({
                   prefix,
                 },
                 selectedInputTableIdx,
-                filterIdx
+                filterIdx,
               )
             }
             onShowDescription={onShowDescription}

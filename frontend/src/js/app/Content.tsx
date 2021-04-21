@@ -1,17 +1,17 @@
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
+import { StateT } from "app-types";
 import React from "react";
 import { useSelector } from "react-redux";
-import styled from "@emotion/styled";
-import { css } from "@emotion/react";
 import SplitPane from "react-split-pane";
 
-import Tooltip from "../tooltip/Tooltip";
-import ActivateTooltip from "../tooltip/ActivateTooltip";
-
 import type { TabT } from "../pane/types";
+import ActivateTooltip from "../tooltip/ActivateTooltip";
+import Tooltip from "../tooltip/Tooltip";
+
+import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
-import DndProvider from "./DndProvider";
-import { StateT } from "app-types";
 
 // ADDING TO react-split-pane STYLES
 // Because otherwise, vertical panes don't expand properly in Safari
@@ -35,7 +35,7 @@ export interface ContentPropsT {
 
 const Content = ({ rightTabs }: ContentPropsT) => {
   const displayTooltip = useSelector<StateT, boolean>(
-    (state) => state.tooltip.displayTooltip
+    (state) => state.tooltip.displayTooltip,
   );
 
   return (

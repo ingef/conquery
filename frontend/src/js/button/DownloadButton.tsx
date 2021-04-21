@@ -35,7 +35,7 @@ const DownloadButton: FC<PropsT> = ({
   const authToken = useAuthToken();
 
   const href = `${url}?access_token=${encodeURIComponent(
-    authToken
+    authToken,
   )}&charset=ISO_8859_1`;
 
   const icon = getIcon(ending);

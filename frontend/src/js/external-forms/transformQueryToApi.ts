@@ -1,4 +1,5 @@
 import { transformElementsToApi } from "../api/apiHelper";
+
 import { Form } from "./config-types";
 
 function transformElementGroupsToApi(elementGroups) {
@@ -9,7 +10,7 @@ function transformElementGroupsToApi(elementGroups) {
           children: transformElementsToApi(concepts),
           ...rest,
         }
-      : { ...transformElementsToApi(concepts)[0], ...rest }
+      : { ...transformElementsToApi(concepts)[0], ...rest },
   );
 }
 
@@ -30,7 +31,7 @@ function transformFieldToApi(fieldConfig, form) {
       return transformElementGroupsToApi(formValue);
     case "TABS":
       const selectedTab = fieldConfig.tabs.find(
-        (tab) => tab.name === formValue
+        (tab) => tab.name === formValue,
       );
 
       return {

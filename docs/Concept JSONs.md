@@ -658,6 +658,23 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
 </p></details>
 
+### QUARTER<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/QuarterSelect.java#L14-L16)</sup></sub></sup>
+Entity is included when the the number of quarters with events is within a specified range.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.QuarterSelect`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/QuarterSelect.java#L22) | sample | one of EARLIEST, LATEST, RANDOM | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+</p></details>
+
 ### QUARTERS_IN_YEAR<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/QuartersInYearSelect.java#L15-L17)</sup></sub></sup>
 Entity is included when the the number of quarters with events is within a specified range.
 

@@ -1,4 +1,10 @@
+import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
+
+import {
+  PostPrefixForSuggestionsParams,
+  usePostPrefixForSuggestions,
+} from "../api/api";
 import type {
   AndQueryT,
   ConceptIdT,
@@ -7,17 +13,11 @@ import type {
   QueryNodeT,
   PostFilterSuggestionsResponseT,
 } from "../api/types";
-
 import { defaultSuccess, defaultError } from "../common/actions";
-import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 import type { TreesT } from "../concept-trees/reducer";
-import {
-  PostPrefixForSuggestionsParams,
-  usePostPrefixForSuggestions,
-} from "../api/api";
 import type { ModeT } from "../form-components/InputRange";
+import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 
-import type { DraggedNodeType, DraggedQueryType } from "./types";
 import {
   DROP_AND_NODE,
   DROP_OR_NODE,
@@ -47,16 +47,22 @@ import {
   TOGGLE_SECONDARY_ID_EXCLUDE,
 } from "./actionTypes";
 import { StandardQueryStateT } from "./queryReducer";
-import { useTranslation } from "react-i18next";
+import type {
+  DragItemConceptTreeNode,
+  DragItemNode,
+  DragItemQuery,
+} from "./types";
 
-export const dropAndNode = (item: DraggedNodeType | DraggedQueryType) => ({
+export const dropAndNode = (
+  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode,
+) => ({
   type: DROP_AND_NODE,
   payload: { item },
 });
 
 export const dropOrNode = (
-  item: DraggedNodeType | DraggedQueryType,
-  andIdx: number
+  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode,
+  andIdx: number,
 ) => ({
   type: DROP_OR_NODE,
   payload: { item, andIdx },
@@ -96,7 +102,7 @@ const findPreviousQueryIds = (node: QueryNodeT, queries = []): string[] => {
       return [
         ...queries,
         ...node.children.flatMap((child: any) =>
-          findPreviousQueryIds(child, [])
+          findPreviousQueryIds(child, []),
         ),
       ];
     default:
@@ -134,12 +140,12 @@ export const useExpandPreviousQuery = () => {
 
     await Promise.all(
       nestedPreviousQueryIds.map((queryId) =>
-        loadPreviousQuery(datasetId, queryId)
-      )
+        loadPreviousQuery(datasetId, queryId),
+      ),
     );
 
     dispatch(
-      setSelectedSecondaryId(query.secondaryId ? query.secondaryId : null)
+      setSelectedSecondaryId(query.secondaryId ? query.secondaryId : null),
     );
   };
 };
@@ -155,7 +161,7 @@ export const updateNodeLabel = (label: string) => ({
   type: UPDATE_NODE_LABEL,
   payload: { label },
 });
-export const addConceptToNode = (concept: DraggedNodeType) => ({
+export const addConceptToNode = (concept: DragItemConceptTreeNode) => ({
   type: ADD_CONCEPT_TO_NODE,
   payload: { concept },
 });
@@ -172,7 +178,7 @@ export const toggleTable = (tableIdx: number, isExcluded: boolean) => ({
 export const setFilterValue = (
   tableIdx: number,
   filterIdx: number,
-  value: unknown
+  value: unknown,
 ) => ({
   type: SET_FILTER_VALUE,
   payload: { tableIdx, filterIdx, value },
@@ -199,7 +205,7 @@ export const resetAllFilters = () => ({
 export const switchFilterMode = (
   tableIdx: number,
   filterIdx: number,
-  mode: ModeT
+  mode: ModeT,
 ) => ({
   type: SWITCH_FILTER_MODE,
   payload: { tableIdx, filterIdx, mode },
@@ -217,7 +223,7 @@ export const toggleSecondaryIdExclude = (andIdx?: number, orIdx?: number) => ({
 
 export const loadFilterSuggestionsStart = (
   tableIdx: number,
-  filterIdx: number
+  filterIdx: number,
 ) => ({
   type: LOAD_FILTER_SUGGESTIONS_START,
   payload: { tableIdx, filterIdx },
@@ -226,7 +232,7 @@ export const loadFilterSuggestionsStart = (
 export const loadFilterSuggestionsSuccess = (
   suggestions: PostFilterSuggestionsResponseT,
   tableIdx: number,
-  filterIdx: number
+  filterIdx: number,
 ) =>
   defaultSuccess(LOAD_FILTER_SUGGESTIONS_SUCCESS, suggestions, {
     tableIdx,
@@ -236,7 +242,7 @@ export const loadFilterSuggestionsSuccess = (
 export const loadFilterSuggestionsError = (
   error: Error,
   tableIdx: number,
-  filterIdx: number
+  filterIdx: number,
 ) =>
   defaultError(LOAD_FILTER_SUGGESTIONS_ERROR, error, { tableIdx, filterIdx });
 
@@ -247,13 +253,13 @@ export const useLoadFilterSuggestions = () => {
   return (
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
-    filterIdx: number
+    filterIdx: number,
   ) => {
     dispatch(loadFilterSuggestionsStart(tableIdx, filterIdx));
 
     return postPrefixForSuggestions(params).then(
       (r) => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
-      (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
+      (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx)),
     );
   };
 };

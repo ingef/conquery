@@ -1,5 +1,5 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 import { Dot } from "react-animated-dots";
 
 const AnimatedDots = styled("span")`

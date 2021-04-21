@@ -1,13 +1,11 @@
-import { includes } from "../common/helpers";
 import type { ConceptT, TableT, SelectorT, ConceptIdT } from "../api/types";
+import { includes } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
+import { nodeIsElement } from "../model/node";
+import { selectsWithDefaults } from "../model/select";
+import { tablesWithDefaults } from "../model/table";
 
 import type { TreesT } from "./reducer";
-
-import { tablesWithDefaults } from "../model/table";
-import { selectsWithDefaults } from "../model/select";
-import { nodeIsElement } from "../model/node";
-import { exists } from "../common/helpers/exists";
-
 import { findConcepts } from "./search";
 
 // Globally store the huge (1-5 MB) trees for read only
@@ -30,7 +28,7 @@ export function resetAllTrees() {
 export function setTree(
   rootConcept: ConceptT,
   treeId: ConceptIdT,
-  tree: ConceptT
+  tree: ConceptT,
 ): void {
   // This replaces the root concept with the one loaded initially (at /concepts)
   const concepts = {
@@ -60,7 +58,7 @@ export function getConceptById(conceptId?: ConceptIdT): ConceptT | null {
 // GETTER including parent tables all the way to the root concept
 //
 const findParentConcepts = (
-  concepts: { concept: ConceptT; id: ConceptIdT }[]
+  concepts: { concept: ConceptT; id: ConceptIdT }[],
 ): { concept: ConceptT; id: ConceptIdT }[] => {
   const firstConcept = concepts[0].concept;
   const parentId = nodeIsElement(firstConcept) ? firstConcept.parent : null;
@@ -88,7 +86,7 @@ interface ConceptsByIds {
 
 const findRootConceptFromNodeIds = (
   rootConcepts: TreesT,
-  conceptIds: ConceptIdT[]
+  conceptIds: ConceptIdT[],
 ) => {
   // Note: The implicit assumption is that all of the passed conceptIds have the same root.
   // because otherwise they wouldn't have landed in the node.ids array in the first place
@@ -102,17 +100,17 @@ const findRootConceptFromNodeIds = (
   if (conceptsWithIds.length !== conceptIds.length) return null;
 
   const parentConceptIds = findParentConcepts(conceptsWithIds).map(
-    (c) => c.id.toString() // toString so we can find them by object keys
+    (c) => c.id.toString(), // toString so we can find them by object keys
   );
 
   return Object.keys(rootConcepts).find(
-    (id) => includes(parentConceptIds, id) && nodeIsElement(rootConcepts[id])
+    (id) => includes(parentConceptIds, id) && nodeIsElement(rootConcepts[id]),
   );
 };
 
 export const getConceptsByIdsWithTablesAndSelects = (
   rootConcepts: TreesT,
-  conceptIds: ConceptIdT[]
+  conceptIds: ConceptIdT[],
 ): ConceptsByIds | null => {
   const rootConceptId = findRootConceptFromNodeIds(rootConcepts, conceptIds);
 
@@ -182,10 +180,10 @@ export const globalSearch = async (trees: TreesT, query: string) => {
           key,
           key,
           combinedTrees[key][key],
-          lowerQuery
+          lowerQuery,
         ),
       }),
-      {}
+      {},
     );
 
   return result;

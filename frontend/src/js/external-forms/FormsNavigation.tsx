@@ -1,15 +1,15 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
-import { useSelector, useDispatch } from "react-redux";
+import type { StateT } from "app-types";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-
-import { setExternalForm } from "./actions";
+import { useSelector, useDispatch } from "react-redux";
 
 import InputSelect from "../form-components/InputSelect";
-import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
-import type { StateT } from "app-types";
-import { Form } from "./config-types";
 import { useActiveLang } from "../localization/useActiveLang";
+
+import { setExternalForm } from "./actions";
+import { Form } from "./config-types";
+import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
 
 const Root = styled("div")`
   flex-shrink: 0;
@@ -38,7 +38,7 @@ const FormsNavigation: FC = () => {
   >((state) => selectAvailableForms(state));
 
   const activeForm = useSelector<StateT, string | null>((state) =>
-    selectActiveFormType(state)
+    selectActiveFormType(state),
   );
 
   const dispatch = useDispatch();

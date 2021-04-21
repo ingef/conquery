@@ -1,17 +1,14 @@
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
-  ConceptQueryNodeType,
   PreviousQueryQueryNodeType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import { TIMEBASED_OPERATOR_TYPES } from "../common/constants/timebasedQueryOperatorTypes";
-import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import { TIMEBASED_OPERATOR_TYPES } from "../timebased-query-editor/reducer";
 
 function isTimebasedQuery(node: PreviousQueryQueryNodeType) {
   const queryString = JSON.stringify(node.query);
 
-  return Object.values(TIMEBASED_OPERATOR_TYPES).some(
-    (op) => queryString.indexOf(op) !== -1
-  );
+  return TIMEBASED_OPERATOR_TYPES.some((op) => queryString.indexOf(op) !== -1);
 }
 
 // A little weird that it's nested so deeply, but well, you can't expand an external query
@@ -45,10 +42,4 @@ function groupHasValidDates(group) {
 
 export function validateQueryDates(query: StandardQueryStateT) {
   return !query || query.length === 0 || query.some(groupHasValidDates);
-}
-
-export function isConceptQueryNode(
-  node: StandardQueryNodeT
-): node is ConceptQueryNodeType {
-  return !node.isPreviousQuery;
 }

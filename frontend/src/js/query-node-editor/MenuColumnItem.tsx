@@ -1,5 +1,5 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
@@ -50,7 +50,7 @@ const MenuColumnItem: FC<PropsT> = ({
   const isDisabled = tableIsDisabled(
     table,
     blocklistedTables,
-    allowlistedTables
+    allowlistedTables,
   );
 
   // TODO: This creates an invalid DOM nesting, a <button> inside a <button>

@@ -126,7 +126,7 @@ public class BucketManager {
 					}
 				}
 			}
-		}
+					});
 
 		if (!job.isEmpty()) {
 			jobManager.addSlowJob(job);
@@ -185,9 +185,8 @@ public class BucketManager {
 
 					job.addCBlock(bucket, connector);
 				}
-			}
+			});
 		}
-
 		jobManager.addSlowJob(job);
 	}
 
