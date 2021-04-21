@@ -238,14 +238,13 @@ public class BucketManager {
 	}
 
 	private void deregisterCBlock(CBlock cBlock) {
-		Bucket bucket = cBlock.getBucket();
 
 		connectorToCblocks.getOrDefault(cBlock.getConnector(), Int2ObjectMaps.emptyMap())
 						  .getOrDefault(cBlock.getBucket().getBucket(), Collections.emptyMap())
 						  .values()
 						  .remove(cBlock);
 
-		for (int entityId : bucket.entities()) {
+		for (int entityId : cBlock.getBucket().entities()) {
 			final Entity entity = entities.get(entityId);
 
 			if (entity == null) {
