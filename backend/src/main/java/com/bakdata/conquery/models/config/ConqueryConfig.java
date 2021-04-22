@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
@@ -26,6 +27,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.MoreCollectors;
@@ -117,6 +119,10 @@ public class ConqueryConfig extends Configuration {
 				.filter(c -> type.isAssignableFrom(c.getClass()))
 				.map(type::cast)
 				.collect(MoreCollectors.toOptional());
+	}
+
+	public void configureObjectMapper(ObjectMapper objectMapper) {
+		objectMapper.registerModule(new ConqueryConfig.ConfiguredModule(this));
 	}
 
 	public static class ConfiguredModule extends SimpleModule {

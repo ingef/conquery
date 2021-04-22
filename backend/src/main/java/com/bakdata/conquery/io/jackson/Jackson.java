@@ -65,11 +65,6 @@ public class Jackson {
 		return objectMapper;
 	}
 
-
-	public static void configure(ObjectMapper objectMapper, ConqueryConfig config) {
-		objectMapper.registerModule(new ConqueryConfig.ConfiguredModule(config));
-	}
-
 	public static <T> T findInjectable(DeserializationContext ctxt, Class<T> clazz) throws JsonMappingException {
 		return (T) ctxt.findInjectableValue(clazz.getName(), null, null);
 	}

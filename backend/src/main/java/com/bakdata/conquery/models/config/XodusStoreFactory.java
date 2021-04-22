@@ -109,7 +109,7 @@ public class XodusStoreFactory implements StoreFactory {
     private transient Validator validator;
 
     @JsonIgnore
-    private transient ObjectMapper objectMapper;
+    private transient ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
 
     @JsonIgnore
     private BiMap<File, Environment> activeEnvironments = HashBiMap.create();
@@ -120,12 +120,17 @@ public class XodusStoreFactory implements StoreFactory {
     @Override
     public void init(ManagerNode managerNode) {
         validator = managerNode.getValidator();
-        objectMapper = managerNode.getEnvironment().getObjectMapper();
+        configureMapper(managerNode.getConfig());
     }
 
     @Override
     public void init(ShardNode shardNode) {
         validator = shardNode.getValidator();
+        configureMapper(shardNode.getConfig());
+    }
+
+    private void configureMapper(ConqueryConfig config) {
+        config.configureObjectMapper(objectMapper);
     }
 
     @Override

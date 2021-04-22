@@ -68,7 +68,7 @@ public class Conquery extends Application<ConqueryConfig> {
 
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-				Jackson.configure(environment.getObjectMapper(),configuration);
+				configuration.configureObjectMapper(environment.getObjectMapper());
 			}
 
 			@Override
