@@ -2,11 +2,14 @@ package com.bakdata.conquery.util.support;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.PreprocessorCommand;
@@ -21,6 +24,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.setup.Environment;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -104,7 +108,20 @@ public class StandaloneSupport implements Closeable {
 	}
 
 	public Client getClient() {
-		return testConquery.getClient();
+		return testConquery.getClient()
+						   .register(new ConqueryAuthenticationFilter(getAuthorizationController().getConqueryTokenRealm().createTokenForUser(getTestUser().getId())));
+	}
+
+	@Data
+	private static class ConqueryAuthenticationFilter implements ClientRequestFilter {
+		private final String token;
+
+		@Override
+		public void filter(ClientRequestContext requestContext) throws IOException {
+			// First remove all prior Authorization and then set our own.
+			requestContext.getHeaders().remove("Authorization");
+			requestContext.getHeaders().add("Authorization", "Bearer " + getToken());
+		}
 	}
 
 	/**
