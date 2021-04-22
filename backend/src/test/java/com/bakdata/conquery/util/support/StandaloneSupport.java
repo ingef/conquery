@@ -118,8 +118,11 @@ public class StandaloneSupport implements Closeable {
 
 		@Override
 		public void filter(ClientRequestContext requestContext) throws IOException {
-			// First remove all prior Authorization and then set our own.
-			requestContext.getHeaders().remove("Authorization");
+			// If none set to provided token
+			if(requestContext.getHeaders().containsKey("Authorization")){
+				return;
+			}
+
 			requestContext.getHeaders().add("Authorization", "Bearer " + getToken());
 		}
 	}
