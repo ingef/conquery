@@ -30,8 +30,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -113,14 +111,12 @@ public class FormTest extends ConqueryTestSpec {
 	@Override
 	public void executeTest(StandaloneSupport support) throws Exception {
 		DatasetRegistry namespaces = support.getNamespace().getNamespaces();
-		UserId userId = support.getTestUser().getId();
-		DatasetId dataset = support.getNamespace().getDataset().getId();
 
 		assertThat(support.getValidator().validate(form))
 				.describedAs("Form Validation Errors")
 				.isEmpty();
 		
-		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, support.getDataset(), support.getConfig());
+		ManagedExecution<?> managedForm = ExecutionManager.runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig());
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {

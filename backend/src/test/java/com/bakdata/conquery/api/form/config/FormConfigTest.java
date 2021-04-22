@@ -44,7 +44,6 @@ import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -158,7 +157,7 @@ public class FormConfigTest {
 			.build();
 		FormConfigId formId = processor.addConfig(user, datasetId, formConfig);
 		
-		assertThat(storage.getAllFormConfigs()).containsExactly(FormConfigAPI.intern(formConfig, user.getId(), dataset.getId()));
+		assertThat(storage.getAllFormConfigs()).containsExactly(FormConfigAPI.intern(formConfig, user, dataset.getId()));
 	}
 
 	@Test
@@ -193,7 +192,7 @@ public class FormConfigTest {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		formConfig.setOwner(user.getId());
+		formConfig.setOwner(user);
 		user.addPermission(storage, formConfig.createPermission(Ability.READ.asSet()));
 		storage.addFormConfig(formConfig);
 		
@@ -236,7 +235,7 @@ public class FormConfigTest {
 		}
 
 		@Override
-		public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, Dataset submittedDataset) {
+		public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
 			return Collections.emptyMap();
 		}
 
@@ -361,7 +360,7 @@ public class FormConfigTest {
 		patchedFormExpected.setLabel("newTestLabel");
 		patchedFormExpected.setShared(true);
 		patchedFormExpected.setTags(new String[] {"tag1", "tag2"});
-		patchedFormExpected.setOwner(user.getId());
+		patchedFormExpected.setOwner(user);
 		patchedFormExpected.setValues(new ObjectNode(mapper.getNodeFactory() , Map.of("test-Node", new TextNode("test-text"))));
 		
 		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison()

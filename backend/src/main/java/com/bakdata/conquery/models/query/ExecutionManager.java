@@ -8,12 +8,12 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -29,11 +29,14 @@ public class ExecutionManager {
 	@NonNull
 	private final Namespace namespace;
 
-	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UserId userId, Dataset submittedDataset, ConqueryConfig config) {
-		return execute(datasets, createExecution(datasets, query, userId, submittedDataset), config);
+	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config) {
+		final ManagedExecution<?> execution = createExecution(datasets, query, user, submittedDataset);
+		execute(datasets, execution, config);
+
+		return execution;
 	}
 
-	public static ManagedExecution<?> execute(DatasetRegistry datasets, ManagedExecution<?> execution, ConqueryConfig config) {
+	public static void execute(DatasetRegistry datasets, ManagedExecution<?> execution, ConqueryConfig config) {
 		// Initialize the query / create subqueries
 		execution.initExecutable(datasets, config);
 
@@ -43,17 +46,16 @@ public class ExecutionManager {
 		execution.start();
 
 		final MetaStorage storage = datasets.getMetaStorage();
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(execution.getOwner()), storage).map(Group::getName).orElse("none");
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 		for (Namespace namespace : execution.getRequiredDatasets()) {
 			namespace.getQueryManager().executeQueryInNamespace(execution);
 		}
-		return execution;
 	}
 
-	public static ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, UserId userId, Dataset submittedDataset) {
-		return createQuery(datasets, query, UUID.randomUUID(), userId, submittedDataset);
+	public static ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset) {
+		return createQuery(datasets, query, UUID.randomUUID(), user, submittedDataset);
 	}
 
 	/**
@@ -64,9 +66,9 @@ public class ExecutionManager {
 		return query;
 	}
 
-	public static ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, Dataset submittedDataset) {
+	public static ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, User user, Dataset submittedDataset) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution<?> managed = query.toManagedExecution(userId, submittedDataset);
+		ManagedExecution<?> managed = query.toManagedExecution(user, submittedDataset);
 
 		managed.setQueryId(queryId);
 
@@ -76,9 +78,6 @@ public class ExecutionManager {
 		return managed;
 	}
 
-	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, UserId userId, Dataset submittedDataset, ConqueryConfig config) {
-		return execute(datasets, createQuery(datasets, query, queryId, userId, submittedDataset), config);
-	}
 
 	/**
 	 * Receive part of query result and store into query.
@@ -92,7 +91,7 @@ public class ExecutionManager {
 		query.addResult(storage, result);
 
 		if (query.getState() == ExecutionState.DONE || query.getState() == ExecutionState.FAILED) {
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(storage.getUser(query.getOwner()), storage).map(Group::getName).orElse("none");
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(query.getOwner(), storage).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
 			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();

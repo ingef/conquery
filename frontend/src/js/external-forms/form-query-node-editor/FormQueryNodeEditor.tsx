@@ -14,7 +14,7 @@ import { toUpperCaseUnderscore } from "../../common/helpers";
 import { ModeT } from "../../form-components/InputRange";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
-import { DraggedNodeType } from "../../standard-query-editor/types";
+import { DragItemNode } from "../../standard-query-editor/types";
 import { FormContextStateT } from "../reducer";
 import {
   selectReduxFormState,
@@ -39,7 +39,7 @@ interface PropsT {
   onDropConcept: (
     valueIdx: number,
     conceptIdx: number,
-    concept: DraggedNodeType,
+    concept: DragItemNode,
   ) => void;
   onRemoveConcept: (
     valueIdx: number,

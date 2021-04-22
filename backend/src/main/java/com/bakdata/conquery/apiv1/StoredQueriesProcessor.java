@@ -1,6 +1,19 @@
 package com.bakdata.conquery.apiv1;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -12,6 +25,7 @@ import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -25,13 +39,6 @@ import com.bakdata.conquery.util.ResourceUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.UriBuilder;
-import java.util.*;
-import java.util.stream.Stream;
-
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -65,10 +72,8 @@ public class StoredQueriesProcessor {
 							 try {
 								 return Stream.of(
 										 mq.buildStatusOverview(
-												 storage,
 												 uriBuilder.clone(),
 												 user,
-												 datasetRegistry,
 												 datasetAbilities
 										 ));
 							 }
@@ -154,6 +159,15 @@ public class StoredQueriesProcessor {
 			patch.applyTo(execution, storage, user);
 			storage.updateExecution(execution);
 		}
+	}
+
+	public FullExecutionStatus reexecute(User user, ManagedExecution<?> query, UriBuilder responseBuilder) {
+		if(!query.getState().equals(ExecutionState.RUNNING)) {
+			ExecutionManager.execute(getDatasetRegistry(), query, config);
+		}
+
+		final Map<DatasetId, Set<Ability>> datasetAbilities = AuthorizationHelper.buildDatasetAbilityMap(user, getDatasetRegistry());
+		return query.buildStatusFull(storage, responseBuilder, user, getDatasetRegistry(), datasetAbilities);
 	}
 
 }

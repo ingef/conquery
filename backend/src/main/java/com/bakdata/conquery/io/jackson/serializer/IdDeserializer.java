@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -41,6 +42,7 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 			return deserializeId(text, idParser, checkForInjectedPrefix, ctxt);
 		}
 		catch (Exception e) {
+
 			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse an " + idClass.getSimpleName() + " from " + text);
 		}
 	}
@@ -59,14 +61,15 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 	}
 
 	private static String findDatasetName(DeserializationContext ctx) throws JsonMappingException {
-		Dataset dataset = (Dataset) ctx.findInjectableValue(Dataset.class.getName(), null, null);
+		Dataset dataset = Jackson.findInjectable(ctx, Dataset.class);
 
 		if(dataset != null){
 			return dataset.getName();
 		}
 
 		// Sometimes injected via @PathParam
-		DatasetId id = (DatasetId) ctx.findInjectableValue(DatasetId.class.getName(), null, null);
+
+		DatasetId id = Jackson.findInjectable(ctx, DatasetId.class);
 
 		if(id != null) {
 			return id.getName();

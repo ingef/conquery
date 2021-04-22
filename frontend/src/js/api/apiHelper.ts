@@ -4,10 +4,6 @@
 // Mainly, certain keys are allowlisted
 // (to exclude others that are relevant to the frontend only)
 // Some keys are added (e.g. the query type attribute)
-import {
-  DAYS_BEFORE,
-  DAYS_OR_NO_EVENT_BEFORE,
-} from "../common/constants/timebasedQueryOperatorTypes";
 import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { isLabelPristine } from "../standard-query-editor/helper";
@@ -148,16 +144,16 @@ const createQueryConcepts = (query: any) => {
 };
 
 // TODO: Use, once feature is complete
-const getDays = (condition: any) => {
+const getDays = (condition: ConditionT) => {
   switch (condition.operator) {
-    case DAYS_BEFORE:
+    case "DAYS_BEFORE":
       return {
         days: {
           min: condition.minDays,
           max: condition.maxDays,
         },
       };
-    case DAYS_OR_NO_EVENT_BEFORE:
+    case "DAYS_OR_NO_EVENT_BEFORE":
       return {
         days: condition.minDaysOrNoEvent,
       };

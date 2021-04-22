@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.forms.frontendconfiguration;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -86,7 +85,7 @@ public class FormConfigProcessor {
 										   .filter(c -> user.isPermitted(c, Ability.READ));
 
 
-		return stream.map(c -> c.overview(storage, user));
+		return stream.map(c -> c.overview(user));
 	}
 
 	/**
@@ -122,15 +121,15 @@ public class FormConfigProcessor {
 
 		translateToDatasets.remove(targetDataset);
 
-		return addConfigAndTranslations(user, targetDataset, translateToDatasets, config);
+		return addConfigAndTranslations(user, targetDataset, config);
 	}
 	
 	/**
 	 * Adds the config to the dataset it was submitted under and also to all other datasets it can be translated to.
 	 * This method does not check permissions.
 	 */
-	public FormConfigId addConfigAndTranslations(User user, DatasetId targetDataset, Collection<DatasetId> translateTo, FormConfigAPI config) {
-		FormConfig internalConfig = FormConfigAPI.intern(config, user.getId(), targetDataset);
+	public FormConfigId addConfigAndTranslations(User user, DatasetId targetDataset, FormConfigAPI config) {
+		FormConfig internalConfig = FormConfigAPI.intern(config, user, targetDataset);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 

@@ -34,7 +34,6 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -91,7 +90,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 
 
-	public ManagedForm(Form submittedForm , UserId owner, Dataset submittedDataset) {
+	public ManagedForm(Form submittedForm , User owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
 		this.submittedForm = submittedForm;
 	}

@@ -98,10 +98,10 @@ const StyledWithTooltip = styled(WithTooltip)`
   margin-left: 10px;
 `;
 
-export interface FormConfigDragItem {
+export interface DragItemFormConfig {
   width: number;
   height: number;
-  type: string;
+  type: "FORM_CONFIG";
   id: string;
   label: string;
 }
@@ -177,16 +177,16 @@ const FormConfig: React.FC<PropsT> = ({
     setIsEditingTags(false);
   };
 
-  const item: FormConfigDragItem = {
+  const item: DragItemFormConfig = {
     height: 0,
     width: 0,
     type: FORM_CONFIG,
     id: config.id,
     label: config.label,
   };
-  const [, drag] = useDrag({
+  const [, drag] = useDrag<DragItemFormConfig, void, {}>({
     item,
-    begin: (): FormConfigDragItem => ({
+    begin: () => ({
       ...item,
       ...getWidthAndHeight(ref),
     }),

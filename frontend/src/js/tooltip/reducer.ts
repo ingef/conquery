@@ -1,3 +1,5 @@
+import { DateRangeT } from "../api/types";
+
 import {
   TOGGLE_DISPLAY_TOOLTIP,
   DISPLAY_ADDITIONAL_INFOS,
@@ -14,7 +16,7 @@ export type AdditionalInfosType = {
   description: string | null;
   isFolder: boolean;
   matchingEntries: number | null;
-  dateRange: Object | null;
+  dateRange: DateRangeT | null;
   infos: InfoType[] | null;
 };
 

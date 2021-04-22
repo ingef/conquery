@@ -7,7 +7,7 @@ import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../../common/constants/dndTypes";
-import type { DraggedQueryType } from "../../standard-query-editor/types";
+import type { DragItemQuery } from "../../standard-query-editor/types";
 
 import PreviousQuery from "./PreviousQuery";
 import { PreviousQueryT } from "./reducer";
@@ -27,7 +27,7 @@ const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
       ? PREVIOUS_QUERY
       : PREVIOUS_SECONDARY_ID_QUERY;
 
-  const item = {
+  const item: DragItemQuery = {
     width: 0,
     height: 0,
     type: dragType,
@@ -37,9 +37,9 @@ const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
     canExpand: query.canExpand,
   };
 
-  const [, drag] = useDrag({
+  const [, drag] = useDrag<DragItemQuery, void, {}>({
     item,
-    begin: (): DraggedQueryType => ({
+    begin: () => ({
       ...item,
       ...getWidthAndHeight(ref),
     }),

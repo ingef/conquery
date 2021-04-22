@@ -7,6 +7,7 @@ import {
 } from "../../common/constants/dndTypes";
 import type { ChildArgs } from "../../form-components/Dropzone";
 import { PreviousQueryT } from "../../previous-queries/list/reducer";
+import type { DragItemQuery } from "../../standard-query-editor/types";
 import DropzoneList from "../form-components/DropzoneList";
 
 import FormQueryResult from "./FormQueryResult";
@@ -33,16 +34,14 @@ const FormMultiQueryDropzone: FC<PropsT> = ({
   };
 
   return (
-    <DropzoneList
+    <DropzoneList<DragItemQuery>
       acceptedDropTypes={[PREVIOUS_QUERY, PREVIOUS_SECONDARY_ID_QUERY]}
       label={label}
       dropzoneChildren={dropzoneChildren}
       items={input.value.map((query: PreviousQueryT, i: number) => (
         <FormQueryResult key={i} queryResult={query} />
       ))}
-      onDrop={(dropzoneProps, monitor) => {
-        const item = monitor.getItem();
-
+      onDrop={(item) => {
         return input.onChange(addValue(item));
       }}
       onDelete={(i: number) => removeValue(i)}

@@ -14,8 +14,12 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.api.description.FESecondaryId;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -46,6 +50,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 				.describedAs("Response = `%s`", post)
 				.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
 
+
 		{
 			final Set<FESecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
@@ -54,6 +59,24 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			assertThat(secondaryIds)
 					.extracting(FESecondaryId::getId)
 					.containsExactly(description.getId().toString());
+
+
+			// Upload Table referencing SecondaryId
+			{
+				// Build data manually so content is minmal (ie no dataset prefixes etc)
+				ObjectNode tableNode = Jackson.MAPPER.createObjectNode();
+				tableNode.put("name", "table");
+
+				ObjectNode columnNode = Jackson.MAPPER.createObjectNode();
+				columnNode.put("name", "column");
+				columnNode.put("type", MajorTypeId.INTEGER.name());
+				columnNode.put("secondaryId", description.getId().toStringWithoutDataset());
+
+				tableNode.put("columns", columnNode);
+
+				final Response response = uploadTable(conquery, tableNode);
+				assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+			}
 		}
 		{
 			final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), DatasetsUIResource.class, "getDataset")
@@ -64,13 +87,17 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
 		}
 
-		final Response delete = deleteDescription(conquery, id);
-
-		assertThat(delete)
-				.describedAs("Response = `%s`", delete)
-				.returns(Response.Status.Family.SUCCESSFUL,response -> response.getStatusInfo().getFamily());
-
 		{
+			//First one fails because table depends on it
+			assertThat(deleteDescription(conquery, id))
+					.returns(Response.Status.Family.CLIENT_ERROR, response -> response.getStatusInfo().getFamily());
+
+			deleteTable(conquery, new TableId(conquery.getDataset().getId(),"table"));
+
+			// We've deleted the table, now it should be successful
+			assertThat(deleteDescription(conquery, id))
+					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
+
 			final Set<FESecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
 			log.info("{}", secondaryIds);
@@ -78,9 +105,21 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			assertThat(secondaryIds)
 					.isEmpty();
 		}
+
 	}
 
-	private Set<FESecondaryId> fetchSecondaryIdDescriptions(StandaloneSupport conquery) throws java.io.IOException {
+	private static Response uploadTable(StandaloneSupport conquery, ObjectNode table) {
+		final URI addTable = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "addTable")
+											.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
+
+		return conquery.getClient()
+					   .target(addTable)
+					   .request(MediaType.APPLICATION_JSON)
+					   .post(Entity.entity(table, MediaType.APPLICATION_JSON_TYPE));
+
+	}
+
+	private static Set<FESecondaryId> fetchSecondaryIdDescriptions(StandaloneSupport conquery) throws java.io.IOException {
 		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), DatasetResource.class, "getRoot")
 									   .buildFromMap(Map.of(
 											   "dataset", conquery.getDataset().getName()
@@ -99,10 +138,11 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 		return objectNode.get("secondaryIds")
 						 .traverse(mapper.getFactory().getCodec())
-						 .readValueAs(new TypeReference<Set<FESecondaryId>>() {});
+						 .readValueAs(new TypeReference<Set<FESecondaryId>>() {
+						 });
 	}
 
-	private Response uploadDescription(StandaloneSupport conquery, SecondaryIdDescription description) {
+	private static Response uploadDescription(StandaloneSupport conquery, SecondaryIdDescription description) {
 		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSecondaryId")
 
 									   .buildFromMap(Map.of(
@@ -118,11 +158,25 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	}
 
 
-	private Response deleteDescription(StandaloneSupport conquery, SecondaryIdDescriptionId id) {
+	private static Response deleteDescription(StandaloneSupport conquery, SecondaryIdDescriptionId id) {
 		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "deleteSecondaryId")
 									   .buildFromMap(Map.of(
 											   "dataset", conquery.getDataset().getName(),
 											   "secondaryId", id
+									   ));
+
+
+		return conquery.getClient()
+					   .target(uri)
+					   .request()
+					   .delete();
+	}
+
+	private static Response deleteTable(StandaloneSupport conquery, TableId id) {
+		final URI uri = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "remove")
+									   .buildFromMap(Map.of(
+											   "dataset", conquery.getDataset().getName(),
+											   "table", id
 									   ));
 
 
