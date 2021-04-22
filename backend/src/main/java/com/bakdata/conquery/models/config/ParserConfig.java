@@ -31,24 +31,27 @@ import java.util.*;
 @Data
 @Setter
 public class ParserConfig {
-	/**
-	 * Minimum required double precision to switch from floats to doubles.
-	 * If set to a positive value, preprocessing will select float values for columns with at least minPrecision ulp.
-	 * @see com.bakdata.conquery.models.preproc.parser.specific.RealParser#decideType()
-	 * @see Math#ulp(float)
-	 */
-	private double minPrecision = Double.MIN_VALUE;
+    /**
+     * Minimum required double precision to switch from floats to doubles.
+     * If set to a positive value, preprocessing will select float values for columns with at least minPrecision ulp.
+     *
+     * @see com.bakdata.conquery.models.preproc.parser.specific.RealParser#decideType()
+     * @see Math#ulp(float)
+     */
+    private double minPrecision = Double.MIN_VALUE;
 
-	/**
-	 * The currency type of currency values that are parsed and processed. For now there can only be one currency in
-	 * an instance.
-	 */
-	@NotNull
-	private Currency currency = Currency.getInstance("EUR");
+    /**
+     * The currency type of currency values that are parsed and processed. For now there can only be one currency in
+     * an instance.
+     */
+    @NotNull
+    private Currency currency = Currency.getInstance("EUR");
 
-	/**
-	 * Date formats that are available for parsing.
-	 */
-	@NotNull
-	private DateFormats dateFormats = new DateFormats();
+    /**
+     * Date formats that are available for parsing.
+     */
+    @NotNull
+    private DateFormats dateFormats = new DateFormats(List.of(
+            "yyyy-MM-dd", "yyyyMMdd", "dd.MM.yyyy"
+    ));
 }

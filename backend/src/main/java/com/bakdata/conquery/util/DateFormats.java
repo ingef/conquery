@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import com.google.common.base.Preconditions;
@@ -65,6 +66,18 @@ public class DateFormats {
 																				  .initialCapacity(64000)
 																				  .build(CacheLoader.from(this::tryParse));
 
+	@JsonCreator
+	public DateFormats(@NotEmpty List<String> formats) {
+		final Set<DateTimeFormatter> formatters = new HashSet<>();
+
+
+		for (String p : formats) {
+			formatters.add(createFormatter(p));
+		}
+
+		this.dateFormats = Collections.unmodifiableSet(formatters);
+	}
+
 	/**
 	 * Try parsing the String value to a LocalDate.
 	 */
@@ -88,10 +101,6 @@ public class DateFormats {
 	 * Method is private as it is only directly accessed via the Cache.
 	 */
 	private LocalDate tryParse(String value) {
-
-		if (dateFormats == null) {
-			initDateFormats();
-		}
 
 		final DateTimeFormatter formatter = lastFormat.get();
 
@@ -119,19 +128,5 @@ public class DateFormats {
 
 	private DateTimeFormatter createFormatter(String pattern) {
 		return new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern(pattern).toFormatter(Locale.US);
-	}
-
-	/**
-	 * Lazy-initialize all formatters. Load additional formatters via ConqueryConfig.
-	 */
-	public void initDateFormats() {
-		final Set<DateTimeFormatter> formatters = new HashSet<>();
-
-
-		for (String p : formats) {
-			formatters.add(createFormatter(p));
-		}
-
-		this.dateFormats = Collections.unmodifiableSet(formatters);
 	}
 }
