@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.HashSet;
@@ -15,10 +16,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -34,6 +38,7 @@ import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.testing.DropwizardTestSupport;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -176,6 +181,8 @@ public class TestConquery {
 
 		openSupports.remove(support);
 	}
+
+
 
 	public void beforeAll() throws Exception {
 

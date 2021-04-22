@@ -167,9 +167,9 @@ public class LoadingUtil {
 												 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
 
 			final Response response = support.getClient()
-										 .target(addImport)
-										 .request(MediaType.APPLICATION_JSON)
-										 .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
+											 .target(addImport)
+											 .request(MediaType.APPLICATION_JSON)
+											 .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
 
 			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
