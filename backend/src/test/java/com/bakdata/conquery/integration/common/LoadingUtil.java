@@ -186,7 +186,6 @@ public class LoadingUtil {
 		);
 
 		for (Concept<?> concept : concepts) {
-
 			support.getDatasetsProcessor().addConcept(dataset, concept);
 		}
 	}

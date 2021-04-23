@@ -9,7 +9,7 @@ import javax.validation.Valid;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.conditions.CTCondition;
+import com.bakdata.conquery.models.concepts.conditions.ConceptTreeCondition;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
@@ -40,7 +40,7 @@ public class ConceptTreeConnector extends Connector {
 	@NsIdRef @CheckForNull
 	private Column column = null;
 
-	private CTCondition condition = null;
+	private ConceptTreeCondition condition = null;
 
 	@Valid @JsonManagedReference
 	private List<Filter<?>> filters = new ArrayList<>();

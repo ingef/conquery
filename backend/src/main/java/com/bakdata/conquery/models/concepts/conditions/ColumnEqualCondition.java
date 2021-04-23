@@ -9,6 +9,9 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.CollectionsUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,13 +20,17 @@ import lombok.Setter;
 /**
  * This condition requires the value of another column to be equal to a given value.
  */
-@CPSType(id="COLUMN_EQUAL", base=CTCondition.class)
+@CPSType(id = "COLUMN_EQUAL", base = ConceptTreeCondition.class)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ColumnEqualCondition implements CTCondition {
+public class ColumnEqualCondition implements ConceptTreeCondition {
 
-	@Setter @Getter @NotEmpty
+	@Setter
+	@Getter
+	@NotEmpty
 	private Set<String> values;
-	@NotEmpty @Setter @Getter
+	@NotEmpty
+	@Setter
+	@Getter
 	private String column;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
@@ -34,9 +41,19 @@ public class ColumnEqualCondition implements CTCondition {
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) {
 		Object checkedValue = rowMap.getValue().get(column);
-		if(checkedValue == null) {
+		if (checkedValue == null) {
 			return false;
 		}
 		return values.contains(checkedValue.toString());
+	}
+
+	@Override
+	public Map<String, RangeSet<String>> getColumnSpan() {
+		final RangeSet<String> rangeSet = TreeRangeSet.create();
+		for (String value : values) {
+			rangeSet.add(Range.singleton(value));
+		}
+
+		return Map.of(getColumn(), rangeSet);
 	}
 }

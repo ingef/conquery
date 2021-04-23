@@ -36,7 +36,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.ValidityDate;
-import com.bakdata.conquery.models.concepts.conditions.CTCondition;
+import com.bakdata.conquery.models.concepts.conditions.ConceptTreeCondition;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
@@ -92,7 +92,7 @@ public class Constants {
 			Group.builder().name("Concept JSONs")
 				 .description("Each `*.concept.json` has to contain exactly one [Concept](#Base-Concept).")
 				 .base(new Base(Concept.class, "A concept is a collection of filters and selects and their connection to tables."))
-				 .base(new Base(CTCondition.class, "These represent guard conditions. A value matches a [ConceptElement](#ConceptElement) if it matches its condition and its parent"))
+				 .base(new Base(ConceptTreeCondition.class, "These represent guard conditions. A value matches a [ConceptElement](#ConceptElement) if it matches its condition and its parent"))
 				 .base(new Base(Filter.class, "These are used to define filters, than can be used to reduce the result set."))
 				 .base(new Base(Select.class, "These are used to define selects, that can be used to create additional CSV columns."))
 				 .otherClass(Connector.class)

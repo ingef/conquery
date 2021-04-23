@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import com.bakdata.conquery.models.concepts.conditions.CTCondition;
+import com.bakdata.conquery.models.concepts.conditions.ConceptTreeCondition;
 import com.bakdata.conquery.models.concepts.conditions.OrCondition;
 import com.bakdata.conquery.models.concepts.conditions.PrefixCondition;
 import com.bakdata.conquery.models.concepts.conditions.PrefixRangeCondition;
@@ -39,7 +39,7 @@ public class TreeChildPrefixIndex {
 	 * @param cond
 	 * @return
 	 */
-	private static boolean isPrefixMaintainigCondition(CTCondition cond) {
+	private static boolean isPrefixMaintainigCondition(ConceptTreeCondition cond) {
 		return cond instanceof PrefixCondition
 				|| cond instanceof PrefixRangeCondition
 				|| (cond instanceof OrCondition
@@ -70,7 +70,7 @@ public class TreeChildPrefixIndex {
 
 			// Iterate over all children that can be reached deterministically with prefixes
 			while ((child = treeChildrenOrig.poll()) != null) {
-				CTCondition condition = child.getCondition();
+				ConceptTreeCondition condition = child.getCondition();
 
 				// If the Condition is not deterministic wrt to prefixes, we will not build an index over it, but start a new one from there.
 				if (!isPrefixMaintainigCondition(condition)) {

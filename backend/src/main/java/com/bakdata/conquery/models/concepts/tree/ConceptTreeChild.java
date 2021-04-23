@@ -3,25 +3,32 @@ package com.bakdata.conquery.models.concepts.tree;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.conditions.CTCondition;
+import com.bakdata.conquery.models.concepts.conditions.ConceptTreeCondition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.google.common.collect.RangeSet;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> implements ConceptTreeNode<ConceptTreeChildId> {
 
 	@JsonIgnore
 	private transient int[] prefix;
-	@JsonManagedReference //@Valid
+
+	@JsonManagedReference @Valid
 	@Getter
 	@Setter
 	private List<ConceptTreeChild> children = Collections.emptyList();
@@ -40,7 +47,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Getter
 	@NotNull
 	@Setter
-	private CTCondition condition = null;
+	private ConceptTreeCondition condition = null;
 
 	@JsonIgnore
 	@Getter
@@ -99,5 +106,72 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Override
 	public Dataset getDataset() {
 		return getConcept().getDataset();
+	}
+
+	@JsonIgnore
+	public Map<String, RangeSet<String>> getColumnSpan(){
+		return condition.getColumnSpan();
+	}
+
+
+	@ValidationMethod
+	@JsonIgnore
+	public boolean isSpanningNonOverlappingChildren() {
+		final Map<String, RangeSet<String>> mySpan = getColumnSpan();
+
+		for (int index = 0; index < children.size(); index++) {
+
+			ConceptTreeChild child = children.get(index);
+			final Map<String, RangeSet<String>> childSpan = child.getColumnSpan();
+
+			// Children have to be enclosed by parent
+			if (!encloses(mySpan, childSpan)) {
+				log.error("{} does not enclose Child {}", this, child);
+				return false;
+			}
+
+			// Siblings may not overlap with each other
+			for (int otherIndex = index + 1; otherIndex < children.size(); otherIndex++) {
+				final ConceptTreeChild other = children.get(otherIndex);
+
+				if (intersects(other.getColumnSpan(), childSpan)) {
+					log.error("{} intersects with its Sibling {}", child, other);
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private boolean encloses(Map<String, RangeSet<String>> mySpan, Map<String, RangeSet<String>> childSpan) {
+		for (Map.Entry<String, RangeSet<String>> entry : childSpan.entrySet()) {
+			// Not defined spans everything
+			if(!mySpan.containsKey(entry.getKey())){
+				continue;
+			}
+
+			if(mySpan.get(entry.getKey()).enclosesAll(entry.getValue())){
+				continue;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
+	private static boolean intersects(Map<String, RangeSet<String>> left, Map<String, RangeSet<String>> right) {
+		for (String column : left.keySet()) {
+			if(!right.containsKey(column)){
+				continue;
+			}
+
+			if(right.get(column).asRanges().stream().anyMatch(left.get(column)::intersects)){
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
