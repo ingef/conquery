@@ -659,7 +659,7 @@ Supported Fields:
 </p></details>
 
 ### QUARTER<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/QuarterSelect.java#L14-L16)</sup></sub></sup>
-Entity is included when the the number of quarters with events is within a specified range.
+Output first, last or random Year-Quarter in time
 
 <details><summary>Details</summary><p>
 
