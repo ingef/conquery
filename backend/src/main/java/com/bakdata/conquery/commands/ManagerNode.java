@@ -85,6 +85,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	// Resources without authentication
 	private DropwizardResourceConfig unprotectedAuthApi;
 	private DropwizardResourceConfig unprotectedAuthAdmin;
+
+	// For registering form providers
+	private FormScanner formScanner;
 	/**
 	 * Flags if the instance name should be a prefix for the instances storage.
 	 */
@@ -112,6 +115,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		this.jobManager = new JobManager("ManagerNode", config.isFailOnError());
 		this.environment = environment;
 		this.validator = environment.getValidator();
+		this.formScanner = new FormScanner();
 		this.config = config;
 		config.initialize(this);
 
@@ -159,7 +163,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			}
 		}
 
-		Task formScanner = new FormScanner();
+		formScanner = new FormScanner();
 		try {
 			formScanner.execute(null, null);
 		}
