@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -51,11 +52,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
-import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -128,6 +127,24 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		this.owner = owner;
 		this.dataset = submittedDataset;
 	}
+
+    public static Stream<EntityResult> getResults(ManagedExecution<?> exec) {
+        if (exec instanceof ManagedQuery) {
+            return ((ManagedQuery) exec).getResults().stream();
+        } else if (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1) {
+            return ((ManagedForm) exec).getSubQueries().values().iterator().next().stream().flatMap(mq -> mq.getResults().stream());
+        }
+        throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
+    }
+
+	public static List<ResultInfo> getResultInfos(ManagedExecution<?> exec) {
+        if (exec instanceof ManagedQuery) {
+            return ((ManagedQuery) exec).collectResultInfos().getInfos();
+        } else if (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1) {
+            return ((ManagedForm) exec).getSubQueries().values().iterator().next().get(0).collectResultInfos().getInfos();
+        }
+        throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
+    }
 
 	/**
 	 * Executed right before execution submission.

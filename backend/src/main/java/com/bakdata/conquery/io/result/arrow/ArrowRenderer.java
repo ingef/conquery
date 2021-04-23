@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -50,8 +48,8 @@ public class ArrowRenderer {
             String[] idHeaders,
             int batchsize) throws IOException {
         // Test the execution if the result is renderable into one table
-        Stream<EntityResult> results = getResults(exec);
-        List<ResultInfo> resultInfos = getResultInfos(exec);
+        Stream<EntityResult> results = ManagedExecution.getResults(exec);
+        List<ResultInfo> resultInfos = ManagedExecution.getResultInfos(exec);
 
         // Combine id and value Fields to one vector to build a schema
         List<Field> fields = new ArrayList<>(generateFieldsFromIdMapping(idHeaders));
@@ -67,24 +65,6 @@ public class ArrowRenderer {
             write(writer, root, idWriters, valueWriter, idMapper, results, batchsize);
         }
 
-    }
-
-    private static Stream<EntityResult> getResults(ManagedExecution<?> exec) {
-        if (exec instanceof ManagedQuery) {
-            return ((ManagedQuery) exec).getResults().stream();
-        } else if (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1) {
-            return ((ManagedForm) exec).getSubQueries().values().iterator().next().stream().flatMap(mq -> mq.getResults().stream());
-        }
-        throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
-    }
-
-    private static List<ResultInfo> getResultInfos(ManagedExecution<?> exec) {
-        if (exec instanceof ManagedQuery) {
-            return ((ManagedQuery) exec).collectResultInfos().getInfos();
-        } else if (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1) {
-            return ((ManagedForm) exec).getSubQueries().values().iterator().next().get(0).collectResultInfos().getInfos();
-        }
-        throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
     }
 
 
