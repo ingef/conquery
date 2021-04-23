@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.StreamingOutput;
@@ -34,14 +33,12 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -223,12 +220,12 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public StreamingOutput getResult(Function<EntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
+	public StreamingOutput getResult(PrintSettings settings, Charset charset, String lineSeparator) {
 		if(subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Can't return the result query of a multi query form");
 		}
-		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), idMapper, charset, lineSeparator);
+		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), charset, lineSeparator);
 	}
 	
 	@Override
@@ -271,7 +268,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry, PrintSettings cfg) {
+	protected void makeDefaultLabel(StringBuilder sb, PrintSettings cfg) {
 		sb
 			.append(getSubmittedForm().getLocalizedTypeLabel())
 			.append(" ")

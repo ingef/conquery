@@ -167,7 +167,7 @@ public class ResultProcessor {
 				I18n.LOCALE.get(),
 				datasetRegistry,
 				config,
-				(EntityResult cer) -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState).getExternalId());
+				(EntityResult cer) -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState));
 
 		
 		StreamingOutput out = new StreamingOutput() {

@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.csv.QueryToCSVRenderer;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -85,10 +84,8 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		List<String> actual = QueryToCSVRenderer
 									  .toCSV(
 											  PRINT_SETTINGS,
-											  managed,
-											  cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, standaloneSupport.getConfig()
-																																 .getIdMapping(), mappingState)
-									  )
+											  managed
+                                      )
 									  .collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();

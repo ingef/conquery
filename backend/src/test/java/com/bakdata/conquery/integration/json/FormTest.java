@@ -20,7 +20,6 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.csv.QueryToCSVRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -142,8 +141,8 @@ public class FormTest extends ConqueryTestSpec {
 			List<String> actual = QueryToCSVRenderer
 				.toCSV(
 					new PrintSettings(true,Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), standaloneSupport.getConfig()),
-					managed.getValue(),
-					cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, idMappingConfig, mappingState))
+					managed.getValue()
+                )
 				.collect(Collectors.toList());
 			
 			assertThat(actual)

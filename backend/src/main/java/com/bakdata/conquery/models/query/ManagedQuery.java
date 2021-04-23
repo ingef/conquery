@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.StreamingOutput;
@@ -38,7 +37,6 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
@@ -107,7 +105,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.involvedWorkers = namespace.getWorkers().size();
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, null));
 		if (label == null) {
-			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces, config));
+			label = makeAutoLabel(new PrintSettings(true, Locale.ROOT,namespaces, config, null));
 		}
 	}
 
@@ -186,7 +184,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 												   .build());
 		}
 		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config);
+		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null);
 
 		collectResultInfos().getInfos()
 							.forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
@@ -232,8 +230,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public StreamingOutput getResult(Function<EntityResult, ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
-		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), idMapper, charset, lineSeparator);
+	public StreamingOutput getResult(PrintSettings settings, Charset charset, String lineSeparator) {
+		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), charset, lineSeparator);
 	}
 
 	@Override
@@ -256,7 +254,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	 * All further labels are dropped.
 	 */
 	@Override
-	protected void makeDefaultLabel(final StringBuilder sb, DatasetRegistry datasetRegistry, PrintSettings cfg) {
+	protected void makeDefaultLabel(final StringBuilder sb, PrintSettings cfg) {
 		final Map<Class<? extends Visitable>, List<Visitable>> sortedContents = new HashMap<>();
 
 		int sbStartSize = sb.length();

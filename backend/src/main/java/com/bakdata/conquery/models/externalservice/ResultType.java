@@ -24,6 +24,7 @@ import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
+import org.apache.poi.ss.usermodel.Cell;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -41,6 +42,10 @@ public interface ResultType {
     }
 
     Field getArrowFieldType(ResultInfo info, PrintSettings settings);
+
+    default void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value){
+        cell.setCellValue(print(settings,value));
+    }
 
     String typeInfo();
 
@@ -96,6 +101,11 @@ public interface ResultType {
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.Bool.INSTANCE), null);
         }
+
+        @Override
+        public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+            cell.setCellValue(print(settings,value));
+        }
     }
 
 
@@ -117,6 +127,11 @@ public interface ResultType {
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
         }
+
+        @Override
+        public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+            cell.setCellValue(settings.getIntegerFormat().format(((Number) value).longValue()));
+        }
     }
 
     @CPSType(id = "NUMERIC", base = ResultType.class)
@@ -136,6 +151,11 @@ public interface ResultType {
         @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null);
+        }
+
+        @Override
+        public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+            cell.setCellValue(settings.getIntegerFormat().format(((Number) value).doubleValue()));
         }
     }
 
@@ -194,6 +214,14 @@ public interface ResultType {
         @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings));
+        }
+
+        @Override
+        public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+            if(!(value instanceof Number)) {
+                throw new IllegalStateException("Expected an Number but got an '" + (value != null ? value.getClass().getName() : "no type") + "' with the value: " + value );
+            }
+            cell.setCellValue(CDate.toLocalDate(((Number)value).intValue()));
         }
     }
 
@@ -274,6 +302,11 @@ public interface ResultType {
         @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
+        }
+
+        @Override
+        public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+            cell.
         }
     }
 

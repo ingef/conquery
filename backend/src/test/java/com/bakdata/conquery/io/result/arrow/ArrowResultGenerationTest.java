@@ -135,7 +135,13 @@ public class ArrowResultGenerationTest {
     @Test
     void writeAndRead() throws IOException {
         // Prepare every input data
-        PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, CONFIG, (selectInfo) -> selectInfo.getSelect().getLabel());
+        PrintSettings printSettings = new PrintSettings(
+                false,
+                Locale.ROOT,
+                null,
+                CONFIG,
+                (cer) -> new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())},
+                (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = List.of(
                 new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),
@@ -170,7 +176,6 @@ public class ArrowResultGenerationTest {
         renderToStream((root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
                 printSettings,
                 mquery,
-                (cer) -> new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())},
                 idMapping.getPrintIdFields(),
                 BATCH_SIZE);
 

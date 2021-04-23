@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,11 +30,9 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -51,7 +48,6 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -156,7 +152,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				return;
 			}
 			if(label == null) {
-				label = makeAutoLabel(datasetRegistry, new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config));
+				// IdMapper is not necessary here
+				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null));
 			}
 			doInitExecutable(datasetRegistry, config);
 			initialized = true;
@@ -392,7 +389,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
 	 */
 	@JsonIgnore
-	public abstract StreamingOutput getResult(Function<EntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator);
+	public abstract StreamingOutput getResult(PrintSettings settings, Charset charset, String lineSeparator);
 	
 	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.
@@ -439,11 +436,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 	
 	@JsonIgnore
-	abstract protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry, PrintSettings cfg);
+	abstract protected void makeDefaultLabel(StringBuilder sb, PrintSettings cfg);
 	
-	protected String makeAutoLabel(DatasetRegistry datasetRegistry, PrintSettings cfg) {
+	protected String makeAutoLabel(PrintSettings cfg) {
 		StringBuilder sb = new StringBuilder();
-		makeDefaultLabel(sb, datasetRegistry, cfg);
+		makeDefaultLabel(sb, cfg);
 		return sb.append(AUTO_LABEL_SUFFIX).toString();
 	}
 

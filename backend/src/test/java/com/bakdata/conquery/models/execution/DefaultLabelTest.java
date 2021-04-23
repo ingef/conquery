@@ -67,7 +67,7 @@ public class DefaultLabelTest {
 		ConceptQuery cq = new ConceptQuery(concept);
 		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
+		mQuery.setLabel(mQuery.makeAutoLabel(new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
 
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -97,7 +97,7 @@ public class DefaultLabelTest {
 		UUID uuid = UUID.randomUUID();
 		mQuery.setQueryId(uuid);
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
+		mQuery.setLabel(mQuery.makeAutoLabel(new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
 
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -119,7 +119,7 @@ public class DefaultLabelTest {
 		ConceptQuery cq = new ConceptQuery(reused);
 		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
+		mQuery.setLabel(mQuery.makeAutoLabel(new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
 
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -138,7 +138,7 @@ public class DefaultLabelTest {
 		ConceptQuery cq = new ConceptQuery(external);
 		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG )));
+		mQuery.setLabel(mQuery.makeAutoLabel(new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG )));
 
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -170,7 +170,7 @@ public class DefaultLabelTest {
 		ConceptQuery cq = new ConceptQuery(and);
 		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
+		mQuery.setLabel(mQuery.makeAutoLabel(new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
 
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -204,7 +204,7 @@ public class DefaultLabelTest {
 		ConceptQuery cq = new ConceptQuery(and);
 		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
-		mQuery.setLabel(mQuery.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
+		mQuery.setLabel(mQuery.makeAutoLabel(new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
 
 		assertThat(mQuery.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mQuery.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);
@@ -222,7 +222,7 @@ public class DefaultLabelTest {
 		ManagedForm mForm = form.toManagedExecution(user, DATASET);
 		mForm.setCreationTime(LocalDateTime.of(2020, 10, 30, 12, 37));
 
-		mForm.setLabel(mForm.makeAutoLabel(DATASET_REGISTRY, new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
+		mForm.setLabel(mForm.makeAutoLabel(new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG)));
 
 		assertThat(mForm.getLabel()).isEqualTo(autoLabel + AUTO_LABEL_SUFFIX);
 		assertThat(mForm.getLabelWithoutAutoLabelSuffix()).isEqualTo(autoLabel);

@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.csv.CsvIo;
@@ -28,11 +27,11 @@ public class QueryToCSVRenderer {
 	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
 	private static final Collection<String> HEADER = Arrays.asList(ID_MAPPING.getPrintIdFields());
 	
-	public static Stream<String> toCSV(PrintSettings cfg, ManagedQuery query, Function<EntityResult,ExternalEntityId> idMapper) {
-		return toCSV(cfg, List.of(query), idMapper);
+	public static Stream<String> toCSV(PrintSettings cfg, ManagedQuery query) {
+		return toCSV(cfg, List.of(query));
 	}
 	
-	public static Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries, Function<EntityResult,ExternalEntityId> idMapper) {
+	public static Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries) {
 		if (queries.stream()
 			.anyMatch(q -> q.getState() != ExecutionState.DONE)) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
@@ -56,15 +55,15 @@ public class QueryToCSVRenderer {
 						writer,
 						cfg,
 						q.collectResultInfos(),
-						q,
-						idMapper))
+						q
+					))
 		);
 	}
 
-	private static Stream<String> createCSVBody(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, ManagedQuery query, Function<EntityResult,ExternalEntityId> idMapper) {
+	private static Stream<String> createCSVBody(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, ManagedQuery query) {
 		return query.getResults()
 					.stream()
-					.map(result -> Pair.of(idMapper.apply(result), result))
+					.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
 					.sorted(Comparator.comparing(Pair::getKey))
 					.flatMap(res -> createCSVLine(writer, cfg, infos, res));
 	}
