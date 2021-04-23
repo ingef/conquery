@@ -33,7 +33,7 @@ public class FormScanner extends Task {
 	public static Map<String, FormType> FRONTEND_FORM_CONFIGS = Collections.emptyMap();
 
 
-	private static Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
+	private Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
 
 	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
 		Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
@@ -52,7 +52,7 @@ public class FormScanner extends Task {
 		return backendClasses.build();
 	}
 
-	public static synchronized void registerFrontendFormConfigProvider(Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider){
+	public synchronized void registerFrontendFormConfigProvider(Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider){
 		providerChain = providerChain.andThen(provider);
 	}
 
@@ -61,7 +61,7 @@ public class FormScanner extends Task {
 	 * Each source must register a provider with {@link FormScanner#registerFrontendFormConfigProvider(Consumer)} beforehand.
 	 */
 	@SneakyThrows
-	private static List<FormFrontendConfigInformation> findFrontendFormConfigs() {
+	private List<FormFrontendConfigInformation> findFrontendFormConfigs() {
 
 		ImmutableList.Builder<FormFrontendConfigInformation> frontendConfigs = ImmutableList.builder();
 		try {
@@ -72,7 +72,7 @@ public class FormScanner extends Task {
 		return frontendConfigs.build();
 	}
 
-	private static Map<String, FormType> generateFEFormConfigMap() {
+	private Map<String, FormType> generateFEFormConfigMap() {
 		// Collect backend implementations for specific forms
 		Map<String, Class<? extends Form>> forms = findBackendMappingClasses();
 
