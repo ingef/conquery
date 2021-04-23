@@ -22,7 +22,6 @@ public class ExcelRenderer {
 
         Sheet sheet = workbook.createSheet("Persons");
 
-        sheet.column
         sheet.setColumnWidth(0, 6000);
         sheet.setColumnWidth(1, 4000);
 
@@ -62,5 +61,14 @@ public class ExcelRenderer {
             headerCell.setCellStyle(headerStyle);
             currentColumn++;
         }
+    }
+
+    private static void writeBody(
+            Sheet sheet,
+            XSSFWorkbook workbook,
+            String[] idHeaders,
+            List<ResultInfo> infos,
+            PrintSettings cfg) {
+
     }
 }

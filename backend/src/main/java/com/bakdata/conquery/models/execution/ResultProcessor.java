@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.ResourceUtil;
@@ -75,12 +76,11 @@ public class ResultProcessor {
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
 		
 		// Get the locale extracted by the LocaleFilter
-		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry, config);
+		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry, config, cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState));
 		Charset charset = determineCharset(userAgent, queryCharset);
 
 		try {
 			StreamingOutput out = exec.getResult(
-				cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState),
 				settings,
 				charset,
 				config.getCsv().getLineSeparator());
@@ -160,10 +160,15 @@ public class ResultProcessor {
 		}
 
 		// Get the locale extracted by the LocaleFilter
-		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry, config);
-		
 		IdMappingConfig idMappingConf = config.getIdMapping();
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
+		PrintSettings settings = new PrintSettings(
+				pretty,
+				I18n.LOCALE.get(),
+				datasetRegistry,
+				config,
+				(EntityResult cer) -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState).getExternalId());
+
 		
 		StreamingOutput out = new StreamingOutput() {
 			
@@ -171,8 +176,7 @@ public class ResultProcessor {
 			public void write(OutputStream output) throws IOException, WebApplicationException {
 				renderToStream(writerProducer.apply(output),
 					settings,
-					exec, 
-					cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState).getExternalId(),
+					exec,
 					idMappingConf.getPrintIdFields(),
 					config.getArrow().getBatchSize());
 				

@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -44,7 +45,6 @@ public class ArrowRenderer {
             Function<VectorSchemaRoot, ArrowWriter> writerProducer,
             PrintSettings cfg,
             ManagedExecution<?> exec,
-            Function<EntityResult, String[]> idMapper,
             String[] idHeaders,
             int batchsize) throws IOException {
         // Test the execution if the result is renderable into one table
@@ -62,7 +62,7 @@ public class ArrowRenderer {
 
         // Write the data
         try (ArrowWriter writer = writerProducer.apply(root)) {
-            write(writer, root, idWriters, valueWriter, idMapper, results, batchsize);
+            write(writer, root, idWriters, valueWriter, cfg.getIdMapper(), results, batchsize);
         }
 
     }
@@ -73,7 +73,7 @@ public class ArrowRenderer {
             VectorSchemaRoot root,
             RowConsumer[] idWriter,
             RowConsumer[] valueWriter,
-            Function<EntityResult, String[]> idMapper,
+            PrintIdMapper idMapper,
             Stream<EntityResult> results,
             int batchSize) throws IOException {
         Preconditions.checkArgument(batchSize > 0, "Batchsize needs be larger than 0.");
@@ -93,7 +93,7 @@ public class ArrowRenderer {
                 }
                 for (int cellIndex = 0; cellIndex < idWriter.length; cellIndex++) {
                     // Write id information
-                    idWriter[cellIndex].accept(batchLineCount, idMapper.apply(cer));
+                    idWriter[cellIndex].accept(batchLineCount, idMapper.map(cer));
                 }
                 for (int cellIndex = 0; cellIndex < valueWriter.length; cellIndex++) {
                     // Write values
