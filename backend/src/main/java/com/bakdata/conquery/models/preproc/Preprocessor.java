@@ -13,14 +13,15 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.preproc.parser.Parser;
+import com.bakdata.conquery.util.DateFormats;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.FileUtil;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Strings;
@@ -111,9 +112,9 @@ public class Preprocessor {
 
 				CSVConfig csvSettings = config.getCsv();
 				// Create CSV parser according to config, but overriding some behaviour.
-				parser = new CsvParser(csvSettings.withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
+				parser = csvSettings.withParseHeaders(true).withSkipHeader(false).createParser();
 
-				parser.beginParsing(CsvIo.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn, csvSettings.getEncoding());
+				parser.beginParsing(FileUtil.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn, csvSettings.getEncoding());
 
 				final String[] headers = parser.getContext().parsedHeaders();
 
@@ -123,12 +124,13 @@ public class Preprocessor {
 				final GroovyPredicate filter = input.createFilter(headers);
 
 
-				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap);
+				DateFormats dateFormats = config.getPreprocessor().getParsers().getDateFormats();
+				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateFormats);
 				final List<OutputDescription.Output> outputs = new ArrayList<>();
 
 				// Instantiate Outputs based on descriptors (apply header positions)
 				for (OutputDescription op : input.getOutput()) {
-					outputs.add(op.createForHeaders(headerMap));
+					outputs.add(op.createForHeaders(headerMap, dateFormats));
 				}
 
 				String[] row;

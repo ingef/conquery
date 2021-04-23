@@ -49,6 +49,8 @@ import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -98,7 +100,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		// init all subqueries
-		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, null));
+		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, config,null));
 		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset());
 		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
 	}
@@ -223,12 +225,12 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public StreamingOutput getResult(Function<EntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
+	public StreamingOutput getResult(Function<EntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator, CsvWriter writer, List<String> header) {
 		if(subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Can't return the result query of a multi query form");
 		}
-		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), idMapper, charset, lineSeparator);
+		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), idMapper, charset, lineSeparator, writer, header);
 	}
 	
 	@Override

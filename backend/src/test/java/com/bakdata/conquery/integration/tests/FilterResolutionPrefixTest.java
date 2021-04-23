@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -50,8 +51,9 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 		
 		test.importRequiredData(conquery);
+		CSVConfig csvConf = conquery.getConfig().getCsv();
 		FilterSearch
-				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
+				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf.createParser());
 
 		conquery.waitUntilWorkDone();
 
@@ -61,12 +63,12 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
-		Files.write(tmpCSv, String.join(ConqueryConfig.getInstance().getCsv().getLineSeparator(), lines).getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines).getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
 		filter.setSearchType(FilterSearch.FilterSearchType.PREFIX);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
 
-		FilterSearch.createSourceSearch(filter);
+		FilterSearch.createSourceSearch(filter, csvConf.createParser());
 
 		assertThat(filter.getSourceSearch()).isNotNull();
 
