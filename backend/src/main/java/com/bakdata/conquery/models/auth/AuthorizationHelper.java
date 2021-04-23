@@ -27,7 +27,6 @@ import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
@@ -69,11 +68,11 @@ public class AuthorizationHelper {
 	}
 
 	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MetaStorage storage){
-		final UserId id = user.getId();
 
 		List<Group> userGroups = new ArrayList<>();
+
 		for (Group group : storage.getAllGroups()) {
-			if(group.containsMember(id)) {
+			if(group.containsMember(user)) {
 				userGroups.add(group);
 			}
 		}
@@ -104,7 +103,7 @@ public class AuthorizationHelper {
 		Set<ConqueryPermission> tmpView = collectRolePermissions(storage, user, user.getPermissions());
 
 		for (Group group : storage.getAllGroups()) {
-			if (group.containsMember(user.getId())) {
+			if (group.containsMember(user)) {
 				// Get effective permissions of the group
 				tmpView = Sets.union(tmpView, getEffectiveGroupPermissions(group, storage));
 			}

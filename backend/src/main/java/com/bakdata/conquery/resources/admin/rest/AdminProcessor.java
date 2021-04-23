@@ -537,14 +537,17 @@ public class AdminProcessor {
 		writer.writeValuesToRow();
 	}
 
+
+
 	public synchronized void deleteImport(ImportId importId) {
-		// TODO explain when the includedBucket Information is updated/cleared in the WorkerInformation
+				// TODO explain when the includedBucket Information is updated/cleared in the WorkerInformation
 
 		final Namespace namespace = datasetRegistry.get(importId.getDataset());
 
+		final Import imp = namespace.getStorage().getImport(importId);
 
 		namespace.getStorage().removeImport(importId);
-		namespace.sendToAll(new RemoveImportJob(importId));
+		namespace.sendToAll(new RemoveImportJob(imp));
 
 		// Remove bucket assignments for consistency report
 		namespace.removeBucketAssignmentsForImportFormWorkers(importId);
@@ -569,14 +572,13 @@ public class AdminProcessor {
 			return dependentConcepts;
 		}
 
-
 		namespace.getStorage().getAllImports().stream()
-				.filter(imp -> imp.getTable().equals(table))
+				 .filter(imp -> imp.getTable().equals(table))
 				 .map(Import::getId)
 				 .forEach(this::deleteImport);
 
 		namespace.getStorage().removeTable(tableId);
-		namespace.sendToAll(new RemoveTable(tableId));
+		namespace.sendToAll(new RemoveTable(table));
 
 		return dependentConcepts;
 	}
@@ -584,9 +586,13 @@ public class AdminProcessor {
 	public synchronized void deleteConcept(ConceptId conceptId) {
 		final Namespace namespace = datasetRegistry.get(conceptId.getDataset());
 
-		namespace.getStorage().removeConcept(conceptId);
+		final NamespaceStorage storage = namespace.getStorage();
+
+		final Concept<?> concept = storage.getConcept(conceptId);
+
+		storage.removeConcept(conceptId);
 		getJobManager()
-				.addSlowJob(new SimpleJob("sendToAll: remove " + conceptId, () -> namespace.sendToAll(new RemoveConcept(conceptId))));
+				.addSlowJob(new SimpleJob("sendToAll: remove " + conceptId, () -> namespace.sendToAll(new RemoveConcept(concept))));
 	}
 
 	public synchronized void deleteDataset(DatasetId datasetId) {

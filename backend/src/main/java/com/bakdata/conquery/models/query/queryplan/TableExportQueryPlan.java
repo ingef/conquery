@@ -59,7 +59,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		for (TableExportDescription exportDescription : tables) {
 
 
-			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, exportDescription.getTable().getId())) {
+			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, exportDescription.getTable())) {
 
 				int entityId = entity.getId();
 

@@ -131,7 +131,7 @@ public class QueryProcessor {
 
 		ExecutionState state = status.getStatus();
 		if (state.equals(ExecutionState.RUNNING)) {
-			log.trace("The execution({}) was already started and its state is: {}", execution.getId(), state);
+			log.trace("The Execution[{}] was already started and its state is: {}", execution.getId(), state);
 			return status;
 		}
 

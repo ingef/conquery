@@ -16,6 +16,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
@@ -24,7 +25,6 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -67,15 +67,15 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Setter
 	private TreeChildPrefixIndex childIndex;
 	@JsonIgnore
-	private Map<ImportId, ConceptTreeCache> caches = new ConcurrentHashMap<>();
+	private Map<Import, ConceptTreeCache> caches = new ConcurrentHashMap<>();
 
 	@Override
 	public Concept<?> findConcept() {
 		return getConcept();
 	}
 
-	public ConceptTreeCache getCache(ImportId importId) {
-		return caches.get(importId);
+	public ConceptTreeCache getCache(Import imp) {
+		return caches.get(imp);
 	}
 
 	@Override
@@ -190,11 +190,11 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 
-	public void initializeIdCache(StringStore type, ImportId importId) {
+	public void initializeIdCache(StringStore type, Import importId) {
 		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));
 	}
 
-	public void removeImportCache(ImportId imp) {
+	public void removeImportCache(Import imp) {
 		caches.remove(imp);
 	}
 

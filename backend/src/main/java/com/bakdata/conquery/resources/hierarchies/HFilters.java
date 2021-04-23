@@ -28,7 +28,7 @@ public abstract class HFilters extends HConnectors {
 	public void init() {
 		super.init();
 		try {
-			this.filter = connector.getFilter(filterId);
+			this.filter = getNamespace().getStorage().getCentralRegistry().resolve(filterId);
 		}
 		catch(NoSuchElementException e) {
 			throw new WebApplicationException("Could not find connector "+connector+" in "+concept, e, Status.NOT_FOUND);

@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.concepts;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
 
 import com.bakdata.conquery.models.common.KeyValue;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
@@ -25,18 +23,6 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	private List<KeyValue> additionalInfos = Collections.emptyList();
 	@Getter @Setter @JsonIgnore
 	private MatchingStats matchingStats = new MatchingStats();
-
-	public ConceptElement<?> getElementById(ConceptElementId<?> conceptElementId) {
-		if(Objects.equals(conceptElementId, this.getId())) {
-			return this;
-		}
-
-		if(conceptElementId instanceof ConceptTreeChildId) {
-			return getChildById((ConceptTreeChildId)conceptElementId);
-		}
-
-		throw new NoSuchElementException("Could not resolve the element "+conceptElementId +" in " + this);
-	}
 
 	public ConceptTreeChild getChildById(ConceptTreeChildId conceptTreeChildId) {
 		throw new UnsupportedOperationException("The concept "+this+" has no children. Was looking for "+conceptTreeChildId);

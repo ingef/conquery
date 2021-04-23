@@ -1,15 +1,14 @@
 package com.bakdata.conquery.models.query.concept.filter;
 
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Data
-@AllArgsConstructor(onConstructor_ = @JsonCreator )
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator )
 public class ValidityDateContainer {
-	@NotNull
-	private ValidityDateId value;
+	@NsIdRef
+	private final ValidityDate value;
 }

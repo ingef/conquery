@@ -1,11 +1,16 @@
 package com.bakdata.conquery.models.query.queryplan;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.EmptyBucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -16,11 +21,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 @Getter
 @Setter
 @ToString
@@ -30,7 +30,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	public static final int VALIDITY_DATE_POSITION = 0;
 	@Getter
 	@Setter
-	private ThreadLocal<Set<TableId>> requiredTables = new ThreadLocal<>();
+	private ThreadLocal<Set<Table>> requiredTables = new ThreadLocal<>();
 	private QPNode child;
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
@@ -69,13 +69,9 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		requiredTables.set(this.collectRequiredTables());
 
 		// Assert that all tables are actually present
-		for (TableId tableId : requiredTables.get()) {
-			if (Dataset.isAllIdsTable(tableId)) {
+		for (Table table : requiredTables.get()) {
+			if (Dataset.isAllIdsTable(table)) {
 				continue;
-			}
-
-			if(storage.getTable(tableId) == null){
-				throw new IllegalStateException("Table is missing");
 			}
 		}
 	}
@@ -115,21 +111,21 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		}
 
 		// Always do one go-round with ALL_IDS_TABLE.
-		nextTable(ctx, ctx.getStorage().getDataset().getAllIdsTableId());
+		nextTable(ctx, ctx.getStorage().getDataset().getAllIdsTable());
 		nextBlock(EmptyBucket.getInstance());
 		nextEvent(EmptyBucket.getInstance(), 0);
 
-		for (TableId currentTableId : requiredTables.get()) {
+		for (Table currentTable : requiredTables.get()) {
 
-			if(currentTableId.equals(ctx.getStorage().getDataset().getAllIdsTableId())){
+			if(Dataset.isAllIdsTable(currentTable)){
 				continue;
 			}
 
-			nextTable(ctx, currentTableId);
+			nextTable(ctx, currentTable);
 
-			final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTableId);
+			final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
-			log.trace("Table[{}] has {} buckets for Entity[{}]", currentTableId, tableBuckets, entity);
+			log.trace("Table[{}] has {} buckets for Entity[{}]", currentTable, tableBuckets, entity);
 
 			for (Bucket bucket : tableBuckets) {
 
@@ -160,7 +156,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		return Optional.empty();
 	}
 
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		child.nextTable(ctx, currentTable);
 	}
 
@@ -207,7 +203,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		return child.isOfInterest(bucket);
 	}
 
-	public Set<TableId> collectRequiredTables() {
+	public Set<Table> collectRequiredTables() {
 		return child.collectRequiredTables();
 	}
 

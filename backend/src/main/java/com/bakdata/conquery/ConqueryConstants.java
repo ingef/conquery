@@ -6,7 +6,6 @@ import c10n.C10N;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -36,10 +35,7 @@ public class ConqueryConstants {
 	}
 	
 	public static DictionaryId getPrimaryDictionary(Dataset dataset) {
-		return getPrimaryDictionary(dataset.getId());
+		return DictionaryId.Parser.INSTANCE.parse(Arrays.asList(dataset.getName(), "primary_dictionary"));
 	}
-	
-	public static DictionaryId getPrimaryDictionary(DatasetId dataset) {
-		return DictionaryId.Parser.INSTANCE.parse(Arrays.asList(dataset.toString(), "primary_dictionary"));
-	}
+
 }
