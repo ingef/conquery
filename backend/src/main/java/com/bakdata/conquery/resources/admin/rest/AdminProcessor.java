@@ -648,9 +648,12 @@ public class AdminProcessor {
 	public void updateMatchingStats(DatasetId datasetId) {
 		final Namespace ns = getDatasetRegistry().get(datasetId);
 
-		ns.getJobManager().addSlowJob(new SimpleJob("Initiate Update Matching Stats",
-													() -> ns.sendToAll(new UpdateMatchingStatsMessage())));
-		FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
+		ns.getJobManager().addSlowJob(new SimpleJob("Initiate Update Matching Stats and FilterSearch",
+													() -> {
+														ns.sendToAll(new UpdateMatchingStatsMessage());
+														FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
+													}
+		));
 	}
 
 	public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
