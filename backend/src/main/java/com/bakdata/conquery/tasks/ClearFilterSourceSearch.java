@@ -5,12 +5,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
-import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
 import io.dropwizard.servlets.tasks.Task;
 
 /**
  * Cleans the source search mapping for filters. Executing this does not update the source search on existing concepts.
- * To do that, an {@link UpdateMatchingStats} needs to be invoked with will then trigger an update of all source searches.
+ * To do that, an {@link com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage} needs to be invoked with will then trigger an update of all source searches.
  *
  */
 public class ClearFilterSourceSearch extends Task {
