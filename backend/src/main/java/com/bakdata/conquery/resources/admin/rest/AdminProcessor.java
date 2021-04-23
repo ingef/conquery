@@ -578,7 +578,7 @@ public class AdminProcessor {
 				 .forEach(this::deleteImport);
 
 		namespace.getStorage().removeTable(tableId);
-		namespace.sendToAll(new RemoveTable(tableId));
+		namespace.sendToAll(new RemoveTable(table));
 
 		return dependentConcepts;
 	}

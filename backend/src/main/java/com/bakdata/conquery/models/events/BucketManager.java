@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -190,7 +191,12 @@ public class BucketManager {
 		jobManager.addSlowJob(job);
 	}
 
-	private void deregisterBucket(Bucket bucket) {
+	public void removeBucket(Bucket bucket) {
+		storage.getAllCBlocks()
+			   .stream()
+			   .filter(cblock -> cblock.getBucket().equals(bucket))
+			   .forEach(this::removeCBlock);
+
 		for (int entityId : bucket.entities()) {
 			final Entity entity = entities.get(entityId);
 
@@ -207,54 +213,36 @@ public class BucketManager {
 					  .getOrDefault(bucket.getBucket(), Collections.emptyList())
 					  .remove(bucket);
 
-	}
-
-	public void removeBucket(Bucket bucket) {
-		storage.getAllCBlocks()
-			   .stream()
-			   .filter(cblock -> cblock.getBucket().equals(bucket))
-			   .forEach(this::removeCBlock);
-
-		deregisterBucket(bucket);
-
 		storage.removeBucket(bucket.getId());
 	}
 
 	public void removeConcept(Concept<?> concept) {
 
-		storage.getAllCBlocks().stream()
-			   .filter(cBlock -> cBlock.getConnector().getConcept().equals(concept))
-			   .forEach(this::removeCBlock);
+		// Just drop all CBlocks at once for the connectors
+		for (Connector connector : concept.getConnectors()) {
+			final Int2ObjectMap<Map<Bucket, CBlock>> removed = connectorToCblocks.remove(connector);
+
+			// It's possible that no data has been loaded yet
+			if(removed != null) {
+				removed.values().stream()
+					   .map(Map::values)
+					   .flatMap(Collection::stream)
+					   .map(CBlock::getId)
+					   .forEach(storage::removeCBlock);
+			}
+		}
 
 		storage.removeConcept(concept.getId());
 	}
 
 	private void removeCBlock(CBlock cBlock) {
 
-		deregisterCBlock(cBlock);
-
-		storage.removeCBlock(cBlock.getId());
-	}
-
-	private void deregisterCBlock(CBlock cBlock) {
-
 		connectorToCblocks.getOrDefault(cBlock.getConnector(), Int2ObjectMaps.emptyMap())
 						  .getOrDefault(cBlock.getBucket().getBucket(), Collections.emptyMap())
 						  .values()
 						  .remove(cBlock);
 
-		for (int entityId : cBlock.getBucket().entities()) {
-			final Entity entity = entities.get(entityId);
-
-			if (entity == null) {
-				continue;
-			}
-
-			//TODO Verify that this is enough.
-			if (isEntityEmpty(entity)) {
-				entities.remove(entityId);
-			}
-		}
+		storage.removeCBlock(cBlock.getId());
 	}
 
 	/**
@@ -267,7 +255,22 @@ public class BucketManager {
 	}
 
 	private boolean hasBucket(int id) {
-		return storage.getAllBuckets().stream().map(Bucket::getBucket).anyMatch(bucket -> bucket == id);
+		return tableToBuckets.values().stream()
+							 .anyMatch(buckets -> buckets.containsKey(id));
+	}
+
+	public void removeTable(Table table) {
+		final Int2ObjectMap<List<Bucket>> removed = tableToBuckets.remove(table);
+
+		// It's possible no buckets were registered yet
+		if (removed != null) {
+			removed.values()
+				   .stream()
+				   .flatMap(List::stream)
+				   .forEach(this::removeBucket);
+		}
+
+		storage.removeTable(table.getId());
 	}
 
 	/**
@@ -322,4 +325,6 @@ public class BucketManager {
 
 		addConcept(incoming);
 	}
+
+
 }

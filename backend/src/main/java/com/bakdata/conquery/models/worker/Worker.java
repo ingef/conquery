@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
@@ -23,7 +24,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
@@ -208,8 +208,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.addTable(table);
 	}
 
-	public void removeTable(TableId table) {
-		storage.removeTable(table);
+	public void removeTable(@NsIdRef Table table) {
+		bucketManager.removeTable(table);
 	}
 
 	public void addSecondaryId(SecondaryIdDescription secondaryId) {
