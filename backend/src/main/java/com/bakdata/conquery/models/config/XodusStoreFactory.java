@@ -58,6 +58,7 @@ import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Multimap;
@@ -108,6 +109,9 @@ public class XodusStoreFactory implements StoreFactory {
     private transient Validator validator;
 
     @JsonIgnore
+    private transient ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
+
+    @JsonIgnore
     private BiMap<File, Environment> activeEnvironments = HashBiMap.create();
 
     @JsonIgnore
@@ -116,11 +120,17 @@ public class XodusStoreFactory implements StoreFactory {
     @Override
     public void init(ManagerNode managerNode) {
         validator = managerNode.getValidator();
+        configureMapper(managerNode.getConfig());
     }
 
     @Override
     public void init(ShardNode shardNode) {
         validator = shardNode.getValidator();
+        configureMapper(shardNode.getConfig());
+    }
+
+    private void configureMapper(ConqueryConfig config) {
+        config.configureObjectMapper(objectMapper);
     }
 
     @Override
@@ -252,7 +262,7 @@ public class XodusStoreFactory implements StoreFactory {
 		final BigStore<IId<Dictionary>, Dictionary> bigStore;
 
 		synchronized (openStoresInEnv) {
-			bigStore = new BigStore<>(this, validator, environment, DICTIONARIES, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, namespaceCollection.injectInto(Jackson.BINARY_MAPPER));
+			bigStore = new BigStore<>(this, validator, environment, DICTIONARIES, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, namespaceCollection.injectInto(objectMapper));
 		}
 
 		final Store<IId<Dictionary>, Dictionary> result;
@@ -391,7 +401,8 @@ public class XodusStoreFactory implements StoreFactory {
                             this,
                             new XodusStore(environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
                             validator,
-                            storeId
+                            storeId,
+                            objectMapper
                     ));
         }
     }

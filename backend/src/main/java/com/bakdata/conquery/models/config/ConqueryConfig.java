@@ -1,20 +1,20 @@
 package com.bakdata.conquery.models.config;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
+import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
+import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
+import com.bakdata.conquery.util.DateFormats;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
@@ -22,12 +22,16 @@ import io.dropwizard.server.ServerFactory;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 @Getter
 @Setter
 public class ConqueryConfig extends Configuration {
-
-	@Getter
-	private static ConqueryConfig instance = new ConqueryConfig();
 
 	@Valid
 	@NotNull
@@ -54,10 +58,6 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private APIConfig api = new APIConfig();
-	@NotNull
-	private List<String> dateFormats = List.of(
-			"yyyy-MM-dd", "yyyyMMdd", "dd.MM.yyyy"
-	);
 	@Valid
 	@NotNull
 	private FrontendConfig frontend = new FrontendConfig();
@@ -83,10 +83,10 @@ public class ConqueryConfig extends Configuration {
 
 	private boolean failOnError = false;
 
+
 	//this is needed to force start the REST backend on /api/
 	public ConqueryConfig() {
 		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
-		ConqueryConfig.instance = this;
 	}
 
 	@Override
@@ -109,6 +109,20 @@ public class ConqueryConfig extends Configuration {
 				.filter(c -> type.isAssignableFrom(c.getClass()))
 				.map(type::cast)
 				.collect(MoreCollectors.toOptional());
+	}
+
+	public void configureObjectMapper(ObjectMapper objectMapper) {
+		objectMapper.registerModule(new ConqueryConfig.ConfiguredModule(this));
+	}
+
+	public static class ConfiguredModule extends SimpleModule {
+		public ConfiguredModule(ConqueryConfig config){
+			DateFormats dateFormats = config.getPreprocessor().getParsers().getDateFormats();
+			addDeserializer(LocalDate.class, new FormatedDateDeserializer(dateFormats));
+			
+			addDeserializer(CDateSet.class, new CDateSetDeserializer(dateFormats));
+			addSerializer(CDateSet.class, new CDateSetSerializer());
+		}
 	}
 
 }

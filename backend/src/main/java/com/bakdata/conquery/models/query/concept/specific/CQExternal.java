@@ -15,7 +15,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -80,7 +79,7 @@ public class CQExternal extends CQElement {
 
 		valuesResolved = new Int2ObjectOpenHashMap<>();
 
-		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
+		IdMappingConfig mapping = context.getConfig().getIdMapping();
 
 		IdAccessor idAccessor = mapping.mappingFromCsvHeader(
 				IdAccessorImpl.selectIdFields(values[0], format),
@@ -101,7 +100,7 @@ public class CQExternal extends CQElement {
 			try {
 				CDateSet dates = dateFormat.map(df -> {
 					try {
-						return df.readDates(dateIndices, row);
+						return df.readDates(dateIndices, row, context.getConfig().getPreprocessor().getParsers().getDateFormats());
 					}
 					catch (Exception e) {
 						throw new RuntimeException(e);
@@ -143,18 +142,18 @@ public class CQExternal extends CQElement {
 	public enum DateFormat {
 		EVENT_DATE {
 			@Override
-			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.parseToLocalDate(row[dateIndices[0]]))));
+			public CDateSet readDates(int[] dateIndices, String[] row, DateFormats dateFormats) throws ParsingException {
+				return CDateSet.create(Collections.singleton(CDateRange.exactly(dateFormats.parseToLocalDate(row[dateIndices[0]]))));
 			}
 		},
 		START_END_DATE {
 			@Override
-			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.parseToLocalDate(row[dateIndices[0]]);
+			public CDateSet readDates(int[] dateIndices, String[] row, DateFormats dateFormats) throws ParsingException {
+				LocalDate start = row[dateIndices[0]] == null ? null : dateFormats.parseToLocalDate(row[dateIndices[0]]);
 
 				LocalDate end = (dateIndices.length < 2 || row[dateIndices[1]] == null) ?
 								null :
-								DateFormats.parseToLocalDate(row[dateIndices[1]]);
+						dateFormats.parseToLocalDate(row[dateIndices[1]]);
 
 				if (start == null && end == null) {
 					return null;
@@ -165,18 +164,18 @@ public class CQExternal extends CQElement {
 		},
 		DATE_RANGE {
 			@Override
-			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.create(Collections.singleton(DateRangeParser.parseISORange(row[dateIndices[0]])));
+			public CDateSet readDates(int[] dateIndices, String[] row, DateFormats dateFormats) throws ParsingException {
+				return CDateSet.create(Collections.singleton(DateRangeParser.parseISORange(row[dateIndices[0]], dateFormats)));
 			}
 		},
 		DATE_SET {
 			@Override
-			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.parse(row[dateIndices[0]]);
+			public CDateSet readDates(int[] dateIndices, String[] row, DateFormats dateFormats) throws ParsingException {
+				return CDateSet.parse(row[dateIndices[0]], dateFormats);
 			}
 		};
 
-		public abstract CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException;
+		public abstract CDateSet readDates(int[] dateIndices, String[] row, DateFormats dateFormats) throws ParsingException;
 	}
 
 	@RequiredArgsConstructor

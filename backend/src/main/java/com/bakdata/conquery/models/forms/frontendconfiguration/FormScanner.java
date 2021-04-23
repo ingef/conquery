@@ -11,7 +11,6 @@ import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfigProvider.FormFrontendConfigInformation;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -28,11 +27,15 @@ public class FormScanner extends Task {
 
 	public FormScanner() {
 		super("form-scanner");
+		registerFrontendFormConfigProvider(ResourceFormConfigProvider::accept);
 	}
 
 	private static final ObjectReader READER = Jackson.MAPPER.copy().reader();
 	
 	public static Map<String, FormType> FRONTEND_FORM_CONFIGS = Collections.emptyMap();
+
+
+	private static Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
 
 	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
 		Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
@@ -51,35 +54,16 @@ public class FormScanner extends Task {
 		return backendClasses.build();
 	}
 
+	public static void registerFrontendFormConfigProvider(Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider){
+		providerChain.andThen(provider);
+	}
+
 	/**
-	 * Frontend form configurations can be provided from different sources. For
-	 * these sources a stub of type {@link FormFrontendConfigProviderBase} must be
-	 * implemented in order to be discovered by this function.
+	 * Frontend form configurations can be provided from different sources.
+	 * Each source must register a provider with {@link FormScanner#registerFrontendFormConfigProvider(Consumer)} beforehand.
 	 */
 	@SneakyThrows
 	private static List<FormFrontendConfigInformation> findFrontendFormConfigs() {
-		List<Class<?>> configProviders = CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(FormFrontendConfigProvider.class.getName())
-			.loadClasses();
-		
-		Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
-		
-		for (Class<?> configProvider : configProviders) {
-			int modifiers = configProvider.getModifiers();
-			if (Modifier.isAbstract(modifiers) || Modifier.isInterface(modifiers)) {
-				continue;
-			}
-			@SuppressWarnings("unchecked")
-			Class<? extends FormFrontendConfigProvider> formConfigProvider = (Class<? extends FormFrontendConfigProviderBase>) configProvider;
-			Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider;
-			// Distinguish between interface implementations and implementations of the abstract class 
-			if (FormFrontendConfigProviderBase.class.isAssignableFrom(formConfigProvider)) {
-				provider = formConfigProvider.getConstructor(ObjectReader.class).newInstance(READER);
-			}
-			else {
-				provider = formConfigProvider.getConstructor().newInstance();
-			}
-			providerChain = providerChain.andThen(provider);
-		}
 
 		ImmutableList.Builder<FormFrontendConfigInformation> frontendConfigs = ImmutableList.builder();
 		try {

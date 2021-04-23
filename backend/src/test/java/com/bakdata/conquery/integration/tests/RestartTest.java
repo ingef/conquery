@@ -59,8 +59,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
 				manager.getValidator(),
-				ConqueryConfig.getInstance().getCluster().getEntityBucketSize(),
-				manager.isUseNameForStoragePrefix() ? manager.getName() : ""
+				manager.isUseNameForStoragePrefix() ? manager.getName() : "."
 		);
 
 

@@ -56,6 +56,8 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -105,7 +107,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.config = config;
 		this.namespace = namespaces.get(getDataset().getId());
 		this.involvedWorkers = namespace.getWorkers().size();
-		query.resolve(new QueryResolveContext(getDataset(), namespaces, null));
+		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
 		if (label == null) {
 			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces, config));
 		}
@@ -232,8 +234,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public StreamingOutput getResult(Function<EntityResult, ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator) {
-		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), idMapper, charset, lineSeparator);
+	public StreamingOutput getResult(Function<EntityResult, ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator, CsvWriter writer, List<String> header) {
+		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), idMapper, charset, lineSeparator, writer, header);
 	}
 
 	@Override

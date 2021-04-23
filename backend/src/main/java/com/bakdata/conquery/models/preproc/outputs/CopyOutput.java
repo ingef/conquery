@@ -6,6 +6,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
+import com.bakdata.conquery.util.DateFormats;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,7 +47,7 @@ public class CopyOutput extends OutputDescription {
 	private MajorTypeId inputType;
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers) {
+	public Output createForHeaders(Object2IntArrayMap<String> headers, DateFormats dateFormats) {
 		assertRequiredHeaders(headers, inputColumn);
 
 		final int column = headers.getInt(inputColumn);

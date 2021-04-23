@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 /**
  * Aggregator, listing all days present.
  */
-public class DateUnionAggregator extends SingleColumnAggregator<Collection<CDateRange>> {
+public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
@@ -46,13 +46,13 @@ public class DateUnionAggregator extends SingleColumnAggregator<Collection<CDate
 	}
 
 	@Override
-	public Aggregator<Collection<CDateRange>> doClone(CloneContext ctx) {
+	public DateUnionAggregator doClone(CloneContext ctx) {
 		return new DateUnionAggregator(getColumn());
 	}
 
 	@Override
-	public Collection<CDateRange> getAggregationResult() {
-		return set.asRanges();
+	public CDateSet getAggregationResult() {
+		return set;
 	}
 
 	@Override

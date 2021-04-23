@@ -34,6 +34,8 @@ import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
@@ -61,8 +63,8 @@ public class ResultCSVResource {
 		return processor.getResult(user, datasetId, queryId, userAgent, queryCharset, pretty.orElse(Boolean.TRUE), "csv").build();
 	}
 
-	public static StreamingOutput resultAsStreamingOutput(ManagedExecutionId id, PrintSettings settings, List<ManagedQuery> queries, Function<EntityResult,ExternalEntityId> idMapper, Charset charset, String lineSeparator) {
-		Stream<String> csv = QueryToCSVRenderer.toCSV(settings, queries, idMapper);
+	public static StreamingOutput resultAsStreamingOutput(ManagedExecutionId id, PrintSettings settings, List<ManagedQuery> queries, Function<EntityResult,ExternalEntityId> idMapper, Charset charset, String lineSeparator, CsvWriter writer, List<String> header) {
+		Stream<String> csv = QueryToCSVRenderer.toCSV(settings, queries, idMapper, writer, header);
 
 		StreamingOutput out = new StreamingOutput() {
 
