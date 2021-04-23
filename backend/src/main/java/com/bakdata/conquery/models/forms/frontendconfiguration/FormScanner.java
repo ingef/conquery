@@ -29,8 +29,6 @@ public class FormScanner extends Task {
 		super("form-scanner");
 		registerFrontendFormConfigProvider(ResourceFormConfigProvider::accept);
 	}
-
-	private static final ObjectReader READER = Jackson.MAPPER.copy().reader();
 	
 	public static Map<String, FormType> FRONTEND_FORM_CONFIGS = Collections.emptyMap();
 
@@ -54,8 +52,8 @@ public class FormScanner extends Task {
 		return backendClasses.build();
 	}
 
-	public static void registerFrontendFormConfigProvider(Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider){
-		providerChain.andThen(provider);
+	public static synchronized void registerFrontendFormConfigProvider(Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider){
+		providerChain = providerChain.andThen(provider);
 	}
 
 	/**
@@ -67,7 +65,7 @@ public class FormScanner extends Task {
 
 		ImmutableList.Builder<FormFrontendConfigInformation> frontendConfigs = ImmutableList.builder();
 		try {
-			providerChain.accept(frontendConfigs);			
+			providerChain.accept(frontendConfigs);
 		} catch (Exception e) {
 			log.error("Unable to collect all frontend form configurations.", e);
 		}
