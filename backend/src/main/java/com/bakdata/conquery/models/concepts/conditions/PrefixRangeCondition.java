@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.concepts.tree.Prefix;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableRangeSet;
@@ -12,22 +13,21 @@ import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * This condition requires each value to start with a prefix between the two given values
  */
 @CPSType(id = "PREFIX_RANGE", base = ConceptTreeCondition.class)
+@RequiredArgsConstructor
 public class PrefixRangeCondition implements ConceptTreeCondition {
 
 	@Getter
-	@Setter
 	@NotEmpty
-	private String min;
+	private final String min;
 	@Getter
-	@Setter
 	@NotEmpty
-	private String max;
+	private final String max;
 
 	@ValidationMethod(message = "Min and max need to be of the same length and min needs to be smaller than max.")
 	@JsonIgnore
@@ -49,7 +49,7 @@ public class PrefixRangeCondition implements ConceptTreeCondition {
 	}
 
 	@Override
-	public Map<String, RangeSet<String>> getColumnSpan() {
-		return Map.of(ConceptTreeCondition.COLUMN_PLACEHOLDER, ImmutableRangeSet.of(Range.closed(min, max)));
+	public Map<String, RangeSet<Prefix>> getColumnSpan() {
+		return Map.of(ConceptTreeCondition.COLUMN_PLACEHOLDER, ImmutableRangeSet.of(Range.closed(Prefix.of(min), Prefix.of(max))));
 	}
 }

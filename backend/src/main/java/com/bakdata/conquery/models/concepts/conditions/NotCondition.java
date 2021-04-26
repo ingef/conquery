@@ -7,6 +7,7 @@ import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.concepts.tree.Prefix;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.google.common.collect.RangeSet;
@@ -31,7 +32,7 @@ public class NotCondition implements ConceptTreeCondition {
 	}
 
 	@Override
-	public Map<String, RangeSet<String>> getColumnSpan() {
+	public Map<String, RangeSet<Prefix>> getColumnSpan() {
 		return condition.getColumnSpan();
 	}
 

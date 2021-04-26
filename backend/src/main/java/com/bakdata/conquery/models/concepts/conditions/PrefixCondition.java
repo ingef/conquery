@@ -5,12 +5,13 @@ import java.util.Map;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.concepts.tree.Prefix;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -18,12 +19,12 @@ import lombok.ToString;
  */
 @CPSType(id = "PREFIX_LIST", base = ConceptTreeCondition.class)
 @ToString
+@RequiredArgsConstructor
 public class PrefixCondition implements ConceptTreeCondition {
 
-	@Setter
 	@Getter
 	@NotEmpty
-	private String[] prefixes;
+	private final String[] prefixes;
 
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) {
@@ -36,10 +37,10 @@ public class PrefixCondition implements ConceptTreeCondition {
 	}
 
 	@Override
-	public Map<String, RangeSet<String>> getColumnSpan() {
-		final RangeSet<String> rangeSet = TreeRangeSet.create();
+	public Map<String, RangeSet<Prefix>> getColumnSpan() {
+		final RangeSet<Prefix> rangeSet = TreeRangeSet.create();
 		for (String value : prefixes) {
-			rangeSet.add(Range.singleton(value));
+			rangeSet.add(Range.singleton(Prefix.of(value)));
 		}
 
 		return Map.of(ConceptTreeCondition.COLUMN_PLACEHOLDER, rangeSet);

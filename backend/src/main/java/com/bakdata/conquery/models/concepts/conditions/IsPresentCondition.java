@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.concepts.tree.Prefix;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.google.common.collect.RangeSet;
 import lombok.Getter;
@@ -27,7 +28,7 @@ public class IsPresentCondition implements ConceptTreeCondition {
 	}
 
 	@Override
-	public Map<String, RangeSet<String>> getColumnSpan() {
+	public Map<String, RangeSet<Prefix>> getColumnSpan() {
 		return Collections.emptyMap();
 	}
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.concepts.tree.Prefix;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -31,21 +32,21 @@ public interface ConceptTreeCondition {
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException;
 
 	@JsonIgnore
-	public Map<String, RangeSet<String>> getColumnSpan();
+	public Map<String, RangeSet<Prefix>> getColumnSpan();
 
 
-	public static void mergeRanges(Map<String, RangeSet<String>> into, Map<String, RangeSet<String>> from) {
-		for (Map.Entry<String, RangeSet<String>> entry : from.entrySet()) {
+	public static void mergeRanges(Map<String, RangeSet<Prefix>> into, Map<String, RangeSet<Prefix>> from) {
+		for (Map.Entry<String, RangeSet<Prefix>> entry : from.entrySet()) {
 			into.computeIfAbsent(entry.getKey(), (ignored) -> TreeRangeSet.create())
 				.addAll(entry.getValue());
 		}
 	}
 
-	public static Map<String, RangeSet<String>> mergeAll(Collection<ConceptTreeCondition> nodes) {
-		Map<String, RangeSet<String>> merged = new HashMap<>();
+	public static Map<String, RangeSet<Prefix>> mergeAll(Collection<ConceptTreeCondition> nodes) {
+		Map<String, RangeSet<Prefix>> merged = new HashMap<>();
 
 		for (ConceptTreeCondition condition : nodes) {
-			final Map<String, RangeSet<String>> range = condition.getColumnSpan();
+			final Map<String, RangeSet<Prefix>> range = condition.getColumnSpan();
 
 			ConceptTreeCondition.mergeRanges(merged, range);
 		}

@@ -10,6 +10,7 @@ import javax.validation.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.concepts.tree.Prefix;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -77,7 +78,7 @@ public class GroovyCondition implements ConceptTreeCondition {
 	}
 
 	@Override
-	public Map<String, RangeSet<String>> getColumnSpan() {
+	public Map<String, RangeSet<Prefix>> getColumnSpan() {
 		return Collections.emptyMap();
 	}
 
