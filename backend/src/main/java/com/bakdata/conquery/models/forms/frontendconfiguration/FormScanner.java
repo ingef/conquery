@@ -24,16 +24,17 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FormScanner extends Task {
-
-	public FormScanner() {
-		super("form-scanner");
-		registerFrontendFormConfigProvider(ResourceFormConfigProvider::accept);
-	}
 	
 	public static Map<String, FormType> FRONTEND_FORM_CONFIGS = Collections.emptyMap();
 
 
 	private Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
+
+
+	public FormScanner() {
+		super("form-scanner");
+		registerFrontendFormConfigProvider(ResourceFormConfigProvider::accept);
+	}
 
 	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
 		Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
