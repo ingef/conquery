@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import { DateRangeT } from "js/api/types";
+import { DateStringMinMax } from "js/common/helpers";
 import { nodeIsConceptQueryNode } from "js/model/node";
 import { StandardQueryStateT } from "js/standard-query-editor/queryReducer";
 import { QueryGroupType } from "js/standard-query-editor/types";
-import React, { FC } from "react";
+import React, { FC, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -53,16 +53,22 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
 
   const dispatch = useDispatch();
 
-  const onSetDate = (date: DateRangeT) =>
-    dispatch(queryGroupModalSetDate(andIdx, date));
+  const onSetDate = (date: DateStringMinMax) => {
+    dispatch(
+      queryGroupModalSetDate(andIdx, {
+        min: date.min || undefined,
+        max: date.max || undefined,
+      }),
+    );
+  };
   const onResetAllDates = () => dispatch(queryGroupModalResetAllDates(andIdx));
 
   if (!group) return null;
 
   const { dateRange } = group;
 
-  const minDate = dateRange ? dateRange.min : null;
-  const maxDate = dateRange ? dateRange.max : null;
+  const minDate = dateRange ? dateRange.min || null : null;
+  const maxDate = dateRange ? dateRange.max || null : null;
   const hasActiveDate = !!(minDate || maxDate);
 
   return (
@@ -75,17 +81,16 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
         <HeadlinePart key={-1}>
           {t("queryGroupModal.headlineStart")}
         </HeadlinePart>
-        ,
         {group.elements.map((node, i) => (
-          <>
-            <HeadlinePart key={i + "-headline"}>
+          <Fragment key={i + "-headline"}>
+            <HeadlinePart>
               {node.label ||
                 (nodeIsConceptQueryNode(node) ? node.ids[0] : node.id)}
             </HeadlinePart>
             {i !== group.elements.length - 1 && (
               <span key={i + "-comma"}>, </span>
             )}
-          </>
+          </Fragment>
         ))}
       </Elements>
       <InputDateRange
@@ -103,7 +108,10 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
         }
         input={{
           onChange: onSetDate,
-          value: dateRange,
+          value: {
+            min: minDate,
+            max: maxDate,
+          },
         }}
       />
     </Modal>
