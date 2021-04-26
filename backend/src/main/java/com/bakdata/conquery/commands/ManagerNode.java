@@ -163,7 +163,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			}
 		}
 
-		formScanner = new FormScanner();
 		try {
 			formScanner.execute(null, null);
 		}
