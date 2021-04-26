@@ -32,7 +32,7 @@ class ConceptTreeChildTest {
 		assertThat(root.isEnclosingChildren()).isFalse();
 
 		final ConceptTreeChild child3 = new ConceptTreeChild();
-		child3.setCondition(ColumnEqualCondition.create(Set.of("G"), "column"));
+		child3.setCondition(new ColumnEqualCondition(Set.of("G"), "column"));
 
 		root.setChildren(List.of(child1, child3));
 		assertThat(root.isEnclosingChildren()).isTrue();
