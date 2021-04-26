@@ -7,6 +7,7 @@ import javax.validation.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.tree.Prefix;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
@@ -19,7 +20,7 @@ import lombok.RequiredArgsConstructor;
  * This condition requires each value to start with a prefix between the two given values
  */
 @CPSType(id = "PREFIX_RANGE", base = ConceptTreeCondition.class)
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class PrefixRangeCondition implements ConceptTreeCondition {
 
 	@Getter

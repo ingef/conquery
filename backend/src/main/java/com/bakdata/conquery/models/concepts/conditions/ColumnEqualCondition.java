@@ -8,36 +8,30 @@ import javax.validation.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.tree.Prefix;
 import com.bakdata.conquery.util.CalculatedValue;
-import com.bakdata.conquery.util.CollectionsUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 /**
  * This condition requires the value of another column to be equal to a given value.
  */
 @CPSType(id = "COLUMN_EQUAL", base = ConceptTreeCondition.class)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator(mode = JsonCreator.Mode.PROPERTIES))
 public class ColumnEqualCondition implements ConceptTreeCondition {
 
 	@Setter
 	@Getter
 	@NotEmpty
-	private Set<String> values;
+	private final Set<String> values;
 	@NotEmpty
 	@Setter
 	@Getter
-	private String column;
+	private final String column;
 
-	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public static ColumnEqualCondition create(Set<String> values, String column) {
-		return new ColumnEqualCondition(CollectionsUtil.createSmallestSet(values), column);
-	}
 
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) {

@@ -6,21 +6,22 @@ import java.util.Map;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.tree.Prefix;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.RangeSet;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * This condition requires that the selected Column has a value.
  */
 @CPSType(id = "PRESENT", base = ConceptTreeCondition.class)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class IsPresentCondition implements ConceptTreeCondition {
 
 	@Getter
-	@Setter
 	@NonNull
-	private String column;
+	private final String column;
 
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) {

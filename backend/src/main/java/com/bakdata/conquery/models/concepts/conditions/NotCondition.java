@@ -10,21 +10,22 @@ import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.Prefix;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.RangeSet;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * This condition matches if its child does not.
  */
 @CPSType(id = "NOT", base = ConceptTreeCondition.class)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class NotCondition implements ConceptTreeCondition {
 
-	@Setter
 	@Getter
 	@Valid
 	@NotEmpty
-	private ConceptTreeCondition condition;
+	private final ConceptTreeCondition condition;
 
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
