@@ -46,7 +46,7 @@ public class ColumnEqualCondition implements ConceptTreeCondition {
 	public Map<String, RangeSet<Prefix>> getColumnSpan() {
 		final RangeSet<Prefix> rangeSet = TreeRangeSet.create();
 		for (String value : values) {
-			rangeSet.add(Range.singleton(Prefix.of(value)));
+			rangeSet.add(Range.singleton(new Prefix(value)));
 		}
 
 		return Map.of(getColumn(), rangeSet);

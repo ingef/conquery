@@ -51,6 +51,6 @@ public class PrefixRangeCondition implements ConceptTreeCondition {
 
 	@Override
 	public Map<String, RangeSet<Prefix>> getColumnSpan() {
-		return Map.of(ConceptTreeCondition.COLUMN_PLACEHOLDER, ImmutableRangeSet.of(Range.closed(Prefix.of(min), Prefix.of(max))));
+		return Map.of(ConceptTreeCondition.COLUMN_PLACEHOLDER, ImmutableRangeSet.of(Range.closed(new Prefix(min), new Prefix(max))));
 	}
 }

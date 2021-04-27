@@ -29,7 +29,8 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@JsonIgnore
 	private transient int[] prefix;
 
-	@JsonManagedReference @Valid
+	@JsonManagedReference
+	@Valid
 	@Getter
 	@Setter
 	private List<ConceptTreeChild> children = Collections.emptyList();
@@ -113,24 +114,24 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	private Map<String, RangeSet<Prefix>> columnSpan = null;
 
 	@JsonIgnore
-	public Map<String, RangeSet<Prefix>> getColumnSpan(){
+	public Map<String, RangeSet<Prefix>> getColumnSpan() {
 
 		// This will walk the whole sub-tree so caching is important for performance
-		if(columnSpan != null){
+		if (columnSpan != null) {
 			return columnSpan;
 		}
 
 		final Map<String, RangeSet<Prefix>> span = new HashMap<>(condition.getColumnSpan());
 
 		for (ConceptTreeChild child : children) {
-			ConceptTreeCondition.mergeRanges(span,child.getColumnSpan());
+			ConceptTreeCondition.mergeRanges(span, child.getColumnSpan());
 		}
 
 		return columnSpan = span;
 	}
 
 
-	@ValidationMethod
+	@ValidationMethod(message = "Children are Overlapping with each other.")
 	@JsonIgnore
 	public boolean isChildrenAreNonOverlapping() {
 
@@ -153,7 +154,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 		return true;
 	}
 
-	@ValidationMethod
+	@ValidationMethod(message = "Does not enclose all its children.")
 	@JsonIgnore
 	public boolean isEnclosingChildren() {
 		final Map<String, RangeSet<Prefix>> mySpan = condition.getColumnSpan();
@@ -172,14 +173,14 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 		return true;
 	}
 
-	private boolean encloses(Map<String, RangeSet<Prefix>> mySpan, Map<String, RangeSet<Prefix>> childSpan) {
+	private static boolean encloses(Map<String, RangeSet<Prefix>> mySpan, Map<String, RangeSet<Prefix>> childSpan) {
 		for (Map.Entry<String, RangeSet<Prefix>> entry : childSpan.entrySet()) {
 			// Not defined spans everything
-			if(!mySpan.containsKey(entry.getKey())){
+			if (!mySpan.containsKey(entry.getKey())) {
 				continue;
 			}
 
-			if(mySpan.get(entry.getKey()).enclosesAll(entry.getValue())){
+			if (mySpan.get(entry.getKey()).enclosesAll(entry.getValue())) {
 				continue;
 			}
 
@@ -191,11 +192,11 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 	private static boolean intersects(Map<String, RangeSet<Prefix>> left, Map<String, RangeSet<Prefix>> right) {
 		for (String column : left.keySet()) {
-			if(!right.containsKey(column)){
+			if (!right.containsKey(column)) {
 				continue;
 			}
 
-			if(right.get(column).asRanges().stream().anyMatch(left.get(column)::intersects)){
+			if (right.get(column).asRanges().stream().anyMatch(left.get(column)::intersects)) {
 				return true;
 			}
 		}

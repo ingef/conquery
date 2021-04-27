@@ -37,8 +37,14 @@ public interface ConceptTreeCondition {
 
 	public static void mergeRanges(Map<String, RangeSet<Prefix>> into, Map<String, RangeSet<Prefix>> from) {
 		for (Map.Entry<String, RangeSet<Prefix>> entry : from.entrySet()) {
-			into.computeIfAbsent(entry.getKey(), (ignored) -> TreeRangeSet.create())
-				.addAll(entry.getValue());
+			into.merge(entry.getKey(), entry.getValue(),
+					   (left, right) -> {
+						   final TreeRangeSet<Prefix> set = TreeRangeSet.create();
+						   set.addAll(left);
+						   set.addAll(right);
+						   return set;
+					   }
+			);
 		}
 	}
 
