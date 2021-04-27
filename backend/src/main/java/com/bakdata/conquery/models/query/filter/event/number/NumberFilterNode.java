@@ -6,8 +6,8 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,8 +44,8 @@ public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends Event
 	public abstract boolean contains(Bucket bucket, int event);
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		requiredTables.add(column.getTable().getId());
+	public void collectRequiredTables(Set<Table> requiredTables) {
+		requiredTables.add(column.getTable());
 	}
 
 }

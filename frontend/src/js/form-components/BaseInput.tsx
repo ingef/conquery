@@ -36,6 +36,7 @@ const ClearZone = styled(IconButton)`
 `;
 
 interface InputPropsType {
+  autoFocus?: boolean;
   pattern?: string;
   step?: number;
   min?: number;
@@ -52,6 +53,7 @@ interface PropsT {
   inputProps?: InputPropsType;
   currencyConfig?: CurrencyConfigT;
   onChange: (val: null | number | string) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 const BaseInput = (props: PropsT) => {
@@ -109,6 +111,7 @@ const BaseInput = (props: PropsT) => {
           onKeyPress={(e) => handleKeyPress(e)}
           value={props.value || ""}
           large={props.large}
+          onBlur={props.onBlur}
           {...inputProps}
         />
       )}

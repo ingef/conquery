@@ -15,6 +15,7 @@ import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.util.DateFormats;
 import com.bakdata.conquery.util.UrlRewriteBundle;
 import io.dropwizard.Application;
 import io.dropwizard.ConfiguredBundle;
@@ -67,6 +68,7 @@ public class Conquery extends Application<ConqueryConfig> {
 
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
+				configuration.configureObjectMapper(environment.getObjectMapper());
 			}
 
 			@Override

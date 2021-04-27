@@ -6,10 +6,9 @@ import java.util.Objects;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -23,7 +22,7 @@ public class DateRestrictingNode extends QPChainNode {
 
 	protected final CDateSet restriction;
 	protected Column validityDateColumn;
-	protected Map<BucketId, CBlock> preCurrentRow = null;
+	protected Map<Bucket, CBlock> preCurrentRow = null;
 
 	public DateRestrictingNode(CDateSet restriction, QPNode child) {
 		super(child);
@@ -31,7 +30,7 @@ public class DateRestrictingNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		//if there was no date restriction we can just use the restriction CDateSet
 		if(ctx.getDateRestriction().isAll()) {
 			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
@@ -44,7 +43,7 @@ public class DateRestrictingNode extends QPChainNode {
 		super.nextTable(ctx, currentTable);
 
 
-		preCurrentRow = ctx.getBucketManager().getEntityCBlocksForConnector(getEntity(), context.getConnector().getId());
+		preCurrentRow = ctx.getBucketManager().getEntityCBlocksForConnector(getEntity(), context.getConnector());
 		validityDateColumn = context.getValidityDateColumn();
 
 		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
@@ -54,7 +53,7 @@ public class DateRestrictingNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket));
 
 		if (validityDateColumn == null) {
 			// If there is no validity date set for a concept there is nothing to restrict

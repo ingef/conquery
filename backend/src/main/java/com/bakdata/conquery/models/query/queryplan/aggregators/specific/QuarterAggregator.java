@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -35,7 +36,7 @@ public class QuarterAggregator implements Aggregator<String> {
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		column = ctx.getValidityDateColumn();
 		dateRestriction = ctx.getDateRestriction();
 	}

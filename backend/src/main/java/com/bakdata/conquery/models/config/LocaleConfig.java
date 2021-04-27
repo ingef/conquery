@@ -11,7 +11,5 @@ import lombok.Setter;
 @Getter @Setter
 public class LocaleConfig {
 	@NotNull
-	private Currency currency = Currency.getInstance("EUR");
-	@NotNull
 	private Locale frontend = Locale.ROOT;
 }

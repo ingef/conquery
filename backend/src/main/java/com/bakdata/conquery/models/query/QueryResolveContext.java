@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -11,6 +12,7 @@ import lombok.With;
 public class QueryResolveContext {
 	private final Dataset submittedDataset;
 	private final DatasetRegistry datasetRegistry;
+	private final ConqueryConfig config;
 
 	@With
 	private final DateAggregationMode dateAggregationMode;

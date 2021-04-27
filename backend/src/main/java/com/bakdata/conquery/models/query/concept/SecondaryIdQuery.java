@@ -71,11 +71,11 @@ public class SecondaryIdQuery extends IQuery {
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
 
-		context = context.withSelectedSecondaryId(getSecondaryId().getId());
+		context = context.withSelectedSecondaryId(getSecondaryId());
 
 		final ConceptQueryPlan queryPlan = query.createQueryPlan(context);
 
-		return new SecondaryIdQueryPlan(queryPlan, secondaryId.getId(), withSecondaryId, withoutSecondaryId);
+		return new SecondaryIdQueryPlan(queryPlan, secondaryId, withSecondaryId, withoutSecondaryId);
 	}
 
 	@Override

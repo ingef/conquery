@@ -34,7 +34,7 @@ public class ResultTypeTest {
 	public static Stream<Arguments> testData() {
 		//init global default config
 		ConqueryConfig cfg = new ConqueryConfig();
-		cfg.getLocale().setCurrency(Currency.getInstance("EUR"));
+		cfg.getPreprocessor().getParsers().setCurrency(Currency.getInstance("EUR"));
 		return Stream.of(
 			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, true,	"t"),
 			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, false,	"f"),

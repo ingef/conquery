@@ -49,7 +49,7 @@ public class CopyUserTest {
 		assertThat(copy).usingRecursiveComparison().isNotEqualTo(originUser);
 
 		// Check that the copy does not have any mappings
-		assertThat(group.containsMember(copy.getId())).isFalse();
+		assertThat(group.containsMember(copy)).isFalse();
 		assertThat(copy.getRoles()).isEmpty();
 
 		// Check that the flat map worked

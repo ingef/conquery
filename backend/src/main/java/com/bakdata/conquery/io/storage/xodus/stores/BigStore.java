@@ -69,7 +69,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		metaStore = new SerializingStore<>(
 				config,
 				new XodusStore(env, metaStoreInfo, openStores, envCloseHook, envRemoveHook), validator,
-				metaStoreInfo
+				metaStoreInfo,
+				mapper
 		);
 
 		final SimpleStoreInfo dataStoreInfo = new SimpleStoreInfo(
@@ -81,7 +82,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		dataStore = new SerializingStore<>(
 				config,
 				new XodusStore(env, dataStoreInfo, openStores, envCloseHook, envRemoveHook), validator,
-				dataStoreInfo
+				dataStoreInfo,
+				mapper
 		);
 
 

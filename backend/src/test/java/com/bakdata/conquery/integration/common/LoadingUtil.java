@@ -68,7 +68,7 @@ public class LoadingUtil {
 		for (ResourceFile queryResults : content.getPreviousQueryResults()) {
 			UUID queryId = new UUID(0L, id++);
 
-			final CsvParser parser = new CsvParser(support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createCsvParserSettings());
+			final CsvParser parser = support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createParser();
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
 
 			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
@@ -167,9 +167,9 @@ public class LoadingUtil {
 												 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
 
 			final Response response = support.getClient()
-										 .target(addImport)
-										 .request(MediaType.APPLICATION_JSON)
-										 .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
+											 .target(addImport)
+											 .request(MediaType.APPLICATION_JSON)
+											 .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
 
 			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}

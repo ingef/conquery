@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.util.io.EndCheckableInputStream;
 import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -24,13 +25,13 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 	private final ObjectWriter writer;
 	private final ObjectReader reader;
 
-	public BinaryJacksonCoder(IdResolveContext datasets, Validator validator) {
+	public BinaryJacksonCoder(IdResolveContext datasets, Validator validator, ObjectMapper objectMapper) {
 		this.validator = validator;
-		this.writer = Jackson.BINARY_MAPPER
+		this.writer = objectMapper
 			.writerFor(NetworkMessage.class)
 			.withView(InternalOnly.class);
 		this.reader = datasets
-				.injectInto(Jackson.BINARY_MAPPER.readerFor(NetworkMessage.class))
+				.injectInto(objectMapper.readerFor(NetworkMessage.class))
 				.without(Feature.AUTO_CLOSE_SOURCE)
 				.withView(InternalOnly.class);
 	}

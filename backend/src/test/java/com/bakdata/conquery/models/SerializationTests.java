@@ -45,8 +45,10 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+@Slf4j
 public class SerializationTests {
 
 	@Test
@@ -292,6 +294,7 @@ public class SerializationTests {
 
 	@Test
 	public void executionQueryJobError() throws JSONException, IOException {
+		log.info("Beware, this test will print an ERROR message.");
 		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5),new ConqueryError.UnknownError(null));
 
 		SerializationTestUtil
