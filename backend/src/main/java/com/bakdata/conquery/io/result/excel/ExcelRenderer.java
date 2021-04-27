@@ -3,9 +3,11 @@ package com.bakdata.conquery.io.result.excel;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFDataFormat;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -17,6 +19,9 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class ExcelRenderer {
+
+
+    public static final short EURO_FORMAT = (short) 0x32;
 
     private static CellStyle generateHeaderStyle(XSSFWorkbook workbook) {
         CellStyle headerStyle = workbook.createCellStyle();
@@ -40,8 +45,12 @@ public class ExcelRenderer {
 
         XSSFWorkbook workbook = new XSSFWorkbook();
 
+        XSSFDataFormat dataformat = workbook.createDataFormat();
+        dataformat.putFormat(EURO_FORMAT, "_(\"€\"* #,##0.00_);_(\"€\"* (#,##0.00);_(\"€\"* \"-\"??_);_(@_)");
+
         // TODO internationalize
         Sheet sheet = workbook.createSheet("Result");
+
 
         writeHeader(sheet,workbook,idHeaders,infos,cfg);
 
@@ -114,7 +123,7 @@ public class ExcelRenderer {
                 ResultInfo resultInfo =  infos.get(i);
                 Object resultValue =  resultValues[i];
                 Cell dataCell = row.createCell(currentColumn);
-                dataCell.setCellValue(resultInfo.getType().writeExcelCell(resultInfo,settings,dataCell, resultValue);
+                resultInfo.getType().writeExcelCell(resultInfo,settings,dataCell, resultValue);
                 currentColumn++;
             }
         }

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.externalservice;
 
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
+import static com.bakdata.conquery.io.result.excel.ExcelRenderer.EURO_FORMAT;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,6 +26,7 @@ import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormat;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -306,7 +308,16 @@ public interface ResultType {
 
         @Override
         public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
-            cell.
+            if(settings.getCurrency().equals(Currency.getInstance("EUR"))){
+                // Print as euro
+                cell.getCellStyle().setDataFormat(EURO_FORMAT);
+                cell.setCellValue(settings.getDecimalFormat().format(
+                        new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits())
+                ));
+                return;
+            }
+            // Print as cents or what ever the minor currency unit is
+            cell.setCellValue(((Number) value).longValue());
         }
     }
 
