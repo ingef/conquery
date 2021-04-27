@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.auth.permissions;
 
+import com.bakdata.conquery.io.cps.CPSBase;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -8,6 +10,7 @@ import java.util.stream.Collectors;
  * Subclasses should wrap their call to the {@code instancePermission} functions with their own string representation.
  *
  */
+@CPSBase
 public abstract class StringPermissionBuilder {
 	
 	private static final String PART_DIVIDER_TOKEN = ":";

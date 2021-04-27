@@ -36,7 +36,7 @@ public class PermissionCleanupTask extends Task {
         log.info("Permissions deleted from all users: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers()));
         log.info("Permissions deleted from all groups: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllGroups()));
         log.info("Permissions deleted from all roles: {}", deleteQueryPermissionsWithMissingRef(storage, storage.getAllRoles()));
-        log.info("Owned Execution permissions deleted: {}", deletePermissionsOfOwnedInstances(storage, QueryPermission.DOMAIN.toLowerCase(), ManagedExecutionId.Parser.INSTANCE, storage::getExecution));
+        log.info("Owned Execution permissions deleted: {}", deletePermissionsOfOwnedInstances(storage, ExecutionPermission.DOMAIN.toLowerCase(), ManagedExecutionId.Parser.INSTANCE, storage::getExecution));
         log.info("Owned FormConfig permissions deleted: {}", deletePermissionsOfOwnedInstances(storage, FormConfigPermission.DOMAIN.toLowerCase(), FormConfigId.Parser.INSTANCE, storage::getFormConfig));
     }
 
@@ -56,7 +56,7 @@ public class PermissionCleanupTask extends Task {
 				if (wpermission == null) {
 					continue;
 				}
-				if (!wpermission.getDomains().contains(QueryPermission.DOMAIN.toLowerCase())) {
+				if (!wpermission.getDomains().contains(ExecutionPermission.DOMAIN.toLowerCase())) {
 					// Skip Permissions that do not reference an Execution/Query
 					continue;
 				}
