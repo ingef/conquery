@@ -6,7 +6,7 @@ import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
-import com.bakdata.conquery.models.concepts.tree.Prefix;
+import com.bakdata.conquery.models.concepts.tree.validation.Prefix;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;

@@ -7,7 +7,7 @@ import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
-import com.bakdata.conquery.models.concepts.tree.Prefix;
+import com.bakdata.conquery.models.concepts.tree.validation.Prefix;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;

@@ -5,7 +5,7 @@ import java.util.Map;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.concepts.tree.Prefix;
+import com.bakdata.conquery.models.concepts.tree.validation.Prefix;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Range;
@@ -41,7 +41,7 @@ public class PrefixCondition implements ConceptTreeCondition {
 	public Map<String, RangeSet<Prefix>> getColumnSpan() {
 		final RangeSet<Prefix> rangeSet = TreeRangeSet.create();
 		for (String value : prefixes) {
-			rangeSet.add(Range.singleton(new Prefix(value)));
+			rangeSet.add(Range.singleton(Prefix.prefix(value)));
 		}
 
 		return Map.of(ConceptTreeCondition.COLUMN_PLACEHOLDER, rangeSet);

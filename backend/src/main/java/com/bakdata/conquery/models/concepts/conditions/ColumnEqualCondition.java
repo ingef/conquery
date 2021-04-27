@@ -6,7 +6,7 @@ import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.concepts.tree.Prefix;
+import com.bakdata.conquery.models.concepts.tree.validation.Prefix;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Range;
@@ -46,7 +46,7 @@ public class ColumnEqualCondition implements ConceptTreeCondition {
 	public Map<String, RangeSet<Prefix>> getColumnSpan() {
 		final RangeSet<Prefix> rangeSet = TreeRangeSet.create();
 		for (String value : values) {
-			rangeSet.add(Range.singleton(new Prefix(value)));
+			rangeSet.add(Range.singleton(Prefix.equal(value)));
 		}
 
 		return Map.of(getColumn(), rangeSet);

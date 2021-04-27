@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.concepts.tree.Prefix;
+import com.bakdata.conquery.models.concepts.tree.validation.Prefix;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.RangeSet;

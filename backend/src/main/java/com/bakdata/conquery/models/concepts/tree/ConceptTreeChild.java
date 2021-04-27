@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.conditions.ConceptTreeCondition;
+import com.bakdata.conquery.models.concepts.tree.validation.Prefix;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;

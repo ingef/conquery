@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.concepts.conditions.ColumnEqualCondition;
 import com.bakdata.conquery.models.concepts.conditions.ConceptTreeCondition;
 import com.bakdata.conquery.models.concepts.conditions.PrefixCondition;
 import com.bakdata.conquery.models.concepts.conditions.PrefixRangeCondition;
+import com.bakdata.conquery.models.concepts.tree.validation.Prefix;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.Range;
@@ -43,8 +44,8 @@ class ConceptTreeChildTest {
 		root.setChildren(List.of(child1, child2));
 
 		final Map<String, ImmutableRangeSet<Prefix>> should_span = Map.of(
-				ConceptTreeCondition.COLUMN_PLACEHOLDER, ImmutableRangeSet.of(Range.closed(new Prefix("A00"), new Prefix("A10"))),
-				"my_column", ImmutableRangeSet.of(Range.singleton(new Prefix("A01")))
+				ConceptTreeCondition.COLUMN_PLACEHOLDER, ImmutableRangeSet.of(Range.closed(Prefix.prefix("A00"), Prefix.prefix("A10"))),
+				"my_column", ImmutableRangeSet.of(Range.singleton(Prefix.equal("A01")))
 		);
 
 		assertThat(root.getColumnSpan()).isEqualTo(should_span);
