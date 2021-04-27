@@ -2,34 +2,18 @@ import React, { ReactNode, FC } from "react";
 
 import { useAuthToken } from "../api/useApi";
 
-import IconButton from "./IconButton";
+import IconButton, { IconButtonPropsT } from "./IconButton";
 
-interface PropsT {
+interface PropsT extends Omit<IconButtonPropsT, "icon" | "onClick"> {
   url: string;
   className?: string;
   children?: ReactNode;
-  ending: string;
-}
-
-function getIcon(ending: string) {
-  return "download";
-
-  // TODO: RE-Enable this with better icons (maybe "regular style" when we can afford it)
-  // switch (ending) {
-  //   case "csv":
-  //     return "file-csv";
-  //   case "zip":
-  //     return "file-archive";
-  //   default:
-  //     return "file-alt";
-  // }
 }
 
 const DownloadButton: FC<PropsT> = ({
   url,
   className,
   children,
-  ending,
   ...restProps
 }) => {
   const authToken = useAuthToken();
@@ -38,11 +22,11 @@ const DownloadButton: FC<PropsT> = ({
     authToken,
   )}&charset=ISO_8859_1`;
 
-  const icon = getIcon(ending);
+  const icon = "download";
 
   return (
     <a href={href} className={className}>
-      <IconButton icon={icon} {...restProps}>
+      <IconButton {...restProps} icon={icon} onClick={() => {}}>
         {children}
       </IconButton>
     </a>
