@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -141,7 +142,10 @@ public class AdminProcessor {
 
 	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) throws JSONException {
 		concept.setDataset(dataset);
+		// Validate coarse structure first then tree, as invalid structure makes trees validation fail
 		ValidatorHelper.failOnError(log, validator.validate(concept));
+
+		ValidatorHelper.failOnError(log, validator.validate(concept, ConceptTreeChild.Tree.class));
 		// Register the Concept in the ManagerNode and Workers
 		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Status.CONFLICT);

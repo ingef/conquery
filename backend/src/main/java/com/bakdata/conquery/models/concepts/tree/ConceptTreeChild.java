@@ -141,8 +141,9 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 		return columnSpan = span;
 	}
 
+	public @interface Tree { }
 
-	@ValidationMethod(message = "Children are Overlapping with each other.")
+	@ValidationMethod(message = "Children are Overlapping with each other.", groups = {Tree.class})
 	@JsonIgnore
 	public boolean isChildrenAreNonOverlapping() {
 
@@ -165,7 +166,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 		return true;
 	}
 
-	@ValidationMethod(message = "Does not enclose all its children.")
+	@ValidationMethod(message = "Does not enclose all its children.", groups = {Tree.class})
 	@JsonIgnore
 	public boolean isEnclosingChildren() {
 		final Map<String, RangeSet<Prefix>> mySpan = condition.getColumnSpan();
