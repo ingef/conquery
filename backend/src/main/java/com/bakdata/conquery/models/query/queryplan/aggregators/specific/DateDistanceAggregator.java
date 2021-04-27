@@ -5,9 +5,9 @@ import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -29,7 +29,7 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
 			reference = null;
 		}

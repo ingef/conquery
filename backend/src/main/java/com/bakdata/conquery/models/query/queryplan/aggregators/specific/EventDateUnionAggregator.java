@@ -1,15 +1,12 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import java.util.Collection;
-import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -24,18 +21,18 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EventDateUnionAggregator implements Aggregator<CDateSet>{
 
-	private final Set<TableId> requiredTables;
+	private final Set<Table> requiredTables;
 	private Column validityDateColumn;
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
+	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.addAll(this.requiredTables);
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		validityDateColumn = ctx.getValidityDateColumn();
 		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");

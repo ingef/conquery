@@ -27,7 +27,6 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -116,7 +115,6 @@ public class AdminProcessor {
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
-	private final int entityBucketSize;
 	@Nullable
 	private final String storagePrefix;
 
@@ -208,7 +206,7 @@ public class AdminProcessor {
 
 		log.info("Importing {}", selectedFile.getAbsolutePath());
 
-		final ImportJob job = new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, entityBucketSize);
+		final ImportJob job = new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, config.getCluster().getEntityBucketSize());
 		datasetRegistry.get(ds.getId()).getJobManager().addSlowJob(job);
 
 	}
@@ -218,10 +216,10 @@ public class AdminProcessor {
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
-		CsvParser parser = new CsvParser(config.getCsv()
-											   .withSkipHeader(false)
-											   .withParseHeaders(false)
-											   .createCsvParserSettings());
+		CsvParser parser = config.getCsv()
+				.withSkipHeader(false)
+				.withParseHeaders(false)
+				.createParser();
 
 		PersistentIdMap mapping = config.getIdMapping().generateIdMapping(parser.iterate(data).iterator());
 
@@ -534,7 +532,7 @@ public class AdminProcessor {
 	 */
 	public String getPermissionOverviewAsCSV(Collection<User> users) {
 		StringWriter sWriter = new StringWriter();
-		CsvWriter writer = CsvIo.createWriter(sWriter);
+		CsvWriter writer = config.getCsv().createWriter();
 		List<String> scope = config
 									 .getAuthorization()
 									 .getOverviewScope();
@@ -574,14 +572,17 @@ public class AdminProcessor {
 		writer.writeValuesToRow();
 	}
 
+
+
 	public synchronized void deleteImport(ImportId importId) {
-		// TODO explain when the includedBucket Information is updated/cleared in the WorkerInformation
+				// TODO explain when the includedBucket Information is updated/cleared in the WorkerInformation
 
 		final Namespace namespace = datasetRegistry.get(importId.getDataset());
 
+		final Import imp = namespace.getStorage().getImport(importId);
 
 		namespace.getStorage().removeImport(importId);
-		namespace.sendToAll(new RemoveImportJob(importId));
+		namespace.sendToAll(new RemoveImportJob(imp));
 
 		// Remove bucket assignments for consistency report
 		namespace.removeBucketAssignmentsForImportFormWorkers(importId);
@@ -606,14 +607,13 @@ public class AdminProcessor {
 			return dependentConcepts;
 		}
 
-
 		namespace.getStorage().getAllImports().stream()
-				.filter(imp -> imp.getTable().equals(table))
+				 .filter(imp -> imp.getTable().equals(table))
 				 .map(Import::getId)
 				 .forEach(this::deleteImport);
 
 		namespace.getStorage().removeTable(tableId);
-		namespace.sendToAll(new RemoveTable(tableId));
+		namespace.sendToAll(new RemoveTable(table));
 
 		return dependentConcepts;
 	}
@@ -621,9 +621,13 @@ public class AdminProcessor {
 	public synchronized void deleteConcept(ConceptId conceptId) {
 		final Namespace namespace = datasetRegistry.get(conceptId.getDataset());
 
-		namespace.getStorage().removeConcept(conceptId);
+		final NamespaceStorage storage = namespace.getStorage();
+
+		final Concept<?> concept = storage.getConcept(conceptId);
+
+		storage.removeConcept(conceptId);
 		getJobManager()
-				.addSlowJob(new SimpleJob("sendToAll: remove " + conceptId, () -> namespace.sendToAll(new RemoveConcept(conceptId))));
+				.addSlowJob(new SimpleJob("sendToAll: remove " + conceptId, () -> namespace.sendToAll(new RemoveConcept(concept))));
 	}
 
 	public synchronized void deleteDataset(DatasetId datasetId) {
@@ -650,8 +654,12 @@ public class AdminProcessor {
 	public void updateMatchingStats(DatasetId datasetId) {
 		final Namespace ns = getDatasetRegistry().get(datasetId);
 
-		ns.sendToAll(new UpdateMatchingStatsMessage());
-		FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager());
+		ns.getJobManager().addSlowJob(new SimpleJob("Initiate Update Matching Stats and FilterSearch",
+													() -> {
+														ns.sendToAll(new UpdateMatchingStatsMessage());
+														FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
+													}
+		));
 	}
 
 	public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {

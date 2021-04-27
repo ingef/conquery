@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.query.concept;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -15,7 +15,6 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -66,37 +65,30 @@ public class TableExportQuery extends IQuery {
 		int totalColumns = 0;
 		List<TableExportDescription> resolvedConnectors = new ArrayList<>();
 		for (CQUnfilteredTable table : tables) {
-			try {
-				Concept<?> concept = context.getCentralRegistry().resolve(table.getId().getConcept());
-				Connector connector = concept.getConnector(table.getId());
-				final Column validityDateColumn;
+			Connector connector = table.getTable();
+			final Column validityDateColumn;
 
-				// if no dateColumn is provided, we use the default instead which is always the first one.
-				// Set to null if none-available in the connector.
-				if (table.getDateColumn() != null) {
-					validityDateColumn = connector.getValidityDateColumn(table.getDateColumn().getValue());
-				}
-				else if (!connector.getValidityDates().isEmpty()) {
-					validityDateColumn = connector.getValidityDates().get(0).getColumn();
-				}
-				else {
-					validityDateColumn = null;
-				}
-
-				final TableExportDescription exportDescription = new TableExportDescription(
-						connector.getTable(),
-						validityDateColumn,
-						totalColumns
-				);
-
-				resolvedConnectors.add(exportDescription);
-
-				totalColumns += connector.getTable().getColumns().length;
+			// if no dateColumn is provided, we use the default instead which is always the first one.
+			// Set to null if none-available in the connector.
+			if (table.getDateColumn() != null) {
+				validityDateColumn = table.getDateColumn().getValue().getColumn();
 			}
-			catch (NoSuchElementException exc) {
-				log.warn("Unable to resolve connector `{}` in dataset `{}`.", table.getId().getConnector(), table.getId().getDataset(), exc);
-				continue;
+			else if (!connector.getValidityDates().isEmpty()) {
+				validityDateColumn = connector.getValidityDates().get(0).getColumn();
 			}
+			else {
+				validityDateColumn = null;
+			}
+
+			final TableExportDescription exportDescription = new TableExportDescription(
+					connector.getTable(),
+					validityDateColumn,
+					totalColumns
+			);
+
+			resolvedConnectors.add(exportDescription);
+
+			totalColumns += connector.getTable().getColumns().length;
 		}
 
 		return new TableExportQueryPlan(
@@ -118,22 +110,9 @@ public class TableExportQuery extends IQuery {
 		resolvedHeader = new ArrayList<>();
 
 		for (CQUnfilteredTable table : tables) {
-			try {
-				Concept<?> concept = context.getNamespace().getStorage().getCentralRegistry().resolve(table.getId().getConcept());
-				Connector connector = concept.getConnector(table.getId());
+			Connector connector = table.getTable();
 
-				for (Column col : connector.getTable().getColumns()) {
-					resolvedHeader.add(col);
-				}
-			}
-			catch (NoSuchElementException exc) {
-				log.warn("Unable to resolve connector `{}` in dataset `{}`.", table.getId().getConnector(), table.getId().getDataset(), exc);
-				continue;
-			}
-		}
-
-		if (resolvedHeader.isEmpty()) {
-			throw new IllegalArgumentException("Could not Resolve any Table");
+			resolvedHeader.addAll(Arrays.asList(connector.getTable().getColumns()));
 		}
 	}
 

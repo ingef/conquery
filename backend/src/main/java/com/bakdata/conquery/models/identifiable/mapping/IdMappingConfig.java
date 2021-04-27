@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
-import java.util.Arrays;
-import java.util.Iterator;
+import java.util.*;
 import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -14,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -50,8 +50,8 @@ public abstract class IdMappingConfig {
 	public abstract IdMappingAccessor[] getIdAccessors();
 
 	@JsonIgnore
-	public String[] getPrintIdFields() {
-		return ArrayUtils.subarray(getHeader(), 1, getHeaderSize());
+	public List<String> getPrintIdFields() {
+		return List.of(ArrayUtils.subarray(getHeader(), 1, getHeaderSize()));
 	}
 
 	/**

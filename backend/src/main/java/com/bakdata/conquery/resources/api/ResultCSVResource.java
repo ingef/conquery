@@ -25,12 +25,17 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.csv.QueryToCSVRenderer;
+import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ResultProcessor;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.results.EntityResult;
+import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
@@ -41,7 +46,9 @@ public class ResultCSVResource {
 
 	public static final String GET_CSV_PATH_METHOD = "getAsCsv";
 	@Inject
-	private ResultProcessor processor;
+	private ResultCsvProcessor processor;
+	@Inject
+	private ConqueryConfig config;
 
 	@GET
 	@Path("{" + QUERY + "}.csv")
@@ -56,34 +63,5 @@ public class ResultCSVResource {
 	{
 		log.info("Result for {} download on dataset {} by user {} ({}).", queryId, datasetId, user.getId(), user.getName());
 		return processor.getResult(user, datasetId, queryId, userAgent, queryCharset, pretty.orElse(Boolean.TRUE), "csv").build();
-	}
-
-	public static StreamingOutput resultAsStreamingOutput(ManagedExecutionId id, PrintSettings settings, List<ManagedQuery> queries, Charset charset, String lineSeparator) {
-		Stream<String> csv = QueryToCSVRenderer.toCSV(settings, queries);
-
-		StreamingOutput out = new StreamingOutput() {
-
-			@Override
-			public void write(OutputStream os) throws WebApplicationException {
-				try (BufferedWriter writer = new BufferedWriter(
-					new OutputStreamWriter(
-						os,
-						charset))) {
-					Iterator<String> it = csv.iterator();
-					while (it.hasNext()) {
-						writer.write(it.next());
-						writer.write(lineSeparator);
-					}
-					writer.flush();
-				}
-				catch (EofException e) {
-					log.info("User canceled download of {}", id);
-				}
-				catch (Exception e) {
-					throw new WebApplicationException("Failed to load result " + id, e);
-				}
-			}
-		};
-		return out;
 	}
 }

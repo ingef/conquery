@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,13 +28,17 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 	 */
 	public static final Dataset PLACEHOLDER = new Dataset("PLACEHOLDER");
 
-	public static boolean isAllIdsTable(TableId tableId){
-		return tableId.getTable().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);
+	public static boolean isAllIdsTable(Table table){
+		return table.getName().equalsIgnoreCase(ConqueryConstants.ALL_IDS_TABLE);
 	}
 
 	@JsonIgnore
-	public TableId getAllIdsTableId() {
-		return new TableId(getId(), ConqueryConstants.ALL_IDS_TABLE);
+	public Table getAllIdsTable() {
+		//TODO store this somehow? / Add this at dataset creation
+		final Table table = new Table();
+		table.setDataset(this);
+		table.setName(ConqueryConstants.ALL_IDS_TABLE);
+		return table;
 	}
 
 	@Override

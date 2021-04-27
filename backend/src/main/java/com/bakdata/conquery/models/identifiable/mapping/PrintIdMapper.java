@@ -7,5 +7,5 @@ import com.bakdata.conquery.models.query.results.EntityResult;
  * Maps an internalId to an external representation.
  */
 public interface PrintIdMapper {
-    String[] map(EntityResult entityResult);
+    ExternalEntityId map(EntityResult entityResult);
 }

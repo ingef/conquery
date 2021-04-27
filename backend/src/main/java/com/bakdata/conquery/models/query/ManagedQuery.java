@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,8 +13,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
@@ -42,7 +41,7 @@ import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -103,7 +102,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.config = config;
 		this.namespace = namespaces.get(getDataset().getId());
 		this.involvedWorkers = namespace.getWorkers().size();
-		query.resolve(new QueryResolveContext(getDataset(), namespaces, null));
+		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
 		if (label == null) {
 			label = makeAutoLabel(new PrintSettings(true, Locale.ROOT,namespaces, config, null));
 		}
@@ -186,14 +185,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		// Then all columns that originate from selects and static aggregators
 		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null);
 
-		collectResultInfos().getInfos()
-							.forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
+		getResultInfo().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
 		return columnDescriptions;
 	}
 
 	@JsonIgnore
-	public ResultInfoCollector collectResultInfos() {
-		return query.collectResultInfos();
+	public List<ResultInfo> getResultInfo() {
+		return query.collectResultInfos().getInfos();
 	}
 
 	@Override
@@ -230,8 +228,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public StreamingOutput getResult(PrintSettings settings, Charset charset, String lineSeparator) {
-		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), charset, lineSeparator);
+	public Stream<EntityResult> streamResults() {
+		return getResults().stream();
 	}
 
 	@Override

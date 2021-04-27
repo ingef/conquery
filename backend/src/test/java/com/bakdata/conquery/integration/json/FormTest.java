@@ -20,6 +20,8 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
+import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.csv.QueryToCSVRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -34,6 +36,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -135,15 +138,28 @@ public class FormTest extends ConqueryTestSpec {
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedForm managedForm, User user) throws IOException {
 		Map<String, List<ManagedQuery>> managedMapping = managedForm.getSubQueries();
 		IdMappingState mappingState = idMappingConfig.initToExternal(user, managedForm);
-		
+		final ConqueryConfig config = standaloneSupport.getConfig();
+		PrintSettings
+				PRINT_SETTINGS =
+				new PrintSettings(
+						false,
+						Locale.ENGLISH,
+						standaloneSupport.getDatasetsProcessor().getDatasetRegistry(),
+						config,
+						cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, config.getIdMapping(), mappingState),
+						(columnInfo) -> columnInfo.getSelect().getId().toStringWithoutDataset()
+				);
+
+		CsvLineStreamRenderer renderer = new CsvLineStreamRenderer(config.getCsv().createWriter(), PRINT_SETTINGS);
+
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
+			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfo();
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
-			List<String> actual = QueryToCSVRenderer
-				.toCSV(
-					new PrintSettings(true,Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), standaloneSupport.getConfig()),
-					managed.getValue()
-                )
-				.collect(Collectors.toList());
+			List<String> actual = renderer.toStream(
+					config.getIdMapping().getPrintIdFields(),
+					resultInfos,
+					managed.getValue().stream().flatMap(ManagedQuery::streamResults)
+			).collect(Collectors.toList());
 			
 			assertThat(actual)
 				.as("Checking result "+managed.getKey())

@@ -288,7 +288,6 @@ public interface ResultType {
     @CPSType(id = "MONEY", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
 	class MoneyT extends PrimitiveResultType {
-        public static final int CURRENCY_DIGITS = ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits();
 
         @Getter(onMethod_ = @JsonCreator)
 		public static final MoneyT INSTANCE = new MoneyT();

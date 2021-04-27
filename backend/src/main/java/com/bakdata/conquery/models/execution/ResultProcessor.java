@@ -59,46 +59,9 @@ public class ResultProcessor {
 	
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
-	
-	public ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty, String fileExtension) {
-		final Namespace namespace = datasetRegistry.get(datasetId);
-		ConqueryMDC.setLocation(user.getName());
-		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
-		user.authorize(namespace.getDataset(), Ability.READ);
-		user.authorize(namespace.getDataset(), Ability.DOWNLOAD);
 
-		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
 
-		ResourceUtil.throwNotFoundIfNull(queryId, exec);
-
-		user.authorize(exec, Ability.READ);
-
-		// Check if user is permitted to download on all datasets that were referenced by the query
-		authorizeDownloadDatasets(user, exec);
-
-		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
-		
-		// Get the locale extracted by the LocaleFilter
-		PrintSettings settings = new PrintSettings(pretty, I18n.LOCALE.get(), datasetRegistry, config, cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState));
-		Charset charset = determineCharset(userAgent, queryCharset);
-
-		try {
-			StreamingOutput out = exec.getResult(
-				settings,
-				charset,
-				config.getCsv().getLineSeparator());
-			
-			return makeResponseWithFileName(fileExtension, exec, out);
-		}
-		catch (NoSuchElementException e) {
-			throw new WebApplicationException(e, Status.NOT_FOUND);
-		}
-		finally {
-			ConqueryMDC.clearLocation();
-		}
-	}
-
-	private static ResponseBuilder makeResponseWithFileName(String fileExtension, ManagedExecution<?> exec, StreamingOutput out) {
+	public static ResponseBuilder makeResponseWithFileName(String fileExtension, ManagedExecution<?> exec, StreamingOutput out) {
 		ResponseBuilder response = Response.ok(out);
 		String label = exec.getLabelWithoutAutoLabelSuffix();
 		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
@@ -174,7 +137,7 @@ public class ResultProcessor {
 				config,
 				(EntityResult cer) -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState));
 
-		
+
 		StreamingOutput out = new StreamingOutput() {
 			
 			@Override
@@ -195,7 +158,7 @@ public class ResultProcessor {
 	 * Tries to determine the charset for the result encoding from different request properties.
 	 * Defaults to StandardCharsets.UTF_8.
 	 */
-	private static Charset determineCharset(String userAgent, String queryCharset) {
+	public static Charset determineCharset(String userAgent, String queryCharset) {
 		if(queryCharset != null) {
 			try {
 				return Charset.forName(queryCharset);				
@@ -224,7 +187,7 @@ public class ResultProcessor {
 				I18n.LOCALE.get(),
 				datasetRegistry,
 				config,
-				(EntityResult cer) -> ResultUtil.createId(datasetRegistry.get(dataset.getId()), cer, idMapping, mappingState).getExternalId());
+				(EntityResult cer) -> ResultUtil.createId(datasetRegistry.get(dataset.getId()), cer, idMapping, mappingState));
 
 		StreamingOutput out = output -> ExcelRenderer.renderToStream(
 				settings,

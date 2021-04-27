@@ -1,22 +1,22 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.Collection;
+
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
-import java.util.Collection;
-
 /**
  * Aggregator, listing all days present.
  */
-public class DateUnionAggregator extends SingleColumnAggregator<Collection<CDateRange>> {
+public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
@@ -26,7 +26,7 @@ public class DateUnionAggregator extends SingleColumnAggregator<Collection<CDate
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		dateRestriction = ctx.getDateRestriction();
 	}
 
@@ -46,13 +46,13 @@ public class DateUnionAggregator extends SingleColumnAggregator<Collection<CDate
 	}
 
 	@Override
-	public Aggregator<Collection<CDateRange>> doClone(CloneContext ctx) {
+	public DateUnionAggregator doClone(CloneContext ctx) {
 		return new DateUnionAggregator(getColumn());
 	}
 
 	@Override
-	public Collection<CDateRange> getAggregationResult() {
-		return set.asRanges();
+	public CDateSet getAggregationResult() {
+		return set;
 	}
 
 	@Override

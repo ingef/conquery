@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.execution;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -21,7 +20,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
@@ -123,24 +121,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		this.owner = owner;
 		this.dataset = submittedDataset;
 	}
-
-    public static Stream<EntityResult> getResults(ManagedExecution<?> exec) {
-        if (exec instanceof ManagedQuery) {
-            return ((ManagedQuery) exec).getResults().stream();
-        } else if (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1) {
-            return ((ManagedForm) exec).getSubQueries().values().iterator().next().stream().flatMap(mq -> mq.getResults().stream());
-        }
-        throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
-    }
-
-	public static List<ResultInfo> getResultInfos(ManagedExecution<?> exec) {
-        if (exec instanceof ManagedQuery) {
-            return ((ManagedQuery) exec).collectResultInfos().getInfos();
-        } else if (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1) {
-            return ((ManagedForm) exec).getSubQueries().values().iterator().next().get(0).collectResultInfos().getInfos();
-        }
-        throw new IllegalStateException("The provided execution cannot be rendered as a single table. Was: " + exec.getId());
-    }
 
 	/**
 	 * Executed right before execution submission.
@@ -385,13 +365,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	/**
-	 * Provides the result of the execution directly as a {@link StreamingOutput} with is directly returned as a response to a download request.
-	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
-	 */
-	@JsonIgnore
-	public abstract StreamingOutput getResult(PrintSettings settings, Charset charset, String lineSeparator);
-	
-	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.
 	 * @return A List of all {@link NamespacedId}s needed for the execution.
 	 */
@@ -447,5 +420,15 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return QueryPermission.onInstance(abilities,getId());
+	}
+
+	@JsonIgnore
+	public List<ResultInfo> getResultInfo() {
+		throw new UnsupportedOperationException("ResultInfos are not available for all executions");
+	}
+
+	@JsonIgnore
+	public Stream<EntityResult> streamResults() {
+		throw new UnsupportedOperationException("EntityResult are not available for all executions");
 	}
 }

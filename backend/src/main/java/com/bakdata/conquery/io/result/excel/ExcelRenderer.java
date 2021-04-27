@@ -1,9 +1,7 @@
 package com.bakdata.conquery.io.result.excel;
 
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import org.apache.poi.ss.usermodel.*;
@@ -15,7 +13,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -40,15 +37,15 @@ public class ExcelRenderer {
 
     public static void renderToStream(
             PrintSettings cfg,
-            String[] idHeaders,
+            List<String> idHeaders,
             ManagedExecution<?> exec,
             OutputStream outputStream) throws IOException {
-        List<ResultInfo> infos = ManagedExecution.getResultInfos(exec);
+        List<ResultInfo> infos = exec.getResultInfo();
 
         XSSFWorkbook workbook = new XSSFWorkbook();
 
-        XSSFDataFormat dataformat = workbook.createDataFormat();
-        dataformat.putFormat(EURO_FORMAT, "_(\"€\"* #,##0.00_);_(\"€\"* (#,##0.00);_(\"€\"* \"-\"??_);_(@_)");
+        XSSFDataFormat dataFormat = workbook.createDataFormat();
+        dataFormat.putFormat(EURO_FORMAT, "_(\"€\"* #,##0.00_);_(\"€\"* (#,##0.00);_(\"€\"* \"-\"??_);_(@_)");
 
         // TODO internationalize
         Sheet sheet = workbook.createSheet("Result");
@@ -56,7 +53,7 @@ public class ExcelRenderer {
 
         writeHeader(sheet,workbook,idHeaders,infos,cfg);
 
-        writeBody(sheet,workbook,idHeaders,infos,cfg, ManagedExecution.getResults(exec));
+        writeBody(sheet, infos,cfg, exec.streamResults());
 
         workbook.write(outputStream);
 
@@ -65,7 +62,7 @@ public class ExcelRenderer {
     private static void writeHeader(
             Sheet sheet,
             XSSFWorkbook workbook,
-            String[] idHeaders,
+            List<String> idHeaders,
             List<ResultInfo> infos,
             PrintSettings cfg){
 
@@ -93,8 +90,6 @@ public class ExcelRenderer {
 
     private static void writeBody(
             Sheet sheet,
-            XSSFWorkbook workbook,
-            String[] idHeaders,
             List<ResultInfo> infos,
             PrintSettings cfg,
             Stream<EntityResult> resultLines) {
@@ -108,7 +103,7 @@ public class ExcelRenderer {
     }
 
     private static void setExcelRow(List<ResultInfo> infos, EntityResult internalRow, Supplier<Row> externalRowSupplier, PrintSettings settings){
-        String[] ids = settings.getIdMapper().map(internalRow);
+        String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
 
 
         for (Object[] resultValues : internalRow.listResultLines()) {

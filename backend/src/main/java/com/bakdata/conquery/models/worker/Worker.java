@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
@@ -21,11 +22,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
@@ -167,28 +165,25 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.addImport(imp);
 	}
 
-	public void removeImport(ImportId importId) {
-		final Import imp = storage.getImport(importId);
+	public void removeImport(Import imp) {
 
 		for (DictionaryId dictionary : imp.getDictionaries()) {
 			storage.removeDictionary(dictionary);
 		}
 
-		storage.removeImport(importId);
-		bucketManager.removeImport(importId);
+		bucketManager.removeImport(imp);
 	}
 
 	public void addBucket(Bucket bucket) {
 		bucketManager.addBucket(bucket);
 	}
 
-	public void removeConcept(ConceptId conceptId) {
+	public void removeConcept(Concept<?> conceptId) {
 		bucketManager.removeConcept(conceptId);
 	}
 
 	public void updateConcept(Concept<?> concept) {
-		bucketManager.removeConcept(concept.getId());
-		bucketManager.addConcept(concept);
+		bucketManager.updateConcept(concept);
 	}
 
 	public void updateDataset(Dataset dataset) {
@@ -213,8 +208,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		storage.addTable(table);
 	}
 
-	public void removeTable(TableId table) {
-		storage.removeTable(table);
+	public void removeTable(@NsIdRef Table table) {
+		bucketManager.removeTable(table);
 	}
 
 	public void addSecondaryId(SecondaryIdDescription secondaryId) {

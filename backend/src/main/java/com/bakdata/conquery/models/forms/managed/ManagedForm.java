@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -12,8 +11,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
@@ -39,6 +38,8 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -95,7 +96,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		// init all subqueries
-		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, null));
+		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, config,null));
 		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset());
 		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
 	}
@@ -218,14 +219,21 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 
+	@Override
+	public List<ResultInfo> getResultInfo() {
+		if(getSubQueries().size() == 1) {
+			return getSubQueries().values().iterator().next().get(0).getResultInfo();
+		}
+		return super.getResultInfo();
+	}
 
 	@Override
-	public StreamingOutput getResult(PrintSettings settings, Charset charset, String lineSeparator) {
+	public Stream<EntityResult> streamResults() {
 		if(subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Can't return the result query of a multi query form");
 		}
-		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), charset, lineSeparator);
+		return subQueries.values().iterator().next().stream().flatMap(ManagedQuery::streamResults);
 	}
 	
 	@Override

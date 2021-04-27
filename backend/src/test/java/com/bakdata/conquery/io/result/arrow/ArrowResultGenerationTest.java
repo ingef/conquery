@@ -10,7 +10,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -23,6 +22,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -59,7 +59,7 @@ public class ArrowResultGenerationTest {
     final IdMappingConfig idMapping = new IdMappingConfig() {
 
         @Getter
-        String[] printIdFields = new String[]{"id1", "id2"};
+        List<String> printIdFields = List.of("id1", "id2");
 
         @Override
         public IdMappingAccessor[] getIdAccessors() {
@@ -108,7 +108,7 @@ public class ArrowResultGenerationTest {
         List<Field> fields = generateFieldsFromResultType(
                 resultInfos,
                 // Custom column namer so we don't require a dataset registry
-                new PrintSettings(false, Locale.ROOT, null, CONFIG, (selectInfo) -> selectInfo.getSelect().getLabel()));
+                new PrintSettings(false, Locale.ROOT, null, CONFIG, null,(selectInfo) -> selectInfo.getSelect().getLabel()));
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -140,7 +140,7 @@ public class ArrowResultGenerationTest {
                 Locale.ROOT,
                 null,
                 CONFIG,
-                (cer) -> new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())},
+                (cer) -> new ExternalEntityId(new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())}),
                 (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = List.of(
@@ -154,13 +154,13 @@ public class ArrowResultGenerationTest {
                 )));
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
-            public ResultInfoCollector collectResultInfos() {
+            public List<ResultInfo> getResultInfo() {
                 ResultInfoCollector coll = new ResultInfoCollector();
                 coll.addAll(getResultTypes().stream()
                         .map(TypedSelectDummy::new)
                         .map(select -> new SelectResultInfo(select, new CQConcept()))
                         .collect(Collectors.toList()));
-                return coll;
+                return coll.getInfos();
             }
 
             ;
@@ -184,7 +184,7 @@ public class ArrowResultGenerationTest {
         String computed = readTSV(inputStream);
 
         assertThat(computed).isNotBlank();
-        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.collectResultInfos().getInfos()));
+        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfo()));
 
     }
 
@@ -232,7 +232,7 @@ public class ArrowResultGenerationTest {
                 })
                 .collect(Collectors.joining("\n"));
 
-        return Arrays.stream(idMapping.getPrintIdFields()).collect(Collectors.joining("\t")) + "\t" +
+        return idMapping.getPrintIdFields().stream().collect(Collectors.joining("\t")) + "\t" +
                 getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
     }
 

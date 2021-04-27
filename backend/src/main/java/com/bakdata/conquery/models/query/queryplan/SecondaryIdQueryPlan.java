@@ -1,13 +1,18 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -33,7 +38,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;
 	private final ConceptQueryPlan query;
-	private final SecondaryIdDescriptionId secondaryId;
+	private final SecondaryIdDescription secondaryId;
 
 	private final Set<Column> tablesWithSecondaryId;
 	private final Set<Table> tablesWithoutSecondaryId;
@@ -96,9 +101,9 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		Table currentTable = secondaryIdColumnId.getTable();
 
-		nextTable(ctxWithPhase, currentTable.getId());
+		nextTable(ctxWithPhase, currentTable);
 
-		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
+		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 		for (Bucket bucket : tableBuckets) {
 			int entityId = entity.getId();
@@ -131,9 +136,9 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, Table currentTable) {
 
-		nextTable(ctx, currentTable.getId());
+		nextTable(ctx, currentTable);
 
-		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable.getId());
+		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 		for (Bucket bucket : tableBuckets) {
 			int entityId = entity.getId();
@@ -153,7 +158,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		}
 	}
 
-	private void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	private void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		query.nextTable(ctx, currentTable);
 		for (ConceptQueryPlan c : childPerKey.values()) {
 			c.nextTable(ctx, currentTable);
@@ -180,7 +185,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
 
 		plan.init(query.getEntity(), currentContext);
-		plan.nextTable(currentContext, secondaryIdColumn.getId().getTable());
+		plan.nextTable(currentContext, secondaryIdColumn.getTable());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);
 

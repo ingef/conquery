@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
+import QueryGroupModal from "js/query-group-modal/QueryGroupModal";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,7 +10,6 @@ import { exists } from "../common/helpers/exists";
 import { TreesT } from "../concept-trees/reducer";
 import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
-import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
 
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
@@ -99,8 +99,6 @@ const Query = () => {
     dispatch(toggleSecondaryIdExclude(andIdx, orIdx));
   const onSelectNodeForEditing = (andIdx: number, orIdx: number) =>
     dispatch(selectNodeForEditing(andIdx, orIdx));
-  const onQueryGroupModalSetNode = (andIdx: number) =>
-    dispatch(queryGroupModalSetNode(andIdx));
   const onLoadPreviousQuery = (queryId: PreviousQueryIdT) => {
     if (datasetId) {
       loadPreviousQuery(datasetId, queryId);
@@ -111,6 +109,10 @@ const Query = () => {
     queryToExpand,
     setQueryToExpand,
   ] = useState<PreviousQueryQueryNodeType | null>(null);
+
+  const [queryGroupModalAndIx, setQueryGroupModalAndIdx] = useState<
+    number | null
+  >(null);
 
   if (!datasetId) {
     return null;
@@ -126,6 +128,12 @@ const Query = () => {
 
   return (
     <Container>
+      {exists(queryGroupModalAndIx) && (
+        <QueryGroupModal
+          andIdx={queryGroupModalAndIx}
+          onClose={() => setQueryGroupModalAndIdx(null)}
+        />
+      )}
       {exists(queryToExpand) && (
         <ExpandPreviousQueryModal
           onClose={() => setQueryToExpand(null)}
@@ -162,7 +170,7 @@ const Query = () => {
                 }
                 onExpandClick={onExpandPreviousQuery}
                 onExcludeClick={() => onToggleExcludeGroup(andIdx)}
-                onDateClick={() => onQueryGroupModalSetNode(andIdx)}
+                onDateClick={() => setQueryGroupModalAndIdx(andIdx)}
                 onLoadPreviousQuery={onLoadPreviousQuery}
                 onToggleTimestamps={(orIdx: number) =>
                   onToggleTimestamps(andIdx, orIdx)

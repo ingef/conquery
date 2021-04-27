@@ -47,7 +47,7 @@ public class CQTable {
 	@JsonIgnore
 	@ValidationMethod(message = "ValidityDate does not belong to Connector.")
 	public boolean isValidityDateForConnector() {
-		return dateColumn == null || dateColumn.getValue().getConnector().equals(getConnector().getId());
+		return dateColumn == null || dateColumn.getValue().getConnector().equals(getConnector());
 	}
 
 	@JsonIgnore

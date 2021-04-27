@@ -1,92 +1,75 @@
 package com.bakdata.conquery.io.result.csv;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Stream;
-
-import com.bakdata.conquery.io.csv.CsvIo;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.io.result.ResultRenderer;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
-import lombok.experimental.UtilityClass;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.jetty.io.EofException;
 
-@UtilityClass
-public class QueryToCSVRenderer {
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
 
-	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
-	private static final Collection<String> HEADER = Arrays.asList(ID_MAPPING.getPrintIdFields());
-	
-	public static Stream<String> toCSV(PrintSettings cfg, ManagedQuery query) {
-		return toCSV(cfg, List.of(query));
-	}
-	
-	public static Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries) {
-		if (queries.stream()
-			.anyMatch(q -> q.getState() != ExecutionState.DONE)) {
-			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
-		}
+@RequiredArgsConstructor
+@Slf4j
+public class QueryToCSVRenderer{
 
-		ResultInfoCollector infos = queries.iterator().next().collectResultInfos();
-		
-		//build header
-		CsvWriter writer = CsvIo.createWriter();
-		writer.addStringValues(HEADER);
-		for(ResultInfo info : infos.getInfos()) {
-			writer.addValue(info.getUniqueName(cfg));
-		}
-		
-		return Stream.concat(
-			Stream.of(writer.writeValuesToString()),
-			queries
-				.stream()
-				.flatMap(
-					q -> createCSVBody(
-						writer,
-						cfg,
-						q.collectResultInfos(),
-						q
-					))
-		);
+	private final CsvWriter writer;
+	private final PrintSettings cfg;
+
+
+
+	public void toCSV(List<String> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream) {
+
+		List<String> headers = new ArrayList<>(idHeaders);
+		infos.forEach(i -> headers.add(i.getUniqueName(cfg)));
+
+
+		writer.writeHeaders(headers);
+
+		createCSVBody(cfg, infos, resultStream);
 	}
 
-	private static Stream<String> createCSVBody(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, ManagedQuery query) {
-		return query.getResults()
-					.stream()
-					.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
-					.sorted(Comparator.comparing(Pair::getKey))
-					.flatMap(res -> createCSVLine(writer, cfg, infos, res));
+	private void createCSVBody(PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results) {
+		results
+				.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
+				.sorted(Comparator.comparing(Pair::getKey))
+				.forEach(res -> createCSVLine(cfg, infos, res));
 	}
 
-	
-	private static Stream<String> createCSVLine(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, Pair<ExternalEntityId, EntityResult> idResult) {
-		return idResult
-			.getValue()
-			.streamValues()
-			.map(result -> print(writer, cfg, idResult.getKey(), infos, result));
+
+	private void createCSVLine(PrintSettings cfg, List<ResultInfo> infos, Pair<ExternalEntityId, EntityResult> idResult) {
+		idResult
+				.getValue()
+				.streamValues()
+				.forEach(result -> print(cfg, idResult.getKey(), infos, result));
 	}
-	
-	public static String print(CsvWriter writer, PrintSettings cfg, ExternalEntityId entity, ResultInfoCollector infos, Object[] value) {
+
+	public void print(PrintSettings cfg, ExternalEntityId entity, List<ResultInfo> infos, Object[] value) {
 		List<String> result = new ArrayList<>(entity.getExternalId().length + value.length);
 		result.addAll(Arrays.asList(entity.getExternalId()));
 		try {
-			for(int i=0;i<infos.size();i++) {
-				result.add(infos.getInfos().get(i).getType().printNullable(cfg, value[i]));
+			for (int i = 0; i < infos.size(); i++) {
+				result.add(infos.get(i).getType().printNullable(cfg, value[i]));
 			}
-		}catch (Exception e) {
-			throw new IllegalStateException("Unable to print line " + Arrays.deepToString(value) + " with result infos " + infos.getInfos(), e);
+		} catch (Exception e) {
+			throw new IllegalStateException("Unable to print line " + Arrays.deepToString(value) + " with result infos " + infos, e);
 		}
 
-		return writer.writeRowToString(result);
+		writer.writeRow(result);
 	}
 }

@@ -125,7 +125,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>3.0.7</version>
+            <version>3.0.8</version>
             <classifier>indy</classifier>
         </dependency>
         <dependency>
