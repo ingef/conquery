@@ -29,7 +29,6 @@ import previousQueriesSearch, {
 import uploadQueryResults, {
   UploadQueryResultsStateT,
 } from "../previous-queries/upload/reducer";
-import queryGroupModal from "../query-group-modal/reducer";
 import {
   createQueryNodeEditorReducer,
   QueryNodeEditorStateT,
@@ -78,7 +77,6 @@ const buildAppReducer = (tabs: TabT[]) => {
     uploadConceptListModal,
     queryUploadConceptListModal,
     queryNodeEditor: createQueryNodeEditorReducer("standard"),
-    queryGroupModal,
     datasets,
     tooltip,
     panes,

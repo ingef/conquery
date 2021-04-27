@@ -2,13 +2,13 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import React, { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import type { WrappedFieldProps } from "redux-form";
 
 import {
   formatDateFromState,
   parseDate,
   parseDateToState,
   getDateStringFromShortcut,
+  DateStringMinMax,
 } from "../common/helpers/dateHelper";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
@@ -41,36 +41,50 @@ const StyledLabeled = styled(Labeled)`
   }
 `;
 
-interface PropsT extends WrappedFieldProps {
+interface PropsT {
   label?: ReactNode;
   labelSuffix?: ReactNode;
   className?: string;
   inline?: boolean;
   large?: boolean;
   center?: boolean;
+  input: {
+    value: DateStringMinMax;
+    onChange: (value: DateStringMinMax) => void;
+  };
 }
 
-function getDisplayDate(what, value, displayDateFormat) {
-  if (!value || !value[what]) return "";
+function getDisplayDate(
+  what: "min" | "max",
+  value: DateStringMinMax,
+  dateFormat: string,
+) {
+  const dateString = value[what];
 
-  return formatDateFromState(value[what], displayDateFormat);
+  if (!dateString) return "";
+
+  return formatDateFromState(dateString, dateFormat);
 }
 
 const InputDateRange: FC<PropsT> = (props) => {
   const { t } = useTranslation();
 
-  const onSetDate = (date) => {
+  const onSetDate = (date: DateStringMinMax) => {
     props.input.onChange(date);
   };
 
-  const onSetWhatDate = (what, value) => {
+  const onSetWhatDate = (what: "min" | "max", value: string) => {
     props.input.onChange({
       ...props.input.value,
       [what]: value,
     });
   };
 
-  const onChangeRaw = (what, val, dateFormat) => {
+  const onChangeRaw = (
+    what: "min" | "max",
+    val: string,
+    dateFormat: string,
+  ) => {
     const potentialDate = parseDate(val, dateFormat);
 
     if (potentialDate) {
@@ -90,8 +104,8 @@ const InputDateRange: FC<PropsT> = (props) => {
     }
   };
 
-  const applyDate = (what, val, displayDateFormat) => {
-    if (parseDate(val, displayDateFormat) === null) {
+  const applyDate = (what: "min" | "max", val: string, dateFormat: string) => {
+    if (parseDate(val, dateFormat) === null) {
       onSetWhatDate(what, "");
     }
   };
@@ -126,9 +140,13 @@ const InputDateRange: FC<PropsT> = (props) => {
             inputType="text"
             value={min}
             placeholder={displayDateFormat.toUpperCase()}
-            onChange={(value) => onChangeRaw("min", value, displayDateFormat)}
+            onChange={(val) =>
+              onChangeRaw("min", val as string, displayDateFormat)
+            }
             onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
-            inputProps={{ autoFocus: true }}
+            inputProps={{
+              autoFocus: true,
+            }}
           />
         </StyledLabeled>
         <StyledLabeled label={t("inputDateRange.to")}>
@@ -136,7 +154,9 @@ const InputDateRange: FC<PropsT> = (props) => {
             inputType="text"
             value={max}
             placeholder={displayDateFormat.toUpperCase()}
-            onChange={(value) => onChangeRaw("max", value, displayDateFormat)}
+            onChange={(val) =>
+              onChangeRaw("max", val as string, displayDateFormat)
+            }
             onBlur={(e) => applyDate("max", e.target.value, displayDateFormat)}
           />
         </StyledLabeled>
