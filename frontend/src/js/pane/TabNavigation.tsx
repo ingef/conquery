@@ -57,9 +57,8 @@ const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab }) => {
     <Root>
       {tabs.map(({ key, label, tooltip }) => {
         return (
-          <WithTooltip text={tooltip} lazy>
+          <WithTooltip text={tooltip} lazy key={key}>
             <Headline
-              key={key}
               active={activeTab === key}
               onClick={() => {
                 if (key !== activeTab) onClickTab(key);

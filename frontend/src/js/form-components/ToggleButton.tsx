@@ -10,26 +10,26 @@ const Root = styled("div")`
   align-items: center;
 
   > span {
-    &:first-child {
+    &:first-of-type {
       margin-left: 0;
       border-top-left-radius: 2px;
       border-bottom-left-radius: 2px;
     }
 
-    &:last-child {
+    &:last-of-type {
       border-top-right-radius: 2px;
       border-bottom-right-radius: 2px;
     }
   }
   > div {
-    &:first-child {
+    &:first-of-type {
       span {
         margin-left: 0;
         border-top-left-radius: 2px;
         border-bottom-left-radius: 2px;
       }
     }
-    &:last-child {
+    &:last-of-type {
       span {
         border-top-right-radius: 2px;
         border-bottom-right-radius: 2px;
