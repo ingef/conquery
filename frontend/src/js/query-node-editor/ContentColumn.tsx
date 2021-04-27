@@ -149,7 +149,10 @@ const ContentColumn: FC<PropsT> = ({
         }
 
         return (
-          <ContentCell ref={(instance) => (itemsRef.current[idx] = instance)}>
+          <ContentCell
+            key={table.id}
+            ref={(instance) => (itemsRef.current[idx] = instance)}
+          >
             <SectionHeading>{table.label}</SectionHeading>
             <TableView
               node={
