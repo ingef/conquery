@@ -15,16 +15,24 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.google.common.collect.RangeSet;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
 public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> implements ConceptTreeNode<ConceptTreeChildId> {
+
+	public ConceptTreeChild(String name){
+		super();
+		setName(name);
+	}
 
 	@JsonIgnore
 	private transient int[] prefix;
