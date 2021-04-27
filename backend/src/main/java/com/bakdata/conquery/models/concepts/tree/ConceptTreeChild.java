@@ -110,14 +110,23 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	}
 
 	@JsonIgnore
+	private Map<String, RangeSet<Prefix>> columnSpan = null;
+
+	@JsonIgnore
 	public Map<String, RangeSet<Prefix>> getColumnSpan(){
+
+		// This will walk the whole sub-tree so caching is important for performance
+		if(columnSpan != null){
+			return columnSpan;
+		}
+
 		final Map<String, RangeSet<Prefix>> span = new HashMap<>(condition.getColumnSpan());
 
 		for (ConceptTreeChild child : children) {
 			ConceptTreeCondition.mergeRanges(span,child.getColumnSpan());
 		}
 
-		return span;
+		return columnSpan = span;
 	}
 
 
@@ -147,7 +156,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@ValidationMethod
 	@JsonIgnore
 	public boolean isEnclosingChildren() {
-		final Map<String, RangeSet<Prefix>> mySpan = getColumnSpan();
+		final Map<String, RangeSet<Prefix>> mySpan = condition.getColumnSpan();
 
 		for (ConceptTreeChild child : children) {
 
