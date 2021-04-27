@@ -46,6 +46,8 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Getter
 	@Setter
 	private int depth = 0;
+
+	@Valid
 	@Getter
 	@NotNull
 	@Setter
@@ -145,7 +147,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 				final ConceptTreeChild other = children.get(otherIndex);
 
 				if (intersects(other.getColumnSpan(), childSpan)) {
-					log.error("{} intersects with its Sibling {}", child, other);
+					log.error("`{}` intersects with its Sibling `{}`", child.getId(), other.getId());
 					return false;
 				}
 			}
@@ -165,7 +167,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 			// Children have to be enclosed by parent
 			if (!encloses(mySpan, childSpan)) {
-				log.error("{} does not enclose Child {}", this, child);
+				log.error("`{}` does not enclose Child `{}`", this.getId(), child.getId());
 				return false;
 			}
 		}
