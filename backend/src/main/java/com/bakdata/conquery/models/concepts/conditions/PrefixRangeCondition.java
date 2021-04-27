@@ -30,12 +30,15 @@ public class PrefixRangeCondition implements ConceptTreeCondition {
 	@NotEmpty
 	private final String max;
 
-	@ValidationMethod(message = "Min and max need to be of the same length and min needs to be smaller than max.")
+	@ValidationMethod(message = "Min and Max are not of the same length.")
 	@JsonIgnore
-	public boolean isValidMinMax() {
-		if (min.length() != max.length()) {
-			return false;
-		}
+	public boolean isLengthsEqual() {
+		return min.length() == max.length();
+	}
+
+	@ValidationMethod(message = "Min is not Less than Max.")
+	@JsonIgnore
+	public boolean isProperSpan() {
 		return min.compareTo(max) < 0;
 	}
 
