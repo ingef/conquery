@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.concepts.conditions;
 import java.util.Map;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
@@ -24,7 +23,6 @@ public class NotCondition implements ConceptTreeCondition {
 
 	@Getter
 	@Valid
-	@NotEmpty
 	private final ConceptTreeCondition condition;
 
 	@Override

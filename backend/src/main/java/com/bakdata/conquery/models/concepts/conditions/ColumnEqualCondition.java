@@ -14,7 +14,6 @@ import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 /**
  * This condition requires the value of another column to be equal to a given value.
@@ -23,12 +22,11 @@ import lombok.Setter;
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator(mode = JsonCreator.Mode.PROPERTIES))
 public class ColumnEqualCondition implements ConceptTreeCondition {
 
-	@Setter
 	@Getter
 	@NotEmpty
 	private final Set<String> values;
+
 	@NotEmpty
-	@Setter
 	@Getter
 	private final String column;
 
