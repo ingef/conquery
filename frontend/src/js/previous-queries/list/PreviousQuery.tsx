@@ -9,7 +9,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { DatasetIdT, SecondaryId } from "../../api/types";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
-import { useFormatDateDistance } from "../../common/helpers";
+import { formatDate, useFormatDateDistance } from "../../common/helpers";
 import { isEmpty } from "../../common/helpers/commonHelper";
 import ErrorMessage from "../../error-message/ErrorMessage";
 import EditableTags from "../../form-components/EditableTags";
@@ -137,8 +137,12 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     const peopleFound = isEmpty(query.numberOfResults)
       ? t("previousQuery.notExecuted")
       : `${query.numberOfResults} ${t("previousQueries.results")}`;
-    const executedAt = formatDateDistance(
-      parseISO(query.createdAt),
+
+    const dateFormat = `${t("inputDateRange.dateFormat")} HH:mm`;
+    const executedAtDate = parseISO(query.createdAt);
+    const executedAt = formatDate(executedAtDate, dateFormat);
+    const executedAtRelative = formatDateDistance(
+      executedAtDate,
       new Date(),
       true,
     );
@@ -173,7 +177,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
               </SharedIndicator>
             )}
             <TopRight>
-              {executedAt}
+              <WithTooltip text={executedAtRelative}>{executedAt}</WithTooltip>
               {mayEditQuery &&
                 !query.editingTags &&
                 (!query.tags || query.tags.length === 0) && (
