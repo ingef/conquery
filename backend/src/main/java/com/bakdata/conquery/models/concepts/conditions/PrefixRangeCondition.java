@@ -39,7 +39,7 @@ public class PrefixRangeCondition implements ConceptTreeCondition {
 	@ValidationMethod(message = "Min is not Less than Max.")
 	@JsonIgnore
 	public boolean isProperSpan() {
-		return min.compareTo(max) < 0;
+		return min.compareTo(max) <= 0;
 	}
 
 
