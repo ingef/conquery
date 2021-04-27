@@ -146,8 +146,7 @@ public class FormTest extends ConqueryTestSpec {
 						Locale.ENGLISH,
 						standaloneSupport.getDatasetsProcessor().getDatasetRegistry(),
 						config,
-						cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, config.getIdMapping(), mappingState),
-						(columnInfo) -> columnInfo.getSelect().getId().toStringWithoutDataset()
+						cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, config.getIdMapping(), mappingState)
 				);
 
 		CsvLineStreamRenderer renderer = new CsvLineStreamRenderer(config.getCsv().createWriter(), PRINT_SETTINGS);
