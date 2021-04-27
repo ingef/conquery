@@ -8,6 +8,11 @@
 - simple express.js server for a mock api
 - keycloak server for authentication, local setup using docker-compose
 
+# Some notable libraries
+- redux-form
+- react-dnd
+- i18next
+
 ## Run (production)
 
 ### Using docker
@@ -33,7 +38,7 @@ docker build -t frontend .
 docker run -d -p 8000:8000 -name frontend frontend
 ```
 
-## Setup development
+## Development
 
 **Requirements**
 
@@ -93,9 +98,15 @@ Depending on the use-case, we're still calling the same concepts differently som
 
 ## Various Technical Explanations
 
-Migration to TypeScript is in progress.
+- Migration from Flow to TypeScript is in progress. At the moment, Typescript errors are printed to console on server start and build, to see what they are and to fix them. Also to check how many are left using `yarn typecheck`. But type errors are ignored (see `.env`) to be able to still compile for now. Plan is to fix the errors step by step and then to enable errors on start / build again.
+- Emotion is used for theming and styles. Some sass styles are left. Plan is to migrate (back) to styled-components, because that's more TypeScript compatible in some edge cases like generic component props. Plan is also to remove the remaining sass styles.
+- Redux actions aren't typed well yet. Plan is to refactor and migrate to https://github.com/piotrwitek/typesafe-actions
+- We're moving away from redux middlewares like thunk (replaced by hooks) and multi 
+- Redux Form is still heavily in use. In consequence, many of the input components use a less than optimal `inpu`: { value, onChange }` props structure. Plan is to replace Redux Form with something more modern that's using either context or local state.
+- We're still trying to support IE11. But this is phasing out slowly, since most users are already using more modern Browsers.
 
 ### Drag and Drop
 
+- We're using react-dnd (and we like it).
 - We're using MultiBackend to support Drag and Drop for touch and html5.
 - To render a Drag and Drop preview on mobile, we'll have to calculate `width` and `height` of the drag source.
