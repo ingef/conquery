@@ -12,6 +12,7 @@ import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -40,7 +41,8 @@ public class ExcelRenderer {
     public static void renderToStream(
             PrintSettings cfg,
             String[] idHeaders,
-            ManagedExecution<?> exec) throws IOException {
+            ManagedExecution<?> exec,
+            OutputStream outputStream) throws IOException {
         List<ResultInfo> infos = ManagedExecution.getResultInfos(exec);
 
         XSSFWorkbook workbook = new XSSFWorkbook();
@@ -56,6 +58,7 @@ public class ExcelRenderer {
 
         writeBody(sheet,workbook,idHeaders,infos,cfg, ManagedExecution.getResults(exec));
 
+        workbook.write(outputStream);
 
     }
 

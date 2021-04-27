@@ -20,9 +20,11 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
+import com.bakdata.conquery.io.result.excel.ExcelRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -63,6 +65,7 @@ public class ResultProcessor {
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
 		user.authorize(namespace.getDataset(), Ability.READ);
+		user.authorize(namespace.getDataset(), Ability.DOWNLOAD);
 
 		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
 
@@ -144,7 +147,9 @@ public class ResultProcessor {
 
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
-		user.authorize(namespace.getDataset(), Ability.READ);
+		final Dataset dataset = namespace.getDataset();
+		user.authorize(dataset, Ability.READ);
+		user.authorize(dataset, Ability.DOWNLOAD);
 
 		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
 
@@ -203,5 +208,32 @@ public class ResultProcessor {
 			return userAgent.toLowerCase().contains("windows") ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
 		}
 		return StandardCharsets.UTF_8;
+	}
+
+	public Response getExcelResult(User user, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
+		ConqueryMDC.setLocation(user.getName());
+		user.authorize(dataset, Ability.READ);
+		user.authorize(dataset, Ability.DOWNLOAD);
+
+		user.authorize(exec, Ability.READ);
+
+		IdMappingConfig idMapping = config.getIdMapping();
+		IdMappingState mappingState = idMapping.initToExternal(user, exec);
+		PrintSettings settings = new PrintSettings(
+				pretty,
+				I18n.LOCALE.get(),
+				datasetRegistry,
+				config,
+				(EntityResult cer) -> ResultUtil.createId(datasetRegistry.get(dataset.getId()), cer, idMapping, mappingState).getExternalId());
+
+		StreamingOutput out = output -> ExcelRenderer.renderToStream(
+				settings,
+				idMapping.getPrintIdFields(),
+				exec,
+				output
+
+		);
+
+		return makeResponseWithFileName("xlsx", exec, out).build();
 	}
 }
