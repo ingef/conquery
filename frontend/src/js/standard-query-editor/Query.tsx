@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
 import QueryGroupModal from "js/query-group-modal/QueryGroupModal";
+import WithTooltip from "js/tooltip/WithTooltip";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -183,13 +184,14 @@ const Query = () => {
                 {t("common.and")}
               </QueryGroupConnector>,
             ])}
-            <QueryEditorDropzone
-              isAnd
-              tooltip={t("help.editorDropzoneAnd")}
-              onDropNode={onDropAndNode}
-              onDropFile={(file) => onDropConceptListFile(file, null)}
-              onLoadPreviousQuery={onLoadPreviousQuery}
-            />
+            <WithTooltip text={t("help.editorDropzoneAnd")} lazy>
+              <QueryEditorDropzone
+                isAnd
+                onDropNode={onDropAndNode}
+                onDropFile={(file) => onDropConceptListFile(file, null)}
+                onLoadPreviousQuery={onLoadPreviousQuery}
+              />
+            </WithTooltip>
           </Groups>
           <QueryFooter />
         </>
