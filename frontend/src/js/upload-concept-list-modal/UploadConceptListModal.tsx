@@ -191,7 +191,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
                       <ErrorIcon icon="exclamation-circle" />
                       <span>
                         {t("uploadConceptListModal.unknownCodes", {
-                          context: unresolvedItemsCount,
+                          count: unresolvedItemsCount,
                         })}
                       </span>
                     </Msg>
