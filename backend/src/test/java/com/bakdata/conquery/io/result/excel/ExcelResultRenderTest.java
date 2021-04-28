@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.util.JsonStringArrayList;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Slf4j
 public class ExcelResultRenderTest {
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig(){{
@@ -65,7 +67,7 @@ public class ExcelResultRenderTest {
 		// Prepare every input data
 		PrintSettings printSettings = new PrintSettings(
 				true,
-				Locale.ENGLISH,
+				Locale.GERMAN,
 				null,
 				CONFIG,
 				(cer) -> new ExternalEntityId(new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())}),
@@ -127,19 +129,10 @@ public class ExcelResultRenderTest {
 						sj.add(formatter.formatCellValue(cell));
 						break;
 					case NUMERIC:
-						sj.add(formatter.formatRawCellContents(cell.getNumericCellValue(), cell.getCellStyle().getDataFormat(),format));
+						sj.add(formatter.formatRawCellContents(cell.getNumericCellValue(),cell.getCellStyle().getDataFormat(),format));
 						break;
-//					case FORMULA:
-//						sj.add(cell.getStringCellValue());
-//						break;
-//					case NUMERIC:
-//
-//						sj.add(Double.toString(cell.getNumericCellValue()));
-//						break;
-//					case BOOLEAN:
-//						sj.add(cell.getBooleanCellValue()? "t" : "f");
-//						break;
 					case BLANK:
+						// We write 'null' here to express that the cell was empty
 						sj.add("null");
 						break;
 					default: throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
@@ -152,6 +145,8 @@ public class ExcelResultRenderTest {
 
 
 		List<String> expected = generateExpectedTSV(results, mquery.getResultInfo(), printSettings);
+
+		log.info("Wrote and than read this excel data: \n{}", computed);
 
 		assertThat(computed).isNotEmpty();
 		assertThat(computed).isEqualTo(expected);
@@ -178,7 +173,7 @@ public class ExcelResultRenderTest {
 								continue;
 							}
 							ResultInfo info = resultInfos.get(lIdx);
-							valueJoiner.add(info.getType().printNullable(settings,val));
+							joinValue(settings, valueJoiner, val, info);
 						}
 						expected.add(valueJoiner.toString());
 					}
@@ -187,25 +182,12 @@ public class ExcelResultRenderTest {
 		return expected;
 	}
 
-//	private static String getPrintValue(Object obj, ResultInfo info) {
-//		if (obj == null) {
-//			return "null";
-//		}
-//
-//		if (info.getType().equals(ResultType.DateRangeT.INSTANCE)) {
-//			// Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
-//			List dr = (List) obj;
-//			return "{\"min\":" + dr.get(0) + ",\"max\":" + dr.get(1) + "}";
-//		}
-//		info.getType().printNullable(settings, obj);
-//		return getPrintValue(obj);
-//	}
-//
-//	private static String getPrintValue(Object obj) {
-//		if(obj instanceof JsonStringArrayList) {
-//			// Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
-//			return getPrintValue(new ArrayList<>((JsonStringArrayList)obj));
-//		}
-//		return Objects.toString(obj);
-//	}
+	private void joinValue(PrintSettings settings, StringJoiner valueJoiner, Object val, ResultInfo info) {
+		String printVal = info.getType().printNullable(settings, val);
+		if (info.getType().equals(ResultType.MoneyT.INSTANCE)) {
+			printVal = printVal +" €";
+		}
+		valueJoiner.add(printVal);
+	}
+
 }

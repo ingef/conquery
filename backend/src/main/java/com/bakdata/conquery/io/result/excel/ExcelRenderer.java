@@ -9,6 +9,7 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFDataFormat;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -48,16 +49,8 @@ public class ExcelRenderer {
 
         XSSFWorkbook workbook = new XSSFWorkbook();
 
-        XSSFDataFormat dataFormat = workbook.createDataFormat();
 
-        Map<String,CellStyle> styles = new HashMap<>();
-        XSSFCellStyle styleEuro = workbook.createCellStyle();
-        styleEuro.setDataFormat(dataFormat.getFormat("_(\"€\"* #,##0.00_);_(\"€\"* (#,##0.00);_(\"€\"* \"-\"??_);_(@_)"));
-        styles.put(EURO_FORMAT,styleEuro);
-        XSSFCellStyle styleDate = workbook.createCellStyle();
-        styleDate.setDataFormat(dataFormat.getFormat("d-m-yyyy"));
-        styles.put(DATE_FORMAT,styleDate);
-
+        Map<String, CellStyle> styles = generateStyles(workbook);
 
 
         // TODO internationalize
@@ -69,6 +62,19 @@ public class ExcelRenderer {
 
         workbook.write(outputStream);
 
+    }
+
+    @NotNull
+    private static Map<String, CellStyle> generateStyles(XSSFWorkbook workbook) {
+        XSSFDataFormat dataFormat = workbook.createDataFormat();
+        Map<String,CellStyle> styles = new HashMap<>();
+        XSSFCellStyle styleEuro = workbook.createCellStyle();
+        styleEuro.setDataFormat(dataFormat.getFormat("#,##0.00 €"));
+        styles.put(EURO_FORMAT,styleEuro);
+        XSSFCellStyle styleDate = workbook.createCellStyle();
+        styleDate.setDataFormat(dataFormat.getFormat("yyyy-mm-dd"));
+        styles.put(DATE_FORMAT,styleDate);
+        return styles;
     }
 
     private static void writeHeader(
