@@ -12,33 +12,23 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.MultilineEntityResult;
-import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -74,7 +64,7 @@ public class ArrowResultGenerationTest {
 
     @Test
     void generateFieldsValue() {
-        List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
+        List<ResultInfo> resultInfos = getResultTypes().stream().map(ResultTestUtil.TypedSelectDummy::new)
                 .map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
 
         List<Field> fields = generateFieldsFromResultType(
@@ -122,7 +112,7 @@ public class ArrowResultGenerationTest {
             public List<ResultInfo> getResultInfo() {
                 ResultInfoCollector coll = new ResultInfoCollector();
                 coll.addAll(getResultTypes().stream()
-                        .map(TypedSelectDummy::new)
+                        .map(ResultTestUtil.TypedSelectDummy::new)
                         .map(select -> new SelectResultInfo(select, new CQConcept()))
                         .collect(Collectors.toList()));
                 return coll.getInfos();
@@ -218,41 +208,4 @@ public class ArrowResultGenerationTest {
         return Objects.toString(obj);
     }
 
-    public static class TypedSelectDummy extends Select {
-
-        private final ResultType resultType;
-
-        public TypedSelectDummy(ResultType resultType) {
-            this.setLabel(resultType.toString());
-            this.resultType = resultType;
-        }
-
-        @Override
-        public Aggregator<String> createAggregator() {
-            return new Aggregator<String>() {
-
-                @Override
-                public Aggregator<String> doClone(CloneContext ctx) {
-                    throw new UnsupportedOperationException();
-                }
-
-                @Override
-                public void acceptEvent(Bucket bucket, int event) {
-                    throw new UnsupportedOperationException();
-                }
-
-                @Override
-                public String getAggregationResult() {
-                    throw new UnsupportedOperationException();
-                }
-
-                @Override
-                public ResultType getResultType() {
-                    return resultType;
-                }
-
-            };
-        }
-
-    }
 }

@@ -67,7 +67,7 @@ public class ResultCsvProcessor {
 
 		StreamingOutput out =  os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
-				QueryToCSVRenderer renderer = new QueryToCSVRenderer(config.getCsv().createWriter(writer), settings);
+				CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
 				renderer.toCSV(config.getIdMapping().getPrintIdFields(), exec.getResultInfo(), exec.streamResults());
 			}
 			catch (EofException e) {

@@ -22,7 +22,6 @@ import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
 import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.io.result.csv.QueryToCSVRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;

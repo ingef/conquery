@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Slf4j
-public class QueryToCSVRenderer{
+public class CsvRenderer {
 
 	private final CsvWriter writer;
 	private final PrintSettings cfg;
