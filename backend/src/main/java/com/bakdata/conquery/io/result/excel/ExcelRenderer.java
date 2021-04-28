@@ -19,7 +19,8 @@ import java.util.stream.Stream;
 public class ExcelRenderer {
 
 
-    public static final short EURO_FORMAT = (short) 0x32;
+    public static final short EURO_FORMAT = (short) 0x100;
+    public static final short DATE_FORMAT = (short) 0x101;
 
     private static CellStyle generateHeaderStyle(XSSFWorkbook workbook) {
         CellStyle headerStyle = workbook.createCellStyle();
@@ -45,7 +46,14 @@ public class ExcelRenderer {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
         XSSFDataFormat dataFormat = workbook.createDataFormat();
+        String[] builtIn = BuiltinFormats.getAll();
+        for (short i = 0; i < builtIn.length; i++) {
+            String s = builtIn[i];
+            dataFormat.putFormat(i,s);
+
+        }
         dataFormat.putFormat(EURO_FORMAT, "_(\"€\"* #,##0.00_);_(\"€\"* (#,##0.00);_(\"€\"* \"-\"??_);_(@_)");
+        dataFormat.putFormat(DATE_FORMAT, "d-m-yyyy");
 
         // TODO internationalize
         Sheet sheet = workbook.createSheet("Result");

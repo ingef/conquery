@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.externalservice;
 
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
+import static com.bakdata.conquery.io.result.excel.ExcelRenderer.DATE_FORMAT;
 import static com.bakdata.conquery.io.result.excel.ExcelRenderer.EURO_FORMAT;
 
 import java.math.BigDecimal;
@@ -30,28 +31,35 @@ import org.apache.poi.ss.usermodel.DataFormat;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-public interface ResultType {
+public abstract class ResultType {
 
-    default String printNullable(PrintSettings cfg, Object f) {
+    public String printNullable(PrintSettings cfg, Object f) {
         if (f == null) {
             return "";
         }
         return print(cfg, f);
     }
 
-    default String print(PrintSettings cfg, @NonNull Object f) {
+    protected String print(PrintSettings cfg, @NonNull Object f) {
         return f.toString();
     }
 
-    Field getArrowFieldType(ResultInfo info, PrintSettings settings);
+    public abstract Field getArrowFieldType(ResultInfo info, PrintSettings settings);
 
-    default void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value){
+    public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value){
+        if (value == null) {
+            return;
+        }
+        internWriteExcelCell(info, settings, cell, value);
+    }
+
+    protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value){
         cell.setCellValue(print(settings,value));
     }
 
-    String typeInfo();
+    public abstract String typeInfo();
 
-    static ResultType resolveResultType(MajorTypeId majorTypeId) {
+    public static ResultType resolveResultType(MajorTypeId majorTypeId) {
         switch (majorTypeId) {
             case STRING:
                 return StringT.INSTANCE;
@@ -73,7 +81,7 @@ public interface ResultType {
         }
     }
 
-    abstract static class PrimitiveResultType implements ResultType {
+    abstract static class PrimitiveResultType extends ResultType {
         @Override
         public String typeInfo() {
             return this.getClass().getAnnotation(CPSType.class).id();
@@ -87,7 +95,7 @@ public interface ResultType {
 
     @CPSType(id = "BOOLEAN", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class BooleanT extends PrimitiveResultType {
+	public static class BooleanT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final BooleanT INSTANCE = new BooleanT();
 
@@ -105,7 +113,7 @@ public interface ResultType {
         }
 
         @Override
-        public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
             cell.setCellValue(print(settings,value));
         }
     }
@@ -113,7 +121,7 @@ public interface ResultType {
 
     @CPSType(id = "INTEGER", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class IntegerT extends PrimitiveResultType {
+    public static class IntegerT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final IntegerT INSTANCE = new IntegerT();
 
@@ -131,14 +139,14 @@ public interface ResultType {
         }
 
         @Override
-        public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
             cell.setCellValue(settings.getIntegerFormat().format(((Number) value).longValue()));
         }
     }
 
     @CPSType(id = "NUMERIC", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class NumericT extends PrimitiveResultType {
+    public static class NumericT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final NumericT INSTANCE = new NumericT();
 
@@ -156,14 +164,14 @@ public interface ResultType {
         }
 
         @Override
-        public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
             cell.setCellValue(settings.getIntegerFormat().format(((Number) value).doubleValue()));
         }
     }
 
     @CPSType(id = "CATEGORICAL", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class CategoricalT extends PrimitiveResultType {
+    public static class CategoricalT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final CategoricalT INSTANCE = new CategoricalT();
 
@@ -175,7 +183,7 @@ public interface ResultType {
 
     @CPSType(id = "RESOLUTION", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class ResolutionT extends PrimitiveResultType {
+    public static class ResolutionT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final ResolutionT INSTANCE = new ResolutionT();
 
@@ -197,11 +205,16 @@ public interface ResultType {
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
         }
+
+        @Override
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+            cell.setCellValue(print(settings, value));
+        }
     }
 
     @CPSType(id = "DATE", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class DateT extends PrimitiveResultType {
+    public static class DateT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final DateT INSTANCE = new DateT();
 
@@ -219,11 +232,12 @@ public interface ResultType {
         }
 
         @Override
-        public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
             if(!(value instanceof Number)) {
                 throw new IllegalStateException("Expected an Number but got an '" + (value != null ? value.getClass().getName() : "no type") + "' with the value: " + value );
             }
             cell.setCellValue(CDate.toLocalDate(((Number)value).intValue()));
+            cell.getCellStyle().setDataFormat(DATE_FORMAT);
         }
     }
 
@@ -233,7 +247,7 @@ public interface ResultType {
      */
     @CPSType(id = "DATE_RANGE", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class DateRangeT extends PrimitiveResultType {
+    public static class DateRangeT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final DateRangeT INSTANCE = new DateRangeT();
 
@@ -263,7 +277,7 @@ public interface ResultType {
 
     @CPSType(id = "STRING", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class StringT extends PrimitiveResultType {
+    public static class StringT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final StringT INSTANCE = new StringT();
 
@@ -275,7 +289,7 @@ public interface ResultType {
 
     @CPSType(id = "ID", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class IdT extends PrimitiveResultType {
+    public static class IdT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final IdT INSTANCE = new IdT();
 
@@ -287,7 +301,7 @@ public interface ResultType {
 
     @CPSType(id = "MONEY", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class MoneyT extends PrimitiveResultType {
+    public static class MoneyT extends PrimitiveResultType {
 
         @Getter(onMethod_ = @JsonCreator)
 		public static final MoneyT INSTANCE = new MoneyT();
@@ -306,7 +320,7 @@ public interface ResultType {
         }
 
         @Override
-        public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
             if(settings.getCurrency().equals(Currency.getInstance("EUR"))){
                 // Print as euro
                 cell.getCellStyle().setDataFormat(EURO_FORMAT);
@@ -322,7 +336,7 @@ public interface ResultType {
 
     @CPSType(id = "LIST", base = ResultType.class)
 	@Getter
-	class ListT implements ResultType {
+    public static class ListT extends ResultType {
         @NonNull
         private final ResultType elementType;
 

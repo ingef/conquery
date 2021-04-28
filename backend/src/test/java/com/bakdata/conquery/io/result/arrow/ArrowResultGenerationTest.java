@@ -56,27 +56,12 @@ public class ArrowResultGenerationTest {
 
     private static final int BATCH_SIZE = 2;
     public static final ConqueryConfig CONFIG = new ConqueryConfig();
-    final IdMappingConfig idMapping = new IdMappingConfig() {
-
-        @Getter
-        List<String> printIdFields = List.of("id1", "id2");
-
-        @Override
-        public IdMappingAccessor[] getIdAccessors() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String[] getHeader() {
-            throw new UnsupportedOperationException();
-        }
-
-    };
+    List<String> printIdFields = List.of("id1", "id2");
 
     @Test
     void generateFieldsIdMapping() {
 
-        List<Field> fields = generateFieldsFromIdMapping(idMapping.getPrintIdFields());
+        List<Field> fields = generateFieldsFromIdMapping(printIdFields);
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -85,7 +70,7 @@ public class ArrowResultGenerationTest {
 
     }
 
-    private Collection<ResultType> getResultTypes() {
+    private List<ResultType> getResultTypes() {
         return List.of(
                 ResultType.BooleanT.INSTANCE,
                 ResultType.IntegerT.INSTANCE,
@@ -176,7 +161,7 @@ public class ArrowResultGenerationTest {
         renderToStream((root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
                 printSettings,
                 mquery,
-                idMapping.getPrintIdFields(),
+                printIdFields,
                 BATCH_SIZE);
 
         InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
@@ -232,7 +217,7 @@ public class ArrowResultGenerationTest {
                 })
                 .collect(Collectors.joining("\n"));
 
-        return idMapping.getPrintIdFields().stream().collect(Collectors.joining("\t")) + "\t" +
+        return printIdFields.stream().collect(Collectors.joining("\t")) + "\t" +
                 getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
     }
 
@@ -253,7 +238,7 @@ public class ArrowResultGenerationTest {
         return Objects.toString(obj);
     }
 
-    private static class TypedSelectDummy extends Select {
+    public static class TypedSelectDummy extends Select {
 
         private final ResultType resultType;
 
