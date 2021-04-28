@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.result.arrow;
 
+import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
+import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.*;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
@@ -70,21 +72,6 @@ public class ArrowResultGenerationTest {
 
     }
 
-    private List<ResultType> getResultTypes() {
-        return List.of(
-                ResultType.BooleanT.INSTANCE,
-                ResultType.IntegerT.INSTANCE,
-                ResultType.NumericT.INSTANCE,
-                ResultType.CategoricalT.INSTANCE,
-                ResultType.ResolutionT.INSTANCE,
-                ResultType.DateT.INSTANCE,
-                ResultType.DateRangeT.INSTANCE,
-                ResultType.StringT.INSTANCE,
-                ResultType.MoneyT.INSTANCE,
-                new ResultType.ListT(ResultType.BooleanT.INSTANCE)
-        );
-    }
-
     @Test
     void generateFieldsValue() {
         List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
@@ -128,15 +115,8 @@ public class ArrowResultGenerationTest {
                 (cer) -> new ExternalEntityId(new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())}),
                 (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
-        List<EntityResult> results = List.of(
-                new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),
-                new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of()}),
-                new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false)}),
-                new MultilineEntityResult(3, List.of(
-                        new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false)},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false)}
-                )));
+
+        final List<EntityResult> results = getTestEntityResults();
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
             public List<ResultInfo> getResultInfo() {
