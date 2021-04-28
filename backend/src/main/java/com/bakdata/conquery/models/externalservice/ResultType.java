@@ -8,13 +8,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Currency;
 import java.util.List;
+import java.util.Map;
 import java.util.StringJoiner;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -27,7 +27,7 @@ import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.CellStyle;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -46,14 +46,14 @@ public abstract class ResultType {
 
     public abstract Field getArrowFieldType(ResultInfo info, PrintSettings settings);
 
-    public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value){
+    public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles){
         if (value == null) {
             return;
         }
-        internWriteExcelCell(info, settings, cell, value);
+        internWriteExcelCell(info, settings, cell, value, styles);
     }
 
-    protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value){
+    protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles){
         cell.setCellValue(print(settings,value));
     }
 
@@ -113,7 +113,11 @@ public abstract class ResultType {
         }
 
         @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
+            if (value instanceof Boolean) {
+                Boolean aBoolean = (Boolean) value;
+                cell.setCellValue(aBoolean.booleanValue());
+            }
             cell.setCellValue(print(settings,value));
         }
     }
@@ -139,7 +143,7 @@ public abstract class ResultType {
         }
 
         @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
             cell.setCellValue(settings.getIntegerFormat().format(((Number) value).longValue()));
         }
     }
@@ -164,7 +168,7 @@ public abstract class ResultType {
         }
 
         @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
             cell.setCellValue(settings.getIntegerFormat().format(((Number) value).doubleValue()));
         }
     }
@@ -205,11 +209,6 @@ public abstract class ResultType {
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
         }
-
-        @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
-            cell.setCellValue(print(settings, value));
-        }
     }
 
     @CPSType(id = "DATE", base = ResultType.class)
@@ -232,12 +231,12 @@ public abstract class ResultType {
         }
 
         @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
             if(!(value instanceof Number)) {
                 throw new IllegalStateException("Expected an Number but got an '" + (value != null ? value.getClass().getName() : "no type") + "' with the value: " + value );
             }
             cell.setCellValue(CDate.toLocalDate(((Number)value).intValue()));
-            cell.getCellStyle().setDataFormat(DATE_FORMAT);
+            cell.setCellStyle(styles.get(DATE_FORMAT));
         }
     }
 
@@ -320,13 +319,13 @@ public abstract class ResultType {
         }
 
         @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value) {
+        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
             if(settings.getCurrency().equals(Currency.getInstance("EUR"))){
                 // Print as euro
-                cell.getCellStyle().setDataFormat(EURO_FORMAT);
-                cell.setCellValue(settings.getDecimalFormat().format(
-                        new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits())
-                ));
+                cell.setCellStyle(styles.get(EURO_FORMAT));
+                cell.setCellValue(
+                        new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits()).doubleValue()
+                );
                 return;
             }
             // Print as cents or what ever the minor currency unit is
