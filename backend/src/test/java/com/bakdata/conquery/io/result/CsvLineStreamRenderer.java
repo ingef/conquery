@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 /**
  * Result renderer for query tests.
+ * In the future there might be a better format to check the query test results.
  */
 @RequiredArgsConstructor
 public class CsvLineStreamRenderer {
@@ -52,7 +53,7 @@ public class CsvLineStreamRenderer {
 				.map(result -> print(cfg, idResult.getKey(), infos, result));
 	}
 
-	public String print(PrintSettings cfg, ExternalEntityId entity, List<ResultInfo> infos, Object[] value) {
+	private String print(PrintSettings cfg, ExternalEntityId entity, List<ResultInfo> infos, Object[] value) {
 		List<String> result = new ArrayList<>(entity.getExternalId().length + value.length);
 		result.addAll(Arrays.asList(entity.getExternalId()));
 		try {
