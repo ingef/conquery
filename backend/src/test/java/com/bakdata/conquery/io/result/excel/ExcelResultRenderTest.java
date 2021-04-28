@@ -105,7 +105,7 @@ public class ExcelResultRenderTest {
 	}
 
 	@NotNull
-	private List<String> readComputed(InputStream inputStream) throws IOException {
+	private List<String> readComputed(InputStream inputStream, PrintSettings settings) throws IOException {
 		XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
 		XSSFSheet sheet = workbook.getSheetAt(0);
 
@@ -114,7 +114,7 @@ public class ExcelResultRenderTest {
 		for (Row row : sheet) {
 			StringJoiner sj = new StringJoiner("\t");
 			for (Cell cell : row) {
-				DataFormatter formatter = new DataFormatter();
+				DataFormatter formatter = new DataFormatter(settings.getLocale());
 				switch (cell.getCellType()) {
 					case STRING:
 					case FORMULA:
