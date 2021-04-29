@@ -92,7 +92,7 @@ public class ExcelResultRenderTest {
 		InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
 
-		List<String> computed = readComputed(inputStream);
+		List<String> computed = readComputed(inputStream, printSettings);
 
 
 		List<String> expected = generateExpectedTSV(results, mquery.getResultInfo(), printSettings);
