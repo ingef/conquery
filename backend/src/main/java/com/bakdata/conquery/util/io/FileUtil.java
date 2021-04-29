@@ -15,7 +15,12 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class FileUtil {
-    public static final Pattern SAVE_FILENAME_REPLACEMENT_MATCHER = Pattern.compile("[^a-zA-Z0-9\\.\\-]");
+    public static final Pattern SAVE_FILENAME_REPLACEMENT_MATCHER = Pattern.compile("[^a-zA-Z0-9äÄöÖüÜß \\.\\-]");
+
+
+    public static String makeSafeFileName(String fileExtension, String label) {
+        return SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(label + "." + fileExtension).replaceAll("_");
+    }
 
     public void deleteRecursive(Path path) throws IOException {
         Files.walkFileTree((path),

@@ -1,24 +1,5 @@
 package com.bakdata.conquery.models.execution;
 
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.channels.Channels;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.NoSuchElementException;
-import java.util.function.Function;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.StreamingOutput;
-
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.result.excel.ExcelRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -49,6 +30,22 @@ import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.http.HttpStatus;
 
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.function.Function;
+
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
+
 /**
  * Holder for utility methods to obtain an result from an execution.
  * Acts as a bridge between HTTP-requests and {@link ManagedExecution}s.
@@ -61,19 +58,17 @@ public class ResultProcessor {
 	private final ConqueryConfig config;
 
 
-	public static ResponseBuilder makeResponseWithFileName(String fileExtension, ManagedExecution<?> exec, StreamingOutput out) {
+	public static ResponseBuilder makeResponseWithFileName(String fileExtension, StreamingOutput out, String label) {
 		ResponseBuilder response = Response.ok(out);
-		String label = exec.getLabelWithoutAutoLabelSuffix();
 		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
 			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
 			response.header("Content-Disposition", String.format(
-				"attachment; filename=\"%s.%s\"",
-				FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(label).replaceAll("_"),
-				fileExtension));
+					"attachment; filename=\"%s\"",FileUtil.makeSafeFileName(fileExtension, label)));
 		}
 		return response;
 	}
-	
+
+
 	public Response getArrowStreamResult(User user, ManagedExecutionId queryId, DatasetId datasetId, boolean pretty) {
 		return getArrowResult(
 			(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
@@ -151,7 +146,7 @@ public class ResultProcessor {
 			}
 		};
 		
-		return makeResponseWithFileName(fileExtension, exec, out).build();
+		return makeResponseWithFileName(fileExtension, out, exec.getLabelWithoutAutoLabelSuffix()).build();
 	}
 
 	/**
@@ -197,6 +192,6 @@ public class ResultProcessor {
 
 		);
 
-		return makeResponseWithFileName("xlsx", exec, out).build();
+		return makeResponseWithFileName("xlsx", out, exec.getLabelWithoutAutoLabelSuffix()).build();
 	}
 }

@@ -79,7 +79,7 @@ public class ResultCsvProcessor {
 				ConqueryMDC.clearLocation();
 			}
 		};
-		return ResultProcessor.makeResponseWithFileName(fileExtension, exec, out);
+		return ResultProcessor.makeResponseWithFileName(fileExtension, out, exec.getLabelWithoutAutoLabelSuffix());
 	}
 
 }
