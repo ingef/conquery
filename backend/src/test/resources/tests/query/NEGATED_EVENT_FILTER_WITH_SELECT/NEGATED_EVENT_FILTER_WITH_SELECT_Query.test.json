@@ -1,0 +1,84 @@
+{
+    "type": "QUERY_TEST",
+    "label": "NEGATED_EVENT_FILTER_WITH_SELECT Test",
+    "expectedCsv": "tests/query/NEGATED_EVENT_FILTER_WITH_SELECT/expected.csv",
+    "query": {
+        "type": "CONCEPT_QUERY",
+        "root": {
+            "type": "NEGATION",
+            "child": {
+                "type": "CONCEPT",
+                "ids": [
+                    "concept"
+                ],
+                "label": "concept",
+                "tables": [
+                    {
+                        "id": "concept.connector",
+                        "filters": 
+                            {
+                                "filter": "concept.connector.prop",
+                                "type": "MULTI_SELECT",
+                                "value": [
+                                    "f"
+                                ]
+                            },
+                            "selects":
+                            [
+                                "concept.connector.select"
+                            ]
+                    }
+                ]
+            }
+        }
+    },
+    "concepts": [
+        {
+            "label": "concept",
+            "type": "TREE",
+            "connectors": [
+                {
+                    "label": "connector",
+                    "table": "table",
+                    "validityDates": {
+                        "label": "datum",
+                        "column": "table.datum"
+                    },
+                    "filters": {
+                        "label": "prop",
+                        "description": "prop zur gegebenen Datumseinschränkung",
+                        "column": "table.prop",
+                        "type": "SELECT"
+                    },
+                    "selects": {
+                        "name": "select",
+                        "type": "FIRST",
+                        "column": "table.prop"
+                    }
+                }
+            ]
+        }
+    ],
+    "content": {
+        "tables": [
+            {
+                "csv": "tests/query/NEGATED_EVENT_FILTER_WITH_SELECT/content.csv",
+                "name": "table",
+                "primaryColumn": {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+                "columns": [
+                    {
+                        "name": "datum",
+                        "type": "DATE"
+                    },
+                    {
+                        "name": "prop",
+                        "type": "STRING"
+                    }
+                ]
+            }
+        ]
+    }
+}

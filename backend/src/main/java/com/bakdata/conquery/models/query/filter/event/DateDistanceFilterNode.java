@@ -52,7 +52,7 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 	}
 
 	@Override
-	public boolean checkEvent(Bucket bucket, int event) {
+	public boolean eventFiltersApply(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return false;
 		}

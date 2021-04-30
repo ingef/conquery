@@ -22,10 +22,23 @@ public interface EventIterating {
 	
 	default void nextBlock(Bucket bucket) {}
 
+
 	void acceptEvent(Bucket bucket, int event);
 
 
-	default boolean isOfInterest(Bucket bucket){ return true; }
-	
+	/**
+	 * If false, pre-discard based on entity meta data.
+	 */
 	default boolean isOfInterest(Entity entity){ return true; }
+
+	/**
+	 * If false, pre-discard based on bucket meta data.
+	 */
+	default boolean isOfInterest(Bucket bucket){ return true; }
+
+	/**
+	 * If false, discard based on event properties.
+	 */
+	boolean eventFiltersApply(Bucket bucket, int event);
+
 }

@@ -176,7 +176,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		} else {
 			this.error = error;
 			// Log the error, so its id is atleast once in the logs
-			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error);
+			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error.getMessage());
 		}
 		
 		finish(storage, ExecutionState.FAILED);

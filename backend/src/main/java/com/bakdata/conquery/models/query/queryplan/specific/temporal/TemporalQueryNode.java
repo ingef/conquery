@@ -153,6 +153,12 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	@Override
+	public boolean eventFiltersApply(Bucket bucket, int event) {
+		// TODO verify this
+		return true;
+	}
+
+	@Override
 	public boolean isOfInterest(Entity entity) {
 		return reference.getChild().isOfInterest(entity) || preceding.getChild().isOfInterest(entity);
 	}

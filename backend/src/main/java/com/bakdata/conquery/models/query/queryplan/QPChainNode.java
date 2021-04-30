@@ -72,14 +72,15 @@ public abstract class QPChainNode extends QPNode {
 	public boolean isOfInterest(Bucket bucket) {
 		return child.isOfInterest(bucket);
 	}
-	
-	@Override
-	public boolean isOfInterest(Entity entity) {
-		return true;
-	}
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
 		return child.getDateAggregators();
+	}
+
+
+	@Override
+	public boolean eventFiltersApply(Bucket bucket, int event) {
+		return child.eventFiltersApply(bucket, event);
 	}
 }

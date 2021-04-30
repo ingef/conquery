@@ -58,4 +58,9 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	public boolean isOfInterest(Bucket bucket) {
 		return aggregator.isOfInterest(bucket);
 	}
+
+	@Override
+	public boolean eventFiltersApply(Bucket bucket, int event) {
+		throw new UnsupportedOperationException("This method should never be called on a AggregationFilter");
+	}
 }

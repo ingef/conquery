@@ -38,7 +38,12 @@ public class Leaf extends QPNode {
 	public boolean isOfInterest(Bucket bucket) {
 		return true;
 	}
-	
+
+	@Override
+	public boolean eventFiltersApply(Bucket bucket, int event) {
+		return true;
+	}
+
 	@Override
 	public boolean isOfInterest(Entity entity) {
 		return true;

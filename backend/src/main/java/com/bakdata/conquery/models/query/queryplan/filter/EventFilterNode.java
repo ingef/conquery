@@ -10,8 +10,6 @@ public abstract class EventFilterNode<FILTER_VALUE> extends FilterNode<FILTER_VA
 		super(filterValue);
 	}
 
-	public abstract boolean checkEvent(Bucket bucket, int event);
-
 	@Override
 	public final void acceptEvent(Bucket bucket, int event) {
 		hit = true;

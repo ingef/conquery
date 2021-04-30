@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.filter.AggregationResultFilterNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
@@ -22,22 +23,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 
+@Slf4j
 @ToString(of = {"filters", "aggregators"})
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FiltersNode extends QPNode {
 
 	private boolean hit = false;
 
-	@Getter @Setter(AccessLevel.PRIVATE)
-	private List<? extends FilterNode<?>> filters;
-
 	@Setter(AccessLevel.PRIVATE)
 	private List<Aggregator<?>> aggregators;
 
 	@Setter(AccessLevel.PRIVATE)
 	private List<EventFilterNode<?>> eventFilters;
+	@Setter(AccessLevel.PRIVATE)
+	private List<AggregationResultFilterNode<?, ?>> aggregationFilters;
 
 
 	@Setter(AccessLevel.PRIVATE)
@@ -50,14 +52,20 @@ public class FiltersNode extends QPNode {
 		}
 		
 		final ArrayList<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
+		final List<AggregationResultFilterNode<?, ?>> aggregationFilters = new ArrayList<>(filters.size());
 
 		// Select only Event Filtering nodes as they are used differently.
 		for (FilterNode<?> filter : filters) {
-			if (!(filter instanceof EventFilterNode)) {
+			if ((filter instanceof EventFilterNode)) {
+				eventFilters.add((EventFilterNode<?>) filter);
 				continue;
 			}
+			if ((filter instanceof AggregationResultFilterNode)) {
+				aggregationFilters.add((AggregationResultFilterNode<?,?>) filter);
+				continue;
+			}
+			throw new IllegalArgumentException("Unknown filter type: " + filter.getClass().getName());
 
-			eventFilters.add((EventFilterNode<?>) filter);
 		}
 
 		Set<Aggregator<CDateSet>> eventDateAggregators = new HashSet<>();
@@ -69,7 +77,7 @@ public class FiltersNode extends QPNode {
 
 		final FiltersNode filtersNode = new FiltersNode();
 		filtersNode.setAggregators(aggregators);
-		filtersNode.setFilters(filters);
+		filtersNode.setAggregationFilters(aggregationFilters);
 		filtersNode.setEventFilters(eventFilters);
 		filtersNode.setEventDateAggregators(eventDateAggregators);
 
@@ -80,26 +88,38 @@ public class FiltersNode extends QPNode {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
-		filters.forEach(f -> f.nextTable(ctx, currentTable));
+		eventFilters.forEach(f -> f.nextTable(ctx, currentTable));
+		aggregationFilters.forEach(f -> f.nextTable(ctx, currentTable));
 		aggregators.forEach(a -> a.nextTable(ctx, currentTable));
 	}
 	
 	@Override
 	public void nextBlock(Bucket bucket) {
 		super.nextBlock(bucket);
-		filters.forEach(f -> f.nextBlock(bucket));
+		eventFilters.forEach(f -> f.nextBlock(bucket));
+		aggregationFilters.forEach(f -> f.nextBlock(bucket));
 		aggregators.forEach(a -> a.nextBlock(bucket));
+	}
+
+	@Override
+	public final boolean eventFiltersApply(Bucket bucket, int event) {
+		// On a table/connector all event filters must apply similar to AndNode
+		for(EventFilterNode<?> f : eventFilters) {
+			if (!f.eventFiltersApply(bucket, event)) {
+				log.warn("A filter didn't apply for an event of entity {}", getEntity().getId());
+				return false;
+			}
+		}
+		log.warn("All filters applied for an event of entity {}", getEntity().getId());
+		return true;
 	}
 	
 	@Override
 	public final void acceptEvent(Bucket bucket, int event) {
-		for(EventFilterNode<?> f : eventFilters) {
-			if (!f.checkEvent(bucket, event)) {
-				return;
-			}
-		}
 
-		filters.forEach(f -> f.acceptEvent(bucket, event));
+		log.warn("Accepting events for entity {}", getEntity().getId());
+
+		aggregationFilters.forEach(f -> f.acceptEvent(bucket, event));
 		aggregators.forEach(a -> a.acceptEvent(bucket, event));
 
 		hit = true;
@@ -107,13 +127,16 @@ public class FiltersNode extends QPNode {
 
 	@Override
 	public boolean isContained() {
-		for(FilterNode<?> f : filters) {
+		for(FilterNode<?> f : aggregationFilters) {
 			if (!f.isContained()) {
+				log.warn("A filter for entity {} was not hit.", getEntity().getId());
 				return false;
 			}
 		}
 
-		return hit;
+
+//		log.warn("FiltersNode for entity {} was {} hit.",getEntity().getId(), hit?"":"not");
+		return true;
 	}
 
 	@Override
@@ -125,14 +148,13 @@ public class FiltersNode extends QPNode {
 	public FiltersNode doClone(CloneContext ctx) {
 		final FiltersNode clone = new FiltersNode();
 
-		List<FilterNode<?>> filters = new ArrayList<>(this.filters);
-		filters.replaceAll(ctx::clone);
-
-		clone.setFilters(filters);
-
 		List<EventFilterNode<?>> eventFilters = new ArrayList<>(this.eventFilters);
 		eventFilters.replaceAll(ctx::clone);
 		clone.setEventFilters(eventFilters);
+
+		List<AggregationResultFilterNode<?, ?>> aggregationFilters = new ArrayList<>(this.aggregationFilters);
+		aggregationFilters.replaceAll(ctx::clone);
+		clone.setAggregationFilters(aggregationFilters);
 
 		List<Aggregator<?>> aggregators = new ArrayList<>(this.aggregators);
 		aggregators.replaceAll(ctx::clone);
@@ -146,13 +168,20 @@ public class FiltersNode extends QPNode {
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		super.collectRequiredTables(requiredTables);
 
-		filters.forEach(f -> f.collectRequiredTables(requiredTables));
+		eventFilters.forEach(f -> f.collectRequiredTables(requiredTables));
+		aggregationFilters.forEach(f -> f.collectRequiredTables(requiredTables));
 		aggregators.forEach(a -> a.collectRequiredTables(requiredTables));
 	}
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		for (FilterNode<?> filter : filters) {
+		for (FilterNode<?> filter : eventFilters) {
+			if(filter.isOfInterest(bucket)){
+				return true;
+			}
+		}
+
+		for (FilterNode<?> filter : aggregationFilters) {
 			if(filter.isOfInterest(bucket)){
 				return true;
 			}
@@ -169,7 +198,13 @@ public class FiltersNode extends QPNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		for (FilterNode<?> filter : filters) {
+		for (FilterNode<?> filter : eventFilters) {
+			if(filter.isOfInterest(entity)){
+				return true;
+			}
+		}
+
+		for (FilterNode<?> filter : aggregationFilters) {
 			if(filter.isOfInterest(entity)){
 				return true;
 			}

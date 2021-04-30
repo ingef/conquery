@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -47,5 +48,15 @@ public class AndNode extends QPParentNode {
 			default:
 				return new AndNode(new ArrayList<>(children), action);
 		}
+	}
+
+	@Override
+	public boolean eventFiltersApply(Bucket bucket, int event) {
+		for (QPNode currentTableChild : currentTableChildren) {
+			if (!currentTableChild.eventFiltersApply(bucket, event)) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

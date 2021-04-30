@@ -64,7 +64,12 @@ public class ExternalNode extends QPNode {
 			dateUnion.acceptEvent(bucket, event);
 		}
 	}
-	
+
+	@Override
+	public boolean eventFiltersApply(Bucket bucket, int event) {
+		return true;
+	}
+
 	@Override
 	public boolean isContained() {
 		return contained != null && !contained.isEmpty();

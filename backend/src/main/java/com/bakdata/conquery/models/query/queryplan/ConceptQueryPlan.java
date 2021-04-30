@@ -82,7 +82,10 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	}
 
 	public void nextEvent(Bucket bucket, int event) {
-		getChild().acceptEvent(bucket, event);
+		final QPNode child = getChild();
+		if(EmptyBucket.getInstance().equals(bucket) || child.eventFiltersApply(bucket, event)) {
+			child.acceptEvent(bucket, event);
+		}
 	}
 
 	protected SinglelineEntityResult result() {
@@ -153,6 +156,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		if (isContained()) {
 			return Optional.of(result());
 		}
+		log.warn("entity {} not contained", entity.getId());
 		return Optional.empty();
 	}
 

@@ -42,7 +42,7 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	}
 
 	@Override
-	public boolean checkEvent(Bucket bucket, int event) {
+	public boolean eventFiltersApply(Bucket bucket, int event) {
 		if (selectedId == -1 || !bucket.has(event, getColumn())) {
 			return false;
 		}

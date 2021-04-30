@@ -85,4 +85,9 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 
 		return super.isOfInterest(bucket);
 	}
+
+	@Override
+	public boolean eventFiltersApply(Bucket bucket, int event) {
+		throw new UnsupportedOperationException("This method should never be called on an aggregation filter");
+	}
 }

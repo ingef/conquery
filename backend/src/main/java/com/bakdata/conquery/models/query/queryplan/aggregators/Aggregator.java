@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators;
 
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
@@ -25,4 +26,8 @@ public interface Aggregator<T> extends CtxCloneable<Aggregator<T>>, EventIterati
 	@JsonIgnore
     ResultType getResultType();
 
+	@Override
+	default boolean eventFiltersApply(Bucket bucket, int event) {
+		throw new UnsupportedOperationException("This method should never be called on an aggregator");
+	}
 }

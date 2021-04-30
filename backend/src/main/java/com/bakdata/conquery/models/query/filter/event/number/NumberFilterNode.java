@@ -33,7 +33,7 @@ public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends Event
 	}
 
 	@Override
-	public final boolean checkEvent(Bucket bucket, int event) {
+	public final boolean eventFiltersApply(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
 			return false;
 		}
