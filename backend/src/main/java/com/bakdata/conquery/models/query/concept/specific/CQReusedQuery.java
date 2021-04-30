@@ -87,6 +87,6 @@ public class CQReusedQuery extends CQElement implements NamespacedIdentifiableHo
 	@Override
 	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> ids) {
 		checkNotNull(ids);
-		ids.add(query);
+//		ids.add(query);
 	}
 }

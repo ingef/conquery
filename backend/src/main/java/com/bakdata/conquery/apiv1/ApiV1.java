@@ -4,6 +4,7 @@ import java.time.Duration;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
@@ -83,5 +84,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(DatasetResource.class);
 		environment.register(FilterResource.class);
 		environment.register(MeResource.class);
+
+		environment.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry()));
 	}
 }

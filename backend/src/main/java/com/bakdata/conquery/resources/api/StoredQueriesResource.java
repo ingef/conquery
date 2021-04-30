@@ -24,14 +24,12 @@ import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
-import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 
@@ -48,38 +46,34 @@ public class StoredQueriesResource extends HDatasets {
 	private MetaStorage storage;
 
 	@GET
-	public List<ExecutionStatus> getAllQueries(DatasetId datasetId) {
+	public List<ExecutionStatus> getAllQueries(@PathParam(DATASET) Dataset dataset) {
 		return processor.getAllQueries(getNamespace(), servletRequest, user)
 						.collect(Collectors.toList());
 	}
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecutionId queryId) {
-		return processor.getQueryFullStatus(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
+	public FullExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecution query) {
+		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest));
 	}
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus patchQuery(@PathParam(QUERY) ManagedExecutionId queryId, MetaDataPatch patch) throws JSONException {
-		processor.patchQuery(user, queryId, patch);
+	public FullExecutionStatus patchQuery(@PathParam(QUERY) ManagedExecution query, MetaDataPatch patch) throws JSONException {
+		processor.patchQuery(user, query, patch);
 		
-		return processor.getQueryFullStatus(queryId, user, RequestAwareUriBuilder.fromRequest(servletRequest));
+		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest));
 	}
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public void deleteQuery(@PathParam(QUERY) ManagedExecutionId queryId) {
-		processor.deleteQuery(queryId, user);
+	public void deleteQuery(@PathParam(QUERY) ManagedExecution query) {
+		processor.deleteQuery(query, user);
 	}
 
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
-	public FullExecutionStatus reexecute(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) {
-
-		ManagedExecution<?> query = storage.getExecution(queryId);
-
-		ResourceUtil.throwNotFoundIfNull(queryId, query);
+	public FullExecutionStatus reexecute(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution query, @Context HttpServletRequest req) {
 
 		user.authorize(query, Ability.READ);
 

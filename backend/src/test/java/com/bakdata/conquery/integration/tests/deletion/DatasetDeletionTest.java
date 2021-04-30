@@ -157,7 +157,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 				IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 			}).isNotNull();
 
-			IntegrationUtils.assertQueryResult(conquery, query, 0, ExecutionState.FAILED, conquery.getTestUser(), 400);
+			IntegrationUtils.assertQueryResult(conquery, query, 0, ExecutionState.FAILED, conquery.getTestUser(), 404);
 		}
 
 
