@@ -10,29 +10,35 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFDataFormat;
-import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.util.Currency;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-@RequiredArgsConstructor
 public class ExcelRenderer {
+    
+    private final static Map<Class<? extends ResultType>,TypeWriter> TYPE_WRITER_MAP = Map.of(
+            ResultType.BooleanT.class, ExcelRenderer::writeBooleanCell,
+            ResultType.DateT.class, ExcelRenderer::writeDateCell,
+            ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
+            ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
+            ResultType.NumericT.class, ExcelRenderer::writeNumericCell
+    );
 
-    private final ExcelConfig config;
+    private final XSSFWorkbook workbook;
+    private final ImmutableMap<String, CellStyle> styles;
 
-    private transient ImmutableMap<String, CellStyle> styles;
+
+    public ExcelRenderer(ExcelConfig config) {
+        workbook = new XSSFWorkbook();
+        styles = config.generateStyles(workbook);
+    }
 
     @FunctionalInterface
     private interface TypeWriter{
@@ -46,18 +52,13 @@ public class ExcelRenderer {
             OutputStream outputStream) throws IOException {
         List<ResultInfo> info = exec.getResultInfo();
 
-        XSSFWorkbook workbook = new XSSFWorkbook();
-
-
-        styles = config.generateStyles(workbook);
-
 
         // TODO internationalize
         Sheet sheet = workbook.createSheet("Result");
 
         writeHeader(sheet,workbook,idHeaders,info,cfg);
 
-        writeBody(sheet, info,cfg, exec.streamResults(), styles);
+        writeBody(sheet, info,cfg, exec.streamResults());
 
         workbook.write(outputStream);
 
@@ -89,25 +90,22 @@ public class ExcelRenderer {
         }
     }
 
-    private static void writeBody(
+    private void writeBody(
             Sheet sheet,
             List<ResultInfo> infos,
             PrintSettings cfg,
-            Stream<EntityResult> resultLines,
-            Map<String, CellStyle> styles) {
+            Stream<EntityResult> resultLines) {
 
         // Row 1 is the Header the data starts at 2
         AtomicInteger currentRow = new AtomicInteger(2);
-        resultLines.forEach(l -> setExcelRow(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg, styles));
-
+        resultLines.forEach(l -> this.writeRowsForEntity(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg));
     }
 
-    private static void setExcelRow(
+    private void writeRowsForEntity(
             List<ResultInfo> infos,
             EntityResult internalRow,
             Supplier<Row> externalRowSupplier,
-            PrintSettings settings,
-            Map<String, CellStyle> styles){
+            PrintSettings settings){
         String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
 
 
@@ -139,6 +137,8 @@ public class ExcelRenderer {
             }
         }
     }
+
+    // Type specific cell writers
 
     private static void writeStringCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles){
         cell.setCellValue(info.getType().printNullable(settings,value));
@@ -180,13 +180,4 @@ public class ExcelRenderer {
                 new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits()).doubleValue()
         );
     }
-
-
-    private final static Map<Class<? extends ResultType>,TypeWriter> TYPE_WRITER_MAP = Map.of(
-            ResultType.BooleanT.class, ExcelRenderer::writeBooleanCell,
-            ResultType.DateT.class, ExcelRenderer::writeDateCell,
-            ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
-            ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
-            ResultType.NumericT.class, ExcelRenderer::writeNumericCell
-    );
 }
