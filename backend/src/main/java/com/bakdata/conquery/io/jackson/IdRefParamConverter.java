@@ -11,7 +11,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class IdRefPathParamProvider<ID extends IId<VALUE>, VALUE extends Identifiable<ID>> implements ParamConverter<VALUE> {
+public class IdRefParamConverter<ID extends IId<VALUE>, VALUE extends Identifiable<ID>> implements ParamConverter<VALUE> {
 	private final IId.Parser<ID> idParser;
 	@NonNull
 	private final IdResolveContext resolveContext;

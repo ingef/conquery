@@ -23,6 +23,7 @@ import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -110,23 +111,23 @@ public class ResultProcessor {
 		return response;
 	}
 	
-	public Response getArrowStreamResult(User user, ManagedExecutionId queryId, DatasetId datasetId, boolean pretty) {
+	public Response getArrowStreamResult(User user, ManagedExecution<?> query, Dataset dataset, boolean pretty) {
 		return getArrowResult(
 			(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 			user,
-			queryId,
-			datasetId,
+			query,
+			dataset,
 			datasetRegistry,
 			pretty,
 			FILE_EXTENTION_ARROW_STREAM);
 	}
 	
-	public Response getArrowFileResult(User user, ManagedExecutionId queryId, DatasetId datasetId, boolean pretty) {
+	public Response getArrowFileResult(User user, ManagedExecution<?> query, Dataset dataset, boolean pretty) {
 		return getArrowResult(
 			(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 			user,
-			queryId,
-			datasetId,
+			query,
+			dataset,
 			datasetRegistry,
 			pretty,
 			FILE_EXTENTION_ARROW_FILE);
@@ -136,22 +137,18 @@ public class ResultProcessor {
 	private Response getArrowResult(
 		Function<OutputStream, Function<VectorSchemaRoot,ArrowWriter>> writerProducer,
 		User user,
-		ManagedExecutionId queryId,
-		DatasetId datasetId,
+		ManagedExecution<?> exec,
+		Dataset dataset,
 		DatasetRegistry datasetRegistry,
 		boolean pretty,
 		String fileExtension) {
 
-		final Namespace namespace = datasetRegistry.get(datasetId);
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		ConqueryMDC.setLocation(user.getName());
-		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
-		user.authorize(namespace.getDataset(), Ability.READ);
+		log.info("Downloading results for {} on dataset {}", exec, dataset);
 
-		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
-
-		ResourceUtil.throwNotFoundIfNull(queryId,exec);
-
+		user.authorize(dataset, Ability.READ);
 		user.authorize(exec, Ability.READ);
 
 		// Check if user is permitted to download on all datasets that were referenced by the query

@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,12 +39,10 @@ import lombok.extern.slf4j.Slf4j;
 public class QueryResource {
 
 	private QueryProcessor processor;
-	private ResourceUtil dsUtil;
 
 	@Inject
 	public QueryResource(QueryProcessor processor) {
 		this.processor = processor;
-		dsUtil = new ResourceUtil(processor.getDatasetRegistry());
 	}
 
 	@POST
@@ -65,7 +62,7 @@ public class QueryResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution query, @Context HttpServletRequest req) {
+	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query, @Context HttpServletRequest req) {
 
 
 		return processor.cancel(
@@ -78,7 +75,7 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) Dataset datasetId, @PathParam(QUERY) ManagedExecution query, @Context HttpServletRequest req)
+	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) Dataset datasetId, @PathParam(QUERY) ManagedExecution<?> query, @Context HttpServletRequest req)
 			throws InterruptedException {
 
 		query.awaitDone(10, TimeUnit.SECONDS);

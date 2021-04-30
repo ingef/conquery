@@ -23,12 +23,12 @@ import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor.PostResponse;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 
@@ -38,13 +38,13 @@ import io.dropwizard.jersey.PATCH;
 public class FormConfigResource {
 	
 	@PathParam(DATASET)
-	private DatasetId dataset;
+	private Dataset dataset;
 	@Inject
 	private FormConfigProcessor processor;
 
 	@POST
 	public Response postConfig(@Auth User user, @Valid FormConfigAPI config) {
-		return Response.ok(new PostResponse(processor.addConfig(user, dataset, config))).status(Status.CREATED).build();
+		return Response.ok(new PostResponse(processor.addConfig(user, dataset, config).getId())).status(Status.CREATED).build();
 	}
 	
 	@GET
@@ -54,19 +54,19 @@ public class FormConfigResource {
 
 	@GET
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation getConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId) {
-		return processor.getConfig(dataset, user, formId);
+	public FormConfigFullRepresentation getConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfig form) {
+		return processor.getConfig(user, form);
 	}
 	
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation patchConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId, FormConfigPatch patch ) {
-		return processor.patchConfig(user, dataset, formId, patch);
+	public FormConfigFullRepresentation patchConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfig form, FormConfigPatch patch ) {
+		return processor.patchConfig(user, form, patch);
 	}
 	
 	@DELETE
 	@Path("{" + FORM_CONFIG + "}")
-	public Response deleteConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfigId formId) {
+	public Response deleteConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfig formId) {
 		processor.deleteConfig(user, formId);
 		return Response.ok().build();
 	}

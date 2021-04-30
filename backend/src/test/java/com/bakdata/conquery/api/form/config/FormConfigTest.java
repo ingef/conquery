@@ -148,16 +148,17 @@ public class FormConfigTest {
 	public void addConfigWithoutTranslation() {
 		User user = new User("test","test");
 		storage.addUser(user);
-		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
+		user.addPermission(storage, dataset.createPermission(Ability.READ.asSet()));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfigAPI formConfig = FormConfigAPI.builder()
 			.formType(form.getFormType())
 			.values(mapper.valueToTree(form))
 			.build();
-		FormConfigId formId = processor.addConfig(user, datasetId, formConfig);
+
+		processor.addConfig(user, dataset, formConfig);
 		
-		assertThat(storage.getAllFormConfigs()).containsExactly(FormConfigAPI.intern(formConfig, user, dataset.getId()));
+		assertThat(storage.getAllFormConfigs()).containsExactly(FormConfigAPI.intern(formConfig, user, dataset));
 	}
 
 	@Test
@@ -169,12 +170,13 @@ public class FormConfigTest {
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), mapper.valueToTree(form));
-		
-		user.addPermission(storage, FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
+		formConfig.setDataset(dataset);
+
+		user.addPermission(storage, formConfig.createPermission(AbilitySets.FORM_CONFIG_CREATOR));
 		storage.addFormConfig(formConfig);
 		
 		// EXECUTE
-		processor.deleteConfig(user, formConfig.getId());
+		processor.deleteConfig(user, formConfig);
 		
 		// CHECK
 		assertThat(storage.getAllFormConfigs()).doesNotContain(formConfig);
@@ -187,17 +189,18 @@ public class FormConfigTest {
 		// PREPARE
 		User user = new User("test","test");
 		storage.addUser(user);
-		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
+		user.addPermission(storage, dataset.createPermission(Ability.READ.asSet()));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
+		formConfig.setDataset(dataset);
 		formConfig.setOwner(user);
 		user.addPermission(storage, formConfig.createPermission(Ability.READ.asSet()));
 		storage.addFormConfig(formConfig);
 		
 		// EXECUTE
-		 FormConfigFullRepresentation response = processor.getConfig(new DatasetId("testDataset"), user, formConfig.getId());
+		 FormConfigFullRepresentation response = processor.getConfig(user, formConfig);
 
 		// CHECK
 		assertThat(response).usingRecursiveComparison()
@@ -283,14 +286,14 @@ public class FormConfigTest {
 				.formType(form3.getFormType())
 				.values(mapper.valueToTree(form2))
 				.build();
-		FormConfigId formId = processor.addConfig(user, datasetId, formConfig);
-		FormConfigId formId2 = processor.addConfig(user, datasetId, formConfig2);
-		FormConfigId _formId3 = processor.addConfig(user, datasetId, formConfig3);
+		FormConfigId formId = processor.addConfig(user, dataset, formConfig).getId();
+		FormConfigId formId2 = processor.addConfig(user, dataset, formConfig2).getId();
+		FormConfigId _formId3 = processor.addConfig(user, dataset, formConfig3).getId();
 
 		FormScanner.FRONTEND_FORM_CONFIGS = Map.of(form.getFormType(), new FormType(form.getFormType(), new TextNode("dummy")));
 
 		// EXECUTE
-		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, datasetId, Collections.emptySet());
+		 Stream<FormConfigOverviewRepresentation> response = processor.getConfigsByFormType(user, dataset, Collections.emptySet());
 		
 		// CHECK
 		assertThat(response).containsExactlyInAnyOrder(
@@ -338,34 +341,34 @@ public class FormConfigTest {
 			.formType(form.getFormType())
 			.values(values)
 			.build();
-		FormConfigId formId = processor.addConfig(user, datasetId, formConfig);
+		FormConfig config = processor.addConfig(user, dataset, formConfig);
 		
 		// EXECUTE PART 1
 		processor.patchConfig(
-			 user,
-			 new DatasetId("testDataset"),
-			 formId, 
-			 FormConfigPatch.builder()
-				 .label("newTestLabel")
-				 .tags(new String[] {"tag1", "tag2"})
-				 .groups(List.of(group1.getId()))
-				 .values(new ObjectNode(mapper.getNodeFactory() , Map.of("test-Node", new TextNode("test-text"))))
-			 	.build()
-			 );
+				user,
+				config,
+				FormConfigPatch.builder()
+							   .label("newTestLabel")
+							   .tags(new String[]{"tag1", "tag2"})
+							   .groups(List.of(group1.getId()))
+							   .values(new ObjectNode(mapper.getNodeFactory(), Map.of("test-Node", new TextNode("test-text"))))
+							   .build()
+		);
 		
 		// CHECK PART 1
 		FormConfig patchedFormExpected = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
-		patchedFormExpected.setDataset(datasetId);
-		patchedFormExpected.setFormId(formId.getId());
+		patchedFormExpected.setDataset(dataset);
+		patchedFormExpected.setFormId(config.getFormId());
 		patchedFormExpected.setLabel("newTestLabel");
 		patchedFormExpected.setShared(true);
 		patchedFormExpected.setTags(new String[] {"tag1", "tag2"});
 		patchedFormExpected.setOwner(user);
 		patchedFormExpected.setValues(new ObjectNode(mapper.getNodeFactory() , Map.of("test-Node", new TextNode("test-text"))));
-		
+
+		final FormConfigId formId = config.getId();
 		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison()
-				.ignoringFields("cachedId", FormConfig.Fields.creationTime)
-				.isEqualTo(patchedFormExpected);
+														 .ignoringFields("cachedId", FormConfig.Fields.creationTime)
+														 .isEqualTo(patchedFormExpected);
 
 		assertThat(storage.getGroup(group1.getId()).getPermissions()).contains(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 		assertThat(storage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
@@ -375,8 +378,7 @@ public class FormConfigTest {
 		// EXECUTE PART 2 (Unshare)
 		processor.patchConfig(
 			 user,
-			 datasetId,
-			 formId, 
+			 config,
 			 FormConfigPatch.builder()
 				 .groups(List.of())
 			 	.build()
@@ -386,8 +388,8 @@ public class FormConfigTest {
 		patchedFormExpected.setShared(false);
 		
 		assertThat(storage.getFormConfig(formId)).usingRecursiveComparison()
-				.ignoringFields("cachedId", FormConfig.Fields.creationTime)
-				.isEqualTo(patchedFormExpected);
+														 .ignoringFields("cachedId", FormConfig.Fields.creationTime)
+														 .isEqualTo(patchedFormExpected);
 
 		assertThat(storage.getGroup(group1.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));
 		assertThat(storage.getGroup(group2.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.SHAREHOLDER, formId));

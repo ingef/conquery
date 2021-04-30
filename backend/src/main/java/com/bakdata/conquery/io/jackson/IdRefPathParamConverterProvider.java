@@ -30,6 +30,6 @@ public class IdRefPathParamConverterProvider implements ParamConverterProvider {
 
 		final IId.Parser<IId<T>> parser = IId.createParser(idClass);
 
-		return new IdRefPathParamProvider(parser, datasetRegistry);
+		return new IdRefParamConverter(parser, datasetRegistry);
 	}
 }
