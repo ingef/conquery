@@ -54,7 +54,9 @@ public class ResultExcelProcessor {
 				config,
 				(EntityResult cer) -> ResultUtil.createId(datasetRegistry.get(dataset.getId()), cer, idMapping, mappingState));
 
-		StreamingOutput out = output -> ExcelRenderer.renderToStream(
+		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel());
+
+		StreamingOutput out = output -> excelRenderer.renderToStream(
 				settings,
 				idMapping.getPrintIdFields(),
 				exec,

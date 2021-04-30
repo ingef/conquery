@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.result.excel;
 
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
@@ -83,7 +84,9 @@ public class ExcelResultRenderTest {
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-		ExcelRenderer.renderToStream(
+		ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig());
+
+		renderer.renderToStream(
 				printSettings,
 				printIdFields,
 				mquery,

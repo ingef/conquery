@@ -1,11 +1,14 @@
 package com.bakdata.conquery.io.result.excel;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.google.common.collect.ImmutableMap;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFDataFormat;
@@ -24,33 +27,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+@RequiredArgsConstructor
 public class ExcelRenderer {
 
+    private final ExcelConfig config;
 
-    public static final String EURO_FORMAT = "euroFormat";
-    public static final String DATE_FORMAT = "dateFormat";
+    private transient ImmutableMap<String, CellStyle> styles;
 
     @FunctionalInterface
     private interface TypeWriter{
         void writeCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles);
     }
 
-
-    private static CellStyle generateHeaderStyle(XSSFWorkbook workbook) {
-        CellStyle headerStyle = workbook.createCellStyle();
-        headerStyle.setFillForegroundColor(IndexedColors.LIGHT_BLUE.getIndex());
-        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-
-        XSSFFont font = workbook.createFont();
-        font.setFontName("Arial");
-        font.setFontHeightInPoints((short) 16);
-        font.setBold(true);
-        headerStyle.setFont(font);
-
-        return headerStyle;
-    }
-
-    public static void renderToStream(
+    public void renderToStream(
             PrintSettings cfg,
             List<String> idHeaders,
             ManagedExecution<?> exec,
@@ -60,7 +49,7 @@ public class ExcelRenderer {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
 
-        Map<String, CellStyle> styles = generateStyles(workbook);
+        styles = config.generateStyles(workbook);
 
 
         // TODO internationalize
@@ -74,47 +63,28 @@ public class ExcelRenderer {
 
     }
 
-    @NotNull
-    private static Map<String, CellStyle> generateStyles(XSSFWorkbook workbook) {
-        XSSFDataFormat dataFormat = workbook.createDataFormat();
-        Map<String,CellStyle> styles = new HashMap<>();
-
-        XSSFCellStyle styleEuro = workbook.createCellStyle();
-        styleEuro.setDataFormat(dataFormat.getFormat("#,##0.00 €"));
-        styles.put(EURO_FORMAT,styleEuro);
-
-        XSSFCellStyle styleDate = workbook.createCellStyle();
-        styleDate.setDataFormat(dataFormat.getFormat("yyyy-mm-dd"));
-        styles.put(DATE_FORMAT,styleDate);
-
-        return styles;
-    }
-
-    private static void writeHeader(
+    private void writeHeader(
             Sheet sheet,
             XSSFWorkbook workbook,
             List<String> idHeaders,
             List<ResultInfo> infos,
             PrintSettings cfg){
-
-
+        final CellStyle style = styles.get(ExcelConfig.HEADER_STYLE);
         Row header = sheet.createRow(0);
 
-
-        CellStyle headerStyle = generateHeaderStyle(workbook);
 
         int currentColumn = 1;
         for (String idHeader : idHeaders) {
             Cell headerCell = header.createCell(currentColumn);
             headerCell.setCellValue(idHeader);
-            headerCell.setCellStyle(headerStyle);
+            headerCell.setCellStyle(style);
             currentColumn++;
         }
 
         for (ResultInfo info : infos) {
             Cell headerCell = header.createCell(currentColumn);
             headerCell.setCellValue(info.getUniqueName(cfg));
-            headerCell.setCellStyle(headerStyle);
+            headerCell.setCellStyle(style);
             currentColumn++;
         }
     }
@@ -143,7 +113,7 @@ public class ExcelRenderer {
 
         for (Object[] resultValues : internalRow.listResultLines()) {
             Row row = externalRowSupplier.get();
-            // Write Id cells
+            // Write id cells
             int currentColumn = 1;
             for (String id : ids) {
                 Cell idCell = row.createCell(currentColumn);
@@ -187,7 +157,7 @@ public class ExcelRenderer {
             throw new IllegalStateException("Expected an Number but got an '" + (value != null ? value.getClass().getName() : "no type") + "' with the value: " + value );
         }
         cell.setCellValue(CDate.toLocalDate(((Number)value).intValue()));
-        cell.setCellStyle(styles.get(DATE_FORMAT));
+        cell.setCellStyle(styles.get(ExcelConfig.DATE_STYLE));
     }
 
     public static void writeIntegerCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
@@ -199,16 +169,16 @@ public class ExcelRenderer {
     }
 
     public static void writeMoneyCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-        if(settings.getCurrency().equals(Currency.getInstance("EUR"))){
-            // Print as euro
-            cell.setCellStyle(styles.get(EURO_FORMAT));
-            cell.setCellValue(
-                    new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits()).doubleValue()
-            );
-            return;
+        CellStyle currencyStyle = styles.get(ExcelConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
+        if(currencyStyle == null){
+            // Print as cents or what ever the minor currency unit is
         }
-        // Print as cents or what ever the minor currency unit is
         cell.setCellValue(((Number) value).longValue());
+        // Print as euro
+        cell.setCellStyle(currencyStyle);
+        cell.setCellValue(
+                new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits()).doubleValue()
+        );
     }
 
 
