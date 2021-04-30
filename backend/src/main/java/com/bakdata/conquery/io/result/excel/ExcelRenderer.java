@@ -172,9 +172,10 @@ public class ExcelRenderer {
         CellStyle currencyStyle = styles.get(ExcelConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
         if(currencyStyle == null){
             // Print as cents or what ever the minor currency unit is
+            cell.setCellValue(value.toString());
+            return;
         }
         cell.setCellValue(((Number) value).longValue());
-        // Print as euro
         cell.setCellStyle(currencyStyle);
         cell.setCellValue(
                 new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits()).doubleValue()

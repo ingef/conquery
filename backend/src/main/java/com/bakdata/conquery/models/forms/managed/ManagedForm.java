@@ -224,14 +224,14 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		if(getSubQueries().size() == 1) {
 			return getSubQueries().values().iterator().next().get(0).getResultInfo();
 		}
-		return super.getResultInfo();
+		throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
 	}
 
 	@Override
 	public Stream<EntityResult> streamResults() {
 		if(subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
-			throw new UnsupportedOperationException("Can't return the result query of a multi query form");
+			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
 		return subQueries.values().iterator().next().stream().flatMap(ManagedQuery::streamResults);
 	}
@@ -280,7 +280,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		sb
 			.append(getSubmittedForm().getLocalizedTypeLabel())
 			.append(" ")
-			.append(getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm", I18n.LOCALE.get())));
+			.append(getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", I18n.LOCALE.get())));
 		
 	}
 	
