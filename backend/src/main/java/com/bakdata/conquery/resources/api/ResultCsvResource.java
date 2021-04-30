@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Path("datasets/{" + DATASET + "}/result/")
-public class ResultCSVResource {
+public class ResultCsvResource {
 
 	public static final String GET_CSV_PATH_METHOD = "getAsCsv";
 	@Inject

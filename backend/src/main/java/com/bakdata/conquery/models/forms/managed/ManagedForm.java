@@ -44,7 +44,7 @@ import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.ResultCSVResource;
+import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -265,9 +265,9 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	protected URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException {
 		return url
-			.path(ResultCSVResource.class)
+			.path(ResultCsvResource.class)
 			.resolveTemplate(ResourceConstants.DATASET, dataset.getName())
-			.path(ResultCSVResource.class, ResultCSVResource.GET_CSV_PATH_METHOD)
+			.path(ResultCsvResource.class, ResultCsvResource.GET_CSV_PATH_METHOD)
 			.resolveTemplate(ResourceConstants.QUERY, getId().toString())
 			.build()
 			.toURL();

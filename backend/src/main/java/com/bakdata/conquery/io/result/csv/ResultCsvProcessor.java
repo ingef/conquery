@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.execution.ResultProcessor;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -26,6 +25,8 @@ import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
+import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
 @Slf4j
@@ -62,7 +63,7 @@ public class ResultCsvProcessor {
 				config,
 				cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState)
 		);
-		Charset charset = ResultProcessor.determineCharset(userAgent, queryCharset);
+		Charset charset = determineCharset(userAgent, queryCharset);
 
 
 		StreamingOutput out =  os -> {
@@ -75,11 +76,9 @@ public class ResultCsvProcessor {
 			}
 			catch (Exception e) {
 				throw new WebApplicationException("Failed to load result", e);
-			}finally {
-				ConqueryMDC.clearLocation();
 			}
 		};
-		return ResultProcessor.makeResponseWithFileName(fileExtension, exec, out);
+		return makeResponseWithFileName(fileExtension, exec, out);
 	}
 
 }

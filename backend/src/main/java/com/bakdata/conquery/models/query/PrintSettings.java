@@ -1,13 +1,10 @@
 package com.bakdata.conquery.models.query;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.function.Function;
 
-import com.bakdata.conquery.io.result.ResultRenderer;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;

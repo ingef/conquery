@@ -148,7 +148,7 @@ Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.resources.api.ResultCSVResource`
+Java Type: `com.bakdata.conquery.resources.api.ResultCsvResource`
 
 Method: `getAsCsv`
 

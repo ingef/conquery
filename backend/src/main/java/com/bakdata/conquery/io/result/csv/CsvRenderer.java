@@ -26,7 +26,6 @@ public class CsvRenderer {
 		List<String> headers = new ArrayList<>(idHeaders);
 		infos.forEach(i -> headers.add(i.getUniqueName(cfg)));
 
-
 		writer.writeHeaders(headers);
 
 		createCSVBody(cfg, infos, resultStream);

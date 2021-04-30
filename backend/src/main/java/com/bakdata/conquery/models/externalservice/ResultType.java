@@ -46,16 +46,6 @@ public abstract class ResultType {
 
     public abstract Field getArrowFieldType(ResultInfo info, PrintSettings settings);
 
-    public void writeExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles){
-        if (value == null) {
-            return;
-        }
-        internWriteExcelCell(info, settings, cell, value, styles);
-    }
-
-    protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles){
-        cell.setCellValue(print(settings,value));
-    }
 
     public abstract String typeInfo();
 
@@ -112,14 +102,6 @@ public abstract class ResultType {
             return new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.Bool.INSTANCE), null);
         }
 
-        @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-            if (value instanceof Boolean) {
-                Boolean aBoolean = (Boolean) value;
-                cell.setCellValue(aBoolean.booleanValue());
-            }
-            cell.setCellValue(print(settings,value));
-        }
     }
 
 
@@ -142,10 +124,6 @@ public abstract class ResultType {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
         }
 
-        @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-            cell.setCellValue(settings.getIntegerFormat().format(((Number) value).longValue()));
-        }
     }
 
     @CPSType(id = "NUMERIC", base = ResultType.class)
@@ -167,10 +145,6 @@ public abstract class ResultType {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null);
         }
 
-        @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-            cell.setCellValue(settings.getIntegerFormat().format(((Number) value).doubleValue()));
-        }
     }
 
     @CPSType(id = "CATEGORICAL", base = ResultType.class)
@@ -230,14 +204,7 @@ public abstract class ResultType {
             return NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings));
         }
 
-        @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-            if(!(value instanceof Number)) {
-                throw new IllegalStateException("Expected an Number but got an '" + (value != null ? value.getClass().getName() : "no type") + "' with the value: " + value );
-            }
-            cell.setCellValue(CDate.toLocalDate(((Number)value).intValue()));
-            cell.setCellStyle(styles.get(DATE_FORMAT));
-        }
+
     }
 
     /**
@@ -318,19 +285,7 @@ public abstract class ResultType {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
         }
 
-        @Override
-        protected void internWriteExcelCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-            if(settings.getCurrency().equals(Currency.getInstance("EUR"))){
-                // Print as euro
-                cell.setCellStyle(styles.get(EURO_FORMAT));
-                cell.setCellValue(
-                        new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits()).doubleValue()
-                );
-                return;
-            }
-            // Print as cents or what ever the minor currency unit is
-            cell.setCellValue(((Number) value).longValue());
-        }
+
     }
 
     @CPSType(id = "LIST", base = ResultType.class)
@@ -348,12 +303,12 @@ public abstract class ResultType {
         public String print(PrintSettings cfg, @NonNull Object f) {
             // Jackson deserializes collections as lists instead of an array, if the type is not given
             if(!(f instanceof List)) {
-                throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f != null ? f.getClass().getName() : "no type", f));
+                throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
             }
             // Not sure if this escaping is enough
             String listDelimEscape = cfg.getListElementEscaper() + cfg.getListElementDelimiter();
             StringJoiner joiner = new StringJoiner(cfg.getListElementDelimiter(), cfg.getListPrefix(), cfg.getListPostfix());
-            for(Object obj : (List) f) {
+            for(Object obj : (List<?>) f) {
                 joiner.add(elementType.print(cfg,obj).replace(cfg.getListElementDelimiter(), listDelimEscape));
             }
             return joiner.toString();
@@ -378,9 +333,5 @@ public abstract class ResultType {
         public String toString() {
             return typeInfo();
         }
-    }
-    static boolean isArray(Object obj)
-    {
-        return obj!=null && obj.getClass().isArray();
     }
 }

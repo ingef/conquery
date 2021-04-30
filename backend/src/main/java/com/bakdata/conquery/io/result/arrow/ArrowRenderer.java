@@ -11,7 +11,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -44,12 +43,8 @@ public class ArrowRenderer {
     public static void renderToStream(
             Function<VectorSchemaRoot, ArrowWriter> writerProducer,
             PrintSettings cfg,
-            ManagedExecution<?> exec,
             List<String> idHeaders,
-            int batchSize) throws IOException {
-        // Test the execution if the result can be rendered into one table
-        Stream<EntityResult> results = exec.streamResults();
-        List<ResultInfo> resultInfo = exec.getResultInfo();
+            int batchSize, Stream<EntityResult> results, List<ResultInfo> resultInfo) throws IOException {
 
         // Combine id and value Fields to one vector to build a schema
         List<Field> fields = new ArrayList<>(generateFieldsFromIdMapping(idHeaders));
