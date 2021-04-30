@@ -26,15 +26,12 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.google.common.base.Strings;
@@ -58,15 +55,11 @@ public class ResultProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 	
-	public ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty, String fileExtension) {
-		final Namespace namespace = datasetRegistry.get(datasetId);
+	public ResponseBuilder getResult(User user, Dataset dataset, ManagedExecution<?> exec, String userAgent, String queryCharset, boolean pretty, String fileExtension) {
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		ConqueryMDC.setLocation(user.getName());
-		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
+		log.info("Downloading results for {} on dataset {}", exec.getId(), dataset.getId());
 		user.authorize(namespace.getDataset(), Ability.READ);
-
-		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
-
-		ResourceUtil.throwNotFoundIfNull(queryId, exec);
 
 		user.authorize(exec, Ability.READ);
 

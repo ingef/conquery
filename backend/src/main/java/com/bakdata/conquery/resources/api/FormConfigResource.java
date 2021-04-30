@@ -66,8 +66,8 @@ public class FormConfigResource {
 	
 	@DELETE
 	@Path("{" + FORM_CONFIG + "}")
-	public Response deleteConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfig formId) {
-		processor.deleteConfig(user, formId);
+	public Response deleteConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfig form) {
+		processor.deleteConfig(user, form);
 		return Response.ok().build();
 	}
 	

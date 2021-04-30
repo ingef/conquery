@@ -21,7 +21,6 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -42,9 +41,6 @@ public class StoredQueriesResource extends HDatasets {
 	@Inject
 	private StoredQueriesProcessor processor;
 
-	@Inject
-	private MetaStorage storage;
-
 	@GET
 	public List<ExecutionStatus> getAllQueries(@PathParam(DATASET) Dataset dataset) {
 		return processor.getAllQueries(getNamespace(), servletRequest, user)
@@ -53,13 +49,13 @@ public class StoredQueriesResource extends HDatasets {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecution query) {
+	public FullExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecution<?> query) {
 		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest));
 	}
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus patchQuery(@PathParam(QUERY) ManagedExecution query, MetaDataPatch patch) throws JSONException {
+	public FullExecutionStatus patchQuery(@PathParam(QUERY) ManagedExecution<?> query, MetaDataPatch patch) throws JSONException {
 		processor.patchQuery(user, query, patch);
 		
 		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest));
@@ -67,13 +63,13 @@ public class StoredQueriesResource extends HDatasets {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public void deleteQuery(@PathParam(QUERY) ManagedExecution query) {
+	public void deleteQuery(@PathParam(QUERY) ManagedExecution<?> query) {
 		processor.deleteQuery(query, user);
 	}
 
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
-	public FullExecutionStatus reexecute(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution query, @Context HttpServletRequest req) {
+	public FullExecutionStatus reexecute(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query, @Context HttpServletRequest req) {
 
 		user.authorize(query, Ability.READ);
 

@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class QueryResource {
 
-	private QueryProcessor processor;
+	private final QueryProcessor processor;
 
 	@Inject
 	public QueryResource(QueryProcessor processor) {
@@ -64,7 +64,6 @@ public class QueryResource {
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query, @Context HttpServletRequest req) {
 
-
 		return processor.cancel(
 				user,
 				dataset,
@@ -75,7 +74,7 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) Dataset datasetId, @PathParam(QUERY) ManagedExecution<?> query, @Context HttpServletRequest req)
+	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query, @Context HttpServletRequest req)
 			throws InterruptedException {
 
 		query.awaitDone(10, TimeUnit.SECONDS);
