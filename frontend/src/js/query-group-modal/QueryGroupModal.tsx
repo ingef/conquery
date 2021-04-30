@@ -1,16 +1,16 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import { DateStringMinMax } from "js/common/helpers";
-import { nodeIsConceptQueryNode } from "js/model/node";
-import { StandardQueryStateT } from "js/standard-query-editor/queryReducer";
-import { QueryGroupType } from "js/standard-query-editor/types";
 import React, { FC, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../button/IconButton";
+import { DateStringMinMax } from "../common/helpers";
 import InputDateRange from "../form-components/InputDateRange";
 import Modal from "../modal/Modal";
+import { nodeIsConceptQueryNode } from "../model/node";
+import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import { QueryGroupType } from "../standard-query-editor/types";
 
 import {
   queryGroupModalSetDate,
