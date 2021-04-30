@@ -3,6 +3,8 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Objects;
+
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -11,6 +13,7 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -46,6 +49,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
 
 		final ConceptId conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
+		final Concept<?> concept;
 
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 		final QueryTest test2 = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson2);
@@ -63,6 +67,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
+			concept = Objects.requireNonNull(namespace.getStorage().getConcept(conceptId));
+
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
@@ -76,7 +82,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			// Must contain the concept.
 			assertThat(namespace.getStorage().getAllConcepts())
-					.filteredOn(concept -> concept.getId().equals(conceptId))
+					.filteredOn(con -> con.getId().equals(conceptId))
 					.isNotEmpty();
 
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
@@ -109,7 +115,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		{
 			log.info("Issuing deletion of import {}", conceptId);
 
-			conquery.getDatasetsProcessor().deleteConcept(conceptId);
+			conquery.getDatasetsProcessor().deleteConcept(concept);
 
 			conquery.waitUntilWorkDone();
 		}
@@ -120,7 +126,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			// We've deleted the concept so it and it's associated cblock should be gone.
 			assertThat(namespace.getStorage().getAllConcepts())
-					.filteredOn(concept -> concept.getId().equals(conceptId))
+					.filteredOn(con -> con.getId().equals(conceptId))
 					.isEmpty();
 
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
@@ -162,7 +168,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			// Must contain the concept now.
 			assertThat(namespace.getStorage().getAllConcepts())
-					.filteredOn(concept -> concept.getId().equals(conceptId))
+					.filteredOn(con -> con.getId().equals(conceptId))
 					.isNotEmpty();
 
 			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
@@ -208,7 +214,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			{
 				// Must contain the concept.
 				assertThat(namespace.getStorage().getAllConcepts())
-						.filteredOn(concept -> concept.getId().equals(conceptId))
+						.filteredOn(con -> con.getId().equals(conceptId))
 						.isNotEmpty();
 
 				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))

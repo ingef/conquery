@@ -16,10 +16,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.hierarchies.HUsers;
 
 public class UserResource extends HUsers {
@@ -45,22 +44,22 @@ public class UserResource extends HUsers {
 
 	@Path("{" + USER_ID + "}")
 	@DELETE
-	public Response deleteUser(@PathParam(USER_ID) UserId userId) {
-		processor.deleteUser(userId);
+	public Response deleteUser(@PathParam(USER_ID) User user) {
+		processor.deleteUser(user);
 		return Response.ok().build();
 	}
 
 	@Path("{" + USER_ID + "}/" + ROLE_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRoleFromUser(@PathParam(USER_ID) UserId userId, @PathParam(ROLE_ID) RoleId roleId) {
-		processor.deleteRoleFrom(userId, roleId);
+	public Response deleteRoleFromUser(@PathParam(USER_ID) User user, @PathParam(ROLE_ID) Role role) {
+		processor.deleteRoleFrom(user, role);
 		return Response.ok().build();
 	}
 
 	@Path("{" + USER_ID + "}/" + ROLE_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@POST
-	public Response addRoleToUser(@PathParam(USER_ID) UserId userId, @PathParam(ROLE_ID) RoleId roleId) {
-		processor.addRoleTo(userId, roleId);
+	public Response addRoleToUser(@PathParam(USER_ID) User user, @PathParam(ROLE_ID) Role role) {
+		processor.addRoleTo(user, role);
 		return Response.ok().build();
 	}
 }

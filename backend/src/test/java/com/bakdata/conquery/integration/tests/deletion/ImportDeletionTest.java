@@ -123,7 +123,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Issuing deletion of import {}", importId);
 
-			conquery.getDatasetsProcessor().deleteImport(importId);
+			// TODO use API
+//			conquery.getDatasetsProcessor().deleteImport(imp);
 
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();

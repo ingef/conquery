@@ -3,8 +3,8 @@ package com.bakdata.conquery.resources.admin;
 import java.util.Collections;
 
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.freemarker.Freemarker;
+import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
@@ -31,7 +31,6 @@ import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.views.ViewMessageBodyWriter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.realm.Realm;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -79,6 +78,7 @@ public class AdminServlet {
 			}
 		});
 
+		jerseyConfig.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry()));
 	}
 
 	public void register(ManagerNode manager) {

@@ -11,8 +11,8 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -184,10 +184,10 @@ public class Namespace implements Closeable {
 		}
 	}
 
-	public synchronized void removeBucketAssignmentsForImportFormWorkers(@NonNull ImportId importId) {
+	public synchronized void removeBucketAssignmentsForImportFormWorkers(@NonNull Import imp) {
 		synchronized (this) {
 			WorkerToBucketsMap map = getWorkerBucketsMap();
-			map.removeBucketsOfImport(importId);
+			map.removeBucketsOfImport(imp.getId());
 			storage.setWorkerToBucketsMap(map);
 		}
 	}

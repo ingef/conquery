@@ -54,12 +54,13 @@ public class MetaStorage implements ConqueryStorage{
 
     @Override
     public void loadData() {
-        executions.loadData();
-        formConfigs.loadData();
         authUser.loadData();
         authRole.loadData();
         authGroup.loadData();
-    }
+
+        executions.loadData();
+		formConfigs.loadData();
+	}
 
     @Override
     public void clear() {

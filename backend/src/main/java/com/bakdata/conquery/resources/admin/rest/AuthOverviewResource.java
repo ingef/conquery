@@ -9,7 +9,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.resources.hierarchies.HAuthOverview;
 
 /**
@@ -29,10 +29,10 @@ public class AuthOverviewResource extends HAuthOverview {
 
 	@GET
 	@Path("csv/group/{"+ GROUP_ID +"}")
-	public Response getPermissionOverviewAsCSV(@PathParam(value = GROUP_ID) GroupId groupId) {
+	public Response getPermissionOverviewAsCSV(@PathParam(GROUP_ID) Group group) {
 		return Response
-			.ok(processor.getPermissionOverviewAsCSV(groupId))
-			.header("Content-Disposition",  String.format("attachment; filename=\"authOverview_%s.csv\"", groupId.getGroup()))
+			.ok(processor.getPermissionOverviewAsCSV(group))
+			.header("Content-Disposition",  String.format("attachment; filename=\"authOverview_%s.csv\"", group.getName()))
 			.build();
 	}
 }

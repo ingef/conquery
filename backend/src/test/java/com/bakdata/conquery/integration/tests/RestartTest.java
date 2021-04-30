@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -80,6 +79,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		{// Auth testing (deletion and permission grant)
 			// build constellation
+			//TODO USE APIS
 			adminProcessor.addDataset(TEST_DATASET_1);
 			adminProcessor.addDataset(TEST_DATASET_2);
 			adminProcessor.addDataset(TEST_DATASET_3);
@@ -94,35 +94,36 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			adminProcessor.addGroup(group);
 			adminProcessor.addGroup(groupToDelete);
 
-			adminProcessor.addRoleTo(user.getId(), role.getId());
-			adminProcessor.addRoleTo(user.getId(), roleToDelete.getId());
-			adminProcessor.addRoleTo(userToDelete.getId(), role.getId());
-			adminProcessor.addRoleTo(userToDelete.getId(), roleToDelete.getId());
+			adminProcessor.addRoleTo(user, role);
+			adminProcessor.addRoleTo(user, roleToDelete);
+			adminProcessor.addRoleTo(userToDelete, role);
+			adminProcessor.addRoleTo(userToDelete, roleToDelete);
 
-			adminProcessor.addRoleTo(group.getId(), role.getId());
-			adminProcessor.addRoleTo(group.getId(), roleToDelete.getId());
-			adminProcessor.addRoleTo(groupToDelete.getId(), role.getId());
-			adminProcessor.addRoleTo(groupToDelete.getId(), roleToDelete.getId());
+			adminProcessor.addRoleTo(group, role);
+			adminProcessor.addRoleTo(group, roleToDelete);
+			adminProcessor.addRoleTo(groupToDelete, role);
+			adminProcessor.addRoleTo(groupToDelete, roleToDelete);
 
-			adminProcessor.addUserToGroup(group.getId(), user.getId());
-			adminProcessor.addUserToGroup(group.getId(), userToDelete.getId());
-			adminProcessor.addUserToGroup(groupToDelete.getId(), user.getId());
-			adminProcessor.addUserToGroup(groupToDelete.getId(), userToDelete.getId());
+			adminProcessor.addUserToGroup(group, user);
+			adminProcessor.addUserToGroup(group, userToDelete);
+			adminProcessor.addUserToGroup(groupToDelete, user);
+			adminProcessor.addUserToGroup(groupToDelete, userToDelete);
 
 			// Adding Permissions
-			adminProcessor.createPermission(user.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")));
-			adminProcessor.createPermission(userToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")));
+			adminProcessor.createPermission(user, DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")));
+			adminProcessor.createPermission(userToDelete, DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")));
 
-			adminProcessor.createPermission(role.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")));
-			adminProcessor.createPermission(roleToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")));
+			adminProcessor.createPermission(role, DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")));
+			adminProcessor.createPermission(roleToDelete, DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")));
 
-			adminProcessor.createPermission(group.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")));
-			adminProcessor.createPermission(groupToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")));
+			adminProcessor.createPermission(group, DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")));
+			adminProcessor.createPermission(groupToDelete, DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")));
 
 			// Delete entities
-			adminProcessor.deleteUser(userToDelete.getId());
-			adminProcessor.deleteRole(roleToDelete.getId());
-			adminProcessor.deleteGroup(groupToDelete.getId());
+			//TODO use API
+			adminProcessor.deleteUser(userToDelete);
+			adminProcessor.deleteRole(roleToDelete);
+			adminProcessor.deleteGroup(groupToDelete);
 		}
 
 
