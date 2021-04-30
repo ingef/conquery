@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import QueryGroupModal from "js/query-group-modal/QueryGroupModal";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,6 +9,7 @@ import { exists } from "../common/helpers/exists";
 import { TreesT } from "../concept-trees/reducer";
 import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+import QueryGroupModal from "../query-group-modal/QueryGroupModal";
 import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
 
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
