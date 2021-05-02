@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import WithTooltip from "js/tooltip/WithTooltip";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
 import { DateRangeT } from "../api/types";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryGroupActions from "./QueryGroupActions";
