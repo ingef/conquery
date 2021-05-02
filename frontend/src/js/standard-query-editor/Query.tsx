@@ -11,6 +11,7 @@ import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 import QueryGroupModal from "../query-group-modal/QueryGroupModal";
 import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
 import QueryEditorDropzone from "./QueryEditorDropzone";
@@ -183,13 +184,14 @@ const Query = () => {
                 {t("common.and")}
               </QueryGroupConnector>,
             ])}
-            <QueryEditorDropzone
-              isAnd
-              tooltip={t("help.editorDropzoneAnd")}
-              onDropNode={onDropAndNode}
-              onDropFile={(file) => onDropConceptListFile(file, null)}
-              onLoadPreviousQuery={onLoadPreviousQuery}
-            />
+            <WithTooltip text={t("help.editorDropzoneAnd")} lazy>
+              <QueryEditorDropzone
+                isAnd
+                onDropNode={onDropAndNode}
+                onDropFile={(file) => onDropConceptListFile(file, null)}
+                onLoadPreviousQuery={onLoadPreviousQuery}
+              />
+            </WithTooltip>
           </Groups>
           <QueryFooter />
         </>
