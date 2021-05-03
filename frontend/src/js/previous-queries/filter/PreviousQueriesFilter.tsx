@@ -43,7 +43,6 @@ const PreviousQueriesFilter: FC = () => {
 
   return (
     <SxSmallTabNavigation
-      className="previous-queries-filter"
       options={OPTIONS}
       selectedTab={selectedFilter}
       onSelectTab={(tab) => setFilter(tab)}

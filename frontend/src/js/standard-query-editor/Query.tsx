@@ -9,8 +9,9 @@ import { exists } from "../common/helpers/exists";
 import { TreesT } from "../concept-trees/reducer";
 import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
-import { queryGroupModalSetNode } from "../query-group-modal/actions";
+import QueryGroupModal from "../query-group-modal/QueryGroupModal";
 import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
 import QueryEditorDropzone from "./QueryEditorDropzone";
@@ -99,8 +100,6 @@ const Query = () => {
     dispatch(toggleSecondaryIdExclude(andIdx, orIdx));
   const onSelectNodeForEditing = (andIdx: number, orIdx: number) =>
     dispatch(selectNodeForEditing(andIdx, orIdx));
-  const onQueryGroupModalSetNode = (andIdx: number) =>
-    dispatch(queryGroupModalSetNode(andIdx));
   const onLoadPreviousQuery = (queryId: PreviousQueryIdT) => {
     if (datasetId) {
       loadPreviousQuery(datasetId, queryId);
@@ -111,6 +110,10 @@ const Query = () => {
     queryToExpand,
     setQueryToExpand,
   ] = useState<PreviousQueryQueryNodeType | null>(null);
+
+  const [queryGroupModalAndIx, setQueryGroupModalAndIdx] = useState<
+    number | null
+  >(null);
 
   if (!datasetId) {
     return null;
@@ -126,6 +129,12 @@ const Query = () => {
 
   return (
     <Container>
+      {exists(queryGroupModalAndIx) && (
+        <QueryGroupModal
+          andIdx={queryGroupModalAndIx}
+          onClose={() => setQueryGroupModalAndIdx(null)}
+        />
+      )}
       {exists(queryToExpand) && (
         <ExpandPreviousQueryModal
           onClose={() => setQueryToExpand(null)}
@@ -162,7 +171,7 @@ const Query = () => {
                 }
                 onExpandClick={onExpandPreviousQuery}
                 onExcludeClick={() => onToggleExcludeGroup(andIdx)}
-                onDateClick={() => onQueryGroupModalSetNode(andIdx)}
+                onDateClick={() => setQueryGroupModalAndIdx(andIdx)}
                 onLoadPreviousQuery={onLoadPreviousQuery}
                 onToggleTimestamps={(orIdx: number) =>
                   onToggleTimestamps(andIdx, orIdx)
@@ -175,13 +184,14 @@ const Query = () => {
                 {t("common.and")}
               </QueryGroupConnector>,
             ])}
-            <QueryEditorDropzone
-              isAnd
-              tooltip={t("help.editorDropzoneAnd")}
-              onDropNode={onDropAndNode}
-              onDropFile={(file) => onDropConceptListFile(file, null)}
-              onLoadPreviousQuery={onLoadPreviousQuery}
-            />
+            <WithTooltip text={t("help.editorDropzoneAnd")} lazy>
+              <QueryEditorDropzone
+                isAnd
+                onDropNode={onDropAndNode}
+                onDropFile={(file) => onDropConceptListFile(file, null)}
+                onLoadPreviousQuery={onLoadPreviousQuery}
+              />
+            </WithTooltip>
           </Groups>
           <QueryFooter />
         </>

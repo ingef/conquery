@@ -31,7 +31,7 @@ const useIsHighlightedLabel = (label: string) => {
 };
 
 interface PropsT {
-  mayEditQuery: boolean;
+  mayEditQuery?: boolean;
   label: string;
   selectTextOnMount: boolean;
   editing: boolean;

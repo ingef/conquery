@@ -41,7 +41,8 @@ const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
   }
 `;
 
-interface PropsT extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface IconButtonPropsT
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   iconProps?: IconStyleProps;
   active?: boolean;
   large?: boolean;
@@ -56,7 +57,7 @@ interface PropsT extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 // A button that is prefixed by an icon
-const IconButton: React.FC<PropsT> = ({
+const IconButton: React.FC<IconButtonPropsT> = ({
   icon,
   active,
   red,
