@@ -304,11 +304,11 @@ public interface ResultType {
 
         @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            final FieldType nestedType = elementType.getArrowFieldType(info, settings).getFieldType();
+            final Field nestedField = elementType.getArrowFieldType(info, settings);
             return new Field(
                     info.getUniqueName(settings),
                     FieldType.nullable(ArrowType.List.INSTANCE),
-                    List.of(new Field ("elem", nestedType,null))
+                    List.of(nestedField)
             );
         }
 

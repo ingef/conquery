@@ -37,6 +37,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -96,7 +97,8 @@ public class ArrowResultGenerationTest {
                 ResultType.DateRangeT.INSTANCE,
                 ResultType.StringT.INSTANCE,
                 ResultType.MoneyT.INSTANCE,
-                new ResultType.ListT(ResultType.BooleanT.INSTANCE)
+                new ResultType.ListT(ResultType.BooleanT.INSTANCE),
+                new ResultType.ListT(ResultType.DateRangeT.INSTANCE)
         );
     }
 
@@ -126,7 +128,13 @@ public class ArrowResultGenerationTest {
                                 )),
                         new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
-                        new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("elem", FieldType.nullable(ArrowType.Bool.INSTANCE), null)))
+                        new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.Bool.INSTANCE), null))),
+                        new Field("LIST[DATE_RANGE]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("LIST[DATE_RANGE]",
+                                FieldType.nullable(ArrowType.Struct.INSTANCE),
+                                List.of(
+                                        NAMED_FIELD_DATE_DAY.apply("min"),
+                                        NAMED_FIELD_DATE_DAY.apply("max")
+                                ))))
                 )
         );
 
@@ -138,13 +146,13 @@ public class ArrowResultGenerationTest {
         PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, CONFIG, (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = List.of(
-                new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),
-                new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of()}),
-                new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false)}),
+                new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(345, 534), "test_string", 4521, List.of(true, false), List.of(List.of(345, 534), List.of(1, 2))}),
+                new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(), List.of()}),
+                new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false), null}),
                 new MultilineEntityResult(3, List.of(
-                        new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false)},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false)}
+                        new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false), null},
+                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null, null},
+                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false), null}
                 )));
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
@@ -219,7 +227,7 @@ public class ArrowResultGenerationTest {
                         for (int lIdx = 0; lIdx < line.length; lIdx++) {
                             Object val = line[lIdx];
                             ResultInfo info = resultInfos.get(lIdx);
-                            valueJoiner.add(getPrintValue(val, info));
+                            valueJoiner.add(getPrintValue(val, info.getType()));
                         }
                         lineJoiner.add(valueJoiner.toString());
                     }
@@ -231,13 +239,20 @@ public class ArrowResultGenerationTest {
                 getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
     }
 
-    private static String getPrintValue(Object obj, ResultInfo info) {
-        if (obj != null && info.getType().equals(ResultType.DateRangeT.INSTANCE)) {
+    private static String getPrintValue(Object obj, ResultType type) {
+        if (obj != null && type.equals(ResultType.DateRangeT.INSTANCE)) {
             // Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
             List dr = (List) obj;
             return "{\"min\":" + dr.get(0) + ",\"max\":" + dr.get(1) + "}";
         }
-        return getPrintValue(obj);
+        if(obj instanceof Collection) {
+            Collection<?> col = (Collection<?>) obj;
+            // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
+            new StringJoiner(",","[", "]");
+            @NonNull ResultType elemType = ((ResultType.ListT) type).getElementType();
+            return col.stream().map(v -> getPrintValue(v, elemType)).collect(Collectors.joining(", ","[", "]"));
+        }
+        return Objects.toString(obj);
     }
 
     private static String getPrintValue(Object obj) {
