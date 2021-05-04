@@ -43,7 +43,6 @@ const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
     css`
       height: 100px;
       white-space: nowrap;
-      margin-top: 70px;
       width: initial;
     `};
 `;
