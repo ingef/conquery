@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
@@ -27,7 +27,7 @@ public interface AuthorizationConfig {
 
 	/**
 	 * A list of permission scopes/domains that should be used to generate the permission overview as an CSV.
-	 * Usually {@link QueryPermission} are not included, since they add little information to the overview.
+	 * Usually {@link ExecutionPermission} are not included, since they add little information to the overview.
 	 */
 	List<String> getOverviewScope();
 }
