@@ -1,9 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,6 +14,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
@@ -96,6 +94,7 @@ import com.univocity.parsers.csv.CsvWriter;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -179,35 +178,48 @@ public class AdminProcessor {
 		return dataset;
 	}
 
-	public void addImport(Namespace namespace, File selectedFile) throws IOException {
+
+	@SneakyThrows
+	public void addImport(Namespace namespace, String importSource, InputStream inputStream) throws IOException {
 
 		final Dataset ds = namespace.getDataset();
 		final PreprocessedHeader header;
+		PreprocessedReader parser = null;
+		Table table = null;
+		try{
 
-		// try and read only the header.
-		try (PreprocessedReader parser = Preprocessed.createReader(selectedFile, Collections.emptyMap())) {
+			// try and read only the header.
+			parser = new PreprocessedReader(inputStream);
 			header = parser.readHeader();
+
+			final TableId tableId = new TableId(ds.getId(), header.getTable());
+			table = namespace.getStorage().getTable(tableId);
+
+			if(table == null){
+				throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
+			}
+
+			final ImportId importId = new ImportId(table.getId(), header.getName());
+
+			if (namespace.getStorage().getImport(importId) != null) {
+				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Status.CONFLICT);
+			}
+
+			header.assertMatch(table);
+		} catch (Exception e){
+			if(parser != null) {
+				parser.close();
+			}
+			throw e;
 		}
 
-		final TableId tableId = new TableId(ds.getId(), header.getTable());
-		Table table = namespace.getStorage().getTable(tableId);
+		log.info("Importing {}", importSource);
 
-		if(table == null){
-			throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
-		}
+		final ImportJob job = new ImportJob(datasetRegistry.get(ds.getId()), table, importSource, config.getCluster().getEntityBucketSize(), header, parser);
 
-		final ImportId importId = new ImportId(table.getId(), header.getName());
-
-		if (namespace.getStorage().getImport(importId) != null) {
-			throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Status.CONFLICT);
-		}
-
-		header.assertMatch(table);
-
-		log.info("Importing {}", selectedFile.getAbsolutePath());
-
-		final ImportJob job = new ImportJob(datasetRegistry.get(ds.getId()), table, selectedFile, config.getCluster().getEntityBucketSize());
-		datasetRegistry.get(ds.getId()).getJobManager().addSlowJob(job);
+		job.getProgressReporter().start();
+		job.execute();
+		//datasetRegistry.get(ds.getId()).getJobManager().addSlowJob(job);
 
 	}
 

@@ -38,7 +38,6 @@ import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
-import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
@@ -63,8 +62,13 @@ public class ImportJob extends Job {
 	private final Namespace namespace;
 
 	private final Table table;
-	private final File importFile;
+	private final String importSource;
 	private final int bucketSize;
+	private final PreprocessedHeader header;
+//	private final PreprocessedDictionaries dictionaries;
+//	private final PreprocessedData data;
+
+	private final PreprocessedReader parser;
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
@@ -78,23 +82,20 @@ public class ImportJob extends Job {
 		// 2) The Dictionaries to be imported and transformed
 		// 3) The ColumnStores themselves which contain references to the previously imported dictionaries.
 
-		final Map<IId<?>, Identifiable<?>> replacements = new HashMap<>();
-
-		replacements.put(Dataset.PLACEHOLDER.getId(), getDataset());
-
-		log.info("BEGIN Reading `{}`", importFile);
+		parser.addReplacement(Dataset.PLACEHOLDER.getId(), getDataset());
 
 		final DictionaryMapping primaryMapping;
 		final PreprocessedData container;
 		final Map<String, DictionaryMapping> mappings;
-		final PreprocessedHeader header;
 
-		try (final PreprocessedReader parser = Preprocessed.createReader(importFile, replacements)) {
+		namespace.checkConnections();
+		try {
 
-			header = parser.readHeader();
+			if(parser.getLastRead() != PreprocessedReader.LastRead.HEADER){
+				throw new IllegalStateException("Expected that solely the header of preprocessed file was parsed, but the parser is in state: " + parser.getLastRead());
+			}
 			log.info("Importing {} into {}", header.getName(), table);
 
-			namespace.checkConnections();
 
 			log.trace("Begin reading Dictionaries");
 
@@ -119,15 +120,19 @@ public class ImportJob extends Job {
 
 
 			// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
-			replacements.putAll(normalDictionaries);
+			parser.addAllReplacements(normalDictionaries);
 
 			for (DictionaryMapping value : mappings.values()) {
-				replacements.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), value.getSourceDictionary().getName()), value.getTargetDictionary());
+				parser.addReplacement(new DictionaryId(Dataset.PLACEHOLDER.getId(), value.getSourceDictionary().getName()), value.getTargetDictionary());
 			}
 
 			log.trace("Begin reading data.");
 
 			container = parser.readData();
+		}
+		finally {
+			// Close parser manually
+			parser.close();
 		}
 
 		if (container.isEmpty()) {
@@ -527,7 +532,7 @@ public class ImportJob extends Job {
 
 	@Override
 	public String getLabel() {
-		return "Importing into " + table + " from " + importFile;
+		return "Importing into " + table + " from " + importSource;
 	}
 
 }

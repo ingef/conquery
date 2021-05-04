@@ -4,7 +4,9 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.commands.ShardNode;
@@ -217,7 +219,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.preprocessTmp(conquery.getTmpDir(), List.of(descriptionFile));
 
 			//import preprocessedFiles
-			conquery.getDatasetsProcessor().addImport(conquery.getNamespace(), preprocessedFile);
+			conquery.getDatasetsProcessor().addImport(conquery.getNamespace(), preprocessedFile.getAbsolutePath(), new GZIPInputStream(new FileInputStream(preprocessedFile)));
 			conquery.waitUntilWorkDone();
 		}
 
