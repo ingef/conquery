@@ -1,17 +1,17 @@
 {
     "title": {
-        "de": "Export"
+        "de": "Datenexport"
     },
     "type": "EXPORT_FORM",
     "headline": {
-        "de": "Export"
+        "de": "Datenexport"
     },
     "fields": [
         {
             "name": "queryGroup",
             "type": "RESULT_GROUP",
             "label": {
-                "de": "Versichertengruppe"
+                "de": "Versichertengruppe (Anfrage)"
             },
             "dropzoneLabel": {
                 "de": "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu"
