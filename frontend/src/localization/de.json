@@ -311,10 +311,10 @@
     "colon": "Doppelpunkt",
     "comma": "Komma",
     "id": "ID",
-    "dateSet": "DATUMSBEREICH",
-    "startDate": "START_DATUM",
-    "endDate": "END_DATUM",
-    "ignore": "IGNORIEREN"
+    "dateSet": "Datumsbereich",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "ignore": "Ignorieren"
   },
   "uploadConceptListModal": {
     "headline": "Konzepte aus Liste einfügen",
