@@ -187,7 +187,7 @@
     "today": "Heute",
     "dateFormat": "dd.MM.yyyy",
     "tooltip": {
-      "possiblePattern": "j2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
+      "possiblePattern": "Folgende Abkürzungen sind erlaubt: <br/> Eingabe: j2020/j.2020 wird zu: Von 01.01.2020; Bis 31.12.2020 <br/> Eingabe: q2.2020 wird zu: Von 01.04.2020; Bis 30.06.2020 <br/> Eingabe: m8.2020 wird zu: Von 01.08.2020; Bis 31.08.2020"
     }
   },
   "inputMultiSelect": {
