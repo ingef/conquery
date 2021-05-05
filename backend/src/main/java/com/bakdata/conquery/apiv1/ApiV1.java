@@ -91,6 +91,6 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(FilterResource.class);
 		environment.register(MeResource.class);
 
-		environment.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry()));
+		environment.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
 	}
 }

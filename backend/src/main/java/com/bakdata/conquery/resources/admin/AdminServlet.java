@@ -78,7 +78,7 @@ public class AdminServlet {
 			}
 		});
 
-		jerseyConfig.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry()));
+		jerseyConfig.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
 	}
 
 	public void register(ManagerNode manager) {

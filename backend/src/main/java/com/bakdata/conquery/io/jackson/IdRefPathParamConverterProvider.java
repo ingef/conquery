@@ -6,8 +6,10 @@ import java.lang.reflect.Type;
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.RequiredArgsConstructor;
 
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class IdRefPathParamConverterProvider implements ParamConverterProvider {
 
 	private final DatasetRegistry datasetRegistry;
+	private final CentralRegistry metaRegistry;
 
 	@Override
 	public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
@@ -30,6 +33,11 @@ public class IdRefPathParamConverterProvider implements ParamConverterProvider {
 
 		final IId.Parser<IId<T>> parser = IId.createParser(idClass);
 
-		return new IdRefParamConverter(parser, datasetRegistry);
+
+		if (NamespacedId.class.isAssignableFrom(idClass)) {
+			return new NamespacedIdRefParamConverter(parser, datasetRegistry);
+		}
+
+		return new MetaIdRefParamConverter(parser, metaRegistry);
 	}
 }

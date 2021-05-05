@@ -47,7 +47,6 @@ import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.univocity.parsers.csv.CsvWriter;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
