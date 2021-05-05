@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -23,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @Setter
-public class Import extends NamedImpl<ImportId> {
+public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiable<ImportId> {
 
 	@Valid
 	@NotNull
@@ -55,4 +56,8 @@ public class Import extends NamedImpl<ImportId> {
 		return mem;
 	}
 
+	@Override
+	public Dataset getDataset() {
+		return getTable().getDataset();
+	}
 }

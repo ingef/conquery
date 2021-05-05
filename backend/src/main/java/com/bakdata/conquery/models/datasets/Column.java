@@ -7,6 +7,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -18,7 +19,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class Column extends Labeled<ColumnId> {
+public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId> {
 
 	public static final int UNKNOWN_POSITION = -1;
 
@@ -65,5 +66,10 @@ public class Column extends Labeled<ColumnId> {
 	@ValidationMethod(message = "Only STRING columns can be part of shared Dictionaries.") @JsonIgnore
 	public boolean isSharedString() {
 		return sharedDictionary == null || type.equals(MajorTypeId.STRING);
+	}
+
+	@Override
+	public Dataset getDataset() {
+		return table.getDataset();
 	}
 }

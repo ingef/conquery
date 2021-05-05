@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -18,7 +19,7 @@ import lombok.Setter;
 
 @Getter @Setter
 @NoArgsConstructor
-public class Dataset extends Labeled<DatasetId> implements Injectable, Authorized {
+public class Dataset extends Labeled<DatasetId> implements Injectable, Authorized, NamespacedIdentifiable<DatasetId> {
 	public Dataset(String name) {
 		setName(name);
 	}
@@ -54,5 +55,10 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return DatasetPermission.onInstance(abilities,getId());
+	}
+
+	@Override
+	public Dataset getDataset() {
+		return this;
 	}
 }

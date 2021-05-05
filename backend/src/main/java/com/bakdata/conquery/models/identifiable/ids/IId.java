@@ -67,6 +67,10 @@ public interface IId<TYPE> {
 				throw new IllegalStateException("The type `" +  returnType + "` of `" + cl + "#" + methodName + "` is not a specific subtype of IId");
 			}
 
+			if(NamespacedIdentifiable.class.isAssignableFrom(cl) != NamespacedId.class.isAssignableFrom(returnType)){
+				throw new IllegalStateException(String.format("%s and %s are not both Namespaced.", cl, returnType));
+			}
+
 			result = returnType;
 			CLASS_TO_ID_MAP.put(cl, result);
 
