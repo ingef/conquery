@@ -1,30 +1,5 @@
 package com.bakdata.conquery.models.execution;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriBuilderException;
-
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
@@ -48,12 +23,12 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -64,16 +39,26 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.univocity.parsers.csv.CsvWriter;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.SneakyThrows;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriBuilderException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -138,7 +123,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				return;
 			}
 			if(label == null) {
-				label = makeAutoLabel(datasetRegistry, new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config));
+				// IdMapper is not necessary here
+				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null));
 			}
 			doInitExecutable(datasetRegistry, config);
 			initialized = true;
@@ -246,8 +232,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStatus(state);
-		status.setOwner(owner.getId());
-		status.setOwnerName(owner.getLabel());
+		if(owner != null){
+			status.setOwner(owner.getId());
+			status.setOwnerName(owner.getLabel());
+		}
 		status.setResultUrl(getDownloadURL(url, datasetAbilities).orElse(null));
 	}
 	
@@ -370,13 +358,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	/**
-	 * Provides the result of the execution directly as a {@link StreamingOutput} with is directly returned as a response to a download request.
-	 * This way, no assumption towards the form/type of the result are made and the effective handling of the result is up to the implementation.
-	 */
-	@JsonIgnore
-	public abstract StreamingOutput getResult(Function<EntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator, CsvWriter writer, List<String> header);
-	
-	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.
 	 * @return A List of all {@link NamespacedId}s needed for the execution.
 	 */
@@ -417,15 +398,15 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	
 	@JsonIgnore
 	public boolean isAutoLabeled() {
-		return label != null ? label.endsWith(AUTO_LABEL_SUFFIX) : false;
+		return label != null && label.endsWith(AUTO_LABEL_SUFFIX);
 	}
 	
 	@JsonIgnore
-	abstract protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry, PrintSettings cfg);
+	abstract protected void makeDefaultLabel(StringBuilder sb, PrintSettings cfg);
 	
-	protected String makeAutoLabel(DatasetRegistry datasetRegistry, PrintSettings cfg) {
+	protected String makeAutoLabel(PrintSettings cfg) {
 		StringBuilder sb = new StringBuilder();
-		makeDefaultLabel(sb, datasetRegistry, cfg);
+		makeDefaultLabel(sb, cfg);
 		return sb.append(AUTO_LABEL_SUFFIX).toString();
 	}
 
@@ -433,4 +414,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return ExecutionPermission.onInstance(abilities,getId());
 	}
+
+	@JsonIgnore
+	public abstract List<ResultInfo> getResultInfo();
+
+	@JsonIgnore
+	public abstract Stream<EntityResult> streamResults();
 }

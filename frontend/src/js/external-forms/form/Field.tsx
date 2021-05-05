@@ -49,7 +49,7 @@ interface PropsT {
   field: GeneralField;
   getFieldValue: (fieldName: string) => any;
   locale: "de" | "en";
-  availableDatasets: SelectOptionT;
+  availableDatasets: SelectOptionT[];
 }
 
 const Field = ({ field, ...commonProps }: PropsT) => {
@@ -157,6 +157,11 @@ const Field = ({ field, ...commonProps }: PropsT) => {
         <RxFormField
           name={field.name}
           component={Select}
+          defaultValue={
+            availableDatasets.length > 0
+              ? availableDatasets[0].value
+              : undefined
+          }
           props={{
             label: field.label[locale],
             options: availableDatasets,

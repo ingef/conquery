@@ -47,9 +47,7 @@ const InputMultiSelectDropzone: FC<PropsT> = ({ onDropFile, children }) => {
       <Dropzone<DragItemFile>
         acceptedDropTypes={[NativeTypes.FILE]}
         onDrop={(item) => {
-          if (item) {
-            onDropFile(item.files[0]);
-          }
+          onDropFile(item.files[0]);
         }}
       >
         {children}

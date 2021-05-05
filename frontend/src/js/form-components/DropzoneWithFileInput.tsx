@@ -11,7 +11,7 @@ import Dropzone, {
 } from "./Dropzone";
 
 export interface DragItemFile {
-  type: "__NATIVE_FILE__";
+  type: "__NATIVE_FILE__"; // Actually, this seems to not be passed by react-dnd
   files: File[];
 }
 
@@ -96,7 +96,14 @@ const DropzoneWithFileInput = <
 
         onOpenFileDialog();
       }}
-      onDrop={onDrop}
+      onDrop={(item, monitor) => {
+        if ("files" in item) {
+          // Because it doesn't seem to be added by react-dnd
+          item.type = NativeTypes.FILE;
+        }
+
+        onDrop(item as DroppableObject | DragItemFile, monitor);
+      }}
       isInitial={isInitial}
       className={className}
     >

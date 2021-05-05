@@ -43,7 +43,6 @@ const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
     css`
       height: 100px;
       white-space: nowrap;
-      margin-top: 70px;
       width: initial;
     `};
 `;
@@ -113,7 +112,7 @@ const QueryEditorDropzone: FC<PropsT> = ({
       isInitial={isInitial}
       acceptedDropTypes={DROP_TYPES}
       onDrop={(item) => {
-        if (item.type === NativeTypes.FILE && item.files) {
+        if (item.type === "__NATIVE_FILE__") {
           onDropFile(item.files[0]);
         } else {
           onDropNode(item);
