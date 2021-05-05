@@ -121,7 +121,6 @@ public abstract class ConqueryTestSpec {
 	 */
 	@RequiredArgsConstructor
 	private static class DatasetPlaceHolderFiller extends DeserializationProblemHandler {
-		private static final String DATASET_PLACEHOLDER = "${dataset}";
 
 		private final StandaloneSupport support;
 
