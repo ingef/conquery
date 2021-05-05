@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -12,14 +10,12 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
@@ -31,7 +27,7 @@ import lombok.Setter;
 @CPSType(id = "SAVED_QUERY", base = CQElement.class)
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
 @Getter @Setter
-public class CQReusedQuery extends CQElement implements NamespacedIdentifiableHolding {
+public class CQReusedQuery extends CQElement {
 
 	public CQReusedQuery(ManagedQuery query){
 		this.query = query;
@@ -50,6 +46,11 @@ public class CQReusedQuery extends CQElement implements NamespacedIdentifiableHo
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
 		requiredQueries.add(query);
+
+		// There might be transitive usage of other queries
+		if(resolvedQuery != null) {
+			resolvedQuery.collectRequiredQueries(requiredQueries);
+		}
 	}
 
 	@Override
@@ -82,11 +83,5 @@ public class CQReusedQuery extends CQElement implements NamespacedIdentifiableHo
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		resolvedQuery.getReusableComponents().collectResultInfos(collector);
-	}
-
-	@Override
-	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> ids) {
-		checkNotNull(ids);
-//		ids.add(query);
 	}
 }
