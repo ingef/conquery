@@ -43,7 +43,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 @Slf4j
 public class DefaultColumnNameTest {
 	private final static DatasetRegistry DATASET_REGISTRY = mock(DatasetRegistry.class);
-	private final static PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, DATASET_REGISTRY, new ConqueryConfig());
+	private final static PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, DATASET_REGISTRY, new ConqueryConfig(), null);
 	private final static Validator VALIDATOR = Validators.newValidator();
 	
 	private final static Function<TestConcept,Select> FIRST_CONCEPT_SELECT_EXTRACTOR = (concept) -> concept.getSelects().get(0);

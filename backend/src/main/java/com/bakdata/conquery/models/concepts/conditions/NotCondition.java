@@ -18,7 +18,7 @@ import lombok.Setter;
 @CPSType(id="NOT", base=CTCondition.class)
 public class NotCondition implements CTCondition {
 
-	@Setter @Getter @Valid @NotEmpty
+	@Setter @Getter @Valid
 	private CTCondition condition;
 
 	@Override

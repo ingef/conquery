@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -11,10 +10,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
@@ -34,23 +32,21 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.ResultCSVResource;
+import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.univocity.parsers.csv.CsvWriter;
-import com.univocity.parsers.csv.CsvWriterSettings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -223,14 +219,21 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 
+	@Override
+	public List<ResultInfo> getResultInfo() {
+		if(getSubQueries().size() != 1) {
+			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
+		}
+		return getSubQueries().values().iterator().next().get(0).getResultInfo();
+	}
 
 	@Override
-	public StreamingOutput getResult(Function<EntityResult,ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator, CsvWriter writer, List<String> header) {
+	public Stream<EntityResult> streamResults() {
 		if(subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
-			throw new UnsupportedOperationException("Can't return the result query of a multi query form");
+			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
-		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), idMapper, charset, lineSeparator, writer, header);
+		return subQueries.values().iterator().next().stream().flatMap(ManagedQuery::streamResults);
 	}
 	
 	@Override
@@ -262,9 +265,9 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	protected URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException {
 		return url
-			.path(ResultCSVResource.class)
+			.path(ResultCsvResource.class)
 			.resolveTemplate(ResourceConstants.DATASET, dataset.getName())
-			.path(ResultCSVResource.class, ResultCSVResource.GET_CSV_PATH_METHOD)
+			.path(ResultCsvResource.class, ResultCsvResource.GET_CSV_PATH_METHOD)
 			.resolveTemplate(ResourceConstants.QUERY, getId().toString())
 			.build()
 			.toURL();
@@ -273,11 +276,11 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	protected void makeDefaultLabel(StringBuilder sb, DatasetRegistry datasetRegistry, PrintSettings cfg) {
+	protected void makeDefaultLabel(StringBuilder sb, PrintSettings cfg) {
 		sb
 			.append(getSubmittedForm().getLocalizedTypeLabel())
 			.append(" ")
-			.append(getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm", I18n.LOCALE.get())));
+			.append(getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", I18n.LOCALE.get())));
 		
 	}
 	

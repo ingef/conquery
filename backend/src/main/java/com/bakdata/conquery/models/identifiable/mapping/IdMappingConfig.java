@@ -1,10 +1,12 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.util.*;
+import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -93,4 +95,6 @@ public abstract class IdMappingConfig {
 		log.info("Using the default accessor implementation.");
 		return DefaultIdAccessorImpl.INSTANCE;
 	}
+
+
 }
