@@ -11,11 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.result.ResultTestUtil;
@@ -64,22 +60,6 @@ public class ArrowResultGenerationTest {
                         new Field("id1", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("id2", FieldType.nullable(new ArrowType.Utf8()), null)));
 
-    }
-
-    private Collection<ResultType> getResultTypes() {
-        return List.of(
-                ResultType.BooleanT.INSTANCE,
-                ResultType.IntegerT.INSTANCE,
-                ResultType.NumericT.INSTANCE,
-                ResultType.CategoricalT.INSTANCE,
-                ResultType.ResolutionT.INSTANCE,
-                ResultType.DateT.INSTANCE,
-                ResultType.DateRangeT.INSTANCE,
-                ResultType.StringT.INSTANCE,
-                ResultType.MoneyT.INSTANCE,
-                new ResultType.ListT(ResultType.BooleanT.INSTANCE),
-                new ResultType.ListT(ResultType.DateRangeT.INSTANCE)
-        );
     }
 
     @Test
@@ -131,15 +111,7 @@ public class ArrowResultGenerationTest {
                 (cer) -> new ExternalEntityId(new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())}),
                 (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
-        List<EntityResult> results = List.of(
-                new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(345, 534), "test_string", 4521, List.of(true, false), List.of(List.of(345, 534), List.of(1, 2))}),
-                new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(), List.of()}),
-                new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false), null}),
-                new MultilineEntityResult(3, List.of(
-                        new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false), null},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null, null},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false), null}
-                )));
+        List<EntityResult> results = getTestEntityResults();
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
             public List<ResultInfo> getResultInfo() {
