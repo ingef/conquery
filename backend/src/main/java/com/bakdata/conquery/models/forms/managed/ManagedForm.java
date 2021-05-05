@@ -50,7 +50,6 @@ import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.univocity.parsers.csv.CsvWriter;
-import com.univocity.parsers.csv.CsvWriterSettings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -70,12 +69,12 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(base = ManagedExecution.class, id = "MANAGED_FORM")
 @NoArgsConstructor
 public class ManagedForm extends ManagedExecution<FormSharedResult> {
-	
+
 	/**
 	 * The form that was submitted through the api.
 	 */
 	private Form submittedForm;
-	
+
 	/**
 	 * Mapping of a result table name to a set of queries.
 	 * This is required by forms that have multiple results (CSVs) as output.
@@ -94,17 +93,17 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		super(owner, submittedDataset);
 		this.submittedForm = submittedForm;
 	}
-	
+
 
 
 	@Override
 	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		// init all subqueries
-		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, config,null));
+		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, datasetRegistry.getMetaRegistry(), config,null));
 		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset());
 		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
 	}
-	
+
 	@Override
 	public void start() {
 		synchronized (this) {
@@ -147,7 +146,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		ManagedExecutionId subquery = result.getSubqueryId();
 		if(result.getError().isPresent()) {
 			fail(storage, result.getError().get());
-			return;			
+			return;
 		}
 		ManagedQuery subQuery = flatSubQueries.get(subquery);
 		subQuery.addResult(storage, result);
@@ -170,9 +169,9 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			case RUNNING:
 			default:
 				break;
-			
+
 		}
-		
+
 	}
 
 
@@ -192,7 +191,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		FormSharedResult result = new FormSharedResult();
 		result.setQueryId(getId());
 		if(entry != null) {
-			result.setSubqueryId(entry.getKey());			
+			result.setSubqueryId(entry.getKey());
 		}
 		return result;
 	}
@@ -232,7 +231,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		}
 		return ResultCSVResource.resultAsStreamingOutput(this.getId(), settings, subQueries.values().iterator().next(), idMapper, charset, lineSeparator, writer, header);
 	}
-	
+
 	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
 		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
@@ -278,7 +277,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			.append(getSubmittedForm().getLocalizedTypeLabel())
 			.append(" ")
 			.append(getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("YYYY-MM-dd HH:mm", I18n.LOCALE.get())));
-		
+
 	}
-	
+
 }

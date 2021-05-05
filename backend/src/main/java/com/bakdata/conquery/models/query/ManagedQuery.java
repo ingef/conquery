@@ -57,7 +57,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvWriter;
-import com.univocity.parsers.csv.CsvWriterSettings;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -107,7 +106,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.config = config;
 		this.namespace = namespaces.get(getDataset().getId());
 		this.involvedWorkers = namespace.getWorkers().size();
-		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
+		query.resolve(new QueryResolveContext(getDataset(), namespaces, namespaces.getMetaRegistry(), config,null));
 		if (label == null) {
 			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces, config));
 		}

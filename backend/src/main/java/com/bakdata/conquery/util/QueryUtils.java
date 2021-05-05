@@ -18,9 +18,9 @@ import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.NamespacedIdentifiableHolding;
@@ -115,12 +115,12 @@ public class QueryUtils {
 			}
 		}
 
-		public Optional<ManagedExecution<?>> getOnlyReused() {
+		public Optional<ManagedExecutionId> getOnlyReused() {
 			if (containsOthersElements || reusedQuery == null) {
 				return Optional.empty();
 			}
 
-			return Optional.of(reusedQuery.getQuery());
+			return Optional.of(reusedQuery.getQueryId());
 		}
 	}
 
