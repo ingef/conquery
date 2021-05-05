@@ -72,7 +72,7 @@ public class CQReusedQuery extends CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		query = ((ManagedQuery) context.getMetaRegistry().resolve(queryId));
+		query = ((ManagedQuery) context.getDatasetRegistry().getMetaRegistry().resolve(queryId));
 		resolvedQuery = query.getQuery();
 
 		// Yey recursion, because the query might consist of another CQReusedQuery or CQExternal
