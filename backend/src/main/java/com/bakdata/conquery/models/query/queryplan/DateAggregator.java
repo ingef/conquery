@@ -1,15 +1,15 @@
 package com.bakdata.conquery.models.query.queryplan;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * This aggregator builds a tree of other DateAggregator which is partly parallel to the actual query plan.
@@ -37,7 +37,6 @@ public class DateAggregator implements Aggregator<CDateSet> {
 
     @Override
     public CDateSet getAggregationResult() {
-        CDateSet ret = CDateSet.create();
         final Set<CDateSet> all = new HashSet<>();
         siblings.forEach(s -> {
             CDateSet result = s.getAggregationResult();

@@ -18,21 +18,22 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class MoneyParser extends Parser<Long, MoneyStore> {
 
-	@JsonIgnore
-	@Getter(lazy = true)
-	private final BigDecimal moneyFactor = BigDecimal.valueOf(10).pow(ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits());
 	private long maxValue = Long.MIN_VALUE;
 	private long minValue = Long.MAX_VALUE;
 
+	@JsonIgnore
+	private final BigDecimal moneyFactor;
+
 	public MoneyParser(ParserConfig config) {
 		super(config);
+		moneyFactor = BigDecimal.valueOf(10).pow(config.getCurrency().getDefaultFractionDigits());
 	}
 
 	@Override
 	protected Long parseValue(String value) throws ParsingException {
 		return NumberParsing
 					   .parseMoney(value)
-					   .multiply(getMoneyFactor())
+					   .multiply(moneyFactor)
 					   .longValueExact();
 	}
 
@@ -64,7 +65,7 @@ public class MoneyParser extends Parser<Long, MoneyStore> {
 	}
 
 	@Override
-	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues createColumnValues() {
 		return new LongColumnValues();
 	}
 

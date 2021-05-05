@@ -55,4 +55,13 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	public String defaultColumnName(PrintSettings printSettings) {
 		return localizedDefaultLabelProvider.apply(printSettings.getLocale());
 	}
+
+	@Override
+	public String toString() {
+		return "LocalizedDefaultResultInfo{" +
+				"localizedLabelProvider=" + localizedLabelProvider.apply(Locale.ROOT) +
+				", localizedDefaultLabelProvider=" + localizedDefaultLabelProvider.apply(Locale.ROOT) +
+				", type=" + type +
+				'}';
+	}
 }

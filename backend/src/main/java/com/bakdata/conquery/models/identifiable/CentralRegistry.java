@@ -9,7 +9,6 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.error.ConqueryError.ExecutionCreationResolveError;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -34,37 +33,39 @@ public class CentralRegistry implements Injectable {
 		cacheables.put(id, supplier);
 	}
 
-	public <T extends Identifiable<?>> T resolve(IId<T> name) {
+	protected  <T extends Identifiable<?>> T get(IId<T> name) {
 		Object res = map.get(name);
 		if (res != null) {
 			return (T) res;
 		}
+
 		Function<IId, Identifiable> supplier = cacheables.get(name);
 		if (supplier == null) {
-			throw new ExecutionCreationResolveError(name);
+			return null;
 		}
 		return (T) supplier.apply(name);
 	}
 
-	public <T extends Identifiable<?>> Optional<T> getOptional(IId<T> name) {
-		Object res = map.get(name);
-		if (res != null) {
-			return Optional.of((T) res);
+	public <T extends Identifiable<?>> T resolve(IId<T> name) {
+		final T result = get(name);
+
+		if(result == null){
+			throw new ExecutionCreationResolveError(name);
 		}
-		Function<IId, Identifiable> supplier = cacheables.get(name);
-		if (supplier == null) {
-			return Optional.empty();
-		}
-		return Optional.ofNullable((T) supplier.apply(name));
+
+		return result;
 	}
 
-	public synchronized void remove(IId<?> id) {
-		map.remove(id);
-		cacheables.remove(id);
+	public <T extends Identifiable<?>> Optional<T> getOptional(IId<T> name) {
+		return Optional.ofNullable(get(name));
 	}
 
 	public void remove(Identifiable<?> ident) {
-		remove(ident.getId());
+		IId<?> id = ident.getId();
+		synchronized (this) {
+			map.remove(id);
+			cacheables.remove(id);
+		}
 	}
 
 	@Override
@@ -82,16 +83,6 @@ public class CentralRegistry implements Injectable {
 			return alternative.getMetaRegistry();
 		}
 		return result;
-	}
-
-	public static CentralRegistry getForDataset(DeserializationContext ctxt, DatasetId datasetId) throws JsonMappingException {
-		IdResolveContext alternative = (IdResolveContext) ctxt.findInjectableValue(IdResolveContext.class.getName(), null, null);
-
-		if (alternative == null) {
-			return null;
-		}
-
-		return alternative.findRegistry(datasetId);
 	}
 
 	public void clear() {

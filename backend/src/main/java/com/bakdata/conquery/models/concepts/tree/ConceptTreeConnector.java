@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketEntry;
@@ -20,7 +19,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -88,9 +86,6 @@ public class ConceptTreeConnector extends Connector {
 
 		final TreeConcept treeConcept = getConcept();
 
-		final Import imp = bucket.getImp();
-		final ImportId importId = imp.getId();
-
 		final StringStore stringStore;
 
 		// If we have a column and it is of string-type, we create indices and caches.
@@ -101,7 +96,7 @@ public class ConceptTreeConnector extends Connector {
 			// Create index and insert into Tree.
 			TreeChildPrefixIndex.putIndexInto(treeConcept);
 
-			treeConcept.initializeIdCache(stringStore, importId);
+			treeConcept.initializeIdCache(stringStore, bucket.getImp());
 		}
 		// No column only possible if we have just one tree element!
 		else if(treeConcept.countElements() == 1){
@@ -114,7 +109,7 @@ public class ConceptTreeConnector extends Connector {
 
 		final int[][] mostSpecificChildren = new int[bucket.getNumberOfEvents()][];
 
-		final ConceptTreeCache cache = treeConcept.getCache(importId);
+		final ConceptTreeCache cache = treeConcept.getCache(bucket.getImp());
 
 		final int[] root = getConcept().getPrefix();
 

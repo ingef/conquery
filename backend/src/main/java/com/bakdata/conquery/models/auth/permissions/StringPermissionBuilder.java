@@ -1,14 +1,17 @@
 package com.bakdata.conquery.models.auth.permissions;
 
+import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.bakdata.conquery.io.cps.CPSBase;
 
 /**
  * Base class with utility functions to build permissions.
  * Subclasses should wrap their call to the {@code instancePermission} functions with their own string representation.
- *
+ * {@link com.bakdata.conquery.io.cps.CPSType} is used by {@link AdminProcessor#preparePermissionTemplate()} to generate
+ * a view ob possible Permissions for creation.
+ * Therefore every builder should have a static INSTANCE-Field.
  */
 @CPSBase
 public abstract class StringPermissionBuilder {

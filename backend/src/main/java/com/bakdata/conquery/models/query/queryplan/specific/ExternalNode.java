@@ -1,8 +1,14 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
+import javax.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -12,14 +18,9 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.NonNull;
 
-import javax.validation.constraints.NotEmpty;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-
 public class ExternalNode extends QPNode {
 
-	private final TableId tableId;
+	private final Table table;
 	private SpecialDateUnion dateUnion = new SpecialDateUnion();
 
 	@Getter @NotEmpty @NonNull
@@ -27,9 +28,9 @@ public class ExternalNode extends QPNode {
 
 	private CDateSet contained;
 
-	public ExternalNode(TableId tableId, Map<Integer, CDateSet> includedEntities) {
+	public ExternalNode(Table table, Map<Integer, CDateSet> includedEntities) {
 		this.includedEntities = includedEntities;
-		this.tableId = tableId;
+		this.table = table;
 	}
 
 	@Override
@@ -40,13 +41,13 @@ public class ExternalNode extends QPNode {
 	
 	@Override
 	public ExternalNode doClone(CloneContext ctx) {
-		ExternalNode node = new ExternalNode(tableId, includedEntities);
+		ExternalNode node = new ExternalNode(table, includedEntities);
 		node.dateUnion = ctx.clone(dateUnion);
 		return node;
 	}
 	
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if(contained != null) {
 			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
 			newSet.retainAll(contained);
@@ -75,9 +76,9 @@ public class ExternalNode extends QPNode {
 	}
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
+	public void collectRequiredTables(Set<Table> requiredTables) {
 		super.collectRequiredTables(requiredTables);
 		//add the allIdsTable
-		requiredTables.add(tableId);
+		requiredTables.add(table);
 	}
 }

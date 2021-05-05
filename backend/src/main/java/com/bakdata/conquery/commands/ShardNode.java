@@ -1,10 +1,12 @@
 package com.bakdata.conquery.commands;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -28,6 +30,7 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -62,6 +65,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	private Workers workers;
 	@Setter
 	private ScheduledExecutorService scheduler;
+	private Environment environment;
 
 	/**
 	 * Flags if the instance name should be a prefix for the instances storage.
@@ -83,6 +87,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+		this.environment = environment;
 		connector = new NioSocketConnector();
 
 		jobManager = new JobManager(getName(), config.isFailOnError());
@@ -99,14 +104,14 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		this.config = config;
 		config.initialize(this);
 
-		ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 		workers = new Workers(
 				getConfig().getQueries().getExecutionPool(),
 				getConfig().getQueries().getExecutionPool().getMaxThreads(),
 				getConfig().getCluster().getEntityBucketSize());
 
-		for(WorkerStorage workerStorage : config.getStorage().loadWorkerStorages(this, ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName())) ) {
+		for(WorkerStorage workerStorage : config.getStorage().loadWorkerStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName())) ) {
 			workers.createWorker(workerStorage, config.isFailOnError());
 		}
 
@@ -197,8 +202,11 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
+		ObjectMapper om = Jackson.BINARY_MAPPER.copy();
+		config.configureObjectMapper(om);
+
+		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);
+		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
 

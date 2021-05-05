@@ -1,11 +1,21 @@
 package com.bakdata.conquery.models.query.concept;
 
+import java.util.Set;
+import java.util.function.Consumer;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.*;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -15,12 +25,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Consumer;
 
 @Getter
 @Setter
@@ -58,7 +62,7 @@ public class ConceptQuery extends IQuery {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
 		root.collectRequiredQueries(requiredQueries);
 	}
 

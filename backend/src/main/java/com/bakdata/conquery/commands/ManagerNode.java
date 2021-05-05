@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
@@ -41,6 +42,7 @@ import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
@@ -83,6 +85,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	// Resources without authentication
 	private DropwizardResourceConfig unprotectedAuthApi;
 	private DropwizardResourceConfig unprotectedAuthAdmin;
+
+	// For registering form providers
+	private FormScanner formScanner;
 	/**
 	 * Flags if the instance name should be a prefix for the instances storage.
 	 */
@@ -110,6 +115,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		this.jobManager = new JobManager("ManagerNode", config.isFailOnError());
 		this.environment = environment;
 		this.validator = environment.getValidator();
+		this.formScanner = new FormScanner();
 		this.config = config;
 		config.initialize(this);
 
@@ -157,7 +163,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			}
 		}
 
-		Task formScanner = new FormScanner();
 		try {
 			formScanner.execute(null, null);
 		}
@@ -193,7 +198,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void loadNamespaces() {
-		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(this, ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
+		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
 			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError());
 
 			datasetRegistry.add(ns);
@@ -247,8 +252,10 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator);
-		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
+		ObjectMapper om = Jackson.BINARY_MAPPER.copy();
+		config.configureObjectMapper(om);
+		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
+		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		acceptor.setHandler(this);
 		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
 		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));

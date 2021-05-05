@@ -1,33 +1,29 @@
 package com.bakdata.conquery.models.concepts;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
-import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset.Entry;
 import io.dropwizard.validation.ValidationMethod;
@@ -43,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Valid
 @Slf4j
-public abstract class Connector extends Labeled<ConnectorId> implements Serializable, SelectHolder<Select> {
+public abstract class Connector extends Labeled<ConnectorId> implements SelectHolder<Select>, NamespacedIdentifiable<ConnectorId> {
 
 	public static final int[] NOT_CONTAINED = new int[]{-1};
 	private static final long serialVersionUID = 1L;
@@ -84,40 +80,12 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 		return concept;
 	}
 
-	@JsonDeserialize(contentUsing = NsIdReferenceDeserializer.class)
-	public void setSelectableDates(List<Column> cols) {
-		this.setValidityDates(
-				cols
-						.stream()
-						.map(c -> {
-							ValidityDate sd = new ValidityDate();
-							sd.setColumn(c);
-							sd.setName(c.getName());
-							sd.setConnector(this);
-							return sd;
-						})
-						.collect(Collectors.toList())
-		);
-	}
-
 	@Override
 	public ConnectorId createId() {
 		return new ConnectorId(concept.getId(), getName());
 	}
 
 	public abstract Table getTable();
-
-	@JsonIgnore
-	public Column getSelectableDate(String name) {
-		return validityDates
-					   .stream()
-					   .filter(vd -> vd.getName().equals(name))
-					   .map(ValidityDate::getColumn)
-					   .findAny()
-					   .orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
-	}
-
-
 
 	@JsonIgnore
 	@ValidationMethod(message = "Filter names are not unique.")
@@ -136,34 +104,8 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 		return valid;
 	}
 
-
-
-	public Filter<?> getFilterByName(String name) {
-		return collectAllFilters().stream()
-								  .filter(f -> name.equals(f.getName()))
-								  .findAny()
-								  .orElseThrow(() -> new IllegalArgumentException("Unable to find filter " + name));
-	}
-
 	@JsonIgnore
 	public abstract List<Filter<?>> collectAllFilters();
-
-	public <T extends Filter> T getFilter(FilterId id) {
-		if (allFiltersMap == null) {
-			allFiltersMap = new IdMap<>(collectAllFilters());
-		}
-		return (T) allFiltersMap.getOrFail(id);
-	}
-
-	public Column getValidityDateColumn(ValidityDateId id) {
-		for (ValidityDate vDate : validityDates) {
-			if (vDate.getId().equals(id)) {
-				return vDate.getColumn();
-			}
-		}
-
-		throw new NoSuchElementException("There is no validityDate called '" + id + "' in " + this);
-	}
 
 	public synchronized void addImport(Import imp) {
 		for (Filter<?> f : collectAllFilters()) {
@@ -173,6 +115,12 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 	public static boolean isNotContained(int[] mostSpecificChildren) {
 		return Arrays.equals(mostSpecificChildren, NOT_CONTAINED);
+	}
+
+	@JsonIgnore
+	@Override
+	public Dataset getDataset() {
+		return getConcept().getDataset();
 	}
 
 	/**

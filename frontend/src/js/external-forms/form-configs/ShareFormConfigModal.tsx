@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
-import { useDispatch, useSelector } from "react-redux";
 import { StateT } from "app-types";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
 
-import Modal from "../../modal/Modal";
 import { usePatchFormConfig } from "../../api/api";
 import type { DatasetIdT, UserGroupT } from "../../api/types";
-import { setMessage } from "../../snack-message/actions";
-import TransparentButton from "../../button/TransparentButton";
 import PrimaryButton from "../../button/PrimaryButton";
-import { FormConfigT } from "./reducer";
-import InputMultiSelect from "../../form-components/InputMultiSelect";
-import { patchFormConfigSuccess } from "./actions";
-import { usePrevious } from "../../common/helpers/usePrevious";
+import TransparentButton from "../../button/TransparentButton";
 import { exists } from "../../common/helpers/exists";
+import { usePrevious } from "../../common/helpers/usePrevious";
+import InputMultiSelect from "../../form-components/InputMultiSelect";
+import Modal from "../../modal/Modal";
+import { setMessage } from "../../snack-message/actions";
+
+import { patchFormConfigSuccess } from "./actions";
+import { FormConfigT } from "./reducer";
 import { useLoadFormConfig } from "./selectors";
-import { useTranslation } from "react-i18next";
 
 const Buttons = styled("div")`
   text-align: center;
@@ -51,7 +52,7 @@ interface PropsT {
 
 const getUserGroupsValue = (
   userGroups: UserGroupT[],
-  formConfig?: FormConfigT
+  formConfig?: FormConfigT,
 ) => {
   return formConfig && formConfig.groups
     ? userGroups
@@ -70,18 +71,18 @@ const ShareFormConfigModal = ({
 }: PropsT) => {
   const { t } = useTranslation();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId,
   );
   const userGroups = useSelector<StateT, UserGroupT[]>((state) =>
-    state.user.me ? state.user.me.groups : []
+    state.user.me ? state.user.me.groups : [],
   );
   const formConfig = useSelector<StateT, FormConfigT | undefined>((state) =>
-    state.formConfigs.data.find((config) => config.id === formConfigId)
+    state.formConfigs.data.find((config) => config.id === formConfigId),
   );
   const initialUserGroupsValue = getUserGroupsValue(userGroups, formConfig);
 
   const [userGroupsValue, setUserGroupsValue] = useState<SelectValueT[]>(
-    initialUserGroupsValue
+    initialUserGroupsValue,
   );
 
   const previousFormConfigId = usePrevious(formConfigId);
@@ -134,7 +135,7 @@ const ShareFormConfigModal = ({
           ...formConfig,
           shared,
           groups: userGroupsToShare,
-        })
+        }),
       );
 
       onShareSuccess();

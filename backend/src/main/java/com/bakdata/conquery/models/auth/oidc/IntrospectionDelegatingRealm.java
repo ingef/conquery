@@ -1,5 +1,14 @@
 package com.bakdata.conquery.models.auth.oidc;
 
+import java.io.IOException;
+import java.net.URI;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
@@ -30,16 +39,6 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
-import org.keycloak.authorization.client.Configuration;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Realm that validates OpenID access tokens by delegating them to an IDP TokenIntrospection endpoint
@@ -172,7 +171,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 
 		private void synchGroupMappings(User user, Set<Group> mappedGroupsToDo) {
 			for(Group group : storage.getAllGroups()) {
-				if(group.containsMember(user.getId())) {
+				if(group.containsMember(user)) {
 					if(mappedGroupsToDo.contains(group)) {
 						// Mapping is still valid, remove from ToDo-List
 						mappedGroupsToDo.remove(group);

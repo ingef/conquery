@@ -1,11 +1,11 @@
+import { StateT } from "app-types";
 import React from "react";
 import { useTranslation } from "react-i18next";
-
-import DeleteModal from "../../modal/DeleteModal";
-import { useDeleteFormConfig } from "../../api/api";
 import { useDispatch, useSelector } from "react-redux";
-import { StateT } from "app-types";
+
+import { useDeleteFormConfig } from "../../api/api";
 import type { DatasetIdT } from "../../api/types";
+import DeleteModal from "../../modal/DeleteModal";
 import { setMessage } from "../../snack-message/actions";
 
 interface PropsType {
@@ -21,7 +21,7 @@ const DeleteFormConfigModal = ({
 }: PropsType) => {
   const { t } = useTranslation();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId,
   );
   const dispatch = useDispatch();
   const deleteFormConfig = useDeleteFormConfig();

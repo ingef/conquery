@@ -1,6 +1,8 @@
-import { ConceptIdT } from "../api/types";
-import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
+import { useSelector, useDispatch } from "react-redux";
+
+import { ConceptIdT } from "../api/types";
+
 import { setConceptOpen } from "./actions";
 
 interface PropsT {
@@ -13,7 +15,7 @@ export const useOpenableConcept = ({
   openInitially = false,
 }: PropsT) => {
   const conceptOpen = useSelector<StateT, boolean>(
-    (state) => state.conceptTreesOpen[conceptId]
+    (state) => state.conceptTreesOpen[conceptId],
   );
   const open = conceptOpen == null ? openInitially : conceptOpen;
 

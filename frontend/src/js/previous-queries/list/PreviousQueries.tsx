@@ -1,13 +1,13 @@
-import React, { useState } from "react";
 import styled from "@emotion/styled";
+import React, { useState } from "react";
 import ReactList from "react-list";
 
 import { DatasetIdT } from "../../api/types";
 
-import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
-import { PreviousQueryT } from "./reducer";
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
+import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
 import SharePreviousQueryModal from "./SharePreviousQueryModal";
+import { PreviousQueryT } from "./reducer";
 
 interface PropsT {
   datasetId: DatasetIdT | null;
@@ -17,6 +17,7 @@ interface PropsT {
 const Root = styled("div")`
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   font-size: ${({ theme }) => theme.font.sm};
   padding: 0 10px;
 `;

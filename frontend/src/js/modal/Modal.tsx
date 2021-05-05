@@ -1,12 +1,12 @@
-import React, { useRef, FC, ReactNode } from "react";
 import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
+import React, { useRef, FC, ReactNode } from "react";
 import Hotkeys from "react-hot-keys";
+import { useTranslation } from "react-i18next";
 
-import FaIcon from "../icon/FaIcon";
 import TransparentButton from "../button/TransparentButton";
-import WithTooltip from "../tooltip/WithTooltip";
 import { useClickOutside } from "../common/helpers/useClickOutside";
+import FaIcon from "../icon/FaIcon";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
   position: fixed;

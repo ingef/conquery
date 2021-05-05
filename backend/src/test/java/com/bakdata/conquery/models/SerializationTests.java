@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
@@ -37,7 +37,6 @@ import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -46,8 +45,10 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
+@Slf4j
 public class SerializationTests {
 
 	@Test
@@ -89,7 +90,7 @@ public class SerializationTests {
 		user
 			.addPermission(
 				storage,
-				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+				ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		Role role = new Role("company", "company");
 		user.addRole(storage, role);
 
@@ -110,7 +111,7 @@ public class SerializationTests {
 		group
 			.addPermission(
 				storage,
-				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+				ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		group.addRole(storage, new Role("company", "company"));
 
 		Role role = new Role("company", "company");
@@ -219,12 +220,21 @@ public class SerializationTests {
 	@Test
 	public void managedQuery() throws JSONException, IOException {
 
-		ManagedQuery execution = new ManagedQuery(null, new UserId("test-user"), new DatasetId("test-dataset"));
+		final CentralRegistry registry = new CentralRegistry();
+
+		final Dataset dataset = new Dataset("test-dataset");
+
+		final User user = new User("test-user","test-user");
+
+		registry.register(dataset);
+		registry.register(user);
+
+		ManagedQuery execution = new ManagedQuery(null, user, dataset);
 		execution.setTags(new String[] {"test-tag"});
 
-		SerializationTestUtil
-				.forType(ManagedExecution.class)
-				.test(execution);
+		SerializationTestUtil.forType(ManagedExecution.class)
+							 .registry(registry)
+							 .test(execution);
 	}
 
 	@Test
@@ -262,7 +272,7 @@ public class SerializationTests {
 				.registry(registry)
 				.test(cqConcept);
 	}
-	
+
 	@Test
 	public void executionCreationPlanError() throws JSONException, IOException {
 		ConqueryError error = new ConqueryError.ExecutionCreationPlanError();
@@ -284,6 +294,7 @@ public class SerializationTests {
 
 	@Test
 	public void executionQueryJobError() throws JSONException, IOException {
+		log.info("Beware, this test will print an ERROR message.");
 		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5),new ConqueryError.UnknownError(null));
 
 		SerializationTestUtil

@@ -2,7 +2,7 @@ import { createActionTypes } from "./actionTypes";
 
 export interface QueryNodeEditorStateT {
   detailsViewActive: boolean;
-  selectedInputTableIdx: number;
+  selectedInputTableIdx: number | null;
   selectedInput: number | null; // It's a filter index => TODO: Refactor/rename
   editingLabel: boolean;
 }
@@ -10,7 +10,7 @@ export interface QueryNodeEditorStateT {
 export const createQueryNodeEditorReducer = (type: string) => {
   const initialState: QueryNodeEditorStateT = {
     detailsViewActive: true,
-    selectedInputTableIdx: 0,
+    selectedInputTableIdx: null,
     selectedInput: null,
     editingLabel: false,
   };
@@ -25,7 +25,7 @@ export const createQueryNodeEditorReducer = (type: string) => {
 
   return (
     state: QueryNodeEditorStateT = initialState,
-    action: any
+    action: any,
   ): QueryNodeEditorStateT => {
     switch (action.type) {
       case SET_DETAILS_VIEW_ACTIVE:

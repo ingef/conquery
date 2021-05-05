@@ -2,16 +2,15 @@ package com.bakdata.conquery.models.forms.frontendconfiguration;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.forms.frontendconfiguration.FormFrontendConfigProvider.FormFrontendConfigInformation;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -25,20 +24,22 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FormScanner extends Task {
+	
+	public static Map<String, FormType> FRONTEND_FORM_CONFIGS = Collections.emptyMap();
+
+
+	private Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
+
 
 	public FormScanner() {
 		super("form-scanner");
+		registerFrontendFormConfigProvider(ResourceFormConfigProvider::accept);
 	}
-
-	private final static String INFO_FORMAT = "\t%-30s %-60s %-20s";
-	private final static ObjectReader READER = Jackson.MAPPER.copy().reader();
-	
-	public static Map<String, JsonNode> FRONTEND_FORM_CONFIGS = ImmutableMap.of();
 
 	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
 		Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
 		// Gather form implementations first
-		for (Class<?> subclass : CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(Form.class.getName()).loadClasses()) {
+		for (Class<?> subclass : CPSTypeIdResolver.SCAN_RESULT.getSubclasses(Form.class.getName()).loadClasses()) {
 			if (Modifier.isAbstract(subclass.getModifiers())) {
 				continue;
 			}
@@ -52,50 +53,27 @@ public class FormScanner extends Task {
 		return backendClasses.build();
 	}
 
+	public synchronized void registerFrontendFormConfigProvider(Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider){
+		providerChain = providerChain.andThen(provider);
+	}
+
 	/**
-	 * Frontend form configurations can be provided from different sources. For
-	 * these sources a stub of type {@link FormFrontendConfigProviderBase} must be
-	 * implemented in order to be discovered by this function.
+	 * Frontend form configurations can be provided from different sources.
+	 * Each source must register a provider with {@link FormScanner#registerFrontendFormConfigProvider(Consumer)} beforehand.
 	 */
 	@SneakyThrows
-	private static List<FormFrontendConfigInformation> findFrontendFormConfigs() {
-		List<Class<?>> configProviders = CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(FormFrontendConfigProvider.class.getName())
-			.loadClasses();
-		
-		Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
-		
-		for (Class<?> configProvider : configProviders) {
-			int modifiers = configProvider.getModifiers();
-			if (Modifier.isAbstract(modifiers) || Modifier.isInterface(modifiers)) {
-				continue;
-			}
-			@SuppressWarnings("unchecked")
-			Class<? extends FormFrontendConfigProvider> formConfigProvider = (Class<? extends FormFrontendConfigProviderBase>) configProvider;
-			Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider;
-			// Distinguish between interface implementations and implementations of the abstract class 
-			if (FormFrontendConfigProviderBase.class.isAssignableFrom(formConfigProvider)) {
-				provider = formConfigProvider.getConstructor(ObjectReader.class).newInstance(READER);
-			}
-			else {
-				provider = formConfigProvider.getConstructor().newInstance();
-			}
-			providerChain = providerChain.andThen(provider);
-		}
+	private List<FormFrontendConfigInformation> findFrontendFormConfigs() {
 
 		ImmutableList.Builder<FormFrontendConfigInformation> frontendConfigs = ImmutableList.builder();
 		try {
-			providerChain.accept(frontendConfigs);			
+			providerChain.accept(frontendConfigs);
 		} catch (Exception e) {
 			log.error("Unable to collect all frontend form configurations.", e);
 		}
 		return frontendConfigs.build();
 	}
 
-	private static Map<String, JsonNode> generateFEFormConfigMap() {
-		StringJoiner info = new StringJoiner("\n", "\n", "\n");
-		info.add(String.format(INFO_FORMAT, "Form Type", "Frontend Config", "Backend Class"));
-		
-
+	private Map<String, FormType> generateFEFormConfigMap() {
 		// Collect backend implementations for specific forms
 		Map<String, Class<? extends Form>> forms = findBackendMappingClasses();
 
@@ -103,7 +81,9 @@ public class FormScanner extends Task {
 		List<FormFrontendConfigInformation> frontendConfigs = findFrontendFormConfigs();
 
 		// Match frontend form configurations to backend implementations
-		ImmutableMap.Builder<String, JsonNode> result = ImmutableMap.builder();
+		final ImmutableMap.Builder<String, FormType> result = ImmutableMap.builderWithExpectedSize(frontendConfigs.size());
+
+
 		for (FormFrontendConfigInformation configInfo : frontendConfigs) {
 			JsonNode configTree = configInfo.getConfigTree();
 			JsonNode type = configTree.get("type");
@@ -116,17 +96,15 @@ public class FormScanner extends Task {
 			String fullTypeIdentifier = type.asText();
 			String typeIdentifier = CPSTypeIdResolver.truncateSubTypeInformation(fullTypeIdentifier);
 			if (!forms.containsKey(typeIdentifier)) {
-				log.warn("Frontend form config {} (type = {}) does not map to a backend class.", configInfo, type);
+				log.error("Frontend form config {} (type = {}) does not map to a backend class.", configInfo, type);
 				continue;
 			}
+
+			result.put(fullTypeIdentifier, new FormType(fullTypeIdentifier, configTree));
 			
-			// Register Fontend config and check if there was already a mapping for this complete type to a frontend config
-			result.put(fullTypeIdentifier, configTree);
-			
-			// Update information string
-			info.add(String.format(INFO_FORMAT, fullTypeIdentifier, configInfo.getOrigin(), forms.get(typeIdentifier).getName()));
+			log.info("Form[{}] from `{}` of Type[{}]", fullTypeIdentifier, configInfo.getOrigin(), forms.get(typeIdentifier).getName());
 		}
-		log.info(info.toString());
+
 		return result.build();
 	}
 

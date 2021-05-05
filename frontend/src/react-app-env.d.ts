@@ -1,6 +1,6 @@
 /// <reference types="react-scripts" />
-
 import "@emotion/react";
+
 import { ConceptIdT, ConceptT } from "./js/api/types";
 
 declare namespace NodeJS {
@@ -23,7 +23,6 @@ declare module "@emotion/react" {
       grayMediumLight: string;
       grayLight: string;
       grayVeryLight: string;
-      graySuperLight: string;
       red: string;
       blueGrayDark: string;
       blueGray: string;

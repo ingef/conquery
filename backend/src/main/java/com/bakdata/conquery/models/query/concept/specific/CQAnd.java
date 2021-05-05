@@ -1,12 +1,18 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.util.*;
+import java.util.function.Consumer;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -23,11 +29,6 @@ import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import java.util.*;
-import java.util.function.Consumer;
-
 @CPSType(id = "AND", base = CQElement.class)
 public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable {
 
@@ -38,7 +39,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	private List<CQElement> children;
 
 	@Getter @Setter
-	boolean createExists = false;
+	private Optional<Boolean> createExists = Optional.empty();
 
 	@InternalOnly
 	@Getter @Setter
@@ -46,7 +47,9 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 
 	@Override
 	public void setDefaultExists() {
-		createExists = true;
+		if (createExists.isEmpty()){
+			createExists = Optional.of(true);
+		}
 	}
 
 	@Override
@@ -58,21 +61,19 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 			nodes[i] = children.get(i).createQueryPlan(context, plan);
 		}
 
-
 		final QPNode node = AndNode.of(Arrays.asList(nodes), dateAction);
 
-		if (createExists) {
+		if (createExists()) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(node.collectRequiredTables());
 			existsAggregator.setReference(node);
 			plan.addAggregator(existsAggregator);
 		}
 
-
 		return node;
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
 		for (CQElement c : children) {
 			c.collectRequiredQueries(requiredQueries);
 		}
@@ -106,7 +107,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 			c.collectResultInfos(collector);
 		}
 
-		if(createExists){
+		if(createExists()){
 			collector.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}
@@ -132,5 +133,9 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 		for (CQElement c : children) {
 			c.visit(visitor);
 		}
+	}
+
+	private boolean createExists(){
+		return createExists.orElse(false);
 	}
 }

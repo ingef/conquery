@@ -188,7 +188,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	@SneakyThrows
 	@Override
-	public ColumnValues<Integer> createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues<Integer> createColumnValues() {
 		return new IntegerColumnValues();
 	}
 

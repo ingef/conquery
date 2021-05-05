@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.concepts;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -10,12 +10,15 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.Authorized;
+import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -37,7 +40,7 @@ import lombok.ToString;
 @ToString(of = {"connectors"})
 @Getter
 @Setter
-public abstract class Concept<CONNECTOR extends Connector> extends ConceptElement<ConceptId> {
+public abstract class Concept<CONNECTOR extends Connector> extends ConceptElement<ConceptId> implements Authorized {
 
 	/**
 	 * Display Concept for users.
@@ -56,13 +59,6 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 					  .stream()
 					  .filter(Select::isDefault)
 					  .collect(Collectors.toList());
-	}
-
-	public CONNECTOR getConnector(ConnectorId connectorId) {
-		return connectors.stream()
-						 .filter(conn -> connectorId.equals(conn.getId()))
-						 .findAny()
-						 .orElseThrow(() -> new NoSuchElementException("Connector not found: " + connectorId));
 	}
 
 	public abstract List<? extends Select> getSelects();
@@ -98,5 +94,10 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 			return new Leaf();
 		}
 		return FiltersNode.create(filters, aggregators);
+	}
+
+	@Override
+	public ConqueryPermission createPermission(Set<Ability> abilities) {
+		return ConceptPermission.onInstance(abilities, getId());
 	}
 }

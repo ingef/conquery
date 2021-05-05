@@ -1,13 +1,14 @@
 package com.bakdata.conquery.integration.common;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.integration.tests.TestUser;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 
 @Getter @Setter
 public class RequiredUser {
@@ -17,7 +18,7 @@ public class RequiredUser {
 	 * not previously parsed.
 	 */
 	@Valid @NotNull
-	private User user;
+	private TestUser user;
 	@Valid
 	private RoleId [] rolesInjected = new RoleId[0];
 }

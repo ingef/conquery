@@ -9,8 +9,6 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -18,6 +16,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import com.bakdata.conquery.util.ResourceUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -41,9 +40,8 @@ public class AdminConceptsResource extends HAdmin {
 		super.init();
 		this.namespace = processor.getDatasetRegistry().get(datasetId);
 		this.concept = namespace.getStorage().getConcept(conceptId);
-		if (this.concept == null) {
-			throw new WebApplicationException("Could not find concept " + conceptId, Status.NOT_FOUND);
-		}
+
+		ResourceUtil.throwNotFoundIfNull(conceptId, concept);
 	}
 
 	@DELETE

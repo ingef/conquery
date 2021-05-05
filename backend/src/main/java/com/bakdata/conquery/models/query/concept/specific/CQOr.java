@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -14,8 +11,8 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -46,7 +43,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 
 	@Getter
 	@Setter
-	private boolean createExists = false;
+	private Optional<Boolean> createExists = Optional.empty();
 
 	@InternalOnly
 	@Getter @Setter
@@ -54,7 +51,9 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 
 	@Override
 	public void setDefaultExists() {
-		createExists = true;
+		if (createExists.isEmpty()){
+			createExists = Optional.of(true);
+		}
 	}
 
 	@Override
@@ -69,7 +68,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 
 		final QPNode or = OrNode.of(Arrays.asList(nodes), dateAction);
 
-		if (createExists) {
+		if (createExists()) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(or.collectRequiredTables());
 			existsAggregator.setReference(or);
 			plan.addAggregator(existsAggregator);
@@ -79,7 +78,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
 		for (CQElement c : children) {
 			c.collectRequiredQueries(requiredQueries);
 		}
@@ -114,7 +113,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 			c.collectResultInfos(collector);
 		}
 
-		if (createExists) {
+		if (createExists()) {
 			collector.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
 	}
@@ -140,5 +139,9 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 		for (CQElement c : children) {
 			c.visit(visitor);
 		}
+	}
+
+	private boolean createExists(){
+		return createExists.orElse(false);
 	}
 }

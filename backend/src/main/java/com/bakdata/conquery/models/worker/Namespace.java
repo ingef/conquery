@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
 
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -22,7 +21,11 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -67,9 +70,6 @@ public class Namespace implements Closeable {
 		this.jobManager = new JobManager(storage.getDataset().getName(), failOnError);
 	}
 
-	public void initMaintenance(ScheduledExecutorService maintenanceService) {
-	}
-
 	public void checkConnections() {
 		List<WorkerInformation> l = new ArrayList<>(workers);
 		l.removeIf(w -> w.getConnectedShardNode() != null);
@@ -85,16 +85,6 @@ public class Namespace implements Closeable {
 		}
 		for (WorkerInformation w : workers) {
 			w.send(msg);
-		}
-	}
-
-	public void sendToAllAsync(WorkerMessage msg){
-		if (workers.isEmpty()) {
-			throw new IllegalStateException("There are no workers yet");
-		}
-
-		for (WorkerInformation w : workers) {
-			new Thread(() -> w.send(msg), w.getName()).start();
 		}
 	}
 

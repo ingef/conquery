@@ -1,19 +1,23 @@
-import React, { useRef, FC } from "react";
-import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
+import React, { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
+import { useTranslation } from "react-i18next";
 
+import { getWidthAndHeight } from "../app/DndProvider";
+import IconButton from "../button/IconButton";
+import { TIMEBASED_NODE } from "../common/constants/dndTypes";
 import VerticalToggleButton, {
   Option,
 } from "../form-components/VerticalToggleButton";
-import {
-  EARLIEST,
-  LATEST,
-  RANDOM,
-} from "../common/constants/timebasedQueryTimestampTypes";
-import { TIMEBASED_NODE } from "../common/constants/dndTypes";
-import IconButton from "../button/IconButton";
-import { getWidthAndHeight } from "../app/DndProvider";
+import { DragItemQuery } from "../standard-query-editor/types";
+
+export interface DragItemTimebasedNode {
+  conditionIdx: number;
+  resultIdx: number;
+  node: DragItemQuery;
+  moved: true;
+  type: "TIMEBASED_NODE";
+}
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
@@ -86,15 +90,15 @@ const TimebasedNode: FC<PropsT> = ({
       options={[
         {
           label: t("timebasedQueryEditor.timestampFirst"),
-          value: EARLIEST,
+          value: "EARLIEST",
         },
         {
           label: t("timebasedQueryEditor.timestampRandom"),
-          value: RANDOM,
+          value: "RANDOM",
         },
         {
           label: t("timebasedQueryEditor.timestampLast"),
-          value: LATEST,
+          value: "LATEST",
         },
       ]}
     />

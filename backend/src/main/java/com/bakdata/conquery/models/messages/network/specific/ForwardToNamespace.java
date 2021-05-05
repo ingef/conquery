@@ -24,7 +24,7 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 	
 	@Override
 	public void react(ManagerNodeNetworkContext context) throws Exception {
-		Namespace ns = Objects.requireNonNull(context.getNamespaces().get(datasetId));
+		Namespace ns = Objects.requireNonNull(context.getNamespaces().get(datasetId), datasetId.toString());
 		ConqueryMDC.setLocation(ns.getStorage().getDataset().toString());
 		message.react(ns);
 	}

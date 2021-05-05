@@ -1,9 +1,10 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
+
 import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
 import FaIcon from "../icon/FaIcon";
+import WithTooltip from "../tooltip/WithTooltip";
 
 interface PropsT {
   excludeTimestamps?: boolean;

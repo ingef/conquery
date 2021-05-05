@@ -6,7 +6,6 @@ import c10n.C10N;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -18,7 +17,6 @@ public class ConqueryConstants {
 	public static final String ALL_IDS_TABLE = "ALL_IDS";
 	public static final String EXTENSION_PREPROCESSED = ".cqpp";
 	public static final String EXTENSION_DESCRIPTION = ".import.json";
-	public static final String INPUT_FILE_EXTENSION = ".csv.gz";
 
 	public static final ResultInfo DATES_INFO = new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).dates(), new ResultType.ListT(ResultType.DateRangeT.INSTANCE));
 	
@@ -37,10 +35,7 @@ public class ConqueryConstants {
 	}
 	
 	public static DictionaryId getPrimaryDictionary(Dataset dataset) {
-		return getPrimaryDictionary(dataset.getId());
+		return DictionaryId.Parser.INSTANCE.parse(Arrays.asList(dataset.getName(), "primary_dictionary"));
 	}
-	
-	public static DictionaryId getPrimaryDictionary(DatasetId dataset) {
-		return DictionaryId.Parser.INSTANCE.parse(Arrays.asList(dataset.toString(), "primary_dictionary"));
-	}
+
 }

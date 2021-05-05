@@ -1,19 +1,18 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { nodeHasActiveFilters } from "../model/node";
 
 import IconButton from "../button/IconButton";
-import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+import { nodeHasActiveFilters } from "../model/node";
+import type { StandardQueryNodeT } from "../standard-query-editor/types";
 
 const Container = styled("div")`
   text-transform: uppercase;
-  padding: 10px 2px;
   white-space: nowrap;
 `;
 
 interface Props {
-  node: ConceptQueryNodeType;
+  node: StandardQueryNodeT;
   onResetAllFilters: () => void;
 }
 

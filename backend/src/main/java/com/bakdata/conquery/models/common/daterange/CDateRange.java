@@ -3,14 +3,12 @@ package com.bakdata.conquery.models.common.daterange;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CQuarter;
@@ -19,6 +17,7 @@ import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
+import com.bakdata.conquery.util.DateFormats;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -174,9 +173,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		return new int[] { getMinValue(), getMaxValue() };
 	}
 
-	public Range<Integer> asIntegerRange() {
-		return Range.of(getMinValue(), getMaxValue());
-	}
 
 	@Override
 	public boolean contains(LocalDate value) {
@@ -253,17 +249,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		return of(min, max);
 	}
 
-	public static CDateRange spanOf(CDateRange a, CDateRange b) {
-		if (a == null) {
-			return b;
-		}
-		else if (b == null) {
-			return a;
-		}
-		else {
-			return a.span(b);
-		}
-	}
 
 	@Override
 	public boolean isOpen() {
@@ -318,17 +303,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		);
 	}
 
-	public boolean isConnected(CDateRange other) {
-		if (other == null) {
-			return false;
-		}
-
-		//either they intersect or they are right next to each other
-		return
-				this.intersects(other)
-				|| this.getMinValue() - 1 == other.getMaxValue()
-				|| this.getMaxValue() == other.getMinValue() - 1;
-	}
 
 	public boolean encloses(CDateRange other) {
 		if (other == null) {
@@ -338,10 +312,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 		return
 				getMaxValue() >= other.getMaxValue()
 				&& getMinValue() <= other.getMinValue();
-	}
-
-	public Stream<LocalDate> stream(TemporalUnit unit) {
-		return Stream.iterate(getMin(), value -> value.plus(1, unit)).limit(1 + unit.between(getMin(), getMax()));
 	}
 
 	/**
@@ -466,11 +436,6 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 			ranges.add(CDateRange.exactly(i));
 		}
 		return ranges;
-	}
-	
-	@JsonCreator
-	public static CDateRange parse(String value) throws ParsingException {
-		return DateRangeParser.parseISORange(value);
 	}
 
 	public boolean isSingleQuarter() {

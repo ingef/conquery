@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
 import com.bakdata.conquery.models.preproc.parser.Parser;
+import com.bakdata.conquery.util.DateFormats;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -109,9 +110,10 @@ public abstract class OutputDescription {
 	/**
 	 * Instantiate the corresponding {@link Output} for the rows.
 	 * @param headers A map from column names to column indices.
+	 * @param dateFormats
 	 * @return the output for the specific headers.
 	 */
-	public abstract Output createForHeaders(Object2IntArrayMap<String> headers);
+	public abstract Output createForHeaders(Object2IntArrayMap<String> headers, DateFormats dateFormats);
 
 	/**
 	 * The resulting type after {@link Output} has been applied.

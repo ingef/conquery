@@ -1,5 +1,5 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 
 type PropsType = {
   className?: string;
@@ -15,7 +15,7 @@ const Btn = styled("p")`
   margin: 0 auto;
 `;
 
-export const Option = styled("span")`
+export const Option = styled("span")<{ active?: boolean }>`
   font-size: ${({ theme }) => theme.font.xs};
   display: block;
   padding: 2px 8px;

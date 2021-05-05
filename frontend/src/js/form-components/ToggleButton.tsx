@@ -1,5 +1,6 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
+
 import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
@@ -53,7 +54,7 @@ const Option = styled("span")<{ active?: boolean }>`
 
   &:hover {
     background-color: ${({ theme, active }) =>
-      active ? "white" : theme.col.graySuperLight};
+      active ? "white" : theme.col.bg};
   }
 `;
 

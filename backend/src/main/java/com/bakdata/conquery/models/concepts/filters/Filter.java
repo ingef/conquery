@@ -4,9 +4,11 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -27,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @Slf4j
-public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
+public abstract class Filter<FE_TYPE> extends Labeled<FilterId> implements NamespacedIdentifiable<FilterId> {
 
 	private String unit;
 	private String description;
@@ -35,6 +37,12 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
 	private Connector connector;
 	private String pattern;
 	private Boolean allowDropFile;
+
+	@JsonIgnore
+	@Override
+	public Dataset getDataset() {
+		return getConnector().getDataset();
+	}
 
 	public abstract void configureFrontend(FEFilter f) throws ConceptConfigurationException;
 

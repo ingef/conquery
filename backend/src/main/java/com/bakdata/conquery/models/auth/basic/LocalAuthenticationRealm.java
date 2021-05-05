@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.auth.basic;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
@@ -31,12 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 /**
  * This realm stores credentials in a local database ({@link XodusStore}). Upon
  * successful authentication using username and password the authenticated user
@@ -66,8 +66,6 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	private XodusStore passwordStore;
 
 	@JsonIgnore
-	private final MetaStorage storage;
-	@JsonIgnore
 	private final ConqueryTokenRealm centralTokenRealm;
 	private final Duration validDuration;
 
@@ -85,9 +83,8 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(MetaStorage storage,  ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration) {
+	public LocalAuthenticationRealm(ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration) {
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
-		this.storage = storage;
 		this.storeName = storeName;
 		this.storageDir = storageDir;
 		this.centralTokenRealm = centralTokenRealm;

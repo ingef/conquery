@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.UUID;
 
 import javax.validation.Validator;
 
@@ -17,10 +16,10 @@ import com.bakdata.conquery.io.storage.StoreInfo;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.google.common.io.Files;
@@ -44,8 +43,9 @@ public class SerializingStoreDumpTest {
 	private XodusStoreFactory config;
 
 	// Test data
+	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"));
 	private final ConceptQuery cQuery = new ConceptQuery(
-		new CQReusedQuery(new ManagedExecutionId(new DatasetId("testD"), UUID.randomUUID())));
+		new CQReusedQuery(managedQuery));
 	private final User user = new User("username", "userlabel");
 
 	@BeforeEach
@@ -62,7 +62,7 @@ public class SerializingStoreDumpTest {
 	}
 
 	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, IStoreInfo storeId) {
-		return new SerializingStore<>(config, new XodusStore(environment, storeId, new ArrayList<>(), (e) -> {}, (e) -> {}), validator, storeId);
+		return new SerializingStore<>(config, new XodusStore(environment, storeId, new ArrayList<>(), (e) -> {}, (e) -> {}), validator, storeId, config.getObjectMapper());
 	}
 
 	/**

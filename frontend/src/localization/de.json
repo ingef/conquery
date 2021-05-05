@@ -85,7 +85,7 @@
     "queryNode": "Abfrageknoten",
     "conceptNodes": "Konzeptknoten",
     "conceptNodeTables": "Anfragetabellen",
-    "properties": "Eigenschaften",
+    "properties": "Allgemeine Einstellungen",
     "reset": "Zurücksetzen",
     "resetSettings": "Änderungen zurücksetzen",
     "excludeTimestamps": "Von Zeitberechnung ausschließen",
@@ -100,9 +100,12 @@
     "tooManyValues": "{{count}} Werte ausgewählt",
     "filters": "Filter",
     "selects": "Zusatzwerte",
+    "commonSelects": "Allgemeine Zusatzwerte",
     "nodeNotFound": "Konzept nicht gefunden",
     "selectValidityDate": "Relevanter Zeitraum",
-    "dateColumn": "Datumsspalte"
+    "dateColumn": "Datumsspalte",
+    "dropMoreConcepts": "Konzepte im Knoten",
+    "emptyMenuColumn": "Keine weiteren Einstellungen"
   },
   "queryGroupModal": {
     "explanation": "Zeitlich einschränken",
@@ -134,6 +137,7 @@
     "clearAll": "Alle entfernen",
     "clearValue": "Wert entfernen",
     "closeEsc": "Schließen (ESC)",
+    "close": "Schließen",
     "create": "Erstellen",
     "addTag": "Schlagwort hinzufügen",
     "share": "Freigeben",

@@ -70,16 +70,11 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 
 		SCAN_RESULT = new ClassGraph()
 				.enableClassInfo()
-				.enableAnnotationInfo().rejectPackages(
-						"groovy",
-						"org.codehaus.groovy",
-						"org.apache",
-						"org.eclipse",
-						"com.google",
-						"io",
-						"com.auth0",
-						"com.esotericsoftware",
-						"org.glassfish"
+				.enableAnnotationInfo()
+				//TODO if ever necessary, use an environment variable also
+				.acceptPackages(
+						"com.bakdata",
+						"tests"
 				)
 				.scan();
 		

@@ -1,7 +1,9 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 import { connect } from "react-redux";
+
 import IconButton from "../button/IconButton";
+
 import { toggleDisplayTooltip } from "./actions";
 
 type PropsType = {
@@ -35,8 +37,8 @@ const ActivateTooltip = (props: PropsType) => {
   );
 };
 
-const mapDispatchToProps = dispatch => ({
-  toggleDisplayTooltip: () => dispatch(toggleDisplayTooltip())
+const mapDispatchToProps = (dispatch) => ({
+  toggleDisplayTooltip: () => dispatch(toggleDisplayTooltip()),
 });
 
 export default connect(() => ({}), mapDispatchToProps)(ActivateTooltip);

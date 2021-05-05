@@ -6,12 +6,9 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.core.util.Separators;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import lombok.extern.slf4j.Slf4j;
-
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter.Indenter;
+import com.fasterxml.jackson.core.util.Separators;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PrettyPrinter {
@@ -30,13 +27,6 @@ public class PrettyPrinter {
 	.withArrayIndenter(INDENTER)
 	.withObjectIndenter(INDENTER)
 	.withSpacesInObjectEntries();
-		
-	public static String print(JsonNode node) throws JsonProcessingException {
-		return Jackson.MAPPER
-			.setDefaultPrettyPrinter(PRETTY_PRINTER)
-			.writerWithDefaultPrettyPrinter()
-			.writeValueAsString(node);
-	}
 
 	public static String print(String json) throws JsonProcessingException, IOException {
 		try {

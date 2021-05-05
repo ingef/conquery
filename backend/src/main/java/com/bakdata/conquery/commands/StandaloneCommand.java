@@ -32,6 +32,9 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 	private ManagerNode manager = new ManagerNode();
 	private final List<ShardNode> shardNodes = new Vector<>();
 
+	// TODO clean up the command structure, so we can use the Environment from EnvironmentCommand
+	private Environment environment;
+
 	public StandaloneCommand(Conquery conquery) {
 		super(conquery, "standalone", "starts a server and a client at the same time.");
 		this.conquery = conquery;
@@ -40,7 +43,7 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 	// this must be overridden so that
 	@Override
 	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
-		final Environment environment = new Environment(
+		environment = new Environment(
 			bootstrap.getApplication().getName(),
 			bootstrap.getObjectMapper(),
 			bootstrap.getValidatorFactory(),

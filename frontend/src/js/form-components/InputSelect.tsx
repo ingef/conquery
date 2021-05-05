@@ -1,12 +1,12 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import ReactSelect from "./ReactSelect";
-import Labeled from "./Labeled";
-
-import { isEmpty } from "../common/helpers";
 import type { SelectOptionT } from "../api/types";
+import { isEmpty } from "../common/helpers";
 import InfoTooltip from "../tooltip/InfoTooltip";
+
+import Labeled from "./Labeled";
+import ReactSelect from "./ReactSelect";
 
 interface PropsT {
   className?: string;

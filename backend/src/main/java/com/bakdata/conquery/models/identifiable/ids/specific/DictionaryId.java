@@ -19,12 +19,12 @@ public class DictionaryId extends AId<Dictionary> implements NamespacedId {
 	@NotNull
 	private final DatasetId dataset;
 	@NotNull
-	private final String dictionary;
+	private final String name;
 	
 	@Override
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
-		components.add(dictionary);
+		components.add(name);
 	}
 	
 	public static enum Parser implements IId.Parser<DictionaryId> {

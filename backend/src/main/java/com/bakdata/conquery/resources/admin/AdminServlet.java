@@ -66,7 +66,6 @@ public class AdminServlet {
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
 				manager.getValidator(),
-				manager.getConfig().getCluster().getEntityBucketSize(),
 				manager.isUseNameForStoragePrefix() ? manager.getName() : null
 		);
 

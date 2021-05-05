@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.query.queryplan.aggregators;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
@@ -13,9 +13,9 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 public abstract class ColumnAggregator<T> implements Aggregator<T> {
 
 	@Override
-	public void collectRequiredTables(Set<TableId> out) {
+	public void collectRequiredTables(Set<Table> out) {
 		for (Column column : getRequiredColumns()) {
-			out.add(column.getTable().getId());
+			out.add(column.getTable());
 		}
 	}
 

@@ -1,3 +1,5 @@
+import type { UserGroupIdT } from "../../api/types";
+
 import {
   LOAD_PREVIOUS_QUERIES_START,
   LOAD_PREVIOUS_QUERIES_SUCCESS,
@@ -16,7 +18,6 @@ import {
   TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS,
   DELETE_PREVIOUS_QUERY_SUCCESS,
 } from "./actionTypes";
-import type { UserGroupIdT } from "../../api/types";
 
 export type PreviousQueryIdT = string;
 export interface PreviousQueryT {
@@ -65,7 +66,7 @@ const findQuery = (queries: PreviousQueryT[], queryId: string | number) => {
 const updatePreviousQuery = (
   state: PreviousQueriesStateT,
   action: Object,
-  attributes: Partial<PreviousQueryT>
+  attributes: Partial<PreviousQueryT>,
 ) => {
   const { query, queryIdx } = findQuery(state.queries, action.payload.queryId);
 
@@ -93,7 +94,7 @@ const sortQueries = (queries: PreviousQueryT[]) => {
 const toggleQueryAttribute = (
   state: PreviousQueriesStateT,
   action: Object,
-  attribute: keyof PreviousQueryT
+  attribute: keyof PreviousQueryT,
 ) => {
   const { query } = findQuery(state.queries, action.payload.queryId);
 
@@ -150,7 +151,7 @@ const updateUniqueNames = (existingNames: string[], newName: string) => {
 
 const previousQueriesReducer = (
   state: PreviousQueriesStateT = initialState,
-  action: Object
+  action: Object,
 ): PreviousQueriesStateT => {
   switch (action.type) {
     case LOAD_PREVIOUS_QUERIES_START:

@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.fail;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,12 +16,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -36,6 +41,9 @@ import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -60,13 +68,13 @@ public class LoadingUtil {
 		for (ResourceFile queryResults : content.getPreviousQueryResults()) {
 			UUID queryId = new UUID(0L, id++);
 
-			final CsvParser parser = new CsvParser(support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createCsvParserSettings());
+			final CsvParser parser = support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createParser();
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
 
 			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 
-			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user.getId(), support.getNamespace().getDataset().getId());
-			user.addPermission(support.getMetaStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
+			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
 				fail("Query failed");
@@ -79,8 +87,8 @@ public class LoadingUtil {
 			IQuery query = mapper.readerFor(IQuery.class).readValue(queryNode);
 			UUID queryId = new UUID(0L, id++);
 
-			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),query, queryId, user.getId(), support.getNamespace().getDataset().getId());
-			user.addPermission(support.getMetaStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),query, queryId, user, support.getNamespace().getDataset());
+			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
 				fail("Query failed");
@@ -94,7 +102,6 @@ public class LoadingUtil {
 	}
 
 	public static void importTables(StandaloneSupport support, RequiredData content) throws JSONException {
-		Dataset dataset = support.getDataset();
 
 		for (RequiredTable rTable : content.getTables()) {
 			support.getDatasetsProcessor().addTable(rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry()), support.getNamespace());
@@ -155,7 +162,16 @@ public class LoadingUtil {
 		for (File file : preprocessedFiles) {
 			assertThat(file).exists();
 
-			support.getDatasetsProcessor().addImport(support.getNamespace(), file);
+			final URI addImport = HierarchyHelper.fromHierachicalPathResourceMethod(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
+												 .queryParam("file", file)
+												 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
+
+			final Response response = support.getClient()
+											 .target(addImport)
+											 .request(MediaType.APPLICATION_JSON)
+											 .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
+
+			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
 	}
 
@@ -170,6 +186,7 @@ public class LoadingUtil {
 		);
 
 		for (Concept<?> concept : concepts) {
+
 			support.getDatasetsProcessor().addConcept(dataset, concept);
 		}
 	}

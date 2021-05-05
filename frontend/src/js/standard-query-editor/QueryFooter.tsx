@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+
 import SecondaryIdSelector from "./SecondaryIdSelector";
 
 const QueryFooter: FC = () => {

@@ -1,13 +1,13 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import type { WrappedFieldProps } from "redux-form";
 
 import type { CurrencyConfigT } from "../api/types";
 
+import InputRangeHeader from "./InputRangeHeader";
 import InputText from "./InputText";
 import ToggleButton from "./ToggleButton";
-import InputRangeHeader from "./InputRangeHeader";
 
 const Container = styled("div")`
   width: 100%;

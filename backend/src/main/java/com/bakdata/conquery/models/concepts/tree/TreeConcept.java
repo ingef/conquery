@@ -16,6 +16,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
@@ -24,7 +25,6 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -45,8 +45,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private final int depth = 0;
 	@Getter
 	private final int[] prefix = new int[]{0};
-	@JsonIgnore
-	private transient int maxDepth = -1;
 	@JsonIgnore
 	private List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
 	@JsonIgnore
@@ -69,15 +67,15 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Setter
 	private TreeChildPrefixIndex childIndex;
 	@JsonIgnore
-	private Map<ImportId, ConceptTreeCache> caches = new ConcurrentHashMap<>();
+	private Map<Import, ConceptTreeCache> caches = new ConcurrentHashMap<>();
 
 	@Override
 	public Concept<?> findConcept() {
 		return getConcept();
 	}
 
-	public ConceptTreeCache getCache(ImportId importId) {
-		return caches.get(importId);
+	public ConceptTreeCache getCache(Import imp) {
+		return caches.get(imp);
 	}
 
 	@Override
@@ -88,14 +86,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Override
 	public boolean matchesPrefix(int[] conceptPrefix) {
 		return conceptPrefix != null && conceptPrefix[0] == 0;
-	}
-
-	public int getMaxDepth() {
-		if (maxDepth == -1) {
-			maxDepth = allChildren.stream().mapToInt(ConceptTreeNode::getDepth).max().orElse(-1) + 1;
-		}
-
-		return maxDepth;
 	}
 
 	@Override
@@ -141,7 +131,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 		if (this.getChildIndex() != null) {
-			ConceptTreeChild best = this.getChildIndex().findMostSpecificChild(stringValue, rowMap);
+			ConceptTreeChild best = this.getChildIndex().findMostSpecificChild(stringValue);
 
 			if (best != null) {
 				return findMostSpecificChild(stringValue, rowMap, best, best.getChildren());
@@ -165,7 +155,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 					match = n;
 
 					if (n.getChildIndex() != null) {
-						ConceptTreeChild specificChild = n.getChildIndex().findMostSpecificChild(stringValue, rowMap);
+						ConceptTreeChild specificChild = n.getChildIndex().findMostSpecificChild(stringValue);
 
 						if (specificChild != null) {
 							match = specificChild;
@@ -200,11 +190,11 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 
-	public void initializeIdCache(StringStore type, ImportId importId) {
+	public void initializeIdCache(StringStore type, Import importId) {
 		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));
 	}
 
-	public void removeImportCache(ImportId imp) {
+	public void removeImportCache(Import imp) {
 		caches.remove(imp);
 	}
 

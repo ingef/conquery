@@ -47,7 +47,7 @@ public class ArrowRenderer {
             PrintSettings cfg,
             ManagedExecution<?> exec,
             Function<EntityResult, String[]> idMapper,
-            String[] idHeaders,
+            List<String> idHeaders,
             int batchsize) throws IOException {
         // Test the execution if the result is renderable into one table
         Stream<EntityResult> results = getResults(exec);
@@ -59,8 +59,8 @@ public class ArrowRenderer {
         VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 
         // Build separate pipelines for id and value, as they have different sources but the same target
-        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.length);
-        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.length, resultInfos.size());
+        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size());
+        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfos.size());
 
         // Write the data
         try (ArrowWriter writer = writerProducer.apply(root)) {
@@ -221,23 +221,28 @@ public class ArrowRenderer {
             vector.setIndexDefined(rowNumber);
         };
     }
-    private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer, Function<Object[], Object[]> resultExtractor){
+    private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer, Function<Object[], List> resultExtractor){
         // This is not used at the moment see ResultType.ListT::getArrowFieldType
         return (rowNumber, line) -> {
             // Values is a vertical list
-            Object[] values = resultExtractor.apply(line);
+            List values = resultExtractor.apply(line);
             if (values == null) {
                 vector.setNull(rowNumber);
                 return;
             }
 
-            vector.startNewValue(rowNumber);
-            for (int i = 0; i < values.length; i++) {
+            int start = vector.startNewValue(rowNumber);
+            for (int i = 0; i < values.size(); i++) {
                 // These short lived one value arrays are a workaround at the moment
-                nestedConsumer.accept(i, new Object[] {values[i]});
+                nestedConsumer.accept(start + i, new Object[] {values.get(i)});
             }
 
-            vector.endValue(rowNumber,values.length);
+            // Workaround for https://issues.apache.org/jira/browse/ARROW-8842
+            final FieldVector innerVector = vector.getDataVector();
+            int valueCount = innerVector.getValueCount();
+            innerVector.setValueCount(valueCount + values.size());
+
+            vector.endValue(rowNumber,values.size());
        };
     }
 
@@ -307,14 +312,14 @@ public class ArrowRenderer {
             ValueVector nestedVector = listVector.getDataVector();
 
             // pos = 0 is a workaround for now
-            return listVectorFiller(listVector, generateVectorFiller(0, nestedVector), (line) -> (Object[]) line[pos]);
+            return listVectorFiller(listVector, generateVectorFiller(0, nestedVector), (line) -> (List) line[pos]);
         }
 
         throw new IllegalArgumentException("Unsupported vector type " + vector);
     }
 
-    public static List<Field> generateFieldsFromIdMapping(String[] idHeaders) {
-        Preconditions.checkArgument(idHeaders != null && idHeaders.length > 0, "No id headers given");
+    public static List<Field> generateFieldsFromIdMapping(List<String> idHeaders) {
+        Preconditions.checkArgument(idHeaders != null && idHeaders.size() > 0, "No id headers given");
 
         ImmutableList.Builder<Field> fields = ImmutableList.builder();
 

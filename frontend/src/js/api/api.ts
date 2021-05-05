@@ -1,5 +1,11 @@
 import { apiUrl } from "../environment";
+import type {
+  FormConfigT,
+  BaseFormConfigT,
+} from "../external-forms/form-configs/reducer";
 
+import { transformFormQueryToApi } from "./apiExternalFormsHelper";
+import { transformQueryToApi } from "./apiHelper";
 import type {
   DatasetIdT,
   QueryIdT,
@@ -22,14 +28,7 @@ import type {
   GetFormConfigResponseT,
   GetDatasetsResponseT,
 } from "./types";
-
 import { useApi, useApiUnauthorized } from "./useApi";
-import { transformQueryToApi } from "./apiHelper";
-import { transformFormQueryToApi } from "./apiExternalFormsHelper";
-import type {
-  FormConfigT,
-  BaseFormConfigT,
-} from "../external-forms/form-configs/reducer";
 
 const PROTECTED_PREFIX = "/api";
 
@@ -72,7 +71,7 @@ export const usePostQueries = () => {
   return (
     datasetId: DatasetIdT,
     query: Object,
-    options: { queryType: string; selectedSecondaryId?: string | null }
+    options: { queryType: string; selectedSecondaryId?: string | null },
   ) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries`),
@@ -88,7 +87,7 @@ export const usePostFormQueries = () => {
   return (
     datasetId: DatasetIdT,
     query: { form: any; formName: string },
-    { formQueryTransformation }: { formQueryTransformation: Function }
+    { formQueryTransformation }: { formQueryTransformation: Function },
   ) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries`),
@@ -183,7 +182,7 @@ export const usePostPrefixForSuggestions = () => {
   }: PostPrefixForSuggestionsParams) =>
     api({
       url: getProtectedUrl(
-        `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/autocomplete`
+        `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/autocomplete`,
       ),
       method: "POST",
       data: { text: prefix },
@@ -196,7 +195,7 @@ export const usePostConceptsListToResolve = () => {
   return (datasetId: DatasetIdT, conceptId: string, concepts: string[]) =>
     api({
       url: getProtectedUrl(
-        `/datasets/${datasetId}/concepts/${conceptId}/resolve`
+        `/datasets/${datasetId}/concepts/${conceptId}/resolve`,
       ),
       method: "POST",
       data: { concepts },
@@ -211,11 +210,11 @@ export const usePostFilterValuesResolve = () => {
     conceptId: string,
     tableId: string,
     filterId: string,
-    values: string[]
+    values: string[],
   ) =>
     api({
       url: getProtectedUrl(
-        `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/resolve`
+        `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/resolve`,
       ),
       method: "POST",
       data: { values },
@@ -258,7 +257,7 @@ export const useGetFormConfig = () => {
   return (datasetId: DatasetIdT, formConfigId: string) =>
     api({
       url: getProtectedUrl(
-        `/datasets/${datasetId}/form-configs/${formConfigId}`
+        `/datasets/${datasetId}/form-configs/${formConfigId}`,
       ),
     });
 };
@@ -269,11 +268,11 @@ export const usePatchFormConfig = () => {
   return (
     datasetId: DatasetIdT,
     formConfigId: string,
-    data: Partial<FormConfigT>
+    data: Partial<FormConfigT>,
   ) =>
     api({
       url: getProtectedUrl(
-        `/datasets/${datasetId}/form-configs/${formConfigId}`
+        `/datasets/${datasetId}/form-configs/${formConfigId}`,
       ),
       method: "PATCH",
       data,
@@ -295,7 +294,7 @@ export const useDeleteFormConfig = () => {
   return (datasetId: DatasetIdT, formConfigId: string) =>
     api({
       url: getProtectedUrl(
-        `/datasets/${datasetId}/form-configs/${formConfigId}`
+        `/datasets/${datasetId}/form-configs/${formConfigId}`,
       ),
       method: "DELETE",
     });

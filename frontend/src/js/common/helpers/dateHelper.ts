@@ -38,7 +38,7 @@ export const formatDate = (date: Date, dateFormat: string) => {
 
 export const formatDateFromState = (
   dateString: string,
-  dateFormat: string
+  dateFormat: string,
 ): string => {
   const date = parseDate(dateString, DATE_FORMAT);
 
@@ -131,7 +131,7 @@ interface MinMax {
 export const getDateStringFromShortcut = (
   what: "min" | "max",
   value: string,
-  displayDateFormat: string
+  displayDateFormat: string,
 ): MinMax => {
   const date = testRegexes(what, value, displayDateFormat);
 
@@ -149,7 +149,7 @@ interface DateMinMax {
 export const testRegexes = (
   what: "min" | "max",
   value: string,
-  displayDateFormat: string
+  displayDateFormat: string,
 ): DateMinMax => {
   switch (true) {
     case DATE_PATTERN.raw.test(value):

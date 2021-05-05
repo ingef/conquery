@@ -18,10 +18,13 @@ import lombok.ToString;
 public class DateParser extends Parser<Integer, DateStore> {
 
 	private IntegerParser subType;
+	private DateFormats dateFormats;
 
 	public DateParser(ParserConfig config) {
 		super(config);
 		subType = new IntegerParser(config);
+		dateFormats = config.getDateFormats();
+
 	}
 
 	@Override
@@ -32,7 +35,7 @@ public class DateParser extends Parser<Integer, DateStore> {
 
 	@Override
 	protected Integer parseValue(@Nonnull String value) throws ParsingException {
-		return CDate.ofLocalDate(DateFormats.parseToLocalDate(value));
+		return CDate.ofLocalDate(dateFormats.parseToLocalDate(value));
 	}
 
 	@Override
@@ -60,7 +63,7 @@ public class DateParser extends Parser<Integer, DateStore> {
 
 	@SneakyThrows
 	@Override
-	public ColumnValues createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues createColumnValues() {
 		return new IntegerColumnValues();
 	}
 

@@ -1,6 +1,12 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,13 +21,13 @@ import javax.validation.Validator;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreInfo;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.primitives.Ints;
@@ -48,7 +54,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	private int chunkByteSize;
 
 
-	public BigStore(XodusStoreFactory config, Validator validator, Environment env, StoreInfo storeInfo, Collection<jetbrains.exodus.env.Store> openStores, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook) {
+	public BigStore(XodusStoreFactory config, Validator validator, Environment env, StoreInfo storeInfo, Collection<jetbrains.exodus.env.Store> openStores, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook, ObjectMapper mapper) {
 		this.storeInfo = storeInfo;
 
 		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
@@ -63,7 +69,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		metaStore = new SerializingStore<>(
 				config,
 				new XodusStore(env, metaStoreInfo, openStores, envCloseHook, envRemoveHook), validator,
-				metaStoreInfo
+				metaStoreInfo,
+				mapper
 		);
 
 		final SimpleStoreInfo dataStoreInfo = new SimpleStoreInfo(
@@ -75,11 +82,14 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		dataStore = new SerializingStore<>(
 				config,
 				new XodusStore(env, dataStoreInfo, openStores, envCloseHook, envRemoveHook), validator,
-				dataStoreInfo
+				dataStoreInfo,
+				mapper
 		);
 
-		this.valueWriter = Jackson.BINARY_MAPPER.writerFor(storeInfo.getValueType());
-		this.valueReader = Jackson.BINARY_MAPPER.readerFor(storeInfo.getValueType());
+
+
+		this.valueWriter = mapper.writerFor(storeInfo.getValueType());
+		this.valueReader = mapper.readerFor(storeInfo.getValueType());
 	}
 
 	@Override

@@ -1,12 +1,16 @@
 package com.bakdata.conquery.util;
 
-import com.bakdata.conquery.io.storage.NamespaceStorage;
+import javax.ws.rs.NotFoundException;
+
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import lombok.NonNull;
 
+//TODO remove this class
 public class ResourceUtil {
 
 	private final DatasetRegistry namespaces;
@@ -15,12 +19,14 @@ public class ResourceUtil {
 		this.namespaces = namespaces;
 	}
 
-	public Dataset getDataset(DatasetId id) {
-		return namespaces.get(id).getStorage().getDataset();
+	public static void throwNotFoundIfNull(@NonNull IId<?> id, Object identifiable) {
+		if (identifiable == null) {
+			throw new NotFoundException(id.toString());
+		}
 	}
 
-	public NamespaceStorage getStorage(DatasetId id) {
-		return namespaces.get(id).getStorage();
+	public Dataset getDataset(DatasetId id) {
+		return namespaces.get(id).getStorage().getDataset();
 	}
 
 	public ManagedExecution<?> getManagedQuery(ManagedExecutionId queryId) {

@@ -7,7 +7,6 @@ import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketEntry;
@@ -32,20 +31,22 @@ public class CalculateCBlocksJob extends Job {
 	private final List<CalculationInformation> infos = new ArrayList<>();
 	private final WorkerStorage storage;
 	private final BucketManager bucketManager;
-	private final Connector connector;
-	private final Table table;
 
 	@Override
 	public String getLabel() {
-		return "Calculate " + infos.size() + " CBlocks for " + connector.getId();
+		return "Calculate CBlocks[" + infos.size() + "]";
 	}
 
-	public void addCBlock(Import imp, Bucket bucket, CBlockId cBlockId) {
-		infos.add(new CalculationInformation(bucket, cBlockId));
+	public void addCBlock(Bucket bucket, Connector connector) {
+		infos.add(new CalculationInformation(connector, bucket));
 	}
 
 	@Override
 	public void execute() throws Exception {
+		if(infos.isEmpty()){
+			return;
+		}
+
 		getProgressReporter().setMax(infos.size());
 
 		// todo compute in parallel.
@@ -56,9 +57,9 @@ public class CalculateCBlocksJob extends Job {
 					continue;
 				}
 
-				CBlock cBlock = CBlock.createCBlock(connector, info.getBucket(), bucketManager.getEntityBucketSize());
+				CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize());
 
-				connector.calculateCBlock(cBlock, info.getBucket());
+				info.getConnector().calculateCBlock(cBlock, info.getBucket());
 
 				calculateEntityDateIndices(cBlock, info.getBucket());
 				bucketManager.addCalculatedCBlock(cBlock);
@@ -67,10 +68,9 @@ public class CalculateCBlocksJob extends Job {
 			catch (Exception e) {
 				throw new Exception(
 						String.format(
-								"Exception in CalculateCBlocksJob (CBlock=%s, connector=%s, table=%s)",
+								"Exception in CalculateCBlocksJob (CBlock=%s, connector=%s)",
 								info.getCBlockId(),
-								connector,
-								table
+								info.getConnector()
 						),
 						e
 				);
@@ -86,7 +86,7 @@ public class CalculateCBlocksJob extends Job {
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 */
 	private void calculateEntityDateIndices(CBlock cBlock, Bucket bucket) {
-		Table table = bucket.getImp().getTable();
+		Table table = bucket.getTable();
 		for (Column column : table.getColumns()) {
 			if (!column.getType().isDateCompatible()) {
 				continue;
@@ -112,8 +112,11 @@ public class CalculateCBlocksJob extends Job {
 	@Getter
 	@Setter
 	private static class CalculationInformation {
-
+		private final Connector connector;
 		private final Bucket bucket;
-		private final CBlockId cBlockId;
+
+		public CBlockId getCBlockId() {
+			return new CBlockId(getBucket().getId(), getConnector().getId());
+		}
 	}
 }

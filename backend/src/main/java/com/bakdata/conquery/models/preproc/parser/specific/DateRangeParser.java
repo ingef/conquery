@@ -15,12 +15,15 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Date;
+
 @Slf4j
 @ToString(callSuper = true)
 public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 	private final DateParser minParser;
 	private final DateParser maxParser;
+	private final DateFormats dateFormats;
 
 	private boolean onlyQuarters = true;
 	private int maxValue = Integer.MIN_VALUE;
@@ -31,14 +34,15 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 		super(config);
 		minParser = new DateParser(config);
 		maxParser = new DateParser(config);
+		dateFormats = config.getDateFormats();
 	}
 
 	@Override
 	protected CDateRange parseValue(@Nonnull String value) throws ParsingException {
-		return DateRangeParser.parseISORange(value);
+		return DateRangeParser.parseISORange(value, dateFormats);
 	}
 
-	public static CDateRange parseISORange(String value) throws ParsingException {
+	public static CDateRange parseISORange(String value, DateFormats dateFormats) throws ParsingException {
 		if (value == null) {
 			return null;
 		}
@@ -48,8 +52,8 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 		}
 
 		return CDateRange.of(
-				DateFormats.parseToLocalDate(parts[0]),
-				DateFormats.parseToLocalDate(parts[1])
+				dateFormats.parseToLocalDate(parts[0]),
+				dateFormats.parseToLocalDate(parts[1])
 		);
 	}
 
@@ -102,7 +106,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	}
 
 	@Override
-	public ColumnValues<CDateRange> createColumnValues(ParserConfig parserConfig) {
+	public ColumnValues<CDateRange> createColumnValues() {
 		return new ListColumnValues<>();
 	}
 

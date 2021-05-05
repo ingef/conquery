@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -14,7 +13,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 public class PermissionRoleHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	private final Role mandator1 = new Role("company", "company");
-	private final User user1 = new User("user", "user");
+	private final TestUser user1 = new TestUser();
 
 	/**
 	 * This is a longer test that plays through different scenarios of permission

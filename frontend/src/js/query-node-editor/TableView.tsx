@@ -1,14 +1,16 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 
-import TableFilters from "./TableFilters";
-import TableSelects from "./TableSelects";
+import type { PostPrefixForSuggestionsParams } from "../api/api";
+import type { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
+import type { ModeT } from "../form-components/InputRange";
+import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+
 import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";
-import type { ConceptQueryNodeType } from "../standard-query-editor/types";
-import type { CurrencyConfigT, DatasetIdT } from "../api/types";
-import type { PostPrefixForSuggestionsParams } from "../api/api";
+import TableFilters from "./TableFilters";
+import TableSelects from "./TableSelects";
 
 const Column = styled("div")`
   display: flex;
@@ -18,26 +20,28 @@ const Column = styled("div")`
 
 const MaximizedCell = styled(ContentCell)`
   flex-grow: 1;
-  padding-bottom: 30px;
 `;
 
 interface PropsT {
   node: ConceptQueryNodeType;
   selectedInputTableIdx: number;
-  onShowDescription: (filterIdx: number) => void;
   datasetId: DatasetIdT;
   currencyConfig: CurrencyConfigT;
 
+  onShowDescription: (filterIdx: number) => void;
+  onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
+  onSetDateColumn: (tableIdx: number, dateColumnValue: string | null) => void;
+  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
+  onSwitchFilterMode: (
+    tableIdx: number,
+    filterIdx: number,
+    mode: ModeT,
+  ) => void;
   onLoadFilterSuggestions: (
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
-    filterIdx: number
+    filterIdx: number,
   ) => void;
-
-  onSelectTableSelects;
-  onSetDateColumn;
-  onSetFilterValue;
-  onSwitchFilterMode;
 }
 
 const TableView: FC<PropsT> = ({
@@ -81,7 +85,7 @@ const TableView: FC<PropsT> = ({
       {displayDateColumnOptions && (
         <ContentCell headline={t("queryNodeEditor.selectValidityDate")}>
           <DateColumnSelect
-            dateColumn={table.dateColumn}
+            dateColumn={table.dateColumn!}
             onSelectDateColumn={(value) =>
               onSetDateColumn(selectedInputTableIdx, value)
             }
@@ -115,7 +119,7 @@ const TableView: FC<PropsT> = ({
                   prefix,
                 },
                 selectedInputTableIdx,
-                filterIdx
+                filterIdx,
               )
             }
             onShowDescription={onShowDescription}

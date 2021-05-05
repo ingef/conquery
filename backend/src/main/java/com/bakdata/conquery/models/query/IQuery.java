@@ -6,15 +6,14 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 
@@ -23,13 +22,13 @@ public abstract class IQuery implements QueryDescription {
 
 	public abstract QueryPlan createQueryPlan(QueryPlanContext context);
 	
-	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries);
+	public abstract void collectRequiredQueries(Set<ManagedExecution> requiredQueries);
 	
 	@Override
 	public abstract void resolve(QueryResolveContext context);
 	
-	public Set<ManagedExecutionId> collectRequiredQueries() {
-		HashSet<ManagedExecutionId> set = new HashSet<>();
+	public Set<ManagedExecution> collectRequiredQueries() {
+		HashSet<ManagedExecution> set = new HashSet<>();
 		this.collectRequiredQueries(set);
 		return set;
 	}
@@ -43,8 +42,8 @@ public abstract class IQuery implements QueryDescription {
 	public abstract void collectResultInfos(ResultInfoCollector collector);
 	
 	@Override
-	public ManagedQuery toManagedExecution(DatasetRegistry namespaces, UserId userId, DatasetId submittedDataset) {
-		return new ManagedQuery(this,userId, submittedDataset);
+	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset) {
+		return new ManagedQuery(this, user, submittedDataset);
 	}
 
 	/**

@@ -6,8 +6,8 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 
-@CPSType(id = "QUERY", base = StringPermissionBuilder.class)
-public class QueryPermission extends StringPermissionBuilder {
+@CPSType(id = "EXECUTION", base = StringPermissionBuilder.class)
+public class ExecutionPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "queries";
 	
@@ -21,7 +21,7 @@ public class QueryPermission extends StringPermissionBuilder {
 		Ability.LABEL
 		);
 	
-	public static final QueryPermission INSTANCE = new QueryPermission();
+	public static final ExecutionPermission INSTANCE = new ExecutionPermission();
 	
 	
 	private ConqueryPermission instancePermission(Ability ability, ManagedExecutionId instance) {
@@ -43,6 +43,7 @@ public class QueryPermission extends StringPermissionBuilder {
 	}
 
 	//// Helper functions
+	@Deprecated
 	public static ConqueryPermission onInstance(Ability ability, ManagedExecutionId instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}

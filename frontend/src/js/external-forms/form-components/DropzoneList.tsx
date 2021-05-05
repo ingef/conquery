@@ -1,9 +1,15 @@
-import React, { ReactNode } from "react";
 import styled from "@emotion/styled";
+import React, { ReactNode } from "react";
+import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
-import Dropzone, { ChildArgs } from "../../form-components/Dropzone";
-import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
+import Dropzone, {
+  ChildArgs,
+  PossibleDroppableObject,
+} from "../../form-components/Dropzone";
+import DropzoneWithFileInput, {
+  DragItemFile,
+} from "../../form-components/DropzoneWithFileInput";
 import Label from "../../form-components/Label";
 
 const ListItem = styled("div")`
@@ -21,19 +27,24 @@ const StyledIconButton = styled(IconButton)`
   right: 0;
 `;
 
-interface PropsT {
+interface PropsT<DroppableObject> {
   className?: string;
   label?: ReactNode;
   dropzoneChildren: (args: ChildArgs) => ReactNode;
   items: ReactNode[];
   acceptedDropTypes: string[];
-  onDrop: (props: any, monitor: any) => void;
+  onDrop: (
+    props: DroppableObject | DragItemFile,
+    monitor: DropTargetMonitor,
+  ) => void;
   onDropFile?: (file: File) => void;
   onDelete: (idx: number) => void;
   disallowMultipleColumns?: boolean;
 }
 
-const DropzoneList = (props: PropsT) => {
+const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
+  props: PropsT<DroppableObject>,
+) => {
   // allow at least one column
   const showDropzone =
     (props.items && props.items.length === 0) || !props.disallowMultipleColumns;

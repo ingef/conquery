@@ -3,7 +3,6 @@ package com.bakdata.conquery.commands;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,10 +16,10 @@ import java.util.function.Predicate;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.preproc.PreprocessingJob;
 import com.bakdata.conquery.models.preproc.Preprocessor;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
@@ -47,7 +46,6 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 	private final List<String> failed = Collections.synchronizedList(new ArrayList<>());
 	private final List<String> success = Collections.synchronizedList(new ArrayList<>());
-	private final List<String> missing = Collections.synchronizedList(new ArrayList<>());
 	private ExecutorService pool;
 	private boolean isFailFast = false;
 	private boolean isStrict = true;
@@ -72,10 +70,9 @@ public class PreprocessorCommand extends ConqueryCommand {
 											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 
-			try (HCFile outFile = new HCFile(preprocessingJob.getPreprocessedFile(), false);
-				 InputStream is = outFile.readHeader()) {
+			try (final PreprocessedReader parser = Preprocessed.createReader(preprocessingJob.getPreprocessedFile(), Collections.emptyMap())) {
 
-				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
+				PreprocessedHeader header = parser.readHeader();
 
 				if (header.getValidityHash() == currentHash) {
 					log.info("\tHASH STILL VALID");

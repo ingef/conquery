@@ -1,8 +1,6 @@
-import { useDispatch } from "react-redux";
 import { TFunction, useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
 
-import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
-import { TimebasedQueryStateT } from "../timebased-query-editor/reducer";
 import {
   useGetQuery,
   useDeleteQuery,
@@ -17,8 +15,11 @@ import type {
   QueryIdT,
 } from "../api/types";
 import { defaultError, defaultSuccess, ErrorObject } from "../common/actions";
+import { getExternalSupportedErrorMessage } from "../environment";
 import { useLoadPreviousQueries } from "../previous-queries/list/actions";
-import { QUERY_AGAIN_TIMEOUT } from "./constants";
+import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import { TimebasedQueryStateT } from "../timebased-query-editor/reducer";
+
 import {
   START_QUERY_START,
   START_QUERY_SUCCESS,
@@ -31,7 +32,7 @@ import {
   QUERY_RESULT_ERROR,
   QUERY_RESULT_SUCCESS,
 } from "./actionTypes";
-import { getExternalSupportedErrorMessage } from "../environment";
+import { QUERY_AGAIN_TIMEOUT } from "./constants";
 
 /*
   This implements a polling mechanism,
@@ -78,7 +79,7 @@ export const useStartQuery = (queryType: QueryTypeT) => {
     }: {
       formQueryTransformation?: Function;
       selectedSecondaryId?: string | null;
-    } = {}
+    } = {},
   ) => {
     dispatch(startQueryStart(queryType));
 
@@ -98,7 +99,7 @@ export const useStartQuery = (queryType: QueryTypeT) => {
 
         return queryResult(datasetId, queryId);
       },
-      (e) => dispatch(startQueryError(queryType, e))
+      (e) => dispatch(startQueryError(queryType, e)),
     );
   };
 };
@@ -121,7 +122,7 @@ export const useStopQuery = (queryType: QueryTypeT) => {
 
     return deleteQuery(datasetId, queryId).then(
       (r) => dispatch(stopQuerySuccess(queryType, r)),
-      (e) => dispatch(stopQueryError(queryType, e))
+      (e) => dispatch(stopQueryError(queryType, e)),
     );
   };
 };
@@ -160,7 +161,7 @@ const getQueryErrorMessage = ({
 const queryResultError = (
   t: TFunction,
   queryType: QueryTypeT,
-  e: GetQueryErrorResponseT | Error
+  e: GetQueryErrorResponseT | Error,
 ) => {
   if (e instanceof Error)
     return defaultError(QUERY_RESULT_ERROR, e, { queryType });
@@ -174,7 +175,7 @@ const queryResultError = (
 const queryResultSuccess = (
   queryType: QueryTypeT,
   res: GetQueryResponseDoneT,
-  datasetId: DatasetIdT
+  datasetId: DatasetIdT,
 ) => defaultSuccess(QUERY_RESULT_SUCCESS, res, { datasetId, queryType });
 
 const useQueryResult = (queryType: QueryTypeT) => {
@@ -209,11 +210,11 @@ const useQueryResult = (queryType: QueryTypeT) => {
           //   we - the frontend - try again almost instantly.
           setTimeout(
             () => queryResult(datasetId, queryId),
-            QUERY_AGAIN_TIMEOUT
+            QUERY_AGAIN_TIMEOUT,
           );
         }
       },
-      (e: Error) => dispatch(queryResultError(t, queryType, e))
+      (e: Error) => dispatch(queryResultError(t, queryType, e)),
     );
   };
 

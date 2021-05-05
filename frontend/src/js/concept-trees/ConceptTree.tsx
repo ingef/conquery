@@ -1,14 +1,14 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { ConceptT, ConceptIdT } from "../api/types";
-import FaIcon from "../icon/FaIcon";
 import IconButton from "../button/IconButton";
+import FaIcon from "../icon/FaIcon";
 
 import ConceptTreeNode from "./ConceptTreeNode";
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
-import { useTranslation } from "react-i18next";
 
 interface PropsT {
   id: ConceptIdT;

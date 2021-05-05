@@ -3,8 +3,9 @@ package com.bakdata.conquery.models.dictionary;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
@@ -15,16 +16,17 @@ import lombok.Setter;
 public abstract class Dictionary extends NamedImpl<DictionaryId> implements Iterable<DictionaryEntry> {
 
 	@Getter @Setter
-	private DatasetId dataset;
+	@NsIdRef
+	private Dataset dataset;
 	
-	public Dictionary(@NotNull DatasetId dataset, @NotNull String name) {
+	public Dictionary(Dataset dataset, @NotNull String name) {
 		this.setName(name);
 		this.dataset = dataset;
 	}
 	
 	@Override
 	public DictionaryId createId() {
-		return new DictionaryId(dataset, getName());
+		return new DictionaryId(dataset.getId(), getName());
 	}
 
 	public abstract int add(byte[] bytes);
@@ -43,7 +45,7 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Iter
 	}
 
 	public static MapDictionary copyUncompressed(Dictionary dict) {
-		MapDictionary newDict = new MapDictionary(dict.getId().getDataset(), dict.getId().getDictionary());
+		MapDictionary newDict = new MapDictionary(dict.getDataset(), dict.getName());
 		for(DictionaryEntry e:dict) {
 			newDict.add(e.getValue());
 		}

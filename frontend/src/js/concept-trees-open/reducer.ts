@@ -1,9 +1,10 @@
+import { SEARCH_TREES_SUCCESS } from "../concept-trees/actionTypes";
+
 import {
   RESET_ALL_CONCEPT_OPEN,
   SET_CONCEPT_OPEN,
   CLOSE_ALL_CONCEPT_OPEN,
 } from "./actionTypes";
-import { SEARCH_TREES_SUCCESS } from "../concept-trees/actionTypes";
 
 export type ConceptTreesOpenStateT = {
   [conceptId: string]: boolean;
@@ -13,7 +14,7 @@ const initialState: ConceptTreesOpenStateT = {};
 
 const conceptTreesOpen = (
   state: ConceptTreesOpenStateT = initialState,
-  action: Object
+  action: Object,
 ): ConceptTreesOpenStateT => {
   switch (action.type) {
     case SET_CONCEPT_OPEN: {

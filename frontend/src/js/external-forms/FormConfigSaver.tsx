@@ -1,31 +1,32 @@
-import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
-import EditableText from "../form-components/EditableText";
-import { useSelector, useDispatch } from "react-redux";
 import { StateT } from "app-types";
-import {
-  selectActiveFormValues,
-  useSelectActiveFormName,
-  selectActiveFormType,
-} from "./stateSelectors";
+import React, { FC, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useSelector, useDispatch } from "react-redux";
+
 import {
   usePatchFormConfig,
   useGetFormConfig,
   usePostFormConfig,
 } from "../api/api";
-import Label from "../form-components/Label";
-import { setMessage } from "../snack-message/actions";
 import IconButton from "../button/IconButton";
-import { usePrevious } from "../common/helpers/usePrevious";
-import Dropzone from "../form-components/Dropzone";
-
 import { FORM_CONFIG } from "../common/constants/dndTypes";
-import { FormConfigDragItem } from "./form-configs/FormConfig";
-import { loadExternalFormValues, setExternalForm } from "./actions";
-import FaIcon from "../icon/FaIcon";
-import { useLoadFormConfigs } from "./form-configs/selectors";
+import { usePrevious } from "../common/helpers/usePrevious";
 import { useDatasetId } from "../dataset/selectors";
-import { useTranslation } from "react-i18next";
+import Dropzone from "../form-components/Dropzone";
+import EditableText from "../form-components/EditableText";
+import Label from "../form-components/Label";
+import FaIcon from "../icon/FaIcon";
+import { setMessage } from "../snack-message/actions";
+
+import { loadExternalFormValues, setExternalForm } from "./actions";
+import { DragItemFormConfig } from "./form-configs/FormConfig";
+import { useLoadFormConfigs } from "./form-configs/selectors";
+import {
+  selectActiveFormValues,
+  useSelectActiveFormName,
+  selectActiveFormType,
+} from "./stateSelectors";
 
 const Root = styled("div")`
   display: flex;
@@ -75,7 +76,7 @@ const hasChanged = (a: any, b: any) => {
   return JSON.stringify(a) !== JSON.stringify(b);
 };
 
-const FormConfigSaver: React.FC = () => {
+const FormConfigSaver: FC = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const datasetId = useDatasetId();
@@ -86,12 +87,12 @@ const FormConfigSaver: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const formValues = useSelector<StateT, Record<string, any>>((state) =>
-    selectActiveFormValues(state)
+    selectActiveFormValues(state),
   );
   const previousFormValues = usePrevious(formValues);
   const activeFormName = useSelectActiveFormName();
   const activeFormType = useSelector<StateT, string | null>((state) =>
-    selectActiveFormType(state)
+    selectActiveFormType(state),
   );
 
   const { loadFormConfigs } = useLoadFormConfigs();
@@ -105,7 +106,7 @@ const FormConfigSaver: React.FC = () => {
   }
 
   const [configName, setConfigName] = useState<string>(
-    getUntitledName(activeFormName)
+    getUntitledName(activeFormName),
   );
 
   useEffect(() => {
@@ -153,7 +154,7 @@ const FormConfigSaver: React.FC = () => {
     setIsSaving(false);
   }
 
-  async function onLoad(dragItem: FormConfigDragItem) {
+  async function onLoad(dragItem: DragItemFormConfig) {
     if (!datasetId) return;
 
     setIsLoading(true);
@@ -174,15 +175,12 @@ const FormConfigSaver: React.FC = () => {
     setIsLoading(false);
   }
 
-  function onDropConfig(props: any, monitor: any) {
-    const dragItem = monitor.getItem();
-
-    onLoad(dragItem);
-  }
-
   return (
     <Root>
-      <SxDropzone onDrop={onDropConfig} acceptedDropTypes={[FORM_CONFIG]}>
+      <SxDropzone<FC<DropzoneProps<DragItemFormConfig>>>
+        onDrop={onLoad}
+        acceptedDropTypes={[FORM_CONFIG]}
+      >
         {() => (
           <SpacedRow>
             <div>

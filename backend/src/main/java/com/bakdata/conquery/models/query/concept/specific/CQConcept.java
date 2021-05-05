@@ -25,16 +25,13 @@ import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
+import com.bakdata.conquery.models.query.concept.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -52,20 +49,18 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Strings;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Setter
 @CPSType(id = "CONCEPT", base = CQElement.class)
 @Slf4j
 @ToString
-public class CQConcept extends CQElement implements NamespacedIdHolding, ExportForm.DefaultSelectSettable {
+public class CQConcept extends CQElement implements NamespacedIdentifiableHolding, ExportForm.DefaultSelectSettable {
 
 	/**
 	 * @implNote FK: this is a schema migration problem I'm not interested fixing right now.
@@ -186,10 +181,8 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
-			Column validityDateColumn = selectValidityDateColumn(table);
-
 			if(aggregateEventDates){
-				aggregators.add(new EventDateUnionAggregator(Set.of(table.getConnector().getTable().getId())));
+				aggregators.add(new EventDateUnionAggregator(Set.of(table.getConnector().getTable())));
 			}
 
 			final QPNode filtersNode = concept.createConceptQuery(context, filters, aggregators);
@@ -201,7 +194,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 					Arrays.stream(table.getConnector().getTable().getColumns())
 						  .map(Column::getSecondaryId)
 						  .filter(Objects::nonNull)
-						  .map(SecondaryIdDescription::getId)
 						  .anyMatch(o -> Objects.equals(context.getSelectedSecondaryId(), o));
 
 			tableNodes.add(
@@ -238,12 +230,6 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 		return outNode;
 	}
 
-	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
-		return ids.stream()
-				  .map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-				  .toArray(ConceptElement[]::new);
-	}
-
 	/**
 	 * Generates Aggregators from Selects. These are collected and also appended to the list of aggregators in the
 	 * query plan that contribute to columns the result.
@@ -263,8 +249,7 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 
 	private Column selectValidityDateColumn(CQTable table) {
 		if (table.getDateColumn() != null) {
-			return table.getConnector()
-						.getValidityDateColumn(table.getDateColumn().getValue());
+			return table.getDateColumn().getValue().getColumn();
 		}
 
 		//else use this first defined validity date column
@@ -285,11 +270,11 @@ public class CQConcept extends CQElement implements NamespacedIdHolding, ExportF
 	}
 
 	@Override
-	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> namespacedIds) {
 		checkNotNull(namespacedIds);
-		elements.forEach(ce -> namespacedIds.add(ce.getId()));
-		selects.forEach(select -> namespacedIds.add(select.getId()));
-		tables.forEach(table -> namespacedIds.add(table.getConnector().getId()));
+		namespacedIds.addAll(elements);
+		namespacedIds.addAll(selects);
+		tables.forEach(table -> namespacedIds.add(table.getConnector()));
 	}
 
 	@Override

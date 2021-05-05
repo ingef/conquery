@@ -1,17 +1,10 @@
-import React, { useRef } from "react";
-import { useTranslation } from "react-i18next";
 import styled from "@emotion/styled";
-import { DropTarget } from "react-dnd";
+import React, { FC, ReactNode, useRef } from "react";
 import { NativeTypes } from "react-dnd-html5-backend";
+import { useTranslation } from "react-i18next";
 
-/*
-  Can't use the dynamic <Dropzone> from './Dropzone' (the default export),
-  because the dynamic generation of DropTargets will lead the nested InputMultiSelect
-  to lose focus when re-rendering.
-
-  And we're rerendering an InputMultiSelect potentially quite often.
-*/
-import { InnerZone } from "./Dropzone";
+import Dropzone from "./Dropzone";
+import type { DragItemFile } from "./DropzoneWithFileInput";
 
 const Root = styled("div")`
   position: relative;
@@ -35,27 +28,13 @@ const TopRight = styled("p")`
   }
 `;
 
-const target = {
-  drop: (props, monitor) => {
-    const item = monitor.getItem();
+interface PropsT {
+  className?: string;
+  onDropFile: (file: File) => void;
+  children: () => ReactNode;
+}
 
-    if (item && props.onDropFile) {
-      props.onDropFile(item.files[0]);
-    }
-  },
-};
-
-const collect = (connect, monitor) => ({
-  connectDropTarget: connect.dropTarget(),
-  isOver: monitor.isOver(),
-  canDrop: monitor.canDrop(),
-});
-
-export default DropTarget(
-  [NativeTypes.FILE],
-  target,
-  collect
-)(({ onDropFile, children, isOver, canDrop, connectDropTarget }) => {
+const InputMultiSelectDropzone: FC<PropsT> = ({ onDropFile, children }) => {
   const { t } = useTranslation();
   const fileInputRef = useRef(null);
 
@@ -65,13 +44,14 @@ export default DropTarget(
 
   return (
     <Root>
-      <InnerZone
-        connectDropTarget={connectDropTarget}
-        canDrop={canDrop}
-        isOver={isOver}
+      <Dropzone<DragItemFile>
+        acceptedDropTypes={[NativeTypes.FILE]}
+        onDrop={(item) => {
+          onDropFile(item.files[0]);
+        }}
       >
         {children}
-      </InnerZone>
+      </Dropzone>
       <TopRight onClick={onOpenFileDialog}>
         {t("inputMultiSelect.openFileDialog")}
         <FileInput
@@ -85,4 +65,6 @@ export default DropTarget(
       </TopRight>
     </Root>
   );
-});
+};
+
+export default InputMultiSelectDropzone;

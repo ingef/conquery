@@ -38,9 +38,16 @@ public abstract class FilterValue<VALUE> {
 
 	@NoArgsConstructor
 	@CPSType(id = "MULTI_SELECT", base = FilterValue.class)
-	@CPSType(id = "BIG_MULTI_SELECT", base = FilterValue.class)
 	public static class CQMultiSelectFilter extends FilterValue<String[]> {
 		public CQMultiSelectFilter(@NsIdRef Filter<?> filter, String[] value) {
+			super(filter, value);
+		}
+	}
+
+	@NoArgsConstructor
+	@CPSType(id = "BIG_MULTI_SELECT", base = FilterValue.class)
+	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
+		public CQBigMultiSelectFilter(@NsIdRef Filter<?> filter, String[] value) {
 			super(filter, value);
 		}
 	}

@@ -1,18 +1,19 @@
-import React, { useEffect } from "react";
 import styled from "@emotion/styled";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { DatasetIdT } from "../../api/types";
-
 import EmptyList from "../../list/EmptyList";
 import Loading from "../../list/Loading";
+
 import FormConfigs from "./FormConfigs";
-import FormConfigsSearchBox from "./search/FormConfigsSearchBox";
 import FormConfigsFilter from "./filter/FormConfigsFilter";
+import FormConfigsSearchBox from "./search/FormConfigsSearchBox";
 import { useFilteredFormConfigs, useLoadFormConfigs } from "./selectors";
 
 const Container = styled("div")`
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   font-size: ${({ theme }) => theme.font.sm};
   padding: 0 10px;
 `;

@@ -1,23 +1,22 @@
-import React from "react";
 import styled from "@emotion/styled";
-import type { Dispatch } from "redux-thunk";
-import { useTranslation } from "react-i18next";
-import { connect } from "react-redux";
-import Markdown from "react-markdown/with-html";
-
+import React from "react";
 import Highlighter from "react-highlight-words";
+import { useTranslation } from "react-i18next";
+import Markdown from "react-markdown/with-html";
+import { connect } from "react-redux";
+import type { Dispatch } from "redux-thunk";
 
 import IconButton from "../button/IconButton";
-import FaIcon from "../icon/FaIcon";
 import type { SearchT } from "../concept-trees/reducer";
+import FaIcon from "../icon/FaIcon";
 
 import ActivateTooltip from "./ActivateTooltip";
+import TooltipEntries from "./TooltipEntries";
 import {
   toggleDisplayTooltip as toggleTooltip,
   toggleAdditionalInfos as toggleInfos,
 } from "./actions";
 import type { AdditionalInfosType } from "./reducer";
-import TooltipEntries from "./TooltipEntries";
 
 const Root = styled("div")`
   width: 100%;
@@ -50,6 +49,7 @@ const Content = styled("div")`
   width: 100%;
   flex-grow: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overflow-x: hidden;
 `;
 const Head = styled("div")`

@@ -46,15 +46,16 @@
 	
 	<div class="row">
 		<div class="col">
-			<br/><br/>
-			<form action="/admin/jobs" method="post" enctype="multipart/form-data">
-				<h3>Create Demo Job</h3>
-				<input class="btn btn-primary" type="submit"/>
-			</form>
+            <input type="checkbox" id="update" name="update" checked>
+            <label for="update">Reload automatically.</label><br>
 			<script type="text/javascript">
 				setTimeout(function () {
-					location.reload(false);
-				}, 2000);
+                    if(!document.getElementById("updated").checked){
+                        return
+                    }
+					
+                    location.reload(false);
+				}, 5000);
 			</script>
 		</div>
 	</div>

@@ -1,9 +1,10 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React from "react";
 
-import { useStartup } from "../startup/useStartup";
 import Header from "../header/Header";
 import SnackMessage from "../snack-message/SnackMessage";
+import { useStartup } from "../startup/useStartup";
+
 import Content, { ContentPropsT } from "./Content";
 
 const Root = styled("div")`

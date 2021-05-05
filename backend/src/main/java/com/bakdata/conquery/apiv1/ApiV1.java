@@ -7,6 +7,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
 import com.bakdata.conquery.models.execution.ResultProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
@@ -40,10 +41,13 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
+				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+				bind(manager.getStorage()).to(MetaStorage.class);
+
 				bind(new ConceptsProcessor(manager.getDatasetRegistry())).to(ConceptsProcessor.class);
 				bind(new MeProcessor(manager.getStorage(), datasets)).to(MeProcessor.class);
 				bind(new QueryProcessor(datasets, manager.getStorage(), manager.getConfig())).to(QueryProcessor.class);
-				bind(new FormConfigProcessor(manager.getValidator(),manager.getStorage())).to(FormConfigProcessor.class);
+				bind(new FormConfigProcessor(manager.getValidator(), manager.getStorage())).to(FormConfigProcessor.class);
 				bind(new StoredQueriesProcessor(manager.getDatasetRegistry(), manager.getStorage(), manager.getConfig())).to(StoredQueriesProcessor.class);
 				bind(new ResultProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultProcessor.class);
 			}
@@ -52,10 +56,12 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(CORSPreflightRequestFilter.class);
 		environment.register(CORSResponseFilter.class);
 
-		environment.register(new ActiveUsersFilter(manager.getStorage(), Duration.ofMinutes(manager.getConfig()
-																										.getMetricsConfig()
-																										.getUserActiveDuration()
-																										.toMinutes())));
+		environment.register(
+				new ActiveUsersFilter(
+						manager.getStorage(),
+						Duration.ofMinutes(manager.getConfig().getMetricsConfig().getUserActiveDuration().toMinutes())
+				)
+		);
 
 		/*
 		 * Register the authentication filter which protects all resources registered in this servlet.

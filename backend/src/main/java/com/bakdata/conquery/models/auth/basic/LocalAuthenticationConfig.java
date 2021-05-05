@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.auth.basic;
 
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -18,9 +21,6 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-
-import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 @CPSType(base = AuthenticationConfig.class, id = "LOCAL_AUTHENTICATION")
 @Getter
@@ -66,7 +66,6 @@ public class LocalAuthenticationConfig implements AuthenticationConfig {
 
 
 		LocalAuthenticationRealm realm = new LocalAuthenticationRealm(
-				managerNode.getStorage(),
 				managerNode.getAuthController().getConqueryTokenRealm(),
 				storeName,
 				directory,

@@ -12,7 +12,7 @@ const initialState: QueryUploadConceptListModalStateT = {
 
 const reducer = (
   state = initialState,
-  action: any
+  action: any,
 ): QueryUploadConceptListModalStateT => {
   switch (action.type) {
     case MODAL_OPEN:

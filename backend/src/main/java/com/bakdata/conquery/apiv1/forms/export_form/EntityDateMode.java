@@ -11,12 +11,12 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.util.DateContext;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -62,7 +62,7 @@ public class EntityDateMode extends Mode {
     }
 
     @Override
-    public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+    public IQuery createSpecializedQuery(DatasetRegistry datasets, User user, Dataset submittedDataset) {
         CDateRange dateRestriction = dateRange == null ? CDateRange.all() : CDateRange.of(dateRange);
 
         return new EntityDateQuery(

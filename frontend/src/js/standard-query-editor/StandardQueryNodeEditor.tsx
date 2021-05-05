@@ -1,11 +1,11 @@
-import React from "react";
 import { StateT } from "app-types";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
-
-import { tableIsEditable } from "../model/table";
 import { ConceptIdT, CurrencyConfigT, DatasetIdT } from "../api/types";
+import { nodeIsConceptQueryNode } from "../model/node";
+import { tableIsEditable } from "../model/table";
+import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
 import { QueryNodeEditorStateT } from "../query-node-editor/reducer";
 
 import {
@@ -24,35 +24,35 @@ import {
   toggleSecondaryIdExclude,
   useLoadFilterSuggestions,
 } from "./actions";
-import { StandardQueryNodeT } from "./types";
 import type { StandardQueryStateT } from "./queryReducer";
-import { isConceptQueryNode } from "../model/query";
+import { StandardQueryNodeT } from "./types";
 
 const findNodeBeingEdited = (query: StandardQueryStateT) =>
   query
     .reduce<StandardQueryNodeT[]>(
       (acc, group) => [...acc, ...group.elements],
-      []
+      [],
     )
     .find((element) => element.isEditing);
 
 const StandardQueryNodeEditor = () => {
   const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId
+    (state) => state.datasets.selectedDatasetId,
   );
   const node = useSelector<StateT, StandardQueryNodeT | undefined>((state) =>
-    findNodeBeingEdited(state.queryEditor.query)
+    findNodeBeingEdited(state.queryEditor.query),
   );
   const showTables =
     !!node &&
-    isConceptQueryNode(node) &&
+    nodeIsConceptQueryNode(node) &&
     !!node.tables &&
+    node.tables.length > 1 &&
     node.tables.some((table) => tableIsEditable(table));
   const editorState = useSelector<StateT, QueryNodeEditorStateT>(
-    (state) => state.queryNodeEditor
+    (state) => state.queryNodeEditor,
   );
   const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-    (state) => state.startup.config.currency
+    (state) => state.startup.config.currency,
   );
 
   const onLoadFilterSuggestions = useLoadFilterSuggestions();
@@ -69,8 +69,6 @@ const StandardQueryNodeEditor = () => {
       node={node}
       editorState={editorState}
       showTables={showTables}
-      isExcludeTimestampsPossible={true}
-      isExcludeFromSecondaryIdQueryPossible={true}
       currencyConfig={currencyConfig}
       onLoadFilterSuggestions={onLoadFilterSuggestions}
       onCloseModal={() => dispatch(deselectNode())}
@@ -82,19 +80,17 @@ const StandardQueryNodeEditor = () => {
       onToggleTable={(tableIdx: number, isExcluded: boolean) =>
         dispatch(toggleTable(tableIdx, isExcluded))
       }
-      onSelectSelects={(value) => dispatch(setSelects(value))}
+      onSelectSelects={(value) => {
+        dispatch(setSelects(value));
+      }}
       onSelectTableSelects={(tableIdx: number, value) =>
         dispatch(setTableSelects(tableIdx, value))
       }
       onSetFilterValue={(tableIdx: number, filterIdx: number, value) =>
         dispatch(setFilterValue(tableIdx, filterIdx, value))
       }
-      onSwitchFilterMode={(tableIdx: number, filterIdx: number, mode) =>
-        dispatch(switchFilterMode(tableIdx, filterIdx, mode))
-      }
-      onResetAllFilters={(andIdx: number, orIdx: number) =>
-        dispatch(resetAllFilters(andIdx, orIdx))
-      }
+      onSwitchFilterMode={(...args) => dispatch(switchFilterMode(...args))}
+      onResetAllFilters={() => dispatch(resetAllFilters())}
       onToggleTimestamps={() => dispatch(toggleTimestamps())}
       onToggleSecondaryIdExclude={() => dispatch(toggleSecondaryIdExclude())}
       onSetDateColumn={(tableIdx: number, value) =>

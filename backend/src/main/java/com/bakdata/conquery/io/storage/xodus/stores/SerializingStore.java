@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -24,6 +23,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Key-value-store from {@link KEY} type values to {@link VALUE} values. ACID consistent, stored on disk using {@link jetbrains.exodus.env.Store} via {@link XodusStore}.
  * <p>
- * Values are (de-)serialized using {@linkplain Jackson.BINARY_MAPPER}.
+ * Values are (de-)serialized using {@linkplain objectMapper}.
  *
  * @param <KEY>   type of keys
  * @param <VALUE> type of values.
@@ -101,8 +101,10 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	
 	private final boolean removeUnreadablesFromUnderlyingStore;
 
+	private final ObjectMapper objectMapper;
+
 	@SuppressWarnings("unchecked")
-	public SerializingStore(XodusStoreFactory config, XodusStore store, Validator validator, IStoreInfo storeInfo) {
+	public SerializingStore(XodusStoreFactory config, XodusStore store, Validator validator, IStoreInfo storeInfo, ObjectMapper objectMapper) {
 		this.storeInfo = storeInfo;
 		this.store = store;
 		this.validator = validator;
@@ -110,19 +112,21 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		valueType = (Class<VALUE>) storeInfo.getValueType();
 
-		valueWriter = Jackson.BINARY_MAPPER
+		this.objectMapper = objectMapper;
+
+		valueWriter = objectMapper
 							  .writerFor(valueType)
 							  .withView(InternalOnly.class);
 
-		valueReader = Jackson.BINARY_MAPPER
+		valueReader = objectMapper
 							  .readerFor(valueType)
 							  .withView(InternalOnly.class);
 
-		keyWriter = Jackson.BINARY_MAPPER
+		keyWriter = objectMapper
 							.writerFor(storeInfo.getKeyType())
 							.withView(InternalOnly.class);
 
-		keyReader = Jackson.BINARY_MAPPER
+		keyReader = objectMapper
 							.readerFor(storeInfo.getKeyType())
 							.withView(InternalOnly.class);
 		
@@ -149,7 +153,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			throw new IllegalStateException("The element " + value + " is not of the required type " + valueType);
 		}
 		if (validateOnWrite) {
-			ValidatorHelper.failOnError(log, validator.validate(value), "encoding " + value.getClass().getSimpleName() + " " + Objects.toString(value));
+			ValidatorHelper.failOnError(log, validator.validate(value));
 		}
 
 		store.add(writeKey(key), writeValue(value));
@@ -162,7 +166,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			return readValue(binValue);			
 		} catch (Exception e) {
 			if(unreadableValuesDumpDir != null) {
-				dumpToFile(binValue, key.toString(), unreadableValuesDumpDir, storeInfo.getName());
+				dumpToFile(binValue, key.toString(), unreadableValuesDumpDir, storeInfo.getName(), objectMapper);
 			}
 			if(removeUnreadablesFromUnderlyingStore) {
 				remove(key);
@@ -256,7 +260,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			return deserializer.apply(serial);			
 		} catch (Exception e) {
 			if(unreadableValuesDumpDir != null) {
-				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), unreadableValuesDumpDir, storeInfo.getName());
+				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), unreadableValuesDumpDir, storeInfo.getName(), objectMapper);
 			}
 			if(log.isTraceEnabled()){
 				// With trace also print the stacktrace
@@ -275,7 +279,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 
 		if (validateOnWrite) {
-			ValidatorHelper.failOnError(log, validator.validate(value), "encoding " + value.getClass().getSimpleName() + " " + Objects.toString(value));
+			ValidatorHelper.failOnError(log, validator.validate(value));
 		}
 
 		store.update(writeKey(key), writeValue(value));
@@ -352,7 +356,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
 	 * @param storeName The name of the store which is also used in the dump file name.
 	 */
-	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, @NonNull File unreadableDumpDir, @NonNull String storeName) {
+	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, @NonNull File unreadableDumpDir, @NonNull String storeName, ObjectMapper objectMapper) {
 		// Create dump filehandle
 		File dumpfile = new File(unreadableDumpDir, makeDumpfileName(keyOfDump, storeName));
 		if(dumpfile.exists()) {
@@ -362,7 +366,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		// Write dump
 		try {
 			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
-			JsonNode dump = Jackson.BINARY_MAPPER.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
+			JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
 			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
 		}
 		catch (IOException e) {

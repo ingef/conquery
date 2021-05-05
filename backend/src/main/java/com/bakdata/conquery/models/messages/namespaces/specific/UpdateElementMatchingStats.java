@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @ToString
 public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
 	private final WorkerId source;
+	//TODO NsIdRef?
 	@ToString.Exclude
 	private final Map<ConceptElementId<?>, MatchingStats.Entry> values;
 

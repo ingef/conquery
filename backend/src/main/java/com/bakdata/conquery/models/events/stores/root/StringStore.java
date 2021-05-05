@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.events.stores.root;
 
-import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -35,24 +33,11 @@ public interface StringStore extends Iterable<String>, ColumnStore {
 	int getId(String value);
 
 
-
-	/**
-	 * Allows injecting a different dictionary (usually a shared dictionary)
-	 */
-	void setUnderlyingDictionary(DictionaryId newDict);
-
 	@JsonIgnore
 	Dictionary getUnderlyingDictionary();
 
 	@JsonIgnore
 	boolean isDictionaryHolding();
-
-	/**
-	 * Loads all dictionaries.
-	 *
-	 * TODO: This can be replaced with {@link com.bakdata.conquery.io.jackson.serializer.NsIdRef} when used properly.
-	 */
-	default void loadDictionaries(NamespacedStorage storage) {}
 
 
 	/**

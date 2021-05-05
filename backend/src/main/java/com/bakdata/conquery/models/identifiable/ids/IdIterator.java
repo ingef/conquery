@@ -8,6 +8,7 @@ import lombok.ToString;
 
 @Getter @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+//TODO is this class necessary?
 public class IdIterator {
 	@EqualsAndHashCode.Include
 	private final List<String> data;

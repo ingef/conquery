@@ -124,7 +124,7 @@
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy</artifactId>
-			<version>3.0.7</version>
+			<version>3.0.8</version>
 			<classifier>indy</classifier>
 		</dependency>
 		<dependency>
@@ -135,7 +135,7 @@
 		<dependency>
 			<groupId>it.unimi.dsi</groupId>
 			<artifactId>fastutil</artifactId>
-			<version>8.5.2</version>
+			<version>8.5.4</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.classgraph</groupId>
@@ -232,7 +232,7 @@
 		<dependency>
 			<groupId>com.auth0</groupId>
 			<artifactId>java-jwt</artifactId>
-			<version>3.12.1</version>
+			<version>3.15.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.dropwizard</groupId>

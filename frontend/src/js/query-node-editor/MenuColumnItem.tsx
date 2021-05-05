@@ -1,11 +1,10 @@
-import React from "react";
 import styled from "@emotion/styled";
+import React, { FC } from "react";
 
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
-
 import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
-import type { TableWithFilterValueT } from "../standard-query-node-editor/types";
+import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
 import MenuColumnButton from "./MenuColumnButton";
 
@@ -29,7 +28,7 @@ const Label = styled("span")`
   line-height: ${({ theme }) => theme.font.lg};
 `;
 
-type PropsT = {
+interface PropsT {
   table: TableWithFilterValueT;
   isActive: boolean;
   isOnlyOneTableIncluded: boolean;
@@ -37,9 +36,9 @@ type PropsT = {
   allowlistedTables?: string[];
   onClick: () => void;
   onToggleTable: (value: boolean) => void;
-};
+}
 
-export default ({
+const MenuColumnItem: FC<PropsT> = ({
   table,
   isActive,
   isOnlyOneTableIncluded,
@@ -47,11 +46,11 @@ export default ({
   allowlistedTables,
   onClick,
   onToggleTable,
-}: PropsT) => {
+}) => {
   const isDisabled = tableIsDisabled(
     table,
     blocklistedTables,
-    allowlistedTables
+    allowlistedTables,
   );
 
   // TODO: This creates an invalid DOM nesting, a <button> inside a <button>
@@ -78,3 +77,5 @@ export default ({
     </MenuColumnButton>
   );
 };
+
+export default MenuColumnItem;

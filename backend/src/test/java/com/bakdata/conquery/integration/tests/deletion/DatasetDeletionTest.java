@@ -140,13 +140,13 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 					// No bucket should be found referencing the import.
 					assertThat(workerStorage.getAllBuckets())
 							.describedAs("Buckets for Worker %s", value.getInfo().getId())
-							.filteredOn(bucket -> bucket.getImp().getId().getTable().getDataset().equals(dataset.getId()))
+							.filteredOn(bucket -> bucket.getTable().getDataset().getId().equals(dataset.getId()))
 							.isEmpty();
 
 					// No CBlock associated with import may exist
 					assertThat(workerStorage.getAllCBlocks())
 							.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-							.filteredOn(cBlock -> cBlock.getBucket().getImp().getTable().getDataset().getId().equals(dataset.getId()))
+							.filteredOn(cBlock -> cBlock.getBucket().getTable().getDataset().getId().equals(dataset.getId()))
 							.isEmpty();
 				}
 			}
@@ -238,7 +238,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getTable().getDataset().getId().equals(dataset.getId())))
+						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getTable().getDataset().getId().equals(dataset.getId())))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
 					}

@@ -1,18 +1,17 @@
-import React, { useState, useEffect } from "react";
 import styled from "@emotion/styled";
-import { useSelector } from "react-redux";
-import { useTranslation } from "react-i18next";
 import type { StateT } from "app-types";
-
-import Modal from "../modal/Modal";
-import InputSelect from "../form-components/InputSelect";
-import InputText from "../form-components/InputText";
-import ScrollableList from "../scrollable-list/ScrollableList";
-import PrimaryButton from "../button/PrimaryButton";
-import FaIcon from "../icon/FaIcon";
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
 import type { ConceptIdT, ConceptT } from "../api/types";
+import PrimaryButton from "../button/PrimaryButton";
 import type { TreesT } from "../concept-trees/reducer";
+import InputSelect from "../form-components/InputSelect";
+import InputText from "../form-components/InputText";
+import FaIcon from "../icon/FaIcon";
+import Modal from "../modal/Modal";
+import ScrollableList from "../scrollable-list/ScrollableList";
 
 import { useSelectConceptRootNodeAndResolveCodes } from "./actions";
 import { UploadConceptListModalStateT } from "./reducer";
@@ -59,7 +58,7 @@ interface PropsT {
   onAccept: (
     label: string,
     rootConcepts: TreesT,
-    resolvedConcepts: ConceptIdT[]
+    resolvedConcepts: ConceptIdT[],
   ) => void;
   onClose: () => void;
 }
@@ -79,20 +78,20 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
     resolved,
     error,
   } = useSelector<StateT, UploadConceptListModalStateT>(
-    (state) => state.uploadConceptListModal
+    (state) => state.uploadConceptListModal,
   );
 
   const availableConceptRootNodes = useSelector<StateT, ConceptRootNodeByKey[]>(
-    (state) => selectAvailableConceptRootNodes(state)
+    (state) => selectAvailableConceptRootNodes(state),
   );
   const rootConcepts = useSelector<StateT, TreesT>(
-    (state) => state.conceptTrees.trees
+    (state) => state.conceptTrees.trees,
   );
   const resolvedItemsCount = useSelector<StateT, number>((state) =>
-    selectResolvedItemsCount(state)
+    selectResolvedItemsCount(state),
   );
   const unresolvedItemsCount = useSelector<StateT, number>((state) =>
-    selectUnresolvedItemsCount(state)
+    selectUnresolvedItemsCount(state),
   );
 
   const [label, setLabel] = useState(filename);
@@ -192,7 +191,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
                       <ErrorIcon icon="exclamation-circle" />
                       <span>
                         {t("uploadConceptListModal.unknownCodes", {
-                          context: unresolvedItemsCount,
+                          count: unresolvedItemsCount,
                         })}
                       </span>
                     </Msg>
@@ -239,7 +238,7 @@ const selectAvailableConceptRootNodes = (state: StateT) => {
     .map(([key, value]) => ({ key, value }))
     .filter(({ value }) => value.codeListResolvable)
     .sort((a, b) =>
-      a.value.label.toLowerCase().localeCompare(b.value.label.toLowerCase())
+      a.value.label.toLowerCase().localeCompare(b.value.label.toLowerCase()),
     );
 };
 

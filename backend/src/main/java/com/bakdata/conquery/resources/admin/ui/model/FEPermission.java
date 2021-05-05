@@ -3,9 +3,6 @@ package com.bakdata.conquery.resources.admin.ui.model;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -35,14 +32,6 @@ public class FEPermission implements Comparable<FEPermission>{
 			cPermission.getInstances(),
 			LocalDateTime.ofInstant(cPermission.getCreationTime(), TIMEZONE).format(DateTimeFormatter.ISO_DATE_TIME),
 			cPermission.toString());
-	}
-	
-	public static List<FEPermission> from(Collection<ConqueryPermission> cPermission) {
-		List<FEPermission> fePerms = new ArrayList<>();
-		for(ConqueryPermission perm : cPermission) {
-			fePerms.add(from(perm));
-		}
-		return fePerms;
 	}
 
 	@Override

@@ -1,40 +1,25 @@
 package com.bakdata.conquery.io.result.csv;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import com.bakdata.conquery.io.csv.CsvIo;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 @UtilityClass
 public class QueryToCSVRenderer {
-
-	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
-	private static final Collection<String> HEADER = Arrays.asList(ID_MAPPING.getPrintIdFields());
 	
-	public static Stream<String> toCSV(PrintSettings cfg, ManagedQuery query, Function<EntityResult,ExternalEntityId> idMapper) {
-		return toCSV(cfg, List.of(query), idMapper);
-	}
-	
-	public static Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries, Function<EntityResult,ExternalEntityId> idMapper) {
+	public static Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries, Function<EntityResult, ExternalEntityId> idMapper, CsvWriter writer, Collection<String> header) {
 		if (queries.stream()
 			.anyMatch(q -> q.getState() != ExecutionState.DONE)) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
@@ -43,8 +28,7 @@ public class QueryToCSVRenderer {
 		ResultInfoCollector infos = queries.iterator().next().collectResultInfos();
 		
 		//build header
-		CsvWriter writer = CsvIo.createWriter();
-		writer.addStringValues(HEADER);
+		writer.addStringValues(header);
 		for(ResultInfo info : infos.getInfos()) {
 			writer.addValue(info.getUniqueName(cfg));
 		}
@@ -64,12 +48,11 @@ public class QueryToCSVRenderer {
 	}
 
 	private static Stream<String> createCSVBody(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, ManagedQuery query, Function<EntityResult,ExternalEntityId> idMapper) {
-		Namespace namespace = Objects.requireNonNull(query.getNamespace());
 		return query.getResults()
-			.stream()
-			.map(result -> Pair.of(idMapper.apply(result), result))
-			.sorted(Comparator.comparing(Pair::getKey))
-			.flatMap(res -> createCSVLine(writer, cfg, infos, res));
+					.stream()
+					.map(result -> Pair.of(idMapper.apply(result), result))
+					.sorted(Comparator.comparing(Pair::getKey))
+					.flatMap(res -> createCSVLine(writer, cfg, infos, res));
 	}
 
 	

@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -89,7 +92,7 @@ public class Workers extends IdResolveContext {
 
 	@Override
 	public CentralRegistry getMetaRegistry() {
-		throw new UnsupportedOperationException("Workers should never be asked about the meta registry");
+		return null; // Workers simply have no MetaRegistry.
 	}
 
 	public void removeWorkersFor(DatasetId dataset) {

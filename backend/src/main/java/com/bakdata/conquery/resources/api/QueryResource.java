@@ -1,11 +1,9 @@
 package com.bakdata.conquery.resources.api;
 
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
-import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -29,6 +27,7 @@ import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -42,13 +41,13 @@ import lombok.extern.slf4j.Slf4j;
 @Produces(AdditionalMediaTypes.JSON)
 @Slf4j
 public class QueryResource {
-	
+
 	private QueryProcessor processor;
 	private ResourceUtil dsUtil;
 
 	@Inject
 	public QueryResource(QueryProcessor processor) {
-		this.processor= processor;
+		this.processor = processor;
 		dsUtil = new ResourceUtil(processor.getDatasetRegistry());
 	}
 
@@ -69,25 +68,36 @@ public class QueryResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws SQLException {
-		authorize(user, datasetId, Ability.READ);
+	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) {
+
+		final ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
+
+		ResourceUtil.throwNotFoundIfNull(queryId, query);
+
+		final Dataset dataset = dsUtil.getDataset(datasetId);
+
+		ResourceUtil.throwNotFoundIfNull(datasetId, dataset);
 
 		return processor.cancel(
-			dsUtil.getDataset(datasetId),
-			dsUtil.getManagedQuery(queryId),
-			RequestAwareUriBuilder.fromRequest(req));
+				user,
+				dataset,
+				query,
+				RequestAwareUriBuilder.fromRequest(req)
+		);
 	}
 
 	@GET
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req)
 			throws InterruptedException {
-		authorize(user, datasetId, Ability.READ);
+
 		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
-		authorize(user, query, Ability.READ);
+
+		ResourceUtil.throwNotFoundIfNull(queryId, query);
+
+		user.authorize(query, Ability.READ);
+
 		query.awaitDone(10, TimeUnit.SECONDS);
-
-
 
 		return processor.getStatus(
 				query,

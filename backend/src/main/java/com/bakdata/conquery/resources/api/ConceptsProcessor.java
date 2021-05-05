@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -22,15 +21,14 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEList;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -46,7 +44,6 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -96,15 +93,14 @@ public class ConceptsProcessor {
 			throw new RuntimeException("failed to create frontend node for "+concept, e);
 		}
 	}
-	
+
 	public List<IdLabel<DatasetId>> getDatasets(User user) {
-		return namespaces
-			.getAllDatasets()
-			.stream()
-			.filter(d -> user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), d.getId())))
-			.map(d -> new IdLabel<DatasetId>(d.getId(), d.getLabel()))
-			.sorted()
-			.collect(Collectors.toList());
+		return namespaces.getAllDatasets()
+						 .stream()
+						 .filter(d -> user.isPermitted(d, Ability.READ))
+						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
+						 .sorted()
+						 .collect(Collectors.toList());
 	}
 
 	/**
@@ -254,17 +250,7 @@ public class ConceptsProcessor {
 		private FilterId filterId;
 		private List<FEValue> value;
 	}
-	
-	@Getter
-	@Setter
-	@AllArgsConstructor
-	@NoArgsConstructor
-	private class ResolvedFilter {
-		private Column column;
-		private Map<String, String> realLabels;
-		private QuickSearch<FilterSearchItem> sourceSearch;
-	}
-	
+
 	@Getter
 	@Setter
 	@AllArgsConstructor

@@ -85,7 +85,7 @@
     "queryNode": "Query Node",
     "conceptNodes": "Concept Nodes",
     "conceptNodeTables": "Input Tables",
-    "properties": "Properties",
+    "properties": "Common properties",
     "reset": "Reset",
     "resetSettings": "Reset all settings",
     "excludeTimestamps": "Exclude from time calculation",
@@ -99,10 +99,13 @@
     "includeSubnodes": "Include subordinate concepts",
     "tooManyValues": "{{count}} values selected",
     "filters": "Filters",
-    "selects": "More values",
+    "selects": "Additional values",
+    "commonSelects": "Common additional values",
     "nodeNotFound": "Concept not found",
     "selectValidityDate": "Relevant date interval",
-    "dateColumn": "Date column"
+    "dateColumn": "Date column",
+    "dropMoreConcepts": "Contained concepts",
+    "emptyMenuColumn": "No further settings"
   },
   "queryGroupModal": {
     "explanation": "Set time frame",
@@ -134,6 +137,7 @@
     "clearAll": "Clear all",
     "clearValue": "Clear value",
     "closeEsc": "Close (ESC)",
+    "close": "Close",
     "create": "Create",
     "addTag": "Add Tag",
     "share": "Share",

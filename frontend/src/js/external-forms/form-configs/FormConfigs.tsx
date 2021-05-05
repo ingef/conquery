@@ -1,13 +1,13 @@
-import React, { useState } from "react";
 import styled from "@emotion/styled";
+import React, { useState } from "react";
 import ReactList from "react-list";
-
-import { FormConfigT } from "./reducer";
-import FormConfig from "./FormConfig";
-import DeleteFormConfigModal from "./DeleteFormConfigModal";
 import { useDispatch } from "react-redux";
-import { deleteFormConfigSuccess } from "./actions";
+
+import DeleteFormConfigModal from "./DeleteFormConfigModal";
+import FormConfig from "./FormConfig";
 import ShareFormConfigModal from "./ShareFormConfigModal";
+import { deleteFormConfigSuccess } from "./actions";
+import { FormConfigT } from "./reducer";
 
 interface PropsT {
   datasetId: string;
@@ -17,6 +17,7 @@ interface PropsT {
 const Root = styled("div")`
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   font-size: ${({ theme }) => theme.font.sm};
   padding: 0 10px;
 `;
@@ -26,10 +27,10 @@ const Container = styled("div")`
 
 const FormConfigs: React.FC<PropsT> = ({ datasetId, formConfigs }) => {
   const [formConfigToDelete, setFormConfigToDelete] = useState<string | null>(
-    null
+    null,
   );
   const [formConfigToShare, setFormConfigToShare] = useState<string | null>(
-    null
+    null,
   );
 
   const dispatch = useDispatch();

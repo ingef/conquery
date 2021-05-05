@@ -4,6 +4,7 @@ import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DA
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Currency;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -18,10 +19,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
@@ -260,7 +258,6 @@ public interface ResultType {
     @CPSType(id = "MONEY", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
 	class MoneyT extends PrimitiveResultType {
-        public static final int CURRENCY_DIGITS = ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits();
 
         @Getter(onMethod_ = @JsonCreator)
 		public static final MoneyT INSTANCE = new MoneyT();
@@ -268,7 +265,7 @@ public interface ResultType {
         @Override
         public String print(PrintSettings cfg, Object f) {
             if (cfg.isPrettyPrint()) {
-                return cfg.getDecimalFormat().format(new BigDecimal(((Number) f).longValue()).movePointLeft(CURRENCY_DIGITS));
+                return cfg.getDecimalFormat().format(new BigDecimal(((Number) f).longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits()));
             }
             return IntegerT.INSTANCE.print(cfg, f);
         }
@@ -307,13 +304,12 @@ public interface ResultType {
 
         @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-
-            // This is a workaround right now because currently the ArrowWriter does not write the underlying DataVector
-            // of the List vector or the ArrowReader does not read it correctly. So we print the list as a flat String.
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-
-            // This is the intended way of handling list values -> putting them in a ListVector
-            //return new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field ("elem", elementType.getArrowFieldType(info, settings).getFieldType(),null)));
+            final FieldType nestedType = elementType.getArrowFieldType(info, settings).getFieldType();
+            return new Field(
+                    info.getUniqueName(settings),
+                    FieldType.nullable(ArrowType.List.INSTANCE),
+                    List.of(new Field ("elem", nestedType,null))
+            );
         }
 
         @Override
