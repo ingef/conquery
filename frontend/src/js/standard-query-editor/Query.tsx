@@ -43,6 +43,14 @@ const Container = styled("div")`
   flex-direction: column;
 `;
 
+const PaddedTop = styled("div")`
+  padding-top: 70px;
+`;
+
+const SxWithTooltip = styled(WithTooltip)`
+  display: block !important;
+`;
+
 const Groups = styled("div")`
   display: flex;
   flex-direction: row;
@@ -184,14 +192,16 @@ const Query = () => {
                 {t("common.and")}
               </QueryGroupConnector>,
             ])}
-            <WithTooltip text={t("help.editorDropzoneAnd")} lazy>
-              <QueryEditorDropzone
-                isAnd
-                onDropNode={onDropAndNode}
-                onDropFile={(file) => onDropConceptListFile(file, null)}
-                onLoadPreviousQuery={onLoadPreviousQuery}
-              />
-            </WithTooltip>
+            <PaddedTop>
+              <SxWithTooltip text={t("help.editorDropzoneAnd")} lazy>
+                <QueryEditorDropzone
+                  isAnd
+                  onDropNode={onDropAndNode}
+                  onDropFile={(file) => onDropConceptListFile(file, null)}
+                  onLoadPreviousQuery={onLoadPreviousQuery}
+                />
+              </SxWithTooltip>
+            </PaddedTop>
           </Groups>
           <QueryFooter />
         </>
