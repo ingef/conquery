@@ -1,5 +1,20 @@
 package com.bakdata.conquery.io.result.arrow;
 
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.channels.Channels;
+import java.util.function.Function;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -8,8 +23,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -17,7 +30,6 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,20 +40,6 @@ import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.http.HttpStatus;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.channels.Channels;
-import java.util.function.Function;
-
-import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
-
 @RequiredArgsConstructor
 @Slf4j
 public class ResultArrowProcessor {
@@ -50,23 +48,23 @@ public class ResultArrowProcessor {
 	private final ConqueryConfig config;
 
 
-	public Response getArrowStreamResult(User user, ManagedExecutionId queryId, DatasetId datasetId, boolean pretty) {
+	public Response getArrowStreamResult(User user, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				user,
-				queryId,
-				datasetId,
+				exec,
+				dataset,
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_STREAM);
 	}
 
-	public Response getArrowFileResult(User user, ManagedExecutionId queryId, DatasetId datasetId, boolean pretty) {
+	public Response getArrowFileResult(User user, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				user,
-				queryId,
-				datasetId,
+				exec,
+				dataset,
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_FILE);
@@ -76,23 +74,19 @@ public class ResultArrowProcessor {
 	private Response getArrowResult(
 			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
 			User user,
-			ManagedExecutionId queryId,
-			DatasetId datasetId,
+			ManagedExecution<?> exec,
+			Dataset dataset,
 			DatasetRegistry datasetRegistry,
 			boolean pretty,
 			String fileExtension) {
 
-		final Namespace namespace = datasetRegistry.get(datasetId);
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		ConqueryMDC.setLocation(user.getName());
-		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
-		final Dataset dataset = namespace.getDataset();
+		log.info("Downloading results for {} on dataset {}", exec, dataset);
 		user.authorize(dataset, Ability.READ);
 		user.authorize(dataset, Ability.DOWNLOAD);
 
-		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
-
-		ResourceUtil.throwNotFoundIfNull(queryId,exec);
 
 		user.authorize(exec, Ability.READ);
 

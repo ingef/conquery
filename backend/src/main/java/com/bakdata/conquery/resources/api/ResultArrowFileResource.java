@@ -17,7 +17,6 @@ import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.execution.ResultProcessor;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
 
