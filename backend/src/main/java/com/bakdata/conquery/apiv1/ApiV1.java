@@ -25,7 +25,7 @@ import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.api.ResultArrowFileResource;
 import com.bakdata.conquery.resources.api.ResultArrowStreamResource;
-import com.bakdata.conquery.resources.api.ResultCSVResource;
+import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.resources.api.StoredQueriesResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -71,7 +71,7 @@ public class ApiV1 implements ResourcesProvider {
 		 */
 		environment.register(manager.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
-		environment.register(ResultCSVResource.class);
+		environment.register(ResultCsvResource.class);
 		environment.register(ResultArrowFileResource.class);
 		environment.register(ResultArrowStreamResource.class);
 		environment.register(StoredQueriesResource.class);
