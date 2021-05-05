@@ -47,27 +47,29 @@ public class MetaStorage implements ConqueryStorage{
 		authUser = storageFactory.createUserStore(centralRegistry, pathName);
 		authRole = storageFactory.createRoleStore(centralRegistry, pathName);
 		authGroup = storageFactory.createGroupStore(centralRegistry, pathName);
-
+		// Executions depend on users
 		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, pathName);
 		formConfigs = storageFactory.createFormConfigStore(centralRegistry, pathName);
     }
 
     @Override
     public void loadData() {
-        executions.loadData();
-        formConfigs.loadData();
         authUser.loadData();
         authRole.loadData();
         authGroup.loadData();
-    }
+
+		executions.loadData();
+		formConfigs.loadData();
+	}
 
     @Override
     public void clear() {
         centralRegistry.clear();
 
-        executions.clear();
-        formConfigs.clear();
-        authUser.clear();
+		executions.clear();
+		formConfigs.clear();
+
+		authUser.clear();
         authRole.clear();
         authGroup.clear();
     }
@@ -76,6 +78,7 @@ public class MetaStorage implements ConqueryStorage{
     public void removeStorage() {
         executions.removeStore();
         formConfigs.removeStore();
+
         authUser.removeStore();
         authRole.removeStore();
         authGroup.removeStore();
