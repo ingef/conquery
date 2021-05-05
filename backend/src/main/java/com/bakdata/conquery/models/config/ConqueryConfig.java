@@ -75,6 +75,10 @@ public class ConqueryConfig extends Configuration {
 	@NotNull
 	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
 	@Valid
+	@NotNull
+	private ExcelConfig excel = new ExcelConfig();
+
+	@Valid
 	private List<PluginConfig> plugins = new ArrayList<>();
 	/**
 	 * null means here that we try to deduce from an attached agent
