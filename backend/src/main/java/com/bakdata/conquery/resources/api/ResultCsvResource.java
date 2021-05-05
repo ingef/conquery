@@ -45,6 +45,6 @@ public class ResultCsvResource {
 		@QueryParam("pretty") Optional<Boolean> pretty) 
 	{
 		log.info("Result for {} download on dataset {} by user {} ({}).", queryId, datasetId, user.getId(), user.getName());
-		return processor.getResult(user, datasetId, queryId, userAgent, queryCharset, pretty.orElse(Boolean.TRUE), "csv").build();
+		return processor.getResult(user, datasetId, queryId, userAgent, queryCharset, pretty.orElse(Boolean.TRUE));
 	}
 }

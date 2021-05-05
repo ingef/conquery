@@ -64,6 +64,6 @@ public class ResultExcelProcessor {
 
 		);
 
-		return makeResponseWithFileName("xlsx", exec, out).build();
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx");
 	}
 }

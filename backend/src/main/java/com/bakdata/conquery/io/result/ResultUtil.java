@@ -30,20 +30,16 @@ public class ResultUtil {
 				mappingState);
 	}
 
-
-
-	public static Response.ResponseBuilder makeResponseWithFileName(String fileExtension, ManagedExecution<?> exec, StreamingOutput out) {
+	public static Response makeResponseWithFileName(StreamingOutput out, String label, String fileExtension) {
 		Response.ResponseBuilder response = Response.ok(out);
-		String label = exec.getLabelWithoutAutoLabelSuffix();
 		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
 			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
 			response.header("Content-Disposition", String.format(
-					"attachment; filename=\"%s.%s\"",
-					FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(label).replaceAll("_"),
-					fileExtension));
+					"attachment; filename=\"%s\"",FileUtil.makeSafeFileName(label, fileExtension)));
 		}
-		return response;
+		return response.build();
 	}
+
 	/**
 	 * Tries to determine the charset for the result encoding from different request properties.
 	 * Defaults to StandardCharsets.UTF_8.

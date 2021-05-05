@@ -126,7 +126,7 @@ public class ResultArrowProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(fileExtension, exec, out).build();
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension);
 	}
 
 }

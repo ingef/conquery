@@ -37,7 +37,7 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 
 
-	public Response.ResponseBuilder getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty, String fileExtension) {
+	public Response getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty) {
 		final Namespace namespace = datasetRegistry.get(datasetId);
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
@@ -78,7 +78,7 @@ public class ResultCsvProcessor {
 				throw new WebApplicationException("Failed to load result", e);
 			}
 		};
-		return makeResponseWithFileName(fileExtension, exec, out);
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv");
 	}
 
 }
