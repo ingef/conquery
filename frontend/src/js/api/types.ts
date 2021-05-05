@@ -297,6 +297,11 @@ export interface GetQueryResponseDoneT {
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
 
+export interface GetQueryRunningResponseT {
+  status: "RUNNING";
+  progress?: number;
+}
+
 // TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
 export interface GetQueryErrorResponseT {
   status: "FAILED" | "CANCELED";
@@ -310,7 +315,10 @@ export interface ErrorResponseT {
   context?: Record<string, string>; // More information to maybe display in translated messages
 }
 
-export type GetQueryResponseT = GetQueryResponseDoneT | GetQueryErrorResponseT;
+export type GetQueryResponseT =
+  | GetQueryRunningResponseT
+  | GetQueryResponseDoneT
+  | GetQueryErrorResponseT;
 
 export interface GetStoredQueryResponseT {
   id: QueryIdT;

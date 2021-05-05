@@ -8,7 +8,7 @@ import java.util.UUID;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -97,7 +97,7 @@ public class InstancePermissionImplificationTest {
 	@Test
 	public void permissionTypesFail() {
 		Permission dPerm = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId(DATASET1));
-		Permission qPerm = QueryPermission.onInstance(Ability.READ.asSet(), new ManagedExecutionId(new DatasetId(DATASET1), UUID.randomUUID()));
+		Permission qPerm = ExecutionPermission.onInstance(Ability.READ.asSet(), new ManagedExecutionId(new DatasetId(DATASET1), UUID.randomUUID()));
 		Permission sPerm = SuperPermission.onDomain();
 		Permission aPerm = AdminPermission.onDomain();
 		assertThat(dPerm.implies(qPerm)).isFalse();

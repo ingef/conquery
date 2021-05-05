@@ -14,7 +14,6 @@ import {
 import { DropzoneProps } from "../form-components/Dropzone";
 import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
 import FaIcon from "../icon/FaIcon";
-import WithTooltip from "../tooltip/WithTooltip";
 
 import type {
   DragItemConceptTreeNode,
@@ -44,7 +43,6 @@ const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
     css`
       height: 100px;
       white-space: nowrap;
-      margin-top: 70px;
       width: initial;
     `};
 `;
@@ -88,7 +86,6 @@ interface PropsT {
   className?: string;
   isInitial?: boolean;
   isAnd?: boolean;
-  tooltip?: string;
   onDropNode: (
     node: DragItemQuery | DragItemNode | DragItemConceptTreeNode,
   ) => void;
@@ -100,7 +97,6 @@ const QueryEditorDropzone: FC<PropsT> = ({
   className,
   isAnd,
   isInitial,
-  tooltip,
   onLoadPreviousQuery,
   onDropFile,
   onDropNode,
@@ -116,7 +112,7 @@ const QueryEditorDropzone: FC<PropsT> = ({
       isInitial={isInitial}
       acceptedDropTypes={DROP_TYPES}
       onDrop={(item) => {
-        if (item.type === NativeTypes.FILE && item.files) {
+        if (item.type === "__NATIVE_FILE__") {
           onDropFile(item.files[0]);
         } else {
           onDropNode(item);
@@ -129,7 +125,7 @@ const QueryEditorDropzone: FC<PropsT> = ({
       showFileSelectButton={isInitial}
     >
       {() => (
-        <WithTooltip text={tooltip} lazy>
+        <>
           {isInitial && (
             <TextInitial>
               <h2>{t("dropzone.explanation")}</h2>
@@ -148,7 +144,7 @@ const QueryEditorDropzone: FC<PropsT> = ({
             </TextInitial>
           )}
           {!isInitial && <Text>{t("dropzone.dragElementPlease")}</Text>}
-        </WithTooltip>
+        </>
       )}
     </SxDropzoneWithFileInput>
   );

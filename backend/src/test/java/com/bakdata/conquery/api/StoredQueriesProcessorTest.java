@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -119,7 +119,7 @@ public class StoredQueriesProcessorTest {
 		STORAGE.addUser(user);
 
 		for (ManagedExecutionId queryId : allowedQueryIds) {
-			AuthorizationHelper.addPermission(user, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId), STORAGE);
+			AuthorizationHelper.addPermission(user, ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId), STORAGE);
 		}
 
 		return user;

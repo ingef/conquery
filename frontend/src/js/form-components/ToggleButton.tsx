@@ -1,3 +1,4 @@
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import React, { FC } from "react";
 
@@ -8,37 +9,13 @@ const Root = styled("div")`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-
-  > span {
-    &:first-child {
-      margin-left: 0;
-      border-top-left-radius: 2px;
-      border-bottom-left-radius: 2px;
-    }
-
-    &:last-child {
-      border-top-right-radius: 2px;
-      border-bottom-right-radius: 2px;
-    }
-  }
-  > div {
-    &:first-child {
-      span {
-        margin-left: 0;
-        border-top-left-radius: 2px;
-        border-bottom-left-radius: 2px;
-      }
-    }
-    &:last-child {
-      span {
-        border-top-right-radius: 2px;
-        border-bottom-right-radius: 2px;
-      }
-    }
-  }
 `;
 
-const Option = styled("span")<{ active?: boolean }>`
+const Option = styled("span")<{
+  active?: boolean;
+  isFirst?: boolean;
+  isLast?: boolean;
+}>`
   font-size: ${({ theme }) => theme.font.xs};
   display: inline-block;
   padding: 4px 8px;
@@ -51,11 +28,26 @@ const Option = styled("span")<{ active?: boolean }>`
     active ? "white" : theme.col.grayVeryLight};
 
   margin-left: -1px;
+  margin-bottom: 2px;
 
   &:hover {
     background-color: ${({ theme, active }) =>
       active ? "white" : theme.col.bg};
   }
+
+  ${({ isFirst }) =>
+    isFirst &&
+    css`
+      margin-left: 0;
+      border-top-left-radius: 2px;
+      border-bottom-left-radius: 2px;
+    `}
+  ${({ isLast }) =>
+    isLast &&
+    css`
+      border-top-right-radius: 2px;
+      border-bottom-right-radius: 2px;
+    `}
 `;
 
 interface OptionsT {
@@ -76,9 +68,11 @@ interface PropsT {
 const ToggleButton: FC<PropsT> = ({ options, input, className }) => {
   return (
     <Root className={className}>
-      {options.map(({ value, label, description }) => (
+      {options.map(({ value, label, description }, i) => (
         <WithTooltip key={value} text={description}>
           <Option
+            isFirst={i === 0}
+            isLast={i === options.length - 1}
             active={input.value === value}
             onClick={() => {
               if (value !== input.value) input.onChange(value);

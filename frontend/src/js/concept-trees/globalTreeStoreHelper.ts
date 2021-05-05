@@ -31,7 +31,7 @@ export function setTree(
   tree: ConceptT,
 ): void {
   // This replaces the root concept with the one loaded initially (at /concepts)
-  const concepts = {
+  const concepts: Record<string, ConceptT> = {
     ...tree,
     [treeId]: rootConcept,
   };

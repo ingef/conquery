@@ -3,8 +3,10 @@ package com.bakdata.conquery.models.auth.permissions;
 import java.util.EnumSet;
 import java.util.Set;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 
+@CPSType(id = "CONCEPT", base = StringPermissionBuilder.class)
 public class ConceptPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "concepts";
