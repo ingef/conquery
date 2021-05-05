@@ -57,6 +57,7 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 		return DatasetPermission.onInstance(abilities,getId());
 	}
 
+	@JsonIgnore
 	@Override
 	public Dataset getDataset() {
 		return this;
