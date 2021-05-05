@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,10 +12,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 
@@ -38,13 +36,12 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
@@ -108,7 +105,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.involvedWorkers = namespace.getWorkers().size();
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
 		if (label == null) {
-			label = makeAutoLabel(namespaces, new PrintSettings(true, Locale.ROOT,namespaces, config));
+			label = makeAutoLabel(new PrintSettings(true, Locale.ROOT,namespaces, config, null));
 		}
 	}
 
@@ -187,16 +184,15 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 												   .build());
 		}
 		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config);
+		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null);
 
-		collectResultInfos().getInfos()
-							.forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
+		getResultInfo().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
 		return columnDescriptions;
 	}
 
 	@JsonIgnore
-	public ResultInfoCollector collectResultInfos() {
-		return query.collectResultInfos();
+	public List<ResultInfo> getResultInfo() {
+		return query.collectResultInfos().getInfos();
 	}
 
 	@Override
@@ -233,8 +229,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public StreamingOutput getResult(Function<EntityResult, ExternalEntityId> idMapper, PrintSettings settings, Charset charset, String lineSeparator, CsvWriter writer, List<String> header) {
-		return ResultCsvResource.resultAsStreamingOutput(this.getId(), settings, List.of(this), idMapper, charset, lineSeparator, writer, header);
+	public Stream<EntityResult> streamResults() {
+		return getResults().stream();
 	}
 
 	@Override
@@ -257,7 +253,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	 * All further labels are dropped.
 	 */
 	@Override
-	protected void makeDefaultLabel(final StringBuilder sb, DatasetRegistry datasetRegistry, PrintSettings cfg) {
+	protected void makeDefaultLabel(final StringBuilder sb, PrintSettings cfg) {
 		final Map<Class<? extends Visitable>, List<Visitable>> sortedContents = new HashMap<>();
 
 		int sbStartSize = sb.length();

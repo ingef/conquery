@@ -1,10 +1,5 @@
 import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
-import React from "react";
-
-type PropsType = {
-  isQueryRunning: boolean;
-};
 
 const spin = keyframes`
   0% {
@@ -15,7 +10,7 @@ const spin = keyframes`
   }
 `;
 
-const Spinner = styled("div")`
+export const QueryRunningSpinner = styled("div")`
   height: 30px;
   width: 30px;
   background-image: url("${({ theme }) => theme.img.spinner}");
@@ -24,8 +19,3 @@ const Spinner = styled("div")`
 
   animation: ${spin} 1s linear 0s infinite;
 `;
-
-const QueryRunningSpinner = (props: PropsType) =>
-  props.isQueryRunning ? <Spinner /> : null;
-
-export default QueryRunningSpinner;

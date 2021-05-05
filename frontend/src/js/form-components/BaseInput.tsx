@@ -41,6 +41,7 @@ interface InputPropsType {
   step?: number;
   min?: number;
   max?: number;
+  onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 interface PropsT {

@@ -13,6 +13,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -24,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Path("datasets/{" + DATASET + "}/result/")
 public class ResultArrowFileResource {
 	@Inject
-	private ResultProcessor processor;
+	private ResultArrowProcessor processor;
 	
 	@GET
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)

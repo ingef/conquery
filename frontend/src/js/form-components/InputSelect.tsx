@@ -16,6 +16,7 @@ interface PropsT {
   small?: boolean;
   selectProps?: Object;
   tooltip?: string;
+  defaultValue?: string | null; // Weird to have it here as well => TODO: get rid of redux-form
   input: {
     clearable?: boolean;
     defaultValue?: string | null;
@@ -33,11 +34,16 @@ const InputSelect = ({
   disabled,
   selectProps,
   tooltip,
+  defaultValue,
+  ...rest
 }: PropsT) => {
   const { t } = useTranslation();
   const selected = options && options.find((v) => v.value === input.value);
-  const defaultValue =
-    options && options.find((v) => v.value === input.defaultValue);
+  const defaultVal =
+    options &&
+    options.find(
+      (v) => v.value === defaultValue || v.value === input.defaultValue,
+    );
 
   return (
     <Labeled
@@ -56,7 +62,7 @@ const InputSelect = ({
         name="form-field"
         small={small}
         value={selected}
-        defaultValue={defaultValue}
+        defaultValue={defaultVal}
         options={options}
         onChange={(field: { value: string; label: string } | null) =>
           field ? input.onChange(field.value) : input.onChange(null)

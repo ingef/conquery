@@ -113,12 +113,10 @@ export const searchTreesSuccess = (query: string, result: Object) => ({
 export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });
 
-export const searchTrees = (
-  datasetId: DatasetIdT,
-  trees: TreesT,
-  query: string,
-) => {
-  return async (dispatch: Dispatch) => {
+export const useSearchTrees = () => {
+  const dispatch = useDispatch();
+
+  return async (trees: TreesT, query: string) => {
     dispatch(searchTreesStart(query));
 
     if (isEmpty(query)) return;

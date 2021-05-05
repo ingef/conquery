@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { DateRangeT } from "../api/types";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryGroupActions from "./QueryGroupActions";
@@ -40,6 +41,13 @@ const QueryOrConnector = styled("p")`
   text-align: center;
 `;
 
+// To override tippy here.
+// Maybe also possible in another way by adjusting
+// QueryEditorDropzone styles
+const SxWithTooltip = styled(WithTooltip)`
+  display: block !important;
+`;
+
 const isDateActive = (dateRange?: DateRangeT) => {
   return !!dateRange && (!!dateRange.min || !!dateRange.max);
 };
@@ -67,13 +75,14 @@ const QueryGroup = (props: PropsT) => {
 
   return (
     <Root>
-      <QueryEditorDropzone
-        key={props.group.elements.length + 1}
-        tooltip={t("help.editorDropzoneOr")}
-        onDropNode={props.onDropNode}
-        onDropFile={props.onDropFile}
-        onLoadPreviousQuery={props.onLoadPreviousQuery}
-      />
+      <SxWithTooltip text={t("help.editorDropzoneOr")} lazy>
+        <QueryEditorDropzone
+          key={props.group.elements.length + 1}
+          onDropNode={props.onDropNode}
+          onDropFile={props.onDropFile}
+          onLoadPreviousQuery={props.onLoadPreviousQuery}
+        />
+      </SxWithTooltip>
       <QueryOrConnector>{t("common.or")}</QueryOrConnector>
       <Group excluded={props.group.exclude}>
         <QueryGroupActions
