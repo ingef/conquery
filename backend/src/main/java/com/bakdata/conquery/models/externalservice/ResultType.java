@@ -1,50 +1,52 @@
 package com.bakdata.conquery.models.externalservice;
 
-import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Currency;
-import java.util.List;
-import java.util.StringJoiner;
-
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.StringJoiner;
+
+import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-public interface ResultType {
+public abstract class ResultType {
 
-    default String printNullable(PrintSettings cfg, Object f) {
+    public String printNullable(PrintSettings cfg, Object f) {
         if (f == null) {
             return "";
         }
         return print(cfg, f);
     }
 
-    default String print(PrintSettings cfg, @NonNull Object f) {
+    protected String print(PrintSettings cfg, @NonNull Object f) {
         return f.toString();
     }
 
-    Field getArrowFieldType(ResultInfo info, PrintSettings settings);
+    public abstract Field getArrowFieldType(ResultInfo info, PrintSettings settings);
 
-    String typeInfo();
 
-    static ResultType resolveResultType(MajorTypeId majorTypeId) {
+    public abstract String typeInfo();
+
+    public static ResultType resolveResultType(MajorTypeId majorTypeId) {
         switch (majorTypeId) {
             case STRING:
                 return StringT.INSTANCE;
@@ -66,7 +68,7 @@ public interface ResultType {
         }
     }
 
-    abstract static class PrimitiveResultType implements ResultType {
+    abstract static class PrimitiveResultType extends ResultType {
         @Override
         public String typeInfo() {
             return this.getClass().getAnnotation(CPSType.class).id();
@@ -80,7 +82,7 @@ public interface ResultType {
 
     @CPSType(id = "BOOLEAN", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class BooleanT extends PrimitiveResultType {
+	public static class BooleanT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final BooleanT INSTANCE = new BooleanT();
 
@@ -96,12 +98,13 @@ public interface ResultType {
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.Bool.INSTANCE), null);
         }
+
     }
 
 
     @CPSType(id = "INTEGER", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class IntegerT extends PrimitiveResultType {
+    public static class IntegerT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final IntegerT INSTANCE = new IntegerT();
 
@@ -117,11 +120,12 @@ public interface ResultType {
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
         }
+
     }
 
     @CPSType(id = "NUMERIC", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class NumericT extends PrimitiveResultType {
+    public static class NumericT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final NumericT INSTANCE = new NumericT();
 
@@ -137,11 +141,12 @@ public interface ResultType {
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null);
         }
+
     }
 
     @CPSType(id = "CATEGORICAL", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class CategoricalT extends PrimitiveResultType {
+    public static class CategoricalT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final CategoricalT INSTANCE = new CategoricalT();
 
@@ -153,7 +158,7 @@ public interface ResultType {
 
     @CPSType(id = "RESOLUTION", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class ResolutionT extends PrimitiveResultType {
+    public static class ResolutionT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final ResolutionT INSTANCE = new ResolutionT();
 
@@ -179,7 +184,7 @@ public interface ResultType {
 
     @CPSType(id = "DATE", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class DateT extends PrimitiveResultType {
+    public static class DateT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final DateT INSTANCE = new DateT();
 
@@ -195,6 +200,8 @@ public interface ResultType {
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings));
         }
+
+
     }
 
     /**
@@ -203,7 +210,7 @@ public interface ResultType {
      */
     @CPSType(id = "DATE_RANGE", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class DateRangeT extends PrimitiveResultType {
+    public static class DateRangeT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final DateRangeT INSTANCE = new DateRangeT();
 
@@ -233,7 +240,7 @@ public interface ResultType {
 
     @CPSType(id = "STRING", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class StringT extends PrimitiveResultType {
+    public static class StringT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final StringT INSTANCE = new StringT();
 
@@ -245,7 +252,7 @@ public interface ResultType {
 
     @CPSType(id = "ID", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class IdT extends PrimitiveResultType {
+    public static class IdT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final IdT INSTANCE = new IdT();
 
@@ -257,7 +264,7 @@ public interface ResultType {
 
     @CPSType(id = "MONEY", base = ResultType.class)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-	class MoneyT extends PrimitiveResultType {
+    public static class MoneyT extends PrimitiveResultType {
 
         @Getter(onMethod_ = @JsonCreator)
 		public static final MoneyT INSTANCE = new MoneyT();
@@ -274,11 +281,13 @@ public interface ResultType {
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
         }
+
+
     }
 
     @CPSType(id = "LIST", base = ResultType.class)
 	@Getter
-	class ListT implements ResultType {
+    public static class ListT extends ResultType {
         @NonNull
         private final ResultType elementType;
 
@@ -291,12 +300,12 @@ public interface ResultType {
         public String print(PrintSettings cfg, @NonNull Object f) {
             // Jackson deserializes collections as lists instead of an array, if the type is not given
             if(!(f instanceof List)) {
-                throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f != null ? f.getClass().getName() : "no type", f));
+                throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
             }
             // Not sure if this escaping is enough
             String listDelimEscape = cfg.getListElementEscaper() + cfg.getListElementDelimiter();
             StringJoiner joiner = new StringJoiner(cfg.getListElementDelimiter(), cfg.getListPrefix(), cfg.getListPostfix());
-            for(Object obj : (List) f) {
+            for(Object obj : (List<?>) f) {
                 joiner.add(elementType.print(cfg,obj).replace(cfg.getListElementDelimiter(), listDelimEscape));
             }
             return joiner.toString();
@@ -304,11 +313,11 @@ public interface ResultType {
 
         @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            final FieldType nestedType = elementType.getArrowFieldType(info, settings).getFieldType();
+            final Field nestedField = elementType.getArrowFieldType(info, settings);
             return new Field(
                     info.getUniqueName(settings),
                     FieldType.nullable(ArrowType.List.INSTANCE),
-                    List.of(new Field ("elem", nestedType,null))
+                    List.of(nestedField)
             );
         }
 
@@ -321,9 +330,5 @@ public interface ResultType {
         public String toString() {
             return typeInfo();
         }
-    }
-    static boolean isArray(Object obj)
-    {
-        return obj!=null && obj.getClass().isArray();
     }
 }

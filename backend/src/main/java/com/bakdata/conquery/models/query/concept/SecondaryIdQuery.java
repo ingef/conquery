@@ -78,7 +78,8 @@ public class SecondaryIdQuery extends IQuery {
 
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
-		query.collectRequiredQueries(requiredQueries);
+		// Be aware, that this.query cannot be checked, as it does not exists at this point, however this.root exists
+		root.collectRequiredQueries(requiredQueries);
 	}
 
 	@Override

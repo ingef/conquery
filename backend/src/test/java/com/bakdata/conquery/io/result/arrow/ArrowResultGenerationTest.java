@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.result.arrow;
 
+import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
+import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.*;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
@@ -9,27 +11,16 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.forms.util.DateContext;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
@@ -37,6 +28,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -56,27 +48,12 @@ public class ArrowResultGenerationTest {
 
     private static final int BATCH_SIZE = 2;
     public static final ConqueryConfig CONFIG = new ConqueryConfig();
-    final IdMappingConfig idMapping = new IdMappingConfig() {
-
-        @Getter
-        List<String> printIdFields = List.of("id1", "id2");
-
-        @Override
-        public IdMappingAccessor[] getIdAccessors() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String[] getHeader() {
-            throw new UnsupportedOperationException();
-        }
-
-    };
+    List<String> printIdFields = List.of("id1", "id2");
 
     @Test
     void generateFieldsIdMapping() {
 
-        List<Field> fields = generateFieldsFromIdMapping(idMapping.getPrintIdFields());
+        List<Field> fields = generateFieldsFromIdMapping(printIdFields);
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -85,30 +62,15 @@ public class ArrowResultGenerationTest {
 
     }
 
-    private Collection<ResultType> getResultTypes() {
-        return List.of(
-                ResultType.BooleanT.INSTANCE,
-                ResultType.IntegerT.INSTANCE,
-                ResultType.NumericT.INSTANCE,
-                ResultType.CategoricalT.INSTANCE,
-                ResultType.ResolutionT.INSTANCE,
-                ResultType.DateT.INSTANCE,
-                ResultType.DateRangeT.INSTANCE,
-                ResultType.StringT.INSTANCE,
-                ResultType.MoneyT.INSTANCE,
-                new ResultType.ListT(ResultType.BooleanT.INSTANCE)
-        );
-    }
-
     @Test
     void generateFieldsValue() {
-        List<ResultInfo> resultInfos = getResultTypes().stream().map(TypedSelectDummy::new)
+        List<ResultInfo> resultInfos = getResultTypes().stream().map(ResultTestUtil.TypedSelectDummy::new)
                 .map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
 
         List<Field> fields = generateFieldsFromResultType(
                 resultInfos,
                 // Custom column namer so we don't require a dataset registry
-                new PrintSettings(false, Locale.ROOT, null, CONFIG, (selectInfo) -> selectInfo.getSelect().getLabel()));
+                new PrintSettings(false, Locale.ROOT, null, CONFIG, null,(selectInfo) -> selectInfo.getSelect().getLabel()));
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -126,7 +88,13 @@ public class ArrowResultGenerationTest {
                                 )),
                         new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
-                        new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("elem", FieldType.nullable(ArrowType.Bool.INSTANCE), null)))
+                        new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.Bool.INSTANCE), null))),
+                        new Field("LIST[DATE_RANGE]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("LIST[DATE_RANGE]",
+                                FieldType.nullable(ArrowType.Struct.INSTANCE),
+                                List.of(
+                                        NAMED_FIELD_DATE_DAY.apply("min"),
+                                        NAMED_FIELD_DATE_DAY.apply("max")
+                                ))))
                 )
         );
 
@@ -135,26 +103,24 @@ public class ArrowResultGenerationTest {
     @Test
     void writeAndRead() throws IOException {
         // Prepare every input data
-        PrintSettings printSettings = new PrintSettings(false, Locale.ROOT, null, CONFIG, (selectInfo) -> selectInfo.getSelect().getLabel());
+        PrintSettings printSettings = new PrintSettings(
+                false,
+                Locale.ROOT,
+                null,
+                CONFIG,
+                (cer) -> new ExternalEntityId(new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())}),
+                (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
-        List<EntityResult> results = List.of(
-                new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(534, 345), "test_string", 4521, List.of(true, false)}),
-                new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of()}),
-                new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false)}),
-                new MultilineEntityResult(3, List.of(
-                        new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false)},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
-                        new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false)}
-                )));
+        List<EntityResult> results = getTestEntityResults();
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
-            public ResultInfoCollector collectResultInfos() {
+            public List<ResultInfo> getResultInfo() {
                 ResultInfoCollector coll = new ResultInfoCollector();
                 coll.addAll(getResultTypes().stream()
-                        .map(TypedSelectDummy::new)
+                        .map(ResultTestUtil.TypedSelectDummy::new)
                         .map(select -> new SelectResultInfo(select, new CQConcept()))
                         .collect(Collectors.toList()));
-                return coll;
+                return coll.getInfos();
             }
 
             ;
@@ -169,17 +135,15 @@ public class ArrowResultGenerationTest {
 
         renderToStream((root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
                 printSettings,
-                mquery,
-                (cer) -> new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())},
-                idMapping.getPrintIdFields(),
-                BATCH_SIZE);
+                printIdFields,
+                BATCH_SIZE, mquery.streamResults(), mquery.getResultInfo());
 
         InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 
         String computed = readTSV(inputStream);
 
         assertThat(computed).isNotBlank();
-        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.collectResultInfos().getInfos()));
+        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfo()));
 
     }
 
@@ -219,7 +183,7 @@ public class ArrowResultGenerationTest {
                         for (int lIdx = 0; lIdx < line.length; lIdx++) {
                             Object val = line[lIdx];
                             ResultInfo info = resultInfos.get(lIdx);
-                            valueJoiner.add(getPrintValue(val, info));
+                            valueJoiner.add(getPrintValue(val, info.getType()));
                         }
                         lineJoiner.add(valueJoiner.toString());
                     }
@@ -227,17 +191,24 @@ public class ArrowResultGenerationTest {
                 })
                 .collect(Collectors.joining("\n"));
 
-        return idMapping.getPrintIdFields().stream().collect(Collectors.joining("\t")) + "\t" +
+        return printIdFields.stream().collect(Collectors.joining("\t")) + "\t" +
                 getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
     }
 
-    private static String getPrintValue(Object obj, ResultInfo info) {
-        if (obj != null && info.getType().equals(ResultType.DateRangeT.INSTANCE)) {
+    private static String getPrintValue(Object obj, ResultType type) {
+        if (obj != null && type.equals(ResultType.DateRangeT.INSTANCE)) {
             // Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
             List dr = (List) obj;
             return "{\"min\":" + dr.get(0) + ",\"max\":" + dr.get(1) + "}";
         }
-        return getPrintValue(obj);
+        if(obj instanceof Collection) {
+            Collection<?> col = (Collection<?>) obj;
+            // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
+            new StringJoiner(",","[", "]");
+            @NonNull ResultType elemType = ((ResultType.ListT) type).getElementType();
+            return col.stream().map(v -> getPrintValue(v, elemType)).collect(Collectors.joining(", ","[", "]"));
+        }
+        return Objects.toString(obj);
     }
 
     private static String getPrintValue(Object obj) {
@@ -248,41 +219,4 @@ public class ArrowResultGenerationTest {
         return Objects.toString(obj);
     }
 
-    private static class TypedSelectDummy extends Select {
-
-        private final ResultType resultType;
-
-        public TypedSelectDummy(ResultType resultType) {
-            this.setLabel(resultType.toString());
-            this.resultType = resultType;
-        }
-
-        @Override
-        public Aggregator<String> createAggregator() {
-            return new Aggregator<String>() {
-
-                @Override
-                public Aggregator<String> doClone(CloneContext ctx) {
-                    throw new UnsupportedOperationException();
-                }
-
-                @Override
-                public void acceptEvent(Bucket bucket, int event) {
-                    throw new UnsupportedOperationException();
-                }
-
-                @Override
-                public String getAggregationResult() {
-                    throw new UnsupportedOperationException();
-                }
-
-                @Override
-                public ResultType getResultType() {
-                    return resultType;
-                }
-
-            };
-        }
-
-    }
 }
