@@ -30,20 +30,21 @@ public class ResultTestUtil {
 				ResultType.DateRangeT.INSTANCE,
 				ResultType.StringT.INSTANCE,
 				ResultType.MoneyT.INSTANCE,
-				new ResultType.ListT(ResultType.BooleanT.INSTANCE)
+				new ResultType.ListT(ResultType.BooleanT.INSTANCE),
+				new ResultType.ListT(ResultType.DateRangeT.INSTANCE)
 		);
 	}
 
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {
 		List<EntityResult> results = List.of(
-				new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(345, 534), "test_string", 4521, List.of(true, false)}),
-				new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of()}),
-				new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false)}),
+				new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(345, 534), "test_string", 4521, List.of(true, false), List.of(List.of(345, 534), List.of(1, 2))}),
+				new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(), List.of()}),
+				new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false), null}),
 				new MultilineEntityResult(3, List.of(
-						new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false)},
-						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null},
-						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false)}
+						new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false), null},
+						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null, null},
+						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false), null}
 				)));
 		return results;
 	}

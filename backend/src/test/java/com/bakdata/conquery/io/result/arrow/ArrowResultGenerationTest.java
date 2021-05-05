@@ -11,11 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.result.ResultTestUtil;
@@ -29,6 +25,10 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import lombok.Getter;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.FieldVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -88,7 +88,13 @@ public class ArrowResultGenerationTest {
                                 )),
                         new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
-                        new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("elem", FieldType.nullable(ArrowType.Bool.INSTANCE), null)))
+                        new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("LIST[BOOLEAN]", FieldType.nullable(ArrowType.Bool.INSTANCE), null))),
+                        new Field("LIST[DATE_RANGE]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("LIST[DATE_RANGE]",
+                                FieldType.nullable(ArrowType.Struct.INSTANCE),
+                                List.of(
+                                        NAMED_FIELD_DATE_DAY.apply("min"),
+                                        NAMED_FIELD_DATE_DAY.apply("max")
+                                ))))
                 )
         );
 
@@ -105,8 +111,7 @@ public class ArrowResultGenerationTest {
                 (cer) -> new ExternalEntityId(new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())}),
                 (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
-
-        final List<EntityResult> results = getTestEntityResults();
+        List<EntityResult> results = getTestEntityResults();
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
             public List<ResultInfo> getResultInfo() {
@@ -178,7 +183,7 @@ public class ArrowResultGenerationTest {
                         for (int lIdx = 0; lIdx < line.length; lIdx++) {
                             Object val = line[lIdx];
                             ResultInfo info = resultInfos.get(lIdx);
-                            valueJoiner.add(getPrintValue(val, info));
+                            valueJoiner.add(getPrintValue(val, info.getType()));
                         }
                         lineJoiner.add(valueJoiner.toString());
                     }
@@ -190,13 +195,20 @@ public class ArrowResultGenerationTest {
                 getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
     }
 
-    private static String getPrintValue(Object obj, ResultInfo info) {
-        if (obj != null && info.getType().equals(ResultType.DateRangeT.INSTANCE)) {
+    private static String getPrintValue(Object obj, ResultType type) {
+        if (obj != null && type.equals(ResultType.DateRangeT.INSTANCE)) {
             // Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
             List dr = (List) obj;
             return "{\"min\":" + dr.get(0) + ",\"max\":" + dr.get(1) + "}";
         }
-        return getPrintValue(obj);
+        if(obj instanceof Collection) {
+            Collection<?> col = (Collection<?>) obj;
+            // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
+            new StringJoiner(",","[", "]");
+            @NonNull ResultType elemType = ((ResultType.ListT) type).getElementType();
+            return col.stream().map(v -> getPrintValue(v, elemType)).collect(Collectors.joining(", ","[", "]"));
+        }
+        return Objects.toString(obj);
     }
 
     private static String getPrintValue(Object obj) {

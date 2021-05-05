@@ -282,7 +282,6 @@ public class ArrowRenderer {
         }
 
         if (vector instanceof ListVector) {
-            // This is not used at the moment see ResultType.ListT::getArrowFieldType
             ListVector listVector = (ListVector) vector;
 
             ValueVector nestedVector = listVector.getDataVector();
