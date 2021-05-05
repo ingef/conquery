@@ -47,7 +47,8 @@ public class ArrowRenderer {
             int batchSize, Stream<EntityResult> results, List<ResultInfo> resultInfo) throws IOException {
 
         // Combine id and value Fields to one vector to build a schema
-        List<Field> fields = new ArrayList<>(generateFieldsFromIdMapping(idHeaders));
+        final List<Field> idFields = generateFieldsFromIdMapping(idHeaders);
+        List<Field> fields = new ArrayList<>(idFields);
         fields.addAll(generateFieldsFromResultType(resultInfo, cfg));
         VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 

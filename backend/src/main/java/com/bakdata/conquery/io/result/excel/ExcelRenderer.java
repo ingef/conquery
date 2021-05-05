@@ -128,11 +128,10 @@ public class ExcelRenderer {
                 if (resultValue == null) {
                     continue;
                 }
-                TypeWriter typeWriter = TYPE_WRITER_MAP.get(resultInfo.getType().getClass());
-                if (typeWriter == null) {
-                    // Fallback to string if type is not explicitly registered
-                    typeWriter = ExcelRenderer::writeStringCell;
-                }
+
+                // Fallback to string if type is not explicitly registered
+                TypeWriter typeWriter = TYPE_WRITER_MAP.getOrDefault(resultInfo.getType().getClass(), ExcelRenderer::writeStringCell);
+
                 typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
             }
         }
@@ -175,7 +174,6 @@ public class ExcelRenderer {
             cell.setCellValue(value.toString());
             return;
         }
-        cell.setCellValue(((Number) value).longValue());
         cell.setCellStyle(currencyStyle);
         cell.setCellValue(
                 new BigDecimal(((Number) value).longValue()).movePointLeft(settings.getCurrency().getDefaultFractionDigits()).doubleValue()

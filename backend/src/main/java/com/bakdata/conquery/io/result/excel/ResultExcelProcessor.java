@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,8 @@ public class ResultExcelProcessor {
 
 	public Response getExcelResult(User user, ManagedExecutionId execId, DatasetId datasetId, boolean pretty) {
 		ConqueryMDC.setLocation(user.getName());
-		Dataset dataset = datasetRegistry.get(datasetId).getDataset();
+		final Namespace namespace = datasetRegistry.get(datasetId);
+		Dataset dataset = namespace.getDataset();
 		user.authorize(dataset, Ability.READ);
 		user.authorize(dataset, Ability.DOWNLOAD);
 
@@ -52,7 +54,9 @@ public class ResultExcelProcessor {
 				I18n.LOCALE.get(),
 				datasetRegistry,
 				config,
-				(EntityResult cer) -> ResultUtil.createId(datasetRegistry.get(dataset.getId()), cer, idMapping, mappingState));
+				(EntityResult cer) -> {
+					return ResultUtil.createId(namespace, cer, idMapping, mappingState);
+				});
 
 		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel());
 
@@ -61,7 +65,6 @@ public class ResultExcelProcessor {
 				idMapping.getPrintIdFields(),
 				exec,
 				output
-
 		);
 
 		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx");

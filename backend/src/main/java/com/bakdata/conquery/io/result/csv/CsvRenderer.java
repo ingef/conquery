@@ -38,11 +38,11 @@ public class CsvRenderer {
 				.forEach(res -> res
 								.getValue()
 								.streamValues()
-								.forEach(result -> print(cfg, res.getKey(), infos, result)));
+								.forEach(result -> printLine(cfg, res.getKey(), infos, result)));
 	}
 
 
-	public void print(PrintSettings cfg, ExternalEntityId entity, List<ResultInfo> infos, Object[] value) {
+	public void printLine(PrintSettings cfg, ExternalEntityId entity, List<ResultInfo> infos, Object[] value) {
 		// Cast here to Object[] so it is clear to intellij that the varargs call is intended
 		writer.addValues((Object[]) entity.getExternalId());
 		try {

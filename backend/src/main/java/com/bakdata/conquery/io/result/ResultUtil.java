@@ -50,11 +50,10 @@ public class ResultUtil {
 				return Charset.forName(queryCharset);
 			}catch (Exception e) {
 				log.warn("Unable to map '{}' to a charset. Defaulting to UTF-8", queryCharset);
-				return StandardCharsets.UTF_8;
 			}
 		}
-		if(userAgent != null) {
-			return userAgent.toLowerCase().contains("windows") ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
+		if(userAgent != null && userAgent.toLowerCase().contains("windows") ) {
+			return StandardCharsets.ISO_8859_1;
 		}
 		return StandardCharsets.UTF_8;
 	}

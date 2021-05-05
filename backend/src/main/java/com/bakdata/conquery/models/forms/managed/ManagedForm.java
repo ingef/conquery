@@ -221,10 +221,10 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 	@Override
 	public List<ResultInfo> getResultInfo() {
-		if(getSubQueries().size() == 1) {
-			return getSubQueries().values().iterator().next().get(0).getResultInfo();
+		if(getSubQueries().size() != 1) {
+			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
 		}
-		throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
+		return getSubQueries().values().iterator().next().get(0).getResultInfo();
 	}
 
 	@Override
