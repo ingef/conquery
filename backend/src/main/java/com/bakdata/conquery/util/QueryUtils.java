@@ -156,7 +156,7 @@ public class QueryUtils {
 		public void accept(Visitable element) {
 			if (element instanceof NamespacedIdentifiableHolding) {
 				NamespacedIdentifiableHolding idHolder = (NamespacedIdentifiableHolding) element;
-				idHolder.collectNamespacedIds(identifiables);
+				idHolder.collectNamespacedObjects(identifiables);
 			}
 		}
 	}

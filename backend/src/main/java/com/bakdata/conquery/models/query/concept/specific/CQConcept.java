@@ -270,7 +270,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	@Override
-	public void collectNamespacedIds(Set<NamespacedIdentifiable<?>> namespacedIds) {
+	public void collectNamespacedObjects(Set<NamespacedIdentifiable<?>> namespacedIds) {
 		checkNotNull(namespacedIds);
 		namespacedIds.addAll(elements);
 		namespacedIds.addAll(selects);

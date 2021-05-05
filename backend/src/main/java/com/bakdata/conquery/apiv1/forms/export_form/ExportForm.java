@@ -67,7 +67,7 @@ public class ExportForm extends Form implements NamespacedIdentifiableHolding {
 	}
 
 	@Override
-	public void collectNamespacedIds(@NonNull Set<NamespacedIdentifiable<?>> ids) {
+	public void collectNamespacedObjects(@NonNull Set<NamespacedIdentifiable<?>> ids) {
 //		ids.add(queryGroup);
 	}
 
