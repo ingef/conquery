@@ -82,7 +82,7 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
-	public void addImport(@NotNull InputStream importStream, @QueryParam("name") @NotBlank String importName) throws IOException, JSONException {
+	public void uploadImport(@NotNull InputStream importStream, @QueryParam("name") @NotBlank String importName) throws IOException, JSONException {
 		processor.addImport(namespace, "FileUpload " + importName, new GZIPInputStream(importStream));
 	}
 

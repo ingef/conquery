@@ -89,6 +89,7 @@ public class IntegrationTests {
 			.SCAN_RESULT
 			.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 			.filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
+				.filter(info -> info.getName().contains("ImportDeletionTest"))
 			.loadClasses();
 
 		return programmatic

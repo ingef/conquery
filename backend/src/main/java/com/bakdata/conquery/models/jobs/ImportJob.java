@@ -71,6 +71,7 @@ public class ImportJob extends Job {
 	private final PreprocessedReader parser;
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
+	private Map<DictionaryId, Dictionary> normalDictionaries;
 
 	@Override
 	public void execute() throws JSONException, InterruptedException, IOException {
@@ -113,8 +114,14 @@ public class ImportJob extends Job {
 
 			getProgressReporter().report(1);
 
-			final Map<DictionaryId, Dictionary> normalDictionaries =
-					importNormalDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
+			normalDictionaries = importNormalDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
+
+			// Persist Dictionaries on manager and shards
+//			for (Dictionary dict : normalDictionaries.values()) {
+//				log.trace("Sending {} to all Workers", dict);
+//				namespace.getStorage().updateDictionary(dict);
+//				namespace.sendToAll(new UpdateDictionary(dict));
+//			}
 
 			mappings = importSharedDictionaries(dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
@@ -341,7 +348,9 @@ public class ImportJob extends Job {
 			final Dictionary dict = dicts.get(column.getName());
 			final String name = computeDefaultDictionaryName(importName, column);
 
+
 			out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dict.getName()), dict);
+
 
 			dict.setDataset(getDataset());
 			dict.setName(name);
@@ -349,7 +358,6 @@ public class ImportJob extends Job {
 			log.trace("Sending {} to all Workers", dict);
 			namespace.getStorage().updateDictionary(dict);
 			namespace.sendToAll(new UpdateDictionary(dict));
-			subJob.report(1);
 		}
 
 		subJob.done();
