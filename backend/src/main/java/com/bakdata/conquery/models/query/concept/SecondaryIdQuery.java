@@ -19,10 +19,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.*;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -34,9 +31,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j.XSlf4j;
+import org.jetbrains.annotations.TestOnly;
 
 @Getter
 @Setter
+@Slf4j
 @CPSType(id = "SECONDARY_ID_QUERY", base = QueryDescription.class)
 public class SecondaryIdQuery extends IQuery {
 
@@ -47,10 +48,14 @@ public class SecondaryIdQuery extends IQuery {
 	@NotNull
 	private SecondaryIdDescription secondaryId;
 
+	@NotNull
+	protected DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
+	
+
 	/**
 	 * @apiNote not using {@link ConceptQuery} directly in the API-spec simplifies the API.
 	 */
-	@JsonIgnore
+	@InternalOnly
 	private ConceptQuery query;
 
 	@InternalOnly
@@ -60,13 +65,6 @@ public class SecondaryIdQuery extends IQuery {
 	@InternalOnly
 	@NsIdRefCollection
 	private Set<Table> withoutSecondaryId;
-
-	@JsonProperty
-	public void setRoot(@NotNull CQElement root) {
-		this.root = root;
-		this.query = new ConceptQuery(root);
-	}
-
 
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
@@ -85,6 +83,15 @@ public class SecondaryIdQuery extends IQuery {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
+
+		@NotNull DateAggregationMode resolvedDateAggregationMode = dateAggregationMode;
+		if(context.getDateAggregationMode() != null) {
+			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
+			resolvedDateAggregationMode = context.getDateAggregationMode();
+		}
+		context = context.withDateAggregationMode(resolvedDateAggregationMode);
+
+		this.query = new ConceptQuery(root);
 		query.resolve(context);
 
 		withSecondaryId = new HashSet<>();
