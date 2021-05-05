@@ -7,18 +7,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ResultNameTest {
 
+	public static final String FILE_EXTENSION = "test";
+
 	@Test
 	public void resultNameOk(){
 		final String label = "azAZ19 äü-ÄÜ";
-		String fileName = FileUtil.makeSafeFileName("test", label);
-		assertThat(fileName).isEqualTo(label + ".test");
+		String fileName = FileUtil.makeSafeFileName(label, FILE_EXTENSION);
+		assertThat(fileName).isEqualTo(label + "." +FILE_EXTENSION);
 	}
 
 	@Test
 	public void resultNameModified(){
 
 		final String label = "()§ $ \\ \" ";
-		String fileName = FileUtil.makeSafeFileName("test", label);
-		assertThat(fileName).isEqualTo("___ _ _ _ " + ".test");
+		String fileName = FileUtil.makeSafeFileName(label, FILE_EXTENSION);
+		assertThat(fileName).isEqualTo("___ _ _ _ ." + FILE_EXTENSION);
 	}
 }

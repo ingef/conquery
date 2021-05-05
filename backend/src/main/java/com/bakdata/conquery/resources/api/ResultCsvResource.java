@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Path("datasets/{" + DATASET + "}/result/")
-public class ResultCSVResource {
+public class ResultCsvResource {
 
 	public static final String GET_CSV_PATH_METHOD = "getAsCsv";
 	@Inject
@@ -45,6 +45,6 @@ public class ResultCSVResource {
 		@QueryParam("pretty") Optional<Boolean> pretty) 
 	{
 		log.info("Result for {} download on dataset {} by user {} ({}).", queryId, datasetId, user.getId(), user.getName());
-		return processor.getResult(user, datasetId, queryId, userAgent, queryCharset, pretty.orElse(Boolean.TRUE), "csv").build();
+		return processor.getResult(user, datasetId, queryId, userAgent, queryCharset, pretty.orElse(Boolean.TRUE));
 	}
 }

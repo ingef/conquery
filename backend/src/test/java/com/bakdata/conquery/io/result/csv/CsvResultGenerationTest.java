@@ -36,7 +36,7 @@ public class CsvResultGenerationTest {
 	}
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig(){{
-		// Surpress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
+		// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
 		setStorage(new NonPersistentStoreFactory());
 	}};
 	List<String> printIdFields = List.of("id1", "id2");

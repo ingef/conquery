@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -29,7 +26,6 @@ public class CsvRenderer {
 		List<String> headers = new ArrayList<>(idHeaders);
 		infos.forEach(i -> headers.add(i.getUniqueName(cfg)));
 
-
 		writer.writeHeaders(headers);
 
 		createCSVBody(cfg, infos, resultStream);
@@ -38,29 +34,25 @@ public class CsvRenderer {
 	private void createCSVBody(PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results) {
 		results
 				.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
-				.sorted(Comparator.comparing(Pair::getKey))
-				.forEach(res -> createCSVLine(cfg, infos, res));
+				.sorted(Map.Entry.comparingByKey())
+				.forEach(res -> res
+								.getValue()
+								.streamValues()
+								.forEach(result -> print(cfg, res.getKey(), infos, result)));
 	}
 
-
-	private void createCSVLine(PrintSettings cfg, List<ResultInfo> infos, Pair<ExternalEntityId, EntityResult> idResult) {
-		idResult
-				.getValue()
-				.streamValues()
-				.forEach(result -> print(cfg, idResult.getKey(), infos, result));
-	}
 
 	public void print(PrintSettings cfg, ExternalEntityId entity, List<ResultInfo> infos, Object[] value) {
-		List<String> result = new ArrayList<>(entity.getExternalId().length + value.length);
-		result.addAll(Arrays.asList(entity.getExternalId()));
+		// Cast here to Object[] so it is clear to intellij that the varargs call is intended
+		writer.addValues((Object[]) entity.getExternalId());
 		try {
 			for (int i = 0; i < infos.size(); i++) {
-				result.add(infos.get(i).getType().printNullable(cfg, value[i]));
+				writer.addValue(infos.get(i).getType().printNullable(cfg, value[i]));
 			}
 		} catch (Exception e) {
 			throw new IllegalStateException("Unable to print line " + Arrays.deepToString(value) + " with result infos " + infos, e);
 		}
 
-		writer.writeRow(result);
+		writer.writeValuesToRow();
 	}
 }

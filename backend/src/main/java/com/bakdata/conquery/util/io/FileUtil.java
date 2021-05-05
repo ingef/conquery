@@ -18,7 +18,7 @@ public class FileUtil {
     public static final Pattern SAVE_FILENAME_REPLACEMENT_MATCHER = Pattern.compile("[^a-zA-Z0-9äÄöÖüÜß \\.\\-]");
 
 
-    public static String makeSafeFileName(String fileExtension, String label) {
+    public static String makeSafeFileName(String label, String fileExtension) {
         return SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(label + "." + fileExtension).replaceAll("_");
     }
 

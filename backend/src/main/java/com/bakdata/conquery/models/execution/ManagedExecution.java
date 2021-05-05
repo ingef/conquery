@@ -241,8 +241,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStatus(state);
-		status.setOwner(owner.getId());
-		status.setOwnerName(owner.getLabel());
+		if(owner != null){
+			status.setOwner(owner.getId());
+			status.setOwnerName(owner.getLabel());
+		}
 		status.setResultUrl(getDownloadURL(url, datasetAbilities).orElse(null));
 	}
 	
@@ -405,7 +407,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	
 	@JsonIgnore
 	public boolean isAutoLabeled() {
-		return label != null ? label.endsWith(AUTO_LABEL_SUFFIX) : false;
+		return label != null && label.endsWith(AUTO_LABEL_SUFFIX);
 	}
 	
 	@JsonIgnore
@@ -423,12 +425,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfo() {
-		throw new UnsupportedOperationException("ResultInfos are not available for all executions");
-	}
+	public abstract List<ResultInfo> getResultInfo();
 
 	@JsonIgnore
-	public Stream<EntityResult> streamResults() {
-		throw new UnsupportedOperationException("EntityResult are not available for all executions");
-	}
+	public abstract Stream<EntityResult> streamResults();
 }

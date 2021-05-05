@@ -70,15 +70,8 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.filter.ValidityDateContainer;
-import com.bakdata.conquery.resources.api.APIResource;
-import com.bakdata.conquery.resources.api.ConceptResource;
-import com.bakdata.conquery.resources.api.ConceptsProcessor;
-import com.bakdata.conquery.resources.api.ConfigResource;
-import com.bakdata.conquery.resources.api.DatasetResource;
-import com.bakdata.conquery.resources.api.FilterResource;
-import com.bakdata.conquery.resources.api.QueryResource;
-import com.bakdata.conquery.resources.api.ResultCSVResource;
-import com.bakdata.conquery.resources.api.StoredQueriesResource;
+import com.bakdata.conquery.resources.api.*;
+import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -146,7 +139,7 @@ public class Constants {
 				 .resource(ConceptResource.class)
 				 .resource(FilterResource.class)
 				 .resource(QueryResource.class)
-				 .resource(ResultCSVResource.class)
+				 .resource(ResultCsvResource.class)
 				 .resource(StoredQueriesResource.class)
 				 .base(new Base(QueryDescription.class, ""))
 				 .base(new Base(CQElement.class, ""))

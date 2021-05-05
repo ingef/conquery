@@ -1,11 +1,11 @@
-package com.bakdata.conquery.models.execution;
+package com.bakdata.conquery.io.result.arrow;
 
 import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.io.result.excel.ExcelRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -19,8 +19,6 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.bakdata.conquery.util.io.FileUtil;
-import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -32,74 +30,57 @@ import org.apache.http.HttpStatus;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
-/**
- * Holder for utility methods to obtain an result from an execution.
- * Acts as a bridge between HTTP-requests and {@link ManagedExecution}s.
- */
-@Slf4j
 @RequiredArgsConstructor
-public class ResultProcessor {
-	
+@Slf4j
+public class ResultArrowProcessor {
+
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 
 
-	public static ResponseBuilder makeResponseWithFileName(String fileExtension, StreamingOutput out, String label) {
-		ResponseBuilder response = Response.ok(out);
-		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
-			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
-			response.header("Content-Disposition", String.format(
-					"attachment; filename=\"%s\"",FileUtil.makeSafeFileName(fileExtension, label)));
-		}
-		return response;
-	}
-
-
 	public Response getArrowStreamResult(User user, ManagedExecutionId queryId, DatasetId datasetId, boolean pretty) {
 		return getArrowResult(
-			(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
-			user,
-			queryId,
-			datasetId,
-			datasetRegistry,
-			pretty,
-			FILE_EXTENTION_ARROW_STREAM);
+				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
+				user,
+				queryId,
+				datasetId,
+				datasetRegistry,
+				pretty,
+				FILE_EXTENTION_ARROW_STREAM);
 	}
-	
+
 	public Response getArrowFileResult(User user, ManagedExecutionId queryId, DatasetId datasetId, boolean pretty) {
 		return getArrowResult(
-			(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
-			user,
-			queryId,
-			datasetId,
-			datasetRegistry,
-			pretty,
-			FILE_EXTENTION_ARROW_FILE);
+				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
+				user,
+				queryId,
+				datasetId,
+				datasetRegistry,
+				pretty,
+				FILE_EXTENTION_ARROW_FILE);
 	}
-	
-	
+
+
 	private Response getArrowResult(
-		Function<OutputStream, Function<VectorSchemaRoot,ArrowWriter>> writerProducer,
-		User user,
-		ManagedExecutionId queryId,
-		DatasetId datasetId,
-		DatasetRegistry datasetRegistry,
-		boolean pretty,
-		String fileExtension) {
+			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
+			User user,
+			ManagedExecutionId queryId,
+			DatasetId datasetId,
+			DatasetRegistry datasetRegistry,
+			boolean pretty,
+			String fileExtension) {
 
 		final Namespace namespace = datasetRegistry.get(datasetId);
 
@@ -134,64 +115,18 @@ public class ResultProcessor {
 
 
 		StreamingOutput out = new StreamingOutput() {
-			
+
 			@Override
 			public void write(OutputStream output) throws IOException, WebApplicationException {
 				renderToStream(writerProducer.apply(output),
-					settings,
-					exec,
-					idMappingConf.getPrintIdFields(),
-					config.getArrow().getBatchSize());
-				
+						settings,
+						idMappingConf.getPrintIdFields(),
+						config.getArrow().getBatchSize(), exec.streamResults(), exec.getResultInfo());
+
 			}
 		};
-		
-		return makeResponseWithFileName(fileExtension, out, exec.getLabelWithoutAutoLabelSuffix()).build();
+
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension);
 	}
 
-	/**
-	 * Tries to determine the charset for the result encoding from different request properties.
-	 * Defaults to StandardCharsets.UTF_8.
-	 */
-	public static Charset determineCharset(String userAgent, String queryCharset) {
-		if(queryCharset != null) {
-			try {
-				return Charset.forName(queryCharset);				
-			}catch (Exception e) {
-				log.warn("Unable to map '{}' to a charset. Defaulting to UTF-8", queryCharset);
-				return StandardCharsets.UTF_8;
-			}
-		}
-		if(userAgent != null) {
-			return userAgent.toLowerCase().contains("windows") ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
-		}
-		return StandardCharsets.UTF_8;
-	}
-
-	public Response getExcelResult(User user, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
-		ConqueryMDC.setLocation(user.getName());
-		user.authorize(dataset, Ability.READ);
-		user.authorize(dataset, Ability.DOWNLOAD);
-
-		user.authorize(exec, Ability.READ);
-
-		IdMappingConfig idMapping = config.getIdMapping();
-		IdMappingState mappingState = idMapping.initToExternal(user, exec);
-		PrintSettings settings = new PrintSettings(
-				pretty,
-				I18n.LOCALE.get(),
-				datasetRegistry,
-				config,
-				(EntityResult cer) -> ResultUtil.createId(datasetRegistry.get(dataset.getId()), cer, idMapping, mappingState));
-
-		StreamingOutput out = output -> ExcelRenderer.renderToStream(
-				settings,
-				idMapping.getPrintIdFields(),
-				exec,
-				output
-
-		);
-
-		return makeResponseWithFileName("xlsx", out, exec.getLabelWithoutAutoLabelSuffix()).build();
-	}
 }
