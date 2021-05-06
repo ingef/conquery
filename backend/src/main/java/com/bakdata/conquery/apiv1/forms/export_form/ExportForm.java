@@ -42,7 +42,7 @@ import lombok.Setter;
 
 @Getter @Setter
 @CPSType(id="EXPORT_FORM", base=QueryDescription.class)
-public class ExportForm extends Form implements NamespacedIdentifiableHolding {
+public class ExportForm extends Form {
 
 	@MetaIdRef
 	private ManagedQuery queryGroup;
@@ -64,11 +64,6 @@ public class ExportForm extends Form implements NamespacedIdentifiableHolding {
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 		timeMode.visit(visitor);
-	}
-
-	@Override
-	public void collectNamespacedObjects(@NonNull Set<NamespacedIdentifiable<?>> identifiables) {
-//		ids.add(queryGroup);
 	}
 
 	@Override
