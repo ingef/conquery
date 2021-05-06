@@ -196,6 +196,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	}
 
 	@Override
+	@JsonIgnore
 	public Dataset getDataset() {
 		return bucket.getDataset();
 	}

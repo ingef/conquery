@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,7 @@ public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiabl
 		return mem;
 	}
 
+	@JsonIgnore
 	@Override
 	public Dataset getDataset() {
 		return getTable().getDataset();

@@ -63,11 +63,13 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 		return String.format("Column[%s](type = %s)", getId(), getType());
 	}
 
-	@ValidationMethod(message = "Only STRING columns can be part of shared Dictionaries.") @JsonIgnore
+	@ValidationMethod(message = "Only STRING columns can be part of shared Dictionaries.")
+	@JsonIgnore
 	public boolean isSharedString() {
 		return sharedDictionary == null || type.equals(MajorTypeId.STRING);
 	}
 
+	@JsonIgnore
 	@Override
 	public Dataset getDataset() {
 		return table.getDataset();

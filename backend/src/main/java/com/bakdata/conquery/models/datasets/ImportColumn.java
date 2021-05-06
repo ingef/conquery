@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportColumnId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -39,6 +40,7 @@ public class ImportColumn extends NamedImpl<ImportColumnId> implements Namespace
 		return "ImportColumn(id=" + getId() + ", typeDescription=" + getTypeDescription() + ")";
 	}
 
+	@JsonIgnore
 	@Override
 	public Dataset getDataset() {
 		return parent.getDataset();

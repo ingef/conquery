@@ -57,6 +57,7 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 		return false;
 	}
 
+	@JsonIgnore
 	@Override
 	public Dataset getDataset() {
 		return connector.getDataset();

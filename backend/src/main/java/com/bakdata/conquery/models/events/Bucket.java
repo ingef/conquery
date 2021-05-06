@@ -189,6 +189,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return out;
 	}
 
+	@JsonIgnore
 	@Override
 	public Dataset getDataset() {
 		return getTable().getDataset();
