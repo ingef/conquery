@@ -181,6 +181,8 @@ public class AdminProcessor {
 		final PreprocessedHeader header;
 		try(PreprocessedReader parser = new PreprocessedReader(inputStream)){
 
+			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
+
 			// We parse semi-manually as the incoming file consist of multiple documents we only read progressively:
 			// 1) the header to check metadata
 			// 2) The Dictionaries to be imported and transformed
@@ -250,7 +252,7 @@ public class AdminProcessor {
 	 * Handle importing Dictionaries of non-shared columns.
 	 * Link dataset and create human readable name.
 	 */
-	private static Map<DictionaryId, Dictionary> importNormalDictionaries(Dataset dataset, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+	private static synchronized Map<DictionaryId, Dictionary> importNormalDictionaries(Dataset dataset, Map<String, Dictionary> dicts, Column[] columns, String importName) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -291,7 +293,7 @@ public class AdminProcessor {
 	/**
 	 * Import shared Dictionaries, create new Dictionary if not already present. Create mappings from incoming to already present dict.
 	 */
-	private static Map<String, DictionaryMapping> importSharedDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+	private static  synchronized Map<String, DictionaryMapping> importSharedDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
