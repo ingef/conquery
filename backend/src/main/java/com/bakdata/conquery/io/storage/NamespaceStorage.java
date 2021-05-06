@@ -41,7 +41,12 @@ public class NamespaceStorage extends NamespacedStorage {
 
     @Override
     public void loadData() {
-        super.loadData();
+
+		log.info("Begin reading ManagerNode Storage NamespaceStorage.");
+
+    	super.loadData();
+
+    	log.info("Commence loading Manager specific data.");
 
         idMapping.loadData();
         structure.loadData();

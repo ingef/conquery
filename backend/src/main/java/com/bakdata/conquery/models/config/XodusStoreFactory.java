@@ -159,6 +159,8 @@ public class XodusStoreFactory implements StoreFactory {
 					}
 
 					NamespaceStorage namespaceStorage = new NamespaceStorage(validator, this, pathElems);
+					log.info("BEGIN reading at `{}`", directory);
+
 					namespaceStorage.loadData();
 
 					log.info("DONE reading Storage[{}] at `{}`", namespaceStorage.getDataset(), directory);
@@ -170,6 +172,7 @@ public class XodusStoreFactory implements StoreFactory {
             		log.error("Failed reading Store at `{}`", directory, e);
 				}
             	finally {
+					log.info("FINISHED reading {}", directory);
 					ConqueryMDC.clearLocation();
 				}
             });
