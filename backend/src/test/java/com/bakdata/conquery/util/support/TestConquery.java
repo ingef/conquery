@@ -141,6 +141,7 @@ public class TestConquery {
 				localTmpDir,
 				localCfg,
 				standaloneCommand.getManager().getAdmin().getAdminProcessor(),
+				standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor(),
 				// Getting the User from AuthorizationConfig
 				standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser()
 		);
@@ -164,7 +165,7 @@ public class TestConquery {
 				name += "[" + count + "]";
 			}
 			DatasetId datasetId = new DatasetId(name);
-			standaloneCommand.getManager().getAdmin().getAdminProcessor().addDataset(name);
+			standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor().addDataset(name);
 			return createSupport(datasetId, name);
 		}
 		catch (Exception e) {

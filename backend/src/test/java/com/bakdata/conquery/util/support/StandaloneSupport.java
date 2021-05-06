@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.setup.Environment;
@@ -43,7 +44,9 @@ public class StandaloneSupport implements Closeable {
 	@Getter
 	private final ConqueryConfig config;
 	@Getter
-	private final AdminProcessor datasetsProcessor;
+	private final AdminProcessor metaProcessor;
+	@Getter
+	private final AdminDatasetProcessor datasetsProcessor;
 	@Getter
 	private final User testUser;
 

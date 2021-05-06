@@ -28,17 +28,16 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 
-@Path("/")
+@Path("/datasets")
 @Getter
 @Setter
-public class AdminResource extends HAdmin {
+public class AdminDatasetsResource extends HAdmin {
 
 	@Inject
-	private AdminProcessor processor;
+	private AdminDatasetProcessor processor;
 
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Path("datasets")
 	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
 		Dataset dataset = processor.addDataset(name);
 
@@ -50,7 +49,6 @@ public class AdminResource extends HAdmin {
 	}
 
 	@GET
-	@Path("datasets")
 	public List<DatasetId> listDatasets() {
 		return processor.getDatasetRegistry().getAllDatasets().stream().map(Dataset::getId).collect(Collectors.toList());
 	}

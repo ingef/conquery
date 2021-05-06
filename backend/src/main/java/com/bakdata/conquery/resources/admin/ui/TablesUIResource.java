@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -29,6 +30,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -55,6 +58,11 @@ public class TablesUIResource extends HAdmin {
 	protected TableId tableId;
 	protected Table table;
 
+	@Inject
+	protected AdminProcessor processor;
+	@Inject
+	protected UIProcessor uiProcessor;
+
 	@SneakyThrows({NotFoundException.class})
 	@PostConstruct
 	@Override
@@ -76,7 +84,7 @@ public class TablesUIResource extends HAdmin {
 
 		return new UIView<>(
 				"table.html.ftl",
-				processor.getUIContext(),
+				uiProcessor.getUIContext(),
 				new TableStatistics(
 						table,
 						entries,
@@ -131,7 +139,7 @@ public class TablesUIResource extends HAdmin {
 
 		return new UIView<>(
 				"import.html.ftl",
-				processor.getUIContext(),
+				uiProcessor.getUIContext(),
 				new ImportStatistics(imp, cBlockSize)
 		);
 	}

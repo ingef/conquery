@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -52,15 +53,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		PersistentIdMap persistentIdMap = IdMapSerialisationTest.createTestPersistentMap();
 
 		ManagerNode manager = testConquery.getStandaloneCommand().getManager();
-		AdminProcessor adminProcessor = new AdminProcessor(
-				manager.getConfig(),
-				manager.getStorage(),
-				manager.getDatasetRegistry(),
-				manager.getJobManager(),
-				manager.getMaintenanceService(),
-				manager.getValidator(),
-				manager.isUseNameForStoragePrefix() ? manager.getName() : "."
-		);
+		AdminDatasetProcessor adminDatasetProcessor = manager.getAdmin().getAdminDatasetProcessor();
+		AdminProcessor adminProcessor = manager.getAdmin().getAdminProcessor();
 
 
 		StandaloneSupport conquery = testConquery.getSupport(name);
@@ -80,12 +74,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		{// Auth testing (deletion and permission grant)
 			// build constellation
-			adminProcessor.addDataset(TEST_DATASET_1);
-			adminProcessor.addDataset(TEST_DATASET_2);
-			adminProcessor.addDataset(TEST_DATASET_3);
-			adminProcessor.addDataset(TEST_DATASET_4);
-			adminProcessor.addDataset(TEST_DATASET_5);
-			adminProcessor.addDataset(TEST_DATASET_6);
+			adminDatasetProcessor.addDataset(TEST_DATASET_1);
+			adminDatasetProcessor.addDataset(TEST_DATASET_2);
+			adminDatasetProcessor.addDataset(TEST_DATASET_3);
+			adminDatasetProcessor.addDataset(TEST_DATASET_4);
+			adminDatasetProcessor.addDataset(TEST_DATASET_5);
+			adminDatasetProcessor.addDataset(TEST_DATASET_6);
 
 			adminProcessor.addUser(user);
 			adminProcessor.addUser(userToDelete);

@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
@@ -26,6 +27,9 @@ import lombok.Setter;
 @Getter @Setter
 @Path("datasets/{" + DATASET + "}/concepts/{" + CONCEPT + "}")
 public class AdminConceptsResource extends HAdmin {
+
+	@Inject
+	protected AdminDatasetProcessor processor;
 	
 	@PathParam(DATASET)
 	protected DatasetId datasetId;

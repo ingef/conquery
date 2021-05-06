@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -24,6 +25,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.bakdata.conquery.util.ResourceUtil;
@@ -43,6 +46,10 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 public class DatasetsUIResource extends HAdmin {
 
+	@Inject
+	private AdminDatasetProcessor processor;
+	@Inject
+	private UIProcessor uiProcessor;
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
 	private static final String ABBREVIATION_MARKER = "\u2026";
@@ -64,7 +71,7 @@ public class DatasetsUIResource extends HAdmin {
 	public View getDataset() {
 		return new UIView<>(
 				"dataset.html.ftl",
-				processor.getUIContext(),
+				uiProcessor.getUIContext(),
 				new DatasetInfos(
 						namespace.getDataset(),
 						namespace.getStorage().getSecondaryIds(),
@@ -111,9 +118,9 @@ public class DatasetsUIResource extends HAdmin {
 	public View getIdMapping() {
 		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
 		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
-			return new UIView<>("idmapping.html.ftl", processor.getUIContext(), mapping.getCsvIdToExternalIdMap());
+			return new UIView<>("idmapping.html.ftl", uiProcessor.getUIContext(), mapping.getCsvIdToExternalIdMap());
 		}
-		return new UIView<>("add_idmapping.html.ftl", processor.getUIContext(), namespace.getDataset().getId());
+		return new UIView<>("add_idmapping.html.ftl", uiProcessor.getUIContext(), namespace.getDataset().getId());
 	}
 
 	@Data

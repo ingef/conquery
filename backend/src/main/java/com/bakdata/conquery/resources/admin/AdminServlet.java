@@ -3,21 +3,11 @@ package com.bakdata.conquery.resources.admin;
 import java.util.Collections;
 
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
-import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
-import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
-import com.bakdata.conquery.resources.admin.rest.AdminResource;
-import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
-import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
-import com.bakdata.conquery.resources.admin.rest.GroupResource;
-import com.bakdata.conquery.resources.admin.rest.PermissionResource;
-import com.bakdata.conquery.resources.admin.rest.RoleResource;
-import com.bakdata.conquery.resources.admin.rest.UserResource;
+import com.bakdata.conquery.resources.admin.rest.*;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.AuthOverviewUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
@@ -31,7 +21,6 @@ import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.views.ViewMessageBodyWriter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.realm.Realm;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -46,6 +35,7 @@ public class AdminServlet {
 
 	private final AdminProcessor adminProcessor;
 	private final DropwizardResourceConfig jerseyConfig;
+	private final AdminDatasetProcessor adminDatasetProcessor;
 
 	public AdminServlet(ManagerNode manager) {
 		jerseyConfig = new DropwizardResourceConfig(manager.getEnvironment().metrics());
@@ -58,6 +48,7 @@ public class AdminServlet {
 		jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
 		// freemarker support
 		jerseyConfig.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)));
+		final String storagePrefix = manager.isUseNameForStoragePrefix() ? manager.getName() : ".";
 
 		adminProcessor = new AdminProcessor(
 				manager.getConfig(),
@@ -66,7 +57,16 @@ public class AdminServlet {
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
 				manager.getValidator(),
-				manager.isUseNameForStoragePrefix() ? manager.getName() : null
+				storagePrefix
+		);
+
+		adminDatasetProcessor = new AdminDatasetProcessor(
+				manager.getStorage(),
+				manager.getConfig(),
+				manager.getValidator(),
+				storagePrefix,
+				manager.getDatasetRegistry(),
+				manager.getJobManager()
 		);
 
 
@@ -76,6 +76,8 @@ public class AdminServlet {
 			@Override
 			protected void configure() {
 				bind(adminProcessor).to(AdminProcessor.class);
+				bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
+				bind(new UIProcessor(manager.getDatasetRegistry())).to(UIProcessor.class);
 			}
 		});
 
@@ -85,7 +87,7 @@ public class AdminServlet {
 
 		// register root resources
 		jerseyConfig
-			.register(AdminResource.class)
+			.register(AdminDatasetsResource.class)
 			.register(AdminDatasetResource.class)
 			.register(AdminConceptsResource.class)
 			.register(AdminTablesResource.class)

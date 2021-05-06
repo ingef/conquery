@@ -2,6 +2,7 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -15,12 +16,14 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.bakdata.conquery.util.ResourceUtil;
+import io.dropwizard.auth.Auth;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -43,6 +46,11 @@ import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
 @Setter
 @Path("datasets/{" + DATASET + "}")
 public class AdminDatasetResource extends HAdmin {
+
+
+	@Inject
+	protected AdminDatasetProcessor processor;
+
 
 	@PathParam(DATASET)
 	protected DatasetId datasetId;
@@ -157,6 +165,13 @@ public class AdminDatasetResource extends HAdmin {
 	@DELETE
 	public void delete() {
 		processor.deleteDataset(datasetId);
+	}
+
+	@POST
+	@Path("/update-matching-stats")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)DatasetId datasetId) throws JSONException {
+		processor.updateMatchingStats(datasetId);
 	}
 
 }

@@ -40,7 +40,7 @@
 		</ul>
 	</@layout.kc>
 	
-	<form action="/admin/update-matching-stats/${c.ds.id}" method="post" enctype="multipart/form-data">
+	<form action="/admin/datasets/${c.ds.id}/update-matching-stats" method="post" enctype="multipart/form-data">
         <h3>Start Update Matching Stats Job</h3>
         <input class="btn btn-primary" type="submit"/>
     </form>
