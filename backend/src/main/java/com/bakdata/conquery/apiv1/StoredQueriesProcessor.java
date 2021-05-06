@@ -35,7 +35,6 @@ import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.ResourceUtil;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -112,20 +111,14 @@ public class StoredQueriesProcessor {
 	}
 
 
-  public void deleteQuery(ManagedExecutionId executionId, User user) {
-		final ManagedExecution<?> execution = storage.getExecution(executionId);
-
-		ResourceUtil.throwNotFoundIfNull(executionId, execution);
+  public void deleteQuery(ManagedExecution<?> execution, User user) {
 
 		user.authorize(execution, Ability.DELETE);
 
-		storage.removeExecution(executionId);
+		storage.removeExecution(execution.getId());
 	}
 
-	public FullExecutionStatus getQueryFullStatus(ManagedExecutionId queryId, User user, UriBuilder url) {
-		ManagedExecution<?> query = storage.getExecution(queryId);
-
-		ResourceUtil.throwNotFoundIfNull(queryId, query);
+	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, User user, UriBuilder url) {
 
 		user.authorize(query, Ability.READ);
 
@@ -135,28 +128,26 @@ public class StoredQueriesProcessor {
 		return query.buildStatusFull(storage, url, user, datasetRegistry, datasetAbilities);
 	}
 
-	public void patchQuery(User user, ManagedExecutionId executionId, MetaDataPatch patch) throws JSONException {
-		ManagedExecution<?> execution = storage.getExecution(executionId);
-
-		ResourceUtil.throwNotFoundIfNull(executionId, execution);
+	public void patchQuery(User user, ManagedExecution execution, MetaDataPatch patch) throws JSONException {
 
 		user.authorize(execution, Ability.MODIFY);
 
-		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), executionId, patch);
+		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 		patch.applyTo(execution, storage, user);
 		storage.updateExecution(execution);
 
 		// Patch this query in other datasets
 		List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets(() -> new ArrayList<>());
-		remainingDatasets.remove(datasetRegistry.get(executionId.getDataset()).getDataset());
+		remainingDatasets.remove(execution.getDataset());
+
 		for (Dataset dataset : remainingDatasets) {
-			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(), executionId.getExecution());
-			execution = storage.getExecution(id);
-			if (execution == null) {
+			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(), execution.getQueryId());
+			final ManagedExecution<?> otherExecution = storage.getExecution(id);
+			if (otherExecution == null) {
 				continue;
 			}
 			log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), id, patch);
-			patch.applyTo(execution, storage, user);
+			patch.applyTo(otherExecution, storage, user);
 			storage.updateExecution(execution);
 		}
 	}

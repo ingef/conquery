@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -83,10 +82,10 @@ public interface QueryDescription extends Visitable {
 
 		// Generate ConceptPermissions
 		final Set<Concept> concepts = nsIdCollector.getIdentifiables().stream()
-												   .filter(ConceptElement.class::isInstance)
-												   .map(ConceptElement.class::cast)
-												   .map(ConceptElement::getConcept)
-												   .collect(Collectors.toSet());
+													  .filter(ConceptElement.class::isInstance)
+													  .map(ConceptElement.class::cast)
+													  .map(ConceptElement::getConcept)
+													  .collect(Collectors.toSet());
 
 		user.authorize(concepts, Ability.READ);
 

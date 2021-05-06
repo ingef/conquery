@@ -6,13 +6,12 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class StructureNodeId extends AId<StructureNode> implements NamespacedId {
+public class StructureNodeId extends AId<StructureNode> {
 
 	private final DatasetId dataset;
 	private final StructureNodeId parent;

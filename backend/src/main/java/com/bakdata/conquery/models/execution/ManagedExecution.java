@@ -39,7 +39,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
-import lombok.*;
+import com.univocity.parsers.csv.CsvWriter;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.SneakyThrows;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
@@ -67,12 +73,12 @@ import java.util.stream.Stream;
 @CPSBase
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable, NamespacedIdentifiable<ManagedExecutionId> {
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 	
 	/**
 	 * Some unusual suffix. Its not too bad if someone actually uses this. 
 	 */
-	public final static String AUTO_LABEL_SUFFIX = "\t@§$";
+	public static final String AUTO_LABEL_SUFFIX = "\t@§$";
 
 	@NsIdRef
 	protected Dataset dataset;

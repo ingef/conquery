@@ -19,7 +19,6 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 
 @Path(ROLES_PATH_ELEMENT)
@@ -46,8 +45,8 @@ public class RoleResource extends HAdmin {
 
 	@Path("{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRole(@PathParam(ROLE_ID) RoleId roleId) throws JSONException {
-		processor.deleteRole(roleId);
+	public Response deleteRole(@PathParam(ROLE_ID) Role role) throws JSONException {
+		processor.deleteRole(role);
 		return Response.ok().build();
 	}
 }

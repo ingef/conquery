@@ -28,7 +28,7 @@ public abstract class IQuery implements QueryDescription {
 	public abstract void resolve(QueryResolveContext context);
 	
 	public Set<ManagedExecution> collectRequiredQueries() {
-		HashSet<ManagedExecution> set = new HashSet<>();
+		Set<ManagedExecution> set = new HashSet<>();
 		this.collectRequiredQueries(set);
 		return set;
 	}

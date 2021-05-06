@@ -6,7 +6,6 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 
@@ -22,9 +21,8 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		MetaStorage storage = conquery.getMetaStorage();
-		Dataset dataset1 = new Dataset();
-		dataset1.setLabel("dataset1");
-		
+		Dataset dataset = conquery.getDataset();
+
 		try {
 
 			storage.addRole(mandator1);
@@ -32,50 +30,50 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 
 			user1.addRole(storage, mandator1);
 
-			user1.addPermission(storage, DatasetPermission.onInstance(Ability.READ, dataset1.getId()));
-			mandator1.addPermission(storage, DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()));
+			user1.addPermission(storage, dataset.createPermission(Ability.READ.asSet()));
+			mandator1.addPermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
 
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isTrue();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isTrue();
 
 			// Delete permission from mandator
-			mandator1.removePermission(storage, DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()));
+			mandator1.removePermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
 			assertThat(mandator1.getPermissions()).isEmpty();
 
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isFalse();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isFalse();
 
 			// Add permission to user
-			user1.addPermission(storage, DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()));
+			user1.addPermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
 
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isTrue();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isTrue();
 
 			// Delete permission from mandator
-			user1.removePermission(storage, DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()));
+			user1.removePermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
 
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isFalse();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isFalse();
 
 			// Add permission to mandator, remove mandator from user
-			mandator1.addPermission(storage, DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()));
+			mandator1.addPermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
 			user1.removeRole(storage, mandator1);
 
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isFalse();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isFalse();
 
 			// Add mandator back to user
 			user1.addRole(storage, mandator1);
 
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isTrue();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isTrue();
 
 			// Delete all permissions from mandator and user
-			user1.removePermission(storage, DatasetPermission.onInstance(Ability.READ, dataset1.getId()));
-			mandator1.removePermission(storage, DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()));
+			user1.removePermission(storage, dataset.createPermission(Ability.READ.asSet()));
+			mandator1.removePermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
 
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isFalse();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isFalse();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isFalse();
+			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isFalse();
 		}
 		finally {
 			storage.removeUser(user1.getId());
