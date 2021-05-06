@@ -160,6 +160,8 @@ public class XodusStoreFactory implements StoreFactory {
                 NamespaceStorage namespaceStorage = new NamespaceStorage(validator, this, pathElems);
                 namespaceStorage.loadData();
 
+                log.info("Done reading Store {} at `{}`", namespaceStorage.getDataset(), directory);
+
                 storages.add(namespaceStorage);
 
                 ConqueryMDC.clearLocation();
