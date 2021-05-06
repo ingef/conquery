@@ -45,18 +45,14 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.DictionaryMapping;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -71,9 +67,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryI
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
-import com.bakdata.conquery.models.preproc.Preprocessed;
-import com.bakdata.conquery.models.preproc.PreprocessedHeader;
-import com.bakdata.conquery.models.preproc.PreprocessedReader;
+import com.bakdata.conquery.models.preproc.*;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
@@ -86,6 +80,7 @@ import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.bakdata.conquery.util.ResourceUtil;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
@@ -184,16 +179,17 @@ public class AdminProcessor {
 
 		final Dataset ds = namespace.getDataset();
 		final PreprocessedHeader header;
-		PreprocessedReader parser = null;
-		Table table = null;
-		try{
+		try(PreprocessedReader parser = new PreprocessedReader(inputStream)){
 
-			// try and read only the header.
-			parser = new PreprocessedReader(inputStream);
+			// We parse semi-manually as the incoming file consist of multiple documents we only read progressively:
+			// 1) the header to check metadata
+			// 2) The Dictionaries to be imported and transformed
+			// 3) The ColumnStores themselves which contain references to the previously imported dictionaries.
+
 			header = parser.readHeader();
 
 			final TableId tableId = new TableId(ds.getId(), header.getTable());
-			table = namespace.getStorage().getTable(tableId);
+			Table table = namespace.getStorage().getTable(tableId);
 
 			if(table == null){
 				throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
@@ -204,23 +200,170 @@ public class AdminProcessor {
 			if (namespace.getStorage().getImport(importId) != null) {
 				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Status.CONFLICT);
 			}
+			log.trace("Begin reading Dictionaries");
 
-			header.assertMatch(table);
-		} catch (Exception e){
-			if(parser != null) {
-				parser.close();
+			PreprocessedDictionaries dictionaries = parser.readDictionaries();
+
+			Map<DictionaryId, Dictionary> normalDictionaries = importNormalDictionaries(ds, dictionaries.getDictionaries(), table.getColumns(), header.getName());
+
+			Map<String, DictionaryMapping> sharedDictionaryMappings = importSharedDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
+
+
+			// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
+			parser.addAllReplacements(normalDictionaries);
+
+			for (DictionaryMapping value : sharedDictionaryMappings.values()) {
+				parser.addReplacement(new DictionaryId(Dataset.PLACEHOLDER.getId(), value.getSourceDictionary().getName()), value.getTargetDictionary());
 			}
-			throw e;
+
+			log.trace("Begin reading data.");
+
+			PreprocessedData container = parser.readData();
+
+			if (container.isEmpty()) {
+				log.warn("Import was empty. Skipping.");
+				return;
+			}
+
+			log.info("Importing {}", importSource);
+
+			final ImportJob job = new ImportJob(
+					datasetRegistry.get(ds.getId()),
+					table,
+					importSource,
+					config.getCluster().getEntityBucketSize(),
+					header,
+					dictionaries,
+					container,
+					normalDictionaries,
+					sharedDictionaryMappings
+			);
+
+			job.getProgressReporter().start();
+			job.execute();
+			//datasetRegistry.get(ds.getId()).getJobManager().addSlowJob(job);
 		}
 
-		log.info("Importing {}", importSource);
 
-		final ImportJob job = new ImportJob(datasetRegistry.get(ds.getId()), table, importSource, config.getCluster().getEntityBucketSize(), header, parser);
+	}
+	/**
+	 * Handle importing Dictionaries of non-shared columns.
+	 * Link dataset and create human readable name.
+	 */
+	private static Map<DictionaryId, Dictionary> importNormalDictionaries(Dataset dataset, Map<String, Dictionary> dicts, Column[] columns, String importName) {
 
-		job.getProgressReporter().start();
-		job.execute();
-		//datasetRegistry.get(ds.getId()).getJobManager().addSlowJob(job);
+		// Empty Maps are Coalesced to null by Jackson
+		if (dicts == null) {
+			return Collections.emptyMap();
+		}
 
+		final Map<DictionaryId, Dictionary> out = new HashMap<>();
+
+		log.trace("Importing Normal Dictionaries.");
+
+		for (Column column : columns) {
+
+			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() != null) {
+				continue;
+			}
+
+			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
+			// but could also be an error :/ Most likely the former
+			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
+				log.trace("No Dictionary for {}", column);
+				continue;
+			}
+
+			final Dictionary dict = dicts.get(column.getName());
+			final String name = computeDefaultDictionaryName(importName, column);
+
+
+			out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dict.getName()), dict);
+
+
+			dict.setDataset(dataset);
+			dict.setName(name);
+		}
+
+
+		return out;
+	}
+	/**
+	 * Import shared Dictionaries, create new Dictionary if not already present. Create mappings from incoming to already present dict.
+	 */
+	private static Map<String, DictionaryMapping> importSharedDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+
+		// Empty Maps are Coalesced to null by Jackson
+		if (dicts == null) {
+			return Collections.emptyMap();
+		}
+
+		final Map<String, DictionaryMapping> out = new HashMap<>();
+
+		log.trace("Importing Shared Dictionaries");
+
+		for (Column column : columns) {
+
+			if (column.getSharedDictionary() == null) {
+				continue;
+			}
+
+			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
+			// but could also be an error :/ Most likely the former
+			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
+				log.trace("No Dictionary for {}", column);
+				continue;
+			}
+
+			final String sharedDictionaryId = computeSharedDictionaryName(column);
+			final Dictionary dictionary = dicts.get(column.getName());
+
+			log.debug("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryId);
+
+			final Dataset dataset = namespace.getDataset();
+			final Dictionary targetDictionary = namespace.getStorage().getDictionary(new DictionaryId(dataset.getId(), sharedDictionaryId));
+
+			log.debug("Merging into shared Dictionary[{}]", targetDictionary);
+
+			DictionaryMapping mapping = null;
+			if (targetDictionary == null) {
+				mapping = DictionaryMapping.create(dictionary, new MapDictionary(dataset, sharedDictionaryId));
+				namespace.getStorage().updateDictionary(mapping.getTargetDictionary());
+			}
+			else {
+				mapping = importSharedDictionary(dataset,dictionary, sharedDictionaryId, targetDictionary);
+			}
+
+			out.put(column.getName(), mapping);
+
+		}
+
+		return out;
+	}
+
+	private static String computeSharedDictionaryName(Column column) {
+		return column.getSharedDictionary();
+	}
+
+	private static DictionaryMapping importSharedDictionary(Dataset dataset, Dictionary incoming, String targetDictionary, Dictionary targetDict) {
+
+		log.debug("Merging into shared Dictionary[{}]", targetDictionary);
+
+		if (targetDict == null) {
+			targetDict = new MapDictionary(dataset, targetDictionary);
+		}
+
+		targetDict = Dictionary.copyUncompressed(targetDict);
+
+		DictionaryMapping mapping = DictionaryMapping.create(incoming, targetDict);
+
+		targetDict.setName(targetDictionary);
+
+		return mapping;
+	}
+
+	private static String computeDefaultDictionaryName(String importName, Column column) {
+		return String.format("%s#%s", importName, column.getId().toString());
 	}
 
 	public void addWorker(ShardNodeInformation node, Dataset dataset) {
