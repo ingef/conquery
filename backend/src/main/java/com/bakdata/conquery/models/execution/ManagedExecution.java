@@ -109,7 +109,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@JsonIgnore
 	private boolean initialized = false;
 	@JsonIgnore @MinDuration(value = 1, unit = TimeUnit.SECONDS)
-	private Duration completionWaitTimeout = Duration.seconds(10);
+	protected Duration completionWaitTimeout = Duration.seconds(10);
 
 	public ManagedExecution(User owner, Dataset submittedDataset) {
 		this.owner = owner;
