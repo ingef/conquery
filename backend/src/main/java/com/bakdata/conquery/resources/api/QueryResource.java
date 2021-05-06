@@ -97,7 +97,7 @@ public class QueryResource {
 
 		user.authorize(query, Ability.READ);
 
-		query.awaitDone(10, TimeUnit.SECONDS);
+		query.awaitDone(1, TimeUnit.SECONDS);
 
 		return processor.getStatus(
 				query,
