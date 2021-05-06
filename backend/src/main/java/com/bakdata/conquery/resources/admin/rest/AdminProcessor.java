@@ -14,7 +14,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
@@ -57,14 +56,7 @@ import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveSecondaryId;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveTable;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryId;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
+import com.bakdata.conquery.models.messages.namespaces.specific.*;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.preproc.*;
@@ -80,7 +72,6 @@ import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.bakdata.conquery.util.ResourceUtil;
-import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
@@ -206,8 +197,9 @@ public class AdminProcessor {
 
 			PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
-			Map<DictionaryId, Dictionary> normalDictionaries = importNormalDictionaries(ds, dictionaries.getDictionaries(), table.getColumns(), header.getName());
+			Map<DictionaryId, Dictionary> normalDictionaries = collectNormalDictionaries(ds, dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
+			// The following call is synchronized, because the
 			Map<String, DictionaryMapping> sharedDictionaryMappings = importSharedDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
 
@@ -235,11 +227,11 @@ public class AdminProcessor {
 					importSource,
 					config.getCluster().getEntityBucketSize(),
 					header,
-					dictionaries,
-					container,
+					dictionaries.getPrimaryDictionary(),
 					normalDictionaries,
-					sharedDictionaryMappings
-			);
+					sharedDictionaryMappings,
+					container
+					);
 
 			job.getProgressReporter().start();
 			job.execute();
@@ -249,10 +241,9 @@ public class AdminProcessor {
 
 	}
 	/**
-	 * Handle importing Dictionaries of non-shared columns.
-	 * Link dataset and create human readable name.
+	 * Collects all dictionaries that map only to columns of this import.
 	 */
-	private static synchronized Map<DictionaryId, Dictionary> importNormalDictionaries(Dataset dataset, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+	private static synchronized Map<DictionaryId, Dictionary> collectNormalDictionaries(Dataset dataset, Map<String, Dictionary> dicts, Column[] columns, String importName) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -330,11 +321,14 @@ public class AdminProcessor {
 			DictionaryMapping mapping = null;
 			if (targetDictionary == null) {
 				mapping = DictionaryMapping.create(dictionary, new MapDictionary(dataset, sharedDictionaryId));
-				namespace.getStorage().updateDictionary(mapping.getTargetDictionary());
 			}
 			else {
-				mapping = importSharedDictionary(dataset,dictionary, sharedDictionaryId, targetDictionary);
+				mapping = extendSharedDictionary(dataset,dictionary, sharedDictionaryId, targetDictionary);
 			}
+
+			// We need to update the storages for now in this synchronized part
+			namespace.getStorage().updateDictionary(mapping.getTargetDictionary());
+			namespace.sendToAll(new UpdateDictionary(mapping.getTargetDictionary()));
 
 			out.put(column.getName(), mapping);
 
@@ -347,7 +341,7 @@ public class AdminProcessor {
 		return column.getSharedDictionary();
 	}
 
-	private static DictionaryMapping importSharedDictionary(Dataset dataset, Dictionary incoming, String targetDictionary, Dictionary targetDict) {
+	private static DictionaryMapping extendSharedDictionary(Dataset dataset, Dictionary incoming, String targetDictionary, Dictionary targetDict) {
 
 		log.debug("Merging into shared Dictionary[{}]", targetDictionary);
 

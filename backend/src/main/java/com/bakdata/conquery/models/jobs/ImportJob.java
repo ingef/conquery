@@ -49,6 +49,8 @@ import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * This is the main routine to load data into Conquery.
  */
@@ -62,10 +64,10 @@ public class ImportJob extends Job {
 	private final String importSource;
 	private final int bucketSize;
 	private final PreprocessedHeader header;
-	private final PreprocessedDictionaries dictionaries;
-	private final PreprocessedData container;
+	private final Dictionary primaryDictionary;
 	private final Map<DictionaryId, Dictionary> normalDictionaries;
 	private final Map<String, DictionaryMapping> sharedDictionaryMappings;
+	private final PreprocessedData container;
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
@@ -77,7 +79,7 @@ public class ImportJob extends Job {
 		log.trace("Updating primary dictionary");
 
 		// Update primary dictionary: load new data, and create mapping.
-		final DictionaryMapping primaryMapping = importPrimaryDictionary(dictionaries.getPrimaryDictionary());
+		final DictionaryMapping primaryMapping = importPrimaryDictionary(primaryDictionary);
 
 		getProgressReporter().report(1);
 
@@ -89,11 +91,6 @@ public class ImportJob extends Job {
 			log.trace("Sending {} to all Workers", dict);
 			namespace.getStorage().updateDictionary(dict);
 			namespace.sendToAll(new UpdateDictionary(dict));
-		}
-
-		for (DictionaryMapping dictionaryMapping : sharedDictionaryMappings.values()) {
-			namespace.getStorage().updateDictionary(dictionaryMapping.getTargetDictionary());
-			namespace.sendToAll(new UpdateDictionary(dictionaryMapping.getTargetDictionary()));
 		}
 
 
