@@ -10,12 +10,14 @@ import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Validator;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 public class NamespaceStorage extends NamespacedStorage {
 
     @Getter
@@ -40,6 +42,7 @@ public class NamespaceStorage extends NamespacedStorage {
     @Override
     public void loadData() {
         super.loadData();
+
         idMapping.loadData();
         structure.loadData();
         workerToBuckets.loadData();

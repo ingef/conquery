@@ -149,20 +149,29 @@ public class XodusStoreFactory implements StoreFactory {
 
         for (File directory : baseDir.listFiles((file, name) -> name.startsWith("dataset_"))) {
             loaders.submit(() -> {
-                List<String> pathElems = getRelativePathElements(directory.toPath());
-                ConqueryMDC.setLocation(directory.toString());
+            	try {
+					List<String> pathElems = getRelativePathElements(directory.toPath());
+					ConqueryMDC.setLocation(directory.toString());
 
-                if (!environmentHasStores(directory)) {
-                    log.warn("No valid NamespaceStorage found.");
-                    return;
-                }
+					if (!environmentHasStores(directory)) {
+						log.warn("No valid NamespaceStorage found.");
+						return;
+					}
 
-                NamespaceStorage namespaceStorage = new NamespaceStorage(validator, this, pathElems);
-                namespaceStorage.loadData();
+					NamespaceStorage namespaceStorage = new NamespaceStorage(validator, this, pathElems);
+					namespaceStorage.loadData();
 
-                storages.add(namespaceStorage);
+					log.info("DONE reading Storage[{}] at `{}`", namespaceStorage.getDataset(), directory);
 
-                ConqueryMDC.clearLocation();
+					storages.add(namespaceStorage);
+
+				}
+            	catch (Exception e){
+            		log.error("Failed reading Store at `{}`", directory, e);
+				}
+            	finally {
+					ConqueryMDC.clearLocation();
+				}
             });
         }
 
