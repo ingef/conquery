@@ -77,7 +77,8 @@ public class QueryResource {
 	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query, @Context HttpServletRequest req)
 			throws InterruptedException {
 
-		query.awaitDone(10, TimeUnit.SECONDS);
+		query.awaitDone(1, TimeUnit.SECONDS);
+
 
 		return processor.getStatus(
 				query,
