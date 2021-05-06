@@ -39,6 +39,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import io.dropwizard.util.Duration;
+import io.dropwizard.validation.MinDuration;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -50,7 +52,6 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriBuilderException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -107,6 +108,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	private transient Float progress;
 	@JsonIgnore
 	private boolean initialized = false;
+	@JsonIgnore @MinDuration(value = 1, unit = TimeUnit.SECONDS)
+	private Duration completionWaitTimeout = Duration.seconds(10);
 
 	public ManagedExecution(User owner, Dataset submittedDataset) {
 		this.owner = owner;
@@ -208,18 +211,18 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	@JsonIgnore
-	public Duration getExecutionTime() {
-		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
+	public java.time.Duration getExecutionTime() {
+		return (startTime != null && finishTime != null) ? java.time.Duration.between(startTime, finishTime) : null;
 	}
 
 	/**
 	 * Blocks until a execution finished of the specified timeout is reached. Return immediately if the execution is not running
 	 */
-	public void awaitDone(int time, TimeUnit unit) {
+	public void awaitDone(Duration timeout) {
 		if (state != ExecutionState.RUNNING){
 			return;
 		}
-		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+		Uninterruptibles.awaitUninterruptibly(execution, timeout.getQuantity(), timeout.getUnit());
 	}
 
 	protected void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
@@ -420,4 +423,5 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	@JsonIgnore
 	public abstract Stream<EntityResult> streamResults();
+
 }

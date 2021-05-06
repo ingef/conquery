@@ -44,6 +44,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.powerlibraries.io.In;
+import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -119,7 +120,7 @@ public class FormTest extends ConqueryTestSpec {
 		
 		ManagedExecution<?> managedForm = ExecutionManager.runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig());
 
-		managedForm.awaitDone(10, TimeUnit.MINUTES);
+		managedForm.awaitDone(Duration.seconds(10));
 		if (managedForm.getState() != ExecutionState.DONE) {
 			if (managedForm.getState() == ExecutionState.FAILED) {
 				fail(getLabel() + " Query failed");

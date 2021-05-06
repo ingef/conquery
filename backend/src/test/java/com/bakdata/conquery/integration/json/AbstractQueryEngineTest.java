@@ -30,6 +30,7 @@ import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
+import io.dropwizard.util.Duration;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -58,10 +59,10 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		final User testUser = standaloneSupport.getTestUser();
 		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, testUser, dataset, config);
 
-		managed.awaitDone(10, TimeUnit.SECONDS);
+		managed.awaitDone(Duration.seconds(10));
 		while (managed.getState() != ExecutionState.DONE && managed.getState() != ExecutionState.FAILED) {
 			log.warn("waiting for more than 10 seconds on " + getLabel());
-			managed.awaitDone(1, TimeUnit.DAYS);
+			managed.awaitDone(Duration.days(1));
 		}
 
 		if (managed.getState() == ExecutionState.FAILED) {
