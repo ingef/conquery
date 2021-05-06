@@ -20,7 +20,7 @@ public class ImportColumn extends NamedImpl<ImportColumnId> {
 
 	// Only used on ManagerNode for com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter.addImport
 	// Can Probably be removed.
-	private final transient ColumnStore typeDescription;
+	private final ColumnStore typeDescription;
 
 	private final long lines;
 
