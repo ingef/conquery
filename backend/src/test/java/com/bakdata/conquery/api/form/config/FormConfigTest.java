@@ -134,7 +134,7 @@ public class FormConfigTest {
 		form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
 		form.setTimeMode(mode);
-		form.setQueryGroup(managedQuery);
+		form.setQueryGroupId(managedQuery.getId());
 		mode.setForm(form);
 		mode.setFeatures(List.of(new CQConcept()));
 	}
