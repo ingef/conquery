@@ -16,22 +16,26 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.ToString;
 
+/**
+ * Messages are sent serialized and only deserialized when they are being processed. This ensures that messages that were sent just shortly before to setup state later messages depend upon is correct.
+ */
 @CPSType(id="FORWARD_TO_WORKER", base=NetworkMessage.class)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED) @Getter
+@ToString(of = {"workerId", "text"})
 public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
 	private static final ObjectWriter WRITER = Jackson.BINARY_MAPPER.copy().writerFor(WorkerMessage.class).withView(InternalOnly.class);
 
-	@SneakyThrows // TODO check if this can kill whole threads.
+	@SneakyThrows(JsonProcessingException.class)
 	public static ForwardToWorker create(WorkerId worker, WorkerMessage message) {
 		return new ForwardToWorker(
 				worker,
@@ -44,7 +48,7 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 	private final WorkerId workerId;
 	private final byte[] messageRaw;
 
-	// We cache this on the sender side.
+	// We cache these on the sender side.
 	@Getter(onMethod_ = @JsonIgnore(false))
 	private final boolean slowMessage;
 	private final String text;
@@ -58,11 +62,7 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 		Worker worker = Objects.requireNonNull(context.getWorkers().getWorker(workerId));
 		ConqueryMDC.setLocation(worker.toString());
 
-		WorkerMessage message = context.getWorkers()
-									   .getBinaryMapper()
-									   .readerFor(WorkerMessage.class)
-									   .withView(InternalOnly.class)
-									   .readValue(messageRaw);
+		WorkerMessage message = deserializeMessage(messageRaw, context.getWorkers().getBinaryMapper());
 
 		if(message instanceof SlowMessage){
 			((SlowMessage) message).setProgressReporter(progressReporter);
@@ -71,9 +71,9 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 		message.react(worker);
 	}
 
-
-	@Override
-	public String toString() {
-		return messageRaw.toString() + " for worker " + workerId;
+	private static WorkerMessage deserializeMessage(byte[] messageRaw, ObjectMapper binaryMapper) throws java.io.IOException {
+		return binaryMapper.readerFor(WorkerMessage.class)
+						   .withView(InternalOnly.class)
+						   .readValue(messageRaw);
 	}
 }
