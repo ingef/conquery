@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -298,43 +299,43 @@ public class XodusStoreFactory implements StoreFactory {
 
     @Override
     public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName) {
-        return EXECUTIONS.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "executions")), validator, EXECUTIONS), centralRegistry, datasetRegistry);
+        return EXECUTIONS.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "executions")), validator, EXECUTIONS), centralRegistry, datasetRegistry);
     }
 
     @Override
     public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return FORM_CONFIG.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "formConfigs")), validator, FORM_CONFIG), centralRegistry);
+        return FORM_CONFIG.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "formConfigs")), validator, FORM_CONFIG), centralRegistry);
     }
 
     @Override
     public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return AUTH_USER.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "users")), validator, AUTH_USER), centralRegistry);
+        return AUTH_USER.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "users")), validator, AUTH_USER), centralRegistry);
     }
 
     @Override
     public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return AUTH_ROLE.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "roles")), validator, AUTH_ROLE), centralRegistry);
+        return AUTH_ROLE.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "roles")), validator, AUTH_ROLE), centralRegistry);
     }
 
 
     @Override
     public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return AUTH_GROUP.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "groups")), validator, AUTH_GROUP), centralRegistry);
+        return AUTH_GROUP.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "groups")), validator, AUTH_GROUP), centralRegistry);
     }
 
-    private List<String> appendToNewPath(List<String> pathName, String users) {
-        ArrayList<String> path = new ArrayList<>();
+    private List<String> appendToNewPath(List<String> pathName, String... subdirs) {
+        List<String> path = new ArrayList<>();
         path.addAll(pathName);
-        path.add(users);
+		path.addAll(Arrays.asList(subdirs));
         return path;
     }
 
-    @NonNull
-    @JsonIgnore
     /**
      * Returns this.directory if the list is empty.
      */
-    private File getStorageDir(List<String> pathName) {
+	@NonNull
+	@JsonIgnore
+	private File getStorageDir(List<String> pathName) {
 		return getDirectory().resolve(String.join("/", pathName)).toFile();
     }
 
@@ -346,7 +347,7 @@ public class XodusStoreFactory implements StoreFactory {
 
     private Environment findEnvironment(List<String> pathName) {
         synchronized (activeEnvironments) {
-            @NonNull File path = getStorageDir(pathName);
+            File path = getStorageDir(pathName);
             return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(p, getXodus().createConfig()));
         }
     }
@@ -365,24 +366,24 @@ public class XodusStoreFactory implements StoreFactory {
     }
 
     private void removeEnvironment(Environment env) {
-        log.info("Deleting environment: {}", env.getLocation());
+        log.info("Deleting Environment[{}]", env.getLocation());
         try {
             FileUtil.deleteRecursive(Path.of(env.getLocation()));
         }catch (IOException e) {
-            log.error("Cannot delete directory of removed environment: {}", env.getLocation(), log.isDebugEnabled()? e : null);
+            log.error("Cannot delete directory of removed Environment[{}]", env.getLocation(), log.isDebugEnabled()? e : null);
         }
     }
 
     public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreInfo storeId) {
         synchronized (openStoresInEnv) {
-            return new CachedStore<KEY, VALUE>(
-                    new SerializingStore<KEY, VALUE>(
-                            this,
-                            new XodusStore(environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
-                            validator,
-                            storeId,
-                            objectMapper
-                    ));
+            return new CachedStore<>(
+					new SerializingStore<>(
+							this,
+							new XodusStore(environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
+							validator,
+							storeId,
+							objectMapper
+					));
         }
     }
 
