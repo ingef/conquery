@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -38,10 +39,15 @@ public class Workers extends IdResolveContext {
 	private final ThreadPoolExecutor jobsThreadPool;
 	private final ThreadPoolDefinition queryThreadPoolDefinition;
 
+	@Getter
+	private final ObjectMapper mapper;
+	@Getter
+	private final ObjectMapper binaryMapper;
+
 	private final int entityBucketSize;
 
 	
-	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, int jobThreadPoolSize, int entityBucketSize) {
+	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, int jobThreadPoolSize, ObjectMapper mapper, ObjectMapper binaryMapper, int entityBucketSize) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 		
 		// TODO: 30.06.2020 build from configuration
@@ -50,6 +56,8 @@ public class Workers extends IdResolveContext {
 												new LinkedBlockingQueue<>(),
 												new ThreadFactoryBuilder().setNameFormat("Workers Helper %d").build()
 		);
+		this.mapper = injectInto(mapper);
+		this.binaryMapper = injectInto(binaryMapper);
 		this.entityBucketSize = entityBucketSize;
 
 		jobsThreadPool.prestartAllCoreThreads();

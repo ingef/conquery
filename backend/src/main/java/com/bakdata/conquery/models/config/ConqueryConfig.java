@@ -111,8 +111,8 @@ public class ConqueryConfig extends Configuration {
 				.collect(MoreCollectors.toOptional());
 	}
 
-	public void configureObjectMapper(ObjectMapper objectMapper) {
-		objectMapper.registerModule(new ConqueryConfig.ConfiguredModule(this));
+	public ObjectMapper configureObjectMapper(ObjectMapper objectMapper) {
+		return objectMapper.registerModule(new ConqueryConfig.ConfiguredModule(this));
 	}
 
 	public static class ConfiguredModule extends SimpleModule {
