@@ -24,22 +24,15 @@ public class ImportBucket extends WorkerMessage.Slow {
 
 	private final String name;
 
-	/**
-	 * @implSpec We need to deserialize this lazily, as this message and it's dependencies are transmitted in such quick succession, that they are sometimes not there on deserialization of the message.
-	 */
-	private final byte[] rawBucket;
+	private final Bucket bucket;
 
-	public static ImportBucket forBucket(Bucket bucket) throws JsonProcessingException {
-		return new ImportBucket(bucket.getId().toString(), Jackson.BINARY_MAPPER.writerWithView(InternalOnly.class).writeValueAsBytes(bucket));
+	public static ImportBucket forBucket(Bucket bucket)  {
+		return new ImportBucket(bucket.getId().toString(),bucket);
 	}
 
 	@Override
 	public void react(Worker context) throws Exception {
-		final ObjectMapper objectMapper = context.getStorage().getDataset().injectInto(context.inject(Jackson.BINARY_MAPPER));
-
-		final Bucket bucket = objectMapper.readValue(rawBucket, Bucket.class);
-
-		log.trace("Received {}", bucket.getId());
+		log.info("Received {}", bucket.getId());
 
 		context.addBucket(bucket);
 	}
