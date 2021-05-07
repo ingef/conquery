@@ -75,7 +75,6 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.function.TriFunction;
 
 @Slf4j
 @Getter
@@ -139,17 +138,17 @@ public class XodusStoreFactory implements StoreFactory {
     @Override
     @SneakyThrows
     public Collection<NamespaceStorage> loadNamespaceStorages(List<String> pathName) {
-		return loadNamespacedStores(pathName, (elements) -> new NamespaceStorage(validator, this, elements));
+		return loadNamespacedStores("dataset_", pathName, (elements) -> new NamespaceStorage(validator, this, elements));
     }
 
     @Override
     @SneakyThrows
     public Collection<WorkerStorage> loadWorkerStorages(List<String> pathName) {
-		return loadNamespacedStores(pathName, (elements) -> new WorkerStorage(validator, this, elements));
+		return loadNamespacedStores("worker_", pathName, (elements) -> new WorkerStorage(validator, this, elements));
     }
 
 
-	private <T extends NamespacedStorage> ConcurrentLinkedQueue<T> loadNamespacedStores(List<String> pathName, Function<List<String>, T> creator)
+	private <T extends NamespacedStorage> ConcurrentLinkedQueue<T> loadNamespacedStores(String prefix, List<String> pathName, Function<List<String>, T> creator)
 			throws InterruptedException {
 		File baseDir = getStorageDir(pathName);
 
@@ -161,7 +160,7 @@ public class XodusStoreFactory implements StoreFactory {
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
 
 
-		for (File directory : baseDir.listFiles((file, name) -> name.startsWith("worker_"))) {
+		for (File directory : baseDir.listFiles((file, name) -> name.startsWith(prefix))) {
 
 			loaders.submit(() -> {
 				try {
