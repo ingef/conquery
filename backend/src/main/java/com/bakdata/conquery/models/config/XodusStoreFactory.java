@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import javax.validation.Valid;
 import javax.validation.Validator;
@@ -25,6 +26,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreInfo;
 import com.bakdata.conquery.io.storage.WorkerStorage;
@@ -73,6 +75,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.function.TriFunction;
 
 @Slf4j
 @Getter
@@ -136,102 +139,67 @@ public class XodusStoreFactory implements StoreFactory {
     @Override
     @SneakyThrows
     public Collection<NamespaceStorage> loadNamespaceStorages(List<String> pathName) {
-        @NonNull File baseDir = getStorageDir(pathName);
-
-        if (baseDir.mkdirs()) {
-            log.warn("Had to create Storage Dir at `{}`", getDirectory());
-        }
-
-        ConcurrentLinkedQueue<NamespaceStorage> storages = new ConcurrentLinkedQueue<>();
-
-        ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
-
-
-        for (File directory : baseDir.listFiles((file, name) -> name.startsWith("dataset_"))) {
-            loaders.submit(() -> {
-            	try {
-					List<String> pathElems = getRelativePathElements(directory.toPath());
-					ConqueryMDC.setLocation(directory.toString());
-
-					if (!environmentHasStores(directory)) {
-						log.warn("No valid NamespaceStorage found.");
-						return;
-					}
-
-					NamespaceStorage namespaceStorage = new NamespaceStorage(validator, this, pathElems);
-					log.info("BEGIN reading at `{}`", directory);
-
-					namespaceStorage.loadData();
-
-					log.info("DONE reading Storage[{}] at `{}`", namespaceStorage.getDataset(), directory);
-
-					storages.add(namespaceStorage);
-
-				}
-            	catch (Exception e){
-            		log.error("Failed reading Store at `{}`", directory, e);
-				}
-            	finally {
-					log.info("FINISHED reading {}", directory);
-					ConqueryMDC.clearLocation();
-				}
-            });
-        }
-
-
-        loaders.shutdown();
-        while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-            log.debug("Still waiting for Datasets to load. {} already finished.", storages);
-        }
-
-        log.info("All NamespaceStores loaded: {}", storages);
-        return storages;
+		return loadNamespacedStores(pathName, (elements) -> new NamespaceStorage(validator, this, elements));
     }
 
     @Override
     @SneakyThrows
     public Collection<WorkerStorage> loadWorkerStorages(List<String> pathName) {
-        @NonNull File baseDir = getStorageDir(pathName);
-
-        if (baseDir.mkdirs()) {
-            log.warn("Had to create Storage Dir at `{}`", baseDir);
-        }
-
-
-        ConcurrentLinkedQueue<WorkerStorage> storages = new ConcurrentLinkedQueue<>();
-        ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
-
-
-        for (File directory : baseDir.listFiles((file, name) -> name.startsWith("worker_"))) {
-
-            loaders.submit(() -> {
-                List<String> pathElems = getRelativePathElements(directory.toPath());
-                ConqueryMDC.setLocation(directory.toString());
-
-                if (!environmentHasStores(directory)) {
-                    log.warn("No valid WorkerStorage found.");
-                    return;
-                }
-
-                WorkerStorage workerStorage = new WorkerStorage(validator, this, pathElems);
-                workerStorage.loadData();
-
-                storages.add(workerStorage);
-
-                ConqueryMDC.clearLocation();
-            });
-        }
-
-        loaders.shutdown();
-        while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-            log.debug("Waiting for Worker storages to load. {} are already finished.", storages.size());
-        }
-
-        log.info("All WorkerStores loaded: {}", storages);
-        return storages;
+		return loadNamespacedStores(pathName, (elements) -> new WorkerStorage(validator, this, elements));
     }
 
-    private List<String> getRelativePathElements(Path path) {
+
+	private <T extends NamespacedStorage> ConcurrentLinkedQueue<T> loadNamespacedStores(List<String> pathName, Function<List<String>, T> creator)
+			throws InterruptedException {
+		File baseDir = getStorageDir(pathName);
+
+		if (baseDir.mkdirs()) {
+			log.warn("Had to create Storage Dir at `{}`", baseDir);
+		}
+
+		ConcurrentLinkedQueue<T> storages = new ConcurrentLinkedQueue<>();
+		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
+
+
+		for (File directory : baseDir.listFiles((file, name) -> name.startsWith("worker_"))) {
+
+			loaders.submit(() -> {
+				try {
+					List<String> pathElems = getRelativePathElements(directory.toPath());
+					ConqueryMDC.setLocation(directory.toString());
+
+					if (!environmentHasStores(directory)) {
+						log.warn("No valid WorkerStorage found.");
+						return;
+					}
+
+					T workerStorage = creator.apply(pathElems);
+					log.debug("BEGIN reading Storage");
+					workerStorage.loadData();
+
+					storages.add(workerStorage);
+
+				}
+				catch (Exception e) {
+					log.error("Failed reading Storage", e);
+				}
+				finally {
+					log.debug("DONE reading Storage");
+					ConqueryMDC.clearLocation();
+				}
+			});
+		}
+
+		loaders.shutdown();
+		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+			log.debug("Waiting for Worker storages to load. {} are already finished.", storages.size());
+		}
+
+		log.info("All WorkerStores loaded: {}", storages);
+		return storages;
+	}
+
+	private List<String> getRelativePathElements(Path path) {
         ArrayList<String> list = new ArrayList<>();
         Path relative = getDirectory().relativize(path);
         for (int i = 0; i < relative.getNameCount(); i++) {
