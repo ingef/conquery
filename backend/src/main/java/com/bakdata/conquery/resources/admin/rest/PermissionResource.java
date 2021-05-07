@@ -25,13 +25,13 @@ public class PermissionResource extends HPermissions {
 	 */
 	@POST
 	public Response createPermission(String permission) throws JSONException {
-		processor.createPermission(ownerId, new WildcardPermission(permission));
+		processor.createPermission(getOwner(), new WildcardPermission(permission));
 		return Response.ok().build();
 	}
 	
 	@DELETE
 	public Response deletePermission(String permission) throws JSONException {
-		processor.deletePermission(ownerId, new WildcardPermission(permission));
+		processor.deletePermission(getOwner(), new WildcardPermission(permission));
 		return Response.ok().build();
 	}
 }

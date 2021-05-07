@@ -5,15 +5,13 @@ import java.util.List;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class WorkerId extends AId<WorkerInformation> implements NamespacedId {
+public class WorkerId extends AId<WorkerInformation> {
 
 	private final DatasetId dataset;
 	private final String worker;

@@ -13,8 +13,7 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -74,12 +73,13 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		{// Auth testing (deletion and permission grant)
 			// build constellation
-			adminDatasetProcessor.addDataset(TEST_DATASET_1);
-			adminDatasetProcessor.addDataset(TEST_DATASET_2);
-			adminDatasetProcessor.addDataset(TEST_DATASET_3);
-			adminDatasetProcessor.addDataset(TEST_DATASET_4);
-			adminDatasetProcessor.addDataset(TEST_DATASET_5);
-			adminDatasetProcessor.addDataset(TEST_DATASET_6);
+			//TODO USE APIS
+			final Dataset dataset1 = adminDatasetProcessor.addDataset(TEST_DATASET_1);
+			final Dataset dataset2 = adminDatasetProcessor.addDataset(TEST_DATASET_2);
+			final Dataset dataset3 = adminDatasetProcessor.addDataset(TEST_DATASET_3);
+			final Dataset dataset4 = adminDatasetProcessor.addDataset(TEST_DATASET_4);
+			final Dataset dataset5 = adminDatasetProcessor.addDataset(TEST_DATASET_5);
+			final Dataset dataset6 = adminDatasetProcessor.addDataset(TEST_DATASET_6);
 
 			adminProcessor.addUser(user);
 			adminProcessor.addUser(userToDelete);
@@ -88,35 +88,36 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			adminProcessor.addGroup(group);
 			adminProcessor.addGroup(groupToDelete);
 
-			adminProcessor.addRoleTo(user.getId(), role.getId());
-			adminProcessor.addRoleTo(user.getId(), roleToDelete.getId());
-			adminProcessor.addRoleTo(userToDelete.getId(), role.getId());
-			adminProcessor.addRoleTo(userToDelete.getId(), roleToDelete.getId());
+			adminProcessor.addRoleTo(user, role);
+			adminProcessor.addRoleTo(user, roleToDelete);
+			adminProcessor.addRoleTo(userToDelete, role);
+			adminProcessor.addRoleTo(userToDelete, roleToDelete);
 
-			adminProcessor.addRoleTo(group.getId(), role.getId());
-			adminProcessor.addRoleTo(group.getId(), roleToDelete.getId());
-			adminProcessor.addRoleTo(groupToDelete.getId(), role.getId());
-			adminProcessor.addRoleTo(groupToDelete.getId(), roleToDelete.getId());
+			adminProcessor.addRoleTo(group, role);
+			adminProcessor.addRoleTo(group, roleToDelete);
+			adminProcessor.addRoleTo(groupToDelete, role);
+			adminProcessor.addRoleTo(groupToDelete, roleToDelete);
 
-			adminProcessor.addUserToGroup(group.getId(), user.getId());
-			adminProcessor.addUserToGroup(group.getId(), userToDelete.getId());
-			adminProcessor.addUserToGroup(groupToDelete.getId(), user.getId());
-			adminProcessor.addUserToGroup(groupToDelete.getId(), userToDelete.getId());
+			adminProcessor.addUserToGroup(group, user);
+			adminProcessor.addUserToGroup(group, userToDelete);
+			adminProcessor.addUserToGroup(groupToDelete, user);
+			adminProcessor.addUserToGroup(groupToDelete, userToDelete);
 
 			// Adding Permissions
-			adminProcessor.createPermission(user.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")));
-			adminProcessor.createPermission(userToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")));
+			adminProcessor.createPermission(user, dataset1.createPermission(Ability.READ.asSet()));
+			adminProcessor.createPermission(userToDelete, dataset2.createPermission(Ability.READ.asSet()));
 
-			adminProcessor.createPermission(role.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")));
-			adminProcessor.createPermission(roleToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")));
+			adminProcessor.createPermission(role, dataset3.createPermission(Ability.READ.asSet()));
+			adminProcessor.createPermission(roleToDelete, dataset4.createPermission(Ability.READ.asSet()));
 
-			adminProcessor.createPermission(group.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")));
-			adminProcessor.createPermission(groupToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")));
+			adminProcessor.createPermission(group, dataset5.createPermission(Ability.READ.asSet()));
+			adminProcessor.createPermission(groupToDelete, dataset6.createPermission(Ability.READ.asSet()));
 
 			// Delete entities
-			adminProcessor.deleteUser(userToDelete.getId());
-			adminProcessor.deleteRole(roleToDelete.getId());
-			adminProcessor.deleteGroup(groupToDelete.getId());
+			//TODO use API
+			adminProcessor.deleteUser(userToDelete);
+			adminProcessor.deleteRole(roleToDelete);
+			adminProcessor.deleteGroup(groupToDelete);
 		}
 
 
@@ -144,12 +145,18 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			assertThat(storage.getRole(roleToDelete.getId())).as("deleted role should stay deleted").isNull();
 			assertThat(storage.getGroup(groupToDelete.getId())).as("deleted group should stay deleted").isNull();
 
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId(TEST_DATASET_1)).getDataset(),Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId(TEST_DATASET_2)).getDataset(),Ability.READ)).isFalse(); // Was never permitted
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId(TEST_DATASET_3)).getDataset(),Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId(TEST_DATASET_4)).getDataset(),Ability.READ)).isFalse(); // Was permitted by deleted role
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId(TEST_DATASET_5)).getDataset(),Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId(TEST_DATASET_6)).getDataset(),Ability.READ)).isFalse(); // Was permitted by deleted group
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId(TEST_DATASET_1)).getDataset(), Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry()
+													 .get(new DatasetId(TEST_DATASET_2))
+													 .getDataset(), Ability.READ)).isFalse(); // Was never permitted
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId(TEST_DATASET_3)).getDataset(), Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry()
+													 .get(new DatasetId(TEST_DATASET_4))
+													 .getDataset(), Ability.READ)).isFalse(); // Was permitted by deleted role
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(new DatasetId(TEST_DATASET_5)).getDataset(), Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(storage.getDatasetRegistry()
+													 .get(new DatasetId(TEST_DATASET_6))
+													 .getDataset(), Ability.READ)).isFalse(); // Was permitted by deleted group
 
 		}
 

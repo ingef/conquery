@@ -20,15 +20,13 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
-import com.bakdata.conquery.util.ResourceUtil;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -43,19 +41,16 @@ public class AdminTablesResource extends HAdmin {
 	private AdminDatasetProcessor processor;
 	
 	@PathParam(DATASET)
-	protected DatasetId datasetId;
+	protected Dataset dataset;
 	protected Namespace namespace;
 	@PathParam(TABLE)
-	protected TableId tableId;
 	protected Table table;
 
 	@PostConstruct
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getDatasetRegistry().get(datasetId);
-		this.table = namespace.getStorage().getTable(tableId);
-		ResourceUtil.throwNotFoundIfNull(tableId, table);
+		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 
 	/**
@@ -65,7 +60,7 @@ public class AdminTablesResource extends HAdmin {
 	 */
 	@DELETE
 	public Response remove(@QueryParam("force") @DefaultValue("false") boolean force) {
-		final List<ConceptId> dependents = processor.deleteTable(tableId, force);
+		final List<ConceptId> dependents = processor.deleteTable(table, force);
 
 		if (!force && !dependents.isEmpty()) {
 			return Response.status(Status.CONFLICT)
@@ -92,8 +87,8 @@ public class AdminTablesResource extends HAdmin {
 
 	@DELETE
 	@Path("imports/{"+IMPORT_ID+"}")
-	public void deleteImportView(@PathParam(IMPORT_ID) ImportId importId) {
-		processor.deleteImport(importId);
+	public void deleteImportView(@PathParam(IMPORT_ID) Import imp) {
+		processor.deleteImport(imp);
 	}
 
 

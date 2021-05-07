@@ -4,6 +4,7 @@ import java.time.Duration;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
@@ -15,7 +16,20 @@ import com.bakdata.conquery.metrics.ActiveUsersFilter;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourcesProvider;
-import com.bakdata.conquery.resources.api.*;
+import com.bakdata.conquery.resources.api.APIResource;
+import com.bakdata.conquery.resources.api.ConceptResource;
+import com.bakdata.conquery.resources.api.ConceptsProcessor;
+import com.bakdata.conquery.resources.api.ConfigResource;
+import com.bakdata.conquery.resources.api.DatasetResource;
+import com.bakdata.conquery.resources.api.FilterResource;
+import com.bakdata.conquery.resources.api.FormConfigResource;
+import com.bakdata.conquery.resources.api.MeResource;
+import com.bakdata.conquery.resources.api.QueryResource;
+import com.bakdata.conquery.resources.api.ResultArrowFileResource;
+import com.bakdata.conquery.resources.api.ResultArrowStreamResource;
+import com.bakdata.conquery.resources.api.ResultCsvResource;
+import com.bakdata.conquery.resources.api.ResultExcelResource;
+import com.bakdata.conquery.resources.api.StoredQueriesResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
@@ -76,5 +90,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(DatasetResource.class);
 		environment.register(FilterResource.class);
 		environment.register(MeResource.class);
+
+		environment.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
 	}
 }

@@ -10,7 +10,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -34,13 +34,13 @@ public class RoleUIResource extends HAdmin {
 	/**
 	 * End point for retrieving information about a specific role.
 	 *
-	 * @param roleId
+	 * @param role
 	 *            Unique id of the role.
 	 * @return A view holding the information about the role.
 	 */
 	@Path("{" + ROLE_ID + "}")
 	@GET
-	public View getRole(@PathParam(ROLE_ID) RoleId roleId) {
-		return new UIView<>("role.html.ftl", uiProcessor.getUIContext(), processor.getRoleContent(roleId));
+	public View getRole(@PathParam(ROLE_ID) Role role) {
+		return new UIView<>("role.html.ftl", uiProcessor.getUIContext(), processor.getRoleContent(role));
 	}
 }

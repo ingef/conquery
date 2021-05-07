@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FormResource {
 	
-	private FormProcessor processor;
+	private final FormProcessor processor;
 
 	public FormResource(FormProcessor processor) {
 		this.processor = processor;

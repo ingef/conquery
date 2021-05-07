@@ -46,7 +46,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.NonNull;
@@ -200,7 +199,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void loadNamespaces() {
 		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
 			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError());
-
 			datasetRegistry.add(ns);
 		}
 	}

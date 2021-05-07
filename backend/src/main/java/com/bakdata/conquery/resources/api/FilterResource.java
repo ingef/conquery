@@ -43,7 +43,7 @@ public class FilterResource extends HFilters {
 	
 	@POST
 	@Path("autocomplete")
-	public List<FEValue> autocompleteTextFilter(@NotNull StringContainer text, @Context HttpServletRequest req, @QueryParam("page") OptionalInt pageNumberOpt, @QueryParam("pageSize")OptionalInt itemsPerPageOpt) {
+	public List<FEValue> autocompleteTextFilter(@NotNull StringContainer text, @Context HttpServletRequest req, @QueryParam("page") OptionalInt pageNumberOpt, @QueryParam("pageSize") OptionalInt itemsPerPageOpt) {
 		if(StringUtils.isEmpty(text.getText())) {
 			throw new WebApplicationException("Too short text. Requires at least 1 characters.", Status.BAD_REQUEST);
 		}

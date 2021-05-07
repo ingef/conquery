@@ -201,6 +201,11 @@ public class SerializationTests {
 	
 	@Test
 	public void formConfig() throws JSONException, IOException {
+		final CentralRegistry registry = new CentralRegistry();
+
+		final Dataset dataset = new Dataset("test-dataset");
+
+		registry.register(dataset);
 
 		ExportForm form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
@@ -211,9 +216,11 @@ public class SerializationTests {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
+		formConfig.setDataset(dataset);
 		
 		SerializationTestUtil
 			.forType(FormConfig.class)
+			.registry(registry)
 			.test(formConfig);
 	}
 

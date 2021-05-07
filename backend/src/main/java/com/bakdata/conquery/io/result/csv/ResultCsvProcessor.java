@@ -1,33 +1,32 @@
 package com.bakdata.conquery.io.result.csv;
 
-import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
-import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.ResourceUtil;
-import com.bakdata.conquery.util.io.ConqueryMDC;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.io.EofException;
+import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
-import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
-import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
+import com.bakdata.conquery.io.result.ResultUtil;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.io.ConqueryMDC;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.io.EofException;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,16 +36,12 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 
 
-	public Response getResult(User user, DatasetId datasetId, ManagedExecutionId queryId, String userAgent, String queryCharset, boolean pretty) {
-		final Namespace namespace = datasetRegistry.get(datasetId);
+	public Response getResult(User user, Dataset dataset, ManagedExecution<?> exec, String userAgent, String queryCharset, boolean pretty) {
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		ConqueryMDC.setLocation(user.getName());
-		log.info("Downloading results for {} on dataset {}", queryId, datasetId);
+		log.info("Downloading results for {} on dataset {}", exec, dataset);
 		user.authorize(namespace.getDataset(), Ability.READ);
 		user.authorize(namespace.getDataset(), Ability.DOWNLOAD);
-
-		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(queryId);
-
-		ResourceUtil.throwNotFoundIfNull(queryId, exec);
 
 		user.authorize(exec, Ability.READ);
 

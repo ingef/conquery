@@ -10,12 +10,9 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
-import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,7 +27,10 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
@@ -53,16 +53,14 @@ public class AdminDatasetResource extends HAdmin {
 
 
 	@PathParam(DATASET)
-	protected DatasetId datasetId;
+	protected Dataset dataset;
 	protected Namespace namespace;
 
 	@PostConstruct
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getDatasetRegistry().get(datasetId);
-
-		ResourceUtil.throwNotFoundIfNull(datasetId, namespace);
+		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 
 	@POST
@@ -139,7 +137,7 @@ public class AdminDatasetResource extends HAdmin {
 
 	@DELETE
 	@Path("secondaryId/{" + SECONDARY_ID + "}")
-	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescriptionId secondaryId) {
+	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
 		processor.deleteSecondaryId(secondaryId);
 	}
 
@@ -164,7 +162,7 @@ public class AdminDatasetResource extends HAdmin {
 
 	@DELETE
 	public void delete() {
-		processor.deleteDataset(datasetId);
+		processor.deleteDataset(dataset);
 	}
 
 	@POST

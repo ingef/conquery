@@ -29,6 +29,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -52,6 +53,10 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -71,7 +76,6 @@ import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.bakdata.conquery.util.ConqueryEscape;
-import com.bakdata.conquery.util.ResourceUtil;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
@@ -126,11 +130,10 @@ public class AdminProcessor {
 	 * Deletes the mandator, that is identified by the id. Its references are
 	 * removed from the users, the groups, and from the storage.
 	 *
-	 * @param roleId The id belonging to the mandator
+	 * @param role the role to delete
 	 * @throws JSONException is thrown on JSON validation form the storage.
 	 */
-	public void deleteRole(RoleId roleId) throws JSONException {
-		final Role role = storage.getRole(roleId);
+	public void deleteRole(Role role) throws JSONException {
 		AuthorizationHelper.deleteRole(storage, role);
 	}
 
@@ -148,19 +151,14 @@ public class AdminProcessor {
 		return groups.stream().filter(g -> g.getRoles().contains(role)).collect(Collectors.toList());
 	}
 
-	public FERoleContent getRoleContent(RoleId roleId) {
-		Role role = storage.getRole(roleId);
-
-		ResourceUtil.throwNotFoundIfNull(roleId,role);
-
-		return FERoleContent
-					   .builder()
-					   .permissions(wrapInFEPermission(role.getPermissions()))
-					   .permissionTemplateMap(preparePermissionTemplate())
-					   .users(getUsers(role))
-					   .groups(getGroups(role))
-					   .owner(role)
-					   .build();
+	public FERoleContent getRoleContent(Role role) {
+		return FERoleContent.builder()
+							.permissions(wrapInFEPermission(role.getPermissions()))
+							.permissionTemplateMap(preparePermissionTemplate())
+							.users(getUsers(role))
+							.groups(getGroups(role))
+							.owner(role)
+							.build();
 	}
 
 	private SortedSet<FEPermission> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
@@ -196,21 +194,25 @@ public class AdminProcessor {
 	/**
 	 * Handles creation of permissions.
 	 *
+	 *
+	 * @param owner
 	 * @param permission The permission to create.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
-	public void createPermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.addPermission(ownerId.getPermissionOwner(storage), permission, storage);
+	public void createPermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
+		AuthorizationHelper.addPermission(owner, permission, storage);
 	}
 
 	/**
 	 * Handles deletion of permissions.
 	 *
+	 *
+	 * @param owner the owner of the permission
 	 * @param permission The permission to delete.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
-	public void deletePermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.removePermission(ownerId.getPermissionOwner(storage), permission, storage);
+	public void deletePermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
+		AuthorizationHelper.removePermission(owner, permission, storage);
 	}
 
 
@@ -218,11 +220,7 @@ public class AdminProcessor {
 		return new TreeSet<>(storage.getAllUsers());
 	}
 
-	public FEUserContent getUserContent(UserId userId) {
-		User user = storage.getUser(userId);
-
-		ResourceUtil.throwNotFoundIfNull(userId,user);
-
+	public FEUserContent getUserContent(User user) {
 		return FEUserContent
 					   .builder()
 					   .owner(user)
@@ -233,13 +231,12 @@ public class AdminProcessor {
 					   .build();
 	}
 
-	public synchronized void deleteUser(UserId userId) {
-		User user = storage.getUser(userId);
+	public synchronized void deleteUser(User user) {
 		for (Group group : storage.getAllGroups()) {
 			group.removeMember(storage, user);
 		}
-		storage.removeUser(userId);
-		log.trace("Removed user {} from the storage.", userId);
+		storage.removeUser(user.getId());
+		log.trace("Removed user {} from the storage.", user.getId());
 	}
 
 	public void addUser(User user) throws JSONException {
@@ -264,10 +261,7 @@ public class AdminProcessor {
 		return new TreeSet<>(storage.getAllGroups());
 	}
 
-	public FEGroupContent getGroupContent(GroupId groupId) {
-		Group group = storage.getGroup(groupId);
-
-		ResourceUtil.throwNotFoundIfNull(groupId, group);
+	public FEGroupContent getGroupContent(Group group) {
 
 		Set<UserId> membersIds = group.getMembers();
 		ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
@@ -303,66 +297,34 @@ public class AdminProcessor {
 		}
 	}
 
-	public void addUserToGroup(GroupId groupId, UserId userId) {
+	public void addUserToGroup(Group group, User user) {
 		synchronized (storage) {
-
-
-			final Group group = storage.getGroup(groupId);
-			final User user = storage.getUser(userId);
-
-			ResourceUtil.throwNotFoundIfNull(groupId, group);
-			ResourceUtil.throwNotFoundIfNull(userId, user);
-
 			group.addMember(storage, user);
 
 			log.trace("Added user {} to group {}", user, group);
 		}
 	}
 
-	public void deleteUserFromGroup(GroupId groupId, UserId userId) {
+	public void deleteUserFromGroup(Group group, User user) {
 		synchronized (storage) {
-			final User user = storage.getUser(userId);
-			final Group group = storage.getGroup(groupId);
-
-			ResourceUtil.throwNotFoundIfNull(userId,user);
-			ResourceUtil.throwNotFoundIfNull(groupId,group);
-
 			group.removeMember(storage,user);
 		}
-		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(storage));
+		log.trace("Removed user {} from group {}", user, group);
 	}
 
-	public void deleteGroup(GroupId groupId) {
-		storage.removeGroup(groupId);
-		log.trace("Removed group {}", groupId.getPermissionOwner(storage));
+	public void deleteGroup(Group group) {
+		storage.removeGroup(group.getId());
+		log.trace("Removed group {}", group);
 	}
 
-	public <ID extends PermissionOwnerId<? extends RoleOwner>> void  deleteRoleFrom(ID ownerId, RoleId roleId) {
-		final RoleOwner owner;
-		final Role role;
+	public void  deleteRoleFrom(RoleOwner owner, Role role) {
 		synchronized (storage) {
-			owner = ownerId.getPermissionOwner(storage);
-
-			ResourceUtil.throwNotFoundIfNull(ownerId,owner);
-
-			role = storage.getRole(roleId);
-
-			ResourceUtil.throwNotFoundIfNull(roleId,role);
-
 			AuthorizationHelper.deleteRoleFrom(storage, owner, role);
 		}
 
 	}
 
-	public <ID extends PermissionOwnerId<? extends RoleOwner>> void addRoleTo(ID ownerId, RoleId roleId) {
-		final Role role = roleId.getPermissionOwner(getStorage());
-
-		ResourceUtil.throwNotFoundIfNull(roleId,role);
-
-		final RoleOwner owner = ownerId.getPermissionOwner(getStorage());
-
-		ResourceUtil.throwNotFoundIfNull(ownerId, owner);
-
+	public  void addRoleTo(RoleOwner owner, Role role) {
 		AuthorizationHelper.addRoleTo(getStorage(), role, owner);
 	}
 
@@ -391,10 +353,7 @@ public class AdminProcessor {
 	/**
 	 * Renders the permission overview for all users in a certain {@link Group} in form of a CSV.
 	 */
-	public String getPermissionOverviewAsCSV(GroupId groupId) {
-		final Group group = storage.getGroup(groupId);
-		ResourceUtil.throwNotFoundIfNull(groupId,group);
-
+	public String getPermissionOverviewAsCSV(Group group) {
 		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser).collect(Collectors.toList()));
 	}
 
@@ -444,4 +403,118 @@ public class AdminProcessor {
 	}
 
 
+
+	public synchronized void deleteImport(Import imp) {
+		final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
+
+
+		namespace.getStorage().removeImport(imp.getId());
+		namespace.sendToAll(new RemoveImportJob(imp));
+
+		// Remove bucket assignments for consistency report
+		namespace.removeBucketAssignmentsForImportFormWorkers(imp);
+	}
+
+	public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
+		final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
+
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
+														   .filter(con -> con.getTable().equals(table))
+														   .map(Connector::getConcept)
+														   .collect(Collectors.toList());
+
+		if (force || dependentConcepts.isEmpty()) {
+			for (Concept<?> concept : dependentConcepts) {
+				deleteConcept(concept);
+			}
+
+			namespace.getStorage().getAllImports().stream()
+					 .filter(imp -> imp.getTable().equals(table))
+					 .forEach(this::deleteImport);
+
+			namespace.getStorage().removeTable(table.getId());
+			namespace.sendToAll(new RemoveTable(table));
+		}
+
+		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+	public synchronized void deleteConcept(Concept<?> concept) {
+		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
+
+		namespace.getStorage().removeConcept(concept.getId());
+		getJobManager()
+				.addSlowJob(new SimpleJob("sendToAll: remove " + concept.getId(), () -> namespace.sendToAll(new RemoveConcept(concept))));
+	}
+
+	public synchronized void deleteDataset(Dataset dataset) {
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
+
+		if (!namespace.getStorage().getTables().isEmpty()) {
+			throw new IllegalArgumentException(
+					String.format(
+							"Cannot delete dataset `%s`, because it still has tables: `%s`",
+							dataset.getId(),
+							namespace.getStorage().getTables().stream()
+									 .map(Table::getId)
+									 .map(Objects::toString)
+									 .collect(Collectors.joining(","))
+					));
+		}
+
+		namespace.close();
+		datasetRegistry.removeNamespace(dataset.getId());
+
+		datasetRegistry.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(dataset)));
+
+	}
+
+	public void updateMatchingStats(Dataset dataset) {
+		final Namespace ns = getDatasetRegistry().get(dataset.getId());
+
+		ns.getJobManager().addSlowJob(new SimpleJob("Initiate Update Matching Stats and FilterSearch",
+													() -> {
+														ns.sendToAll(new UpdateMatchingStatsMessage());
+														FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
+													}
+		));
+	}
+
+	public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
+		final Dataset dataset = namespace.getDataset();
+		secondaryId.setDataset(dataset);
+
+		log.info("Received new SecondaryId[{}]", secondaryId.getId());
+
+		namespace.getStorage().addSecondaryId(secondaryId);
+
+		namespace.sendToAll(new UpdateSecondaryId(secondaryId));
+	}
+
+	public synchronized void deleteSecondaryId(SecondaryIdDescription secondaryId) {
+		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset().getId());
+
+		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
+		final List<Column> dependents = namespace.getStorage().getTables().stream()
+												 .map(Table::getColumns).flatMap(Arrays::stream)
+												 .filter(column -> column.getSecondaryId() != null)
+												 .filter(column -> column.getSecondaryId().equals(secondaryId))
+												 .collect(Collectors.toList());
+
+		if (!dependents.isEmpty()) {
+			final Set<TableId> tables = dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet());
+			log.error(
+					"SecondaryId[{}] still present on {}",
+					secondaryId,
+					tables
+			);
+
+			throw new ForbiddenException(String.format("SecondaryId still has dependencies. %s", tables));
+		}
+
+		log.info("Deleting SecondaryId[{}]", secondaryId);
+
+		namespace.getStorage().removeSecondaryId(secondaryId.getId());
+		namespace.sendToAll(new RemoveSecondaryId(secondaryId));
+	}
 }
