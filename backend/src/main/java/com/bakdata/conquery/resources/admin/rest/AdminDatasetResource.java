@@ -168,8 +168,8 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Path("/update-matching-stats")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)DatasetId datasetId) throws JSONException {
-		processor.updateMatchingStats(datasetId);
+	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)Dataset dataset) throws JSONException {
+		processor.updateMatchingStats(dataset);
 	}
 
 }

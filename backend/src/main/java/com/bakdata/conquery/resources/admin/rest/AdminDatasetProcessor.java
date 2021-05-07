@@ -96,14 +96,14 @@ public class AdminDatasetProcessor {
 		node.send(new AddWorker(dataset));
 	}
 
-	public synchronized void deleteDataset(DatasetId datasetId) {
-		final Namespace namespace = datasetRegistry.get(datasetId);
+	public synchronized void deleteDataset(Dataset dataset) {
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		if (!namespace.getStorage().getTables().isEmpty()) {
 			throw new IllegalArgumentException(
 					String.format(
 							"Cannot delete dataset `%s`, because it still has tables: `%s`",
-							datasetId,
+							dataset.getId(),
 							namespace.getStorage().getTables().stream()
 									.map(Table::getId)
 									.map(Objects::toString)
@@ -112,8 +112,8 @@ public class AdminDatasetProcessor {
 		}
 
 		namespace.close();
-		datasetRegistry.removeNamespace(datasetId);
-		datasetRegistry.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(datasetId)));
+		datasetRegistry.removeNamespace(dataset.getId());
+		datasetRegistry.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(dataset)));
 
 	}
 
@@ -128,8 +128,8 @@ public class AdminDatasetProcessor {
 		namespace.sendToAll(new UpdateSecondaryId(secondaryId));
 	}
 
-	public synchronized void deleteSecondaryId(SecondaryIdDescriptionId secondaryId) {
-		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset());
+	public synchronized void deleteSecondaryId(SecondaryIdDescription secondaryId) {
+		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset().getId());
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents = namespace.getStorage().getTables().stream()
@@ -151,7 +151,7 @@ public class AdminDatasetProcessor {
 
 		log.info("Deleting SecondaryId[{}]", secondaryId);
 
-		namespace.getStorage().removeSecondaryId(secondaryId);
+		namespace.getStorage().removeSecondaryId(secondaryId.getId());
 		namespace.sendToAll(new RemoveSecondaryId(secondaryId));
 	}
 
@@ -410,61 +410,61 @@ public class AdminDatasetProcessor {
 
 
 
-	public synchronized void deleteImport(ImportId importId) {
-		// TODO explain when the includedBucket Information is updated/cleared in the WorkerInformation
 
-		final Namespace namespace = datasetRegistry.get(importId.getDataset());
+	public synchronized void deleteImport(Import imp) {
+		final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
 
-		final Import imp = namespace.getStorage().getImport(importId);
 
-		namespace.getStorage().removeImport(importId);
+		namespace.getStorage().removeImport(imp.getId());
 		namespace.sendToAll(new RemoveImportJob(imp));
 
 		// Remove bucket assignments for consistency report
-		namespace.removeBucketAssignmentsForImportFormWorkers(importId);
+		namespace.removeBucketAssignmentsForImportFormWorkers(imp);
 	}
 
-	public synchronized List<ConceptId> deleteTable(TableId tableId, boolean force) {
-		final Namespace namespace = datasetRegistry.get(tableId.getDataset());
-		final Table table = namespace.getStorage().getTable(tableId);
+	public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
+		final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
 
-		final List<ConceptId> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
 				.filter(con -> con.getTable().equals(table))
 				.map(Connector::getConcept)
-				.map(Concept::getId)
 				.collect(Collectors.toList());
 
-		if (force) {
-			for (ConceptId concept : dependentConcepts) {
+		if (force || dependentConcepts.isEmpty()) {
+			for (Concept<?> concept : dependentConcepts) {
 				deleteConcept(concept);
 			}
+
+			namespace.getStorage().getAllImports().stream()
+					.filter(imp -> imp.getTable().equals(table))
+					.forEach(this::deleteImport);
+
+			namespace.getStorage().removeTable(table.getId());
+			namespace.sendToAll(new RemoveTable(table));
 		}
-		else if (!dependentConcepts.isEmpty()) {
-			return dependentConcepts;
-		}
 
-		namespace.getStorage().getAllImports().stream()
-				.filter(imp -> imp.getTable().equals(table))
-				.map(Import::getId)
-				.forEach(this::deleteImport);
-
-		namespace.getStorage().removeTable(tableId);
-		namespace.sendToAll(new RemoveTable(table));
-
-		return dependentConcepts;
+		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
 	}
 
-	public synchronized void deleteConcept(ConceptId conceptId) {
-		final Namespace namespace = datasetRegistry.get(conceptId.getDataset());
+	public synchronized void deleteConcept(Concept<?> concept) {
+		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
 
-		final NamespaceStorage storage = namespace.getStorage();
-
-		final Concept<?> concept = storage.getConcept(conceptId);
-
-		storage.removeConcept(conceptId);
+		namespace.getStorage().removeConcept(concept.getId());
 		getJobManager()
-				.addSlowJob(new SimpleJob("sendToAll: remove " + conceptId, () -> namespace.sendToAll(new RemoveConcept(concept))));
+				.addSlowJob(new SimpleJob("sendToAll: remove " + concept.getId(), () -> namespace.sendToAll(new RemoveConcept(concept))));
 	}
+
+	public void updateMatchingStats(Dataset dataset) {
+		final Namespace ns = getDatasetRegistry().get(dataset.getId());
+
+		ns.getJobManager().addSlowJob(new SimpleJob("Initiate Update Matching Stats and FilterSearch",
+				() -> {
+					ns.sendToAll(new UpdateMatchingStatsMessage());
+					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
+				}
+		));
+	}
+
 
 
 
