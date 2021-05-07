@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
+import com.bakdata.conquery.util.io.EndCheckableInputStream;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -68,26 +68,8 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 						+ ".json"
 					, e
 				);
-				
-				try (InputStream is = chunkedMessage.createInputStream()) {
-					JsonNode tree = mapper.readTree(is);
-					try(OutputStream os = Out.file("dumps/reading_"+id+"_"+Math.random()+".json").asStream()) {
-						mapper.copy().enable(SerializationFeature.INDENT_OUTPUT).writeValue(os, tree);
-					}
-				} catch (Exception e1) {
-					log.error("Failed to write the error json dump "+id+".json, trying as bin", e1);
-					if(log.isTraceEnabled()) {
-						try (InputStream is = chunkedMessage.createInputStream()) {
-							File dumps = new File("dumps");
-							dumps.mkdirs();
-							try(OutputStream os = Out.file(dumps, "reading_"+id+"_"+Math.random()+".bin").asStream()) {
-								IOUtils.copy(is, os);
-							}
-						} catch (Exception e2) {
-							log.error("Failed to write the error json dump "+id+".bin", e2);
-						}
-					}
-				}
+
+				dumpFailed(id, chunkedMessage.createInputStream());
 			}
 		}
 		//if not the last part of the message we just store it
@@ -96,6 +78,28 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 		}
 
 		return true;
+	}
+
+	private void dumpFailed(UUID id, InputStream inputStream) {
+		try (InputStream is = inputStream) {
+			JsonNode tree = mapper.readTree(is);
+			try(OutputStream os = Out.file("dumps/reading_" + id + "_" + Math.random() + ".json").asStream()) {
+				mapper.copy().enable(SerializationFeature.INDENT_OUTPUT).writeValue(os, tree);
+			}
+		} catch (Exception e1) {
+			log.error("Failed to write the error json dump " + id + ".json, trying as bin", e1);
+			if(log.isTraceEnabled()) {
+				try (InputStream is = inputStream) {
+					File dumps = new File("dumps");
+					dumps.mkdirs();
+					try(OutputStream os = Out.file(dumps, "reading_" + id + "_" + Math.random() + ".bin").asStream()) {
+						IOUtils.copy(is, os);
+					}
+				} catch (Exception e2) {
+					log.error("Failed to write the error json dump " + id + ".bin", e2);
+				}
+			}
+		}
 	}
 
 	private MessageManager getMessageManager(IoSession session) {
