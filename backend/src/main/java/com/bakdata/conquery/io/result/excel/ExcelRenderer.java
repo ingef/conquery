@@ -67,7 +67,7 @@ public class ExcelRenderer {
 
         // Create a table environment inside the excel sheet
         CellReference topLeft = new CellReference(0,0);
-        CellReference bottomRight = new CellReference(0 + 1, idHeaders.size() + info.size());
+        CellReference bottomRight = new CellReference(0, idHeaders.size() + info.size());
         AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         XSSFTable table = sheet.createTable(newArea);
 
