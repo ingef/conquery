@@ -8,9 +8,16 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
-import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumn;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumns;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ExcelRenderer {
@@ -54,65 +62,103 @@ public class ExcelRenderer {
 
 
         // TODO internationalize
-        Sheet sheet = workbook.createSheet("Result");
+        XSSFSheet sheet = workbook.createSheet("Result");
 
-        writeHeader(sheet,workbook,idHeaders,info,cfg);
 
-        writeBody(sheet, info,cfg, exec.streamResults());
+        // Create a table environment inside the excel sheet
+        CellReference topLeft = new CellReference(0,0);
+        CellReference bottomRight = new CellReference(0 + 1, idHeaders.size() + info.size());
+        AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
+        XSSFTable table = sheet.createTable(newArea);
+
+        CTTable cttable = table.getCTTable();
+        table.setName(exec.getLabelWithoutAutoLabelSuffix());
+        cttable.setTotalsRowShown(false);
+
+        CTTableStyleInfo styleInfo = cttable.addNewTableStyleInfo();
+        styleInfo.setName("TableStyleMedium2");
+        styleInfo.setShowColumnStripes(false);
+        styleInfo.setShowRowStripes(true);
+
+
+        writeHeader(sheet,workbook,idHeaders,info,cfg, table);
+
+        int writtenLines = writeBody(sheet, info, cfg, exec.streamResults());
+
+        // Extend the table area to the added data
+        AreaReference area = table.getArea();
+        topLeft = area.getFirstCell();
+        bottomRight = new CellReference(writtenLines + 1, area.getLastCell().getCol());
+        newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
+        table.setArea(newArea);
+
 
         workbook.write(outputStream);
 
     }
 
     private void writeHeader(
-            Sheet sheet,
+            XSSFSheet sheet,
             XSSFWorkbook workbook,
             List<String> idHeaders,
             List<ResultInfo> infos,
-            PrintSettings cfg){
+            PrintSettings cfg,
+            XSSFTable table){
+
+
+
+
         final CellStyle style = styles.get(ExcelConfig.HEADER_STYLE);
         Row header = sheet.createRow(0);
 
+        CTTableColumns columns = table.getCTTable().addNewTableColumns();
+        columns.setCount(idHeaders.size() + infos.size());
 
-        int currentColumn = 1;
+        int currentColumn = 0;
         for (String idHeader : idHeaders) {
+            CTTableColumn column = columns.addNewTableColumn();
+            column.setName(idHeader);
             Cell headerCell = header.createCell(currentColumn);
             headerCell.setCellValue(idHeader);
-            headerCell.setCellStyle(style);
+//            headerCell.setCellStyle(style);
             currentColumn++;
         }
 
         for (ResultInfo info : infos) {
+            final String columnName = info.getUniqueName(cfg);
+            CTTableColumn column = columns.addNewTableColumn();
+            column.setName(columnName);
             Cell headerCell = header.createCell(currentColumn);
-            headerCell.setCellValue(info.getUniqueName(cfg));
-            headerCell.setCellStyle(style);
+            headerCell.setCellValue(columnName);
+//            headerCell.setCellStyle(style);
             currentColumn++;
         }
     }
 
-    private void writeBody(
+    private int writeBody(
             Sheet sheet,
             List<ResultInfo> infos,
             PrintSettings cfg,
             Stream<EntityResult> resultLines) {
 
-        // Row 1 is the Header the data starts at 2
-        AtomicInteger currentRow = new AtomicInteger(2);
-        resultLines.forEach(l -> this.writeRowsForEntity(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg));
+        // Row 0 is the Header the data starts at 1
+        AtomicInteger currentRow = new AtomicInteger(1);
+        return resultLines.map(l -> this.writeRowsForEntity(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg)).reduce(0, Integer::sum);
     }
 
-    private void writeRowsForEntity(
+    private int writeRowsForEntity(
             List<ResultInfo> infos,
             EntityResult internalRow,
             Supplier<Row> externalRowSupplier,
             PrintSettings settings){
         String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
 
+        int writtenLines = 0;
 
         for (Object[] resultValues : internalRow.listResultLines()) {
             Row row = externalRowSupplier.get();
             // Write id cells
-            int currentColumn = 1;
+            int currentColumn = 0;
             for (String id : ids) {
                 Cell idCell = row.createCell(currentColumn);
                 idCell.setCellValue(id);
@@ -134,7 +180,9 @@ public class ExcelRenderer {
 
                 typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
             }
+            writtenLines++;
         }
+        return writtenLines;
     }
 
     // Type specific cell writers
