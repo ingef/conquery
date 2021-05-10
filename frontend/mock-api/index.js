@@ -398,7 +398,7 @@ module.exports = function (app, port) {
 
     res.send({
       userName: "superUser",
-      permissions: {
+      datasetAbilities: {
         imdb: {
           canUpload: true,
         },
