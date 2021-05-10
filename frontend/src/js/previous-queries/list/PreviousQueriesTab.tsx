@@ -24,6 +24,19 @@ const Container = styled("div")`
   padding: 0 10px;
 `;
 
+const Row = styled("div")`
+  display: flex;
+  align-items: flex-start;
+  padding: 0 10px;
+`;
+const SxPreviousQueriesSearchBox = styled(PreviousQueriesSearchBox)`
+  flex-grow: 1;
+`;
+
+const SxUploadQueryResults = styled(UploadQueryResults)`
+  margin-right: 5px;
+`;
+
 interface PropsT {
   datasetId: DatasetIdT | null;
 }
@@ -57,8 +70,12 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   return (
     <>
       <PreviousQueriesFilter />
-      <PreviousQueriesSearchBox />
-      {hasPermissionToUpload && <UploadQueryResults datasetId={datasetId} />}
+      <Row>
+        {hasPermissionToUpload && (
+          <SxUploadQueryResults datasetId={datasetId} />
+        )}
+        <SxPreviousQueriesSearchBox />
+      </Row>
       <Container>
         {loading && <Loading message={t("previousQueries.loading")} />}
         {queries.length === 0 && !loading && (
