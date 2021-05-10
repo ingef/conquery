@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets;
 
+import java.io.ObjectInputStream;
+import java.util.Objects;
+
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.InternalOnly;
@@ -55,7 +58,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable().getId(), getTable().getId()));
 		}
 
-		return imp.getColumns()[getPosition()].getTypeDescription();
+		return Objects.requireNonNull(imp.getColumns()[getPosition()].getTypeDescription(), () -> "No description for Column/Import " + getId() + "/" + imp.getId());
 	}
 
 	@Override

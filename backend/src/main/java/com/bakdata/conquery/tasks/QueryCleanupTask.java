@@ -112,10 +112,14 @@ public class QueryCleanupTask extends Task {
 			}
 
 			// remove all queries referenced in reused queries.
-			final Collection<ManagedQuery> referenced = reusedChecker.getReusedElements().stream()
-																	 .map(CQReusedQuery::getQuery)
-																	 .collect(Collectors.toSet());
+			final Collection<ManagedExecution<?>> referenced =
+					reusedChecker.getReusedElements().stream()
+								 .map(CQReusedQuery::getQueryId)
+								 .map(storage::getExecution)
+								 .collect(Collectors.toSet());
+
 			toDelete.removeAll(referenced);
+
 
 			if (toDelete.isEmpty()) {
 				log.info("No queries to delete");

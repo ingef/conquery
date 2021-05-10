@@ -107,7 +107,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
 
 		//inject datasets into the objectmapper
-		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
+		((MutableInjectableValues) environment.getObjectMapper().getInjectableValues())
 				.add(IdResolveContext.class, datasetRegistry);
 
 
@@ -122,8 +122,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		I18n.init();
 
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
-
-
 
 		this.maintenanceService = environment
 				.lifecycle()

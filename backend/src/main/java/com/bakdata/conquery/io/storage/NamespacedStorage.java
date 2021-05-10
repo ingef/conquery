@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Overlapping storage structure for {@link WorkerStorage} and {@link NamespaceStorage}.
@@ -36,6 +37,7 @@ import lombok.SneakyThrows;
  * SerDes communication between the manager and the shards/worker for the resolving of ids included in
  * messages (see also {@link com.bakdata.conquery.io.jackson.serializer.NsIdRef}).
  */
+@Slf4j
 public abstract class NamespacedStorage implements ConqueryStorage {
 
 	@Getter
@@ -77,6 +79,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 		dictionaries.loadData();
 		imports.loadData();
 		concepts.loadData();
+		log.info("Done reading {} / {}", dataset.get(), getClass().getName());
 	}
 
 	@Override

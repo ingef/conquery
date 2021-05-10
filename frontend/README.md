@@ -65,7 +65,7 @@ yarn start
 **Mock API**
 
 ```bash
-$ yarn serve
+$ yarn server
 ```
 
 **Login**

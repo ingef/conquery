@@ -121,7 +121,7 @@ public class DefaultLabelTest {
 		final ManagedQuery managedQuery = new ManagedQuery(null, null, DATASET);
 		managedQuery.setQueryId(UUID.randomUUID());
 
-		CQReusedQuery reused = new CQReusedQuery(managedQuery);
+		CQReusedQuery reused = new CQReusedQuery(managedQuery.getId());
 		ConceptQuery cq = new ConceptQuery(reused);
 		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
@@ -168,7 +168,7 @@ public class DefaultLabelTest {
 
 		and.setChildren(List.of(
 				new CQExternal(List.of(), new String[0][0]),
-				new CQReusedQuery(managedQuery),
+				new CQReusedQuery(managedQuery.getId()),
 				concept1,
 				concept2,
 				concept3
@@ -202,7 +202,7 @@ public class DefaultLabelTest {
 		CQConcept concept3 = makeCQConcept("Concept3");
 		and.setChildren(List.of(
 				new CQExternal(List.of(), new String[0][0]),
-				new CQReusedQuery(managedQuery),
+				new CQReusedQuery(managedQuery.getId()),
 				concept1,
 				concept2,
 				concept3
