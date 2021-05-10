@@ -29,7 +29,7 @@ import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
 const Root = styled("div")<{ own?: boolean; system?: boolean }>`
   margin: 0;
-  padding: 5px 10px;
+  padding: 4px 10px;
   cursor: pointer;
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.grayLight};
@@ -58,9 +58,10 @@ const Root = styled("div")<{ own?: boolean; system?: boolean }>`
 
 const Gray = styled("div")`
   color: ${({ theme }) => theme.col.gray};
+  font-size: ${({ theme }) => theme.font.xs};
 `;
 const TopInfos = styled(Gray)`
-  line-height: 24px;
+  line-height: 20px;
 `;
 
 const TopRight = styled("div")`
@@ -86,6 +87,12 @@ const StyledFaIcon = styled(FaIcon)`
 
 const StyledWithTooltip = styled(WithTooltip)`
   margin-left: 10px;
+`;
+
+const SxDownloadButton = styled(DownloadButton)`
+  button {
+    font-size: ${({ theme }) => theme.font.xs};
+  }
 `;
 
 interface PropsT {
@@ -164,9 +171,9 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
           <div>
             {!!query.resultUrl ? (
               <WithTooltip text={t("previousQuery.downloadResults")}>
-                <DownloadButton tight bare url={query.resultUrl}>
+                <SxDownloadButton tight bare url={query.resultUrl}>
                   {peopleFound}
-                </DownloadButton>
+                </SxDownloadButton>
               </WithTooltip>
             ) : (
               peopleFound
@@ -227,7 +234,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
         </MiddleRow>
         {mayEditQuery ? (
           <EditableTags
-            tags={query.tags}
+            tags={query.tags.sort()}
             editing={!!query.editingTags}
             loading={!!query.loading}
             onSubmit={onRetagPreviousQuery}

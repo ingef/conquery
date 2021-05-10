@@ -15,7 +15,7 @@ interface PropsT {
 }
 
 const Root = styled("div")`
-  flex: 1;
+  flex-grow: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   font-size: ${({ theme }) => theme.font.sm};

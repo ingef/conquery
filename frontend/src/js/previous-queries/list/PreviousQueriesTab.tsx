@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -13,6 +13,8 @@ import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
 import PreviousQueries from "./PreviousQueries";
+import PreviousQueriesFolderButton from "./PreviousQueriesFolderButton";
+import PreviousQueriesFolders from "./PreviousQueriesFolders";
 import { useLoadPreviousQueries } from "./actions";
 import { PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
@@ -21,7 +23,6 @@ const Container = styled("div")`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   font-size: ${({ theme }) => theme.font.sm};
-  padding: 0 10px;
 `;
 
 const Row = styled("div")`
@@ -29,12 +30,23 @@ const Row = styled("div")`
   align-items: flex-start;
   padding: 0 10px;
 `;
+const FoldersAndQueries = styled(Row)`
+  flex-grow: 1;
+  margin-top: 8px;
+`;
 const SxPreviousQueriesSearchBox = styled(PreviousQueriesSearchBox)`
   flex-grow: 1;
 `;
 
 const SxUploadQueryResults = styled(UploadQueryResults)`
   margin-right: 5px;
+`;
+
+const Expand = styled("div")`
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 `;
 
 interface PropsT {
@@ -67,24 +79,37 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
     }
   }, [datasetId]);
 
+  const [areFoldersOpen, setAreFoldersOpen] = useState<boolean>(false);
+
   return (
     <>
       <PreviousQueriesFilter />
       <Row>
         {hasPermissionToUpload && (
+          <PreviousQueriesFolderButton
+            active={areFoldersOpen}
+            onClick={() => setAreFoldersOpen(!areFoldersOpen)}
+          />
+        )}
+        {hasPermissionToUpload && (
           <SxUploadQueryResults datasetId={datasetId} />
         )}
         <SxPreviousQueriesSearchBox />
       </Row>
-      <Container>
-        {loading && <Loading message={t("previousQueries.loading")} />}
-        {queries.length === 0 && !loading && (
-          <EmptyList emptyMessage={t("previousQueries.noQueriesFound")} />
-        )}
-      </Container>
-      {hasQueries && (
-        <PreviousQueries queries={queries} datasetId={datasetId} />
-      )}
+      <FoldersAndQueries>
+        <PreviousQueriesFolders isOpen={areFoldersOpen} />
+        <Expand>
+          <Container>
+            {loading && <Loading message={t("previousQueries.loading")} />}
+            {queries.length === 0 && !loading && (
+              <EmptyList emptyMessage={t("previousQueries.noQueriesFound")} />
+            )}
+          </Container>
+          {hasQueries && (
+            <PreviousQueries queries={queries} datasetId={datasetId} />
+          )}
+        </Expand>
+      </FoldersAndQueries>
     </>
   );
 };

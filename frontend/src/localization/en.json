@@ -339,6 +339,9 @@
   "uploadQueryResults": {
     "uploadResults": "Upload Query Result"
   },
+  "previousQueriesFolderButton": {
+    "tooltip": "Show / hide folders"
+  },
   "authorization": {
     "unauthorized": "Authentitcation failed. An authentication token is missing or expired"
   },

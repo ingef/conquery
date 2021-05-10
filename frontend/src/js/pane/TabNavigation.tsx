@@ -40,6 +40,10 @@ const Headline = styled("h2")<{ active: boolean }>`
   }
 `;
 
+const SxWithTooltip = styled(WithTooltip)`
+  flex-shrink: 0;
+`;
+
 export interface TabNavigationTab {
   key: string;
   label: string;
@@ -57,7 +61,7 @@ const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab }) => {
     <Root>
       {tabs.map(({ key, label, tooltip }) => {
         return (
-          <WithTooltip text={tooltip} lazy key={key}>
+          <SxWithTooltip text={tooltip} lazy key={key}>
             <Headline
               active={activeTab === key}
               onClick={() => {
@@ -66,7 +70,7 @@ const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab }) => {
             >
               {label}
             </Headline>
-          </WithTooltip>
+          </SxWithTooltip>
         );
       })}
     </Root>
