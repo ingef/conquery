@@ -8,8 +8,8 @@ import javax.validation.Valid;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -20,6 +20,8 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,13 +31,19 @@ import lombok.Setter;
 @Getter @Setter
 public class CQReusedQuery extends CQElement {
 
-	public CQReusedQuery(ManagedQuery query){
-		this.query = query;
+	public CQReusedQuery(ManagedExecutionId executionId){
+		this.queryId = executionId;
 	}
 
-	@Nullable // Null on Shards, therefore resolved on Manager.
+	/**
+	 * @implNote Cannot use {@link com.bakdata.conquery.io.jackson.serializer.MetaIdRef} as that would be a dependency on the same store which is not possible, due to eager loading and unordered loading.
+	 */
+	@Nullable
 	@Valid
-	@MetaIdRef
+	@JsonProperty("query")
+	private ManagedExecutionId queryId;
+
+	@JsonIgnore
 	private ManagedQuery query;
 
 	@InternalOnly
@@ -45,11 +53,9 @@ public class CQReusedQuery extends CQElement {
 
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
-		requiredQueries.add(query);
-
-		// There might be transitive usage of other queries
-		if(resolvedQuery != null) {
-			resolvedQuery.collectRequiredQueries(requiredQueries);
+		if(query != null) {
+			requiredQueries.add(query);
+			query.getQuery().collectRequiredQueries(requiredQueries);
 		}
 	}
 
@@ -66,9 +72,10 @@ public class CQReusedQuery extends CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
+		query = ((ManagedQuery) context.getDatasetRegistry().getMetaRegistry().resolve(queryId));
 		resolvedQuery = query.getQuery();
 
-		// Yey recursion, because the query might consists of another CQReusedQuery or CQExternal
+		// Yey recursion, because the query might consist of another CQReusedQuery or CQExternal
 		resolvedQuery.resolve(context);
 	}
 
@@ -84,4 +91,5 @@ public class CQReusedQuery extends CQElement {
 	public void collectResultInfos(ResultInfoCollector collector) {
 		resolvedQuery.getReusableComponents().collectResultInfos(collector);
 	}
+
 }
