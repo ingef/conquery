@@ -282,10 +282,16 @@ public class XodusStoreFactory implements StoreFactory {
         return WORKER.singleton(createStore(findEnvironment(pathName), validator, WORKER));
     }
 
-    @Override
-    public SingletonStore<PersistentIdMap> createIdMappingStore(List<String> pathName) {
-        return ID_MAPPING.singleton(createStore(findEnvironment(pathName), validator, ID_MAPPING));
-    }
+	@Override
+	public SingletonStore<PersistentIdMap> createIdMappingStore(List<String> pathName) {
+		final Environment environment = findEnvironment(pathName);
+
+		final BigStore<Boolean, PersistentIdMap>
+				bigStore =
+				new BigStore<>(this, validator, environment, ID_MAPPING, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, objectMapper);
+
+		return new SingletonStore<>(new CachedStore<>(bigStore));
+	}
 
     @Override
     public SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(List<String> pathName) {
