@@ -9,11 +9,14 @@ import ReactSelect from "../../form-components/ReactSelect";
 import { updatePreviousQueriesSearch } from "./actions";
 
 const Root = styled("div")`
-  margin: 0 10px 5px;
   position: relative;
 `;
 
-const PreviousQueriesSearchBox: React.FC = () => {
+interface Props {
+  className?: string;
+}
+
+const PreviousQueriesSearchBox: React.FC<Props> = ({ className }) => {
   const { t } = useTranslation();
   const search = useSelector<StateT, string[]>(
     (state) => state.previousQueriesSearch,
@@ -28,7 +31,7 @@ const PreviousQueriesSearchBox: React.FC = () => {
     dispatch(updatePreviousQueriesSearch(values));
 
   return (
-    <Root>
+    <Root className={className}>
       <ReactSelect
         creatable
         isMulti
