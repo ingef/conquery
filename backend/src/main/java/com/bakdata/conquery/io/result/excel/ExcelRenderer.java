@@ -8,7 +8,10 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -26,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ExcelRenderer {
@@ -66,10 +68,7 @@ public class ExcelRenderer {
 
 
         // Create a table environment inside the excel sheet
-        CellReference topLeft = new CellReference(0,0);
-        CellReference bottomRight = new CellReference(0, idHeaders.size() + info.size());
-        AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
-        XSSFTable table = sheet.createTable(newArea);
+        XSSFTable table = sheet.createTable(null);
 
         CTTable cttable = table.getCTTable();
         table.setName(exec.getLabelWithoutAutoLabelSuffix());
@@ -81,15 +80,14 @@ public class ExcelRenderer {
         styleInfo.setShowRowStripes(true);
 
 
-        writeHeader(sheet,workbook,idHeaders,info,cfg, table);
+        writeHeader(sheet, idHeaders,info,cfg, table);
 
         int writtenLines = writeBody(sheet, info, cfg, exec.streamResults());
 
         // Extend the table area to the added data
-        AreaReference area = table.getArea();
-        topLeft = area.getFirstCell();
-        bottomRight = new CellReference(writtenLines + 1, area.getLastCell().getCol());
-        newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
+        CellReference topLeft = new CellReference(0,0);
+        CellReference bottomRight = new CellReference(writtenLines + 1, idHeaders.size() + info.size());
+        AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         table.setArea(newArea);
 
 
@@ -99,7 +97,6 @@ public class ExcelRenderer {
 
     private void writeHeader(
             XSSFSheet sheet,
-            XSSFWorkbook workbook,
             List<String> idHeaders,
             List<ResultInfo> infos,
             PrintSettings cfg,
@@ -194,7 +191,7 @@ public class ExcelRenderer {
     private static void writeBooleanCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
         if (value instanceof Boolean) {
             Boolean aBoolean = (Boolean) value;
-            cell.setCellValue(aBoolean.booleanValue());
+            cell.setCellValue(aBoolean);
         }
         cell.setCellValue(info.getType().printNullable(settings,value));
     }
