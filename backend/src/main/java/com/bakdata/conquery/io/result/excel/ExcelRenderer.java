@@ -90,6 +90,10 @@ public class ExcelRenderer {
         AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         table.setArea(newArea);
 
+        // Auto-width fit all columns
+        for (int colIdx = 0; colIdx < table.getColumnCount(); colIdx++) {
+            sheet.autoSizeColumn(colIdx);
+        }
 
         workbook.write(outputStream);
 
