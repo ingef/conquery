@@ -24,15 +24,19 @@ public class ExcelConfig {
 	public static String DATE_STYLE = "date";
 	public static String CURRENCY_STYLE_PREFIX = "currency_";
 	private static final String BASIC_STYLE = "basic";
+	public static final String NUMERIC_STYLE = "numeric";
+	public static final String INTEGER_STYLE = "integer";
 
 	private static final Map<String, CellStyler> FALLBACK_STYLES = Map.of(
 			BASIC_STYLE, new CellStyler(),
 			CURRENCY_STYLE_PREFIX+"EUR", new CellStyler().withDataFormatString("#,##0.00 €"),
+			NUMERIC_STYLE, new CellStyler().withDataFormatString("#,##0.00"),
+			INTEGER_STYLE, new CellStyler().withDataFormatString("#,###"),
 			DATE_STYLE, new CellStyler().withDataFormatString("yyyy-mm-dd")
 	);
 
 	/**
-	 * User provided styles. Currently existing styles such as HEADER_STYLE, DATE_STYLE and BASIC_STYLE
+	 * User provided styles. Currently existing styles such as NUMERIC_STYLE, DATE_STYLE and BASIC_STYLE
 	 * can be overridden. Styles for specific currencies might be added by prefixing the currency identifier
 	 * with "currency_".
 	 */

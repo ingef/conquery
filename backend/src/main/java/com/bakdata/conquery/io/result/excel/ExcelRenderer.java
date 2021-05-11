@@ -96,8 +96,9 @@ public class ExcelRenderer {
         }
 
 
-        // Freeze Header
+        // Freeze Header and id columns
         sheet.createFreezePane(idHeaders.size(), 1);
+
 
         workbook.write(outputStream);
 
@@ -210,11 +211,13 @@ public class ExcelRenderer {
     }
 
     public static void writeIntegerCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-        cell.setCellValue(settings.getIntegerFormat().format(((Number) value).longValue()));
+        cell.setCellValue(((Number) value).longValue());
+        cell.setCellStyle(styles.get(ExcelConfig.INTEGER_STYLE));
     }
 
     public static void writeNumericCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-        cell.setCellValue(settings.getIntegerFormat().format(((Number) value).doubleValue()));
+        cell.setCellValue(((Number) value).doubleValue());
+        cell.setCellStyle(styles.get(ExcelConfig.NUMERIC_STYLE));
     }
 
     public static void writeMoneyCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
