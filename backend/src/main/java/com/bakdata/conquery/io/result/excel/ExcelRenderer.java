@@ -86,7 +86,7 @@ public class ExcelRenderer {
 
         // Extend the table area to the added data
         CellReference topLeft = new CellReference(0,0);
-        CellReference bottomRight = new CellReference(writtenLines + 1, idHeaders.size() + info.size());
+        CellReference bottomRight = new CellReference(writtenLines + 1, idHeaders.size() + info.size() - 1);
         AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         table.setArea(newArea);
 
@@ -114,6 +114,7 @@ public class ExcelRenderer {
         int currentColumn = 0;
         for (String idHeader : idHeaders) {
             CTTableColumn column = columns.addNewTableColumn();
+            column.setId(currentColumn);
             column.setName(idHeader);
             Cell headerCell = header.createCell(currentColumn);
             headerCell.setCellValue(idHeader);
