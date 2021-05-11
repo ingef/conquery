@@ -111,6 +111,7 @@ public class ExcelRenderer {
         cttable.setTotalsRowShown(false);
 
         CTTableStyleInfo styleInfo = cttable.addNewTableStyleInfo();
+        // Not sure how important this name is
         styleInfo.setName("TableStyleMedium2");
         styleInfo.setShowColumnStripes(false);
         styleInfo.setShowRowStripes(true);
