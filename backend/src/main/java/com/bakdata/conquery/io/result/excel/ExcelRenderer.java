@@ -114,7 +114,8 @@ public class ExcelRenderer {
         int currentColumn = 0;
         for (String idHeader : idHeaders) {
             CTTableColumn column = columns.addNewTableColumn();
-            column.setId(currentColumn);
+            // Table column ids MUST be set and MUST start at 1, excel will fail otherwise
+            column.setId(currentColumn+1);
             column.setName(idHeader);
             Cell headerCell = header.createCell(currentColumn);
             headerCell.setCellValue(idHeader);
@@ -125,6 +126,7 @@ public class ExcelRenderer {
         for (ResultInfo info : infos) {
             final String columnName = info.getUniqueName(cfg);
             CTTableColumn column = columns.addNewTableColumn();
+            column.setId(currentColumn+1);
             column.setName(columnName);
             Cell headerCell = header.createCell(currentColumn);
             headerCell.setCellValue(columnName);
