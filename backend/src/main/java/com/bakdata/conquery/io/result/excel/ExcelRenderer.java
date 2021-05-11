@@ -13,11 +13,11 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jetbrains.annotations.NotNull;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumn;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumns;
@@ -69,6 +69,41 @@ public class ExcelRenderer {
 
 
         // Create a table environment inside the excel sheet
+        XSSFTable table = createTableEnvironment(exec, sheet);
+
+        writeHeader(sheet, idHeaders,info,cfg, table);
+
+        int writtenLines = writeBody(sheet, info, cfg, exec.streamResults());
+
+        postProcessTable(idHeaders, table, writtenLines);
+
+
+        workbook.write(outputStream);
+
+    }
+
+    private void postProcessTable(List<String> idHeaders, XSSFTable table, int writtenLines) {
+        // Extend the table area to the added data
+        CellReference topLeft = new CellReference(0,0);
+        CellReference bottomRight = new CellReference(writtenLines + 1, table.getColumnCount() - 1);
+        AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
+        table.setArea(newArea);
+
+        // Auto-width fit all columns
+        final XSSFSheet sheet = table.getXSSFSheet();
+        for (int colIdx = 0; colIdx < table.getColumnCount(); colIdx++) {
+            sheet.autoSizeColumn(colIdx);
+        }
+
+        // TODO Add auto filters. This won't work with excel yet
+        //sheet.setAutoFilter(new CellRangeAddress(1, 1, 1, bottomRight.getCol()));
+
+        // Freeze Header and id columns
+        sheet.createFreezePane(idHeaders.size(), 1);
+    }
+
+    @NotNull
+    private XSSFTable createTableEnvironment(ManagedExecution<?> exec, XSSFSheet sheet) {
         XSSFTable table = sheet.createTable(null);
 
         CTTable cttable = table.getCTTable();
@@ -79,32 +114,7 @@ public class ExcelRenderer {
         styleInfo.setName("TableStyleMedium2");
         styleInfo.setShowColumnStripes(false);
         styleInfo.setShowRowStripes(true);
-
-
-        writeHeader(sheet, idHeaders,info,cfg, table);
-
-        int writtenLines = writeBody(sheet, info, cfg, exec.streamResults());
-
-        // Extend the table area to the added data
-        CellReference topLeft = new CellReference(0,0);
-        CellReference bottomRight = new CellReference(writtenLines + 1, idHeaders.size() + info.size() - 1);
-        AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
-        table.setArea(newArea);
-
-        // Auto-width fit all columns
-        for (int colIdx = 0; colIdx < table.getColumnCount(); colIdx++) {
-            sheet.autoSizeColumn(colIdx);
-        }
-
-        // TODO Add auto filters. This won't work with excel yet
-        //sheet.setAutoFilter(new CellRangeAddress(1, 1, 1, bottomRight.getCol()));
-
-        // Freeze Header and id columns
-        sheet.createFreezePane(idHeaders.size(), 1);
-
-
-        workbook.write(outputStream);
-
+        return table;
     }
 
     private void writeHeader(
