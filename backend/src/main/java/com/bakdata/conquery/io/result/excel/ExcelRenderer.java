@@ -95,6 +95,10 @@ public class ExcelRenderer {
             sheet.autoSizeColumn(colIdx);
         }
 
+
+        // Freeze Header
+        sheet.createFreezePane(idHeaders.size(), 1);
+
         workbook.write(outputStream);
 
     }
