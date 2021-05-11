@@ -89,7 +89,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	private transient ConqueryConfig config;
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
-	@JsonIgnore
+	@JsonIgnore @ToString.Exclude
 	private transient List<EntityResult> results = new ArrayList<>();
 
 	public ManagedQuery(IQuery query, User owner, Dataset submittedDataset) {
