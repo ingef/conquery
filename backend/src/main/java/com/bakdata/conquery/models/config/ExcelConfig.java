@@ -21,17 +21,12 @@ import java.util.Map;
 @Data
 public class ExcelConfig {
 
-	public static String HEADER_STYLE = "header";
 	public static String DATE_STYLE = "date";
 	public static String CURRENCY_STYLE_PREFIX = "currency_";
 	private static final String BASIC_STYLE = "basic";
 
 	private static final Map<String, CellStyler> FALLBACK_STYLES = Map.of(
 			BASIC_STYLE, new CellStyler(),
-			HEADER_STYLE, new CellStyler()
-							.withBold(true)
-							.withFillPattern(FillPatternType.SOLID_FOREGROUND)
-							.withForegroundColors(IndexedColors.LIGHT_BLUE.getIndex()),
 			CURRENCY_STYLE_PREFIX+"EUR", new CellStyler().withDataFormatString("#,##0.00 €"),
 			DATE_STYLE, new CellStyler().withDataFormatString("yyyy-mm-dd")
 	);
@@ -69,31 +64,41 @@ public class ExcelConfig {
 	private static class CellStyler {
 
 		@NotBlank
-		private String font = "Arial";
+		private String font = null;
 		@Min(1)
-		private short fontHeightInPoints = 16;
-		private boolean bold = false;
+		private Short fontHeightInPoints = null;
+		private Boolean bold = null;
 		@NotNull
-		private FillPatternType fillPattern = FillPatternType.NO_FILL;
+		private FillPatternType fillPattern = null;
 		@Min(0)
-		private short foregroundColors = IndexedColors.BLACK.getIndex();
+		private Short foregroundColors = null;
 
-		private String dataFormatString;
+		private String dataFormatString = null;
 
 		private CellStyle generateStyle(XSSFWorkbook workbook) {
 			XSSFDataFormat dataFormat = workbook.createDataFormat();
 			CellStyle style = workbook.createCellStyle();
-			style.setFillForegroundColor(foregroundColors);
-			style.setFillPattern(fillPattern);
-
-			XSSFFont xFont = workbook.createFont();
-			xFont.setFontName(font);
-			xFont.setFontHeightInPoints(fontHeightInPoints);
-			xFont.setBold(bold);
-			style.setFont(xFont);
+			if (fillPattern != null){
+				style.setFillPattern(fillPattern);
+			}
+			if (foregroundColors != null) {
+				style.setFillForegroundColor(foregroundColors);
+			}
 
 			if (dataFormatString != null){
 				style.setDataFormat(dataFormat.getFormat(dataFormatString));
+			}
+
+			if (fontHeightInPoints != null || bold != null) {
+				XSSFFont xFont = workbook.createFont();
+				xFont.setFontName(font);
+				if (fontHeightInPoints != null) {
+					xFont.setFontHeightInPoints(fontHeightInPoints);
+				}
+				if (bold != null) {
+					xFont.setBold(bold);
+				}
+				style.setFont(xFont);
 			}
 
 			return style;

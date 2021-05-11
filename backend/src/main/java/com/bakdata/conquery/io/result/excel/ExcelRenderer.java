@@ -102,10 +102,6 @@ public class ExcelRenderer {
             PrintSettings cfg,
             XSSFTable table){
 
-
-
-
-        final CellStyle style = styles.get(ExcelConfig.HEADER_STYLE);
         Row header = sheet.createRow(0);
 
         CTTableColumns columns = table.getCTTable().addNewTableColumns();
@@ -119,7 +115,6 @@ public class ExcelRenderer {
             column.setName(idHeader);
             Cell headerCell = header.createCell(currentColumn);
             headerCell.setCellValue(idHeader);
-//            headerCell.setCellStyle(style);
             currentColumn++;
         }
 
@@ -130,7 +125,6 @@ public class ExcelRenderer {
             column.setName(columnName);
             Cell headerCell = header.createCell(currentColumn);
             headerCell.setCellValue(columnName);
-//            headerCell.setCellStyle(style);
             currentColumn++;
         }
     }
