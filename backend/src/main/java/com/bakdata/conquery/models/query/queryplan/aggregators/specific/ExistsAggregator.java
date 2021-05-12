@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
@@ -31,7 +32,7 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 
 	@Override
 	public Boolean getAggregationResult() {
-		return reference.isContained();
+		return reference.aggregationFiltersApply().orElse(true);
 	}
 	
 	@Override

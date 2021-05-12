@@ -81,11 +81,13 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		child.init(entity, ctx);
 	}
 
-	public void nextEvent(Bucket bucket, int event) {
+	public boolean nextEvent(Bucket bucket, int event) {
 		final QPNode child = getChild();
-		if(EmptyBucket.getInstance().equals(bucket) || child.eventFiltersApply(bucket, event)) {
+		final boolean accepted = EmptyBucket.getInstance().equals(bucket) || child.eventFiltersApply(bucket, event);
+		if(accepted) {
 			child.acceptEvent(bucket, event);
 		}
+		return accepted;
 	}
 
 	protected SinglelineEntityResult result() {
@@ -113,11 +115,15 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 			return Optional.empty();
 		}
 
+		boolean accepted = false;
 		// Always do one go-round with ALL_IDS_TABLE.
-		nextTable(ctx, ctx.getStorage().getDataset().getAllIdsTable());
-		nextBlock(EmptyBucket.getInstance());
-		nextEvent(EmptyBucket.getInstance(), 0);
-
+		final Table allIdsTable = ctx.getStorage().getDataset().getAllIdsTable();
+		if (requiredTables.get().contains(allIdsTable)) {
+			nextTable(ctx, allIdsTable);
+			nextBlock(EmptyBucket.getInstance());
+			nextEvent(EmptyBucket.getInstance(), 0);
+			accepted = true;
+		}
 		for (Table currentTable : requiredTables.get()) {
 
 			if(Dataset.isAllIdsTable(currentTable)){
@@ -148,12 +154,12 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 				int start = bucket.getEntityStart(entity.getId());
 				int end = bucket.getEntityEnd(entity.getId());
 				for (int event = start; event < end; event++) {
-					nextEvent(bucket, event);
+					accepted |= nextEvent(bucket, event);
 				}
 			}
 		}
 
-		if (isContained()) {
+		if (accepted && aggregationFiltersApply().orElse(true)) {
 			return Optional.of(result());
 		}
 		log.warn("entity {} not contained", entity.getId());
@@ -176,8 +182,8 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		return aggregators.size();
 	}
 
-	public boolean isContained() {
-		return child.isContained();
+	public Optional<Boolean> aggregationFiltersApply() {
+		return child.aggregationFiltersApply();
 	}
 
 	@Override

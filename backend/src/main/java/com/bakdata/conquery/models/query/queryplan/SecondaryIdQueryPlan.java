@@ -79,7 +79,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		// Prepend the key (ie the actual SecondaryId) to the result.
 		for (Map.Entry<String, ConceptQueryPlan> child : childPerKey.entrySet()) {
-			if (!child.getValue().isContained()) {
+			if (!child.getValue().aggregationFiltersApply().orElse(true)) {
 				continue;
 			}
 

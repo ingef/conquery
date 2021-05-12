@@ -1,10 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
@@ -19,7 +15,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -122,21 +117,27 @@ public class FiltersNode extends QPNode {
 		aggregationFilters.forEach(f -> f.acceptEvent(bucket, event));
 		aggregators.forEach(a -> a.acceptEvent(bucket, event));
 
-		hit = true;
+		if (eventFilters.isEmpty()){
+			hit = true;
+		}
 	}
 
 	@Override
-	public boolean isContained() {
+	public Optional<Boolean> aggregationFiltersApply() {
+
+		if (aggregationFilters.isEmpty()) {
+			return Optional.empty();
+		}
+
 		for(FilterNode<?> f : aggregationFilters) {
 			if (!f.isContained()) {
 				log.warn("A filter for entity {} was not hit.", getEntity().getId());
-				return false;
+				return Optional.of(Boolean.FALSE);
 			}
 		}
 
 
-//		log.warn("FiltersNode for entity {} was {} hit.",getEntity().getId(), hit?"":"not");
-		return true;
+		return Optional.of(Boolean.TRUE);
 	}
 
 	@Override

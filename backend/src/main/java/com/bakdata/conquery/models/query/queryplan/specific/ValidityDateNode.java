@@ -8,6 +8,8 @@ import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+import java.util.Optional;
+
 public class ValidityDateNode extends QPChainNode {
 
 	private final Column validityDateColumn;
@@ -38,8 +40,8 @@ public class ValidityDateNode extends QPChainNode {
 	}
 	
 	@Override
-	public boolean isContained() {
-		return getChild().isContained();
+	public Optional<Boolean> aggregationFiltersApply() {
+		return getChild().aggregationFiltersApply();
 	}
 
 	@Override

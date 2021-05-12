@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
@@ -37,7 +38,12 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 	@Override
 	public abstract void acceptEvent(Bucket bucket, int event);
 
-	public abstract boolean isContained();
+	/**
+	 * Checks if the logical composition of the aggregation filters applies to the entity.
+	 * The result is trifold, be cause there might be no aggregation filter and thus no assumption can be made.
+	 * @return
+	 */
+	public abstract Optional<Boolean> aggregationFiltersApply();
 
 	public List<QPNode> getChildren() {
 		return Collections.emptyList();

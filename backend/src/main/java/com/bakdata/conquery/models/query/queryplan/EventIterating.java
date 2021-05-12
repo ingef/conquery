@@ -28,6 +28,7 @@ public interface EventIterating {
 
 	/**
 	 * If false, pre-discard based on entity meta data.
+	 * @implNote This seems to have no use case at the moment
 	 */
 	default boolean isOfInterest(Entity entity){ return true; }
 

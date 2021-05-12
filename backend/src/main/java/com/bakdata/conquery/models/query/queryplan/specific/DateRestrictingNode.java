@@ -66,16 +66,19 @@ public class DateRestrictingNode extends QPChainNode {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		if (validityDateColumn != null && !bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
-			return;
+	public boolean eventFiltersApply(Bucket bucket, int event) {
+		if (validityDateColumn == null) {
+			return true;
 		}
-		getChild().acceptEvent(bucket, event);
+		if(!bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
+			return false;
+		}
+		return getChild().eventFiltersApply(bucket, event);
 	}
 
 	@Override
-	public boolean isContained() {
-		return getChild().isContained();
+	public void acceptEvent(Bucket bucket, int event) {
+		getChild().acceptEvent(bucket, event);
 	}
 
 	@Override

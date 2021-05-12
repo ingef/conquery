@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -83,9 +80,9 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public boolean eventFiltersApply(Bucket bucket, int event) {
 		if (!tableActive) {
-			return;
+			return false;
 		}
 
 		//check concepts
@@ -95,23 +92,32 @@ public class ConceptNode extends QPChainNode {
 				// having no specific child set maps directly to root.
 				// This means we likely have a VirtualConcept
 				if (ce.getConcept() == ce) {
-					getChild().acceptEvent(bucket, event);
+					return getChild().eventFiltersApply(bucket, event);
 				}
 			}
-			return;
+			return false;
 		}
 
 		for (ConceptElement<?> ce : concepts) {
 			//see #177  we could improve this by building a a prefix tree over concepts.prefix
 			if (ce.matchesPrefix(mostSpecificChildren)) {
-				getChild().acceptEvent(bucket, event);
+				return getChild().eventFiltersApply(bucket, event);
 			}
 		}
+		return false;
 	}
 
 	@Override
-	public boolean isContained() {
-		return getChild().isContained();
+	public void acceptEvent(Bucket bucket, int event) {
+		if (!tableActive) {
+			return;
+		}
+		getChild().acceptEvent(bucket, event);
+	}
+
+	@Override
+	public Optional<Boolean> aggregationFiltersApply() {
+		return getChild().aggregationFiltersApply();
 	}
 
 	@Override

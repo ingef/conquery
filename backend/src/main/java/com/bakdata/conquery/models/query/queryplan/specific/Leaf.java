@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 
 public class Leaf extends QPNode {
 
@@ -25,8 +26,8 @@ public class Leaf extends QPNode {
 	}
 
 	@Override
-	public boolean isContained() {
-		return triggered;
+	public Optional<Boolean> aggregationFiltersApply() {
+		return Optional.of(triggered);
 	}
 
 	@Override

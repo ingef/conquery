@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -31,12 +32,20 @@ public class AndNode extends QPParentNode {
 	}
 
 	@Override
-	public boolean isContained() {
-		boolean currently = true;
+	public Optional<Boolean> aggregationFiltersApply() {
+		Boolean currently = null;
 		for (QPNode agg : getChildren()) {
-			currently &= agg.isContained();
+			final Optional<Boolean> currently1 = agg.aggregationFiltersApply();
+			if (!currently1.isPresent()){
+				continue;
+			}
+			if(currently !=null){
+				currently = currently1.get();
+				continue;
+			}
+			currently &= currently1.get();
 		}
-		return currently;
+		return currently != null ? Optional.of(currently) : Optional.empty();
 	}
 
 	public static QPNode of(Collection<? extends QPNode> children, DateAggregationAction action) {
