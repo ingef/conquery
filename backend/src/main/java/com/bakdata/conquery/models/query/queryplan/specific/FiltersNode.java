@@ -38,7 +38,7 @@ public class FiltersNode extends QPNode {
 
 
 	@Setter(AccessLevel.PRIVATE)
-	private Set<Aggregator<CDateSet>> eventDateAggregators;
+	private List<Aggregator<CDateSet>> eventDateAggregators;
 
 
 	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators) {
@@ -63,7 +63,7 @@ public class FiltersNode extends QPNode {
 
 		}
 
-		Set<Aggregator<CDateSet>> eventDateAggregators = new HashSet<>();
+		List<Aggregator<CDateSet>> eventDateAggregators = new ArrayList<>();
 		for (Aggregator<?> aggregator: aggregators) {
 			if(aggregator instanceof EventDateUnionAggregator) {
 				eventDateAggregators.add((EventDateUnionAggregator) aggregator);
@@ -164,8 +164,11 @@ public class FiltersNode extends QPNode {
 
 		List<Aggregator<?>> aggregators = new ArrayList<>(this.aggregators);
 		aggregators.replaceAll(ctx::clone);
-
 		clone.setAggregators(aggregators);
+
+		List<Aggregator<CDateSet>> eventDateAggregators = new ArrayList<>(this.eventDateAggregators);
+		eventDateAggregators.replaceAll(ctx::clone);
+		clone.setEventDateAggregators(eventDateAggregators);
 
 		return clone;
 	}
