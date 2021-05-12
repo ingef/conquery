@@ -13,7 +13,6 @@ const Label = styled("span")<{ isHighlighted?: boolean }>`
     isHighlighted &&
     css`
       background-color: ${theme.col.grayVeryLight};
-      border: 1px solid ${theme.col.blueGrayLight};
       border-radius: ${theme.borderRadius};
       padding: 0 3px;
     `};

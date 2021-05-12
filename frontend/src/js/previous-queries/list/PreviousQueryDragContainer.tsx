@@ -20,7 +20,6 @@ interface PropsT {
 }
 
 const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
-  const isNotEditing = !(query.editingLabel || query.editingTags);
   const ref = useRef<HTMLDivElement | null>(null);
   const dragType =
     query.queryType === "CONCEPT_QUERY"
@@ -35,6 +34,7 @@ const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
     label: query.label,
     isPreviousQuery: true,
     canExpand: query.canExpand,
+    tags: query.tags,
   };
 
   const [, drag] = useDrag<DragItemQuery, void, {}>({
@@ -49,9 +49,7 @@ const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
     <PreviousQuery
       ref={(instance) => {
         ref.current = instance;
-        if (isNotEditing) {
-          drag(instance);
-        }
+        drag(instance);
       }}
       query={query}
       {...props}

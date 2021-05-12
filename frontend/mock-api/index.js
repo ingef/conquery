@@ -2,6 +2,9 @@ const path = require("path");
 const version = require("../package.json").version;
 const EXPORT_FORM_CONFIG = require("./forms/export-form.json");
 const mockAuthMiddleware = require("./mockAuthMiddleware");
+const Chance = require("chance");
+
+const chance = new Chance();
 
 // Taken from:
 // http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
@@ -179,7 +182,7 @@ module.exports = function (app, port) {
 
           ids.push({
             id: i,
-            label: Math.random() > 0.7 ? "Saved Query" : null,
+            label: Math.random() > 0.1 ? chance.sentence({ words: 8 }) : null,
             numberOfResults: notExecuted
               ? null
               : Math.floor(Math.random() * 500000),

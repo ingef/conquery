@@ -84,6 +84,7 @@ export interface DragItemQuery {
   secondaryId?: string | null;
   availableSecondaryIds?: string[];
   excludeFromSecondaryIdQuery?: boolean;
+  tags: string[];
 }
 
 // ------------------

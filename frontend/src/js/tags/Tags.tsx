@@ -12,21 +12,19 @@ interface PropsT {
 }
 
 const Tags: FC<PropsT> = (props) => {
-  if (!props.tags || props.tags.length <= 0) {
-    return null;
-  }
-
   return (
     <div className={props.className}>
-      {props.tags.map((tag, i) => (
-        <Tag
-          key={i}
-          isSelected={tag.isSelected}
-          onClick={() => props.onClickTag(tag.label)}
-        >
-          {tag.label}
-        </Tag>
-      ))}
+      {!props.tags || props.tags.length <= 0
+        ? "-"
+        : props.tags.map((tag, i) => (
+            <Tag
+              key={i}
+              isSelected={tag.isSelected}
+              onClick={() => props.onClickTag(tag.label)}
+            >
+              {tag.label}
+            </Tag>
+          ))}
     </div>
   );
 };

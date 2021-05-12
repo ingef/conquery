@@ -4,16 +4,21 @@ import { StateT } from "app-types";
 import React, { FC, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import {
+  PREVIOUS_QUERY,
+  PREVIOUS_SECONDARY_ID_QUERY,
+} from "../../common/constants/dndTypes";
+import Dropzone, { DropzoneProps } from "../../form-components/Dropzone";
+import type { DragItemQuery } from "../../standard-query-editor/types";
 import { updatePreviousQueriesSearch } from "../search/actions";
 
 import PreviousQueriesFolder from "./PreviousQueriesFolder";
+import { useRetagPreviousQuery } from "./actions";
 import type { PreviousQueryT } from "./reducer";
 
 const WIDTH_OPEN = 150;
 
 const Folders = styled("div")<{ isOpen?: boolean }>`
-  transition: margin ${({ theme }) => theme.transitionTime},
-    width ${({ theme }) => theme.transitionTime};
   overflow-x: auto;
   flex-shrink: 0;
   height: 100%;
@@ -33,6 +38,10 @@ const Folders = styled("div")<{ isOpen?: boolean }>`
     `};
 `;
 
+const SxDropzone = styled(Dropzone)`
+  justify-content: flex-start;
+`;
+
 interface Props {
   isOpen?: boolean;
 }
@@ -49,14 +58,27 @@ const PreviousQueriesFolders: FC<Props> = ({ isOpen }) => {
   const onClickFolder = (folder: string) =>
     dispatch(updatePreviousQueriesSearch([folder]));
 
+  const retagPreviousQuery = useRetagPreviousQuery();
+  const onDropIntoFolder = (query: DragItemQuery, folder: string) =>
+    retagPreviousQuery(query.id, Array.from(new Set([...query.tags, folder])));
+
   return (
     <Folders isOpen={isOpen}>
-      {folders.map((folder) => (
-        <PreviousQueriesFolder
-          key={folder}
-          folder={folder}
-          onClick={() => onClickFolder(folder)}
-        />
+      {folders.map((folder, i) => (
+        <SxDropzone<FC<DropzoneProps<DragItemQuery>>>
+          key={`${folder}-${i}`}
+          naked
+          onDrop={(item) => onDropIntoFolder(item, folder)}
+          acceptedDropTypes={[PREVIOUS_QUERY, PREVIOUS_SECONDARY_ID_QUERY]}
+        >
+          {() => (
+            <PreviousQueriesFolder
+              key={folder}
+              folder={folder}
+              onClick={() => onClickFolder(folder)}
+            />
+          )}
+        </SxDropzone>
       ))}
     </Folders>
   );

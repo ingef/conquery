@@ -1,8 +1,10 @@
 import styled from "@emotion/styled";
-import React, { useRef, useState } from "react";
+import useResizeObserver from "@react-hook/resize-observer";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FixedSizeList } from "react-window";
 
 import { DatasetIdT } from "../../api/types";
+import { useDebounce } from "../../common/helpers/useDebounce";
 
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
 import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
@@ -44,19 +46,24 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
     onCloseDeleteModal();
   }
 
-  const width = useRef<number>(0);
+  const container = useRef<HTMLDivElement | null>(null);
   const height = useRef<number>(0);
 
   return (
     <Root
       ref={(instance) => {
         if (!instance) {
+          container.current = null;
           return;
         }
 
+        container.current = instance;
+
         const rect = instance.getBoundingClientRect();
 
-        width.current = rect.width;
+        // setHeight(rect.height);
+
+        // // width.current = rect.width;
         height.current = rect.height;
       }}
     >
@@ -76,10 +83,10 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
       )}
       {datasetId && (
         <FixedSizeList
-          itemSize={70}
+          itemSize={85}
           itemCount={queries.length}
           height={height.current}
-          width={width.current}
+          width="100%"
         >
           {({ index, style }) => {
             return (
