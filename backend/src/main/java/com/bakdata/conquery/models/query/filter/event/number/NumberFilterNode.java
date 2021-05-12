@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event.number;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -33,12 +34,12 @@ public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends Event
 	}
 
 	@Override
-	public final boolean eventFiltersApply(Bucket bucket, int event) {
+	public final Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
-			return false;
+			return Optional.of(Boolean.FALSE);
 		}
 
-		return contains(bucket, event);
+		return Optional.of(contains(bucket, event));
 	}
 
 	public abstract boolean contains(Bucket bucket, int event);

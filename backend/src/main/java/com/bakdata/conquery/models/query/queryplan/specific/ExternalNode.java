@@ -67,8 +67,8 @@ public class ExternalNode extends QPNode {
 	}
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
-		return true;
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
+		return Optional.empty();
 	}
 
 	@Override

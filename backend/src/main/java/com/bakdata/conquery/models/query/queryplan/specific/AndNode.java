@@ -39,7 +39,7 @@ public class AndNode extends QPParentNode {
 			if (!currently1.isPresent()){
 				continue;
 			}
-			if(currently !=null){
+			if(currently == null){
 				currently = currently1.get();
 				continue;
 			}
@@ -60,12 +60,21 @@ public class AndNode extends QPParentNode {
 	}
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
-		for (QPNode currentTableChild : currentTableChildren) {
-			if (!currentTableChild.eventFiltersApply(bucket, event)) {
-				return false;
-			}
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
+		if (currentTableChildren.isEmpty()){
+			return Optional.empty();
 		}
-		return true;
+		boolean foundTrue = false;
+		for (QPNode currentTableChild : currentTableChildren) {
+			final Optional<Boolean> result = currentTableChild.eventFiltersApply(bucket, event);
+			if (result.isEmpty()) {
+				continue;
+			}
+			if (!result.get()) {
+				return result;
+			}
+			foundTrue = true;
+		}
+		return foundTrue ? Optional.of(Boolean.TRUE) : Optional.empty();
 	}
 }

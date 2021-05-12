@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
@@ -53,8 +52,10 @@ public class NegatingNode extends QPChainNode {
 	}
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
-		return !getChild().eventFiltersApply(bucket, event);
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
+		// Negate if present
+		final Optional<Boolean> result = getChild().eventFiltersApply(bucket, event);
+		return result.isPresent()? Optional.of(!result.get()) : result;
 	}
 
 	@Override

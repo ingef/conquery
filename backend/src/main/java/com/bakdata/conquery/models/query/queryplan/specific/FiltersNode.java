@@ -97,16 +97,20 @@ public class FiltersNode extends QPNode {
 	}
 
 	@Override
-	public final boolean eventFiltersApply(Bucket bucket, int event) {
+	public final Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
+		if (eventFilters.isEmpty()) {
+			return Optional.empty();
+		}
 		// On a table/connector all event filters must apply similar to AndNode
 		for(EventFilterNode<?> f : eventFilters) {
-			if (!f.eventFiltersApply(bucket, event)) {
+			final Optional<Boolean> result = f.eventFiltersApply(bucket, event);
+			if (!result.orElse(true)) {
 				log.warn("A filter didn't apply for an event of entity {}", getEntity().getId());
-				return false;
+				return result;
 			}
 		}
 		log.warn("All filters applied for an event of entity {}", getEntity().getId());
-		return true;
+		return Optional.of(Boolean.TRUE);
 	}
 	
 	@Override
@@ -117,16 +121,14 @@ public class FiltersNode extends QPNode {
 		aggregationFilters.forEach(f -> f.acceptEvent(bucket, event));
 		aggregators.forEach(a -> a.acceptEvent(bucket, event));
 
-		if (eventFilters.isEmpty()){
-			hit = true;
-		}
+		hit = true;
 	}
 
 	@Override
 	public Optional<Boolean> aggregationFiltersApply() {
 
 		if (aggregationFilters.isEmpty()) {
-			return Optional.empty();
+			return Optional.of(hit);
 		}
 
 		for(FilterNode<?> f : aggregationFilters) {

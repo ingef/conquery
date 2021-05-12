@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -42,14 +43,14 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	}
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
 		if (selectedId == -1 || !bucket.has(event, getColumn())) {
-			return false;
+			return Optional.of(Boolean.FALSE);
 		}
 
 		int value = bucket.getString(event, getColumn());
 
-		return value == selectedId;
+		return Optional.of(value == selectedId);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.filter.event;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -52,20 +53,20 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 	}
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
-			return false;
+			return Optional.of(Boolean.FALSE);
 		}
 
 		if (reference == null) {
-			return false;
+			return Optional.of(Boolean.FALSE);
 		}
 
 		LocalDate date = CDate.toLocalDate(bucket.getDate(event, getColumn()));
 
 		final long between = unit.between(date, reference);
 
-		return filterValue.contains(between);
+		return Optional.of(filterValue.contains(between));
 	}
 
 	@Override

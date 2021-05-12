@@ -80,9 +80,9 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		if (!tableActive) {
-			return false;
+			return;
 		}
 
 		//check concepts
@@ -92,27 +92,18 @@ public class ConceptNode extends QPChainNode {
 				// having no specific child set maps directly to root.
 				// This means we likely have a VirtualConcept
 				if (ce.getConcept() == ce) {
-					return getChild().eventFiltersApply(bucket, event);
+					getChild().acceptEvent(bucket, event);
 				}
 			}
-			return false;
+			return;
 		}
 
 		for (ConceptElement<?> ce : concepts) {
 			//see #177  we could improve this by building a a prefix tree over concepts.prefix
 			if (ce.matchesPrefix(mostSpecificChildren)) {
-				return getChild().eventFiltersApply(bucket, event);
+				getChild().acceptEvent(bucket, event);
 			}
 		}
-		return false;
-	}
-
-	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		if (!tableActive) {
-			return;
-		}
-		getChild().acceptEvent(bucket, event);
 	}
 
 	@Override

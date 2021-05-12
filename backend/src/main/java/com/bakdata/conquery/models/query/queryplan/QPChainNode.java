@@ -77,7 +77,7 @@ public abstract class QPChainNode extends QPNode {
 
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
 		return child.eventFiltersApply(bucket, event);
 	}
 }

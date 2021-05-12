@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.filter;
 
+import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
@@ -60,7 +61,7 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	}
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
 		throw new UnsupportedOperationException("This method should never be called on a AggregationFilter");
 	}
 }

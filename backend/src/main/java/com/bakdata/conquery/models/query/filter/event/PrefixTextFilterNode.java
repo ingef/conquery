@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -41,16 +42,16 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 	}
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
-			return false;
+			return Optional.of(Boolean.FALSE);
 		}
 
 		final int id = store.getString(event);
 		String value = store.getElement(id);
 
 		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
-		return value.startsWith(filterValue);
+		return Optional.of(value.startsWith(filterValue));
 	}
 
 	@Override

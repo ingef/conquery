@@ -155,9 +155,9 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
 		// TODO verify this
-		return true;
+		return Optional.of(Boolean.TRUE);
 	}
 
 	@Override

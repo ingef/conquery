@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Optional;
 import java.util.Set;
 
+import javax.swing.text.html.Option;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -44,20 +46,20 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
-			return false;
+			return Optional.of(Boolean.FALSE);
 		}
 
 		int stringToken = bucket.getString(event, getColumn());
 
 		for (int selectedValue : selectedValues) {
 			if (selectedValue == stringToken) {
-				return true;
+				return Optional.of(Boolean.TRUE);
 			}
 		}
 
-		return false;
+		return Optional.of(Boolean.FALSE);
 	}
 
 	@Override

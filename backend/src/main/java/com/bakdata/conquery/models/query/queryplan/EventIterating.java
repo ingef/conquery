@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
@@ -39,7 +40,8 @@ public interface EventIterating {
 
 	/**
 	 * If false, discard based on event properties.
+	 * @return
 	 */
-	boolean eventFiltersApply(Bucket bucket, int event);
+	Optional<Boolean> eventFiltersApply(Bucket bucket, int event);
 
 }

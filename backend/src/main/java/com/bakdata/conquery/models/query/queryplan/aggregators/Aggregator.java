@@ -6,6 +6,8 @@ import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.Optional;
+
 /**
  * An aggregator iterates over events, computing a value alongside. Values are fed through {@code aggregateEvent}, and the result can be queried at {@code getAggregationResult}.
  *
@@ -27,7 +29,7 @@ public interface Aggregator<T> extends CtxCloneable<Aggregator<T>>, EventIterati
     ResultType getResultType();
 
 	@Override
-	default boolean eventFiltersApply(Bucket bucket, int event) {
+	default Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
 		throw new UnsupportedOperationException("This method should never be called on an aggregator");
 	}
 }

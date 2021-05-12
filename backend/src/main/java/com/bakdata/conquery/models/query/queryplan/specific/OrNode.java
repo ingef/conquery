@@ -64,13 +64,22 @@ public class OrNode extends QPParentNode {
 
 
 	@Override
-	public boolean eventFiltersApply(Bucket bucket, int event) {
-		for (QPNode currentTableChild : currentTableChildren) {
-			if (currentTableChild.eventFiltersApply(bucket, event)) {
-				return true;
-			}
+	public Optional<Boolean> eventFiltersApply(Bucket bucket, int event) {
+		if (currentTableChildren.isEmpty()) {
+			return Optional.empty();
 		}
-		return false;
+		boolean foundFalse = false;
+		for (QPNode currentTableChild : currentTableChildren) {
+			final Optional<Boolean> result = currentTableChild.eventFiltersApply(bucket, event);
+			if (result.isEmpty()) {
+				continue;
+			}
+			if (result.get()) {
+				return result;
+			}
+			foundFalse = true;
+		}
+		return foundFalse ? Optional.of(Boolean.FALSE) : Optional.empty();
 	}
 
 }

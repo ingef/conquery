@@ -68,6 +68,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 		requiredTables.set(this.collectRequiredTables());
 
+		// TODO This checks nothing
 		// Assert that all tables are actually present
 		for (Table table : requiredTables.get()) {
 			if (Dataset.isAllIdsTable(table)) {
@@ -83,7 +84,8 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 	public boolean nextEvent(Bucket bucket, int event) {
 		final QPNode child = getChild();
-		final boolean accepted = EmptyBucket.getInstance().equals(bucket) || child.eventFiltersApply(bucket, event);
+		final boolean emptyBucket = EmptyBucket.getInstance().equals(bucket);
+		final boolean accepted = emptyBucket || child.eventFiltersApply(bucket, event).orElse(true);
 		if(accepted) {
 			child.acceptEvent(bucket, event);
 		}
