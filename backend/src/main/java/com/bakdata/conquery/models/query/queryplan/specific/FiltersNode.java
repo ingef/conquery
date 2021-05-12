@@ -121,7 +121,10 @@ public class FiltersNode extends QPNode {
 		aggregationFilters.forEach(f -> f.acceptEvent(bucket, event));
 		aggregators.forEach(a -> a.acceptEvent(bucket, event));
 
-		hit = true;
+		final Optional<Boolean> result = eventFiltersApply(bucket, event);
+		if (result.orElse(true) ) {
+			hit = true;
+		}
 	}
 
 	@Override
