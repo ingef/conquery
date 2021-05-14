@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 import javax.validation.Valid;
 import javax.validation.Validator;
@@ -25,6 +27,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreInfo;
 import com.bakdata.conquery.io.storage.WorkerStorage;
@@ -136,90 +139,67 @@ public class XodusStoreFactory implements StoreFactory {
     @Override
     @SneakyThrows
     public Collection<NamespaceStorage> loadNamespaceStorages(List<String> pathName) {
-        @NonNull File baseDir = getStorageDir(pathName);
-
-        if (baseDir.mkdirs()) {
-            log.warn("Had to create Storage Dir at `{}`", getDirectory());
-        }
-
-        ConcurrentLinkedQueue<NamespaceStorage> storages = new ConcurrentLinkedQueue<>();
-
-        ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
-
-
-        for (File directory : baseDir.listFiles((file, name) -> name.startsWith("dataset_"))) {
-            loaders.submit(() -> {
-                List<String> pathElems = getRelativePathElements(directory.toPath());
-                ConqueryMDC.setLocation(directory.toString());
-
-                if (!environmentHasStores(directory)) {
-                    log.warn("No valid NamespaceStorage found.");
-                    return;
-                }
-
-                NamespaceStorage namespaceStorage = new NamespaceStorage(validator, this, pathElems);
-                namespaceStorage.loadData();
-
-                storages.add(namespaceStorage);
-
-                ConqueryMDC.clearLocation();
-            });
-        }
-
-
-        loaders.shutdown();
-        while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-            log.debug("Still waiting for Datasets to load. {} already finished.", storages);
-        }
-
-        log.info("All NamespaceStores loaded: {}", storages);
-        return storages;
+		return loadNamespacedStores("dataset_", pathName, (elements) -> new NamespaceStorage(validator, this, elements));
     }
 
     @Override
     @SneakyThrows
     public Collection<WorkerStorage> loadWorkerStorages(List<String> pathName) {
-        @NonNull File baseDir = getStorageDir(pathName);
-
-        if (baseDir.mkdirs()) {
-            log.warn("Had to create Storage Dir at `{}`", baseDir);
-        }
-
-
-        ConcurrentLinkedQueue<WorkerStorage> storages = new ConcurrentLinkedQueue<>();
-        ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
-
-
-        for (File directory : baseDir.listFiles((file, name) -> name.startsWith("worker_"))) {
-
-            loaders.submit(() -> {
-                List<String> pathElems = getRelativePathElements(directory.toPath());
-                ConqueryMDC.setLocation(directory.toString());
-
-                if (!environmentHasStores(directory)) {
-                    log.warn("No valid WorkerStorage found.");
-                    return;
-                }
-
-                WorkerStorage workerStorage = new WorkerStorage(validator, this, pathElems);
-                workerStorage.loadData();
-
-                storages.add(workerStorage);
-
-                ConqueryMDC.clearLocation();
-            });
-        }
-
-        loaders.shutdown();
-        while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-            log.debug("Waiting for Worker storages to load. {} are already finished.", storages.size());
-        }
-
-        log.info("All WorkerStores loaded: {}", storages);
-        return storages;
+		return loadNamespacedStores("worker_", pathName, (elements) -> new WorkerStorage(validator, this, elements));
     }
 
-    private List<String> getRelativePathElements(Path path) {
+
+	private <T extends NamespacedStorage> ConcurrentLinkedQueue<T> loadNamespacedStores(String prefix, List<String> pathName, Function<List<String>, T> creator)
+			throws InterruptedException {
+		File baseDir = getStorageDir(pathName);
+
+		if (baseDir.mkdirs()) {
+			log.warn("Had to create Storage Dir at `{}`", baseDir);
+		}
+
+		ConcurrentLinkedQueue<T> storages = new ConcurrentLinkedQueue<>();
+		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
+
+
+		for (File directory : baseDir.listFiles((file, name) -> name.startsWith(prefix))) {
+
+			loaders.submit(() -> {
+				try {
+					List<String> pathElems = getRelativePathElements(directory.toPath());
+					ConqueryMDC.setLocation(directory.toString());
+
+					if (!environmentHasStores(directory)) {
+						log.warn("No valid WorkerStorage found.");
+						return;
+					}
+
+					T workerStorage = creator.apply(pathElems);
+					log.debug("BEGIN reading Storage");
+					workerStorage.loadData();
+
+					storages.add(workerStorage);
+
+				}
+				catch (Exception e) {
+					log.error("Failed reading Storage", e);
+				}
+				finally {
+					log.debug("DONE reading Storage");
+					ConqueryMDC.clearLocation();
+				}
+			});
+		}
+
+		loaders.shutdown();
+		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+			log.debug("Waiting for Worker storages to load. {} are already finished.", storages.size());
+		}
+
+		log.info("All WorkerStores loaded: {}", storages);
+		return storages;
+	}
+
+	private List<String> getRelativePathElements(Path path) {
         ArrayList<String> list = new ArrayList<>();
         Path relative = getDirectory().relativize(path);
         for (int i = 0; i < relative.getNameCount(); i++) {
@@ -319,43 +299,43 @@ public class XodusStoreFactory implements StoreFactory {
 
     @Override
     public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName) {
-        return EXECUTIONS.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "executions")), validator, EXECUTIONS), centralRegistry, datasetRegistry);
+        return EXECUTIONS.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "executions")), validator, EXECUTIONS), centralRegistry, datasetRegistry);
     }
 
     @Override
     public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return FORM_CONFIG.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "formConfigs")), validator, FORM_CONFIG), centralRegistry);
+        return FORM_CONFIG.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "formConfigs")), validator, FORM_CONFIG), centralRegistry);
     }
 
     @Override
     public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return AUTH_USER.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "users")), validator, AUTH_USER), centralRegistry);
+        return AUTH_USER.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "users")), validator, AUTH_USER), centralRegistry);
     }
 
     @Override
     public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return AUTH_ROLE.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "roles")), validator, AUTH_ROLE), centralRegistry);
+        return AUTH_ROLE.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "roles")), validator, AUTH_ROLE), centralRegistry);
     }
 
 
     @Override
     public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return AUTH_GROUP.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "groups")), validator, AUTH_GROUP), centralRegistry);
+        return AUTH_GROUP.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "groups")), validator, AUTH_GROUP), centralRegistry);
     }
 
-    private List<String> appendToNewPath(List<String> pathName, String users) {
-        ArrayList<String> path = new ArrayList<>();
+    private List<String> appendToNewPath(List<String> pathName, String... subdirs) {
+        List<String> path = new ArrayList<>();
         path.addAll(pathName);
-        path.add(users);
+		path.addAll(Arrays.asList(subdirs));
         return path;
     }
 
-    @NonNull
-    @JsonIgnore
     /**
      * Returns this.directory if the list is empty.
      */
-    private File getStorageDir(List<String> pathName) {
+	@NonNull
+	@JsonIgnore
+	private File getStorageDir(List<String> pathName) {
 		return getDirectory().resolve(String.join("/", pathName)).toFile();
     }
 
@@ -367,7 +347,7 @@ public class XodusStoreFactory implements StoreFactory {
 
     private Environment findEnvironment(List<String> pathName) {
         synchronized (activeEnvironments) {
-            @NonNull File path = getStorageDir(pathName);
+            File path = getStorageDir(pathName);
             return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(p, getXodus().createConfig()));
         }
     }
@@ -386,24 +366,24 @@ public class XodusStoreFactory implements StoreFactory {
     }
 
     private void removeEnvironment(Environment env) {
-        log.info("Deleting environment: {}", env.getLocation());
+        log.info("Deleting Environment[{}]", env.getLocation());
         try {
             FileUtil.deleteRecursive(Path.of(env.getLocation()));
         }catch (IOException e) {
-            log.error("Cannot delete directory of removed environment: {}", env.getLocation(), log.isDebugEnabled()? e : null);
+            log.error("Cannot delete directory of removed Environment[{}]", env.getLocation(), log.isDebugEnabled()? e : null);
         }
     }
 
     public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreInfo storeId) {
         synchronized (openStoresInEnv) {
-            return new CachedStore<KEY, VALUE>(
-                    new SerializingStore<KEY, VALUE>(
-                            this,
-                            new XodusStore(environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
-                            validator,
-                            storeId,
-                            objectMapper
-                    ));
+            return new CachedStore<>(
+					new SerializingStore<>(
+							this,
+							new XodusStore(environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
+							validator,
+							storeId,
+							objectMapper
+					));
         }
     }
 
