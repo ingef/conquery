@@ -268,7 +268,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	protected URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException {
 		return url
 			.path(ResultCsvResource.class)
-			.resolveTemplate(ResourceConstants.DATASET, dataset.getName())
+			.resolveTemplate(ResourceConstants.DATASET, getDataset().getName())
 			.path(ResultCsvResource.class, ResultCsvResource.GET_CSV_PATH_METHOD)
 			.resolveTemplate(ResourceConstants.QUERY, getId().toString())
 			.build()

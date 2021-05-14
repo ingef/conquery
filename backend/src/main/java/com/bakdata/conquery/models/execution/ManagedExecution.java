@@ -81,32 +81,32 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	public static final String AUTO_LABEL_SUFFIX = "\t@§$";
 
 	@NsIdRef
-	protected Dataset dataset;
-	protected UUID queryId;
-	protected String label;
+	private Dataset dataset;
+	private UUID queryId;
+	private String label;
 
-	protected LocalDateTime creationTime = LocalDateTime.now();
+	private LocalDateTime creationTime = LocalDateTime.now();
 
 	@Nullable
 	@MetaIdRef
-	protected User owner;
+	private User owner;
 
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
 
-	protected boolean machineGenerated;
+	private boolean machineGenerated;
 
 
 	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
-	protected transient ExecutionState state = ExecutionState.NEW;
+	private transient ExecutionState state = ExecutionState.NEW;
 	@JsonIgnore
 	private transient CountDownLatch execution;
 	@JsonIgnore
 	private transient LocalDateTime startTime;
 	@JsonIgnore
-	protected transient LocalDateTime finishTime;
+	private transient LocalDateTime finishTime;
 	@JsonIgnore
 	private transient ConqueryErrorInfo error;
 	@JsonIgnore
@@ -175,7 +175,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		synchronized (this) {
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 			startTime = LocalDateTime.now();
-			state = ExecutionState.RUNNING;
+			setState(ExecutionState.RUNNING);
 			execution = new CountDownLatch(1);
 		}
 	}
@@ -206,7 +206,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 		log.info(
 			"{} {} {} within {}",
-			state,
+			getState(),
 			queryId,
 			this.getClass().getSimpleName(),
 			getExecutionTime()
@@ -222,7 +222,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Blocks until a execution finished of the specified timeout is reached. Return immediately if the execution is not running
 	 */
 	public void awaitDone(int time, TimeUnit unit) {
-		if (state != ExecutionState.RUNNING){
+		if (getState() != ExecutionState.RUNNING){
 			return;
 		}
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
@@ -237,7 +237,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setOwn(user.isOwner(this));
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
-		status.setStatus(state);
+		status.setStatus(getState());
 		if(owner != null){
 			status.setOwner(owner.getId());
 			status.setOwnerName(owner.getLabel());
@@ -287,7 +287,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setProgress(progress);
 
 
-		if (state.equals(ExecutionState.FAILED) && error != null) {
+		if (getState().equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
@@ -347,7 +347,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	protected boolean isReadyToDownload(Map<DatasetId, Set<Ability>> datasetAbilities) {
-		if (state != ExecutionState.DONE) {
+		if (getState() != ExecutionState.DONE) {
 			// No url for unfinished executions, quick return
 			return false;
 		}

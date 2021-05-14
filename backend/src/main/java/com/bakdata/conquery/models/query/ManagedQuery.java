@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -90,7 +91,20 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 	@JsonIgnore
-	private transient List<EntityResult> results = new ArrayList<>();
+	private transient WeakReference<List<EntityResult>> results = new WeakReference<>(new ArrayList<>());
+
+	public List<EntityResult> getResults() {
+		if(results.get() == null){
+			results = new WeakReference<>(new ArrayList<>());
+		}
+
+		return results.get();
+	}
+
+	@Override
+	public ExecutionState getState() {
+		return results.get() == null ? ExecutionState.NEW : super.getState();
+	}
 
 	public ManagedQuery(IQuery query, User owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
@@ -103,8 +117,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.namespace = namespaces.get(getDataset().getId());
 		this.involvedWorkers = namespace.getWorkers().size();
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
-		if (label == null) {
-			label = makeAutoLabel(new PrintSettings(true, Locale.ROOT,namespaces, config, null));
+		if (getLabel() == null) {
+			setLabel(makeAutoLabel(new PrintSettings(true, Locale.ROOT,namespaces, config, null)));
 		}
 	}
 
@@ -118,8 +132,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 		synchronized (this) {
 			executingThreads--;
-			results.addAll(result.getResults());
-			if (executingThreads == 0 && state == ExecutionState.RUNNING) {
+			getResults().addAll(result.getResults());
+			if (executingThreads == 0 && getState() == ExecutionState.RUNNING) {
 				finish(storage, ExecutionState.DONE);
 			}
 		}
@@ -127,7 +141,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	@Override
 	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
-		lastResultCount = query.countResults(results);
+		lastResultCount = query.countResults(getResults());
 
 		super.finish(storage, executionState);
 	}
@@ -140,12 +154,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		}
 
 
-		if (results != null) {
-			results.clear();
-		}
-		else {
-			results = new ArrayList<>();
-		}
+		getResults().clear();
 	}
 
 	@Override
@@ -236,7 +245,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	protected URL getDownloadURLInternal(@NonNull UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException {
 		return url
 					   .path(ResultCsvResource.class)
-					   .resolveTemplate(ResourceConstants.DATASET, dataset.getName())
+					   .resolveTemplate(ResourceConstants.DATASET, getDataset().getName())
 					   .path(ResultCsvResource.class, ResultCsvResource.GET_CSV_PATH_METHOD)
 					   .resolveTemplate(ResourceConstants.QUERY, getId().toString())
 					   .build()
@@ -257,13 +266,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 		int sbStartSize = sb.length();
 
-		QueryVisitor visitor = new QueryVisitor() {
+		QueryVisitor visitor = t -> sortedContents.computeIfAbsent(t.getClass(), (clazz) -> new ArrayList<>()).add(t);
 
-			@Override
-			public void accept(Visitable t) {
-				sortedContents.computeIfAbsent(t.getClass(), (clazz) -> new ArrayList<>()).add(t);
-			}
-		};
 		query.visit(visitor);
 
 		// Check for CQExternal
