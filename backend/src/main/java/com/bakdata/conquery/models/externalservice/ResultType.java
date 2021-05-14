@@ -98,7 +98,7 @@ public abstract class ResultType {
 				return (Boolean) f ? C10N.get(Results.class, cfg.getLocale()).True() : C10N.get(Results.class, cfg.getLocale()).False();
 			}
 
-			return (Boolean) f ? "true" : "false";
+			return (Boolean) f ? "t" : "f";
         }
 
         @Override
