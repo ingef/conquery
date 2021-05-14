@@ -37,8 +37,8 @@ public class ResultTypeTest {
 		ConqueryConfig cfg = new ConqueryConfig();
 		cfg.getPreprocessor().getParsers().setCurrency(Currency.getInstance("EUR"));
 		return Stream.of(
-			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, true,	"t"),
-			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, false,	"f"),
+			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, true,	"Yes"),
+			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, false,	"No"),
 			Arguments.of(PRETTY, ResultType.CategoricalT.INSTANCE, "test", "test"),
 			Arguments.of(PRETTY, ResultType.ResolutionT.INSTANCE, DateContext.Resolution.COMPLETE.name(), "complete"),
 			Arguments.of(PRETTY_DE, ResultType.ResolutionT.INSTANCE, DateContext.Resolution.COMPLETE.name(), "Gesamt"),
