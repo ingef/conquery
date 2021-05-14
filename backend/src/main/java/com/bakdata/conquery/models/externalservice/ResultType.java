@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.externalservice;
 
+import c10n.C10N;
+import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
@@ -10,6 +12,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -88,10 +91,14 @@ public abstract class ResultType {
 
         @Override
         public String print(PrintSettings cfg, Object f) {
-            if (f instanceof java.lang.Boolean) {
-                return (java.lang.Boolean) f ? "t" : "f";
-            }
-            throw new IllegalStateException("Expected a Boolean but got an " + f.getClass() + " (" + f + ")");
+			Preconditions.checkArgument(f instanceof Boolean, "Expected boolean value, but got %s", f.getClass().getName());
+
+			if(cfg.isPrettyPrint()) {
+				//TODO this might be incredibly slow, probably better to cache this in the instance but we need to not use Singletons for that
+				return (Boolean) f ? C10N.get(Results.class, cfg.getLocale()).True() : C10N.get(Results.class, cfg.getLocale()).False();
+			}
+
+			return (Boolean) f ? "true" : "false";
         }
 
         @Override
