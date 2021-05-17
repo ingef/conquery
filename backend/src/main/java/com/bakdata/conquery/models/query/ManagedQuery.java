@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -91,11 +92,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 	@JsonIgnore
-	private transient WeakReference<List<EntityResult>> results = new WeakReference<>(new ArrayList<>());
+	private transient SoftReference<List<EntityResult>> results = new SoftReference<>(new ArrayList<>());
 
 	public List<EntityResult> getResults() {
 		if(results.get() == null){
-			results = new WeakReference<>(new ArrayList<>());
+			results = new SoftReference<>(new ArrayList<>());
 		}
 
 		return results.get();
