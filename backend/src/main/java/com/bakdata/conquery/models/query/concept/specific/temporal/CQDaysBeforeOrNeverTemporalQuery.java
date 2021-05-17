@@ -29,7 +29,7 @@ public class CQDaysBeforeOrNeverTemporalQuery extends CQAbstractTemporalQuery {
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext ctx, ConceptQueryPlan plan) {
 		SpecialDateUnion dateAggregator = new SpecialDateUnion();
-		plan.getDateAggregator().register(Set.of(dateAggregator));
+		plan.getDateAggregator().registerAll(Set.of(dateAggregator));
 
 		return new TemporalQueryNode(
 				index.createQueryPlan(ctx),

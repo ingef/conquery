@@ -26,7 +26,15 @@ public class DateAggregator implements Aggregator<CDateSet> {
     /**
      * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
      */
-    public void register(Collection<Aggregator<CDateSet>> siblings) {
+    public void register(Aggregator<CDateSet> sibling) {
+        this.siblings.add(sibling);
+    }
+
+
+    /**
+     * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
+     */
+    public void registerAll(Collection<Aggregator<CDateSet>> siblings) {
         this.siblings.addAll(siblings);
     }
 

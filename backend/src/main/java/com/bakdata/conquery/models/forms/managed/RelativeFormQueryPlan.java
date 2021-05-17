@@ -1,20 +1,20 @@
 package com.bakdata.conquery.models.forms.managed;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.*;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -46,6 +46,9 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final DateContext.CalendarUnit timeUnit;
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
+	private final transient List<FormQueryPlan> featureSubqueries = new ArrayList<>();
+	private final transient List<FormQueryPlan> outcomeSubqueries = new ArrayList<>();
+
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 		Optional<EntityResult> preResult = query.execute(ctx, entity);
@@ -57,7 +60,11 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		int size = calculateCompleteLength();
 		EntityResult contained = preResult.get();
 		// Gather all validity dates from prerequisite
-		CDateSet dateSet = query.getValidityDates(contained);
+		Optional<DateAggregator> validityDateAggregator = query.getValidityDateAggregator();
+		CDateSet dateSet = CDateSet.create();
+		if (validityDateAggregator.isPresent()) {
+			dateSet = validityDateAggregator.get().getAggregationResult();
+		}
 
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
@@ -78,6 +85,9 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		// create feature and outcome plans
 		FormQueryPlan featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
 		FormQueryPlan outcomeSubquery = createSubQuery(outcomePlan, contexts, FeatureGroup.OUTCOME);
+
+		featureSubqueries.add(featureSubquery);
+		outcomeSubqueries.add(outcomeSubquery);
 
 		// determine result length and check against aggregators in query
 		int featureLength = featureSubquery.columnCount();
@@ -256,25 +266,14 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public CDateSet getValidityDates(MultilineEntityResult result) {
-		CDateSet dateSet = CDateSet.create();
-		for(Object[] resultLine : result.listResultLines()) {
-			int featureDateRangePosition = getFeatureDateRangePosition();
-			if(featureDateRangePosition >= 0) {
-				Object date = resultLine[featureDateRangePosition];
-				if(date != null){
-					dateSet.add((CDateRange) date);
-				}
-			}
+	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
+		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
+		agg.registerAll(Stream.concat(featureSubqueries.stream(), outcomeSubqueries.stream())
+				.map(QueryPlan::getValidityDateAggregator)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(Collectors.toList()));
 
-			int outcomeDateRangePosition = getOutcomeDateRangePosition();
-			if(outcomeDateRangePosition >= 0) {
-				Object date = resultLine[outcomeDateRangePosition];
-				if(date != null){
-					dateSet.add((CDateRange) date);
-				}
-			}
-		}
-		return dateSet;
+		return Optional.of(agg);
 	}
 }

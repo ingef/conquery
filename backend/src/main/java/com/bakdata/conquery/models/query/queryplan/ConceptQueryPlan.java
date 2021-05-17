@@ -98,6 +98,11 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	@Override
 	public Optional<SinglelineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
+		if (ctx.getQueryDateAggregator().isEmpty()) {
+			// Only override if none has been set from a higher level
+			ctx = ctx.withQueryDateAggregator(getValidityDateAggregator());
+		}
+
  		checkRequiredTables(ctx.getStorage());
 
 		if (requiredTables.get().isEmpty()) {
@@ -182,17 +187,13 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	}
 
 	@Override
-	public CDateSet getValidityDates(SinglelineEntityResult result) {
+	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		if(!isAggregateValidityDates()) {
 			// The date aggregator was not added to the plan, so we don't collect a validity date
-			return CDateSet.create();
+			return Optional.empty();
 		}
 
-		Object dates = result.getValues()[VALIDITY_DATE_POSITION];
-		if(dates == null) {
-			return CDateSet.create();
-		}
-		return (CDateSet) dates;
+		return Optional.of(dateAggregator);
 	}
 
 	public boolean isAggregateValidityDates() {
