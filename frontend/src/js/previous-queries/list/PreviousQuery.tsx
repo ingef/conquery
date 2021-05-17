@@ -4,7 +4,7 @@ import type { StateT } from "app-types";
 import { parseISO } from "date-fns";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 
 import type { DatasetIdT, SecondaryId } from "../../api/types";
 import DownloadButton from "../../button/DownloadButton";
@@ -18,11 +18,7 @@ import WithTooltip from "../../tooltip/WithTooltip";
 
 import PreviousQueriesLabel from "./PreviousQueriesLabel";
 import PreviousQueryTags from "./PreviousQueryTags";
-import {
-  toggleEditPreviousQueryLabel,
-  useRenamePreviousQuery,
-  useRetagPreviousQuery,
-} from "./actions";
+import { useRenamePreviousQuery, useRetagPreviousQuery } from "./actions";
 import { PreviousQueryT } from "./reducer";
 import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
@@ -82,18 +78,12 @@ const TopLeft = styled("div")`
 const NonBreakingText = styled("span")`
   white-space: nowrap;
 `;
-const SharedIndicator = styled("div")`
-  margin-left: 10px;
-  color: ${({ theme }) => theme.col.blueGray};
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`;
 const MiddleRow = styled("div")`
   display: flex;
   width: 100%;
   justify-content: space-between;
   line-height: 24px;
+  margin-bottom: 2px;
 `;
 const StyledErrorMessage = styled(ErrorMessage)`
   margin: 0;
@@ -112,6 +102,11 @@ const SxDownloadButton = styled(DownloadButton)`
   button {
     font-size: ${({ theme }) => theme.font.xs};
   }
+`;
+
+const SxPreviousQueryTags = styled(PreviousQueryTags)`
+  display: flex;
+  align-items: center;
 `;
 
 interface PropsT {
@@ -255,11 +250,11 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             onSubmit={onRetagPreviousQuery}
             isEditing={isEditingTags}
             setIsEditing={setIsEditingTags}
-            tagComponent={<PreviousQueryTags tags={query.tags} />}
+            tagComponent={<SxPreviousQueryTags tags={query.tags} />}
             availableTags={availableTags}
           />
         ) : (
-          <PreviousQueryTags tags={query.tags} />
+          <SxPreviousQueryTags tags={query.tags} />
         )}
         {!!query.error && <StyledErrorMessage message={query.error} />}
       </Root>
