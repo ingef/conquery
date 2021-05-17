@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import React, { useState } from "react";
-import ReactList from "react-list";
+import React, { useRef, useState } from "react";
+import { FixedSizeList } from "react-window";
 
 import { DatasetIdT } from "../../api/types";
 
@@ -15,15 +15,11 @@ interface PropsT {
 }
 
 const Root = styled("div")`
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  flex-grow: 1;
   font-size: ${({ theme }) => theme.font.sm};
-  padding: 0 10px;
+  padding: 4px 0;
 `;
-const Container = styled("div")`
-  margin: 4px 0;
-`;
+const Container = styled("div")``;
 
 const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
   const [previousQueryToDelete, setPreviousQueryToDelete] = useState<
@@ -48,8 +44,25 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
     onCloseDeleteModal();
   }
 
+  const container = useRef<HTMLDivElement | null>(null);
+  const height = useRef<number>(0);
+
   return (
-    <Root>
+    <Root
+      ref={(instance) => {
+        if (!instance) {
+          container.current = null;
+          return;
+        }
+
+        container.current = instance;
+
+        // TODO: Detect resize and re-measure
+        const rect = instance.getBoundingClientRect();
+
+        height.current = rect.height;
+      }}
+    >
       {!!previousQueryToShare && (
         <SharePreviousQueryModal
           previousQueryId={previousQueryToShare}
@@ -65,10 +78,15 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
         />
       )}
       {datasetId && (
-        <ReactList
-          itemRenderer={(index: number, key: string | number) => {
+        <FixedSizeList
+          itemSize={85}
+          itemCount={queries.length}
+          height={height.current}
+          width="100%"
+        >
+          {({ index, style }) => {
             return (
-              <Container key={key}>
+              <Container style={style}>
                 <PreviousQueryDragContainer
                   query={queries[index]}
                   datasetId={datasetId}
@@ -82,9 +100,7 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
               </Container>
             );
           }}
-          length={queries.length}
-          type="variable"
-        />
+        </FixedSizeList>
       )}
     </Root>
   );

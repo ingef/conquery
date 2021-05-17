@@ -262,10 +262,10 @@ const FormConfig: React.FC<PropsT> = ({
       {mayEdit ? (
         <EditableTags
           tags={config.tags}
-          editing={isEditingTags}
+          isEditing={isEditingTags}
+          setIsEditing={setIsEditingTags}
           loading={isLoading}
           onSubmit={onRetagFormConfig}
-          onToggleEdit={() => setIsEditingTags(!isEditingTags)}
           tagComponent={<FormConfigTags tags={config.tags} />}
           availableTags={availableTags}
         />

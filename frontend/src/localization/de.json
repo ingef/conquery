@@ -139,7 +139,7 @@
     "closeEsc": "Schließen (ESC)",
     "close": "Schließen",
     "create": "Erstellen",
-    "addTag": "Schlagwort hinzufügen",
+    "addTag": "Zu Ordner hinzufügen",
     "share": "Freigeben",
     "shared": "Freigegeben",
     "loading": "Lade ...",
@@ -163,12 +163,12 @@
   },
   "reactSelect": {
     "placeholder": "Auswählen ...",
-    "tagPlaceholder": "Schlagwort ...",
+    "tagPlaceholder": "Ordner ...",
     "searchPlaceholder": "Suchen ...",
     "dndPlaceholder": "Auswählen oder Datei hochladen ...",
     "backspaceToRemove": "Backspace zum Entfernen drücken",
     "noResults": "Keine Werte gefunden",
-    "createTag": "Schlagwort erstellen: {{label}}",
+    "createTag": "Zu Ordner hinzufügen: {{label}}",
     "searchFor": "Suchen nach: {{label}}",
     "clearAll": "Alle entfernen",
     "clearValue": "Wert entfernen"
@@ -206,7 +206,7 @@
     "downloadResults": "Ergebnisse herunterladen",
     "loadError": "Konnte Anfrage nicht laden",
     "renameError": "Konnte Anfrage nicht umbenennen",
-    "retagError": "Konnte Schlagwörter nicht speichern",
+    "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Anfrage nicht freigeben",
     "deleteError": "Konnte Anfrage nicht löschen"
   },
@@ -339,6 +339,9 @@
   "uploadQueryResults": {
     "uploadResults": "Lade Anfrageergebnis hoch"
   },
+  "previousQueriesFolderButton": {
+    "tooltip": "Ordner anzeigen / verstecken"
+  },
   "authorization": {
     "unauthorized": "Authorisierung fehlgeschlagen. Ein Authorisierungs-Token fehlt, oder ist abgelaufen"
   },
@@ -373,7 +376,7 @@
   "formConfig": {
     "loadError": "Konnte Konfiguration nicht laden",
     "renameError": "Konnte Konfiguration nicht umbenennen",
-    "retagError": "Konnte Schlagwörter nicht speichern",
+    "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Konfiguration nicht freigeben",
     "deleteError": "Konnte Konfiguration nicht löschen"
   },

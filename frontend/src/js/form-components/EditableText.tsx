@@ -21,17 +21,22 @@ interface PropsT {
   onToggleEdit: () => void;
 }
 
-const StyledIconButton = styled(IconButton)`
-  margin-top: 1px;
-  margin-right: ${({ large }) => (large ? "10px" : "5px")};
+const SxIconButton = styled(IconButton)`
+  margin-right: ${({ large }) => (large ? "10px" : "7px")};
   padding: 2px 0;
 `;
 
-const Text = styled("p")`
-  margin: 0;
+const Text = styled("div")`
+  padding: 2px 0 0;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+`;
+
+const SxHighlightableLabel = styled(HighlightableLabel)`
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 `;
 
 const EditableText: React.FC<PropsT> = (props) => {
@@ -48,14 +53,14 @@ const EditableText: React.FC<PropsT> = (props) => {
   ) : (
     <Text className={props.className}>
       <WithTooltip text={props.tooltip}>
-        <StyledIconButton
+        <SxIconButton
           large={props.large}
           bare
-          icon="edit"
+          icon="pen"
           onClick={props.onToggleEdit}
         />
       </WithTooltip>
-      <HighlightableLabel
+      <SxHighlightableLabel
         label={props.text}
         isHighlighted={props.isHighlighted}
       />

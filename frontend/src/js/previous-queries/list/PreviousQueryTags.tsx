@@ -7,6 +7,7 @@ import { addTagToPreviousQueriesSearch } from "../search/actions";
 import type { PreviousQueriesSearchStateT } from "../search/reducer";
 
 interface PropsT {
+  className?: string;
   tags?: string[];
 }
 
@@ -25,7 +26,7 @@ const selectPreviousQueryTags = (state: StateT, tags?: string[]) =>
     isSelected: tagContainsAnySearch(tag, state.previousQueriesSearch),
   }));
 
-const PreviousQueryTags: FC<PropsT> = ({ tags }) => {
+const PreviousQueryTags: FC<PropsT> = ({ className, tags }) => {
   const selectedTags = useSelector<
     StateT,
     { label: string; isSelected: boolean }[]
@@ -36,7 +37,9 @@ const PreviousQueryTags: FC<PropsT> = ({ tags }) => {
   const onClickTag = (tag: string) =>
     dispatch(addTagToPreviousQueriesSearch(tag));
 
-  return <Tags tags={selectedTags} onClickTag={onClickTag} />;
+  return (
+    <Tags className={className} tags={selectedTags} onClickTag={onClickTag} />
+  );
 };
 
 export default PreviousQueryTags;
