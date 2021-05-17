@@ -139,7 +139,7 @@
     "closeEsc": "Close (ESC)",
     "close": "Close",
     "create": "Create",
-    "addTag": "Add Tag",
+    "addTag": "Add folder",
     "share": "Share",
     "shared": "Shared",
     "loading": "Loading ...",
@@ -163,12 +163,12 @@
   },
   "reactSelect": {
     "placeholder": "Choose ...",
-    "tagPlaceholder": "Tag ...",
+    "tagPlaceholder": "Folder ...",
     "searchPlaceholder": "Search ...",
     "dndPlaceholder": "Choose or drop file ...",
     "backspaceToRemove": "Press Backspace to remove",
     "noResults": "No values found",
-    "createTag": "Create tag: {{label}}",
+    "createTag": "Create folder: {{label}}",
     "searchFor": "Search for: {{label}}",
     "clearAll": "Clear all",
     "clearValue": "Clear value"
@@ -206,7 +206,7 @@
     "downloadResults": "Download results",
     "loadError": "Could not load query",
     "renameError": "Could not rename query",
-    "retagError": "Could not save tags",
+    "retagError": "Could not save folders",
     "shareError": "Could not share query",
     "deleteError": "Could not delete query"
   },
@@ -376,7 +376,7 @@
   "formConfig": {
     "loadError": "Could not load form configuration",
     "renameError": "Could not rename form configuration",
-    "retagError": "Could not save tags",
+    "retagError": "Could not save folders",
     "shareError": "Could not share form configuration",
     "deleteError": "Could not delete form configuration"
   },

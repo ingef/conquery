@@ -1,10 +1,8 @@
 import styled from "@emotion/styled";
-import useResizeObserver from "@react-hook/resize-observer";
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { FixedSizeList } from "react-window";
 
 import { DatasetIdT } from "../../api/types";
-import { useDebounce } from "../../common/helpers/useDebounce";
 
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
 import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
@@ -59,11 +57,9 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
 
         container.current = instance;
 
+        // TODO: Detect resize and re-measure
         const rect = instance.getBoundingClientRect();
 
-        // setHeight(rect.height);
-
-        // // width.current = rect.width;
         height.current = rect.height;
       }}
     >

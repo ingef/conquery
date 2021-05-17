@@ -206,7 +206,7 @@
     "downloadResults": "Ergebnisse herunterladen",
     "loadError": "Konnte Anfrage nicht laden",
     "renameError": "Konnte Anfrage nicht umbenennen",
-    "retagError": "Konnte Schlagwörter nicht speichern",
+    "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Anfrage nicht freigeben",
     "deleteError": "Konnte Anfrage nicht löschen"
   },
@@ -376,7 +376,7 @@
   "formConfig": {
     "loadError": "Konnte Konfiguration nicht laden",
     "renameError": "Konnte Konfiguration nicht umbenennen",
-    "retagError": "Konnte Schlagwörter nicht speichern",
+    "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Konfiguration nicht freigeben",
     "deleteError": "Konnte Konfiguration nicht löschen"
   },
