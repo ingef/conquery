@@ -1,101 +1,92 @@
-{  
-   "type":"QUERY_TEST",
-   "label":"DATE_DISTANCE_NEGATION_VERSICHERTENZEIT Test",
-   "expectedCsv":"tests/query/DATE_DISTANCE_NEGATION/expected-versichertenzeit.csv",
-   "query":{  
-      "type":"CONCEPT_QUERY",
-      "root":{  
-           "type":"NEGATION",
-         "child":{ 
-         "type":"DATE_RESTRICTION",
-         "dateRange":{  
-            "min":"2011-01-01",
-            "max":"2011-01-01"
-         },
-            "child":{  
-               "type":"OR",
-               "children":[  
-                  {  
-                     "type":"CONCEPT",
-                     "ids":[  
-                        "alter"
-                     ],
-                     "label":"Alter",
-                     "excludeFromTimeAggregation":false,
-                     "tables":[  
-                        {  
-                           "id":"alter.alterxy",
-                           "selects":[  
-
-                           ],
-                           "filters":[
-                              {  
-                                 "filter":"alter.alterxy.alterseinschrankung",
-                                 "type":"INTEGER_RANGE",
-                                 "value":{  
-                                    "min":"11",
-                                    "max":"11"
-                                 }
-                              }
-                           ]
+{
+   "type": "QUERY_TEST",
+   "label": "DATE_DISTANCE_NEGATION_VERSICHERTENZEIT Test",
+   "expectedCsv": "tests/query/DATE_DISTANCE_NEGATION/expected-versichertenzeit.csv",
+   "query": {
+      "type": "CONCEPT_QUERY",
+      "root": {
+         "type": "NEGATION",
+         "child": {
+            "type": "DATE_RESTRICTION",
+            "dateRange": {
+               "min": "2011-01-01",
+               "max": "2011-01-01"
+            },
+            "child": {
+               "type": "CONCEPT",
+               "ids": [
+                  "alter"
+               ],
+               "label": "Alter",
+               "excludeFromTimeAggregation": false,
+               "tables": [
+                  {
+                     "id": "alter.alterxy",
+                     "selects": [],
+                     "filters": [
+                        {
+                           "filter": "alter.alterxy.alterseinschrankung",
+                           "type": "INTEGER_RANGE",
+                           "value": {
+                              "min": "11",
+                              "max": "11"
+                           }
                         }
-                     ],
-                     "selects":[  
-
                      ]
                   }
-               ]
+               ],
+               "selects": []
             }
-		}
+         }
       }
    },
-   "concepts":[  
-      {  
-         "label":"alter",
-         "type":"TREE",
-         "connectors":[  
-            {  
-               "label":"alterxy",
-               "table":"table1",
-               "validityDates":{  
-                  "label":"versichertenzeit",
-                  "column":"table1.versichertenzeit"
+   "concepts": [
+      {
+         "label": "alter",
+         "type": "TREE",
+         "connectors": [
+            {
+               "label": "alterxy",
+               "table": "table1",
+               "validityDates": {
+                  "label": "versichertenzeit",
+                  "column": "table1.versichertenzeit"
                },
-               "filters":{
-                  "label":"alterseinschrankung",
-                  "description":"Geburtsdatum",
-                  "column":"table1.geburtsdatum",
-                  "type":"DATE_DISTANCE"
+               "filters": {
+                  "label": "alterseinschrankung",
+                  "description": "Geburtsdatum",
+                  "column": "table1.geburtsdatum",
+                  "type": "DATE_DISTANCE"
                }
             }
          ]
       }
    ],
-   "content":{  
-      "tables":[  
-         {  
-            "csv":"tests/query/DATE_DISTANCE_NEGATION/content.csv",
-            "name":"table1",
-            "primaryColumn":{  
-               "name":"pid",
-               "type":"STRING"
+   "content": {
+      "tables": [
+         {
+            "csv": "tests/query/DATE_DISTANCE_NEGATION/content.csv",
+            "name": "table1",
+            "primaryColumn": {
+               "name": "pid",
+               "type": "STRING"
             },
-            "columns":[  
-			   {  
-                  "name":"geburtsdatum",
-                  "type":"DATE"
+            "columns": [
+               {
+                  "name": "geburtsdatum",
+                  "type": "DATE"
                },
-			   {  
-                  "name":"erster",
-                  "type":"DATE"
+               {
+                  "name": "erster",
+                  "type": "DATE"
                },
-			   {  
-                  "name":"letzter",
-                  "type":"DATE"
+               {
+                  "name": "letzter",
+                  "type": "DATE"
                },
-               {  
-                  "name":"versichertenzeit",
-                  "type":"DATE_RANGE"
+               {
+                  "name": "versichertenzeit",
+                  "type": "DATE_RANGE"
                }
             ]
          }

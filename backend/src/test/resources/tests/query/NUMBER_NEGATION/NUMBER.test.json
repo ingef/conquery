@@ -1,90 +1,83 @@
-{  
-   "type":"QUERY_TEST",
-   "label":"NUMBER_NEGATION_QUERY Test",
-   "expectedCsv":"tests/query/NUMBER_NEGATION/expected.csv",
-   "query":{  
-      "type":"CONCEPT_QUERY",
-    "root": {
-	         "type":"NEGATION",
-         "child":{  
-      "type": "AND",
-      "children": [
-        {
-            "type":"DATE_RESTRICTION",
-            "dateRange":{  
-               "min":"2014-02-12",
-               "max":"2014-12-13"
+{
+   "type": "QUERY_TEST",
+   "label": "NUMBER_NEGATION_QUERY Test",
+   "expectedCsv": "tests/query/NUMBER_NEGATION/expected.csv",
+   "query": {
+      "type": "CONCEPT_QUERY",
+      "root": {
+         "type": "NEGATION",
+         "child": {
+            "type": "DATE_RESTRICTION",
+            "dateRange": {
+               "min": "2014-02-12",
+               "max": "2014-12-13"
             },
-            "child":{  
-                  
-                     "ids":[  
-                        "number"
-                     ],
-                     "type":"CONCEPT",
-                     "label":"vs",
-                     "tables":[  
-                        {  
-                           "id":"number.number_connector",
-                           "filters":[  
-                              {  
-                                 "filter":"number.number_connector.value",
-                                 "type":"REAL_RANGE",
-                                 "value":{  
-                                    "min": 1,
-									"max": 1
-                                 }
-                              }
-                           ]
+            "child": {
+               "ids": [
+                  "number"
+               ],
+               "type": "CONCEPT",
+               "label": "vs",
+               "tables": [
+                  {
+                     "id": "number.number_connector",
+                     "filters": [
+                        {
+                           "filter": "number.number_connector.value",
+                           "type": "REAL_RANGE",
+                           "value": {
+                              "min": 1,
+                              "max": 1
+                           }
                         }
                      ]
-                  
-               }
+                  }
+               ]
             }
-         ]
+         }
       }
-	  }
    },
-   "concepts":[  
-      {  
-         "label":"number",
-         "type":"TREE",
-         "connectors":[  
-            {  
-               "label":"number_connector",
-               "table":"table1",
-               "validityDates":{  
-                  "label":"datum",
-                  "column":"table1.datum"
+   "concepts": [
+      {
+         "label": "number",
+         "type": "TREE",
+         "connectors": [
+            {
+               "label": "number_connector",
+               "table": "table1",
+               "validityDates": {
+                  "label": "datum",
+                  "column": "table1.datum"
                },
-               "filters":{
-                  "label":"value",
-                  "description":"xy",
-                  "column":"table1.value",
-                  "type":"NUMBER"
+               "filters": {
+                  "label": "value",
+                  "description": "xy",
+                  "column": "table1.value",
+                  "type": "NUMBER"
                }
             }
          ]
       }
    ],
-   "content":{  
-      "tables":[  
-         {  
-            "csv":"tests/query/NUMBER_NEGATION/content.csv",
-            "name":"table1",
-            "primaryColumn":{  
-               "name":"pid",
-               "type":"STRING"
+   "content": {
+      "tables": [
+         {
+            "csv": "tests/query/NUMBER_NEGATION/content.csv",
+            "name": "table1",
+            "primaryColumn": {
+               "name": "pid",
+               "type": "STRING"
             },
             "columns": [
-        {
-          "name": "value",
-          "type": "REAL"
-        },
-        {
-          "name": "datum",
-          "type": "DATE_RANGE"
-        }
-      ]
+               {
+                  "name": "value",
+                  "type": "REAL"
+               },
+               {
+                  "name": "datum",
+                  "type": "DATE_RANGE"
+               }
+            ]
          }
       ]
    }
