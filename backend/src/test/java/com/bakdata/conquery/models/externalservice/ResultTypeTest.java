@@ -37,8 +37,8 @@ public class ResultTypeTest {
 		ConqueryConfig cfg = new ConqueryConfig();
 		cfg.getPreprocessor().getParsers().setCurrency(Currency.getInstance("EUR"));
 		return Stream.of(
-			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, true,	"t"),
-			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, false,	"f"),
+			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, true,	"Yes"),
+			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, false,	"No"),
 			Arguments.of(PRETTY, ResultType.CategoricalT.INSTANCE, "test", "test"),
 			Arguments.of(PRETTY, ResultType.ResolutionT.INSTANCE, DateContext.Resolution.COMPLETE.name(), "complete"),
 			Arguments.of(PRETTY_DE, ResultType.ResolutionT.INSTANCE, DateContext.Resolution.COMPLETE.name(), "Gesamt"),
@@ -53,8 +53,8 @@ public class ResultTypeTest {
 			Arguments.of(PRETTY_DE, ResultType.NumericT.INSTANCE, new BigDecimal("716283712389817246892743124.12312"), "716.283.712.389.817.246.892.743.124,12312"),
 			Arguments.of(PRETTY, ResultType.StringT.INSTANCE, "test", "test"),
 			
-			Arguments.of(PLAIN, ResultType.BooleanT.INSTANCE, true,	"t"),
-			Arguments.of(PLAIN, ResultType.BooleanT.INSTANCE, false,	"f"),
+			Arguments.of(PLAIN, ResultType.BooleanT.INSTANCE, true,	"1"),
+			Arguments.of(PLAIN, ResultType.BooleanT.INSTANCE, false,	"0"),
 			Arguments.of(PLAIN, ResultType.CategoricalT.INSTANCE, "test", "test"),
 			Arguments.of(PLAIN, ResultType.DateT.INSTANCE, LocalDate.of(2013, 7, 12).toEpochDay(), "2013-07-12"),
 			Arguments.of(PLAIN, ResultType.IntegerT.INSTANCE, 51839274, "51839274"),

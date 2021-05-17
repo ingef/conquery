@@ -248,5 +248,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 				// Issue a query and assert that it has the same content as the first time around.
 				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
+
+		testConquery.removeSupportDataset(conquery);
 	}
 }
