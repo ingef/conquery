@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.result.excel;
 
+import com.bakdata.conquery.Conquery;
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -75,14 +77,14 @@ public class ExcelRenderer {
 
         int writtenLines = writeBody(sheet, info, cfg, exec.streamResults());
 
-        postProcessTable(idHeaders, table, writtenLines);
+        postProcessTable(idHeaders, info, table, writtenLines);
 
 
         workbook.write(outputStream);
 
     }
 
-    private void postProcessTable(List<String> idHeaders, XSSFTable table, int writtenLines) {
+    private void postProcessTable(List<String> idHeaders, List<ResultInfo> info, XSSFTable table, int writtenLines) {
         // Extend the table area to the added data
         CellReference topLeft = new CellReference(0,0);
         CellReference bottomRight = new CellReference(writtenLines + 1, table.getColumnCount() - 1);
@@ -92,6 +94,10 @@ public class ExcelRenderer {
         // Auto-width fit all columns
         final XSSFSheet sheet = table.getXSSFSheet();
         for (int colIdx = 0; colIdx < table.getColumnCount(); colIdx++) {
+            if (colIdx >= idHeaders.size() && info.get(colIdx - idHeaders.size()).getType().equals(ConqueryConstants.DATES_INFO.getType())) {
+                // Don't auto size dateRange Lists as they tend to be long
+                continue;
+            }
             sheet.autoSizeColumn(colIdx);
         }
 
@@ -160,7 +166,7 @@ public class ExcelRenderer {
 
         // Row 0 is the Header the data starts at 1
         AtomicInteger currentRow = new AtomicInteger(1);
-        return resultLines.map(l -> this.writeRowsForEntity(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg)).reduce(0, Integer::sum);
+        return resultLines.map(l -> this.writeRowsForEntity(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg)).mapToInt(Integer::intValue).sum();
     }
 
     private int writeRowsForEntity(
