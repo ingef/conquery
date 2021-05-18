@@ -166,7 +166,7 @@ public class ExcelRenderer {
 
         // Row 0 is the Header the data starts at 1
         AtomicInteger currentRow = new AtomicInteger(1);
-        return resultLines.map(l -> this.writeRowsForEntity(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg)).mapToInt(Integer::intValue).sum();
+        return resultLines.mapToInt(l -> this.writeRowsForEntity(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg)).sum();
     }
 
     private int writeRowsForEntity(
