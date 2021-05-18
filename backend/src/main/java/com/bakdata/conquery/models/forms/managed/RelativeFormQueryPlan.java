@@ -268,11 +268,14 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
-		agg.registerAll(Stream.concat(featureSubqueries.stream(), outcomeSubqueries.stream())
-				.map(QueryPlan::getValidityDateAggregator)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.collect(Collectors.toList()));
+
+		for (FormQueryPlan featureSubquery : featureSubqueries) {
+			featureSubquery.getValidityDateAggregator().ifPresent(agg::register);
+		}
+
+		for (FormQueryPlan outcomeSubquery : outcomeSubqueries) {
+			outcomeSubquery.getValidityDateAggregator().ifPresent(agg::register);
+		}
 
 		return Optional.of(agg);
 	}
