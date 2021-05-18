@@ -56,6 +56,11 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
+		if (ctx.getQueryDateAggregator().isEmpty()) {
+			// Only override if none has been set from a higher level
+			ctx = ctx.withQueryDateAggregator(getValidityDateAggregator());
+		}
+
 		if (query.getRequiredTables().get().isEmpty()) {
 			return Optional.empty();
 		}

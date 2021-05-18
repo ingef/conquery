@@ -42,7 +42,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		// Either all date contexts have an relative event date or none has one
 		boolean withRelativeEventdate = dateContexts.get(0).getEventDate() != null;
 		for(DateContext dateContext : dateContexts) {
-			if((dateContext.getEventDate() != null) != withRelativeEventdate) {
+			if((dateContext.getEventDate() == null) == withRelativeEventdate) {
 				throw new IllegalStateException("Queryplan has absolute AND relative date contexts. Only one kind is allowed.");
 			}
 		}
@@ -51,6 +51,11 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+
+		if (ctx.getQueryDateAggregator().isEmpty()) {
+			// Only override if none has been set from a higher level
+			ctx = ctx.withQueryDateAggregator(getValidityDateAggregator());
+		}
 
 		features.init(ctx,entity);
 

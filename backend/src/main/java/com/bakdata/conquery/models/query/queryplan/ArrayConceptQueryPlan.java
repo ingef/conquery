@@ -97,6 +97,11 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	@Override
 	public Optional<SinglelineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
+		if (ctx.getQueryDateAggregator().isEmpty()) {
+			// Only override if none has been set from a higher level
+			ctx = ctx.withQueryDateAggregator(getValidityDateAggregator());
+		}
+
 		init(ctx, entity);
 
 		if (!isOfInterest(entity)) {
