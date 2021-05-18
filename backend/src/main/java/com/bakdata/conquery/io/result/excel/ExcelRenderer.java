@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.result.excel;
 
+import com.bakdata.conquery.Conquery;
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -8,9 +10,20 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
-import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jetbrains.annotations.NotNull;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumn;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumns;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -54,65 +67,121 @@ public class ExcelRenderer {
 
 
         // TODO internationalize
-        Sheet sheet = workbook.createSheet("Result");
+        XSSFSheet sheet = workbook.createSheet("Result");
 
-        writeHeader(sheet,workbook,idHeaders,info,cfg);
 
-        writeBody(sheet, info,cfg, exec.streamResults());
+        // Create a table environment inside the excel sheet
+        XSSFTable table = createTableEnvironment(exec, sheet);
+
+        writeHeader(sheet, idHeaders,info,cfg, table);
+
+        int writtenLines = writeBody(sheet, info, cfg, exec.streamResults());
+
+        postProcessTable(idHeaders, info, table, writtenLines);
+
 
         workbook.write(outputStream);
 
     }
 
+    private void postProcessTable(List<String> idHeaders, List<ResultInfo> info, XSSFTable table, int writtenLines) {
+        // Extend the table area to the added data
+        CellReference topLeft = new CellReference(0,0);
+        CellReference bottomRight = new CellReference(writtenLines + 1, table.getColumnCount() - 1);
+        AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
+        table.setArea(newArea);
+
+        // Auto-width fit all columns
+        final XSSFSheet sheet = table.getXSSFSheet();
+        for (int colIdx = 0; colIdx < table.getColumnCount(); colIdx++) {
+            if (colIdx >= idHeaders.size() && info.get(colIdx - idHeaders.size()).getType().equals(ConqueryConstants.DATES_INFO.getType())) {
+                // Don't auto size dateRange Lists as they tend to be long
+                continue;
+            }
+            sheet.autoSizeColumn(colIdx);
+        }
+
+        // TODO Add auto filters. This won't work with excel yet
+        //sheet.setAutoFilter(new CellRangeAddress(1, 1, 1, bottomRight.getCol()));
+
+        // Freeze Header and id columns
+        sheet.createFreezePane(idHeaders.size(), 1);
+    }
+
+    @NotNull
+    private XSSFTable createTableEnvironment(ManagedExecution<?> exec, XSSFSheet sheet) {
+        XSSFTable table = sheet.createTable(null);
+
+        CTTable cttable = table.getCTTable();
+        table.setName(exec.getLabelWithoutAutoLabelSuffix());
+        cttable.setTotalsRowShown(false);
+
+        CTTableStyleInfo styleInfo = cttable.addNewTableStyleInfo();
+        // Not sure how important this name is
+        styleInfo.setName("TableStyleMedium2");
+        styleInfo.setShowColumnStripes(false);
+        styleInfo.setShowRowStripes(true);
+        return table;
+    }
+
     private void writeHeader(
-            Sheet sheet,
-            XSSFWorkbook workbook,
+            XSSFSheet sheet,
             List<String> idHeaders,
             List<ResultInfo> infos,
-            PrintSettings cfg){
-        final CellStyle style = styles.get(ExcelConfig.HEADER_STYLE);
+            PrintSettings cfg,
+            XSSFTable table){
+
         Row header = sheet.createRow(0);
 
+        CTTableColumns columns = table.getCTTable().addNewTableColumns();
+        columns.setCount(idHeaders.size() + infos.size());
 
-        int currentColumn = 1;
+        int currentColumn = 0;
         for (String idHeader : idHeaders) {
+            CTTableColumn column = columns.addNewTableColumn();
+            // Table column ids MUST be set and MUST start at 1, excel will fail otherwise
+            column.setId(currentColumn+1);
+            column.setName(idHeader);
             Cell headerCell = header.createCell(currentColumn);
             headerCell.setCellValue(idHeader);
-            headerCell.setCellStyle(style);
             currentColumn++;
         }
 
         for (ResultInfo info : infos) {
+            final String columnName = info.getUniqueName(cfg);
+            CTTableColumn column = columns.addNewTableColumn();
+            column.setId(currentColumn+1);
+            column.setName(columnName);
             Cell headerCell = header.createCell(currentColumn);
-            headerCell.setCellValue(info.getUniqueName(cfg));
-            headerCell.setCellStyle(style);
+            headerCell.setCellValue(columnName);
             currentColumn++;
         }
     }
 
-    private void writeBody(
+    private int writeBody(
             Sheet sheet,
             List<ResultInfo> infos,
             PrintSettings cfg,
             Stream<EntityResult> resultLines) {
 
-        // Row 1 is the Header the data starts at 2
-        AtomicInteger currentRow = new AtomicInteger(2);
-        resultLines.forEach(l -> this.writeRowsForEntity(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg));
+        // Row 0 is the Header the data starts at 1
+        AtomicInteger currentRow = new AtomicInteger(1);
+        return resultLines.mapToInt(l -> this.writeRowsForEntity(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg)).sum();
     }
 
-    private void writeRowsForEntity(
+    private int writeRowsForEntity(
             List<ResultInfo> infos,
             EntityResult internalRow,
             Supplier<Row> externalRowSupplier,
             PrintSettings settings){
         String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
 
+        int writtenLines = 0;
 
         for (Object[] resultValues : internalRow.listResultLines()) {
             Row row = externalRowSupplier.get();
             // Write id cells
-            int currentColumn = 1;
+            int currentColumn = 0;
             for (String id : ids) {
                 Cell idCell = row.createCell(currentColumn);
                 idCell.setCellValue(id);
@@ -134,7 +203,9 @@ public class ExcelRenderer {
 
                 typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
             }
+            writtenLines++;
         }
+        return writtenLines;
     }
 
     // Type specific cell writers
@@ -146,7 +217,7 @@ public class ExcelRenderer {
     private static void writeBooleanCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
         if (value instanceof Boolean) {
             Boolean aBoolean = (Boolean) value;
-            cell.setCellValue(aBoolean.booleanValue());
+            cell.setCellValue(aBoolean);
         }
         cell.setCellValue(info.getType().printNullable(settings,value));
     }
@@ -160,11 +231,13 @@ public class ExcelRenderer {
     }
 
     public static void writeIntegerCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-        cell.setCellValue(settings.getIntegerFormat().format(((Number) value).longValue()));
+        cell.setCellValue(((Number) value).longValue());
+        cell.setCellStyle(styles.get(ExcelConfig.INTEGER_STYLE));
     }
 
     public static void writeNumericCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-        cell.setCellValue(settings.getIntegerFormat().format(((Number) value).doubleValue()));
+        cell.setCellValue(((Number) value).doubleValue());
+        cell.setCellStyle(styles.get(ExcelConfig.NUMERIC_STYLE));
     }
 
     public static void writeMoneyCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
