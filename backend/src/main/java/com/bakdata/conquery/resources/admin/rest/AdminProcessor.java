@@ -167,7 +167,7 @@ public class AdminProcessor {
 		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);
 
-		Namespace ns = new Namespace(datasetStorage, config.isFailOnError());
+		Namespace ns = new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy()).writer());
 
 		datasetRegistry.add(ns);
 
