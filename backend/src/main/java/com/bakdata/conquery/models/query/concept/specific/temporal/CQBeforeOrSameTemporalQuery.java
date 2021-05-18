@@ -24,7 +24,7 @@ public class CQBeforeOrSameTemporalQuery extends CQAbstractTemporalQuery {
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext ctx, ConceptQueryPlan plan) {
 		SpecialDateUnion dateAggregator = new SpecialDateUnion();
-		plan.getDateAggregator().registerAll(Set.of(dateAggregator));
+		plan.getDateAggregator().register(dateAggregator);
 
 		return new TemporalQueryNode(
 			index.createQueryPlan(ctx),
