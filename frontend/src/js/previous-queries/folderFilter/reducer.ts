@@ -1,7 +1,7 @@
-import { getUserSettings, storeUserSettings } from "js/user/userSettings";
 import { getType } from "typesafe-actions";
 
 import type { Action } from "../../app/actions";
+import { getUserSettings, storeUserSettings } from "../../user/userSettings";
 
 import {
   addFolderToFilter,

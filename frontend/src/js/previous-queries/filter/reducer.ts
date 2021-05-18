@@ -1,5 +1,6 @@
-import { Action } from "js/app/actions";
 import { getType } from "typesafe-actions";
+
+import { Action } from "../../app/actions";
 
 import { setPreviousQueriesFilter } from "./actions";
 

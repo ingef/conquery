@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
-import FaIcon from "js/icon/FaIcon";
 import React, { FC } from "react";
 
+import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
