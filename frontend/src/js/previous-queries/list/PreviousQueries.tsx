@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import React, { useRef, useState } from "react";
-import { FixedSizeList, VariableSizeList } from "react-window";
+import { VariableSizeList } from "react-window";
 
 import { DatasetIdT } from "../../api/types";
 
