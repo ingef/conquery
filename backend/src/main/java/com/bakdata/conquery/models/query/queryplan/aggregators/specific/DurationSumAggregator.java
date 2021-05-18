@@ -62,7 +62,7 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 		if (getColumn().equals(validityDateColumn) && queryDateAggregator.isPresent()) {
 			set.retainAll(queryDateAggregator.get().getAggregationResult());
 		}
-		return set.isEmpty() ? null : set.countDays();
+		return set.countDays();
 	}
 
 	@Override
