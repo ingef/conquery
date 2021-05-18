@@ -1,4 +1,7 @@
-import { SET_PREVIOUS_QUERIES_FILTER } from "./actionTypes";
+import { Action } from "js/app/actions";
+import { getType } from "typesafe-actions";
+
+import { setPreviousQueriesFilter } from "./actions";
 
 export type PreviousQueriesFilterStateT = string;
 
@@ -6,11 +9,11 @@ const initialState: PreviousQueriesFilterStateT = "all";
 
 const previousQueriesFilter = (
   state: PreviousQueriesFilterStateT = initialState,
-  action: Object,
+  action: Action,
 ): PreviousQueriesFilterStateT => {
   switch (action.type) {
-    case SET_PREVIOUS_QUERIES_FILTER:
-      return action.payload.filter;
+    case getType(setPreviousQueriesFilter):
+      return action.payload;
     default:
       return state;
   }

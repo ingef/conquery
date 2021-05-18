@@ -387,6 +387,10 @@
     "resetAll": "Back to default view",
     "closeAll": "Close all concepts"
   },
+  "folders": {
+    "headline": "Folders",
+    "noFolders": "Without folders"
+  },
   "help": {
     "tabConceptTrees": "Select concepts from concepts trees and use them in the Editor and Form Editor",
     "tabPreviousQueries": "Select previous queries and use them in the Editor, Timebased Editor and Form Editor",

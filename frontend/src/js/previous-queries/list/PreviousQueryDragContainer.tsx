@@ -35,6 +35,8 @@ const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
     isPreviousQuery: true,
     canExpand: query.canExpand,
     tags: query.tags,
+    own: query.own,
+    shared: query.shared,
   };
 
   const [, drag] = useDrag<DragItemQuery, void, {}>({

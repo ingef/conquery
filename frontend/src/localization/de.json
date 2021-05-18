@@ -387,6 +387,10 @@
     "resetAll": "Zurück zu Standardansicht",
     "closeAll": "Alle Konzepte schließen"
   },
+  "folders": {
+    "headline": "Ordner",
+    "noFolders": "(ohne)"
+  },
   "help": {
     "tabConceptTrees": "Auswahl der Konzepte aus den Konzepten zur Verwendung in Editor oder Formular-Editor.",
     "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung in Editor, Zeit-Editor oder Formular-Editor.",

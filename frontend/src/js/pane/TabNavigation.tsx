@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import FaIcon from "js/icon/FaIcon";
 import React, { FC } from "react";
 
 import WithTooltip from "../tooltip/WithTooltip";
@@ -44,10 +45,15 @@ const SxWithTooltip = styled(WithTooltip)`
   flex-shrink: 0;
 `;
 
+const SxFaIcon = styled(FaIcon)`
+  margin-left: 5px;
+`;
+
 export interface TabNavigationTab {
   key: string;
   label: string;
   tooltip?: string;
+  loading?: boolean;
 }
 
 interface PropsT {
@@ -59,7 +65,7 @@ interface PropsT {
 const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab }) => {
   return (
     <Root>
-      {tabs.map(({ key, label, tooltip }) => {
+      {tabs.map(({ key, label, tooltip, loading }) => {
         return (
           <SxWithTooltip text={tooltip} lazy key={key}>
             <Headline
@@ -69,6 +75,7 @@ const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab }) => {
               }}
             >
               {label}
+              {loading && <SxFaIcon icon="spinner" />}
             </Headline>
           </SxWithTooltip>
         );

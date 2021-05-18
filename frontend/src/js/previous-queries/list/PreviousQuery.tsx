@@ -29,7 +29,8 @@ const Root = styled("div")<{ own?: boolean; system?: boolean }>`
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.grayLight};
   background-color: ${({ theme }) => theme.col.bg};
-  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
 
   border-left: ${({ theme, own, system }) =>
     own
@@ -63,6 +64,7 @@ const TopInfos = styled(Gray)`
 `;
 const OwnerName = styled(Gray)`
   flex-shrink: 0;
+  padding-left: 5px;
 `;
 
 const TopRight = styled("div")`
@@ -83,7 +85,7 @@ const MiddleRow = styled("div")`
   width: 100%;
   justify-content: space-between;
   line-height: 24px;
-  margin-bottom: 2px;
+  margin: 2px 0;
 `;
 const StyledErrorMessage = styled(ErrorMessage)`
   margin: 0;
@@ -191,17 +193,6 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
           </TopLeft>
           <TopRight>
             <WithTooltip text={executedAtRelative}>{executedAt}</WithTooltip>
-            {mayEditQuery &&
-              !isEditingTags &&
-              (!query.tags || query.tags.length === 0) && (
-                <StyledWithTooltip text={t("common.addTag")}>
-                  <IconButton
-                    icon="tags"
-                    bare
-                    onClick={() => setIsEditingTags(true)}
-                  />
-                </StyledWithTooltip>
-              )}
             {secondaryId && query.queryType === "SECONDARY_ID_QUERY" && (
               <StyledWithTooltip
                 text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}

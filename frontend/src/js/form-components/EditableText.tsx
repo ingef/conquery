@@ -27,7 +27,6 @@ const SxIconButton = styled(IconButton)`
 `;
 
 const Text = styled("div")`
-  padding: 2px 0 0;
   display: flex;
   flex-direction: row;
   align-items: flex-start;

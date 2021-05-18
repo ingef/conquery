@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import React, { useRef, useState } from "react";
-import { FixedSizeList } from "react-window";
+import { FixedSizeList, VariableSizeList } from "react-window";
 
 import { DatasetIdT } from "../../api/types";
 
@@ -13,6 +13,10 @@ interface PropsT {
   datasetId: DatasetIdT | null;
   queries: PreviousQueryT[];
 }
+
+const ROW_SIZE_WITH_TAGS = 87;
+const ROW_SIZE_WITHOUT_TAGS = 62;
+const AVG_ROW_SIZE = (ROW_SIZE_WITHOUT_TAGS + ROW_SIZE_WITH_TAGS) / 2;
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -35,14 +39,6 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
   const onCloseShareModal = () => {
     setPreviousQueryToShare(null);
   };
-
-  function onShareSuccess() {
-    onCloseShareModal();
-  }
-
-  function onDeleteSuccess() {
-    onCloseDeleteModal();
-  }
 
   const container = useRef<HTMLDivElement | null>(null);
   const height = useRef<number>(0);
@@ -67,19 +63,25 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
         <SharePreviousQueryModal
           previousQueryId={previousQueryToShare}
           onClose={onCloseShareModal}
-          onShareSuccess={onShareSuccess}
+          onShareSuccess={onCloseShareModal}
         />
       )}
       {!!previousQueryToDelete && (
         <DeletePreviousQueryModal
           previousQueryId={previousQueryToDelete}
           onClose={onCloseDeleteModal}
-          onDeleteSuccess={onDeleteSuccess}
+          onDeleteSuccess={onCloseDeleteModal}
         />
       )}
       {datasetId && (
-        <FixedSizeList
-          itemSize={85}
+        <VariableSizeList
+          estimatedItemSize={AVG_ROW_SIZE}
+          key={queries.length}
+          itemSize={(index) =>
+            queries[index].tags.length === 0
+              ? ROW_SIZE_WITHOUT_TAGS
+              : ROW_SIZE_WITH_TAGS
+          }
           itemCount={queries.length}
           height={height.current}
           width="100%"
@@ -100,7 +102,7 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
               </Container>
             );
           }}
-        </FixedSizeList>
+        </VariableSizeList>
       )}
     </Root>
   );

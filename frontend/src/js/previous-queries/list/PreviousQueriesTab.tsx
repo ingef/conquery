@@ -1,14 +1,14 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../../api/types";
 import EmptyList from "../../list/EmptyList";
-import Loading from "../../list/Loading";
 import { canUploadResult } from "../../user/selectors";
 import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
+import { toggleFoldersOpen } from "../folderFilter/actions";
 import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
@@ -19,7 +19,7 @@ import { useLoadPreviousQueries } from "./actions";
 import { PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
 
-const Container = styled("div")`
+const ScrollContainer = styled("div")`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   font-size: ${({ theme }) => theme.font.sm};
@@ -33,13 +33,20 @@ const Row = styled("div")`
 const FoldersAndQueries = styled(Row)`
   flex-grow: 1;
   margin-top: 8px;
+  overflow: hidden;
 `;
 const SxPreviousQueriesSearchBox = styled(PreviousQueriesSearchBox)`
   flex-grow: 1;
 `;
 
+const SxPreviousQueriesFilter = styled(PreviousQueriesFilter)`
+  margin-top: 5px;
+  display: flex;
+  align-items: flex-start;
+`;
+
 const SxUploadQueryResults = styled(UploadQueryResults)`
-  margin-right: 5px;
+  margin-left: 5px;
 `;
 
 const Expand = styled("div")`
@@ -55,13 +62,29 @@ interface PropsT {
 
 const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   const { t } = useTranslation();
-  const queries = useSelector<StateT, PreviousQueryT[]>((state) =>
-    selectPreviousQueries(
-      state.previousQueries.queries,
-      state.previousQueriesSearch,
-      state.previousQueriesFilter,
-    ),
+  const allQueries = useSelector<StateT, PreviousQueryT[]>(
+    (state) => state.previousQueries.queries,
   );
+  const search = useSelector<StateT, string[]>(
+    (state) => state.previousQueriesSearch,
+  );
+  const filter = useSelector<StateT, string>(
+    (state) => state.previousQueriesFilter,
+  );
+  const folders = useSelector<StateT, string[]>(
+    (state) => state.previousQueriesFolderFilter.folders,
+  );
+  const noFoldersActive = useSelector<StateT, boolean>(
+    (state) => state.previousQueriesFolderFilter.noFoldersActive,
+  );
+  const queries = selectPreviousQueries(
+    allQueries,
+    search,
+    filter,
+    folders,
+    noFoldersActive,
+  );
+
   const loading = useSelector<StateT, boolean>(
     (state) => state.previousQueries.loading,
   );
@@ -79,32 +102,36 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
     }
   }, [datasetId]);
 
-  const [areFoldersOpen, setAreFoldersOpen] = useState<boolean>(false);
+  const areFoldersOpen = useSelector<StateT, boolean>(
+    (state) => state.previousQueriesFolderFilter.areFoldersOpen,
+  );
+
+  const dispatch = useDispatch();
+  const onToggleFoldersOpen = () => dispatch(toggleFoldersOpen());
 
   return (
     <>
-      <PreviousQueriesFilter />
       <Row>
         {hasPermissionToUpload && (
           <PreviousQueriesFolderButton
             active={areFoldersOpen}
-            onClick={() => setAreFoldersOpen(!areFoldersOpen)}
+            onClick={onToggleFoldersOpen}
           />
         )}
+        <SxPreviousQueriesSearchBox />
         {hasPermissionToUpload && (
           <SxUploadQueryResults datasetId={datasetId} />
         )}
-        <SxPreviousQueriesSearchBox />
       </Row>
       <FoldersAndQueries>
         <PreviousQueriesFolders isOpen={areFoldersOpen} />
         <Expand>
-          <Container>
-            {loading && <Loading message={t("previousQueries.loading")} />}
+          <SxPreviousQueriesFilter />
+          <ScrollContainer>
             {queries.length === 0 && !loading && (
               <EmptyList emptyMessage={t("previousQueries.noQueriesFound")} />
             )}
-          </Container>
+          </ScrollContainer>
           {hasQueries && (
             <PreviousQueries queries={queries} datasetId={datasetId} />
           )}

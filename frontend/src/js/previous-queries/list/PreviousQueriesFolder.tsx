@@ -3,14 +3,16 @@ import React, { FC } from "react";
 
 import FaIcon from "../../icon/FaIcon";
 
-const Folder = styled("div")`
+const Folder = styled("div")<{ active?: boolean }>`
   display: inline-flex;
   align-items: flex-start;
-  padding: 4px 7px;
+  padding: 2px 7px;
   border-radius: ${({ theme }) => theme.borderRadius};
   font-size: ${({ theme }) => theme.font.sm};
   cursor: pointer;
 
+  background-color: ${({ theme, active }) =>
+    active ? theme.col.grayLight : "transparent"};
   &:hover {
     background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
   }
@@ -24,13 +26,27 @@ const Text = styled("div")`
 
 interface Props {
   folder: string;
+  className?: string;
+  active?: boolean;
+  empty?: boolean;
   onClick: () => void;
 }
 
-const PreviousQueriesFolder: FC<Props> = ({ folder, onClick }) => {
+const PreviousQueriesFolder: FC<Props> = ({
+  className,
+  folder,
+  active,
+  empty,
+  onClick,
+}) => {
   return (
-    <Folder key={folder} onClick={onClick}>
-      <FaIcon icon="folder" main />
+    <Folder
+      key={folder}
+      active={active}
+      onClick={onClick}
+      className={className}
+    >
+      <FaIcon icon="folder" regular={empty} main />
       <Text>{folder}</Text>
     </Folder>
   );
