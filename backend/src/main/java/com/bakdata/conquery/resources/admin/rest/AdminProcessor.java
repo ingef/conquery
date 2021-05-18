@@ -27,6 +27,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -167,7 +168,7 @@ public class AdminProcessor {
 		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);
 
-		Namespace ns = new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy()).writer());
+		Namespace ns = new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy()).writerWithView(InternalOnly.class));
 
 		datasetRegistry.add(ns);
 
