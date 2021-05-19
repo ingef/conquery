@@ -21,21 +21,21 @@ public class DateAggregator implements Aggregator<CDateSet> {
 
     private final DateAggregationAction action;
 
-    private Set<Aggregator<CDateSet>> siblings = new HashSet<>();
+    private Set<Aggregator<CDateSet>> children = new HashSet<>();
 
     /**
      * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
      */
-    public void register(Aggregator<CDateSet> sibling) {
-        this.siblings.add(sibling);
+    public void register(Aggregator<CDateSet> child) {
+        this.children.add(child);
     }
 
 
     /**
      * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
      */
-    public void registerAll(Collection<Aggregator<CDateSet>> siblings) {
-        this.siblings.addAll(siblings);
+    public void registerAll(Collection<Aggregator<CDateSet>> children) {
+        this.children.addAll(children);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class DateAggregator implements Aggregator<CDateSet> {
     @Override
     public CDateSet getAggregationResult() {
         final Set<CDateSet> all = new HashSet<>();
-        siblings.forEach(s -> {
+        children.forEach(s -> {
             CDateSet result = s.getAggregationResult();
             if(result != null) {
                 all.add(result);
@@ -65,15 +65,15 @@ public class DateAggregator implements Aggregator<CDateSet> {
     @Override
     public Aggregator<CDateSet> doClone(CloneContext ctx) {
         DateAggregator clone = new DateAggregator(action);
-        Set<Aggregator<CDateSet>> clonedSiblings = new HashSet<>();
-        for (Aggregator<CDateSet> sibling : siblings) {
-            clonedSiblings.add(ctx.clone(sibling));
+        Set<Aggregator<CDateSet>> clonedChildren = new HashSet<>();
+        for (Aggregator<CDateSet> sibling : children) {
+            clonedChildren.add(ctx.clone(sibling));
         }
-        clone.siblings = clonedSiblings;
+        clone.children = clonedChildren;
         return clone;
     }
 
-    public boolean hasSiblings() {
-        return !siblings.isEmpty();
+    public boolean hasChildren() {
+        return !children.isEmpty();
     }
 }

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.forms.util.DateContext;
@@ -154,7 +152,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 				p -> p.getValidityDateAggregator().ifPresent(agg::register)
 		);
 
-		return agg.hasSiblings() ? Optional.of(agg) : Optional.empty();
+		return agg.hasChildren() ? Optional.of(agg) : Optional.empty();
 	}
 
 	public int columnCount() {

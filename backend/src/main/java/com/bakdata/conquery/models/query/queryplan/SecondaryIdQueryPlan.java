@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
@@ -218,6 +217,6 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
 		childPerKey.values().forEach(c -> c.getValidityDateAggregator().ifPresent(agg::register));
 
-		return agg.hasSiblings() ? Optional.of(agg) : Optional.empty();
+		return agg.hasChildren() ? Optional.of(agg) : Optional.empty();
 	}
 }

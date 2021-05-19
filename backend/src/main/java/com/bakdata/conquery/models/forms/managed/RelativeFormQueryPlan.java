@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.forms.managed;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
@@ -277,6 +275,6 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			outcomeSubquery.getValidityDateAggregator().ifPresent(agg::register);
 		}
 
-		return agg.hasSiblings() ? Optional.of(agg) : Optional.empty();
+		return agg.hasChildren() ? Optional.of(agg) : Optional.empty();
 	}
 }
