@@ -243,6 +243,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			}
 		}
+
+		testConquery.removeSupportDataset(conquery);
 	}
 
 }

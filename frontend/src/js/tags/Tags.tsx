@@ -11,22 +11,20 @@ interface PropsT {
   onClickTag: (label: string) => void;
 }
 
-const Tags: FC<PropsT> = (props) => {
-  if (!props.tags || props.tags.length <= 0) {
-    return null;
-  }
-
+const Tags: FC<PropsT> = ({ className, tags, onClickTag }) => {
   return (
-    <div className={props.className}>
-      {props.tags.map((tag, i) => (
-        <Tag
-          key={i}
-          isSelected={tag.isSelected}
-          onClick={() => props.onClickTag(tag.label)}
-        >
-          {tag.label}
-        </Tag>
-      ))}
+    <div className={className}>
+      {!tags || tags.length <= 0
+        ? null
+        : tags.map((tag, i) => (
+            <Tag
+              key={i}
+              isSelected={tag.isSelected}
+              onClick={() => onClickTag(tag.label)}
+            >
+              {tag.label}
+            </Tag>
+          ))}
     </div>
   );
 };

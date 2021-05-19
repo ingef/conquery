@@ -19,13 +19,10 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -36,10 +33,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Setter
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString(of = "storage")
 public class Namespace implements Closeable {
 
+	@JsonIgnore
+	private transient ObjectWriter objectWriter;
 	@JsonIgnore
 	private transient NamespaceStorage storage;
 
@@ -64,10 +63,11 @@ public class Namespace implements Closeable {
 	@JsonIgnore
 	private transient DatasetRegistry namespaces;
 
-	public Namespace(NamespaceStorage storage, boolean failOnError) {
+	public Namespace(NamespaceStorage storage, boolean failOnError, ObjectWriter objectWriter) {
 		this.storage = storage;
 		this.queryManager = new ExecutionManager(this);
 		this.jobManager = new JobManager(storage.getDataset().getName(), failOnError);
+		this.objectWriter = objectWriter;
 	}
 
 	public void checkConnections() {
@@ -115,6 +115,8 @@ public class Namespace implements Closeable {
 
 	public synchronized void addWorker(WorkerInformation info) {
 		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
+
+		info.setObjectWriter(objectWriter);
 
 		Set<WorkerInformation> l = new HashSet<>(workers);
 		l.add(info);

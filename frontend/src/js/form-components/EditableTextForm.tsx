@@ -2,8 +2,9 @@ import styled from "@emotion/styled";
 import React, { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
-import PrimaryButton from "../button/PrimaryButton";
+import IconButton from "../button/IconButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
+import WithTooltip from "../tooltip/WithTooltip";
 
 interface PropsT {
   className?: string;
@@ -16,8 +17,8 @@ interface PropsT {
 }
 
 const Input = styled("input")`
-  height: 30px;
   font-size: ${({ theme }) => theme.font.sm};
+  padding: 4px 8px;
 `;
 
 const Form = styled("form")`
@@ -26,8 +27,9 @@ const Form = styled("form")`
   flex-wrap: wrap;
 `;
 
-const SxPrimaryButton = styled(PrimaryButton)`
-  margin-bottom: 3px;
+const SxIconButton = styled(IconButton)`
+  padding: 4px 10px;
+  margin-left: 3px;
 `;
 
 const EditableTextForm: React.FC<PropsT> = ({
@@ -69,9 +71,14 @@ const EditableTextForm: React.FC<PropsT> = ({
         }}
       />
       {!saveOnClickoutside && (
-        <SxPrimaryButton type="submit" small disabled={loading}>
-          {t("common.save")}
-        </SxPrimaryButton>
+        <WithTooltip text={t("common.save")}>
+          <SxIconButton
+            type="submit"
+            frame
+            disabled={loading}
+            icon={loading ? "spinner" : "check"}
+          />
+        </WithTooltip>
       )}
     </Form>
   );

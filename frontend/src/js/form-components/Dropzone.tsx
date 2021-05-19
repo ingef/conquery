@@ -15,22 +15,28 @@ import type { DragItemFile } from "./DropzoneWithFileInput";
 
 const Root = styled("div")<{
   isOver?: boolean;
+  naked?: boolean;
   canDrop?: boolean;
 }>`
-  border: 3px
-    ${({ theme, isOver, canDrop }) =>
-      isOver && !canDrop
-        ? `solid ${theme.col.red}`
-        : isOver
-        ? `solid ${theme.col.black}`
-        : `dashed ${theme.col.gray}`};
+  border: ${({ theme, isOver, canDrop, naked }) =>
+    naked
+      ? "none"
+      : isOver && !canDrop
+      ? `3px solid ${theme.col.red}`
+      : isOver
+      ? `3px solid ${theme.col.black}`
+      : `3px dashed ${theme.col.gray}`};
   border-radius: ${({ theme }) => theme.borderRadius};
-  padding: 10px;
+  padding: ${({ naked }) => (naked ? "0" : "10px")};
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${({ theme, canDrop }) =>
-    canDrop ? theme.col.grayVeryLight : theme.col.bg};
+  background-color: ${({ theme, canDrop, naked, isOver }) =>
+    naked && isOver && canDrop
+      ? theme.col.grayLight
+      : canDrop
+      ? theme.col.grayVeryLight
+      : theme.col.bg};
   width: 100%;
   color: ${({ theme, isOver, canDrop }) =>
     isOver && !canDrop
@@ -49,6 +55,7 @@ export interface ChildArgs {
 export interface DropzoneProps<DroppableObject> {
   className?: string;
   acceptedDropTypes: string[];
+  naked?: boolean;
   onDrop: (props: DroppableObject, monitor: DropTargetMonitor) => void;
   canDrop?: (props: DroppableObject, monitor: DropTargetMonitor) => boolean;
   onClick?: () => void;
@@ -67,6 +74,7 @@ export type PossibleDroppableObject =
 const Dropzone = <DroppableObject extends PossibleDroppableObject>({
   className,
   acceptedDropTypes,
+  naked,
   canDrop,
   onDrop,
   onClick,
@@ -94,6 +102,7 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>({
       canDrop={canDropResult}
       className={className}
       onClick={onClick}
+      naked={naked}
     >
       {children && children({ isOver, canDrop: canDropResult, itemType })}
     </Root>

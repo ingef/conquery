@@ -1,10 +1,11 @@
 import styled from "@emotion/styled";
-import React, { useState } from "react";
-import ReactList from "react-list";
+import React, { useRef, useState } from "react";
+import { FixedSizeList } from "react-window";
 
 import { DatasetIdT } from "../../api/types";
 
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
+import EditPreviousQueryFoldersModal from "./EditPreviousQueryFoldersModal";
 import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
 import SharePreviousQueryModal from "./SharePreviousQueryModal";
 import { PreviousQueryT } from "./reducer";
@@ -14,16 +15,14 @@ interface PropsT {
   queries: PreviousQueryT[];
 }
 
+const ROW_SIZE = 62;
+
 const Root = styled("div")`
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  flex-grow: 1;
   font-size: ${({ theme }) => theme.font.sm};
-  padding: 0 10px;
+  padding: 4px 0;
 `;
-const Container = styled("div")`
-  margin: 4px 0;
-`;
+const Container = styled("div")``;
 
 const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
   const [previousQueryToDelete, setPreviousQueryToDelete] = useState<
@@ -32,43 +31,66 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
   const [previousQueryToShare, setPreviousQueryToShare] = useState<
     string | null
   >(null);
+  const [
+    previousQueryToEditFolders,
+    setPreviousQueryToEditFolders,
+  ] = useState<PreviousQueryT | null>(null);
 
-  const onCloseDeleteModal = () => {
-    setPreviousQueryToDelete(null);
-  };
-  const onCloseShareModal = () => {
-    setPreviousQueryToShare(null);
-  };
+  const onCloseDeleteModal = () => setPreviousQueryToDelete(null);
+  const onCloseShareModal = () => setPreviousQueryToShare(null);
+  const onCloseEditFoldersModal = () => setPreviousQueryToEditFolders(null);
 
-  function onShareSuccess() {
-    onCloseShareModal();
-  }
-
-  function onDeleteSuccess() {
-    onCloseDeleteModal();
-  }
+  const container = useRef<HTMLDivElement | null>(null);
+  const height = useRef<number>(0);
 
   return (
-    <Root>
+    <Root
+      ref={(instance) => {
+        if (!instance) {
+          container.current = null;
+          return;
+        }
+
+        container.current = instance;
+
+        // TODO: Detect resize and re-measure
+        const rect = instance.getBoundingClientRect();
+
+        height.current = rect.height;
+      }}
+    >
       {!!previousQueryToShare && (
         <SharePreviousQueryModal
           previousQueryId={previousQueryToShare}
           onClose={onCloseShareModal}
-          onShareSuccess={onShareSuccess}
+          onShareSuccess={onCloseShareModal}
         />
       )}
       {!!previousQueryToDelete && (
         <DeletePreviousQueryModal
           previousQueryId={previousQueryToDelete}
           onClose={onCloseDeleteModal}
-          onDeleteSuccess={onDeleteSuccess}
+          onDeleteSuccess={onCloseDeleteModal}
+        />
+      )}
+      {!!previousQueryToEditFolders && (
+        <EditPreviousQueryFoldersModal
+          previousQuery={previousQueryToEditFolders}
+          onClose={onCloseEditFoldersModal}
+          onEditSuccess={onCloseEditFoldersModal}
         />
       )}
       {datasetId && (
-        <ReactList
-          itemRenderer={(index: number, key: string | number) => {
+        <FixedSizeList
+          key={queries.length}
+          itemSize={ROW_SIZE}
+          itemCount={queries.length}
+          height={height.current}
+          width="100%"
+        >
+          {({ index, style }) => {
             return (
-              <Container key={key}>
+              <Container style={style}>
                 <PreviousQueryDragContainer
                   query={queries[index]}
                   datasetId={datasetId}
@@ -78,13 +100,14 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
                   onIndicateShare={() =>
                     setPreviousQueryToShare(queries[index].id)
                   }
+                  onIndicateEditFolders={() =>
+                    setPreviousQueryToEditFolders(queries[index])
+                  }
                 />
               </Container>
             );
           }}
-          length={queries.length}
-          type="variable"
-        />
+        </FixedSizeList>
       )}
     </Root>
   );
