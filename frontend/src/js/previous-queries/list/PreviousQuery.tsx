@@ -12,13 +12,11 @@ import IconButton from "../../button/IconButton";
 import { formatDate, useFormatDateDistance } from "../../common/helpers";
 import { exists } from "../../common/helpers/exists";
 import ErrorMessage from "../../error-message/ErrorMessage";
-import EditableTags from "../../form-components/EditableTags";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import PreviousQueriesLabel from "./PreviousQueriesLabel";
-import PreviousQueryTags from "./PreviousQueryTags";
-import { useRenamePreviousQuery, useRetagPreviousQuery } from "./actions";
+import { useRenamePreviousQuery } from "./actions";
 import { PreviousQueryT } from "./reducer";
 import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
@@ -80,7 +78,7 @@ const TopLeft = styled("div")`
 const NonBreakingText = styled("span")`
   white-space: nowrap;
 `;
-const MiddleRow = styled("div")`
+const LabelRow = styled("div")`
   display: flex;
   width: 100%;
   justify-content: space-between;
@@ -106,9 +104,8 @@ const SxDownloadButton = styled(DownloadButton)`
   }
 `;
 
-const SxPreviousQueryTags = styled(PreviousQueryTags)`
-  display: flex;
-  align-items: center;
+const FoldersButton = styled(IconButton)`
+  margin-right: 10px;
 `;
 
 interface PropsT {
@@ -116,17 +113,21 @@ interface PropsT {
   datasetId: DatasetIdT;
   onIndicateDeletion: () => void;
   onIndicateShare: () => void;
+  onIndicateEditFolders: () => void;
 }
 
 const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
   function PreviousQueryComponent(
-    { query, datasetId, onIndicateDeletion, onIndicateShare },
+    {
+      query,
+      datasetId,
+      onIndicateDeletion,
+      onIndicateShare,
+      onIndicateEditFolders,
+    },
     ref,
   ) {
     const { t } = useTranslation();
-    const availableTags = useSelector<StateT, string[]>(
-      (state) => state.previousQueries.tags,
-    );
 
     const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
       (state) => state.conceptTrees.secondaryIds,
@@ -135,14 +136,10 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     const formatDateDistance = useFormatDateDistance();
 
     const renamePreviousQuery = useRenamePreviousQuery();
-    const retagPreviousQuery = useRetagPreviousQuery();
     const onDeletePreviousQuery = useDeletePreviousQuery(query.id);
 
     const onRenamePreviousQuery = (label: string) =>
       renamePreviousQuery(datasetId, query.id, label);
-
-    const onRetagPreviousQuery = (tags: string[]) =>
-      retagPreviousQuery(query.id, tags);
 
     const mayDeleteQueryRightAway =
       query.tags.length === 0 && query.isPristineLabel;
@@ -170,7 +167,6 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       ? loadedSecondaryIds.find((secId) => query.secondaryId === secId.id)
       : null;
 
-    const [isEditingTags, setIsEditingTags] = useState<boolean>(false);
     const [isEditingLabel, setIsEditingLabel] = useState<boolean>(false);
 
     return (
@@ -181,6 +177,17 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       >
         <TopInfos>
           <TopLeft>
+            {mayEditQuery && (
+              <WithTooltip text={t("previousQuery.editFolders")}>
+                <FoldersButton
+                  icon="folder"
+                  tight
+                  small
+                  bare
+                  onClick={onIndicateEditFolders}
+                />
+              </WithTooltip>
+            )}
             {!!query.resultUrl ? (
               <WithTooltip text={t("previousQuery.downloadResults")}>
                 <SxDownloadButton tight small bare url={query.resultUrl}>
@@ -222,7 +229,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             )}
           </TopRight>
         </TopInfos>
-        <MiddleRow>
+        <LabelRow>
           <PreviousQueriesLabel
             mayEditQuery={mayEditQuery}
             loading={!!query.loading}
@@ -233,20 +240,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             setIsEditing={setIsEditingLabel}
           />
           <OwnerName>{query.ownerName}</OwnerName>
-        </MiddleRow>
-        {mayEditQuery ? (
-          <EditableTags
-            tags={query.tags.sort()}
-            loading={!!query.loading}
-            onSubmit={onRetagPreviousQuery}
-            isEditing={isEditingTags}
-            setIsEditing={setIsEditingTags}
-            tagComponent={<SxPreviousQueryTags tags={query.tags} />}
-            availableTags={availableTags}
-          />
-        ) : (
-          <SxPreviousQueryTags tags={query.tags} />
-        )}
+        </LabelRow>
         {!!query.error && <StyledErrorMessage message={query.error} />}
       </Root>
     );

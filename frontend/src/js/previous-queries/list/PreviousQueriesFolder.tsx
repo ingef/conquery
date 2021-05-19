@@ -3,13 +3,14 @@ import React, { FC } from "react";
 
 import FaIcon from "../../icon/FaIcon";
 
-const Folder = styled("div")<{ active?: boolean }>`
+const Folder = styled("div")<{ active?: boolean; empty?: boolean }>`
   display: inline-flex;
   align-items: flex-start;
   padding: 2px 7px;
   border-radius: ${({ theme }) => theme.borderRadius};
   font-size: ${({ theme }) => theme.font.sm};
   cursor: pointer;
+  font-style: ${({ empty }) => (empty ? "italic" : "inherit")};
 
   background-color: ${({ theme, active }) =>
     active ? theme.col.grayLight : "transparent"};
@@ -43,6 +44,7 @@ const PreviousQueriesFolder: FC<Props> = ({
     <Folder
       key={folder}
       active={active}
+      empty={empty}
       onClick={onClick}
       className={className}
     >

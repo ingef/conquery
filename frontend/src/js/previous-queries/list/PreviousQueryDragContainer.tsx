@@ -17,6 +17,7 @@ interface PropsT {
   datasetId: DatasetIdT;
   onIndicateDeletion: () => void;
   onIndicateShare: () => void;
+  onIndicateEditFolders: () => void;
 }
 
 const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {

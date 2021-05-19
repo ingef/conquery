@@ -112,12 +112,10 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   return (
     <>
       <Row>
-        {hasPermissionToUpload && (
-          <PreviousQueriesFolderButton
-            active={areFoldersOpen}
-            onClick={onToggleFoldersOpen}
-          />
-        )}
+        <PreviousQueriesFolderButton
+          active={areFoldersOpen}
+          onClick={onToggleFoldersOpen}
+        />
         <SxPreviousQueriesSearchBox />
         {hasPermissionToUpload && (
           <SxUploadQueryResults datasetId={datasetId} />
@@ -132,9 +130,7 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
               <EmptyList emptyMessage={t("previousQueries.noQueriesFound")} />
             )}
           </ScrollContainer>
-          {hasQueries && (
-            <PreviousQueries queries={queries} datasetId={datasetId} />
-          )}
+          <PreviousQueries queries={queries} datasetId={datasetId} />
         </Expand>
       </FoldersAndQueries>
     </>

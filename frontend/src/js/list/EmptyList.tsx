@@ -18,8 +18,7 @@ const MsgContainer = styled("div")`
 `;
 
 const Msg = styled("div")`
-  width: 400px;
-  white-space: initial;
+  white-space: nowrap;
 `;
 
 const Message = styled("p")`

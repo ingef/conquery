@@ -10,7 +10,7 @@ import { deleteFormConfigSuccess } from "./actions";
 import { FormConfigT } from "./reducer";
 
 interface PropsT {
-  datasetId: string;
+  datasetId?: string;
   formConfigs: FormConfigT[];
 }
 
@@ -25,7 +25,7 @@ const Container = styled("div")`
   margin: 4px 0;
 `;
 
-const FormConfigs: React.FC<PropsT> = ({ datasetId, formConfigs }) => {
+const FormConfigs: React.FC<PropsT> = ({ formConfigs }) => {
   const [formConfigToDelete, setFormConfigToDelete] = useState<string | null>(
     null,
   );
@@ -53,7 +53,6 @@ const FormConfigs: React.FC<PropsT> = ({ datasetId, formConfigs }) => {
     return (
       <Container key={key}>
         <FormConfig
-          datasetId={datasetId}
           config={formConfigs[index]}
           onIndicateDeletion={() =>
             setFormConfigToDelete(formConfigs[index].id)
