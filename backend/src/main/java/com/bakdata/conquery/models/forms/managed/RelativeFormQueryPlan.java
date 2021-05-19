@@ -36,7 +36,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	// Position of fixed columns in the sub result.
 	private static final int SUB_RESULT_DATE_RANGE_POS = 3;
 
-	private final QueryPlan query;
+	private final QueryPlan<?> query;
 	private final ArrayConceptQueryPlan featurePlan;
 	private final ArrayConceptQueryPlan outcomePlan;
 	private final TemporalSampler indexSelector;
@@ -54,7 +54,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		// Don't set the query date aggregator here because the subqueries should set their aggregator independently
 
-		Optional<EntityResult> preResult = query.execute(ctx, entity);
+		Optional<? extends EntityResult> preResult = query.execute(ctx, entity);
 
 		if (preResult.isEmpty()) {
 			return Optional.empty();
@@ -63,11 +63,8 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		int size = calculateCompleteLength();
 		EntityResult contained = preResult.get();
 		// Gather all validity dates from prerequisite
-		Optional<DateAggregator> validityDateAggregator = query.getValidityDateAggregator();
-		CDateSet dateSet = CDateSet.create();
-		if (validityDateAggregator.isPresent()) {
-			dateSet = validityDateAggregator.get().getAggregationResult();
-		}
+		Optional<Aggregator<CDateSet>> validityDateAggregator = query.getValidityDateAggregator();
+		CDateSet dateSet = validityDateAggregator.map(Aggregator::getAggregationResult).orElseGet(CDateSet::create);
 
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 
