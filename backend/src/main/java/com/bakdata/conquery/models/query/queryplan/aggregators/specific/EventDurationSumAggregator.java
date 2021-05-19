@@ -7,33 +7,36 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+
+import java.util.Optional;
 
 /**
  * Aggregator, counting the number of days present.
  */
-public class DurationSumAggregator extends SingleColumnAggregator<Long> {
+public class EventDurationSumAggregator implements Aggregator<Long> {
 
+	private Optional<Aggregator<CDateSet>> queryDateAggregator;
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
-
-	public DurationSumAggregator(Column column) {
-		super(column);
-	}
+	private Column validityDateColumn;
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		dateRestriction = ctx.getDateRestriction();
+		validityDateColumn = ctx.getValidityDateColumn();
+		queryDateAggregator = ctx.getQueryDateAggregator();
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (!bucket.has(event, getColumn())) {
+		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}
 
-		final CDateRange value = bucket.getAsDateRange(event, getColumn());
+		final CDateRange value = bucket.getAsDateRange(event, validityDateColumn);
 
 		if (value.isOpen()) {
 			return;
@@ -44,13 +47,16 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public DurationSumAggregator doClone(CloneContext ctx) {
-		return new DurationSumAggregator(getColumn());
+	public EventDurationSumAggregator doClone(CloneContext ctx) {
+		return new EventDurationSumAggregator();
 	}
 
 	@Override
 	public Long getAggregationResult() {
-		return set.isEmpty() ? null : set.countDays();
+
+		set.retainAll(queryDateAggregator.get().getAggregationResult());
+
+		return set.countDays();
 	}
 
 	@Override

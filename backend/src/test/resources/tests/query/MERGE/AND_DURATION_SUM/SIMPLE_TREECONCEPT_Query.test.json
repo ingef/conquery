@@ -20,7 +20,8 @@
             }
           ],
           "selects": [
-            "tree.connector.dur_sum"
+            // use automatic select
+            "tree.connector.event_duration_sum"
           ]
         },
         {
@@ -47,12 +48,6 @@
         "validityDates": {
           "name": "datum",
           "column": "table.datum"
-        },
-        "selects" : {
-          "type" : "DURATION_SUM",
-          "name" : "dur_sum",
-          "column" : "table.datum"
-
         }
       },
       "children": [
