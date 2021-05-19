@@ -12,14 +12,17 @@ const Root = styled("p")<{ isClickable?: boolean; isSelected?: boolean }>`
   border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
   white-space: nowrap;
 
-  ${({ isClickable, theme }) =>
+  ${({ isClickable, theme, isSelected }) =>
     isClickable &&
     css`
       cursor: pointer;
 
-      &:hover {
-        border-color: ${theme.col.gray};
-      }
+      ${!isSelected &&
+      css`
+        &:hover {
+          border-color: ${theme.col.gray};
+        }
+      `}
     `};
 
   ${({ isSelected, theme }) =>

@@ -28,7 +28,7 @@ const Form = styled("form")`
 `;
 
 const SxIconButton = styled(IconButton)`
-  padding: 4px 10px;
+  padding: 10px 10px;
   margin-left: 3px;
 `;
 

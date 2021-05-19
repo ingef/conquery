@@ -172,9 +172,11 @@ module.exports = function (app, port) {
           "fun",
           "test",
           "group 1",
+          "group 1 – details",
           "important",
           "jk",
           "interesting",
+          "a rather long tagname",
         ];
 
         for (var i = 25600; i < 35600; i++) {

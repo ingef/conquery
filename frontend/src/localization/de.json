@@ -208,7 +208,8 @@
     "renameError": "Konnte Anfrage nicht umbenennen",
     "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Anfrage nicht freigeben",
-    "deleteError": "Konnte Anfrage nicht löschen"
+    "deleteError": "Konnte Anfrage nicht löschen",
+    "editFolders": "Ordner bearbeiten"
   },
   "previousQueriesFilter": {
     "all": "Alle",
@@ -386,6 +387,13 @@
   "conceptTreesOpen": {
     "resetAll": "Zurück zu Standardansicht",
     "closeAll": "Alle Konzepte schließen"
+  },
+  "folders": {
+    "headline": "Ordner",
+    "noFolders": "ohne"
+  },
+  "editPreviousQueryFoldersModal": {
+    "headline": "Ordner bearbeiten"
   },
   "help": {
     "tabConceptTrees": "Auswahl der Konzepte aus den Konzepten zur Verwendung in Editor oder Formular-Editor.",
