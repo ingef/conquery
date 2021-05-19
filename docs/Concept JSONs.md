@@ -587,6 +587,22 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `"resultheadersc10n_dates"` |  |  | 
 </p></details>
 
+### EVENT_DURATION_SUM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/concept/specific/EventDurationSumSelect.java#L20)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.EventDurationSumSelect`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/Select.java#L35) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `"ResultHeadersC10n.eventDuration"` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `"event_duration_sum"` |  |  | 
+</p></details>
+
 ### EXISTS<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/concept/specific/ExistsSelect.java#L15)</sup></sub></sup>
 
 
@@ -834,6 +850,7 @@ Java Type: `com.bakdata.conquery.models.concepts.select.concept.UniversalSelect`
 
 A Marker UniversalSelect is any of:
 * [EVENT_DATE_UNION](#EVENT_DATE_UNION)
+* [EVENT_DURATION_SUM](#EVENT_DURATION_SUM)
 * [EXISTS](#EXISTS)
 
 </p></details>
