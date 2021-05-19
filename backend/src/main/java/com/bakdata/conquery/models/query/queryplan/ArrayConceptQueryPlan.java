@@ -82,11 +82,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 
 	private static void initDateAggregator(DateAggregator validityDateAggregator, List<ConceptQueryPlan> childPlans) {
 		for (ConceptQueryPlan plan : childPlans) {
-			final Optional<Aggregator<CDateSet>> subDateAggregator = plan.getValidityDateAggregator();
-			if (subDateAggregator.isEmpty()) {
-				continue;
-			}
-			validityDateAggregator.register(subDateAggregator.get());
+			plan.getValidityDateAggregator().ifPresent(validityDateAggregator::register);
 		}
 	}
 

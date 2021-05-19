@@ -280,6 +280,6 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			outcomeSubquery.getValidityDateAggregator().ifPresent(agg::register);
 		}
 
-		return Optional.of(agg);
+		return agg.hasSiblings() ? Optional.of(agg) : Optional.empty();
 	}
 }

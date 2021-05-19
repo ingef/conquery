@@ -72,4 +72,8 @@ public class DateAggregator implements Aggregator<CDateSet> {
         clone.siblings = clonedSiblings;
         return clone;
     }
+
+    public boolean hasSiblings() {
+        return !siblings.isEmpty();
+    }
 }
