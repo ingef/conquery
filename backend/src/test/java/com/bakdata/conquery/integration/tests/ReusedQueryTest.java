@@ -204,7 +204,5 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 						.isNotEqualTo(reused1Id);
 			}
 		}
-
-		conquery.close();
 	}
 }

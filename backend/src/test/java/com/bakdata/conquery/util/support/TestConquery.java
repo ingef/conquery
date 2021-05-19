@@ -207,11 +207,13 @@ public class TestConquery {
 	}
 
 	public void afterEach() throws Exception {
-		for (StandaloneSupport openSupport : openSupports) {
-			openSupport.close();
-			removeSupportDataset(openSupport);
+		synchronized (openSupports) {
+			for (StandaloneSupport openSupport : openSupports) {
+				removeSupportDataset(openSupport);
+			}
+			openSupports.clear();
 		}
-		openSupports.clear();
+		waitUntilWorkDone();
 	}
 
 	@SneakyThrows
@@ -221,7 +223,10 @@ public class TestConquery {
 	}
 
 	public void removeSupport(StandaloneSupport support) {
-		openSupports.remove(support);
+		synchronized (openSupports) {
+			openSupports.remove(support);
+			removeSupportDataset(support);
+		}
 	}
 
 	public void waitUntilWorkDone() {
