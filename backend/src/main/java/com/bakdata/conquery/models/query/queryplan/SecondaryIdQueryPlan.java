@@ -216,12 +216,8 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		}
 
 		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
-		agg.registerAll(childPerKey.values().stream()
-				.map(ConceptQueryPlan::getValidityDateAggregator)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.collect(Collectors.toList()));
+		childPerKey.values().forEach(c -> c.getValidityDateAggregator().ifPresent(agg::register));
 
-		return Optional.of(agg);
+		return agg.hasSiblings() ? Optional.of(agg) : Optional.empty();
 	}
 }
