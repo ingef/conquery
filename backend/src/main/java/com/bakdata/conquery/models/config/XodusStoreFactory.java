@@ -118,7 +118,7 @@ public class XodusStoreFactory implements StoreFactory {
     private BiMap<File, Environment> activeEnvironments = HashBiMap.create();
 
     @JsonIgnore
-    private transient Multimap<Environment, jetbrains.exodus.env.Store> openStoresInEnv = Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
+    private final transient Multimap<Environment, jetbrains.exodus.env.Store> openStoresInEnv = Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
 
     @Override
     public void init(ManagerNode managerNode) {
@@ -286,11 +286,12 @@ public class XodusStoreFactory implements StoreFactory {
 	public SingletonStore<PersistentIdMap> createIdMappingStore(List<String> pathName) {
 		final Environment environment = findEnvironment(pathName);
 
-		final BigStore<Boolean, PersistentIdMap>
-				bigStore =
-				new BigStore<>(this, validator, environment, ID_MAPPING, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, objectMapper);
+		synchronized (openStoresInEnv) {
+			final BigStore<Boolean, PersistentIdMap> bigStore =
+					new BigStore<>(this, validator, environment, ID_MAPPING, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, objectMapper);
 
-		return new SingletonStore<>(new CachedStore<>(bigStore));
+			return new SingletonStore<>(new CachedStore<>(bigStore));
+		}
 	}
 
     @Override
