@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -97,11 +98,9 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 	@Override
 	public Optional<SinglelineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
-
-		if (ctx.getQueryDateAggregator().isEmpty()) {
-			// Only override if none has been set from a higher level
-			ctx = ctx.withQueryDateAggregator(getValidityDateAggregator());
-		}
+		
+		// Only override if none has been set from a higher level
+		ctx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
 
  		checkRequiredTables(ctx.getStorage());
 

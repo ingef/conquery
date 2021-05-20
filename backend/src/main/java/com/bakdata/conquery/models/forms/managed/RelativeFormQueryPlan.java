@@ -61,8 +61,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		int size = calculateCompleteLength();
 		EntityResult contained = preResult.get();
 		// Gather all validity dates from prerequisite
-		Optional<Aggregator<CDateSet>> validityDateAggregator = query.getValidityDateAggregator();
-		CDateSet dateSet = validityDateAggregator.map(Aggregator::getAggregationResult).orElseGet(CDateSet::create);
+		CDateSet dateSet = query.getValidityDateAggregator().map(Aggregator::getAggregationResult).orElseGet(CDateSet::create);
 
 		final OptionalInt sampled = indexSelector.sample(dateSet);
 

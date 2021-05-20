@@ -140,12 +140,6 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-
-		int dateRangePosition = getDateRangeResultPosition();
-		if(dateRangePosition < 0) {
-			return Optional.empty();
-		}
-
 		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
 
 		subPlans.forEach(

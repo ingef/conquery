@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
@@ -19,6 +20,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -55,10 +57,8 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
-		if (ctx.getQueryDateAggregator().isEmpty()) {
-			// Only override if none has been set from a higher level
-			ctx = ctx.withQueryDateAggregator(getValidityDateAggregator());
-		}
+		// Only override if none has been set from a higher level
+		ctx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
 
 		if (query.getRequiredTables().get().isEmpty()) {
 			return Optional.empty();
@@ -92,6 +92,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 			// Prepend SecondaryId to result-line.
 			result.add(ArrayUtils.insert(0, child.getValue().result().getValues(), child.getKey()));
 		}
+
 
 		if (result.isEmpty()) {
 			return Optional.empty();
