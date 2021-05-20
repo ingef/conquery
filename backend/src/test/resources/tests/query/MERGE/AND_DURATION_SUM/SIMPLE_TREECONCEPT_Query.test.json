@@ -20,7 +20,6 @@
             }
           ],
           "selects": [
-            // use automatic select
             "tree.connector.event_duration_sum"
           ]
         },

@@ -27,8 +27,11 @@ public interface IntegrationTest {
 			// Because Shiro works with a static Security manager
 			testConquery.getStandaloneCommand().getManager().getAuthController().registerStaticSecurityManager();
 
-			execute(conquery);
-			testConquery.removeSupport(conquery);
+			try {
+				execute(conquery);
+			}finally {
+				testConquery.removeSupport(conquery);
+			}
 		}
 	}
 	

@@ -54,7 +54,7 @@ public class EventDurationSumAggregator implements Aggregator<Long> {
 	@Override
 	public Long getAggregationResult() {
 
-		set.retainAll(queryDateAggregator.get().getAggregationResult());
+		queryDateAggregator.map(Aggregator::getAggregationResult).ifPresent(set::retainAll);
 
 		return set.countDays();
 	}
