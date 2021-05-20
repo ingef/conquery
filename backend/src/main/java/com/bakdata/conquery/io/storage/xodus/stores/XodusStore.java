@@ -91,7 +91,12 @@ public class XodusStore {
 
 
 	public void clear() {
-		// TODO implement, unused at the moment
+		environment.executeInExclusiveTransaction(t -> {
+			Cursor cursor = store.openCursor(t);
+			while(cursor.getNext()){
+				cursor.deleteCurrent();
+			}
+		});
 	}
 
 	public void remove() {

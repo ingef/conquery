@@ -46,6 +46,7 @@ public interface IntegrationTest {
 			ConqueryMDC.setLocation(name);
 			log.info("STARTING integration test {}", name);
 			try {
+				testConquery.beforeEach();
 				test.execute(name, testConquery);
 			}
 			catch(Exception e) {

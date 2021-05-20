@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -65,15 +66,10 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		if(removed != null) {
 			metaStorage.getCentralRegistry().remove(removed.getDataset());
 
+			getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(removed.getDataset())));
+
 			workers.keySet().removeIf(w->w.getDataset().equals(id));
-			removed.close();
-			try {
-				// remove all associated data.
-				removed.getStorage().removeStorage();
-			}
-			catch(Exception e) {
-				log.error("Failed to delete storage "+removed, e);
-			}
+			removed.remove();
 		}
 	}
 

@@ -154,6 +154,18 @@ public class Namespace implements Closeable {
 		}
 	}
 
+	public void remove() {
+		try {
+			jobManager.close();
+		}
+		catch (Exception e) {
+			log.error("Unable to close namespace jobmanager of {}", this, e);
+		}
+
+		log.info("Removing namespace storage of {}", getStorage().getDataset().getId());
+		storage.removeStorage();
+	}
+
 	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {
 		return getWorkerBucketsMap().getBucketsForWorker(workerId);
 	}
