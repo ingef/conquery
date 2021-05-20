@@ -14,22 +14,16 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDurationSumAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.base.Preconditions;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.EnumSet;
 
 @CPSType(id = "EVENT_DURATION_SUM", base = Select.class)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EventDurationSumSelect extends UniversalSelect {
-
-	{
-		/*
-		 *  WORKAROUND to satisfy the validator when the concept is added and a submitted query is deserialized.
-		 *  The label is here internationalized but that doesn't have an effect on the effective label, which is used in a result header.
-		 *  For the result header, the label is generated on a per request basis with respect to the request provided locale.
-		 *  This sets also the default name under which this aggregator can be referenced.
-		 */
-		this.setName("event_duration_sum");
-		this.setLabel(C10N.get(ResultHeadersC10n.class).eventDuration());
-	}
 
 	@Override
 	public String getLabel() {
@@ -40,5 +34,12 @@ public class EventDurationSumSelect extends UniversalSelect {
 	@Override
 	public Aggregator<?> createAggregator() {
 		return new EventDurationSumAggregator();
+	}
+
+	public static EventDurationSumSelect create(String name) {
+		Preconditions.checkArgument(StringUtils.isNotBlank(name), "The name of the select must not be blank");
+		EventDurationSumSelect select = new EventDurationSumSelect();
+		select.setName(name);
+		return select;
 	}
 }

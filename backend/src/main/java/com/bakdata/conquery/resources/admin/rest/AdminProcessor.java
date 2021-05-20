@@ -150,7 +150,7 @@ public class AdminProcessor {
 		}
 
 		// Add selects automatically
-		addAutomaticSelect(concept, EventDurationSumSelect::new);
+		addAutomaticSelect(concept, () -> EventDurationSumSelect.create("event_duration_sum"));
 
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
 		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
