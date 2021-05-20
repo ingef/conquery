@@ -32,7 +32,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	private List<ConceptQueryPlan> childPlans;
 	@ToString.Exclude
 	private boolean generateDateAggregation = false;
-	private DateAggregator validityDateAggregator = new DateAggregator(DateAggregationAction.MERGE);
+	private final DateAggregator validityDateAggregator = new DateAggregator(DateAggregationAction.MERGE);
 
 	public ArrayConceptQueryPlan(boolean generateDateAggregation) {
 		this.generateDateAggregation = generateDateAggregation;
