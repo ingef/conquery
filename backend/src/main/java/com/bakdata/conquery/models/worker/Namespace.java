@@ -34,12 +34,13 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@ToString(of = "storage")
+@ToString(onlyExplicitlyIncluded = true)
 public class Namespace implements Closeable {
 
 	@JsonIgnore
 	private transient ObjectWriter objectWriter;
 	@JsonIgnore
+	@ToString.Include
 	private transient NamespaceStorage storage;
 
 	@JsonIgnore
