@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -43,6 +44,10 @@ import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
+import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
+import com.bakdata.conquery.models.concepts.select.concept.specific.EventDurationSumSelect;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -94,6 +99,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * This class holds the logic for several admin http endpoints.
@@ -143,8 +149,28 @@ public class AdminProcessor {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Status.CONFLICT);
 		}
 
+		// Add selects automatically
+		addAutomaticSelect(concept, () -> EventDurationSumSelect.create("event_duration_sum"));
+
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
 		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
+	}
+
+	private static void addAutomaticSelect(@NotNull Concept<?> concept, Supplier<UniversalSelect> selectCreator) {
+		if (concept instanceof TreeConcept) {
+			// Add to concept
+			TreeConcept treeConcept = (TreeConcept) concept;
+			final UniversalSelect select = selectCreator.get();
+			select.setHolder(treeConcept);
+			treeConcept.getSelects().add(select);
+
+			// Add to connectors
+			for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
+				final UniversalSelect connectorSelect = selectCreator.get();
+				connectorSelect.setHolder(connector);
+				connector.getSelects().add(connectorSelect);
+			}
+		}
 	}
 
 	public synchronized Dataset addDataset(String name) throws JSONException {
