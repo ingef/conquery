@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
@@ -58,10 +59,10 @@ public class ExcelRenderer {
         void writeCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles);
     }
 
-    public void renderToStream(
+    public <E extends ManagedExecution<?> & SingleTableResult> void renderToStream(
             PrintSettings cfg,
             List<String> idHeaders,
-            ManagedExecution<?> exec,
+            E exec,
             OutputStream outputStream) throws IOException {
         List<ResultInfo> info = exec.getResultInfo();
 

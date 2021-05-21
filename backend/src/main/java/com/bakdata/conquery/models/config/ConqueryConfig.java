@@ -5,6 +5,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
+import com.bakdata.conquery.io.result.ResultRender.ResultRenderProvider;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
@@ -44,6 +45,13 @@ public class ConqueryConfig extends Configuration {
 	private CSVConfig csv = new CSVConfig();
 	@Valid @NotNull
 	private ArrowConfig arrow = new ArrowConfig();
+	@Valid @NotNull
+	private List<ResultRenderProvider> resultProviders = List.of(
+			new CsvResultRenderProvider(),
+			new XlsxResultProvider(),
+			new ArrowFileResultProvider(),
+			new ArrowStreamResultProvider()
+	);
 	@Valid @NotNull
 	private LocaleConfig locale = new LocaleConfig();
 	@Valid

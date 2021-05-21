@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.execution;
 
 import java.net.URL;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -40,9 +42,9 @@ public abstract class ExecutionStatus {
 
 
 	/**
-	 * The url under from which the result of the execution can be downloaded as soon as it finished successfully.
+	 * The urls under from which the result of the execution can be downloaded as soon as it finished successfully.
 	 */
-	private URL resultUrl;
+	private List<URL> resultUrls = Collections.emptyList();
 
 
 }

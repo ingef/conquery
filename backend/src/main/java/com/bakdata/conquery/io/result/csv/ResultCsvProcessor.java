@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -36,7 +37,7 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 
 
-	public Response getResult(User user, Dataset dataset, ManagedExecution<?> exec, String userAgent, String queryCharset, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getResult(User user, Dataset dataset, E exec, String userAgent, String queryCharset, boolean pretty) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);

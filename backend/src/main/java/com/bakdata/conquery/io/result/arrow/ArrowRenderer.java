@@ -43,8 +43,10 @@ public class ArrowRenderer {
     public static void renderToStream(
             Function<VectorSchemaRoot, ArrowWriter> writerProducer,
             PrintSettings cfg,
+            int batchSize,
             List<String> idHeaders,
-            int batchSize, Stream<EntityResult> results, List<ResultInfo> resultInfo) throws IOException {
+            List<ResultInfo> resultInfo,
+            Stream<EntityResult> results) throws IOException {
 
         // Combine id and value Fields to one vector to build a schema
         final List<Field> idFields = generateFieldsFromIdMapping(idHeaders);

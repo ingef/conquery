@@ -67,7 +67,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_FORM")
 @NoArgsConstructor
-public class ManagedForm extends ManagedExecution<FormSharedResult> {
+public abstract class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 	/**
 	 * The form that was submitted through the api.
@@ -222,23 +222,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 
 	@Override
-	public List<ResultInfo> getResultInfo() {
-		if(getSubQueries().size() != 1) {
-			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
-		}
-		return getSubQueries().values().iterator().next().get(0).getResultInfo();
-	}
-
-	@Override
-	public Stream<EntityResult> streamResults() {
-		if(subQueries.size() != 1) {
-			// Get the query, only if there is only one query set in the whole execution
-			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
-		}
-		return subQueries.values().iterator().next().stream().flatMap(ManagedQuery::streamResults);
-	}
-
-	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
 		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		// Set the ColumnDescription if the Form only consits of a single subquery
@@ -261,18 +244,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			return;
 		}
 		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions(datasetRegistry));
-	}
-
-
-	@Override
-	protected URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException {
-		return url
-			.path(ResultCsvResource.class)
-			.resolveTemplate(ResourceConstants.DATASET, dataset.getName())
-			.path(ResultCsvResource.class, ResultCsvResource.GET_CSV_PATH_METHOD)
-			.resolveTemplate(ResourceConstants.QUERY, getId().toString())
-			.build()
-			.toURL();
 	}
 
 

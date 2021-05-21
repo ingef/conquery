@@ -1,6 +1,9 @@
 package com.bakdata.conquery.apiv1;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.ws.rs.core.UriBuilder;
@@ -17,6 +20,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
@@ -33,6 +37,8 @@ import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import static com.bakdata.conquery.apiv1.StoredQueriesProcessor.setDownloadUrls;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -174,7 +180,12 @@ public class QueryProcessor {
 
 	public FullExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
 		query.initExecutable(datasetRegistry, config);
-		return query.buildStatusFull(storage, urlb, user, datasetRegistry, AuthorizationHelper.buildDatasetAbilityMap(user, datasetRegistry));
+		final Map<DatasetId, Set<Ability>> datasetAbilities = AuthorizationHelper.buildDatasetAbilityMap(user, datasetRegistry);
+		final FullExecutionStatus status = query.buildStatusFull(storage, urlb, user, datasetRegistry, datasetAbilities);
+		if (query.isReadyToDownload(datasetAbilities)){
+			setDownloadUrls(status, config.getResultProviders(), query, urlb);
+		}
+		return status;
 	}
 
 	public FullExecutionStatus cancel(User user, Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {

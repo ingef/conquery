@@ -21,6 +21,8 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -166,5 +168,11 @@ public class ExportForm extends Form {
 		}
 
 		void setDefaultExists();
+	}
+
+
+	@Override
+	public ManagedForm toManagedExecution(User user, Dataset submittedDataset) {
+		return new ManagedInternalForm(this, user, submittedDataset);
 	}
 }

@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
+import com.bakdata.conquery.io.result.ResultRender.ResultRenderProvider;
 import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
@@ -53,9 +54,6 @@ public class ApiV1 implements ResourcesProvider {
 				bind(new QueryProcessor(datasets, manager.getStorage(), manager.getConfig())).to(QueryProcessor.class);
 				bind(new FormConfigProcessor(manager.getValidator(), manager.getStorage())).to(FormConfigProcessor.class);
 				bind(new StoredQueriesProcessor(manager.getDatasetRegistry(), manager.getStorage(), manager.getConfig())).to(StoredQueriesProcessor.class);
-				bind(new ResultCsvProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultCsvProcessor.class);
-				bind(new ResultArrowProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultArrowProcessor.class);
-				bind(new ResultExcelProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultExcelProcessor.class);
 			}
 		});
 
@@ -76,10 +74,6 @@ public class ApiV1 implements ResourcesProvider {
 		 */
 		environment.register(manager.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
-		environment.register(ResultCsvResource.class);
-		environment.register(ResultArrowFileResource.class);
-		environment.register(ResultArrowStreamResource.class);
-		environment.register(ResultExcelResource.class);
 		environment.register(StoredQueriesResource.class);
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(new ConfigResource(manager.getConfig()));
@@ -90,6 +84,10 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(DatasetResource.class);
 		environment.register(FilterResource.class);
 		environment.register(MeResource.class);
+
+		for (ResultRenderProvider resultProvider : manager.getConfig().getResultProviders()) {
+			resultProvider.registerResultResource(environment,manager);
+		}
 
 		environment.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
 	}

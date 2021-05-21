@@ -42,7 +42,10 @@ import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.api.ResultArrowFileResource;
+import com.bakdata.conquery.resources.api.ResultArrowStreamResource;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
+import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
@@ -175,6 +178,10 @@ public class StoredQueriesProcessorTest {
 	private static ExecutionStatus makeState(ManagedExecutionId id, User owner, User callingUser, ExecutionState state, String typeLabel, SecondaryIdDescriptionId secondaryId) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 
+		final ManagedQuery execMock = new ManagedQuery() {{
+			setQueryId(id.getExecution());
+		}};
+
 		status.setTags(new String[0]);
 		status.setLabel(id.getExecution().toString());
 		status.setPristineLabel(true);
@@ -187,13 +194,13 @@ public class StoredQueriesProcessorTest {
 		status.setQueryType(typeLabel);
 		status.setSecondaryId(secondaryId); // This is probably not interesting on the overview (only if there is an filter for the search)
 		if(state.equals(DONE)) {
-			status.setResultUrl(URI_BUILDER.clone()
-					.path(ResultCsvResource.class)
-					.resolveTemplate(ResourceConstants.DATASET, id.getDataset())
-					.path(ResultCsvResource.class, ResultCsvResource.GET_CSV_PATH_METHOD)
-					.resolveTemplate(ResourceConstants.QUERY, id.toString())
-					.build()
-					.toURL());
+			final UriBuilder clone = URI_BUILDER.clone();
+
+			status.setResultUrls(List.of(
+					ResultCsvResource.getDownloadURL(clone, execMock),
+					ResultExcelResource.getDownloadURL(clone, execMock),
+					ResultArrowFileResource.getDownloadURL(clone, execMock),
+					ResultArrowStreamResource.getDownloadURL(clone, execMock)));
 		}
 
 		return status;

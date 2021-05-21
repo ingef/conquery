@@ -2,16 +2,15 @@ package com.bakdata.conquery.apiv1;
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.net.URL;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.io.result.ResultRender.ResultRenderProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -19,10 +18,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.FullExecutionStatus;
-import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.execution.*;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -37,6 +33,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -67,20 +64,28 @@ public class StoredQueriesProcessor {
 						 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
 						 // However, for other executions we check because those are probably shared.
 						 .filter(q -> user.isPermitted(q, Ability.READ))
-						 .flatMap(mq -> {
-							 try {
-								 return Stream.of(
-										 mq.buildStatusOverview(
-												 uriBuilder.clone(),
-												 user,
-												 datasetAbilities
-										 ));
+						 .map(mq -> {
+							 OverviewExecutionStatus status = mq.buildStatusOverview(
+									 uriBuilder.clone(),
+									 user,
+									 datasetAbilities
+							 );
+							 if (mq.isReadyToDownload(datasetAbilities)){
+							 	setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder);
 							 }
-							 catch (Exception e) {
-								 log.warn("Could not build status of " + mq, e);
-								 return Stream.empty();
-							 }
+							 return status;
 						 });
+	}
+
+	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRenderProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder){
+				
+		List<URL> resultUrls = renderer.stream()
+				.map(r -> r.generateResultURL(exec,uriBuilder.clone()))
+				.flatMap(Optional::stream).collect(Collectors.toList());
+
+		status.setResultUrls(resultUrls);
+
+		return status;
 	}
 
 	private static boolean canFrontendRender(ManagedExecution<?> q) {
@@ -125,10 +130,15 @@ public class StoredQueriesProcessor {
 		query.initExecutable(datasetRegistry, config);
 
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
-		return query.buildStatusFull(storage, url, user, datasetRegistry, datasetAbilities);
+		final FullExecutionStatus status = query.buildStatusFull(storage, url, user, datasetRegistry, datasetAbilities);
+
+		if (query.isReadyToDownload(datasetAbilities)){
+			setDownloadUrls(status, config.getResultProviders(), query, url);
+		}
+		return status;
 	}
 
-	public void patchQuery(User user, ManagedExecution execution, MetaDataPatch patch) throws JSONException {
+	public void patchQuery(User user, ManagedExecution<?> execution, MetaDataPatch patch) throws JSONException {
 
 		user.authorize(execution, Ability.MODIFY);
 
@@ -137,7 +147,7 @@ public class StoredQueriesProcessor {
 		storage.updateExecution(execution);
 
 		// Patch this query in other datasets
-		List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets(() -> new ArrayList<>());
+		List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets(ArrayList::new);
 		remainingDatasets.remove(execution.getDataset());
 
 		for (Dataset dataset : remainingDatasets) {
@@ -152,13 +162,17 @@ public class StoredQueriesProcessor {
 		}
 	}
 
-	public FullExecutionStatus reexecute(User user, ManagedExecution<?> query, UriBuilder responseBuilder) {
+	public FullExecutionStatus reexecute(User user, ManagedExecution<?> query, UriBuilder uriBuilder) {
 		if(!query.getState().equals(ExecutionState.RUNNING)) {
 			ExecutionManager.execute(getDatasetRegistry(), query, config);
 		}
 
 		final Map<DatasetId, Set<Ability>> datasetAbilities = AuthorizationHelper.buildDatasetAbilityMap(user, getDatasetRegistry());
-		return query.buildStatusFull(storage, responseBuilder, user, getDatasetRegistry(), datasetAbilities);
+		final FullExecutionStatus status = query.buildStatusFull(storage, uriBuilder, user, getDatasetRegistry(), datasetAbilities);
+		if (query.isReadyToDownload(datasetAbilities)){
+			setDownloadUrls(status, config.getResultProviders(), query, uriBuilder);
+		}
+		return status;
 	}
 
 }
