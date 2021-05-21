@@ -41,7 +41,7 @@ public class CQSampled {
 		subPlan.setChild(child.createQueryPlan(ctx, subPlan));
 		// Since we create the plan manually we have to register the lower date aggregators manually.
 		// Such an aggregator exists because it was enforced in CQAbstractTemporalQuery::resolve on the child.
-		subPlan.getDateAggregator().register(subPlan.getChild().getDateAggregators());
+		subPlan.getDateAggregator().registerAll(subPlan.getChild().getDateAggregators());
 		return new SampledNode(subPlan, sampler);
 	}
 

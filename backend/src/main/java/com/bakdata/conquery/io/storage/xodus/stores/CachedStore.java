@@ -134,6 +134,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void clear() {
+		cache.clear();
 		store.clear();
 	}
 
