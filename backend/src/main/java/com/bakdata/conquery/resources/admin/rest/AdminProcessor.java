@@ -483,7 +483,7 @@ public class AdminProcessor {
 	 */
 	public String getPermissionOverviewAsCSV(Collection<User> users) {
 		StringWriter sWriter = new StringWriter();
-		CsvWriter writer = config.getCsv().createWriter();
+		CsvWriter writer = config.getCsv().createWriter(sWriter);
 		List<String> scope = config
 									 .getAuthorization()
 									 .getOverviewScope();
