@@ -58,11 +58,11 @@ public class StoredQueriesProcessor {
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
 
 		return allQueries.stream()
-						 // to exclude subtypes from somewhere else
-						 .filter(StoredQueriesProcessor::canFrontendRender)
 						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
 						 // one dataset.
 						 .filter(q -> q.getDataset().equals(datasetId))
+						 // to exclude subtypes from somewhere else
+						 .filter(StoredQueriesProcessor::canFrontendRender)
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
 						 // However, for other executions we check because those are probably shared.
