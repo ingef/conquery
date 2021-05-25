@@ -2,7 +2,7 @@
   "id": 25,
   "status": "DONE",
   "numberOfResults": 5,
-  "resultUrl": "/api/results/1234-123123123-123123-1231.csv",
+  "resultUrls": ["/api/results/1234-123123123-123123-1231.csv"],
   "createdAt": "2016-12-02T14:19:09Z",
   "version": 0,
   "tags": ["Fun"],

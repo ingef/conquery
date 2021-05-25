@@ -28,7 +28,7 @@ export interface PreviousQueryT {
   tags: string[];
   own: boolean;
   system?: boolean;
-  resultUrl: string | null;
+  resultUrls: string[];
   shared: boolean;
   isPristineLabel?: boolean;
   groups?: UserGroupIdT[];

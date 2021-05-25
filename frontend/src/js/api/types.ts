@@ -292,7 +292,7 @@ export interface ColumnDescription {
 export interface GetQueryResponseDoneT {
   status: "DONE";
   numberOfResults: number;
-  resultUrl: string;
+  resultUrls: string[];
   columnDescriptions: ColumnDescription[];
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
@@ -329,7 +329,7 @@ export interface GetStoredQueryResponseT {
   system: boolean;
   ownerName: string;
   numberOfResults: number;
-  resultUrl: string;
+  resultUrls: string[];
   requiredTime: number; // TODO: Not used
   tags?: string[];
   query: QueryT;

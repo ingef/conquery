@@ -73,7 +73,7 @@ module.exports = function (app, port) {
         if (dice <= 0.1) {
           res.status(422);
           res.send(ERROR);
-        } else if (dice > 0.1 && dice <= 0.9) {
+        } else if (dice > 0.1 && dice <= 0.7) {
           res.send(
             JSON.stringify({
               id: 1,
@@ -81,7 +81,7 @@ module.exports = function (app, port) {
               progress: Math.floor(Math.random() * 10) / 10,
             }),
           );
-        } else if (dice > 0.9 && dice <= 0.95) {
+        } else if (dice > 0.7 && dice <= 0.75) {
           res.send(
             JSON.stringify({
               id: 1,
@@ -100,7 +100,17 @@ module.exports = function (app, port) {
               id: 1,
               status: "DONE",
               numberOfResults: 5,
-              resultUrl: `/api/results/results.csv`,
+              resultUrls: [
+                `/api/results/results.xlsx`,
+                `/api/results/results.csv`,
+              ],
+              columnDescriptions: [
+                {
+                  label: "Money Range",
+                  selectId: null,
+                  type: "MONEY",
+                },
+              ],
             }),
           );
         }
@@ -193,7 +203,9 @@ module.exports = function (app, port) {
             own: Math.random() < 0.1,
             canExpand: Math.random() < 0.8,
             shared: Math.random() < 0.8,
-            resultUrl: notExecuted ? null : `/api/results/results.csv`,
+            resultUrls: notExecuted
+              ? []
+              : [`/api/results/results.xlsx`, `/api/results/results.csv`],
             ownerName: "System",
             ...(Math.random() > 0.2
               ? { queryType: "CONCEPT_QUERY" }
