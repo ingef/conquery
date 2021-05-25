@@ -1,4 +1,4 @@
-// We need to put localStorage into an own constant to type annotate it.
+// Putting localStorage into an own constant to type annotate it.
 const localStorage: Storage = window.localStorage;
 
 export const getStoredAuthToken = (): string | null => {

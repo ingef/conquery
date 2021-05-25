@@ -15,7 +15,7 @@ const Tags: FC<PropsT> = ({ className, tags, onClickTag }) => {
   return (
     <div className={className}>
       {!tags || tags.length <= 0
-        ? "-"
+        ? null
         : tags.map((tag, i) => (
             <Tag
               key={i}

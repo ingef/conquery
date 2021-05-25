@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -97,6 +98,9 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 	@Override
 	public Optional<SinglelineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+		
+		// Only override if none has been set from a higher level
+		ctx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
 
  		checkRequiredTables(ctx.getStorage());
 
@@ -182,17 +186,13 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	}
 
 	@Override
-	public CDateSet getValidityDates(SinglelineEntityResult result) {
+	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		if(!isAggregateValidityDates()) {
 			// The date aggregator was not added to the plan, so we don't collect a validity date
-			return CDateSet.create();
+			return Optional.empty();
 		}
 
-		Object dates = result.getValues()[VALIDITY_DATE_POSITION];
-		if(dates == null) {
-			return CDateSet.create();
-		}
-		return (CDateSet) dates;
+		return Optional.of(dateAggregator);
 	}
 
 	public boolean isAggregateValidityDates() {

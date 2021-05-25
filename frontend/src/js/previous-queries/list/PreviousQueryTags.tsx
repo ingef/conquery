@@ -3,39 +3,53 @@ import React, { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Tags from "../../tags/Tags";
-import { addTagToPreviousQueriesSearch } from "../search/actions";
-import type { PreviousQueriesSearchStateT } from "../search/reducer";
+import {
+  addFolderToFilter,
+  removeFolderFromFilter,
+} from "../folderFilter/actions";
 
 interface PropsT {
   className?: string;
   tags?: string[];
 }
 
-const tagContainsAnySearch = (
-  tag: string,
-  searches: PreviousQueriesSearchStateT,
-) => {
-  return searches.some(
-    (search) => tag.toLowerCase().indexOf(search.toLowerCase()) !== -1,
-  );
-};
+const getSelectedTags = (
+  tags: string[],
+  folderFilter: string[],
+  search: string[],
+) =>
+  (tags || []).map((tag) => {
+    const tagSelectedByFolderFilter = folderFilter.some(
+      (folder) => tag === folder,
+    );
+    const tagSelectedBySearch = search.some((str) =>
+      tag.toLowerCase().includes(str.toLowerCase()),
+    );
 
-const selectPreviousQueryTags = (state: StateT, tags?: string[]) =>
-  (tags || []).map((tag) => ({
-    label: tag,
-    isSelected: tagContainsAnySearch(tag, state.previousQueriesSearch),
-  }));
+    return {
+      label: tag,
+      isSelected: tagSelectedByFolderFilter || tagSelectedBySearch,
+    };
+  });
 
 const PreviousQueryTags: FC<PropsT> = ({ className, tags }) => {
-  const selectedTags = useSelector<
-    StateT,
-    { label: string; isSelected: boolean }[]
-  >((state) => selectPreviousQueryTags(state, tags));
+  const search = useSelector<StateT, string[]>(
+    (state) => state.previousQueriesSearch,
+  );
+  const folderFilter = useSelector<StateT, string[]>(
+    (state) => state.previousQueriesFolderFilter.folders,
+  );
+  const selectedTags = getSelectedTags(tags || [], folderFilter, search);
 
   const dispatch = useDispatch();
 
-  const onClickTag = (tag: string) =>
-    dispatch(addTagToPreviousQueriesSearch(tag));
+  const onClickTag = (tag: string) => {
+    if (!folderFilter.includes(tag)) {
+      dispatch(addFolderToFilter(tag));
+    } else {
+      dispatch(removeFolderFromFilter(tag));
+    }
+  };
 
   return (
     <Tags className={className} tags={selectedTags} onClickTag={onClickTag} />

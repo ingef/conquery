@@ -57,7 +57,7 @@ public class ConceptQuery extends IQuery {
 	public ConceptQueryPlan createQueryPlan(QueryPlanContext context) {
 		ConceptQueryPlan qp = new ConceptQueryPlan(!DateAggregationMode.NONE.equals(resolvedDateAggregationMode));
 		qp.setChild(root.createQueryPlan(context, qp));
-		qp.getDateAggregator().register(qp.getChild().getDateAggregators());
+		qp.getDateAggregator().registerAll(qp.getChild().getDateAggregators());
 		return qp;
 	}
 

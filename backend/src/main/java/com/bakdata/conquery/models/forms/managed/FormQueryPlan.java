@@ -6,12 +6,13 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -25,6 +26,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final List<DateContext> dateContexts;
 	private final ArrayConceptQueryPlan features;
 	private final int constantCount;
+	private final transient List<ArrayConceptQueryPlan> subPlans = new ArrayList<>();
 	
 	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features) {
 		this.dateContexts = dateContexts;
@@ -39,7 +41,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		// Either all date contexts have an relative event date or none has one
 		boolean withRelativeEventdate = dateContexts.get(0).getEventDate() != null;
 		for(DateContext dateContext : dateContexts) {
-			if((dateContext.getEventDate() != null) != withRelativeEventdate) {
+			if((dateContext.getEventDate() == null) == withRelativeEventdate) {
 				throw new IllegalStateException("Queryplan has absolute AND relative date contexts. Only one kind is allowed.");
 			}
 		}
@@ -48,6 +50,11 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+
+		if (ctx.getQueryDateAggregator().isEmpty()) {
+			// Only override if none has been set from a higher level
+			ctx = ctx.withQueryDateAggregator(getValidityDateAggregator());
+		}
 
 		features.init(ctx,entity);
 
@@ -63,6 +70,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			CloneContext clCtx = new CloneContext(ctx.getStorage());
 						
 			ArrayConceptQueryPlan subPlan = features.clone(clCtx);
+			subPlans.add(subPlan);
 	
 			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
 			dateRestriction.retainAll(dateContext.getDateRange());
@@ -131,24 +139,14 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public CDateSet getValidityDates(MultilineEntityResult result) {
+	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
+		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
 
-		int dateRangePosition = getDateRangeResultPosition();
-		if(dateRangePosition < 0) {
-			return CDateSet.create();
-		}
+		subPlans.forEach(
+				p -> p.getValidityDateAggregator().ifPresent(agg::register)
+		);
 
-		CDateSet dateSet = CDateSet.create();
-		for(Object[] resultLine : result.listResultLines()) {
-			Object dates = resultLine[dateRangePosition];
-
-			if(dates == null) {
-				continue;
-			}
-
-			dateSet.add((CDateRange) dates);
-		}
-		return dateSet;
+		return agg.hasChildren() ? Optional.of(agg) : Optional.empty();
 	}
 
 	public int columnCount() {
