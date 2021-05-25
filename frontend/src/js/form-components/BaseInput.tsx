@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import type { CurrencyConfigT } from "../api/types";
 import IconButton from "../button/IconButton";
-import { isEmpty } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
 
 import CurrencyInput from "./CurrencyInput";
 
@@ -21,7 +21,7 @@ const Input = styled("input")<{ large?: boolean }>`
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-const ClearZone = styled(IconButton)`
+const ClearZoneIconButton = styled(IconButton)`
   position: absolute;
   top: ${({ large }) => (large ? "5px" : "0")};
   right: 10px;
@@ -35,7 +35,7 @@ const ClearZone = styled(IconButton)`
   }
 `;
 
-interface InputPropsType {
+interface InputProps {
   autoFocus?: boolean;
   pattern?: string;
   step?: number;
@@ -44,20 +44,20 @@ interface InputPropsType {
   onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
-interface PropsT {
+interface Props {
   className?: string;
   inputType: string;
-  valueType?: string;
+  money?: boolean;
   placeholder?: string;
   value: number | string | null;
   large?: boolean;
-  inputProps?: InputPropsType;
+  inputProps?: InputProps;
   currencyConfig?: CurrencyConfigT;
   onChange: (val: null | number | string) => void;
   onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
-const BaseInput = (props: PropsT) => {
+const BaseInput = (props: Props) => {
   const { t } = useTranslation();
   const inputProps = props.inputProps || {};
   const { pattern } = props.inputProps || {};
@@ -84,8 +84,7 @@ const BaseInput = (props: PropsT) => {
     }
   }
 
-  const isCurrencyInput =
-    props.valueType === "MONEY_RANGE" && !!props.currencyConfig;
+  const isCurrencyInput = props.money && !!props.currencyConfig;
 
   return (
     <Root className={props.className}>
@@ -116,14 +115,14 @@ const BaseInput = (props: PropsT) => {
           {...inputProps}
         />
       )}
-      {!isEmpty(props.value) && (
-        <ClearZone
+      {exists(props.value) && (
+        <ClearZoneIconButton
           tiny
           icon="times"
-          tabIndex="-1"
+          tabIndex={-1}
           large={props.large}
           title={t("common.clearValue")}
-          ariaLabel={t("common.clearValue")}
+          aria-label={t("common.clearValue")}
           onClick={() => props.onChange(null)}
         />
       )}

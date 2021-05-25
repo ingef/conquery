@@ -73,22 +73,23 @@ interface PropsT {
   onUpload: (query: ExternalQueryT) => void;
 }
 
+type UploadColumnType =
+  | "ID" // (some string)
+  | "EVENT_DATE" // (a single day)
+  | "START_DATE" //(a starting day)
+  | "END_DATE" // (and end day
+  | "DATE_RANGE" // (two days)
+  | "DATE_SET" // (a set of date ranges)
+  | "IGNORE"; // (ignore this column)
+
 const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
   const { t } = useTranslation();
-  const [csv, setCSV] = useState([]);
-  const [delimiter, setDelimiter] = useState(";");
-  const [csvHeader, setCSVHeader] = useState([]);
+  const [csv, setCSV] = useState<string[][]>([]);
+  const [delimiter, setDelimiter] = useState<string>(";");
+  const [csvHeader, setCSVHeader] = useState<UploadColumnType[]>([]);
   const [csvLoading, setCSVLoading] = useState(false);
 
-  // Theoretically possible in the backend:
-  // ID (some string)
-  // EVENT_DATE (a single day),
-  // START_DATE (a starting day),
-  // END_DATE (and end day,
-  // DATE_RANGE (two days),
-  // DATE_SET (a set of date ranges),
-  // IGNORE (ignore this column);
-  const SELECT_OPTIONS = [
+  const SELECT_OPTIONS: { label: string; value: UploadColumnType }[] = [
     { label: t("csvColumnPicker.id"), value: "ID" },
     { label: t("csvColumnPicker.dateSet"), value: "DATE_SET" },
     { label: t("csvColumnPicker.startDate"), value: "START_DATE" },
@@ -103,11 +104,11 @@ const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
   ];
 
   useEffect(() => {
-    async function parse(f, d) {
+    async function parse() {
       try {
         setCSVLoading(true);
 
-        const parsed = await parseCSV(f, d);
+        const parsed = await parseCSV(file, delimiter);
         const { result } = parsed;
 
         setCSVLoading(false);
@@ -130,8 +131,8 @@ const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
       }
     }
 
-    if (!!file) {
-      parse(file, delimiter);
+    if (file) {
+      parse();
     }
   }, [file, delimiter]);
 
@@ -153,9 +154,10 @@ const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
           <SxInputSelect
             label={t("csvColumnPicker.delimiter")}
             input={{
-              onChange: setDelimiter,
+              onChange: (val) => {
+                if (val) setDelimiter(val);
+              },
               value: delimiter,
-              defaultValue: DELIMITER_OPTIONS[0],
             }}
             options={DELIMITER_OPTIONS}
           />
@@ -173,20 +175,22 @@ const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
               <tr key={j}>
                 {row.map((cell, i) => (
                   <Th key={cell + i}>
-                    <ReactSelect
+                    <ReactSelect<false>
                       small
                       options={SELECT_OPTIONS}
                       value={
                         SELECT_OPTIONS.find((o) => o.value === csvHeader[i]) ||
                         SELECT_OPTIONS[0]
                       }
-                      onChange={(value) =>
-                        setCSVHeader([
-                          ...csvHeader.slice(0, i),
-                          value.value,
-                          ...csvHeader.slice(i + 1),
-                        ])
-                      }
+                      onChange={(value) => {
+                        if (value) {
+                          setCSVHeader([
+                            ...csvHeader.slice(0, i),
+                            value.value as UploadColumnType,
+                            ...csvHeader.slice(i + 1),
+                          ]);
+                        }
+                      }}
                     />
                     <SxPadded>{cell}</SxPadded>
                   </Th>

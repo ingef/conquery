@@ -6,7 +6,7 @@ import { useHistory } from "react-router-dom";
 import { usePostLogin } from "../api/api";
 import PrimaryButton from "../button/PrimaryButton";
 import ErrorMessage from "../error-message/ErrorMessage";
-import InputText from "../form-components/InputText";
+import InputPlain from "../form-components/InputPlain";
 import FaIcon from "../icon/FaIcon";
 
 import { storeAuthToken } from "./helper";
@@ -53,7 +53,7 @@ const Form = styled("form")`
   justify-content: center;
 `;
 
-const SxInputText = styled(InputText)`
+const SxInputPlain = styled(InputPlain)`
   padding: 10px 0;
 `;
 
@@ -110,8 +110,7 @@ const LoginPage = () => {
         <Headline>{t("login.headline")}</Headline>
         {!!error && <SxErrorMessage message={t("login.error")} />}
         <Form onSubmit={onSubmit}>
-          <SxInputText
-            inputType="text"
+          <SxInputPlain
             label={t("login.username")}
             large
             input={{
@@ -122,7 +121,7 @@ const LoginPage = () => {
               disabled: loading,
             }}
           />
-          <SxInputText
+          <SxInputPlain
             inputType="password"
             label={t("login.password")}
             large
