@@ -115,16 +115,28 @@ const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
 
         if (result.data.length > 0) {
           setCSV(result.data);
-          setCSVHeader(
-            // This is experimental still.
-            // External queries (uploaded lists) usually contain three or four columns.
-            // The first two columns are IDs, which will be concatenated
-            // The other two columns are date ranges
-            // We simply assume that the data is in this format by default
-            result.data[0].length >= 4
-              ? ["ID", "ID", "START_DATE", "END_DATE"]
-              : ["ID", "ID", "DATE_SET"],
-          );
+
+          const firstRow = result.data[0];
+
+          let initialCSVHeader = new Array(firstRow.length).fill("IGNORE");
+
+          // External queries (uploaded lists) usually contain three or four columns.
+          // The first two columns are IDs, which will be concatenated
+          // The other two columns are date ranges
+          if (firstRow.length >= 4) {
+            initialCSVHeader[0] = "ID";
+            initialCSVHeader[1] = "ID";
+            initialCSVHeader[2] = "START_DATE";
+            initialCSVHeader[3] = "END_DATE";
+          } else if (firstRow.length === 3) {
+            initialCSVHeader = ["ID", "ID", "DATE_SET"];
+          } else if (firstRow.length === 2) {
+            initialCSVHeader = ["ID", "DATE_SET"];
+          } else {
+            initialCSVHeader = ["ID"];
+          }
+
+          setCSVHeader(initialCSVHeader);
         }
       } catch (e) {
         setCSVLoading(false);
