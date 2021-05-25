@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -31,6 +32,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	private List<ConceptQueryPlan> childPlans;
 	@ToString.Exclude
 	private boolean generateDateAggregation = false;
+	private final DateAggregator validityDateAggregator = new DateAggregator(DateAggregationAction.MERGE);
 
 	public ArrayConceptQueryPlan(boolean generateDateAggregation) {
 		this.generateDateAggregation = generateDateAggregation;
@@ -53,6 +55,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 		}
 		ArrayConceptQueryPlan aqClone = new ArrayConceptQueryPlan(generateDateAggregation);
 		aqClone.childPlans = new ArrayList<>(childPlanClones);
+		initDateAggregator(aqClone.validityDateAggregator, aqClone.childPlans);
 		return aqClone;
 	}
 
@@ -67,9 +70,20 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	 *                     generated.
 	 */
 	public void addChildPlans(List<ConceptQuery> childQueries, QueryPlanContext context) {
+
 		childPlans = new ArrayList<>();
 		for (ConceptQuery child : childQueries) {
 			childPlans.add(child.createQueryPlan(context));
+		}
+
+		if (generateDateAggregation) {
+			initDateAggregator(this.validityDateAggregator, childPlans);
+		}
+	}
+
+	private static void initDateAggregator(DateAggregator validityDateAggregator, List<ConceptQueryPlan> childPlans) {
+		for (ConceptQueryPlan plan : childPlans) {
+			plan.getValidityDateAggregator().ifPresent(validityDateAggregator::register);
 		}
 	}
 
@@ -80,6 +94,10 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	@Override
 	public Optional<SinglelineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
+
+		// Only override if none has been set from a higher level
+		ctx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
+
 		init(ctx, entity);
 
 		if (!isOfInterest(entity)) {
@@ -89,7 +107,6 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 
 		Object[] resultValues = new Object[this.getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
-		CDateSet dateSet = CDateSet.create();
 		final int  resultOffset = generateDateAggregation ? 1 : 0;
 		int resultInsertIdx = resultOffset;
 		boolean notContainedInChildQueries = true;
@@ -113,10 +130,6 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 			SinglelineEntityResult singleLineResult = result.get();
 			// Mark this result line as contained.
 			notContainedInChildQueries = false;
-			if (generateDateAggregation) {
-				dateSet.addAll((CDateSet) singleLineResult.getValues()[0]);
-				// Skip overwriting the first value: daterange
-			}
 
 			int copyLength = calculateCopyLength(singleLineResult);
 			System.arraycopy(singleLineResult.getValues(), resultOffset, resultValues, resultInsertIdx, copyLength);
@@ -132,7 +145,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 
 		if (generateDateAggregation) {
 			// Dateset was needed, add it to the front.
-			resultValues[VALIDITY_DATE_POSITION] = dateSet;
+			resultValues[VALIDITY_DATE_POSITION] = validityDateAggregator.getAggregationResult();
 		}
 
 		return Optional.of(new SinglelineEntityResult(entity.getId(), resultValues));
@@ -149,17 +162,13 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	}
 
 	@Override
-	public CDateSet getValidityDates(SinglelineEntityResult result) {
+	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		if(!generateDateAggregation) {
-			return CDateSet.create();
+			return Optional.empty();
 		}
 
-		Object valDate = result.getValues()[VALIDITY_DATE_POSITION];
 
-		if (valDate == null){
-			return CDateSet.create();
-		}
-		return (CDateSet) valDate;
+		return Optional.of(validityDateAggregator);
 	}
 
 

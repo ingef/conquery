@@ -3,7 +3,7 @@ import * as React from "react";
 
 import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
 
-import BasicButton from "./BasicButton";
+import BasicButton, { BasicButtonProps } from "./BasicButton";
 
 interface StyledFaIconProps extends FaIconPropsT {
   tight?: boolean;
@@ -42,8 +42,7 @@ const SxButton = styled(BasicButton)<{ frame?: boolean }>`
   }
 `;
 
-export interface IconButtonPropsT
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface IconButtonPropsT extends BasicButtonProps {
   iconProps?: IconStyleProps;
   active?: boolean;
   large?: boolean;
@@ -55,7 +54,6 @@ export interface IconButtonPropsT
   left?: boolean;
   frame?: boolean;
   bare?: boolean;
-  onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
 }
 
 // A button that is prefixed by an icon

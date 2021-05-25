@@ -204,8 +204,21 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	@SneakyThrows
 	public void remove() {
+		try {
+			queryExecutor.close();
+		}
+		catch (IOException e) {
+			log.error("Unable to close worker query executor of {}.", this, e);
+		}
+
+		try {
+			jobManager.close();
+		}catch (Exception e) {
+			log.error("Unable to close worker query executor of {}.", this, e);
+		}
+
+		// Don't call close() here because, it would try to close a removed store or remove a closed store
 		storage.removeStorage();
-		close();
 	}
 
 	public void addTable(Table table) {

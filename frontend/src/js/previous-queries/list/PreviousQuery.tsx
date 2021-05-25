@@ -12,13 +12,11 @@ import IconButton from "../../button/IconButton";
 import { formatDate, useFormatDateDistance } from "../../common/helpers";
 import { exists } from "../../common/helpers/exists";
 import ErrorMessage from "../../error-message/ErrorMessage";
-import EditableTags from "../../form-components/EditableTags";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import PreviousQueriesLabel from "./PreviousQueriesLabel";
-import PreviousQueryTags from "./PreviousQueryTags";
-import { useRenamePreviousQuery, useRetagPreviousQuery } from "./actions";
+import { useRenamePreviousQuery } from "./actions";
 import { PreviousQueryT } from "./reducer";
 import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
@@ -29,7 +27,8 @@ const Root = styled("div")<{ own?: boolean; system?: boolean }>`
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.grayLight};
   background-color: ${({ theme }) => theme.col.bg};
-  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
 
   border-left: ${({ theme, own, system }) =>
     own
@@ -63,6 +62,7 @@ const TopInfos = styled(Gray)`
 `;
 const OwnerName = styled(Gray)`
   flex-shrink: 0;
+  padding-left: 5px;
 `;
 
 const TopRight = styled("div")`
@@ -78,12 +78,12 @@ const TopLeft = styled("div")`
 const NonBreakingText = styled("span")`
   white-space: nowrap;
 `;
-const MiddleRow = styled("div")`
+const LabelRow = styled("div")`
   display: flex;
   width: 100%;
   justify-content: space-between;
   line-height: 24px;
-  margin-bottom: 2px;
+  margin: 2px 0;
 `;
 const StyledErrorMessage = styled(ErrorMessage)`
   margin: 0;
@@ -104,9 +104,8 @@ const SxDownloadButton = styled(DownloadButton)`
   }
 `;
 
-const SxPreviousQueryTags = styled(PreviousQueryTags)`
-  display: flex;
-  align-items: center;
+const FoldersButton = styled(IconButton)`
+  margin-right: 10px;
 `;
 
 interface PropsT {
@@ -114,17 +113,21 @@ interface PropsT {
   datasetId: DatasetIdT;
   onIndicateDeletion: () => void;
   onIndicateShare: () => void;
+  onIndicateEditFolders: () => void;
 }
 
 const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
   function PreviousQueryComponent(
-    { query, datasetId, onIndicateDeletion, onIndicateShare },
+    {
+      query,
+      datasetId,
+      onIndicateDeletion,
+      onIndicateShare,
+      onIndicateEditFolders,
+    },
     ref,
   ) {
     const { t } = useTranslation();
-    const availableTags = useSelector<StateT, string[]>(
-      (state) => state.previousQueries.tags,
-    );
 
     const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
       (state) => state.conceptTrees.secondaryIds,
@@ -133,14 +136,10 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     const formatDateDistance = useFormatDateDistance();
 
     const renamePreviousQuery = useRenamePreviousQuery();
-    const retagPreviousQuery = useRetagPreviousQuery();
     const onDeletePreviousQuery = useDeletePreviousQuery(query.id);
 
     const onRenamePreviousQuery = (label: string) =>
       renamePreviousQuery(datasetId, query.id, label);
-
-    const onRetagPreviousQuery = (tags: string[]) =>
-      retagPreviousQuery(query.id, tags);
 
     const mayDeleteQueryRightAway =
       query.tags.length === 0 && query.isPristineLabel;
@@ -168,7 +167,6 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       ? loadedSecondaryIds.find((secId) => query.secondaryId === secId.id)
       : null;
 
-    const [isEditingTags, setIsEditingTags] = useState<boolean>(false);
     const [isEditingLabel, setIsEditingLabel] = useState<boolean>(false);
 
     return (
@@ -179,6 +177,17 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       >
         <TopInfos>
           <TopLeft>
+            {mayEditQuery && (
+              <WithTooltip text={t("previousQuery.editFolders")}>
+                <FoldersButton
+                  icon="folder"
+                  tight
+                  small
+                  bare
+                  onClick={onIndicateEditFolders}
+                />
+              </WithTooltip>
+            )}
             {query.resultUrls.length > 0 ? (
               <WithTooltip text={t("previousQuery.downloadResults")}>
                 <SxDownloadButton tight small bare url={query.resultUrls[0]}>
@@ -191,17 +200,6 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
           </TopLeft>
           <TopRight>
             <WithTooltip text={executedAtRelative}>{executedAt}</WithTooltip>
-            {mayEditQuery &&
-              !isEditingTags &&
-              (!query.tags || query.tags.length === 0) && (
-                <StyledWithTooltip text={t("common.addTag")}>
-                  <IconButton
-                    icon="tags"
-                    bare
-                    onClick={() => setIsEditingTags(true)}
-                  />
-                </StyledWithTooltip>
-              )}
             {secondaryId && query.queryType === "SECONDARY_ID_QUERY" && (
               <StyledWithTooltip
                 text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
@@ -231,7 +229,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             )}
           </TopRight>
         </TopInfos>
-        <MiddleRow>
+        <LabelRow>
           <PreviousQueriesLabel
             mayEditQuery={mayEditQuery}
             loading={!!query.loading}
@@ -242,20 +240,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             setIsEditing={setIsEditingLabel}
           />
           <OwnerName>{query.ownerName}</OwnerName>
-        </MiddleRow>
-        {mayEditQuery ? (
-          <EditableTags
-            tags={query.tags.sort()}
-            loading={!!query.loading}
-            onSubmit={onRetagPreviousQuery}
-            isEditing={isEditingTags}
-            setIsEditing={setIsEditingTags}
-            tagComponent={<SxPreviousQueryTags tags={query.tags} />}
-            availableTags={availableTags}
-          />
-        ) : (
-          <SxPreviousQueryTags tags={query.tags} />
-        )}
+        </LabelRow>
         {!!query.error && <StyledErrorMessage message={query.error} />}
       </Root>
     );

@@ -8,17 +8,14 @@ import EditableText from "../../form-components/EditableText";
 import HighlightableLabel from "../../highlightable-label/HighlightableLabel";
 
 const SxSelectableLabel = styled(HighlightableLabel)`
-  margin: 0;
-  font-weight: 400;
   display: block;
+  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 `;
 const SxEditableText = styled(EditableText)`
-  margin: 0;
   font-weight: 400;
-  word-break: break-word;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
