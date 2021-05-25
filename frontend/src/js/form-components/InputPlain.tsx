@@ -1,16 +1,16 @@
 import React from "react";
-import type { WrappedFieldProps } from "redux-form";
 
 import type { CurrencyConfigT } from "../api/types";
 import { isEmpty } from "../common/helpers";
 
 import BaseInput from "./BaseInput";
 import Labeled from "./Labeled";
+import { InputProps } from "./types";
 
-interface PropsT extends WrappedFieldProps {
+interface Props<T> extends InputProps<T> {
   label: string;
   inputType?: string;
-  valueType?: string;
+  money?: boolean;
   className?: string;
   placeholder?: string;
   tinyLabel?: boolean;
@@ -20,7 +20,9 @@ interface PropsT extends WrappedFieldProps {
   fullWidth?: boolean;
 }
 
-const InputText: React.FC<PropsT> = (props) => {
+const InputPlain = <T extends string | number | null = string | null>(
+  props: Props<T>,
+) => {
   return (
     <Labeled
       className={props.className}
@@ -36,7 +38,7 @@ const InputText: React.FC<PropsT> = (props) => {
       <BaseInput
         large={props.large}
         inputType={props.inputType || "text"}
-        valueType={props.valueType}
+        money={props.money}
         placeholder={props.placeholder}
         value={props.input.value}
         onChange={props.input.onChange}
@@ -47,4 +49,4 @@ const InputText: React.FC<PropsT> = (props) => {
   );
 };
 
-export default InputText;
+export default InputPlain;

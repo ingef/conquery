@@ -45,7 +45,6 @@
     "nodemon": "^2.0.7",
     "preval.macro": "^5.0.0",
     "react": "^16.13.1",
-    "react-animated-dots": "^1.0.0",
     "react-dnd": "^11.1.3",
     "react-dnd-html5-backend": "^11.1.3",
     "react-dnd-multi-backend": "^6.0.2",
