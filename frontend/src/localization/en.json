@@ -115,6 +115,10 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Should this query be deleted?"
   },
+  "deletePreviousQueryFolderModal": {
+    "areYouSure": "Are you sure you want to delete this folder?",
+    "description": "All queries will remain stored, but will be removed from this folder."
+  },
   "sharePreviousQueryModal": {
     "headline": "Sharing query: ",
     "groupsLabel": "Groups to share the query with",

@@ -1,50 +1,64 @@
-import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC, useMemo } from "react";
+import React, { FC, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
+import IconButton from "../../button/IconButton";
 import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../../common/constants/dndTypes";
 import Dropzone, { DropzoneProps } from "../../form-components/Dropzone";
 import type { DragItemQuery } from "../../standard-query-editor/types";
+import WithTooltip from "../../tooltip/WithTooltip";
 import {
   removeFolderFromFilter,
   setFolderFilter,
   toggleNoFoldersFilter,
 } from "../folderFilter/actions";
 
+import DeletePreviousQueryFolderModal from "./DeletePreviousQueryFolderModal";
 import PreviousQueriesFolder from "./PreviousQueriesFolder";
 import { useRetagPreviousQuery } from "./actions";
 import type { PreviousQueryT } from "./reducer";
 
-const WIDTH_OPEN = 150;
-
-const Folders = styled("div")<{ isOpen?: boolean }>`
+const Folders = styled("div")`
   flex-shrink: 0;
   height: 100%;
   overflow: hidden;
-  padding: 8px 0px;
-  width: 0;
   border-right: none;
   display: flex;
   align-items: flex-start;
   flex-direction: column;
+`;
 
-  ${({ isOpen }) =>
-    isOpen &&
-    css`
-      width: ${WIDTH_OPEN}px;
-      padding: 8px 12px 4px 0;
-    `};
+const SxWithTooltip = styled(WithTooltip)`
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  display: none !important;
+`;
+
+const SxIconButton = styled(IconButton)`
+  background-color: ${({ theme }) => theme.col.bg};
+  padding: 2px 8px;
+  opacity: 1;
+  border-radius: 0;
 `;
 
 const SxDropzone = styled(Dropzone)`
   justify-content: flex-start;
   margin-bottom: 2px;
+  position: relative;
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.col.grayVeryLight};
+    ${SxWithTooltip} {
+      display: inherit !important;
+    }
+  }
 `;
 
 const SxPreviousQueriesFolder = styled(PreviousQueriesFolder)`
@@ -61,8 +75,9 @@ const SmallLabel = styled("p")`
 
 const ScrollContainer = styled("div")`
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden;
   flex-grow: 1;
+  width: 100%;
 
   display: flex;
   align-items: flex-start;
@@ -71,10 +86,9 @@ const ScrollContainer = styled("div")`
 
 interface Props {
   className?: string;
-  isOpen?: boolean;
 }
 
-const PreviousQueriesFolders: FC<Props> = ({ isOpen, className }) => {
+const PreviousQueriesFolders: FC<Props> = ({ className }) => {
   const queries = useSelector<StateT, PreviousQueryT[]>(
     (state) => state.previousQueries.queries,
   );
@@ -111,8 +125,20 @@ const PreviousQueriesFolders: FC<Props> = ({ isOpen, className }) => {
     retagPreviousQuery(query.id, Array.from(new Set([...query.tags, folder])));
   };
 
+  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+
   return (
-    <Folders className={className} isOpen={isOpen}>
+    <Folders className={className}>
+      {folderToDelete && (
+        <DeletePreviousQueryFolderModal
+          folder={folderToDelete}
+          onClose={() => setFolderToDelete(null)}
+          onDeleteSuccess={() => {
+            setFolderToDelete(null);
+            dispatch(setFolderFilter([]));
+          }}
+        />
+      )}
       <SmallLabel>{t("folders.headline")}</SmallLabel>
       <ScrollContainer>
         <SxPreviousQueriesFolder
@@ -139,14 +165,26 @@ const PreviousQueriesFolders: FC<Props> = ({ isOpen, className }) => {
                 item.type === "PREVIOUS_SECONDARY_ID_QUERY") &&
               (item.own || item.shared)
             }
+            onClick={() => onClickFolder(folder)}
           >
             {() => (
-              <PreviousQueriesFolder
-                key={folder}
-                folder={folder}
-                active={folderFilter.includes(folder)}
-                onClick={() => onClickFolder(folder)}
-              />
+              <>
+                <PreviousQueriesFolder
+                  key={folder}
+                  folder={folder}
+                  active={folderFilter.includes(folder)}
+                  onClick={() => onClickFolder(folder)}
+                />
+                <SxWithTooltip text={t("common.delete")}>
+                  <SxIconButton
+                    icon="times"
+                    onClick={(e) => {
+                      setFolderToDelete(folder);
+                      e.stopPropagation();
+                    }}
+                  />
+                </SxWithTooltip>
+              </>
             )}
           </SxDropzone>
         ))}

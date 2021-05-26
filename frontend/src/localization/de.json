@@ -115,6 +115,10 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Diese Anfrage wirklich löschen?"
   },
+  "deletePreviousQueryFolderModal": {
+    "areYouSure": "Diesen Ordner wirklich löschen?",
+    "description": "Alle Anfragen werden aus diesem Ordner entfernt, bleiben aber gespeichert."
+  },
   "sharePreviousQueryModal": {
     "headline": "Anfrage freigeben: ",
     "groupsLabel": "Gruppen mit denen die Anfrage geteilt werden soll",
