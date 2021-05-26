@@ -31,6 +31,7 @@ const InputContainer = styled("div")`
 const StyledBaseInput = styled(BaseInput)`
   width: 100%;
   input {
+    padding-right: 60px;
     width: 100%;
     &::placeholder {
       color: ${({ theme }) => theme.col.grayMediumLight};
@@ -46,10 +47,11 @@ const Right = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: center;
-  height: 36px;
+  height: 34px;
 `;
 
 const StyledIconButton = styled(IconButton)`
+  padding: 8px 10px;
   color: ${({ theme }) => theme.col.gray};
 `;
 
@@ -145,7 +147,6 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
               <StyledIconButton
                 icon="search"
                 aria-hidden="true"
-                small
                 onClick={() => onSearch(trees, localQuery)}
               />
             </Right>

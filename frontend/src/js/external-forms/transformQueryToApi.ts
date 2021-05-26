@@ -19,7 +19,8 @@ function transformFieldToApi(fieldConfig, form) {
 
   switch (fieldConfig.type) {
     case "RESULT_GROUP":
-      return formValue.id;
+      // A RESULT_GROUP field may allow null / be optional
+      return formValue ? formValue.id : null;
     case "MULTI_RESULT_GROUP":
       return formValue.map((group) => group.id);
     case "DATE_RANGE":

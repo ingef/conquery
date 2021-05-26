@@ -61,7 +61,7 @@ public abstract class QPParentNode extends QPNode {
 		this.dateAggregator = new DateAggregator(action);
 
 		for (QPNode child : children) {
-			this.dateAggregator.register(child.getDateAggregators());
+			this.dateAggregator.registerAll(child.getDateAggregators());
 		}
 	}
 

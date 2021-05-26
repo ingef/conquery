@@ -33,13 +33,11 @@ import lombok.ToString;
 @ToString(of = {"workerId", "text"})
 public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
-	private static final ObjectWriter WRITER = Jackson.BINARY_MAPPER.copy().writerFor(WorkerMessage.class).withView(InternalOnly.class);
-
 	@SneakyThrows(JsonProcessingException.class)
-	public static ForwardToWorker create(WorkerId worker, WorkerMessage message) {
+	public static ForwardToWorker create(WorkerId worker, WorkerMessage message, ObjectWriter writer) {
 		return new ForwardToWorker(
 				worker,
-				WRITER.writeValueAsBytes(message),
+				writer.writeValueAsBytes(message),
 				message.isSlowMessage(),
 				message.toString()
 		);

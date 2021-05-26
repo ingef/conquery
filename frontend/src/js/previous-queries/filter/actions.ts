@@ -1,6 +1,9 @@
-import { SET_PREVIOUS_QUERIES_FILTER } from "./actionTypes";
+import { ActionType, createAction } from "typesafe-actions";
 
-export const setPreviousQueriesFilter = (filter) => ({
-  type: SET_PREVIOUS_QUERIES_FILTER,
-  payload: { filter },
-});
+export type PreviousQueriesFilterActions = ActionType<
+  typeof setPreviousQueriesFilter
+>;
+
+export const setPreviousQueriesFilter = createAction(
+  "previous-queries/SET_FILTER",
+)<string>();

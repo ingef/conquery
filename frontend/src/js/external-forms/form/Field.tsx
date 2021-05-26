@@ -6,8 +6,8 @@ import { Field as RxFormField } from "redux-form";
 import type { SelectOptionT } from "../../api/types";
 import InputCheckbox from "../../form-components/InputCheckbox";
 import InputDateRange from "../../form-components/InputDateRange";
+import InputPlain from "../../form-components/InputPlain";
 import InputSelect from "../../form-components/InputSelect";
-import InputText from "../../form-components/InputText";
 import ToggleButton from "../../form-components/ToggleButton";
 import { nodeIsInvalid } from "../../model/node";
 import FormField from "../common/FormField";
@@ -26,7 +26,7 @@ const TabsField = styled("div")``;
 
 // Pre-set field components to avoid re-rendering,
 // => Avoids losing input focus.
-const Text = FormField(InputText);
+const Plain = FormField(InputPlain);
 const QueryDropzone = FormField(FormQueryDropzone);
 const MultiQueryDropzone = FormField(FormMultiQueryDropzone);
 const DateRange = FormField(InputDateRange);
@@ -69,7 +69,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
       return (
         <RxFormField
           name={field.name}
-          component={Text}
+          component={Plain}
           props={{
             inputType: "text",
             label: field.label[locale],
@@ -81,7 +81,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
       return (
         <RxFormField
           name={field.name}
-          component={Text}
+          component={Plain}
           props={{
             inputType: "number",
             label: field.label[locale],

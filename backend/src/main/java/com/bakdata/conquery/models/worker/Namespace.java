@@ -19,13 +19,10 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -36,11 +33,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Setter
 @Getter
-@NoArgsConstructor
-@ToString(of = "storage")
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@ToString(onlyExplicitlyIncluded = true)
 public class Namespace implements Closeable {
 
 	@JsonIgnore
+	private transient ObjectWriter objectWriter;
+	@JsonIgnore
+	@ToString.Include
 	private transient NamespaceStorage storage;
 
 	@JsonIgnore
@@ -64,10 +64,11 @@ public class Namespace implements Closeable {
 	@JsonIgnore
 	private transient DatasetRegistry namespaces;
 
-	public Namespace(NamespaceStorage storage, boolean failOnError) {
+	public Namespace(NamespaceStorage storage, boolean failOnError, ObjectWriter objectWriter) {
 		this.storage = storage;
 		this.queryManager = new ExecutionManager(this);
 		this.jobManager = new JobManager(storage.getDataset().getName(), failOnError);
+		this.objectWriter = objectWriter;
 	}
 
 	public void checkConnections() {
@@ -116,6 +117,8 @@ public class Namespace implements Closeable {
 	public synchronized void addWorker(WorkerInformation info) {
 		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
+		info.setObjectWriter(objectWriter);
+
 		Set<WorkerInformation> l = new HashSet<>(workers);
 		l.add(info);
 		workers = l;
@@ -150,6 +153,18 @@ public class Namespace implements Closeable {
 		catch (IOException e) {
 			log.error("Unable to close namespace storage of {}.", this, e);
 		}
+	}
+
+	public void remove() {
+		try {
+			jobManager.close();
+		}
+		catch (Exception e) {
+			log.error("Unable to close namespace jobmanager of {}", this, e);
+		}
+
+		log.info("Removing namespace storage of {}", getStorage().getDataset().getId());
+		storage.removeStorage();
 	}
 
 	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {

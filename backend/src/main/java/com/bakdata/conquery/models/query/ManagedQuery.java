@@ -91,7 +91,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	private transient ConqueryConfig config;
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
-	@JsonIgnore
+	@JsonIgnore @ToString.Exclude
 	private transient SoftReference<List<EntityResult>> results = new SoftReference<>(new ArrayList<>());
 
 	public List<EntityResult> getResults() {

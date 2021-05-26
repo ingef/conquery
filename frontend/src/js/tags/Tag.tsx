@@ -1,15 +1,8 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import * as React from "react";
+import React, { FC } from "react";
 
-type PropsType = {
-  children?: React.Node;
-  className?: string;
-  isSelected: boolean;
-  onClick: () => void;
-};
-
-const Root = styled("p")`
+const Root = styled("p")<{ isClickable?: boolean; isSelected?: boolean }>`
   display: inline-block;
   padding: 4px 4px;
   margin: 0 3px 3px 0;
@@ -17,15 +10,19 @@ const Root = styled("p")`
   line-height: ${({ theme }) => theme.font.xs};
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
+  white-space: nowrap;
 
-  ${({ isClickable, theme }) =>
+  ${({ isClickable, theme, isSelected }) =>
     isClickable &&
     css`
       cursor: pointer;
 
-      &:hover {
-        border-color: ${theme.col.gray};
-      }
+      ${!isSelected &&
+      css`
+        &:hover {
+          border-color: ${theme.col.gray};
+        }
+      `}
     `};
 
   ${({ isSelected, theme }) =>
@@ -38,15 +35,21 @@ const Root = styled("p")`
     `};
 `;
 
-const Tag = (props: PropsType) => {
+interface Props {
+  className?: string;
+  isSelected: boolean;
+  onClick: () => void;
+}
+
+const Tag: FC<Props> = ({ children, className, onClick, isSelected }) => {
   return (
     <Root
-      className={props.className}
-      isClickable={!!props.onClick}
-      isSelected={!!props.isSelected}
-      onClick={props.onClick}
+      className={className}
+      isClickable={!!onClick}
+      isSelected={!!isSelected}
+      onClick={onClick}
     >
-      {props.children}
+      {children}
     </Root>
   );
 };

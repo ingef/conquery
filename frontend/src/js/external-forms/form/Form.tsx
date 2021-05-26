@@ -98,15 +98,15 @@ function getErrorForField(t: TFunction, field: FormFieldType, value: any) {
   return error;
 }
 
-type ConfiguredFormPropsType = {
+interface ConfiguredFormPropsType {
   config: FormType;
-};
+}
 
-type PropsType = {
+interface PropsType {
   onSubmit: Function;
   getFieldValue: (fieldName: string) => any;
   availableDatasets: SelectOptionT[];
-};
+}
 
 // This is the generic form component that receives a form config
 // and builds all fields from there.
