@@ -33,18 +33,18 @@ const Folders = styled("div")`
   flex-direction: column;
 `;
 
-const SxWithTooltip = styled(WithTooltip)`
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  display: none !important;
-`;
-
 const SxIconButton = styled(IconButton)`
   background-color: ${({ theme }) => theme.col.bg};
   padding: 2px 8px;
   opacity: 1;
   border-radius: 0;
+`;
+
+const SxWithTooltip = styled(WithTooltip)`
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  display: none !important; /* to override display: inline */
 `;
 
 const SxDropzone = styled(Dropzone)`
@@ -56,7 +56,7 @@ const SxDropzone = styled(Dropzone)`
   &:hover {
     background-color: ${({ theme }) => theme.col.grayVeryLight};
     ${SxWithTooltip} {
-      display: inherit !important;
+      display: inherit !important; /* to override display: inline */
     }
   }
 `;
