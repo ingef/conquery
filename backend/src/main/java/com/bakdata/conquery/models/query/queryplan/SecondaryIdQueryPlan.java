@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
@@ -132,7 +131,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 				}
 
 				String key = ((String) bucket.createScriptValue(event, secondaryIdColumnId));
-				final ConceptQueryPlan plan = childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumnId, ctxWithPhase, bucket, k));
+				final ConceptQueryPlan plan = childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumnId, ctxWithPhase, bucket));
 				plan.nextEvent(bucket, event);
 			}
 		}
@@ -185,7 +184,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 * if a new distinct secondaryId was found we create a new clone of the ConceptQueryPlan
 	 * and bring it up to speed
 	 */
-	private ConceptQueryPlan createChild(Column secondaryIdColumn, QueryExecutionContext currentContext, Bucket currentBucket, String k) {
+	private ConceptQueryPlan createChild(Column secondaryIdColumn, QueryExecutionContext currentContext, Bucket currentBucket) {
 
 		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
 
