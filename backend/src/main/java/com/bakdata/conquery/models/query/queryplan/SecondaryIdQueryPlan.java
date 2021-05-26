@@ -57,9 +57,6 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
-		// Only override if none has been set from a higher level
-		ctx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
-
 		if (query.getRequiredTables().get().isEmpty()) {
 			return Optional.empty();
 		}
@@ -135,7 +132,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 				}
 
 				String key = ((String) bucket.createScriptValue(event, secondaryIdColumnId));
-				final ConceptQueryPlan plan = childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumnId, ctxWithPhase, bucket));
+				final ConceptQueryPlan plan = childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumnId, ctxWithPhase, bucket, k));
 				plan.nextEvent(bucket, event);
 			}
 		}
@@ -168,7 +165,8 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		query.nextTable(ctx, currentTable);
 		for (ConceptQueryPlan c : childPerKey.values()) {
-			c.nextTable(ctx, currentTable);
+			QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(ctx, c::getValidityDateAggregator);
+			c.nextTable(context, currentTable);
 		}
 	}
 
@@ -187,12 +185,14 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 * if a new distinct secondaryId was found we create a new clone of the ConceptQueryPlan
 	 * and bring it up to speed
 	 */
-	private ConceptQueryPlan createChild(Column secondaryIdColumn, QueryExecutionContext currentContext, Bucket currentBucket) {
+	private ConceptQueryPlan createChild(Column secondaryIdColumn, QueryExecutionContext currentContext, Bucket currentBucket, String k) {
 
 		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
 
-		plan.init(query.getEntity(), currentContext);
-		plan.nextTable(currentContext, secondaryIdColumn.getTable());
+		QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
+
+		plan.init(query.getEntity(), context);
+		plan.nextTable(context, secondaryIdColumn.getTable());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);
 
