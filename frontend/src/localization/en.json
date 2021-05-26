@@ -390,7 +390,8 @@
   },
   "folders": {
     "headline": "Folders",
-    "noFolders": "none"
+    "noFolders": "none",
+    "allQueries": "All"
   },
   "editPreviousQueryFoldersModal": {
     "headline": "Edit folders"

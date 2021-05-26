@@ -14,7 +14,7 @@ import type { DragItemQuery } from "../../standard-query-editor/types";
 import {
   removeFolderFromFilter,
   setFolderFilter,
-  toggleNoFoldersFilder,
+  toggleNoFoldersFilter,
 } from "../folderFilter/actions";
 
 import PreviousQueriesFolder from "./PreviousQueriesFolder";
@@ -27,10 +27,9 @@ const Folders = styled("div")<{ isOpen?: boolean }>`
   flex-shrink: 0;
   height: 100%;
   overflow: hidden;
-  padding: 4px 0px;
+  padding: 8px 0px;
   width: 0;
   border-right: none;
-  margin: 4px 0 0;
   display: flex;
   align-items: flex-start;
   flex-direction: column;
@@ -39,7 +38,7 @@ const Folders = styled("div")<{ isOpen?: boolean }>`
     isOpen &&
     css`
       width: ${WIDTH_OPEN}px;
-      margin: 4px 8px 0 0;
+      padding: 8px 12px 4px 0;
     `};
 `;
 
@@ -64,6 +63,10 @@ const ScrollContainer = styled("div")`
   overflow-y: auto;
   overflow-x: auto;
   flex-grow: 1;
+
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
 `;
 
 interface Props {
@@ -88,7 +91,8 @@ const PreviousQueriesFolders: FC<Props> = ({ isOpen, className }) => {
 
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const onToggleFoldersActive = () => dispatch(toggleNoFoldersFilder());
+  const onToggleNoFoldersActive = () => dispatch(toggleNoFoldersFilter());
+  const onResetFolderFilter = () => dispatch(setFolderFilter([]));
 
   const onClickFolder = (folder: string) => {
     if (!folderFilter.includes(folder)) {
@@ -112,11 +116,17 @@ const PreviousQueriesFolders: FC<Props> = ({ isOpen, className }) => {
       <SmallLabel>{t("folders.headline")}</SmallLabel>
       <ScrollContainer>
         <SxPreviousQueriesFolder
+          key="all-queries"
+          folder={t("folders.allQueries")}
+          active={folderFilter.length === 0 && !noFoldersActive}
+          onClick={onResetFolderFilter}
+        />
+        <SxPreviousQueriesFolder
           key="no-folder"
           empty
           folder={t("folders.noFolders")}
           active={noFoldersActive}
-          onClick={onToggleFoldersActive}
+          onClick={onToggleNoFoldersActive}
         />
         {folders.map((folder, i) => (
           <SxDropzone<FC<DropzoneProps<DragItemQuery>>>

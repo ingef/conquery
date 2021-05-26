@@ -94,8 +94,6 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
 
   const loadPreviousQueries = useLoadPreviousQueries();
 
-  const hasQueries = loading || queries.length !== 0;
-
   useEffect(() => {
     if (datasetId) {
       loadPreviousQueries(datasetId);
