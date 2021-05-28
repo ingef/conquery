@@ -1,11 +1,17 @@
 package com.bakdata.conquery.resources.admin.rest;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
+import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
+import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
+import com.bakdata.conquery.models.concepts.select.concept.specific.EventDurationSumSelect;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -29,6 +35,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
@@ -38,6 +45,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 
@@ -71,7 +79,7 @@ public class AdminDatasetProcessor {
 		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);
 
-		Namespace ns = new Namespace(datasetStorage, config.isFailOnError());
+		Namespace ns = new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy()).writerWithView(InternalOnly.class));
 
 		datasetRegistry.add(ns);
 
@@ -173,10 +181,28 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 		}
 
+		addAutomaticSelect(concept, () -> EventDurationSumSelect.create("event_duration_sum"));
+
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
 		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
 	}
 
+	private static void addAutomaticSelect(@NotNull Concept<?> concept, Supplier<UniversalSelect> selectCreator) {
+		if (concept instanceof TreeConcept) {
+			// Add to concept
+			TreeConcept treeConcept = (TreeConcept) concept;
+			final UniversalSelect select = selectCreator.get();
+			select.setHolder(treeConcept);
+			treeConcept.getSelects().add(select);
+
+			// Add to connectors
+			for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
+				final UniversalSelect connectorSelect = selectCreator.get();
+				connectorSelect.setHolder(connector);
+				connector.getSelects().add(connectorSelect);
+			}
+		}
+	}
 
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {

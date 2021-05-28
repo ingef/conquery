@@ -8,9 +8,9 @@ import type {
   TableIdT,
   FilterIdT,
 } from "../api/types";
+import InputPlain from "../form-components/InputPlain";
 import InputRange, { ModeT } from "../form-components/InputRange";
 import InputSelect from "../form-components/InputSelect";
-import InputText from "../form-components/InputText";
 import type { FilterWithValueType } from "../standard-query-editor/types";
 
 import ResolvableMultiSelect from "./ResolvableMultiSelect";
@@ -104,7 +104,6 @@ const TableFilters = (props: PropsT) => {
             case "INTEGER_RANGE":
               return (
                 <InputRange
-                  inputType="number"
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
@@ -126,7 +125,6 @@ const TableFilters = (props: PropsT) => {
             case "REAL_RANGE":
               return (
                 <InputRange
-                  inputType="number"
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
@@ -149,8 +147,7 @@ const TableFilters = (props: PropsT) => {
             case "MONEY_RANGE":
               return (
                 <InputRange
-                  inputType="number"
-                  valueType="MONEY_RANGE"
+                  moneyRange
                   input={{
                     value: filter.value,
                     onChange: (value) =>
@@ -169,8 +166,7 @@ const TableFilters = (props: PropsT) => {
               );
             case "STRING":
               return (
-                <InputText
-                  inputType="text"
+                <InputPlain
                   input={{
                     value: filter.value || "",
                     defaultValue: filter.defaultValue,

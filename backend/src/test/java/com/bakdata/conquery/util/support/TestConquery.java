@@ -19,6 +19,7 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -71,6 +72,8 @@ public class TestConquery {
 	 */
 	@Getter
 	private ExtensionContext beforeAllContext;
+	// Initial user which is set before each test from the config.
+	private User testUser;
 
 	@SneakyThrows
 	public static void configurePathsAndLogging(ConqueryConfig config, File tmpDir) {
@@ -126,9 +129,16 @@ public class TestConquery {
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
 
-		localTmpDir.mkdir();
+		if (!localTmpDir.exists()) {
+			if(!localTmpDir.mkdir()) {
+				throw new IllegalStateException("Could not create directory for Support");
+			}
+		} else {
+			log.info("Reusing existing folder {} for Support", localTmpDir.getPath());
+		}
 
 		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()));
+
 
 		StandaloneSupport support = new StandaloneSupport(
 				this,
@@ -139,7 +149,7 @@ public class TestConquery {
 				standaloneCommand.getManager().getAdmin().getAdminProcessor(),
 				standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor(),
 				// Getting the User from AuthorizationConfig
-				standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser()
+				testUser
 		);
 
 		Wait.builder()
@@ -208,21 +218,26 @@ public class TestConquery {
 	}
 
 	public void afterEach() throws Exception {
-		for (StandaloneSupport openSupport : openSupports) {
-			openSupport.close();
-			removeSupportDataset(openSupport);
+		synchronized (openSupports) {
+			for (StandaloneSupport openSupport : openSupports) {
+				removeSupportDataset(openSupport);
+			}
+			openSupports.clear();
 		}
-		openSupports.clear();
+		this.getStandaloneCommand().getManager().getStorage().clear();
+		waitUntilWorkDone();
 	}
 
 	@SneakyThrows
 	public void removeSupportDataset(StandaloneSupport support) {
-		standaloneCommand.getManager().getDatasetRegistry().getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(support.getDataset())));
 		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(support.getDataset().getId());
 	}
 
 	public void removeSupport(StandaloneSupport support) {
-		openSupports.remove(support);
+		synchronized (openSupports) {
+			openSupports.remove(support);
+			removeSupportDataset(support);
+		}
 	}
 
 	public void waitUntilWorkDone() {
@@ -268,4 +283,8 @@ public class TestConquery {
 		return busy;
 	}
 
+	public void beforeEach() {
+		testUser = standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser();
+		standaloneCommand.getManager().getStorage().updateUser(testUser);
+	}
 }

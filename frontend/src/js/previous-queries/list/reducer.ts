@@ -10,8 +10,6 @@ import {
   RENAME_PREVIOUS_QUERY_START,
   RENAME_PREVIOUS_QUERY_SUCCESS,
   RENAME_PREVIOUS_QUERY_ERROR,
-  TOGGLE_EDIT_PREVIOUS_QUERY_LABEL,
-  TOGGLE_EDIT_PREVIOUS_QUERY_TAGS,
   RETAG_PREVIOUS_QUERY_START,
   RETAG_PREVIOUS_QUERY_SUCCESS,
   RETAG_PREVIOUS_QUERY_ERROR,
@@ -213,10 +211,6 @@ const previousQueriesReducer = (
         loading: false,
         error: action.payload.message,
       });
-    case TOGGLE_EDIT_PREVIOUS_QUERY_LABEL:
-      return toggleQueryAttribute(state, action, "editingLabel");
-    case TOGGLE_EDIT_PREVIOUS_QUERY_TAGS:
-      return toggleQueryAttribute(state, action, "editingTags");
     default:
       return state;
   }

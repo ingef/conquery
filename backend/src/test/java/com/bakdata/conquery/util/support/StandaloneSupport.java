@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class StandaloneSupport implements Closeable {
+public class StandaloneSupport {
 
 	private final TestConquery testConquery;
 	@Getter
@@ -78,12 +78,6 @@ public class StandaloneSupport implements Closeable {
 		.run(env, namespace, config);
 	}
 
-	@Override
-	public void close() {
-		testConquery.removeSupportDataset(this);
-		testConquery.removeSupport(this);
-		testConquery.waitUntilWorkDone();
-	}
 
 	public Validator getValidator() {
 		return testConquery.getStandaloneCommand().getManager().getValidator();

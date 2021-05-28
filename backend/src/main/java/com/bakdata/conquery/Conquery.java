@@ -29,6 +29,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.StringSubstitutor;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -75,7 +76,7 @@ public class Conquery extends Application<ConqueryConfig> {
 			public void initialize(Bootstrap<?> bootstrap) {
 				// Allow overriding of config from environment variables.
 				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
-						bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
+						bootstrap.getConfigurationSourceProvider(), StringSubstitutor.createInterpolator()));
 			}
 		});
 		// register frontend

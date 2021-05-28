@@ -28,6 +28,9 @@ const LeftPane = () => {
   const areTreesAvailable = useSelector<StateT, boolean>((state) =>
     getAreTreesAvailable(state),
   );
+  const previousQueriesLoading = useSelector<StateT, boolean>(
+    (state) => state.previousQueries.loading,
+  );
 
   return (
     <Pane
@@ -42,6 +45,7 @@ const LeftPane = () => {
           label: t("leftPane.previousQueries"),
           key: "previousQueries",
           tooltip: t("help.tabPreviousQueries"),
+          loading: previousQueriesLoading,
         },
         {
           label: t("leftPane.formConfigs"),

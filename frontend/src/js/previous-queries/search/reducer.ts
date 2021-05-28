@@ -1,7 +1,8 @@
-import {
-  UPDATE_PREVIOUS_QUERIES_SEARCH,
-  ADD_TAG_TO_PREVIOUS_QUERIES_SEARCH,
-} from "./actionTypes";
+import { getType } from "typesafe-actions";
+
+import { Action } from "../../app/actions";
+
+import { updatePreviousQueriesSearch } from "./actions";
 
 export type PreviousQueriesSearchStateT = string[];
 
@@ -9,16 +10,11 @@ const initialState: PreviousQueriesSearchStateT = [];
 
 const previousQueriesSearch = (
   state: PreviousQueriesSearchStateT = initialState,
-  action: Object,
+  action: Action,
 ): PreviousQueriesSearchStateT => {
   switch (action.type) {
-    case UPDATE_PREVIOUS_QUERIES_SEARCH:
-      return action.payload.values;
-    case ADD_TAG_TO_PREVIOUS_QUERIES_SEARCH:
-      const { tag } = action.payload;
-
-      // Only add tag if it doesn't exist
-      return state.indexOf(tag) === -1 ? state.concat(tag) : state;
+    case getType(updatePreviousQueriesSearch):
+      return action.payload;
     default:
       return state;
   }

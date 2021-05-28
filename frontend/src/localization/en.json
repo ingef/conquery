@@ -139,7 +139,7 @@
     "closeEsc": "Close (ESC)",
     "close": "Close",
     "create": "Create",
-    "addTag": "Add Tag",
+    "addTag": "Add folder",
     "share": "Share",
     "shared": "Shared",
     "loading": "Loading ...",
@@ -163,12 +163,12 @@
   },
   "reactSelect": {
     "placeholder": "Choose ...",
-    "tagPlaceholder": "Tag ...",
+    "tagPlaceholder": "Folder ...",
     "searchPlaceholder": "Search ...",
     "dndPlaceholder": "Choose or drop file ...",
     "backspaceToRemove": "Press Backspace to remove",
     "noResults": "No values found",
-    "createTag": "Create tag: {{label}}",
+    "createTag": "Create folder: {{label}}",
     "searchFor": "Search for: {{label}}",
     "clearAll": "Clear all",
     "clearValue": "Clear value"
@@ -206,9 +206,10 @@
     "downloadResults": "Download results",
     "loadError": "Could not load query",
     "renameError": "Could not rename query",
-    "retagError": "Could not save tags",
+    "retagError": "Could not save folders",
     "shareError": "Could not share query",
-    "deleteError": "Could not delete query"
+    "deleteError": "Could not delete query",
+    "editFolders": "Edit folders"
   },
   "previousQueriesFilter": {
     "all": "All",
@@ -339,6 +340,9 @@
   "uploadQueryResults": {
     "uploadResults": "Upload Query Result"
   },
+  "previousQueriesFolderButton": {
+    "tooltip": "Show / hide folders"
+  },
   "authorization": {
     "unauthorized": "Authentitcation failed. An authentication token is missing or expired"
   },
@@ -373,7 +377,7 @@
   "formConfig": {
     "loadError": "Could not load form configuration",
     "renameError": "Could not rename form configuration",
-    "retagError": "Could not save tags",
+    "retagError": "Could not save folders",
     "shareError": "Could not share form configuration",
     "deleteError": "Could not delete form configuration"
   },
@@ -383,6 +387,13 @@
   "conceptTreesOpen": {
     "resetAll": "Back to default view",
     "closeAll": "Close all concepts"
+  },
+  "folders": {
+    "headline": "Folders",
+    "noFolders": "none"
+  },
+  "editPreviousQueryFoldersModal": {
+    "headline": "Edit folders"
   },
   "help": {
     "tabConceptTrees": "Select concepts from concepts trees and use them in the Editor and Form Editor",

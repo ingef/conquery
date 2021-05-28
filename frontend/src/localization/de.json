@@ -95,7 +95,7 @@
     "description": "Beschreibung",
     "noDescriptionProvided": "Keine Beschreibung verfügbar.",
     "selectAFilter": "Kein Filter ausgewählt.",
-    "dropConcept": "Füge weitere Konzepte des selben Konzeptes hinzu",
+    "dropConcept": "Füge weitere Elemente des selben Konzeptes hinzu",
     "includeSubnodes": "Untergeordnete Konzepte einbeziehen",
     "tooManyValues": "{{count}} Werte ausgewählt",
     "filters": "Filter",
@@ -139,7 +139,7 @@
     "closeEsc": "Schließen (ESC)",
     "close": "Schließen",
     "create": "Erstellen",
-    "addTag": "Schlagwort hinzufügen",
+    "addTag": "Zu Ordner hinzufügen",
     "share": "Freigeben",
     "shared": "Freigegeben",
     "loading": "Lade ...",
@@ -163,12 +163,12 @@
   },
   "reactSelect": {
     "placeholder": "Auswählen ...",
-    "tagPlaceholder": "Schlagwort ...",
+    "tagPlaceholder": "Ordner ...",
     "searchPlaceholder": "Suchen ...",
     "dndPlaceholder": "Auswählen oder Datei hochladen ...",
     "backspaceToRemove": "Backspace zum Entfernen drücken",
     "noResults": "Keine Werte gefunden",
-    "createTag": "Schlagwort erstellen: {{label}}",
+    "createTag": "Zu Ordner hinzufügen: {{label}}",
     "searchFor": "Suchen nach: {{label}}",
     "clearAll": "Alle entfernen",
     "clearValue": "Wert entfernen"
@@ -206,9 +206,10 @@
     "downloadResults": "Ergebnisse herunterladen",
     "loadError": "Konnte Anfrage nicht laden",
     "renameError": "Konnte Anfrage nicht umbenennen",
-    "retagError": "Konnte Schlagwörter nicht speichern",
+    "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Anfrage nicht freigeben",
-    "deleteError": "Konnte Anfrage nicht löschen"
+    "deleteError": "Konnte Anfrage nicht löschen",
+    "editFolders": "Ordner bearbeiten"
   },
   "previousQueriesFilter": {
     "all": "Alle",
@@ -339,6 +340,9 @@
   "uploadQueryResults": {
     "uploadResults": "Lade Anfrageergebnis hoch"
   },
+  "previousQueriesFolderButton": {
+    "tooltip": "Ordner anzeigen / verstecken"
+  },
   "authorization": {
     "unauthorized": "Authorisierung fehlgeschlagen. Ein Authorisierungs-Token fehlt, oder ist abgelaufen"
   },
@@ -373,7 +377,7 @@
   "formConfig": {
     "loadError": "Konnte Konfiguration nicht laden",
     "renameError": "Konnte Konfiguration nicht umbenennen",
-    "retagError": "Konnte Schlagwörter nicht speichern",
+    "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Konfiguration nicht freigeben",
     "deleteError": "Konnte Konfiguration nicht löschen"
   },
@@ -384,9 +388,16 @@
     "resetAll": "Zurück zu Standardansicht",
     "closeAll": "Alle Konzepte schließen"
   },
+  "folders": {
+    "headline": "Ordner",
+    "noFolders": "ohne"
+  },
+  "editPreviousQueryFoldersModal": {
+    "headline": "Ordner bearbeiten"
+  },
   "help": {
-    "tabConceptTrees": "Auswahl der Konzepte aus den Konzepten zur Verwendung in Editor oder Formular-Editor.",
-    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung in Editor, Zeit-Editor oder Formular-Editor.",
+    "tabConceptTrees": "Auswahl der Konzepte zur Verwendung im Editor oder Formular-Editor.",
+    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung im Editor, Zeit-Editor oder Formular-Editor.",
     "tabFormConfigs": "Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
     "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
     "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",

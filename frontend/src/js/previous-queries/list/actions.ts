@@ -6,8 +6,18 @@ import {
   usePatchStoredQuery,
   useGetStoredQuery,
 } from "../../api/api";
-import { DatasetIdT } from "../../api/types";
-import { defaultSuccess, defaultError } from "../../common/actions";
+import {
+  DatasetIdT,
+  GetStoredQueriesResponseT,
+  GetStoredQueryResponseT,
+  QueryIdT,
+} from "../../api/types";
+import {
+  defaultSuccess,
+  defaultError,
+  ErrorObject,
+} from "../../common/actions";
+import { useDatasetId } from "../../dataset/selectors";
 import { setMessage } from "../../snack-message/actions";
 
 import {
@@ -20,8 +30,6 @@ import {
   RENAME_PREVIOUS_QUERY_START,
   RENAME_PREVIOUS_QUERY_SUCCESS,
   RENAME_PREVIOUS_QUERY_ERROR,
-  TOGGLE_EDIT_PREVIOUS_QUERY_LABEL,
-  TOGGLE_EDIT_PREVIOUS_QUERY_TAGS,
   RETAG_PREVIOUS_QUERY_START,
   RETAG_PREVIOUS_QUERY_SUCCESS,
   RETAG_PREVIOUS_QUERY_ERROR,
@@ -33,9 +41,9 @@ import { PreviousQueryIdT } from "./reducer";
 export const loadPreviousQueriesStart = () => ({
   type: LOAD_PREVIOUS_QUERIES_START,
 });
-export const loadPreviousQueriesSuccess = (res) =>
+export const loadPreviousQueriesSuccess = (res: GetStoredQueriesResponseT) =>
   defaultSuccess(LOAD_PREVIOUS_QUERIES_SUCCESS, res);
-export const loadPreviousQueriesError = (err) =>
+export const loadPreviousQueriesError = (err: ErrorObject) =>
   defaultError(LOAD_PREVIOUS_QUERIES_ERROR, err);
 
 export const useLoadPreviousQueries = () => {
@@ -58,13 +66,15 @@ export const useLoadPreviousQueries = () => {
   };
 };
 
-export const loadPreviousQueryStart = (queryId) => ({
+export const loadPreviousQueryStart = (queryId: QueryIdT) => ({
   type: LOAD_PREVIOUS_QUERY_START,
   payload: { queryId },
 });
-export const loadPreviousQuerySuccess = (queryId, res) =>
-  defaultSuccess(LOAD_PREVIOUS_QUERY_SUCCESS, res, { queryId });
-export const loadPreviousQueryError = (queryId, err) =>
+export const loadPreviousQuerySuccess = (
+  queryId: QueryIdT,
+  res: GetStoredQueryResponseT,
+) => defaultSuccess(LOAD_PREVIOUS_QUERY_SUCCESS, res, { queryId });
+export const loadPreviousQueryError = (queryId: QueryIdT, err: ErrorObject) =>
   defaultError(LOAD_PREVIOUS_QUERY_ERROR, err, { queryId });
 
 export const useLoadPreviousQuery = () => {
@@ -87,32 +97,28 @@ export const useLoadPreviousQuery = () => {
   };
 };
 
-export const toggleEditPreviousQueryLabel = (queryId) => ({
-  type: TOGGLE_EDIT_PREVIOUS_QUERY_LABEL,
-  payload: { queryId },
-});
-
-export const renamePreviousQueryStart = (queryId) => ({
+export const renamePreviousQueryStart = (queryId: QueryIdT) => ({
   type: RENAME_PREVIOUS_QUERY_START,
   payload: { queryId },
 });
-export const renamePreviousQuerySuccess = (queryId, label, res) =>
-  defaultSuccess(RENAME_PREVIOUS_QUERY_SUCCESS, res, { queryId, label });
-export const renamePreviousQueryError = (queryId, err) =>
+export const renamePreviousQuerySuccess = (
+  queryId: QueryIdT,
+  label: string,
+  res: any,
+) => defaultSuccess(RENAME_PREVIOUS_QUERY_SUCCESS, res, { queryId, label });
+export const renamePreviousQueryError = (queryId: QueryIdT, err: ErrorObject) =>
   defaultError(RENAME_PREVIOUS_QUERY_ERROR, err, { queryId });
 
 export const useRenamePreviousQuery = () => {
   const dispatch = useDispatch();
   const patchStoredQuery = usePatchStoredQuery();
+  const { t } = useTranslation();
 
   return (datasetId: DatasetIdT, queryId: PreviousQueryIdT, label: string) => {
     dispatch(renamePreviousQueryStart(queryId));
 
     return patchStoredQuery(datasetId, queryId, { label }).then(
-      (r) => {
-        dispatch(renamePreviousQuerySuccess(queryId, label, r));
-        dispatch(toggleEditPreviousQueryLabel(queryId));
-      },
+      (r) => dispatch(renamePreviousQuerySuccess(queryId, label, r)),
       (e) =>
         dispatch(
           renamePreviousQueryError(queryId, {
@@ -123,31 +129,34 @@ export const useRenamePreviousQuery = () => {
   };
 };
 
-export const toggleEditPreviousQueryTags = (queryId) => ({
-  type: TOGGLE_EDIT_PREVIOUS_QUERY_TAGS,
-  payload: { queryId },
-});
-
-export const retagPreviousQueryStart = (queryId) => ({
+export const retagPreviousQueryStart = (queryId: QueryIdT) => ({
   type: RETAG_PREVIOUS_QUERY_START,
   payload: { queryId },
 });
-export const retagPreviousQuerySuccess = (queryId, tags, res) =>
-  defaultSuccess(RETAG_PREVIOUS_QUERY_SUCCESS, res, { queryId, tags });
-export const retagPreviousQueryError = (queryId, err) =>
+export const retagPreviousQuerySuccess = (
+  queryId: QueryIdT,
+  tags: string[],
+  res: any,
+) => defaultSuccess(RETAG_PREVIOUS_QUERY_SUCCESS, res, { queryId, tags });
+export const retagPreviousQueryError = (queryId: QueryIdT, err: ErrorObject) =>
   defaultError(RETAG_PREVIOUS_QUERY_ERROR, err, { queryId });
 
 export const useRetagPreviousQuery = () => {
   const dispatch = useDispatch();
   const patchStoredQuery = usePatchStoredQuery();
+  const datasetId = useDatasetId();
+  const { t } = useTranslation();
 
-  return (datasetId: DatasetIdT, queryId: PreviousQueryIdT, tags: string[]) => {
+  return (queryId: PreviousQueryIdT, tags: string[]) => {
+    if (!datasetId) {
+      return Promise.resolve();
+    }
+
     dispatch(retagPreviousQueryStart(queryId));
 
     return patchStoredQuery(datasetId, queryId, { tags }).then(
       (r) => {
         dispatch(retagPreviousQuerySuccess(queryId, tags, r));
-        dispatch(toggleEditPreviousQueryTags(queryId));
       },
       (e) =>
         dispatch(

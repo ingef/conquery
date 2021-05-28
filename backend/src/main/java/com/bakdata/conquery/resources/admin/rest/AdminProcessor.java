@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -24,6 +25,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -39,6 +41,10 @@ import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
+import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
+import com.bakdata.conquery.models.concepts.select.concept.specific.EventDurationSumSelect;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -87,6 +93,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * This class holds the logic for several admin http endpoints.
@@ -362,7 +369,7 @@ public class AdminProcessor {
 	 */
 	public String getPermissionOverviewAsCSV(Collection<User> users) {
 		StringWriter sWriter = new StringWriter();
-		CsvWriter writer = config.getCsv().createWriter();
+		CsvWriter writer = config.getCsv().createWriter(sWriter);
 		List<String> scope = config
 									 .getAuthorization()
 									 .getOverviewScope();

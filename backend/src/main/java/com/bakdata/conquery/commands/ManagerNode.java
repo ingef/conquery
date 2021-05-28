@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jersey.RESTServer;
@@ -107,7 +108,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
 
 		//inject datasets into the objectmapper
-		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
+		((MutableInjectableValues) environment.getObjectMapper().getInjectableValues())
 				.add(IdResolveContext.class, datasetRegistry);
 
 
@@ -122,8 +123,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		I18n.init();
 
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
-
-
 
 		this.maintenanceService = environment
 				.lifecycle()
@@ -198,7 +197,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	public void loadNamespaces() {
 		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
-			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError());
+			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER).writerWithView(InternalOnly.class));
 			datasetRegistry.add(ns);
 		}
 	}

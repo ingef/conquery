@@ -71,15 +71,17 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		namespaceStorage.updateIdMapping(persistentIdMap);
 
+
+		final Dataset dataset1 = adminDatasetProcessor.addDataset(TEST_DATASET_1);
+		final Dataset dataset2 = adminDatasetProcessor.addDataset(TEST_DATASET_2);
+		final Dataset dataset3 = adminDatasetProcessor.addDataset(TEST_DATASET_3);
+		final Dataset dataset4 = adminDatasetProcessor.addDataset(TEST_DATASET_4);
+		final Dataset dataset5 = adminDatasetProcessor.addDataset(TEST_DATASET_5);
+		final Dataset dataset6 = adminDatasetProcessor.addDataset(TEST_DATASET_6);
+
 		{// Auth testing (deletion and permission grant)
 			// build constellation
 			//TODO USE APIS
-			final Dataset dataset1 = adminDatasetProcessor.addDataset(TEST_DATASET_1);
-			final Dataset dataset2 = adminDatasetProcessor.addDataset(TEST_DATASET_2);
-			final Dataset dataset3 = adminDatasetProcessor.addDataset(TEST_DATASET_3);
-			final Dataset dataset4 = adminDatasetProcessor.addDataset(TEST_DATASET_4);
-			final Dataset dataset5 = adminDatasetProcessor.addDataset(TEST_DATASET_5);
-			final Dataset dataset6 = adminDatasetProcessor.addDataset(TEST_DATASET_6);
 
 			adminProcessor.addUser(user);
 			adminProcessor.addUser(userToDelete);
@@ -120,15 +122,19 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			adminProcessor.deleteGroup(groupToDelete);
 		}
 
+		log.info("Shutting down for restart");
 
 		testConquery.shutdown(conquery);
 
 		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
 		testConquery.getDropwizard().after();
-		//restart
+		log.info("Restarting");
 		testConquery.beforeAll();
 
 		final StandaloneSupport support = testConquery.openDataset(dataset);
+
+
+		log.info("Restart complete");
 
 		test.executeTest(support);
 
@@ -163,6 +169,14 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		PersistentIdMap persistentIdMapAfterRestart = conquery.getNamespaceStorage()
 															  .getIdMapping();
 		assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
+
+		// Cleanup
+		adminDatasetProcessor.deleteDataset(dataset2);
+		adminDatasetProcessor.deleteDataset(dataset1);
+		adminDatasetProcessor.deleteDataset(dataset3);
+		adminDatasetProcessor.deleteDataset(dataset4);
+		adminDatasetProcessor.deleteDataset(dataset5);
+		adminDatasetProcessor.deleteDataset(dataset6);
 	}
 }
 
