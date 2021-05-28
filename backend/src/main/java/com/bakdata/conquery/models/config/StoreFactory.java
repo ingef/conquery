@@ -63,7 +63,7 @@ public interface StoreFactory {
 
 	// MetaStorage
     IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName);
-	IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, List<String> pathName);
+	IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName);
 	IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, List<String> pathName);
 	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, List<String> pathName);
 	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, List<String> pathName);
