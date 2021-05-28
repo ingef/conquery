@@ -1,15 +1,8 @@
 package com.bakdata.conquery.models.jobs;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IntSummaryStatistics;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.io.InputStream;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -28,9 +21,7 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
@@ -50,6 +41,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 /**
  * This is the main routine to load data into Conquery.
@@ -70,6 +64,195 @@ public class ImportJob extends Job {
 	private final PreprocessedData container;
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
+
+	public static Optional<ImportJob> create(Namespace namespace, String importSource, InputStream inputStream, int entityBucketSize) throws IOException {
+		try(PreprocessedReader parser = new PreprocessedReader(inputStream)){
+
+			final Dataset ds = namespace.getDataset();
+			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
+
+			// We parse semi-manually as the incoming file consist of multiple documents we only read progressively:
+			// 1) the header to check metadata
+			// 2) The Dictionaries to be imported and transformed
+			// 3) The ColumnStores themselves which contain references to the previously imported dictionaries.
+
+
+			final PreprocessedHeader header = parser.readHeader();
+
+			final TableId tableId = new TableId(ds.getId(), header.getTable());
+			Table table = namespace.getStorage().getTable(tableId);
+
+			if(table == null){
+				throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
+			}
+
+			final ImportId importId = new ImportId(table.getId(), header.getName());
+
+			if (namespace.getStorage().getImport(importId) != null) {
+				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
+			}
+			log.trace("Begin reading Dictionaries");
+
+			PreprocessedDictionaries dictionaries = parser.readDictionaries();
+
+			Map<DictionaryId, Dictionary> normalDictionaries = collectNormalDictionaries(ds, dictionaries.getDictionaries(), table.getColumns(), header.getName());
+
+			// The following call is synchronized, because the dictionary is shared across the dataset
+			Map<String, DictionaryMapping> sharedDictionaryMappings = importSharedDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
+
+
+			// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
+			parser.addAllReplacements(normalDictionaries);
+
+			for (DictionaryMapping value : sharedDictionaryMappings.values()) {
+				parser.addReplacement(new DictionaryId(Dataset.PLACEHOLDER.getId(), value.getSourceDictionary().getName()), value.getTargetDictionary());
+			}
+
+			log.trace("Begin reading data.");
+
+			PreprocessedData container = parser.readData();
+
+			if (container.isEmpty()) {
+				log.warn("Import was empty. Skipping.");
+				return Optional.empty();
+			}
+
+			log.info("Importing {}", importSource);
+
+			return Optional.of(new ImportJob(
+					namespace,
+					table,
+					importSource,
+					entityBucketSize,
+					header,
+					dictionaries.getPrimaryDictionary(),
+					normalDictionaries,
+					sharedDictionaryMappings,
+					container
+			));
+		}
+	}
+
+	/**
+	 * Collects all dictionaries that map only to columns of this import.
+	 */
+	private static synchronized Map<DictionaryId, Dictionary> collectNormalDictionaries(Dataset dataset, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+
+		// Empty Maps are Coalesced to null by Jackson
+		if (dicts == null) {
+			return Collections.emptyMap();
+		}
+
+		final Map<DictionaryId, Dictionary> out = new HashMap<>();
+
+		log.trace("Importing Normal Dictionaries.");
+
+		for (Column column : columns) {
+
+			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() != null) {
+				continue;
+			}
+
+			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
+			// but could also be an error :/ Most likely the former
+			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
+				log.trace("No Dictionary for {}", column);
+				continue;
+			}
+
+			final Dictionary dict = dicts.get(column.getName());
+			final String name = computeDefaultDictionaryName(importName, column);
+
+
+			out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dict.getName()), dict);
+
+
+			dict.setDataset(dataset);
+			dict.setName(name);
+		}
+
+
+		return out;
+	}
+	/**
+	 * Import shared Dictionaries, create new Dictionary if not already present. Create mappings from incoming to already present dict.
+	 */
+	private static synchronized Map<String, DictionaryMapping> importSharedDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+
+		// Empty Maps are Coalesced to null by Jackson
+		if (dicts == null) {
+			return Collections.emptyMap();
+		}
+
+		final Map<String, DictionaryMapping> out = new HashMap<>();
+
+		log.trace("Importing Shared Dictionaries");
+
+		for (Column column : columns) {
+
+			if (column.getSharedDictionary() == null) {
+				continue;
+			}
+
+			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
+			// but could also be an error :/ Most likely the former
+			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
+				log.trace("No Dictionary for {}", column);
+				continue;
+			}
+
+			final String sharedDictionaryName = column.getSharedDictionary();
+			final Dictionary importDictionary = dicts.get(column.getName());
+
+			log.debug("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
+
+			final Dataset dataset = namespace.getDataset();
+			final Dictionary sharedDictionary = namespace.getStorage().getDictionary(new DictionaryId(dataset.getId(), sharedDictionaryName));
+
+			log.debug("Merging into shared Dictionary[{}]", sharedDictionary);
+
+			DictionaryMapping mapping = null;
+			if (sharedDictionary == null) {
+				mapping = DictionaryMapping.create(importDictionary, new MapDictionary(dataset, sharedDictionaryName));
+			}
+			else {
+				mapping = extendSharedDictionary(dataset,importDictionary, sharedDictionaryName, sharedDictionary);
+			}
+
+			// We need to update the storages for now in this synchronized part
+			namespace.getStorage().updateDictionary(mapping.getTargetDictionary());
+			namespace.sendToAll(new UpdateDictionary(mapping.getTargetDictionary()));
+
+			out.put(column.getName(), mapping);
+
+		}
+
+		return out;
+	}
+
+	private static DictionaryMapping extendSharedDictionary(Dataset dataset, Dictionary incoming, String targetDictionaryName, Dictionary targetDict) {
+
+		log.debug("Merging into shared Dictionary[{}]", targetDictionaryName);
+
+		if (targetDict == null) {
+			targetDict = new MapDictionary(dataset, targetDictionaryName);
+		}
+
+		targetDict = Dictionary.copyUncompressed(targetDict);
+
+		DictionaryMapping mapping = DictionaryMapping.create(incoming, targetDict);
+
+		targetDict.setName(targetDictionaryName);
+
+		return mapping;
+	}
+
+	private static String computeDefaultDictionaryName(String importName, Column column) {
+		return String.format("%s#%s", importName, column.getId().toString());
+	}
+
+
+
 
 	@Override
 	public void execute() throws JSONException, InterruptedException, IOException {
