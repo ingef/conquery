@@ -161,4 +161,11 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		return COMPARATOR.compare(this, other);
 	}
 
+	@Override
+	public abstract T createId();
+
+	@Override
+	public T getId() {
+		return super.getId();
+	}
 }

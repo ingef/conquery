@@ -26,6 +26,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.Job;
@@ -121,8 +122,8 @@ public class AdminUIResource extends HAdmin {
 	}
 
 	@POST @Path("/update-matching-stats/{"+ DATASET +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)
-	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)DatasetId datasetId) throws JSONException {
-		processor.updateMatchingStats(datasetId);
+	public void updateMatchingStats(@Auth User user, @PathParam(DATASET) Dataset dataset) throws JSONException {
+		processor.updateMatchingStats(dataset);
 	}
 
 	@POST

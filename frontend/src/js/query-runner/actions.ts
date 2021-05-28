@@ -29,6 +29,7 @@ import {
   STOP_QUERY_START,
   QUERY_RESULT_START,
   QUERY_RESULT_RESET,
+  QUERY_RESULT_RUNNING,
   QUERY_RESULT_ERROR,
   QUERY_RESULT_SUCCESS,
 } from "./actionTypes";
@@ -137,6 +138,14 @@ export const queryResultReset = (queryType: QueryTypeT) => ({
   payload: { queryType },
 });
 
+export const queryResultRunning = (
+  queryType: QueryTypeT,
+  progress?: number,
+) => ({
+  type: QUERY_RESULT_RUNNING,
+  payload: { queryType, progress },
+});
+
 const getQueryErrorMessage = ({
   t,
   status,
@@ -202,6 +211,9 @@ const useQueryResult = (queryType: QueryTypeT) => {
         } else if (r.status === "FAILED") {
           dispatch(queryResultError(t, queryType, r));
         } else {
+          if (r.status === "RUNNING") {
+            dispatch(queryResultRunning(queryType, r.progress));
+          }
           // Try again after a short time:
           //   Use the "long polling" strategy, where we assume that the
           //   backend blocks the request for a couple of seconds and waits

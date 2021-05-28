@@ -9,11 +9,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
@@ -21,6 +23,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.NamespacedIdentifiableHolding;
@@ -29,6 +32,7 @@ import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.google.common.collect.ClassToInstanceMap;
 import lombok.Getter;
@@ -156,7 +160,7 @@ public class QueryUtils {
 		public void accept(Visitable element) {
 			if (element instanceof NamespacedIdentifiableHolding) {
 				NamespacedIdentifiableHolding idHolder = (NamespacedIdentifiableHolding) element;
-				idHolder.collectNamespacedIds(identifiables);
+				idHolder.collectNamespacedObjects(identifiables);
 			}
 		}
 	}
@@ -201,5 +205,14 @@ public class QueryUtils {
 				   .map(cId -> cId.createPermission(Ability.READ.asSet()))
 				   .distinct()
 				   .collect(Collectors.toCollection(() -> collectPermissions));
+	}
+
+
+
+	public static QueryExecutionContext determineDateAggregatorForContext(QueryExecutionContext ctx, Supplier<Optional<Aggregator<CDateSet>>> getValidityDateAggregator) {
+		if (ctx.getQueryDateAggregator().isPresent()) {
+			return ctx;
+		}
+		return ctx.withQueryDateAggregator(getValidityDateAggregator.get());
 	}
 }

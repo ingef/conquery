@@ -4,7 +4,7 @@ import React from "react";
 import FaIcon from "../icon/FaIcon";
 
 const Root = styled("p")`
-  margin: 2px 10px;
+  margin: 0 0 5px;
 `;
 const Spinner = styled("span")`
   margin-right: 5px;

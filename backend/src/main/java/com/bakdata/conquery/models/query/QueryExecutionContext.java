@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.List;
+import java.util.Optional;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -12,6 +13,8 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.queryplan.DateAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -28,6 +31,7 @@ public class QueryExecutionContext {
 	private Connector connector;
 	private final ModificationShieldedWorkerStorage storage;
 	private final BucketManager bucketManager;
+	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 
 
 	/**

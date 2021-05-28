@@ -91,10 +91,19 @@ public class XodusStore {
 
 
 	public void clear() {
-		// TODO implement, unused at the moment
+		environment.executeInExclusiveTransaction(t -> {
+			Cursor cursor = store.openCursor(t);
+			while(cursor.getNext()){
+				cursor.deleteCurrent();
+			}
+		});
 	}
 
 	public void remove() {
+		if (!environment.isOpen()) {
+			log.debug("While removing store: Environment is already closed for {}", this);
+			return;
+		}
 		log.debug("Removing store {} from environment {}", store, environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
 		close();
@@ -106,8 +115,12 @@ public class XodusStore {
 	}
 
 	public void close() {
-		log.info("Closing XodusStore: {}", this);
+		if (!environment.isOpen()) {
+			log.debug("While closing store: Environment is already closed for {}", this);
+			return;
+		}
 		if (!openStores.remove(store)) {
+			log.info("Closed XodusStore: {}", this);
 			return;
 		}
 		if (openStores.isEmpty()){

@@ -35,23 +35,17 @@ const FormConfigsTab = ({ datasetId }: PropsT) => {
     }
   }, [datasetId, loadFormConfigs]);
 
-  if (!datasetId) return null;
-
   return (
     <>
-      <FormConfigsFilter />
       <FormConfigsSearchBox />
+      <FormConfigsFilter />
       <Container>
         {loading && <Loading message={t("formConfigs.loading")} />}
         {formConfigs.length === 0 && !loading && (
           <EmptyList emptyMessage={t("formConfigs.noneFound")} />
         )}
       </Container>
-      {hasConfigs && (
-        <>
-          <FormConfigs formConfigs={formConfigs} datasetId={datasetId} />
-        </>
-      )}
+      {hasConfigs && <FormConfigs formConfigs={formConfigs} />}
     </>
   );
 };

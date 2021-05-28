@@ -16,7 +16,7 @@
     "heroku-postbuild": "yarn run build",
     "lint": "eslint --ext .ts --ext .tsx src/",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "serve": "ts-node mock-api/server"
+    "server": "nodemon --watch mock-api* --exec \"ts-node mock-api/server\""
   },
   "dependencies": {
     "@emotion/babel-plugin": "^11.0.0-next.12",
@@ -28,7 +28,9 @@
     "@fortawesome/free-solid-svg-icons": "^5.9.0",
     "@fortawesome/react-fontawesome": "^0.1.13",
     "@react-keycloak/web": "^3.4.0",
+    "@types/react-window": "^1.8.3",
     "axios": "^0.21.1",
+    "chance": "^1.1.7",
     "classlist-polyfill": "^1.2.0",
     "classnames": "^2.2.5",
     "compression": "^1.7.4",
@@ -40,6 +42,7 @@
     "lodash.difference": "^4.5.0",
     "mustache": "^4.1.0",
     "node-sass": "^4.13.1",
+    "nodemon": "^2.0.7",
     "preval.macro": "^5.0.0",
     "react": "^16.13.1",
     "react-animated-dots": "^1.0.0",
@@ -59,10 +62,12 @@
     "react-select": "^4.0.2",
     "react-split-pane": "^0.1.91",
     "react-tippy": "^1.4.0",
+    "react-window": "^1.8.6",
     "redux": "^4.0.5",
     "redux-form": "^8.3.7",
     "redux-multi": "^0.1.12",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "typesafe-actions": "^5.1.0"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^2.0.2",

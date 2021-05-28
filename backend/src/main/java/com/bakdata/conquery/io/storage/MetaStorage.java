@@ -58,7 +58,7 @@ public class MetaStorage implements ConqueryStorage{
         authRole.loadData();
         authGroup.loadData();
 
-		executions.loadData();
+        executions.loadData();
 		formConfigs.loadData();
 	}
 

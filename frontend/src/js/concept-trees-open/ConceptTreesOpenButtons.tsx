@@ -66,7 +66,7 @@ const ConceptTreesOpenButtons: FC<PropsT> = ({ className }) => {
         <SxIconButton
           disabled={isCloseAllDisabled}
           frame
-          icon="folder"
+          icon="folder-minus"
           onClick={onCloseAllConceptOpen}
         />
       </SxWithTooltip>

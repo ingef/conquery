@@ -14,7 +14,8 @@ interface StyledFaIconProps extends FaIconPropsT {
 const StyledFaIcon = styled(FaIcon)<StyledFaIconProps>`
   color: ${({ theme, active, red }) =>
     red ? theme.col.red : active ? theme.col.blueGrayDark : theme.col.black};
-  font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
+  font-size: ${({ theme, large, small }) =>
+    large ? theme.font.md : small ? theme.font.xs : theme.font.sm};
   margin-right: ${({ hasChildren, tight }) =>
     hasChildren ? (tight ? "5px" : "10px") : "0"};
 `;
@@ -23,7 +24,7 @@ const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
   background-color: transparent;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.black};
-  opacity: 0.8;
+  opacity: 0.7;
   transition: opacity ${({ theme }) => theme.transitionTime};
 
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -41,10 +42,12 @@ const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
   }
 `;
 
-interface PropsT extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface IconButtonPropsT
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   iconProps?: IconStyleProps;
   active?: boolean;
   large?: boolean;
+  small?: boolean;
   icon: string;
   regular?: boolean;
   tight?: boolean;
@@ -52,11 +55,11 @@ interface PropsT extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   left?: boolean;
   frame?: boolean;
   bare?: boolean;
-  onClick: React.ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
+  onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
 }
 
 // A button that is prefixed by an icon
-const IconButton: React.FC<PropsT> = ({
+const IconButton: React.FC<IconButtonPropsT> = ({
   icon,
   active,
   red,
@@ -66,6 +69,7 @@ const IconButton: React.FC<PropsT> = ({
   children,
   tight,
   iconProps,
+  small,
   ...restProps
 }) => (
   <StyledTransparentButton active={active} {...restProps}>
@@ -79,6 +83,7 @@ const IconButton: React.FC<PropsT> = ({
       icon={icon}
       hasChildren={!!children}
       tight={tight}
+      small={small}
       {...iconProps}
     />
     {children}

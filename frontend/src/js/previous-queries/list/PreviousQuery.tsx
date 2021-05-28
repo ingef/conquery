@@ -2,39 +2,33 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
 import { parseISO } from "date-fns";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 
 import type { DatasetIdT, SecondaryId } from "../../api/types";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
-import { useFormatDateDistance } from "../../common/helpers";
-import { isEmpty } from "../../common/helpers/commonHelper";
+import { formatDate, useFormatDateDistance } from "../../common/helpers";
+import { exists } from "../../common/helpers/exists";
 import ErrorMessage from "../../error-message/ErrorMessage";
-import EditableTags from "../../form-components/EditableTags";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import PreviousQueriesLabel from "./PreviousQueriesLabel";
-import PreviousQueryTags from "./PreviousQueryTags";
-import {
-  toggleEditPreviousQueryLabel,
-  toggleEditPreviousQueryTags,
-  useRenamePreviousQuery,
-  useRetagPreviousQuery,
-} from "./actions";
+import { useRenamePreviousQuery } from "./actions";
 import { PreviousQueryT } from "./reducer";
 import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
 const Root = styled("div")<{ own?: boolean; system?: boolean }>`
   margin: 0;
-  padding: 5px 10px;
+  padding: 4px 10px;
   cursor: pointer;
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.grayLight};
   background-color: ${({ theme }) => theme.col.bg};
-  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
 
   border-left: ${({ theme, own, system }) =>
     own
@@ -58,23 +52,38 @@ const Root = styled("div")<{ own?: boolean; system?: boolean }>`
 
 const Gray = styled("div")`
   color: ${({ theme }) => theme.col.gray};
+  font-size: ${({ theme }) => theme.font.xs};
 `;
 const TopInfos = styled(Gray)`
-  line-height: 24px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+const OwnerName = styled(Gray)`
+  flex-shrink: 0;
+  padding-left: 5px;
 `;
 
 const TopRight = styled("div")`
-  float: right;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 `;
-const SharedIndicator = styled("span")`
-  margin-left: 10px;
-  color: ${({ theme }) => theme.col.blueGray};
+const TopLeft = styled("div")`
+  display: flex;
+  align-items: center;
 `;
-const MiddleRow = styled("div")`
+
+const NonBreakingText = styled("span")`
+  white-space: nowrap;
+`;
+const LabelRow = styled("div")`
   display: flex;
   width: 100%;
   justify-content: space-between;
   line-height: 24px;
+  margin: 2px 0;
 `;
 const StyledErrorMessage = styled(ErrorMessage)`
   margin: 0;
@@ -88,22 +97,37 @@ const StyledWithTooltip = styled(WithTooltip)`
   margin-left: 10px;
 `;
 
+const SxDownloadButton = styled(DownloadButton)`
+  white-space: nowrap;
+  button {
+    font-size: ${({ theme }) => theme.font.xs};
+  }
+`;
+
+const FoldersButton = styled(IconButton)`
+  margin-right: 10px;
+`;
+
 interface PropsT {
   query: PreviousQueryT;
   datasetId: DatasetIdT;
   onIndicateDeletion: () => void;
   onIndicateShare: () => void;
+  onIndicateEditFolders: () => void;
 }
 
 const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
   function PreviousQueryComponent(
-    { query, datasetId, onIndicateDeletion, onIndicateShare },
+    {
+      query,
+      datasetId,
+      onIndicateDeletion,
+      onIndicateShare,
+      onIndicateEditFolders,
+    },
     ref,
   ) {
     const { t } = useTranslation();
-    const availableTags = useSelector<StateT, string[]>(
-      (state) => state.previousQueries.tags,
-    );
 
     const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
       (state) => state.conceptTrees.secondaryIds,
@@ -111,22 +135,11 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
 
     const formatDateDistance = useFormatDateDistance();
 
-    const dispatch = useDispatch();
     const renamePreviousQuery = useRenamePreviousQuery();
-    const retagPreviousQuery = useRetagPreviousQuery();
     const onDeletePreviousQuery = useDeletePreviousQuery(query.id);
 
     const onRenamePreviousQuery = (label: string) =>
       renamePreviousQuery(datasetId, query.id, label);
-
-    const onRetagPreviousQuery = (tags: string[]) =>
-      retagPreviousQuery(datasetId, query.id, tags);
-
-    const onToggleEditPreviousQueryLabel = () =>
-      dispatch(toggleEditPreviousQueryLabel(query.id));
-
-    const onToggleEditPreviousQueryTags = () =>
-      dispatch(toggleEditPreviousQueryTags(query.id));
 
     const mayDeleteQueryRightAway =
       query.tags.length === 0 && query.isPristineLabel;
@@ -134,11 +147,15 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       ? onDeletePreviousQuery
       : onIndicateDeletion;
 
-    const peopleFound = isEmpty(query.numberOfResults)
-      ? t("previousQuery.notExecuted")
-      : `${query.numberOfResults} ${t("previousQueries.results")}`;
-    const executedAt = formatDateDistance(
-      parseISO(query.createdAt),
+    const peopleFoundText = exists(query.numberOfResults)
+      ? `${query.numberOfResults} ${t("previousQueries.results")}`
+      : t("previousQuery.notExecuted");
+
+    const dateFormat = `${t("inputDateRange.dateFormat")} HH:mm`;
+    const executedAtDate = parseISO(query.createdAt);
+    const executedAt = formatDate(executedAtDate, dateFormat);
+    const executedAtRelative = formatDateDistance(
+      executedAtDate,
       new Date(),
       true,
     );
@@ -150,6 +167,8 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       ? loadedSecondaryIds.find((secId) => query.secondaryId === secId.id)
       : null;
 
+    const [isEditingLabel, setIsEditingLabel] = useState<boolean>(false);
+
     return (
       <Root
         ref={ref}
@@ -157,83 +176,71 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
         system={!!query.system || (!query.own && !isShared)}
       >
         <TopInfos>
-          <div>
+          <TopLeft>
+            {mayEditQuery && (
+              <WithTooltip text={t("previousQuery.editFolders")}>
+                <FoldersButton
+                  icon="folder"
+                  tight
+                  small
+                  bare
+                  onClick={onIndicateEditFolders}
+                />
+              </WithTooltip>
+            )}
             {!!query.resultUrl ? (
               <WithTooltip text={t("previousQuery.downloadResults")}>
-                <DownloadButton tight bare url={query.resultUrl}>
-                  {peopleFound}
-                </DownloadButton>
+                <SxDownloadButton tight small bare url={query.resultUrl}>
+                  {peopleFoundText}
+                </SxDownloadButton>
               </WithTooltip>
             ) : (
-              peopleFound
+              <NonBreakingText>{peopleFoundText}</NonBreakingText>
             )}
-            {query.own && isShared && (
-              <SharedIndicator onClick={onIndicateShare}>
-                {t("common.shared")}
-              </SharedIndicator>
+          </TopLeft>
+          <TopRight>
+            <WithTooltip text={executedAtRelative}>{executedAt}</WithTooltip>
+            {secondaryId && query.queryType === "SECONDARY_ID_QUERY" && (
+              <StyledWithTooltip
+                text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
+              >
+                <IconButton icon="microscope" bare onClick={() => {}} />
+              </StyledWithTooltip>
             )}
-            <TopRight>
-              {executedAt}
-              {mayEditQuery &&
-                !query.editingTags &&
-                (!query.tags || query.tags.length === 0) && (
-                  <StyledWithTooltip text={t("common.addTag")}>
-                    <IconButton
-                      icon="tags"
-                      bare
-                      onClick={onToggleEditPreviousQueryTags}
-                    />
-                  </StyledWithTooltip>
-                )}
-              {secondaryId && query.queryType === "SECONDARY_ID_QUERY" && (
-                <StyledWithTooltip
-                  text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
-                >
-                  <IconButton icon="microscope" bare onClick={() => {}} />
+            {query.own && (
+              <StyledWithTooltip
+                text={isShared ? t("common.shared") : t("common.share")}
+              >
+                <IconButton
+                  icon={isShared ? "user-friends" : "upload"}
+                  bare
+                  onClick={onIndicateShare}
+                />
+              </StyledWithTooltip>
+            )}
+            {query.loading ? (
+              <StyledFaIcon icon="spinner" />
+            ) : (
+              query.own && (
+                <StyledWithTooltip text={t("common.delete")}>
+                  <IconButton icon="times" bare onClick={onDeleteClick} />
                 </StyledWithTooltip>
-              )}
-              {query.own && !isShared && (
-                <StyledWithTooltip text={t("common.share")}>
-                  <IconButton icon="upload" bare onClick={onIndicateShare} />
-                </StyledWithTooltip>
-              )}
-              {query.loading ? (
-                <StyledFaIcon icon="spinner" />
-              ) : (
-                query.own && (
-                  <StyledWithTooltip text={t("common.delete")}>
-                    <IconButton icon="times" bare onClick={onDeleteClick} />
-                  </StyledWithTooltip>
-                )
-              )}
-            </TopRight>
-          </div>
+              )
+            )}
+          </TopRight>
         </TopInfos>
-        <MiddleRow>
+        <LabelRow>
           <PreviousQueriesLabel
             mayEditQuery={mayEditQuery}
             loading={!!query.loading}
             label={label}
             selectTextOnMount={true}
-            editing={!!query.editingLabel}
             onSubmit={onRenamePreviousQuery}
-            onToggleEdit={onToggleEditPreviousQueryLabel}
+            isEditing={isEditingLabel}
+            setIsEditing={setIsEditingLabel}
           />
-          <Gray>{query.ownerName}</Gray>
-        </MiddleRow>
-        {mayEditQuery ? (
-          <EditableTags
-            tags={query.tags}
-            editing={!!query.editingTags}
-            loading={!!query.loading}
-            onSubmit={onRetagPreviousQuery}
-            onToggleEdit={onToggleEditPreviousQueryTags}
-            tagComponent={<PreviousQueryTags tags={query.tags} />}
-            availableTags={availableTags}
-          />
-        ) : (
-          <PreviousQueryTags tags={query.tags} />
-        )}
+          <OwnerName>{query.ownerName}</OwnerName>
+        </LabelRow>
         {!!query.error && <StyledErrorMessage message={query.error} />}
       </Root>
     );

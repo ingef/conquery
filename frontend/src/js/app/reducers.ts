@@ -20,6 +20,9 @@ import preview, { PreviewStateT } from "../preview/reducer";
 import previousQueriesFilter, {
   PreviousQueriesFilterStateT,
 } from "../previous-queries/filter/reducer";
+import previousQueriesFolderFilter, {
+  PreviousQueriesFolderFilterStateT,
+} from "../previous-queries/folderFilter/reducer";
 import previousQueries, {
   PreviousQueriesStateT,
 } from "../previous-queries/list/reducer";
@@ -29,7 +32,6 @@ import previousQueriesSearch, {
 import uploadQueryResults, {
   UploadQueryResultsStateT,
 } from "../previous-queries/upload/reducer";
-import queryGroupModal from "../query-group-modal/reducer";
 import {
   createQueryNodeEditorReducer,
   QueryNodeEditorStateT,
@@ -63,6 +65,7 @@ export type StateT = {
   previousQueries: PreviousQueriesStateT;
   previousQueriesSearch: PreviousQueriesSearchStateT;
   previousQueriesFilter: PreviousQueriesFilterStateT;
+  previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
   formConfigs: FormConfigsStateT;
   formConfigsSearch: FormConfigsSearchStateT;
   formConfigsFilter: FormConfigsFilterStateT;
@@ -78,13 +81,13 @@ const buildAppReducer = (tabs: TabT[]) => {
     uploadConceptListModal,
     queryUploadConceptListModal,
     queryNodeEditor: createQueryNodeEditorReducer("standard"),
-    queryGroupModal,
     datasets,
     tooltip,
     panes,
     previousQueries,
     previousQueriesSearch,
     previousQueriesFilter,
+    previousQueriesFolderFilter,
     uploadQueryResults,
     snackMessage,
     preview,

@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { StateT } from "app-types";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
@@ -8,12 +7,11 @@ import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
 
 import { setPreviousQueriesFilter } from "./actions";
 
-const SxSmallTabNavigation = styled(SmallTabNavigation)`
-  margin-bottom: 5px;
-  padding: 0 10px;
-`;
+interface Props {
+  className?: string;
+}
 
-const PreviousQueriesFilter: FC = () => {
+const PreviousQueriesFilter: FC<Props> = ({ className }) => {
   const { t } = useTranslation();
   const OPTIONS = [
     {
@@ -42,8 +40,8 @@ const PreviousQueriesFilter: FC = () => {
     dispatch(setPreviousQueriesFilter(filter));
 
   return (
-    <SxSmallTabNavigation
-      className="previous-queries-filter"
+    <SmallTabNavigation
+      className={className}
       options={OPTIONS}
       selectedTab={selectedFilter}
       onSelectTab={(tab) => setFilter(tab)}

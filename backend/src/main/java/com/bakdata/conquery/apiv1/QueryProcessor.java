@@ -157,7 +157,7 @@ public class QueryProcessor {
 				continue;
 			}
 
-			if (user.isPermitted(targetDataset, Ability.READ)) {
+			if (!user.isPermitted(targetDataset, Ability.READ)) {
 				continue;
 			}
 

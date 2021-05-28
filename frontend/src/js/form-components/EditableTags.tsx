@@ -1,18 +1,20 @@
 import styled from "@emotion/styled";
 import React, { ReactNode, FC } from "react";
+import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import EditableTagsForm from "./EditableTagsForm";
 
 interface PropsT {
   className?: string;
   tags?: string[];
-  editing: boolean;
   loading: boolean;
   tagComponent?: ReactNode;
-  onSubmit: (value: string[]) => void;
-  onToggleEdit: () => void;
+  onSubmit: (value: string[]) => Promise<any>;
+  isEditing: boolean;
+  setIsEditing: (value: boolean) => void;
   availableTags: string[];
 }
 
@@ -20,19 +22,27 @@ const EditableTagsDisplay = styled("div")`
   display: flex;
   flex-direction: row;
 `;
-const StyledIconButton = styled(IconButton)`
+const SxIconButton = styled(IconButton)`
   margin-right: 5px;
+  margin-top: 2px;
 `;
 
 const EditableTags: FC<PropsT> = (props) => {
-  if (props.editing) {
+  const { t } = useTranslation();
+
+  if (props.isEditing) {
     return (
       <EditableTagsForm
         className={props.className}
         tags={props.tags}
         loading={props.loading}
-        onSubmit={props.onSubmit}
-        onCancel={props.onToggleEdit}
+        onSubmit={async (tags) => {
+          try {
+            await props.onSubmit(tags);
+            props.setIsEditing(false);
+          } catch (e) {}
+        }}
+        onCancel={() => props.setIsEditing(false)}
         availableTags={props.availableTags}
       />
     );
@@ -41,7 +51,13 @@ const EditableTags: FC<PropsT> = (props) => {
 
     return (
       <EditableTagsDisplay className={props.className}>
-        <StyledIconButton bare icon="edit" onClick={props.onToggleEdit} />
+        <WithTooltip text={t("common.edit")}>
+          <SxIconButton
+            bare
+            icon="folder"
+            onClick={() => props.setIsEditing(true)}
+          />
+        </WithTooltip>
         {props.tagComponent}
       </EditableTagsDisplay>
     );

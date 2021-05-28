@@ -13,12 +13,12 @@ import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.FormConfigResource;
-import com.bakdata.conquery.util.ResourceUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.AllArgsConstructor;
@@ -56,10 +55,10 @@ public class FormConfigProcessor {
 	 * Return an overview of all form config available to the user. The selection can be reduced by setting a specific formType.
 	 * The provided overview does not contain the configured values for the form, just the meta data.
 	 * @param user The user vor which the overview is created.
-	 * @param dataset 
+	 * @param dataset
 	 * @param requestedFormType Optional form type to filter the overview to that specific type.
 	 **/
-	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, @NonNull DatasetId dataset, @NonNull Set<String> requestedFormType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull User user, Dataset dataset, @NonNull Set<String> requestedFormType) {
 
 		if (requestedFormType.isEmpty()) {
 			// If no specific form type is provided, show all types the user is permitted to create.
@@ -92,10 +91,7 @@ public class FormConfigProcessor {
 	 * Returns the full configuration of a configuration (meta data + configured values).
 	 * It also tried to convert all {@link NamespacedId}s into the given dataset, so that the frontend can resolve them.
 	 */
-	public FormConfigFullRepresentation getConfig(DatasetId datasetId, User user, FormConfigId formId) {
-		FormConfig form = storage.getFormConfig(formId);
-
-		ResourceUtil.throwNotFoundIfNull(formId, form);
+	public FormConfigFullRepresentation getConfig(User user, FormConfig form) {
 
 		user.authorize(form,Ability.READ);
 		return form.fullRepresentation(storage, user);
@@ -105,11 +101,12 @@ public class FormConfigProcessor {
 	 * Adds the provided config to the desired dataset and the datasets that the
 	 * user has access to (has the READ ability on the Dataset), if the config is
 	 * translatable to those.
+	 * @return
 	 */
-	public FormConfigId addConfig(User user, DatasetId targetDataset, FormConfigAPI config) {
+	public FormConfig addConfig(User user, Dataset targetDataset, FormConfigAPI config) {
 
 		//TODO clear this up
-		final Namespace namespace = storage.getDatasetRegistry().get(targetDataset);
+		final Namespace namespace = storage.getDatasetRegistry().get(targetDataset.getId());
 
 		user.authorize(namespace.getDataset(), Ability.READ);
 
@@ -127,13 +124,14 @@ public class FormConfigProcessor {
 	/**
 	 * Adds the config to the dataset it was submitted under and also to all other datasets it can be translated to.
 	 * This method does not check permissions.
+	 * @return
 	 */
-	public FormConfigId addConfigAndTranslations(User user, DatasetId targetDataset, FormConfigAPI config) {
+	public FormConfig addConfigAndTranslations(User user, Dataset targetDataset, FormConfigAPI config) {
 		FormConfig internalConfig = FormConfigAPI.intern(config, user, targetDataset);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 
-		return internalConfig.getId();
+		return internalConfig;
 	}
 
 	/**
@@ -150,10 +148,7 @@ public class FormConfigProcessor {
 	/**
 	 * Applies a patch to a configuration that allows to change its label or tags or even share it.
 	 */
-	public FormConfigFullRepresentation patchConfig(User user, DatasetId target, FormConfigId formId, FormConfigPatch patch) {
-		FormConfig config = storage.getFormConfig(formId);
-
-		ResourceUtil.throwNotFoundIfNull(formId, config);
+	public FormConfigFullRepresentation patchConfig(User user, FormConfig config, FormConfigPatch patch) {
 
 		patch.applyTo(config, storage, user);
 		
@@ -165,12 +160,10 @@ public class FormConfigProcessor {
 	/**
 	 * Deletes a configuration from the storage and all permissions, that have this configuration as target.
 	 */
-	public void deleteConfig(User user, FormConfigId formId) {
-		FormConfig config = storage.getFormConfig(formId);
+	public void deleteConfig(User user, FormConfig config) {
 
-		ResourceUtil.throwNotFoundIfNull(formId, config);
 		user.authorize( config, Ability.DELETE);
-		storage.removeFormConfig(formId);
+		storage.removeFormConfig(config.getId());
 		// Delete corresponding permissions (Maybe better to put it into a slow job)
 		for(ConqueryPermission permission : user.getPermissions()) {
 
@@ -179,14 +172,14 @@ public class FormConfigProcessor {
 			if(!wpermission.getDomains().contains(FormConfigPermission.DOMAIN.toLowerCase())) {
 				continue;
 			}
-			if(!wpermission.getInstances().contains(formId.toString().toLowerCase())) {
+			if(!wpermission.getInstances().contains(config.getId().toString().toLowerCase())) {
 				continue;
 			}
 			
 			if(!wpermission.getInstances().isEmpty()) {
 				// Create new permission if it was a composite permission
 				Set<String> instancesCleared = new HashSet<>(wpermission.getInstances());
-				instancesCleared.remove(formId.toString());
+				instancesCleared.remove(config.getId().toString());
 				WildcardPermission clearedPermission =
 						new WildcardPermission(List.of(wpermission.getDomains(), wpermission.getAbilities(), instancesCleared), Instant.now());
 				user.addPermission(storage, clearedPermission);

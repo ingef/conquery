@@ -6,6 +6,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import lombok.Setter;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public abstract class Dictionary extends NamedImpl<DictionaryId> implements Iterable<DictionaryEntry> {
+public abstract class Dictionary extends NamedImpl<DictionaryId> implements NamespacedIdentifiable<DictionaryId>, Iterable<DictionaryEntry> {
 
 	@Getter @Setter
 	@NsIdRef

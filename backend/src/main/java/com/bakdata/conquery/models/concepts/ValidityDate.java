@@ -4,7 +4,9 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -18,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class ValidityDate extends Labeled<ValidityDateId> {
+public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedIdentifiable<ValidityDateId> {
 
 	@NsIdRef
 	@NotNull
@@ -53,5 +55,11 @@ public class ValidityDate extends Labeled<ValidityDateId> {
 		log.error("ValidityDate[{}](Column = `{}`) does not belong to Connector[{}]#Table[{}]", getId(), getColumn().getId(), getId(), connector.getTable().getId());
 
 		return false;
+	}
+
+	@JsonIgnore
+	@Override
+	public Dataset getDataset() {
+		return connector.getDataset();
 	}
 }

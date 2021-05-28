@@ -32,7 +32,12 @@
   {
     "method": "GET",
     "path": "/datasets/{dataset}/result/{query}.csv",
-    "clazz": "ResultCSVResource"
+    "clazz": "ResultCsvResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/result/{query}.xlsx",
+    "clazz": "ResultExcelResource"
   },
   {
     "method": "GET",

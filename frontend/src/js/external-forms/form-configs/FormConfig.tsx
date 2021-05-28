@@ -8,11 +8,11 @@ import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
 import { usePatchFormConfig } from "../../api/api";
-import type { DatasetIdT } from "../../api/types";
 import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
 import { FORM_CONFIG } from "../../common/constants/dndTypes";
 import { useFormatDateDistance } from "../../common/helpers";
+import { useDatasetId } from "../../dataset/selectors";
 import EditableTags from "../../form-components/EditableTags";
 import EditableText from "../../form-components/EditableText";
 import SelectableLabel from "../../highlightable-label/HighlightableLabel";
@@ -107,19 +107,20 @@ export interface DragItemFormConfig {
 }
 
 interface PropsT {
-  datasetId: DatasetIdT;
   config: FormConfigT;
   onIndicateDeletion: () => void;
   onIndicateShare: () => void;
 }
 
 const FormConfig: React.FC<PropsT> = ({
-  datasetId,
   config,
   onIndicateDeletion,
   onIndicateShare,
 }) => {
   const { t } = useTranslation();
+
+  const datasetId = useDatasetId();
+
   const ref = useRef<HTMLDivElement | null>(null);
   const formLabel = useFormLabelByType(config.formType);
   const availableTags = useSelector<StateT, string[]>(
@@ -154,6 +155,8 @@ const FormConfig: React.FC<PropsT> = ({
     },
     errorMessage: string,
   ) => {
+    if (!datasetId) return;
+
     setIsLoading(true);
     try {
       await patchFormConfig(datasetId, config.id, attributes);
@@ -262,10 +265,10 @@ const FormConfig: React.FC<PropsT> = ({
       {mayEdit ? (
         <EditableTags
           tags={config.tags}
-          editing={isEditingTags}
+          isEditing={isEditingTags}
+          setIsEditing={setIsEditingTags}
           loading={isLoading}
           onSubmit={onRetagFormConfig}
-          onToggleEdit={() => setIsEditingTags(!isEditingTags)}
           tagComponent={<FormConfigTags tags={config.tags} />}
           availableTags={availableTags}
         />

@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -38,12 +39,15 @@ import lombok.extern.slf4j.Slf4j;
  * messages (see also {@link com.bakdata.conquery.io.jackson.serializer.NsIdRef}).
  */
 @Slf4j
+@ToString(onlyExplicitlyIncluded = true)
 public abstract class NamespacedStorage implements ConqueryStorage {
 
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	@Getter
 	private final Validator validator;
+	@Getter @ToString.Include
+	private final List<String> pathName;
 
 	protected SingletonStore<Dataset> dataset;
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
@@ -54,6 +58,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 
 	public NamespacedStorage(Validator validator, StoreFactory storageFactory, List<String> pathName) {
 		this.validator = validator;
+		this.pathName = pathName;
 
 		dataset = storageFactory.createDatasetStore(pathName);
 		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName);
