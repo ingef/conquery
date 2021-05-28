@@ -1,10 +1,12 @@
 {
     "title": {
-        "de": "Export"
+        "en": "Data Export",
+        "de": "Datenexport"
     },
     "type": "EXPORT_FORM",
     "headline": {
-        "de": "Export"
+        "en": "Data Export",
+        "de": "Datenexport"
     },
     "fields": [
         {
