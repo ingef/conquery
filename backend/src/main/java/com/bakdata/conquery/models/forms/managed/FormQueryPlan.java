@@ -27,7 +27,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final List<DateContext> dateContexts;
 	private final ArrayConceptQueryPlan features;
 	private final int constantCount;
-	private final transient List<ArrayConceptQueryPlan> subPlans = new ArrayList<>();
+	private final List<ArrayConceptQueryPlan> subPlans = new ArrayList<>();
 	
 	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features) {
 		this.dateContexts = dateContexts;
