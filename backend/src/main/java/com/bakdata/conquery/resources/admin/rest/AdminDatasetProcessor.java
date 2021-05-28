@@ -245,7 +245,7 @@ public class AdminDatasetProcessor {
 
 			Map<DictionaryId, Dictionary> normalDictionaries = collectNormalDictionaries(ds, dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
-			// The following call is synchronized, because the
+			// The following call is synchronized, because the dictionary is shared across the dataset
 			Map<String, DictionaryMapping> sharedDictionaryMappings = importSharedDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
 
@@ -328,7 +328,7 @@ public class AdminDatasetProcessor {
 	/**
 	 * Import shared Dictionaries, create new Dictionary if not already present. Create mappings from incoming to already present dict.
 	 */
-	private static  synchronized Map<String, DictionaryMapping> importSharedDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+	private static synchronized Map<String, DictionaryMapping> importSharedDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -352,22 +352,22 @@ public class AdminDatasetProcessor {
 				continue;
 			}
 
-			final String sharedDictionaryId = computeSharedDictionaryName(column);
-			final Dictionary dictionary = dicts.get(column.getName());
+			final String sharedDictionaryName = column.getSharedDictionary();
+			final Dictionary importDictionary = dicts.get(column.getName());
 
-			log.debug("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryId);
+			log.debug("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
 
 			final Dataset dataset = namespace.getDataset();
-			final Dictionary targetDictionary = namespace.getStorage().getDictionary(new DictionaryId(dataset.getId(), sharedDictionaryId));
+			final Dictionary sharedDictionary = namespace.getStorage().getDictionary(new DictionaryId(dataset.getId(), sharedDictionaryName));
 
-			log.debug("Merging into shared Dictionary[{}]", targetDictionary);
+			log.debug("Merging into shared Dictionary[{}]", sharedDictionary);
 
 			DictionaryMapping mapping = null;
-			if (targetDictionary == null) {
-				mapping = DictionaryMapping.create(dictionary, new MapDictionary(dataset, sharedDictionaryId));
+			if (sharedDictionary == null) {
+				mapping = DictionaryMapping.create(importDictionary, new MapDictionary(dataset, sharedDictionaryName));
 			}
 			else {
-				mapping = extendSharedDictionary(dataset,dictionary, sharedDictionaryId, targetDictionary);
+				mapping = extendSharedDictionary(dataset,importDictionary, sharedDictionaryName, sharedDictionary);
 			}
 
 			// We need to update the storages for now in this synchronized part
@@ -381,23 +381,19 @@ public class AdminDatasetProcessor {
 		return out;
 	}
 
-	private static String computeSharedDictionaryName(Column column) {
-		return column.getSharedDictionary();
-	}
+	private static DictionaryMapping extendSharedDictionary(Dataset dataset, Dictionary incoming, String targetDictionaryName, Dictionary targetDict) {
 
-	private static DictionaryMapping extendSharedDictionary(Dataset dataset, Dictionary incoming, String targetDictionary, Dictionary targetDict) {
-
-		log.debug("Merging into shared Dictionary[{}]", targetDictionary);
+		log.debug("Merging into shared Dictionary[{}]", targetDictionaryName);
 
 		if (targetDict == null) {
-			targetDict = new MapDictionary(dataset, targetDictionary);
+			targetDict = new MapDictionary(dataset, targetDictionaryName);
 		}
 
 		targetDict = Dictionary.copyUncompressed(targetDict);
 
 		DictionaryMapping mapping = DictionaryMapping.create(incoming, targetDict);
 
-		targetDict.setName(targetDictionary);
+		targetDict.setName(targetDictionaryName);
 
 		return mapping;
 	}
