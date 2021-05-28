@@ -8,10 +8,6 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.*;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.DictionaryMapping;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -23,10 +19,6 @@ import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.*;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
-import com.bakdata.conquery.models.preproc.PreprocessedData;
-import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
-import com.bakdata.conquery.models.preproc.PreprocessedHeader;
-import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
@@ -40,7 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Nullable;
 import javax.validation.Validator;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -86,14 +77,10 @@ public class AdminDatasetProcessor {
 
 		// for now we just add one worker to every ShardNode
 		for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {
-			addWorker(node, dataset);
+			node.send(new AddWorker(dataset));
 		}
 
 		return dataset;
-	}
-
-	private void addWorker(ShardNodeInformation node, Dataset dataset) {
-		node.send(new AddWorker(dataset));
 	}
 
 	public synchronized void deleteDataset(Dataset dataset) {
@@ -212,9 +199,9 @@ public class AdminDatasetProcessor {
 
 
 	@SneakyThrows
-	public void addImport(Namespace namespace, String importSource, InputStream inputStream) throws IOException {
+	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-		ImportJob.create(namespace, importSource, inputStream, config.getCluster().getEntityBucketSize())
+		ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize())
 				.ifPresent(job -> namespace.getJobManager().addSlowJob(job));
 	}
 

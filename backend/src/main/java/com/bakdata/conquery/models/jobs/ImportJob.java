@@ -40,7 +40,6 @@ import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -55,7 +54,6 @@ public class ImportJob extends Job {
 	private final Namespace namespace;
 
 	private final Table table;
-	private final String importSource;
 	private final int bucketSize;
 	private final PreprocessedHeader header;
 	private final Dictionary primaryDictionary;
@@ -65,7 +63,7 @@ public class ImportJob extends Job {
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static Optional<ImportJob> create(Namespace namespace, String importSource, InputStream inputStream, int entityBucketSize) throws IOException {
+	public static Optional<ImportJob> create(Namespace namespace, InputStream inputStream, int entityBucketSize) throws IOException {
 		try(PreprocessedReader parser = new PreprocessedReader(inputStream)){
 
 			final Dataset ds = namespace.getDataset();
@@ -117,12 +115,11 @@ public class ImportJob extends Job {
 				return Optional.empty();
 			}
 
-			log.info("Importing {}", importSource);
+			log.info("Importing {} into {}", header.getName(), tableId);
 
 			return Optional.of(new ImportJob(
 					namespace,
 					table,
-					importSource,
 					entityBucketSize,
 					header,
 					dictionaries.getPrimaryDictionary(),
@@ -549,7 +546,7 @@ public class ImportJob extends Job {
 
 	@Override
 	public String getLabel() {
-		return "Importing into " + table + " from " + importSource;
+		return "Importing into " + table + " from " + header.getName();
 	}
 
 }

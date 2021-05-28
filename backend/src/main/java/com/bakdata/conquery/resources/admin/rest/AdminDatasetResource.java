@@ -88,8 +88,9 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
-	public void uploadImport(@NotNull InputStream importStream, @QueryParam("name") @NotBlank String importName) throws IOException, JSONException {
-		processor.addImport(namespace, "FileUpload " + importName, new GZIPInputStream(importStream));
+	public void uploadImport(@NotNull InputStream importStream, @QueryParam("name") String importName) throws IOException, JSONException {
+		log.info("Importing from file upload {}", importName);
+		processor.addImport(namespace, new GZIPInputStream(importStream));
 	}
 
 	@POST
@@ -119,7 +120,8 @@ public class AdminDatasetResource extends HAdmin {
 		}
 
 
-		processor.addImport(namespace, importFile.getAbsolutePath(), new GZIPInputStream(new FileInputStream(importFile)));
+		log.info("Importing from local file {}", importFile.getAbsolutePath());
+		processor.addImport(namespace, new GZIPInputStream(new FileInputStream(importFile)));
 	}
 
 
