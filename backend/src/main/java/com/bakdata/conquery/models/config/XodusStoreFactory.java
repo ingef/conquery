@@ -310,8 +310,8 @@ public class XodusStoreFactory implements StoreFactory {
     }
 
     @Override
-    public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return FORM_CONFIG.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "formConfigs")), validator, FORM_CONFIG), centralRegistry);
+    public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName) {
+        return FORM_CONFIG.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "formConfigs")), validator, FORM_CONFIG), centralRegistry, datasetRegistry);
     }
 
     @Override

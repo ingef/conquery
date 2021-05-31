@@ -11,6 +11,10 @@ const Root = styled("div")`
   text-align: center;
 `;
 
+const Description = styled("p")`
+  margin: 0 0 20px;
+`;
+
 const Btn = styled(TransparentButton)`
   margin: 0 10px;
 `;
@@ -21,15 +25,22 @@ const PrimaryBtn = styled(PrimaryButton)`
 
 interface PropsType {
   headline: ReactNode;
+  description?: ReactNode;
   onClose: () => void;
   onDelete: () => void;
 }
 
-const DeleteModal = ({ headline, onClose, onDelete }: PropsType) => {
+const DeleteModal = ({
+  headline,
+  description,
+  onClose,
+  onDelete,
+}: PropsType) => {
   const { t } = useTranslation();
 
   return (
     <Modal onClose={onClose} headline={headline}>
+      {description && <Description>{description}</Description>}
       <Root>
         <Btn onClick={onClose}>{t("common.cancel")}</Btn>
         <PrimaryBtn onClick={onDelete}>{t("common.delete")}</PrimaryBtn>

@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 
 @Getter
@@ -26,7 +27,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final List<DateContext> dateContexts;
 	private final ArrayConceptQueryPlan features;
 	private final int constantCount;
-	private final transient List<ArrayConceptQueryPlan> subPlans = new ArrayList<>();
+	private final List<ArrayConceptQueryPlan> subPlans = new ArrayList<>();
 	
 	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features) {
 		this.dateContexts = dateContexts;
@@ -51,10 +52,6 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
-		if (ctx.getQueryDateAggregator().isEmpty()) {
-			// Only override if none has been set from a higher level
-			ctx = ctx.withQueryDateAggregator(getValidityDateAggregator());
-		}
 
 		features.init(ctx,entity);
 
@@ -74,6 +71,9 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	
 			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
 			dateRestriction.retainAll(dateContext.getDateRange());
+
+			// Reference the dates per sub-query, don't accumulate dates of all sub-queries
+			ctx = QueryUtils.determineDateAggregatorForContext(ctx, subPlan::getValidityDateAggregator);
 			Optional<SinglelineEntityResult> subResult = subPlan.execute(ctx.withDateRestriction(dateRestriction), entity);
 			
 			if(subResult.isEmpty()) {
@@ -146,7 +146,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 				p -> p.getValidityDateAggregator().ifPresent(agg::register)
 		);
 
-		return agg.hasChildren() ? Optional.of(agg) : Optional.empty();
+		return Optional.empty();
 	}
 
 	public int columnCount() {
