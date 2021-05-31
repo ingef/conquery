@@ -15,6 +15,9 @@ import java.util.Optional;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public interface ResultRenderProvider {
 
+	/**
+	 * Determines if by default the result url for this provider should be hidden or not
+	 */
 	boolean isHidden();
 
 	Optional<URL> generateResultURL(ManagedExecution<?> exec, UriBuilder uriBuilder);

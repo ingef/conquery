@@ -45,10 +45,14 @@ public class ConqueryConfig extends Configuration {
 	private CSVConfig csv = new CSVConfig();
 	@Valid @NotNull
 	private ArrowConfig arrow = new ArrowConfig();
+
+	/**
+	 * The order of this lists determines the ordner of the generated result urls in a query status.
+	 */
 	@Valid @NotNull
 	private List<ResultRenderProvider> resultProviders = List.of(
-			new CsvResultRenderProvider(),
 			new XlsxResultProvider(),
+			new CsvResultRenderProvider(),
 			new ArrowFileResultProvider(),
 			new ArrowStreamResultProvider()
 	);

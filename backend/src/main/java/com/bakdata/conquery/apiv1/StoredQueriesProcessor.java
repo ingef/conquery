@@ -77,6 +77,18 @@ public class StoredQueriesProcessor {
 						 });
 	}
 
+	/**
+	 * Sets the result urls for the given result renderer. Result urls are only rendered for providers that match the
+	 * result type of the execution.
+	 * @param status The status that is edited.
+	 * @param renderer The renderer that are requested for a result url generation.
+	 * @param exec The execution that is used for generating the url
+	 * @param uriBuilder The Uribuilder with the base configuration to generate the urls
+	 * @param allProviders If true, the {@link ResultRenderProvider#isHidden()} is ignored and a result urls is generated
+	 *                     anyways
+	 * @param <S> The type of the provided and returned status
+	 * @return The modified status
+	 */
 	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRenderProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders){
 				
 		List<URL> resultUrls = renderer.stream()
