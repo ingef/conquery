@@ -23,7 +23,7 @@ public class SelectFilter extends AbstractSelectFilter<String> {
 	}
 
 	@Override
-	public FilterNode<?> createAggregator(String value) {
+	public FilterNode<?> createFilterNode(String value) {
 		return new SelectFilterNode(getColumn(), value);
 	}
 }

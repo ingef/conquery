@@ -20,9 +20,9 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.SelectHolder;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.CBlock;
@@ -123,7 +123,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	public boolean isAllSelectsForConcept() {
 		final Concept<?> concept = getConcept();
 
-		if (!getSelects().stream().map(Select::getHolder).map(SelectHolder::findConcept).allMatch(concept::equals)) {
+		if (!getSelects().stream().map(Select::getHolder).allMatch(concept::equals)) {
 			log.error("Not all selects belong to Concept[{}]", concept);
 			return false;
 		}
@@ -147,31 +147,27 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 
-		List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects);
-
-		Concept<?> concept = getConcept();
+		final List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects);
 
 		List<QPNode> tableNodes = new ArrayList<>();
 		for (CQTable table : tables) {
-			List<Select> resolvedSelects = table.getSelects();
-
 
 			List<FilterNode<?>> filters = new ArrayList<>(table.getFilters().size());
+
 			//add filter to children
-			for (FilterValue f : table.getFilters()) {
-				FilterNode agg = f.getFilter().createAggregator(f.getValue());
-				if (agg != null) {
-					filters.add(agg);
-				}
+			for (FilterValue<?> f : table.getFilters()) {
+				FilterNode<?> agg = f.createNode();
+				filters.add(agg);
 			}
 
 			List<Aggregator<?>> aggregators = new ArrayList<>();
-			//add aggregators
 
 			aggregators.addAll(conceptAggregators);
 
-			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, resolvedSelects);
+			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, table.getSelects());
 
+			// Exists aggregators hold a reference to their parent FiltersNode so they need to be treated separately.
+			// They also don't need aggregation as they simply imitate their reference.
 			List<ExistsAggregator> existsAggregators = connectorAggregators.stream()
 																		   .filter(ExistsAggregator.class::isInstance)
 																		   .map(ExistsAggregator.class::cast)
@@ -181,12 +177,16 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
-			if(aggregateEventDates){
-				aggregators.add(new EventDateUnionAggregator(Set.of(table.getConnector().getTable())));
-			}
 
-			final QPNode filtersNode = concept.createConceptQuery(context, filters, aggregators);
+			Set<Aggregator<CDateSet>> eventDateUnionAggregators =
+					aggregateEventDates ? Set.of(new EventDateUnionAggregator(Set.of(table.getConnector().getTable())))
+										: Collections.emptySet();
 
+			aggregators.addAll(eventDateUnionAggregators);
+
+			final QPNode filtersNode = getConcept().createConceptQuery(context, filters, aggregators, eventDateUnionAggregators);
+
+			// Link up the ExistsAggregators to the node
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
 
 			// Select if matching secondaryId available
@@ -196,25 +196,21 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 						  .filter(Objects::nonNull)
 						  .anyMatch(o -> Objects.equals(context.getSelectedSecondaryId(), o));
 
-			tableNodes.add(
-					new ConceptNode(
-							elements,
-							CBlock.calculateBitMask(elements),
-							table,
-							// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
-							new ValidityDateNode(
-									selectValidityDateColumn(table),
-									filtersNode
-							),
-							// if the node is excluded, don't pass it into the Node.
-							!excludeFromSecondaryIdQuery && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
-					)
+			final Column validityDateColumn = selectValidityDateColumn(table);
+
+			final ConceptNode node = new ConceptNode(
+					elements,
+					CBlock.calculateBitMask(elements),
+					table,
+					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
+					new ValidityDateNode(validityDateColumn, filtersNode),
+					// if the node is excluded, don't pass it into the Node.
+					!excludeFromSecondaryIdQuery && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
 			);
+
+			tableNodes.add(node);
 		}
 
-		if (tableNodes.isEmpty()) {
-			throw new IllegalStateException(String.format("Unable to resolve any connector for Query[%s]", this));
-		}
 
 		// We always merge on concept level
 		final QPNode outNode = OrNode.of(tableNodes, aggregateEventDates ? DateAggregationAction.MERGE : DateAggregationAction.BLOCK);
