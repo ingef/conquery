@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
@@ -56,9 +55,6 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 */
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
-
-		// Only override if none has been set from a higher level
-		ctx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
 
 		if (query.getRequiredTables().get().isEmpty()) {
 			return Optional.empty();
@@ -168,7 +164,8 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		query.nextTable(ctx, currentTable);
 		for (ConceptQueryPlan c : childPerKey.values()) {
-			c.nextTable(ctx, currentTable);
+			QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(ctx, c::getValidityDateAggregator);
+			c.nextTable(context, currentTable);
 		}
 	}
 
@@ -191,8 +188,10 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
 
-		plan.init(query.getEntity(), currentContext);
-		plan.nextTable(currentContext, secondaryIdColumn.getTable());
+		QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
+
+		plan.init(query.getEntity(), context);
+		plan.nextTable(context, secondaryIdColumn.getTable());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);
 

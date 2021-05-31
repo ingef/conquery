@@ -4,7 +4,7 @@ export type FolderFilterActions = ActionType<
   | typeof addFolderToFilter
   | typeof removeFolderFromFilter
   | typeof setFolderFilter
-  | typeof toggleNoFoldersFilder
+  | typeof toggleNoFoldersFilter
   | typeof toggleFoldersOpen
 >;
 
@@ -20,7 +20,7 @@ export const setFolderFilter = createAction(
   "previous-queries/SET_FOLDER_FILTER",
 )<string[]>();
 
-export const toggleNoFoldersFilder = createAction(
+export const toggleNoFoldersFilter = createAction(
   "previous-queries/TOGGLE_NO_FOLDERS_FILTER",
 )();
 

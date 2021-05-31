@@ -218,8 +218,8 @@ public class DefaultLabelTest {
 
 	@ParameterizedTest
 	@CsvSource({
-			"de,Export 2020-10-30 12:37",
-			"en,Export 2020-10-30 12:37"
+			"de,Datenexport 2020-10-30 12:37",
+			"en,Data Export 2020-10-30 12:37"
 	})
 	void autoLabelExportForm(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);

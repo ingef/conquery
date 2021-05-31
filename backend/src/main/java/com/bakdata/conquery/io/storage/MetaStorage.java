@@ -49,7 +49,7 @@ public class MetaStorage implements ConqueryStorage{
 		authGroup = storageFactory.createGroupStore(centralRegistry, pathName);
 		// Executions depend on users
 		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, pathName);
-		formConfigs = storageFactory.createFormConfigStore(centralRegistry, pathName);
+		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, pathName);
     }
 
     @Override
