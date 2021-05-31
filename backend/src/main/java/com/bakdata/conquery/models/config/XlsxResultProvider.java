@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.api.ResultExcelResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
@@ -16,8 +17,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 
+@Getter
 @CPSType(base = ResultRenderProvider.class, id = "XLSX")
 public class XlsxResultProvider implements ResultRenderProvider {
+
+	private boolean hidden = false;
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)

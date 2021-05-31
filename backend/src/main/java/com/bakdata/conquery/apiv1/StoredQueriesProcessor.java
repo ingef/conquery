@@ -4,6 +4,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetA
 
 import java.net.URL;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +34,6 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -45,13 +45,13 @@ public class StoredQueriesProcessor {
 	private final MetaStorage storage;
 	private final ConqueryConfig config;
 
-	public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user) {
+	public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user, boolean allProviders) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
-		return getQueriesFiltered(namespace.getDataset(), RequestAwareUriBuilder.fromRequest(req), user, allQueries);
+		return getQueriesFiltered(namespace.getDataset(), RequestAwareUriBuilder.fromRequest(req), user, allQueries, allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, User user, Collection<ManagedExecution<?>> allQueries) {
+	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, User user, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
 
 		return allQueries.stream()
@@ -71,15 +71,16 @@ public class StoredQueriesProcessor {
 									 datasetAbilities
 							 );
 							 if (mq.isReadyToDownload(datasetAbilities)){
-							 	setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder);
+							 	setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder, allProviders);
 							 }
 							 return status;
 						 });
 	}
 
-	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRenderProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder){
+	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRenderProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders){
 				
 		List<URL> resultUrls = renderer.stream()
+				.filter(Predicate.not(ResultRenderProvider::isHidden).or((ResultRenderProvider r) -> allProviders))
 				.map(r -> r.generateResultURL(exec,uriBuilder.clone()))
 				.flatMap(Optional::stream).collect(Collectors.toList());
 
@@ -123,7 +124,7 @@ public class StoredQueriesProcessor {
 		storage.removeExecution(execution.getId());
 	}
 
-	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, User user, UriBuilder url) {
+	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, User user, UriBuilder url, Boolean allProviders) {
 
 		user.authorize(query, Ability.READ);
 
@@ -133,7 +134,7 @@ public class StoredQueriesProcessor {
 		final FullExecutionStatus status = query.buildStatusFull(storage, url, user, datasetRegistry, datasetAbilities);
 
 		if (query.isReadyToDownload(datasetAbilities)){
-			setDownloadUrls(status, config.getResultProviders(), query, url);
+			setDownloadUrls(status, config.getResultProviders(), query, url, allProviders);
 		}
 		return status;
 	}
@@ -162,17 +163,10 @@ public class StoredQueriesProcessor {
 		}
 	}
 
-	public FullExecutionStatus reexecute(User user, ManagedExecution<?> query, UriBuilder uriBuilder) {
+	public void reexecute(ManagedExecution<?> query) {
 		if(!query.getState().equals(ExecutionState.RUNNING)) {
 			ExecutionManager.execute(getDatasetRegistry(), query, config);
 		}
-
-		final Map<DatasetId, Set<Ability>> datasetAbilities = AuthorizationHelper.buildDatasetAbilityMap(user, getDatasetRegistry());
-		final FullExecutionStatus status = query.buildStatusFull(storage, uriBuilder, user, getDatasetRegistry(), datasetAbilities);
-		if (query.isReadyToDownload(datasetAbilities)){
-			setDownloadUrls(status, config.getResultProviders(), query, uriBuilder);
-		}
-		return status;
 	}
 
 }

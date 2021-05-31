@@ -15,6 +15,8 @@ import java.util.Optional;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public interface ResultRenderProvider {
 
+	boolean isHidden();
+
 	Optional<URL> generateResultURL(ManagedExecution<?> exec, UriBuilder uriBuilder);
 
 	void registerResultResource(JerseyEnvironment environment, ManagerNode manager);
