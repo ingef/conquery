@@ -16,6 +16,9 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import java.util.List;
 import java.util.stream.Stream;
 
+/**
+ *	Execution type for simple forms, that are completely executed within Conquery and produce a single table as result.
+ */
 @CPSType(base = ManagedExecution.class, id = "INTERNAL_FORM")
 public class ManagedInternalForm extends ManagedForm implements SingleTableResult {
 
