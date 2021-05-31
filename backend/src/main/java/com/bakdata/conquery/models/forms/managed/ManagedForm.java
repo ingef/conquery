@@ -208,6 +208,7 @@ public abstract class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 	@Override
+	@JsonIgnore
 	public Set<Namespace> getRequiredDatasets() {
 		return flatSubQueries.values().stream()
 			.map(ManagedQuery::getRequiredDatasets)
@@ -216,6 +217,7 @@ public abstract class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 	@Override
+	@JsonIgnore
 	public QueryDescription getSubmitted() {
 		return submittedForm;
 	}

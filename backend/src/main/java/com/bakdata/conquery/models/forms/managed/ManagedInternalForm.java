@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -33,6 +34,7 @@ public class ManagedInternalForm extends ManagedForm implements SingleTableResul
 	}
 
 	@Override
+	@JsonIgnore
 	public List<ResultInfo> getResultInfo() {
 		if(getSubQueries().size() != 1) {
 			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");

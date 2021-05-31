@@ -195,6 +195,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
+	@JsonIgnore
 	public Set<NamespacedIdentifiable<?>> getUsedNamespacedIds() {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		query.visit(collector);
@@ -223,6 +224,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
+	@JsonIgnore
 	public QueryDescription getSubmitted() {
 		return query;
 	}
