@@ -1,8 +1,11 @@
 package com.bakdata.conquery.models.forms.managed;
 
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -13,6 +16,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import java.util.List;
 import java.util.stream.Stream;
 
+@CPSType(base = ManagedExecution.class, id = "INTERNAL_FORM")
 public class ManagedInternalForm extends ManagedForm implements SingleTableResult {
 
 
