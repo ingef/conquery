@@ -111,12 +111,12 @@ public class NonPersistentStoreFactory implements StoreFactory {
 
     @Override
     public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName) {
-        return EXECUTIONS.identifiable(new NonPersistentStore(), centralRegistry);
+        return EXECUTIONS.identifiable(new NonPersistentStore(), centralRegistry, datasetRegistry);
     }
 
     @Override
-    public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return FORM_CONFIG.identifiable(new NonPersistentStore(), centralRegistry);
+    public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName) {
+        return FORM_CONFIG.identifiable(new NonPersistentStore(), centralRegistry, datasetRegistry);
     }
 
     @Override

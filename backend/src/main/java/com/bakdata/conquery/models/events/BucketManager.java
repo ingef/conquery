@@ -117,6 +117,10 @@ public class BucketManager {
 
 						CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
 
+						if (!con.getTable().equals(bucket.getTable())) {
+							continue;
+						}
+
 						if (hasCBlock(cBlockId)) {
 							log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.", cBlockId);
 							continue;

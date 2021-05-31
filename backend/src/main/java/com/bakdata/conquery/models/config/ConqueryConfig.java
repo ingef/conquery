@@ -75,6 +75,10 @@ public class ConqueryConfig extends Configuration {
 	@NotNull
 	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
 	@Valid
+	@NotNull
+	private ExcelConfig excel = new ExcelConfig();
+
+	@Valid
 	private List<PluginConfig> plugins = new ArrayList<>();
 	/**
 	 * null means here that we try to deduce from an attached agent
@@ -111,8 +115,8 @@ public class ConqueryConfig extends Configuration {
 				.collect(MoreCollectors.toOptional());
 	}
 
-	public void configureObjectMapper(ObjectMapper objectMapper) {
-		objectMapper.registerModule(new ConqueryConfig.ConfiguredModule(this));
+	public ObjectMapper configureObjectMapper(ObjectMapper objectMapper) {
+		return objectMapper.registerModule(new ConqueryConfig.ConfiguredModule(this));
 	}
 
 	public static class ConfiguredModule extends SimpleModule {

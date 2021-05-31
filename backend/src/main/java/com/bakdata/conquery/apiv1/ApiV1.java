@@ -4,12 +4,15 @@ import java.time.Duration;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
+import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
+import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
+import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
-import com.bakdata.conquery.models.execution.ResultProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourcesProvider;
@@ -24,7 +27,8 @@ import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.api.ResultArrowFileResource;
 import com.bakdata.conquery.resources.api.ResultArrowStreamResource;
-import com.bakdata.conquery.resources.api.ResultCSVResource;
+import com.bakdata.conquery.resources.api.ResultCsvResource;
+import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.bakdata.conquery.resources.api.StoredQueriesResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -49,7 +53,9 @@ public class ApiV1 implements ResourcesProvider {
 				bind(new QueryProcessor(datasets, manager.getStorage(), manager.getConfig())).to(QueryProcessor.class);
 				bind(new FormConfigProcessor(manager.getValidator(), manager.getStorage())).to(FormConfigProcessor.class);
 				bind(new StoredQueriesProcessor(manager.getDatasetRegistry(), manager.getStorage(), manager.getConfig())).to(StoredQueriesProcessor.class);
-				bind(new ResultProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultProcessor.class);
+				bind(new ResultCsvProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultCsvProcessor.class);
+				bind(new ResultArrowProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultArrowProcessor.class);
+				bind(new ResultExcelProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultExcelProcessor.class);
 			}
 		});
 
@@ -70,9 +76,10 @@ public class ApiV1 implements ResourcesProvider {
 		 */
 		environment.register(manager.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
-		environment.register(ResultCSVResource.class);
+		environment.register(ResultCsvResource.class);
 		environment.register(ResultArrowFileResource.class);
 		environment.register(ResultArrowStreamResource.class);
+		environment.register(ResultExcelResource.class);
 		environment.register(StoredQueriesResource.class);
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(new ConfigResource(manager.getConfig()));
@@ -83,5 +90,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(DatasetResource.class);
 		environment.register(FilterResource.class);
 		environment.register(MeResource.class);
+
+		environment.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
 	}
 }

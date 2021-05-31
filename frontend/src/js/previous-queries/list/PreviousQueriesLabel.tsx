@@ -1,20 +1,24 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
 import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import EditableText from "../../form-components/EditableText";
 import HighlightableLabel from "../../highlightable-label/HighlightableLabel";
 
-const StyledSelectableLabel = styled(HighlightableLabel)`
-  margin: 0;
+const SxSelectableLabel = styled(HighlightableLabel)`
+  display: block;
   font-weight: 400;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
-const StyledEditableText = styled(EditableText)`
-  margin: 0;
+const SxEditableText = styled(EditableText)`
   font-weight: 400;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const labelContainsAnySearch = (label: string, searches: string[]) =>
@@ -31,38 +35,40 @@ const useIsHighlightedLabel = (label: string) => {
 };
 
 interface PropsT {
-  mayEditQuery: boolean;
+  mayEditQuery?: boolean;
   label: string;
   selectTextOnMount: boolean;
-  editing: boolean;
   loading: boolean;
-  onToggleEdit: () => void;
   onSubmit: (text: string) => void;
+  isEditing: boolean;
+  setIsEditing: (value: boolean) => void;
 }
 
 const PreviousQueriesLabel: FC<PropsT> = ({
   mayEditQuery,
   loading,
-  editing,
   selectTextOnMount,
   label,
   onSubmit,
-  onToggleEdit,
+  isEditing,
+  setIsEditing,
 }) => {
   const isHighlightedLabel = useIsHighlightedLabel(label);
+  const { t } = useTranslation();
 
   return mayEditQuery ? (
-    <StyledEditableText
+    <SxEditableText
       loading={loading}
       text={label}
       selectTextOnMount={selectTextOnMount}
-      editing={editing}
+      editing={isEditing}
       onSubmit={onSubmit}
-      onToggleEdit={onToggleEdit}
+      onToggleEdit={() => setIsEditing(!isEditing)}
       isHighlighted={isHighlightedLabel}
+      tooltip={t("common.edit")}
     />
   ) : (
-    <StyledSelectableLabel label={label} isHighlighted={isHighlightedLabel} />
+    <SxSelectableLabel label={label} isHighlighted={isHighlightedLabel} />
   );
 };
 

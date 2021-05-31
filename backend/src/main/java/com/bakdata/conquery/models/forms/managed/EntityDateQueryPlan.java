@@ -7,11 +7,12 @@ import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
-import com.google.common.base.Preconditions;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
@@ -35,23 +36,30 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
 
     @Override
     public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
+
+        // Don't set the query date aggregator here because the subqueries should set their aggregator independently
+
         // Execute the prerequisite query
         Optional<EntityResult> preResult = query.execute(ctx, entity);
         if (preResult.isEmpty()) {
             return Optional.empty();
         }
 
-        CDateSet entityDate = query.getValidityDates(preResult.get());
-        entityDate.retainAll(dateRestriction);
+        Optional<DateAggregator> validityDateAggregator = query.getValidityDateAggregator();
+        if (validityDateAggregator.isEmpty()) {
+            return Optional.empty();
+        }
+
+        final CDateSet aggregationResult = validityDateAggregator.get().getAggregationResult();
+        aggregationResult.retainAll(dateRestriction);
 
         // Generate DateContexts in the provided resolutions
         List<DateContext> contexts = new ArrayList<>();
-        for (CDateRange range : entityDate.asRanges()) {
+        for (CDateRange range : aggregationResult.asRanges()) {
             contexts.addAll(DateContext.generateAbsoluteContexts(range, resolutionsAndAlignments));
         }
 
         FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features);
-        validityDateCollector = resolutionQuery::getValidityDates;
 
         return resolutionQuery.execute(ctx, entity);
     }
@@ -72,8 +80,7 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
     }
 
     @Override
-    public CDateSet getValidityDates(MultilineEntityResult result) {
-        Preconditions.checkNotNull(validityDateCollector, "The query was not executed and no validity date collector set");
-        return validityDateCollector.apply(result);
+    public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
+        return query.getValidityDateAggregator();
     }
 }

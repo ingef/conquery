@@ -12,7 +12,11 @@ import { isEmpty } from "../common/helpers";
 import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
 import BaseInput from "../form-components/BaseInput";
 
-import { searchTrees, clearSearchQuery, toggleShowMismatches } from "./actions";
+import {
+  clearSearchQuery,
+  toggleShowMismatches,
+  useSearchTrees,
+} from "./actions";
 import type { SearchT, TreesT } from "./reducer";
 
 const Root = styled("div")`
@@ -27,6 +31,7 @@ const InputContainer = styled("div")`
 const StyledBaseInput = styled(BaseInput)`
   width: 100%;
   input {
+    padding-right: 60px;
     width: 100%;
     &::placeholder {
       color: ${({ theme }) => theme.col.grayMediumLight};
@@ -42,10 +47,11 @@ const Right = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: center;
-  height: 36px;
+  height: 34px;
 `;
 
 const StyledIconButton = styled(IconButton)`
+  padding: 8px 10px;
   color: ${({ theme }) => theme.col.gray};
 `;
 
@@ -101,8 +107,11 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
-  const onSearch = (datasetId: DatasetIdT, trees: TreesT, query: string) => {
-    if (query.length > 1) dispatch(searchTrees(datasetId, trees, query));
+  const searchTrees = useSearchTrees();
+  const onSearch = (trees: TreesT, searchString: string) => {
+    if (searchString.length > 1) {
+      searchTrees(trees, searchString);
+    }
   };
   const onClearQuery = () => dispatch(clearSearchQuery());
   const onToggleShowMismatches = () => dispatch(toggleShowMismatches());
@@ -117,6 +126,7 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
         <SxConceptTreeOpenButtons />
         <InputContainer>
           <StyledBaseInput
+            inputType="text"
             placeholder={t("conceptTreeList.searchPlaceholder")}
             value={localQuery || ""}
             onChange={(value) => {
@@ -127,7 +137,7 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
             inputProps={{
               onKeyPress: (e) => {
                 return e.key === "Enter" && !isEmpty(e.target.value)
-                  ? onSearch(datasetId, trees, e.target.value)
+                  ? onSearch(trees, e.target.value)
                   : null;
               },
             }}
@@ -137,8 +147,7 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
               <StyledIconButton
                 icon="search"
                 aria-hidden="true"
-                small
-                onClick={() => onSearch(datasetId, trees, localQuery)}
+                onClick={() => onSearch(trees, localQuery)}
               />
             </Right>
           )}

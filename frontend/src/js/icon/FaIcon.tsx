@@ -19,6 +19,7 @@ export interface IconStyleProps {
   disabled?: boolean;
   tiny?: boolean;
   large?: boolean;
+  small?: boolean;
 }
 
 export interface FaIconPropsT extends IconStyleProps {

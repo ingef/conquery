@@ -8,8 +8,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.datasets.Table;
 import com.google.common.collect.MoreCollectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,8 +19,7 @@ import lombok.Setter;
 public abstract class HConnectors extends HConcepts {
 
 	@PathParam(TABLE)
-	protected TableId tableId;
-	protected ConnectorId connectorId;
+	protected Table table;
 	protected Connector connector;
 
 	@PostConstruct
@@ -30,9 +28,8 @@ public abstract class HConnectors extends HConcepts {
 		super.init();
 		connector = concept.getConnectors()
 						   .stream()
-						   .filter(con -> con.getTable().getId().equals(tableId))
+						   .filter(con -> con.getTable().equals(table))
 						   .collect(MoreCollectors.toOptional())
 						   .orElseThrow(() -> new NotFoundException(String.format("Could not find Connector for Table[%s] in Concept[%s]", connector, concept)));
-		connectorId = connector.getId();
 	}
 }

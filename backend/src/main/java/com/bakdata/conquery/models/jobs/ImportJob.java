@@ -341,7 +341,7 @@ public class ImportJob extends Job {
 			dict.setDataset(getDataset());
 			dict.setName(name);
 
-			log.trace("Sending {} to all Workers", dict);
+			log.trace("Sending {} to all Workers", dict.getId());
 			namespace.getStorage().updateDictionary(dict);
 			namespace.sendToAll(new UpdateDictionary(dict));
 			subJob.report(1);

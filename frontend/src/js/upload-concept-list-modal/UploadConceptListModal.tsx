@@ -7,8 +7,8 @@ import { useSelector } from "react-redux";
 import type { ConceptIdT, ConceptT } from "../api/types";
 import PrimaryButton from "../button/PrimaryButton";
 import type { TreesT } from "../concept-trees/reducer";
+import InputPlain from "../form-components/InputPlain";
 import InputSelect from "../form-components/InputSelect";
-import InputText from "../form-components/InputText";
 import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
@@ -54,6 +54,37 @@ const SxPrimaryButton = styled(PrimaryButton)`
   flex-shrink: 0;
 `;
 
+const selectUnresolvedItemsCount = (state: StateT) => {
+  const { resolved } = state.uploadConceptListModal;
+
+  return resolved && resolved.unknownCodes && resolved.unknownCodes.length
+    ? resolved.unknownCodes.length
+    : 0;
+};
+
+const selectResolvedItemsCount = (state: StateT) => {
+  const { resolved } = state.uploadConceptListModal;
+
+  return resolved &&
+    resolved.resolvedConcepts &&
+    resolved.resolvedConcepts.length
+    ? resolved.resolvedConcepts.length
+    : 0;
+};
+
+const selectAvailableConceptRootNodes = (state: StateT) => {
+  const { trees } = state.conceptTrees;
+
+  if (!trees) return [];
+
+  return Object.entries(trees)
+    .map(([key, value]) => ({ key, value }))
+    .filter(({ value }) => value.codeListResolvable)
+    .sort((a, b) =>
+      a.value.label.toLowerCase().localeCompare(b.value.label.toLowerCase()),
+    );
+};
+
 interface PropsT {
   onAccept: (
     label: string,
@@ -94,10 +125,12 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
     selectUnresolvedItemsCount(state),
   );
 
-  const [label, setLabel] = useState(filename);
+  const [label, setLabel] = useState<string>(filename || "");
 
   useEffect(() => {
-    setLabel(filename);
+    if (filename) {
+      setLabel(filename);
+    }
   }, [filename]);
 
   const selectConceptRootNodeAndResolveCode = useSelectConceptRootNodeAndResolveCodes();
@@ -168,7 +201,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
                       })}
                     </Msg>
                     <MsgRow>
-                      <InputText
+                      <InputPlain
                         label={t("uploadConceptListModal.label")}
                         fullWidth
                         inputProps={{
@@ -191,7 +224,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
                       <ErrorIcon icon="exclamation-circle" />
                       <span>
                         {t("uploadConceptListModal.unknownCodes", {
-                          context: unresolvedItemsCount,
+                          count: unresolvedItemsCount,
                         })}
                       </span>
                     </Msg>
@@ -209,37 +242,6 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
       </Root>
     </Modal>
   );
-};
-
-const selectUnresolvedItemsCount = (state: StateT) => {
-  const { resolved } = state.uploadConceptListModal;
-
-  return resolved && resolved.unknownCodes && resolved.unknownCodes.length
-    ? resolved.unknownCodes.length
-    : 0;
-};
-
-const selectResolvedItemsCount = (state: StateT) => {
-  const { resolved } = state.uploadConceptListModal;
-
-  return resolved &&
-    resolved.resolvedConcepts &&
-    resolved.resolvedConcepts.length
-    ? resolved.resolvedConcepts.length
-    : 0;
-};
-
-const selectAvailableConceptRootNodes = (state: StateT) => {
-  const { trees } = state.conceptTrees;
-
-  if (!trees) return [];
-
-  return Object.entries(trees)
-    .map(([key, value]) => ({ key, value }))
-    .filter(({ value }) => value.codeListResolvable)
-    .sort((a, b) =>
-      a.value.label.toLowerCase().localeCompare(b.value.label.toLowerCase()),
-    );
 };
 
 export default UploadConceptListModal;

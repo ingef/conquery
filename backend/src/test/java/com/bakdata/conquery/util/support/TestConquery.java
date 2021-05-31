@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.time.Duration;
 import java.util.HashSet;
@@ -16,8 +15,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
@@ -28,6 +25,7 @@ import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.Wait;
@@ -38,7 +36,6 @@ import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.testing.DropwizardTestSupport;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -75,6 +72,8 @@ public class TestConquery {
 	 */
 	@Getter
 	private ExtensionContext beforeAllContext;
+	// Initial user which is set before each test from the config.
+	private User testUser;
 
 	@SneakyThrows
 	public static void configurePathsAndLogging(ConqueryConfig config, File tmpDir) {
@@ -130,9 +129,16 @@ public class TestConquery {
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
 
-		localTmpDir.mkdir();
+		if (!localTmpDir.exists()) {
+			if(!localTmpDir.mkdir()) {
+				throw new IllegalStateException("Could not create directory for Support");
+			}
+		} else {
+			log.info("Reusing existing folder {} for Support", localTmpDir.getPath());
+		}
 
 		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()));
+
 
 		StandaloneSupport support = new StandaloneSupport(
 				this,
@@ -142,7 +148,7 @@ public class TestConquery {
 				localCfg,
 				standaloneCommand.getManager().getAdmin().getAdminProcessor(),
 				// Getting the User from AuthorizationConfig
-				standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser()
+				testUser
 		);
 
 		Wait.builder()
@@ -211,21 +217,26 @@ public class TestConquery {
 	}
 
 	public void afterEach() throws Exception {
-		for (StandaloneSupport openSupport : openSupports) {
-			openSupport.close();
-			removeSupportDataset(openSupport);
+		synchronized (openSupports) {
+			for (StandaloneSupport openSupport : openSupports) {
+				removeSupportDataset(openSupport);
+			}
+			openSupports.clear();
 		}
-		openSupports.clear();
+		this.getStandaloneCommand().getManager().getStorage().clear();
+		waitUntilWorkDone();
 	}
 
 	@SneakyThrows
 	public void removeSupportDataset(StandaloneSupport support) {
-		DatasetId datasetId = support.getDataset().getId();
-		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(datasetId);
+		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(support.getDataset().getId());
 	}
 
 	public void removeSupport(StandaloneSupport support) {
-		openSupports.remove(support);
+		synchronized (openSupports) {
+			openSupports.remove(support);
+			removeSupportDataset(support);
+		}
 	}
 
 	public void waitUntilWorkDone() {
@@ -271,4 +282,8 @@ public class TestConquery {
 		return busy;
 	}
 
+	public void beforeEach() {
+		testUser = standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser();
+		standaloneCommand.getManager().getStorage().updateUser(testUser);
+	}
 }

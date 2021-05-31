@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -42,7 +42,7 @@ import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.ResultCSVResource;
+import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
@@ -119,7 +119,7 @@ public class StoredQueriesProcessorTest {
 		STORAGE.addUser(user);
 
 		for (ManagedExecutionId queryId : allowedQueryIds) {
-			AuthorizationHelper.addPermission(user, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId), STORAGE);
+			AuthorizationHelper.addPermission(user, ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId), STORAGE);
 		}
 
 		return user;
@@ -188,9 +188,9 @@ public class StoredQueriesProcessorTest {
 		status.setSecondaryId(secondaryId); // This is probably not interesting on the overview (only if there is an filter for the search)
 		if(state.equals(DONE)) {
 			status.setResultUrl(URI_BUILDER.clone()
-					.path(ResultCSVResource.class)
+					.path(ResultCsvResource.class)
 					.resolveTemplate(ResourceConstants.DATASET, id.getDataset())
-					.path(ResultCSVResource.class, ResultCSVResource.GET_CSV_PATH_METHOD)
+					.path(ResultCsvResource.class, ResultCsvResource.GET_CSV_PATH_METHOD)
 					.resolveTemplate(ResourceConstants.QUERY, id.toString())
 					.build()
 					.toURL());

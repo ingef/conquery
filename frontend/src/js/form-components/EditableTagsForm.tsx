@@ -2,8 +2,9 @@ import styled from "@emotion/styled";
 import React, { FC, useState, useRef, FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
-import PrimaryButton from "../button/PrimaryButton";
+import IconButton from "../button/IconButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import ReactSelect from "./ReactSelect";
 
@@ -21,8 +22,19 @@ interface ValueT {
   value: string;
 }
 
-const StyledPrimaryButton = styled(PrimaryButton)`
-  margin-top: 5px;
+const Form = styled("form")`
+  display: flex;
+  align-items: flex-start;
+`;
+
+const SxIconButton = styled(IconButton)`
+  padding: 10px 10px;
+  margin-left: 3px;
+`;
+
+const SxReactSelect = styled(ReactSelect)`
+  z-index: 2;
+  flex-grow: 1;
 `;
 
 const EditableTagsForm: FC<PropsT> = ({
@@ -47,8 +59,8 @@ const EditableTagsForm: FC<PropsT> = ({
   }
 
   return (
-    <form ref={ref} className={className} onSubmit={submit}>
-      <ReactSelect
+    <Form ref={ref} className={className} onSubmit={submit}>
+      <SxReactSelect
         creatable
         name="input"
         value={values}
@@ -66,10 +78,15 @@ const EditableTagsForm: FC<PropsT> = ({
           t("common.create") + `: "${inputValue}"`
         }
       />
-      <StyledPrimaryButton type="submit" small disabled={loading}>
-        {t("common.save")}
-      </StyledPrimaryButton>
-    </form>
+      <WithTooltip text={t("common.save")}>
+        <SxIconButton
+          type="submit"
+          frame
+          disabled={loading}
+          icon={loading ? "spinner" : "check"}
+        />
+      </WithTooltip>
+    </Form>
   );
 };
 

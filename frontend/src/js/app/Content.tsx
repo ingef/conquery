@@ -53,7 +53,7 @@ const Content = ({ rightTabs }: ContentPropsT) => {
           <SplitPane
             split="vertical"
             minSize={350}
-            maxSize={-420}
+            maxSize={-300}
             defaultSize="39%"
           >
             <LeftPane />

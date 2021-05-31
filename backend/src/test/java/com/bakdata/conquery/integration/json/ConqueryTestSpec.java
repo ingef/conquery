@@ -121,15 +121,13 @@ public abstract class ConqueryTestSpec {
 	 */
 	@RequiredArgsConstructor
 	private static class DatasetPlaceHolderFiller extends DeserializationProblemHandler {
-		private static final String DATASET_PLACEHOLDER = "${dataset}";
 
 		private final StandaloneSupport support;
 
 		@Override
 		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) throws IOException {
 			IId.Parser parser = IId.<IId<Identifiable<?>>>createParser((Class) targetType);
-			String replaced = valueToConvert.replace(DATASET_PLACEHOLDER, support.getDataset().getId().toString());
-			return parser.parse(replaced);
+			return parser.parsePrefixed(support.getDataset().getId().toString(), valueToConvert);
 		}
 	}
 }

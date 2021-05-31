@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,13 +18,12 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -34,17 +34,21 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter
 @CPSType(id="EXPORT_FORM", base=QueryDescription.class)
-public class ExportForm extends Form implements NamespacedIdentifiableHolding {
+public class ExportForm extends Form {
 
-	@MetaIdRef
+	@NotNull
+	@JsonProperty("queryGroup")
+	private ManagedExecutionId queryGroupId;
+
+	@JsonIgnore
 	private ManagedQuery queryGroup;
 
 	@NotNull @Valid @JsonManagedReference
@@ -66,10 +70,6 @@ public class ExportForm extends Form implements NamespacedIdentifiableHolding {
 		timeMode.visit(visitor);
 	}
 
-	@Override
-	public void collectNamespacedIds(@NonNull Set<NamespacedIdentifiable<?>> ids) {
-		ids.add(queryGroup);
-	}
 
 	@Override
 	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
@@ -82,11 +82,17 @@ public class ExportForm extends Form implements NamespacedIdentifiableHolding {
 
 	@Override
 	public Set<ManagedExecution> collectRequiredQueries() {
+		if(queryGroup == null){
+			return Collections.emptySet();
+		}
+
 		return Set.of(queryGroup);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
+		queryGroup = (ManagedQuery) context.getDatasetRegistry().getMetaRegistry().resolve(queryGroupId);
+
 		timeMode.resolve(context);
 		prerequisite = queryGroup.getQuery();
 

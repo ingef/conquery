@@ -2,6 +2,9 @@ const path = require("path");
 const version = require("../package.json").version;
 const EXPORT_FORM_CONFIG = require("./forms/export-form.json");
 const mockAuthMiddleware = require("./mockAuthMiddleware");
+const Chance = require("chance");
+
+const chance = new Chance();
 
 // Taken from:
 // http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
@@ -44,7 +47,7 @@ module.exports = function (app, port) {
           res.send(JSON.stringify({ id: 1 }));
         }
       }, NO_DELAY);
-    }
+    },
   );
 
   app.delete(
@@ -55,7 +58,7 @@ module.exports = function (app, port) {
         res.setHeader("Content-Type", "application/json");
         res.send(JSON.stringify({ id: 1 }));
       }, SHORT_DELAY);
-    }
+    },
   );
 
   app.get(
@@ -70,9 +73,15 @@ module.exports = function (app, port) {
         if (dice <= 0.1) {
           res.status(422);
           res.send(ERROR);
-        } else if (dice > 0.1 && dice <= 0.5) {
-          res.send(JSON.stringify({ id: 1, status: "RUNNING" }));
-        } else if (dice > 0.5 && dice <= 0.8) {
+        } else if (dice > 0.1 && dice <= 0.9) {
+          res.send(
+            JSON.stringify({
+              id: 1,
+              status: "RUNNING",
+              progress: Math.floor(Math.random() * 10) / 10,
+            }),
+          );
+        } else if (dice > 0.9 && dice <= 0.95) {
           res.send(
             JSON.stringify({
               id: 1,
@@ -83,7 +92,7 @@ module.exports = function (app, port) {
                   adjective: "easy",
                 },
               },
-            })
+            }),
           );
         } else {
           res.send(
@@ -92,11 +101,11 @@ module.exports = function (app, port) {
               status: "DONE",
               numberOfResults: 5,
               resultUrl: `/api/results/results.csv`,
-            })
+            }),
           );
         }
       }, LONG_DELAY);
-    }
+    },
   );
 
   /*
@@ -113,7 +122,7 @@ module.exports = function (app, port) {
           id: "another-empty-set",
           label: "Another empty dataset with a long name",
         },
-      ])
+      ]),
     );
   });
 
@@ -125,7 +134,7 @@ module.exports = function (app, port) {
     mockAuthMiddleware,
     function response(req, res) {
       res.sendFile(path.join(__dirname, `./results/${req.params.filename}`));
-    }
+    },
   );
 
   /*
@@ -136,7 +145,7 @@ module.exports = function (app, port) {
     mockAuthMiddleware,
     function response(req, res) {
       res.sendFile(path.join(__dirname, "./concepts.json"));
-    }
+    },
   );
 
   app.get(
@@ -144,7 +153,7 @@ module.exports = function (app, port) {
     mockAuthMiddleware,
     function response(req, res) {
       res.sendFile(path.join(__dirname, `./concepts/${req.params.id}.json`));
-    }
+    },
   );
 
   /*
@@ -158,14 +167,17 @@ module.exports = function (app, port) {
 
       setTimeout(() => {
         const ids = [];
-        const possibleTags = [
-          "research",
-          "fun",
-          "test",
-          "group 1",
-          "important",
-          "jk",
-          "interesting",
+        const possibleTagsWithProbabilities = [
+          ["research", 0.3],
+          ["fun", 0.02],
+          ["test", 0.02],
+          ["group 1", 0.2],
+          ["group 1 – details", 0.2],
+          ["important", 0.02],
+          ["jk", 0.02],
+          ["interesting", 0.03],
+          ["a rather long tagname", 0.001],
+          ["Another very long long tagname, 2020", 0.001],
         ];
 
         for (var i = 25600; i < 35600; i++) {
@@ -173,13 +185,17 @@ module.exports = function (app, port) {
 
           ids.push({
             id: i,
-            label: Math.random() > 0.7 ? "Saved Query" : null,
+            label: Math.random() > 0.1 ? chance.sentence({ words: 8 }) : null,
             numberOfResults: notExecuted
               ? null
               : Math.floor(Math.random() * 500000),
-            tags: shuffleArray(possibleTags.filter(() => Math.random() < 0.3)),
+            tags: shuffleArray(
+              possibleTagsWithProbabilities
+                .filter(([, prob]) => Math.random() < prob)
+                .map(([tag]) => tag),
+            ),
             createdAt: new Date(
-              Date.now() - Math.floor(Math.random() * 10000000)
+              Date.now() - Math.floor(Math.random() * 10000000),
             ).toISOString(),
             own: Math.random() < 0.1,
             canExpand: Math.random() < 0.8,
@@ -197,7 +213,7 @@ module.exports = function (app, port) {
 
         res.send(JSON.stringify(ids));
       }, LONG_DELAY);
-    }
+    },
   );
 
   app.get(
@@ -207,7 +223,7 @@ module.exports = function (app, port) {
       setTimeout(() => {
         res.sendFile(path.join(__dirname, "./stored-queries/25.json"));
       }, LONG_DELAY);
-    }
+    },
   );
 
   app.patch(
@@ -217,7 +233,7 @@ module.exports = function (app, port) {
       setTimeout(() => {
         res.send(JSON.stringify({}));
       }, LONG_DELAY);
-    }
+    },
   );
 
   app.delete(
@@ -228,7 +244,7 @@ module.exports = function (app, port) {
         res.setHeader("Content-Type", "application/json");
         res.send(JSON.stringify({ id: 1 }));
       }, SHORT_DELAY);
-    }
+    },
   );
 
   app.get(
@@ -239,7 +255,7 @@ module.exports = function (app, port) {
         res.setHeader("Content-Type", "application/json");
         res.send(JSON.stringify(EXPORT_FORM_CONFIG));
       }, SHORT_DELAY);
-    }
+    },
   );
 
   app.post(
@@ -253,10 +269,10 @@ module.exports = function (app, port) {
           JSON.stringify({
             successful: 1 + Math.floor(Math.random() * 200),
             unsuccessful: 586,
-          })
+          }),
         );
       }, LONG_DELAY);
-    }
+    },
   );
 
   app.post(
@@ -294,7 +310,7 @@ module.exports = function (app, port) {
 
         res.send(JSON.stringify(suggestions));
       }, LONG_DELAY);
-    }
+    },
   );
 
   app.post(
@@ -311,7 +327,7 @@ module.exports = function (app, port) {
           resolvedConcepts: concepts.slice(1),
         });
       }, LONG_DELAY);
-    }
+    },
   );
 
   /*
@@ -353,7 +369,7 @@ module.exports = function (app, port) {
           },
         });
       }, LONG_DELAY);
-    }
+    },
   );
 
   app.get("/api/config/frontend", mockAuthMiddleware, (req, res) => {
@@ -381,7 +397,7 @@ module.exports = function (app, port) {
         res.send(
           JSON.stringify({
             message: "Login failed",
-          })
+          }),
         );
       }
     }, 500);
@@ -392,7 +408,7 @@ module.exports = function (app, port) {
 
     res.send({
       userName: "superUser",
-      permissions: {
+      datasetAbilities: {
         imdb: {
           canUpload: true,
         },
@@ -411,10 +427,10 @@ module.exports = function (app, port) {
         res.send(
           JSON.stringify({
             id: 56000 + Math.floor(Math.random() * 200),
-          })
+          }),
         );
       }, LONG_DELAY);
-    }
+    },
   );
 
   app.get(
@@ -457,7 +473,7 @@ module.exports = function (app, port) {
             label: "Saved Config",
             tags: shuffleArray(possibleTags.filter(() => Math.random() < 0.3)),
             createdAt: new Date(
-              Date.now() - Math.floor(Math.random() * 10000000)
+              Date.now() - Math.floor(Math.random() * 10000000),
             ).toISOString(),
             own: Math.random() < 0.1,
             shared: Math.random() < 0.8,
@@ -468,7 +484,7 @@ module.exports = function (app, port) {
 
         res.send(JSON.stringify(configs));
       }, LONG_DELAY);
-    }
+    },
   );
 
   app.get(
@@ -478,7 +494,7 @@ module.exports = function (app, port) {
       setTimeout(() => {
         res.sendFile(path.join(__dirname, "./form-configs/testconf.json"));
       }, LONG_DELAY);
-    }
+    },
   );
 
   app.patch(
@@ -489,7 +505,7 @@ module.exports = function (app, port) {
         res.setHeader("Content-Type", "application/json");
         res.status(200).end();
       }, SHORT_DELAY);
-    }
+    },
   );
 
   app.delete(
@@ -499,6 +515,6 @@ module.exports = function (app, port) {
       setTimeout(() => {
         res.status(204).end();
       }, LONG_DELAY);
-    }
+    },
   );
 };

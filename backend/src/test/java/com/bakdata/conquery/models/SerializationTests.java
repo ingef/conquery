@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
@@ -90,7 +90,7 @@ public class SerializationTests {
 		user
 			.addPermission(
 				storage,
-				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+				ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		Role role = new Role("company", "company");
 		user.addRole(storage, role);
 
@@ -111,7 +111,7 @@ public class SerializationTests {
 		group
 			.addPermission(
 				storage,
-				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+				ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		group.addRole(storage, new Role("company", "company"));
 
 		Role role = new Role("company", "company");
@@ -201,6 +201,11 @@ public class SerializationTests {
 	
 	@Test
 	public void formConfig() throws JSONException, IOException {
+		final CentralRegistry registry = new CentralRegistry();
+
+		final Dataset dataset = new Dataset("test-dataset");
+
+		registry.register(dataset);
 
 		ExportForm form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
@@ -211,9 +216,11 @@ public class SerializationTests {
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
+		formConfig.setDataset(dataset);
 		
 		SerializationTestUtil
 			.forType(FormConfig.class)
+			.registry(registry)
 			.test(formConfig);
 	}
 

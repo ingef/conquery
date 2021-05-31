@@ -20,19 +20,27 @@ const WithTooltip: FC<PropsT> = ({
 }) => {
   if (!text && !html) return <>{children}</>;
 
+  const delayProps = {
+    // For some reason, supplying delay as an array is the only way
+    // to get the hide delay to work. The types seem to be outdated.
+    // Check this for further info:
+    // https://github.com/tvkhoa/react-tippy/issues/52#issuecomment-406419701
+    delay: lazy ? (([1000, 0] as unknown) as number) : 0,
+    // So this doesn't work, but let's supply it anyways:
+    hideDelay: 0,
+  };
+
   return (
     <Tooltip
       className={className}
       position={place || "top"}
       arrow={true}
       duration={0}
-      delay={lazy ? 1000 : 0}
-      hideDelay={0}
       hideDuration={0}
       title={text}
       html={html}
       theme="light"
-      interactive
+      {...delayProps}
     >
       {children}
     </Tooltip>
