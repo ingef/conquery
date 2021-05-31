@@ -160,7 +160,7 @@ public class SuccinctTrie extends Dictionary {
 		selectZeroCache[1] = 1;
 
 		for (HelpNode node : nodesInOrder) {
-			position+=node.children.size();
+			position += node.children.size();
 			zeroesWritten++;
 			selectZeroCache[zeroesWritten] = position;
 			position++;
@@ -207,10 +207,6 @@ public class SuccinctTrie extends Dictionary {
 		return nodesInOrder;
 	}
 
-	private int select0(int positionForZero) {
-		return selectZeroCache[positionForZero];
-	}
-
 	@Override
 	@JsonIgnore
 	public int getId(byte[] value) {
@@ -230,9 +226,9 @@ public class SuccinctTrie extends Dictionary {
 		for (byte val : value) {
 			// check for fitting child
 
-			int firstChildNode = select0(node + 1) - node;
+			int firstChildNode = findStart(node);
 			// get the first child of the next node
-			int lastChild = select0(node + 1 + 1) - (node + 1);
+			int lastChild = findStart(node +  1);
 
 			node = childIdWithKey(firstChildNode, lastChild, val);
 
@@ -243,6 +239,10 @@ public class SuccinctTrie extends Dictionary {
 		}
 		// node has a value
 		return lookup[node];
+	}
+
+	public int findStart(int node) {
+		return selectZeroCache[node + 1] - node;
 	}
 
 	private HelpNode findChildWithKey(HelpNode node, byte val) {

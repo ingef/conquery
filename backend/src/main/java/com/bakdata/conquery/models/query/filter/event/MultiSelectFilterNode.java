@@ -1,10 +1,13 @@
 package com.bakdata.conquery.models.query.filter.event;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -18,7 +21,6 @@ import lombok.Setter;
  */
 public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
-	private final int[] selectedValues;
 
 	@NotNull
 	@Getter
@@ -28,23 +30,46 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	public MultiSelectFilterNode(Column column, String[] filterValue) {
 		super(filterValue);
 		this.column = column;
-		this.selectedValues = new int[filterValue.length];
+		selectedValuesCache = new ConcurrentHashMap<>();
 	}
+
+	private MultiSelectFilterNode(Column column, String[] filterValue, ConcurrentMap<Import, int[]> cache) {
+		this(column, filterValue);
+		selectedValuesCache = cache;
+	}
+
+	/**
+	 * Shared between all executing Threads to maximize utilization.
+	 */
+	private ConcurrentMap<Import, int[]> selectedValuesCache;
+	private int[] selectedValues;
 
 	@Override
 	public void nextBlock(Bucket bucket) {
+		selectedValues = selectedValuesCache.computeIfAbsent(bucket.getImp(),imp -> findIds(bucket, filterValue));
+	}
+
+	private int[] findIds(Bucket bucket, String[] values) {
+		int[] selectedValues = new int[values.length];
+
 		StringStore type = (StringStore) bucket.getStore(getColumn());
 
-		for (int index = 0; index < filterValue.length; index++) {
-			String select = filterValue[index];
+		for (int index = 0; index < values.length; index++) {
+			String select = values[index];
 			int parsed = type.getId(select);
 			selectedValues[index] = parsed;
 		}
+
+		return selectedValues;
 	}
 
 
 	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
+		if(selectedValues == null){
+			throw new IllegalStateException("No selected values  wer set.");
+		}
+
 		if (!bucket.has(event, getColumn())) {
 			return false;
 		}
@@ -62,7 +87,8 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 	@Override
 	public MultiSelectFilterNode doClone(CloneContext ctx) {
-		return new MultiSelectFilterNode(getColumn(), filterValue);
+		// We reuse the cache
+		return new MultiSelectFilterNode(getColumn(), filterValue, selectedValuesCache);
 	}
 
 	@Override
