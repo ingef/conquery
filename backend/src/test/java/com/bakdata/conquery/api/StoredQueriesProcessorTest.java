@@ -179,6 +179,7 @@ public class StoredQueriesProcessorTest {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 
 		final ManagedQuery execMock = new ManagedQuery() {{
+			setDataset(DATASET_0);
 			setQueryId(id.getExecution());
 		}};
 
@@ -194,13 +195,11 @@ public class StoredQueriesProcessorTest {
 		status.setQueryType(typeLabel);
 		status.setSecondaryId(secondaryId); // This is probably not interesting on the overview (only if there is an filter for the search)
 		if(state.equals(DONE)) {
-			final UriBuilder clone = URI_BUILDER.clone();
-
 			status.setResultUrls(List.of(
-					ResultCsvResource.getDownloadURL(clone, execMock),
-					ResultExcelResource.getDownloadURL(clone, execMock),
-					ResultArrowFileResource.getDownloadURL(clone, execMock),
-					ResultArrowStreamResource.getDownloadURL(clone, execMock)));
+					ResultCsvResource.getDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultExcelResource.getDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultArrowFileResource.getDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultArrowStreamResource.getDownloadURL(URI_BUILDER.clone(), execMock)));
 		}
 
 		return status;
