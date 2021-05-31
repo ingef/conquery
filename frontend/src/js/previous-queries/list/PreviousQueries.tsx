@@ -1,10 +1,11 @@
 import styled from "@emotion/styled";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FixedSizeList } from "react-window";
 
 import { DatasetIdT } from "../../api/types";
 
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
+import EditPreviousQueryFoldersModal from "./EditPreviousQueryFoldersModal";
 import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
 import SharePreviousQueryModal from "./SharePreviousQueryModal";
 import { PreviousQueryT } from "./reducer";
@@ -13,6 +14,8 @@ interface PropsT {
   datasetId: DatasetIdT | null;
   queries: PreviousQueryT[];
 }
+
+const ROW_SIZE = 62;
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -28,21 +31,14 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
   const [previousQueryToShare, setPreviousQueryToShare] = useState<
     string | null
   >(null);
+  const [
+    previousQueryToEditFolders,
+    setPreviousQueryToEditFolders,
+  ] = useState<PreviousQueryT | null>(null);
 
-  const onCloseDeleteModal = () => {
-    setPreviousQueryToDelete(null);
-  };
-  const onCloseShareModal = () => {
-    setPreviousQueryToShare(null);
-  };
-
-  function onShareSuccess() {
-    onCloseShareModal();
-  }
-
-  function onDeleteSuccess() {
-    onCloseDeleteModal();
-  }
+  const onCloseDeleteModal = () => setPreviousQueryToDelete(null);
+  const onCloseShareModal = () => setPreviousQueryToShare(null);
+  const onCloseEditFoldersModal = () => setPreviousQueryToEditFolders(null);
 
   const container = useRef<HTMLDivElement | null>(null);
   const height = useRef<number>(0);
@@ -67,19 +63,27 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
         <SharePreviousQueryModal
           previousQueryId={previousQueryToShare}
           onClose={onCloseShareModal}
-          onShareSuccess={onShareSuccess}
+          onShareSuccess={onCloseShareModal}
         />
       )}
       {!!previousQueryToDelete && (
         <DeletePreviousQueryModal
           previousQueryId={previousQueryToDelete}
           onClose={onCloseDeleteModal}
-          onDeleteSuccess={onDeleteSuccess}
+          onDeleteSuccess={onCloseDeleteModal}
+        />
+      )}
+      {!!previousQueryToEditFolders && (
+        <EditPreviousQueryFoldersModal
+          previousQuery={previousQueryToEditFolders}
+          onClose={onCloseEditFoldersModal}
+          onEditSuccess={onCloseEditFoldersModal}
         />
       )}
       {datasetId && (
         <FixedSizeList
-          itemSize={85}
+          key={queries.length}
+          itemSize={ROW_SIZE}
           itemCount={queries.length}
           height={height.current}
           width="100%"
@@ -95,6 +99,9 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
                   }
                   onIndicateShare={() =>
                     setPreviousQueryToShare(queries[index].id)
+                  }
+                  onIndicateEditFolders={() =>
+                    setPreviousQueryToEditFolders(queries[index])
                   }
                 />
               </Container>

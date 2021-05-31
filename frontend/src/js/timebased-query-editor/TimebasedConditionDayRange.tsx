@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import InputText from "../form-components/InputText";
+import InputPlain from "../form-components/InputPlain";
 
 const Container = styled("div")`
   width: 100%;
@@ -12,16 +12,16 @@ const Container = styled("div")`
   justify-content: center;
 `;
 
-const StyledInputText = styled(InputText)`
+const SxInputPlain = styled(InputPlain)`
   padding: 0 5px;
 `;
 
-type PropsType = {
+interface PropsType {
   minDays?: number | string | null;
   maxDays?: number | string | null;
   onSetTimebasedConditionMinDays: Function;
   onSetTimebasedConditionMaxDays: Function;
-};
+}
 
 const TimebasedConditionDayRange = (props: PropsType) => {
   const { t } = useTranslation();
@@ -29,7 +29,7 @@ const TimebasedConditionDayRange = (props: PropsType) => {
   return (
     <Container>
       {props.minDays !== undefined && (
-        <StyledInputText
+        <SxInputPlain
           inputType="number"
           input={{
             value: props.minDays,
@@ -42,7 +42,7 @@ const TimebasedConditionDayRange = (props: PropsType) => {
         />
       )}
       {props.maxDays !== undefined && (
-        <StyledInputText
+        <SxInputPlain
           inputType="number"
           input={{
             value: props.maxDays,

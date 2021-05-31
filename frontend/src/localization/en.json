@@ -115,6 +115,10 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Should this query be deleted?"
   },
+  "deletePreviousQueryFolderModal": {
+    "areYouSure": "Are you sure you want to delete this folder?",
+    "description": "All queries will remain stored, but will be removed from this folder."
+  },
   "sharePreviousQueryModal": {
     "headline": "Sharing query: ",
     "groupsLabel": "Groups to share the query with",
@@ -208,7 +212,8 @@
     "renameError": "Could not rename query",
     "retagError": "Could not save folders",
     "shareError": "Could not share query",
-    "deleteError": "Could not delete query"
+    "deleteError": "Could not delete query",
+    "editFolders": "Edit folders"
   },
   "previousQueriesFilter": {
     "all": "All",
@@ -386,6 +391,14 @@
   "conceptTreesOpen": {
     "resetAll": "Back to default view",
     "closeAll": "Close all concepts"
+  },
+  "folders": {
+    "headline": "Folders",
+    "noFolders": "none",
+    "allQueries": "All"
+  },
+  "editPreviousQueryFoldersModal": {
+    "headline": "Edit folders"
   },
   "help": {
     "tabConceptTrees": "Select concepts from concepts trees and use them in the Editor and Form Editor",

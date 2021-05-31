@@ -167,14 +167,17 @@ module.exports = function (app, port) {
 
       setTimeout(() => {
         const ids = [];
-        const possibleTags = [
-          "research",
-          "fun",
-          "test",
-          "group 1",
-          "important",
-          "jk",
-          "interesting",
+        const possibleTagsWithProbabilities = [
+          ["research", 0.3],
+          ["fun", 0.02],
+          ["test", 0.02],
+          ["group 1", 0.2],
+          ["group 1 – details", 0.2],
+          ["important", 0.02],
+          ["jk", 0.02],
+          ["interesting", 0.03],
+          ["a rather long tagname", 0.001],
+          ["Another very long long tagname, 2020", 0.001],
         ];
 
         for (var i = 25600; i < 35600; i++) {
@@ -186,7 +189,11 @@ module.exports = function (app, port) {
             numberOfResults: notExecuted
               ? null
               : Math.floor(Math.random() * 500000),
-            tags: shuffleArray(possibleTags.filter(() => Math.random() < 0.3)),
+            tags: shuffleArray(
+              possibleTagsWithProbabilities
+                .filter(([, prob]) => Math.random() < prob)
+                .map(([tag]) => tag),
+            ),
             createdAt: new Date(
               Date.now() - Math.floor(Math.random() * 10000000),
             ).toISOString(),

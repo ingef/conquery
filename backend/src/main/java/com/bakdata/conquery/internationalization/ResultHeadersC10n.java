@@ -16,6 +16,11 @@ public interface ResultHeadersC10n {
 	@En("dates")
 	@De("Datumswerte")
 	String dates();
+
+	@En("event_duration")
+	@De("Anzahl relevanter Tage")
+	String eventDuration();
+
 	
 	@En("event_date")
 	@De("Indexdatum")

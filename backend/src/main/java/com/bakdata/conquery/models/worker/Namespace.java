@@ -34,12 +34,13 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-@ToString(of = "storage")
+@ToString(onlyExplicitlyIncluded = true)
 public class Namespace implements Closeable {
 
 	@JsonIgnore
 	private transient ObjectWriter objectWriter;
 	@JsonIgnore
+	@ToString.Include
 	private transient NamespaceStorage storage;
 
 	@JsonIgnore
@@ -152,6 +153,18 @@ public class Namespace implements Closeable {
 		catch (IOException e) {
 			log.error("Unable to close namespace storage of {}.", this, e);
 		}
+	}
+
+	public void remove() {
+		try {
+			jobManager.close();
+		}
+		catch (Exception e) {
+			log.error("Unable to close namespace jobmanager of {}", this, e);
+		}
+
+		log.info("Removing namespace storage of {}", getStorage().getDataset().getId());
+		storage.removeStorage();
 	}
 
 	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {
