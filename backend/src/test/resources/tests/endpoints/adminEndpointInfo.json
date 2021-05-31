@@ -55,6 +55,11 @@
 		"path": "/datasets/{dataset}/imports",
 		"clazz": "AdminDatasetResource"
 	},
+	{
+		"method": "POST",
+		"path": "/datasets/{dataset}/cqpp",
+		"clazz": "AdminDatasetResource"
+	},
     {
       "method": "POST",
       "path": "/datasets/{dataset}/tables",

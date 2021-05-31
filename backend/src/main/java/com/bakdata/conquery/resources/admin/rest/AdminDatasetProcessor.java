@@ -130,7 +130,7 @@ public class AdminDatasetProcessor {
 		final List<Column> dependents = namespace.getStorage().getTables().stream()
 				.map(Table::getColumns).flatMap(Arrays::stream)
 				.filter(column -> column.getSecondaryId() != null)
-				.filter(column -> column.getSecondaryId().getId().equals(secondaryId))
+				.filter(column -> column.getSecondaryId().equals(secondaryId))
 				.collect(Collectors.toList());
 
 		if (!dependents.isEmpty()) {
