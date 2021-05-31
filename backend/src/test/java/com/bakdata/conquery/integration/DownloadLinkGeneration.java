@@ -48,6 +48,10 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		conquery.getMetaStorage().addExecution(exec);
 
+		user.addPermission(
+				conquery.getMetaStorage(),
+				DatasetPermission.onInstance(Set.of(Ability.READ), conquery.getDataset().getId()));
+
 		{
 			// Try to generate a download link: should not be possible, because the execution isn't run yet
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
@@ -63,10 +67,10 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		}
 
 		{			
-			// Add permissions: now it should be possible
+			// Add permission to download: now it should be possible
 			user.addPermission(
 				conquery.getMetaStorage(),
-				DatasetPermission.onInstance(Set.of(Ability.READ, Ability.DOWNLOAD), conquery.getDataset().getId()));
+				DatasetPermission.onInstance(Set.of(Ability.DOWNLOAD), conquery.getDataset().getId()));
 
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here

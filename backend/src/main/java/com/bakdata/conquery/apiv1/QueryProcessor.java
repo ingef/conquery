@@ -189,7 +189,6 @@ public class QueryProcessor {
 
 	public FullExecutionStatus cancel(User user, Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
 		// TODO implement query cancel functionality
-		user.authorize(query, Ability.CANCEL);
 		return null;
 	}
 

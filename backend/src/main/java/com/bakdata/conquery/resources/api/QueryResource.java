@@ -21,6 +21,7 @@ import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -32,9 +33,12 @@ import lombok.extern.slf4j.Slf4j;
 @Consumes(AdditionalMediaTypes.JSON)
 @Produces(AdditionalMediaTypes.JSON)
 @Slf4j
-public class QueryResource extends HDatasets {
+public class QueryResource {
 
 	private final QueryProcessor processor;
+
+	@Context
+	protected HttpServletRequest servletRequest;
 
 	@Inject
 	public QueryResource(QueryProcessor processor) {
@@ -43,7 +47,10 @@ public class QueryResource extends HDatasets {
 
 	@POST
 	public Response postQuery(@Auth User user, @PathParam(DATASET) Dataset dataset, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
+
 		log.info("Query posted on dataset {} by user {} ({}).", dataset.getId(), user.getId(), user.getName());
+
+		user.authorize(dataset, Ability.READ);
 
 		return Response.ok(
 				processor.postQuery(
@@ -61,6 +68,9 @@ public class QueryResource extends HDatasets {
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query) {
 
+		user.authorize(dataset, Ability.READ);
+		user.authorize(query, Ability.CANCEL);
+
 		return processor.cancel(
 				user,
 				dataset,
@@ -73,6 +83,8 @@ public class QueryResource extends HDatasets {
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders)
 			throws InterruptedException {
+
+		user.authorize(dataset, Ability.READ);
 
 		query.awaitDone(1, TimeUnit.SECONDS);
 

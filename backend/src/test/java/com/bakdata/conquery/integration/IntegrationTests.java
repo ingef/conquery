@@ -89,7 +89,7 @@ public class IntegrationTests {
 			.SCAN_RESULT
 			.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 			.filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
-				.filter(info -> info.getSimpleName().equals(DownloadLinkGeneration.class.getSimpleName()))
+				//.filter(info -> info.getSimpleName().equals(DownloadLinkGeneration.class.getSimpleName()))
 			.loadClasses();
 
 		return programmatic
