@@ -116,13 +116,6 @@ public class AdminUIResource extends HAdmin {
 		}
 	}
 
-
-	@GET
-	@Path("datasets")
-	public View getDatasets() {
-		return new UIView<>("datasets.html.ftl", uiProcessor.getUIContext(), processor.getDatasetRegistry().getAllDatasets());
-	}
-
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Path("/jobs/{" + JOB_ID + "}/cancel")
