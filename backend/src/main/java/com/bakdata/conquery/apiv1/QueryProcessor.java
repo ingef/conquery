@@ -53,8 +53,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public FullExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user) {
-		user.authorize(dataset, Ability.READ);
+	public FullExecutionStatus postQuery(Dataset dataset, QueryDescription query, UriBuilder urlb, User user, boolean allProviders) {
 
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
@@ -92,7 +91,7 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final FullExecutionStatus status = tryReuse(query, executionId, user, datasetRegistry, config, urlb);
+			final FullExecutionStatus status = tryReuse(query, executionId, user, datasetRegistry, config, urlb, allProviders);
 
 			if (status != null) {
 				return status;
@@ -107,10 +106,10 @@ public class QueryProcessor {
 		}
 
 		// return status
-		return getStatus(mq, urlb, user);
+		return getStatus(mq, urlb, user, allProviders);
 	}
 
-	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, User user, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb) {
+	private FullExecutionStatus tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, User user, DatasetRegistry datasetRegistry, ConqueryConfig config, UriBuilder urlb, boolean allProviders) {
 
 		// If this is only a re-executing query, execute the underlying query instead.
 		if (maybeId.isEmpty()) {
@@ -138,7 +137,7 @@ public class QueryProcessor {
 			}
 		}
 
-		FullExecutionStatus status = getStatus(execution, urlb, user);
+		FullExecutionStatus status = getStatus(execution, urlb, user, allProviders);
 
 		ExecutionState state = status.getStatus();
 		if (state.equals(ExecutionState.RUNNING)) {
@@ -150,7 +149,7 @@ public class QueryProcessor {
 
 		ExecutionManager.execute(datasetRegistry, execution, config);
 
-		return getStatus(execution, urlb, user);
+		return getStatus(execution, urlb, user, allProviders);
 
 	}
 
@@ -178,12 +177,12 @@ public class QueryProcessor {
 		}
 	}
 
-	public FullExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user) {
+	public FullExecutionStatus getStatus(ManagedExecution<?> query, UriBuilder urlb, User user, boolean allProviders) {
 		query.initExecutable(datasetRegistry, config);
 		final Map<DatasetId, Set<Ability>> datasetAbilities = AuthorizationHelper.buildDatasetAbilityMap(user, datasetRegistry);
 		final FullExecutionStatus status = query.buildStatusFull(storage, urlb, user, datasetRegistry, datasetAbilities);
 		if (query.isReadyToDownload(datasetAbilities)){
-			setDownloadUrls(status, config.getResultProviders(), query, urlb);
+			setDownloadUrls(status, config.getResultProviders(), query, urlb, allProviders);
 		}
 		return status;
 	}
