@@ -195,8 +195,8 @@ public class StoredQueriesProcessorTest {
 		status.setSecondaryId(secondaryId); // This is probably not interesting on the overview (only if there is an filter for the search)
 		if(state.equals(DONE)) {
 			status.setResultUrls(List.of(
-					ResultCsvResource.getDownloadURL(URI_BUILDER.clone(), execMock),
 					ResultExcelResource.getDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultCsvResource.getDownloadURL(URI_BUILDER.clone(), execMock),
 					ResultArrowFileResource.getDownloadURL(URI_BUILDER.clone(), execMock),
 					ResultArrowStreamResource.getDownloadURL(URI_BUILDER.clone(), execMock)));
 		}
