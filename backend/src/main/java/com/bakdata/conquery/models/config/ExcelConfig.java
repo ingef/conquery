@@ -6,8 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.With;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFDataFormat;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -43,7 +45,7 @@ public class ExcelConfig {
 	private Map<String, CellStyler> styles = Collections.emptyMap();
 
 
-	public ImmutableMap<String, CellStyle> generateStyles(XSSFWorkbook workbook){
+	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook){
 		ImmutableMap.Builder<String, CellStyle> styles = ImmutableMap.builder();
 
 		// Build configured styles
@@ -79,8 +81,8 @@ public class ExcelConfig {
 
 		private String dataFormatString = null;
 
-		private CellStyle generateStyle(XSSFWorkbook workbook) {
-			XSSFDataFormat dataFormat = workbook.createDataFormat();
+		private CellStyle generateStyle(SXSSFWorkbook workbook) {
+			DataFormat dataFormat = workbook.createDataFormat();
 			CellStyle style = workbook.createCellStyle();
 			if (fillPattern != null){
 				style.setFillPattern(fillPattern);
@@ -94,7 +96,7 @@ public class ExcelConfig {
 			}
 
 			if (fontHeightInPoints != null || bold != null) {
-				XSSFFont xFont = workbook.createFont();
+				Font xFont = workbook.createFont();
 				xFont.setFontName(font);
 				if (fontHeightInPoints != null) {
 					xFont.setFontHeightInPoints(fontHeightInPoints);
