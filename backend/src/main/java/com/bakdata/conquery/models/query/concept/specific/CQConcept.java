@@ -174,9 +174,9 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
 
-			Set<Aggregator<CDateSet>> eventDateUnionAggregators =
-					aggregateEventDates ? Set.of(new EventDateUnionAggregator(Set.of(table.getConnector().getTable())))
-										: Collections.emptySet();
+			List<Aggregator<CDateSet>> eventDateUnionAggregators =
+					aggregateEventDates ? List.of(new EventDateUnionAggregator(Set.of(table.getConnector().getTable())))
+										: Collections.emptyList();
 
 			aggregators.addAll(eventDateUnionAggregators);
 

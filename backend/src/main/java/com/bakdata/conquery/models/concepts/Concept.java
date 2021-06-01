@@ -90,7 +90,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	/**
 	 * Allows concepts to create their own altered FiltersNode if necessary.
 	 */
-	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, Set<Aggregator<CDateSet>> eventDateAggregators) {
+	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
 		if (filters.isEmpty() && aggregators.isEmpty()) {
 			return new Leaf();
 		}

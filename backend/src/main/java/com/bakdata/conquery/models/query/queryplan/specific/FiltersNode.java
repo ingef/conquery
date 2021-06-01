@@ -40,10 +40,10 @@ public class FiltersNode extends QPNode {
 
 
 	@Setter(AccessLevel.PRIVATE)
-	private Set<Aggregator<CDateSet>> eventDateAggregators;
+	private List<Aggregator<CDateSet>> eventDateAggregators;
 
 
-	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, Set<Aggregator<CDateSet>> eventDateAggregators) {
+	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
 		if (filters.isEmpty() && aggregators.isEmpty()) {
 			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
 		}
