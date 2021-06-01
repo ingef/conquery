@@ -199,6 +199,7 @@ public class ArrowRenderer {
             vector.setIndexDefined(rowNumber);
         };
     }
+
     private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer, Function<Object[], List<?>> resultExtractor){
         // This is not used at the moment see ResultType.ListT::getArrowFieldType
         return (rowNumber, line) -> {
@@ -212,7 +213,7 @@ public class ArrowRenderer {
             int start = vector.startNewValue(rowNumber);
             for (int i = 0; i < values.size(); i++) {
                 // These short lived one value arrays are a workaround at the moment
-                nestedConsumer.accept(start + i, new Object[] {values.get(i)});
+                nestedConsumer.accept(Math.addExact(start, i), new Object[] {values.get(i)});
             }
 
             // Workaround for https://issues.apache.org/jira/browse/ARROW-8842
