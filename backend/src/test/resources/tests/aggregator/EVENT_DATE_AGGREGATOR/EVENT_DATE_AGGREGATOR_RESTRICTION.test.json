@@ -22,7 +22,7 @@
                         "selects": "con.geschlecht_connector.event-date"
                     }
                 ],
-				"selects": "con.geschlecht_connector.event-date"
+				"selects": "con.event-date"
             }
         }
     },
