@@ -13,6 +13,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -36,12 +39,15 @@ import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.IteratorUtils;
 
 /**
  * Store for big files. Files are stored in chunks of 100MB, it therefore requires two stores: one for metadata maintained in {@link BigStoreMetaKeys} the other for the data. BigStoreMeta contains a list of {@link UUID} which describe a single value in the store, to be read in order.
  */
 @Getter
+@Slf4j
 public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 	private final SerializingStore<KEY, BigStoreMetaKeys> metaStore;
@@ -111,11 +117,23 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		return createValue(key, meta);
 	}
 
+	@SneakyThrows//TODO properly handle this InterruptedException
 	@Override
 	public IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
-		return metaStore.forEach((key, value) -> {
-			consumer.accept(key, createValue(key, value));
+		final ExecutorService service = Executors.newWorkStealingPool();
+
+
+		final IterationStatistic statistic = metaStore.forEach((key, value) -> {
+			service.submit(() -> consumer.accept(key, createValue(key, value)));
 		});
+
+		service.shutdown();
+
+		while(!service.awaitTermination(30, TimeUnit.SECONDS)){
+			log.debug("Still waiting for {} to load.", this);
+		}
+
+		return statistic;
 	}
 
 	@Override

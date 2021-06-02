@@ -191,7 +191,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Iterates a given consumer over the entries of this store.
 	 * Depending on the {@link XodusStoreFactory} corrupt entries may be dump to a file and/or removed from the store.
 	 * These entries are not submitted to the consumer.
-	 *
 	 */
 	@SneakyThrows
 	@Override
@@ -201,87 +200,105 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		final ExecutorService service = Executors.newWorkStealingPool();
 
+
 		List<CompletableFuture<?>> futures = new ArrayList<>();
 
 		store.forEach((rawKey, rawValue) -> {
 			result.incrTotalProcessed();
 
+			// We receive key/value from an IO thread, and deserialize them asynchronously.
+			// Read-errors are expected we log and dump the values, then move on.
+
 			final CompletableFuture<KEY> futureKey =
-					CompletableFuture.supplyAsync(() -> {
-						if (log.isTraceEnabled()) {
-							log.trace("Reading Key `{}`", new String(rawKey.getBytesUnsafe()));
-						}
+					CompletableFuture.supplyAsync(
+							() -> {
+								if (log.isTraceEnabled()) {
+									log.trace("Reading Key `{}`", new String(rawKey.getBytesUnsafe()));
+								}
+								return readKey(rawKey);
+							}, service)
+									 .exceptionally(
+											 exc -> {
+												 log.warn("Could not parse Key `{}`", new String(rawKey.getBytesUnsafe()), log.isTraceEnabled() ? exc : null);
 
-						return readKey(rawKey);
-					}, service);
+												 result.incrFailedKeys();
+												 unreadables.add(rawKey);
 
-			final CompletableFuture<KEY> failedKey = futureKey.whenCompleteAsync(
-					(ignored, exc) -> {
-						if (exc == null) {
-							return;
-						}
-						log.warn("Could not parse Key `{}`", new String(rawKey.getBytesUnsafe()), log.isTraceEnabled() ? exc : null);
-
-						result.incrFailedKeys();
-						unreadables.add(rawKey);
-					});
+												 return null;
+											 });
 
 
 			final CompletableFuture<VALUE> futureValue =
-					CompletableFuture.supplyAsync(() -> {
-						if (log.isTraceEnabled()) {
-							log.trace("Reading Value for Key `{}`", new String(rawKey.getBytesUnsafe()));
-						}
+					CompletableFuture.supplyAsync(
+							() -> {
+								if (log.isTraceEnabled()) {
+									log.trace("Reading Value for Key `{}`", new String(rawKey.getBytesUnsafe()));
+								}
 
-						return readValue(rawValue);
-					}, service);
+								return readValue(rawValue);
+							},
+							service
+					)
+									 .exceptionally(
+											 exc -> {
+												 // When we cannot read the value, we dump it using dumpToFile
+												 final String keyOfDump = new String(rawKey.getBytesUnsafe());
 
-			final CompletableFuture<VALUE> failedValue = futureValue.whenCompleteAsync(
-					(ignored, exc) -> {
-						if (exc == null) {
-							return;
-						}
-						final String keyOfDump = new String(rawKey.getBytesUnsafe());
+												 log.warn("Could not parse Value for Key `{}`", keyOfDump, log.isTraceEnabled() ? exc : null);
 
-						log.warn("Could not parse Value for Key `{}`", keyOfDump, log.isTraceEnabled() ? exc : null);
+												 result.incrFailedValues();
 
-						result.incrFailedValues();
+												 unreadables.add(rawKey);
 
-						unreadables.add(rawKey);
+												 dumpToFile(rawValue, keyOfDump, unreadableValuesDumpDir, storeInfo.getName(), objectMapper);
 
-						dumpToFile(rawValue, keyOfDump, unreadableValuesDumpDir, storeInfo.getName(), objectMapper);
-					});
+												 return null;
+											 });
 
+			// Our providers return null on exception (the only effective way of shadowing exceptions), we therefore only pass on valid non-null key/value-pairs
 			final CompletableFuture<Void> combined =
-					futureKey.thenAcceptBothAsync(futureValue, consumer, service)
-							 .whenCompleteAsync(
-									 (ignored, exc) -> {
-										 if (exc == null) {
-											 return;
-										 }
+					futureKey.thenAcceptBothAsync(
+							futureValue,
+							(key, value) -> {
+								if (key != null && value != null) {
+									consumer.accept(key, value);
+								}
 
-										 log.warn("Unable to apply for-each consumer on Key {}", new String(rawKey.getBytesUnsafe()), exc);
+							}, service
+					)
+							 .exceptionally(
+									 exc -> {
+										 // Exceptions here are serious, as they happen in our users and not us.
+										 //TODO maybe don't catch them?
+										 log.error("Unable to apply for-each consumer on Key {}", new String(rawKey.getBytesUnsafe()), exc);
 										 unreadables.add(rawKey);
-									 }
-									 , service);
 
-			futures.addAll(List.of(futureKey, futureValue, combined, failedValue, failedKey));
+										 return null;
+									 });
+
+			// We gather all futures into a list to join on them
+			futures.add(combined);
 
 		});
 
-		// await all futures.
+		log.trace("All jobs submitted, waiting for {}", futures.size());
+
+		// Wait for completion of all futures (exceptionally or not does not bother us here)
 		futures.forEach(CompletableFuture::join);
 
+		// Shutdown the service and await properly
 		service.shutdown();
-		//TODO better wait
-		service.awaitTermination(1, TimeUnit.DAYS);
+
+		while (!service.awaitTermination(30, TimeUnit.SECONDS)) {
+			log.debug("Still waiting for {} loaders to finish.", this);
+		}
 
 		// Print some statistics
 		int total = result.getTotalProcessed();
 		log.debug(
 				String.format(
 						"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
-						this.storeInfo.getName(),
+						storeInfo.getName(),
 						total,
 						result.getFailedKeys(),
 						total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
@@ -289,7 +306,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 						total > 0 ? (float) result.getFailedValues() / total * 100 : 0
 				));
 
-		// Remove corrupted entries from the store if configured so
+		// Remove corrupted entries from the store if configured
 		if (removeUnreadablesFromUnderlyingStore) {
 			log.warn("Removing {} unreadable elements from the store {}.", unreadables.size(), storeInfo.getName());
 			unreadables.forEach(store::remove);
