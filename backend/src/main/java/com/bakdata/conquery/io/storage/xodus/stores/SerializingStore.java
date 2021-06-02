@@ -191,6 +191,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Iterates a given consumer over the entries of this store.
 	 * Depending on the {@link XodusStoreFactory} corrupt entries may be dump to a file and/or removed from the store.
 	 * These entries are not submitted to the consumer.
+	 *
 	 */
 	@SneakyThrows
 	@Override
@@ -198,16 +199,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		IterationStatistic result = new IterationStatistic();
 		Set<ByteIterable> unreadables = new HashSet<>();
 
-		final ExecutorService service = Executors.newCachedThreadPool();
+		final ExecutorService service = Executors.newWorkStealingPool();
 
 		List<CompletableFuture<?>> futures = new ArrayList<>();
-
-		log.info("Begin reading store");
 
 		store.forEach((rawKey, rawValue) -> {
 			result.incrTotalProcessed();
 
-			// Try to read the key first
 			final CompletableFuture<KEY> futureKey =
 					CompletableFuture.supplyAsync(() -> {
 						if (log.isTraceEnabled()) {
@@ -215,16 +213,18 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 						}
 
 						return readKey(rawKey);
-					}, service)
-									 .exceptionally(
-											 (exc) -> {
-												 log.warn("Could not parse Key `{}`", new String(rawKey.getBytesUnsafe()), exc);
+					}, service);
 
-												 result.incrFailedKeys();
-												 unreadables.add(rawKey);
+			final CompletableFuture<KEY> failedKey = futureKey.whenCompleteAsync(
+					(ignored, exc) -> {
+						if (exc == null) {
+							return;
+						}
+						log.warn("Could not parse Key `{}`", new String(rawKey.getBytesUnsafe()), log.isTraceEnabled() ? exc : null);
 
-												 return null;
-											 });
+						result.incrFailedKeys();
+						unreadables.add(rawKey);
+					});
 
 
 			final CompletableFuture<VALUE> futureValue =
@@ -234,34 +234,38 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 						}
 
 						return readValue(rawValue);
-					}, service)
-									 .exceptionally(
-											 (exc) -> {
-												 final String keyOfDump = new String(rawKey.getBytesUnsafe());
+					}, service);
 
-												 log.warn("Could not parse Value for Key `{}`", keyOfDump, exc);
+			final CompletableFuture<VALUE> failedValue = futureValue.whenCompleteAsync(
+					(ignored, exc) -> {
+						if (exc == null) {
+							return;
+						}
+						final String keyOfDump = new String(rawKey.getBytesUnsafe());
 
-												 result.incrFailedValues();
+						log.warn("Could not parse Value for Key `{}`", keyOfDump, log.isTraceEnabled() ? exc : null);
 
-												 unreadables.add(rawKey);
+						result.incrFailedValues();
 
-												 dumpToFile(rawValue, keyOfDump, unreadableValuesDumpDir, storeInfo.getName(), objectMapper);
+						unreadables.add(rawKey);
 
-												 return null;
-											 });
+						dumpToFile(rawValue, keyOfDump, unreadableValuesDumpDir, storeInfo.getName(), objectMapper);
+					});
 
 			final CompletableFuture<Void> combined =
 					futureKey.thenAcceptBothAsync(futureValue, consumer, service)
-							 .exceptionally(
-									 (exc) -> {
+							 .whenCompleteAsync(
+									 (ignored, exc) -> {
+										 if (exc == null) {
+											 return;
+										 }
+
 										 log.warn("Unable to apply for-each consumer on Key {}", new String(rawKey.getBytesUnsafe()), exc);
 										 unreadables.add(rawKey);
-
-										 return null;
 									 }
-							 );
+									 , service);
 
-			futures.addAll(List.of(futureKey, futureValue, combined));
+			futures.addAll(List.of(futureKey, futureValue, combined, failedValue, failedKey));
 
 		});
 
