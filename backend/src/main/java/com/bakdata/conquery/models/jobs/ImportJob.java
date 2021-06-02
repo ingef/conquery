@@ -208,13 +208,7 @@ public class ImportJob extends Job {
 
 			log.debug("Merging into shared Dictionary[{}]", sharedDictionary);
 
-			DictionaryMapping mapping = null;
-			if (sharedDictionary == null) {
-				mapping = DictionaryMapping.create(importDictionary, new MapDictionary(dataset, sharedDictionaryName));
-			}
-			else {
-				mapping = extendSharedDictionary(dataset,importDictionary, sharedDictionaryName, sharedDictionary);
-			}
+			DictionaryMapping mapping = extendSharedDictionary(dataset,importDictionary, sharedDictionaryName, sharedDictionary);
 
 			// We need to update the storages for now in this synchronized part
 			namespace.getStorage().updateDictionary(mapping.getTargetDictionary());
