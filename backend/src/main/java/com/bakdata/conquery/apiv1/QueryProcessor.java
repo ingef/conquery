@@ -279,7 +279,7 @@ public class QueryProcessor {
 		storage.updateExecution(execution);
 
 		// Patch this query in other datasets
-		List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets(ArrayList::new);
+		List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets();
 		remainingDatasets.remove(execution.getDataset());
 
 		for (Dataset dataset : remainingDatasets) {
