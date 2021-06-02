@@ -123,14 +123,13 @@ public class AdminDatasetProcessor {
 		namespace.sendToAll(new UpdateSecondaryId(secondaryId));
 	}
 
-	public synchronized void deleteSecondaryId(SecondaryIdDescription secondaryId) {
+	public synchronized void deleteSecondaryId(@NonNull SecondaryIdDescription secondaryId) {
 		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset().getId());
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents = namespace.getStorage().getTables().stream()
 				.map(Table::getColumns).flatMap(Arrays::stream)
-				.filter(column -> column.getSecondaryId() != null)
-				.filter(column -> column.getSecondaryId().equals(secondaryId))
+				.filter(column -> secondaryId.equals(column.getSecondaryId()))
 				.collect(Collectors.toList());
 
 		if (!dependents.isEmpty()) {
