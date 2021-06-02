@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 
 import javax.ws.rs.core.UriBuilder;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Optional;
 
@@ -16,11 +15,14 @@ import java.util.Optional;
 public interface ResultRendererProvider {
 
 	/**
-	 * Determines if by default the result url for this provider should be hidden or not
+	 * The provider can return a result url if its renderer supports the execution type.
+	 * If additionally allProviders is set to true it should output an url.
+	 * @param exec The execution whose result needs to be rendered.
+	 * @param uriBuilder The pre-configured builder for the url.
+	 * @param allProviders A flag that should override internal "hide-this-url" flags.
+	 * @return An Optional with the url or an empty optional.
 	 */
-	boolean isHidden();
-
-	Optional<URL> generateResultURL(ManagedExecution<?> exec, UriBuilder uriBuilder);
+	Optional<URL> generateResultURL(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders);
 
 	void registerResultResource(JerseyEnvironment environment, ManagerNode manager);
 }

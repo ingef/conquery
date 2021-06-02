@@ -25,8 +25,12 @@ public class ArrowStreamResultProvider implements ResultRendererProvider {
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
-	public Optional<URL> generateResultURL(ManagedExecution<?> exec, UriBuilder uriBuilder) {
+	public Optional<URL> generateResultURL(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 		if (!(exec instanceof SingleTableResult)) {
+			return Optional.empty();
+		}
+
+		if (hidden && !allProviders) {
 			return Optional.empty();
 		}
 
