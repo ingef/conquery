@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.result.csv;
 
-import com.bakdata.conquery.io.result.ResultRender.ResultRenderProvider;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;

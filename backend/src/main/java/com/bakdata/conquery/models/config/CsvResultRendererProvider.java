@@ -2,11 +2,10 @@ package com.bakdata.conquery.models.config;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.result.ResultRender.ResultRenderProvider;
+import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import lombok.Getter;
@@ -19,8 +18,8 @@ import java.net.URL;
 import java.util.Optional;
 
 @Getter
-@CPSType(base = ResultRenderProvider.class, id = "CSV")
-public class CsvResultRenderProvider implements ResultRenderProvider {
+@CPSType(base = ResultRendererProvider.class, id = "CSV")
+public class CsvResultRendererProvider implements ResultRendererProvider {
 
 	private boolean hidden = false;
 

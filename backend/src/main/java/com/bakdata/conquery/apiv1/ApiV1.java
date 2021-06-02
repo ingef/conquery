@@ -8,10 +8,7 @@ import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
-import com.bakdata.conquery.io.result.ResultRender.ResultRenderProvider;
-import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
-import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
-import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
+import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
@@ -26,10 +23,6 @@ import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
-import com.bakdata.conquery.resources.api.ResultArrowFileResource;
-import com.bakdata.conquery.resources.api.ResultArrowStreamResource;
-import com.bakdata.conquery.resources.api.ResultCsvResource;
-import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.bakdata.conquery.resources.api.StoredQueriesResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -84,7 +77,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(FilterResource.class);
 		environment.register(MeResource.class);
 
-		for (ResultRenderProvider resultProvider : manager.getConfig().getResultProviders()) {
+		for (ResultRendererProvider resultProvider : manager.getConfig().getResultProviders()) {
 			resultProvider.registerResultResource(environment,manager);
 		}
 

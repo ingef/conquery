@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.config;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.result.ResultRender.ResultRenderProvider;
+import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -18,8 +18,8 @@ import java.net.URL;
 import java.util.Optional;
 
 @Getter
-@CPSType(base = ResultRenderProvider.class, id = "XLSX")
-public class XlsxResultProvider implements ResultRenderProvider {
+@CPSType(base = ResultRendererProvider.class, id = "XLSX")
+public class XlsxResultProvider implements ResultRendererProvider {
 
 	private boolean hidden = false;
 

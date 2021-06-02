@@ -1,6 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.io.result.ResultRender.ResultRenderProvider;
+import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
@@ -196,15 +196,15 @@ public class QueryProcessor {
 	 * @param renderer The renderer that are requested for a result url generation.
 	 * @param exec The execution that is used for generating the url
 	 * @param uriBuilder The Uribuilder with the base configuration to generate the urls
-	 * @param allProviders If true, the {@link ResultRenderProvider#isHidden()} is ignored and a result urls is generated
+	 * @param allProviders If true, the {@link ResultRendererProvider#isHidden()} is ignored and a result urls is generated
 	 *                     anyways
 	 * @param <S> The type of the provided and returned status
 	 * @return The modified status
 	 */
-	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRenderProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders){
+	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders){
 
 		List<URL> resultUrls = renderer.stream()
-				.filter(Predicate.not(ResultRenderProvider::isHidden).or((ResultRenderProvider r) -> allProviders))
+				.filter(Predicate.not(ResultRendererProvider::isHidden).or((ResultRendererProvider r) -> allProviders))
 				.map(r -> r.generateResultURL(exec,uriBuilder.clone()))
 				.flatMap(Optional::stream).collect(Collectors.toList());
 

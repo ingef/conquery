@@ -13,7 +13,7 @@ import java.util.Optional;
 
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public interface ResultRenderProvider {
+public interface ResultRendererProvider {
 
 	/**
 	 * Determines if by default the result url for this provider should be hidden or not

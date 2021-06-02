@@ -5,7 +5,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
-import com.bakdata.conquery.io.result.ResultRender.ResultRenderProvider;
+import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
@@ -50,9 +50,9 @@ public class ConqueryConfig extends Configuration {
 	 * The order of this lists determines the ordner of the generated result urls in a query status.
 	 */
 	@Valid @NotNull
-	private List<ResultRenderProvider> resultProviders = List.of(
+	private List<ResultRendererProvider> resultProviders = List.of(
 			new XlsxResultProvider(),
-			new CsvResultRenderProvider(),
+			new CsvResultRendererProvider(),
 			new ArrowFileResultProvider(),
 			new ArrowStreamResultProvider()
 	);
