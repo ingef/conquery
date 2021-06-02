@@ -171,8 +171,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
 
 		// Cleanup
-		adminDatasetProcessor.deleteDataset(dataset2);
 		adminDatasetProcessor.deleteDataset(dataset1);
+		adminDatasetProcessor.deleteDataset(dataset2);
 		adminDatasetProcessor.deleteDataset(dataset3);
 		adminDatasetProcessor.deleteDataset(dataset4);
 		adminDatasetProcessor.deleteDataset(dataset5);

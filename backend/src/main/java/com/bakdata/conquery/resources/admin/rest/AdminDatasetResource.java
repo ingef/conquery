@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
@@ -88,8 +89,8 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
-	public void uploadImport(@NotNull InputStream importStream, @QueryParam("name") String importName) throws IOException, JSONException {
-		log.info("Importing from file upload {}", importName);
+	public void uploadImport(@NotNull InputStream importStream, @QueryParam("name") Optional<String> importName) throws IOException, JSONException {
+		log.info("Importing from file upload {}", importName.orElse(""));
 		processor.addImport(namespace, new GZIPInputStream(importStream));
 	}
 
