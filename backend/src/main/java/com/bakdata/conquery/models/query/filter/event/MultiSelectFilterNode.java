@@ -67,7 +67,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
 		if(selectedValues == null){
-			throw new IllegalStateException("No selected values  wer set.");
+			throw new IllegalStateException("No selected values  were set.");
 		}
 
 		if (!bucket.has(event, getColumn())) {
