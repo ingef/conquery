@@ -27,11 +27,13 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.dictionary.DictionaryProvider;
@@ -40,45 +42,20 @@ import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.http.HttpStatus;
 
-@RequiredArgsConstructor
+@UtilityClass
 @Slf4j
 public class ResultArrowProcessor {
 
-	private final DatasetRegistry datasetRegistry;
-	private final ConqueryConfig config;
 
-
-	public Response getArrowStreamResult(User user, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
-		return getArrowResult(
-				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
-				user,
-				exec,
-				dataset,
-				datasetRegistry,
-				pretty,
-				FILE_EXTENTION_ARROW_STREAM);
-	}
-
-	public Response getArrowFileResult(User user, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
-		return getArrowResult(
-				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
-				user,
-				exec,
-				dataset,
-				datasetRegistry,
-				pretty,
-				FILE_EXTENTION_ARROW_FILE);
-	}
-
-
-	private Response getArrowResult(
+	public static <E extends ManagedExecution<?> & SingleTableResult> Response getArrowResult(
 			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
 			User user,
-			ManagedExecution<?> exec,
+			E exec,
 			Dataset dataset,
 			DatasetRegistry datasetRegistry,
 			boolean pretty,
-			String fileExtension) {
+			String fileExtension,
+			ConqueryConfig config) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
@@ -114,8 +91,10 @@ public class ResultArrowProcessor {
 			public void write(OutputStream output) throws IOException, WebApplicationException {
 				renderToStream(writerProducer.apply(output),
 						settings,
+						config.getArrow().getBatchSize(),
 						idMappingConf.getPrintIdFields(),
-						config.getArrow().getBatchSize(), exec.streamResults(), exec.getResultInfo());
+						exec.getResultInfo(),
+						exec.streamResults());
 
 			}
 		};
