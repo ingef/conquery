@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,7 +21,7 @@ public class MultiSelectFilter extends AbstractSelectFilter<String[]> {
 	}
 
 	@Override
-	public FilterNode<?> createAggregator(String[] value) {
+	public FilterNode<?> createFilterNode(String[] value) {
 		return new MultiSelectFilterNode(getColumn(), value);
 	}
 }

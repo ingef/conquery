@@ -168,7 +168,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		child.nextBlock(bucket);
 	}
 
-	public void addAggregator(Aggregator<?> aggregator) {
+	public void registerAggregator(Aggregator<?> aggregator) {
 		aggregators.add(aggregator);
 	}
 

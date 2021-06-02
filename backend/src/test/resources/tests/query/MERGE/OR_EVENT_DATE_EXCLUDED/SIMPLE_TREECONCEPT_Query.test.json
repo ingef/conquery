@@ -1,16 +1,16 @@
 {
   "type": "QUERY_TEST",
   "label": "AND DURATION SUM Test",
-  "expectedCsv": "tests/query/LOGICAL/AND_DURATION_SUM/expected.csv",
+  "expectedCsv": "tests/query/MERGE/OR_EVENT_DATE_EXCLUDED/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
-    "dateAggregationMode" : "LOGICAL",
+    "dateAggregationMode" : "MERGE",
     "root": {
-      "type": "AND",
-      "createExists": true,
+      "type": "OR",
       "children": [
         {
           "type": "CONCEPT",
+          "excludeFromTimeAggregation" : true,
           "ids": [
             "tree.a"
           ],
@@ -18,7 +18,7 @@
             {
               "id": "tree.connector",
               "selects": [
-                "tree.connector.event_duration_sum"
+                "tree.connector.date_union"
               ]
             }
           ]
@@ -44,6 +44,10 @@
       "connectors": {
         "name": "connector",
         "column": "table.column",
+        "selects" : {
+          "type" : "EVENT_DATE_UNION",
+          "name" : "date_union"
+        },
         "validityDates": {
           "name": "datum",
           "column": "table.datum"
@@ -72,7 +76,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/LOGICAL/AND_DURATION_SUM/content.csv",
+        "csv": "tests/query/MERGE/OR_EVENT_DATE_EXCLUDED/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
