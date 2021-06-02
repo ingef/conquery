@@ -223,14 +223,10 @@ public class SuccinctTrie extends Dictionary {
 		}
 
 		int node = 0;
+		// Traverse the tree along the byte[], exiting when we don't find a match
 		for (byte val : value) {
-			// check for fitting child
 
-			int firstChildNode = findStart(node);
-			// get the first child of the next node
-			int lastChild = findStart(node +  1);
-
-			node = childIdWithKey(firstChildNode, lastChild, val);
+			node = childIdWithKey(node, val);
 
 			if (node == -1) {
 				// no fitting child found
@@ -249,7 +245,11 @@ public class SuccinctTrie extends Dictionary {
 		return node.children.get(val);
 	}
 
-	private int childIdWithKey(int firstChildNode, int lastChildNode, byte val) {
+	private int childIdWithKey(int node, byte val) {
+		int firstChildNode = findStart(node);
+		// get the first child of the next node
+		int lastChildNode = findStart(node +  1);
+
 		for (int i = firstChildNode; i < lastChildNode; i++) {
 			if (keyPartArray[i] == val) {
 				return i;
