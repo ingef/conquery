@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -56,9 +57,7 @@ public class ImportJob extends Job {
 	private final Table table;
 	private final int bucketSize;
 	private final PreprocessedHeader header;
-	private final Dictionary primaryDictionary;
-	private final Map<DictionaryId, Dictionary> normalDictionaries;
-	private final Map<String, DictionaryMapping> sharedDictionaryMappings;
+	private final PreprocessedDictionaries dictionaries;
 	private final PreprocessedData container;
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
@@ -93,22 +92,17 @@ public class ImportJob extends Job {
 
 			PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
-			Map<DictionaryId, Dictionary> normalDictionaries = collectNormalDictionaries(ds, dictionaries.getDictionaries(), table.getColumns(), header.getName());
-
-			// The following call is synchronized, because the dictionary is shared across the dataset
-			Map<String, DictionaryMapping> sharedDictionaryMappings = importSharedDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
-
+			Map<DictionaryId, Dictionary> dictReplacements = createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage());
 
 			// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
-			parser.addAllReplacements(normalDictionaries);
-
-			for (DictionaryMapping value : sharedDictionaryMappings.values()) {
-				parser.addReplacement(new DictionaryId(Dataset.PLACEHOLDER.getId(), value.getSourceDictionary().getName()), value.getTargetDictionary());
-			}
+			parser.addAllReplacements(dictReplacements);
 
 			log.trace("Begin reading data.");
 
 			PreprocessedData container = parser.readData();
+
+
+			log.debug("Done reading data. Contains {} Entities.", container.size());
 
 			if (container.isEmpty()) {
 				log.warn("Import was empty. Skipping.");
@@ -122,18 +116,17 @@ public class ImportJob extends Job {
 					table,
 					entityBucketSize,
 					header,
-					dictionaries.getPrimaryDictionary(),
-					normalDictionaries,
-					sharedDictionaryMappings,
+					dictionaries,
 					container
 			));
 		}
 	}
 
+
 	/**
 	 * Collects all dictionaries that map only to columns of this import.
 	 */
-	private static synchronized Map<DictionaryId, Dictionary> collectNormalDictionaries(Dataset dataset, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+	private static Map<DictionaryId, Dictionary> createLocalIdReplacements(Map<String, Dictionary> dicts, Table table, String importName, NamespaceStorage storage) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -144,9 +137,9 @@ public class ImportJob extends Job {
 
 		log.trace("Importing Normal Dictionaries.");
 
-		for (Column column : columns) {
+		for (Column column : table.getColumns()) {
 
-			if (column.getType() != MajorTypeId.STRING || column.getSharedDictionary() != null) {
+			if (column.getType() != MajorTypeId.STRING) {
 				continue;
 			}
 
@@ -156,6 +149,24 @@ public class ImportJob extends Job {
 				log.trace("No Dictionary for {}", column);
 				continue;
 			}
+
+
+			if (column.getSharedDictionary() != null) {
+				// If the column is based on a shared dict. We reference a new empty dictionary or the existing one
+				// but without updated entries. The entries are updated later on, see ImportJob#applyDictionaryMappings.
+				Dictionary sharedDict = null;
+				synchronized (storage.getLockDummy()) {
+					sharedDict = storage.getDictionary(new DictionaryId(table.getDataset().getId(), column.getSharedDictionary()));
+					if (sharedDict == null) {
+						sharedDict = new MapDictionary(table.getDataset(), column.getSharedDictionary());
+						storage.updateDictionary(sharedDict);
+					}
+				}
+				out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dicts.get(column.getName()).getName()), sharedDict);
+				continue;
+			}
+
+			// Its a normal dictionary (only valid for this column in this import)
 
 			final Dictionary dict = dicts.get(column.getName());
 			final String name = computeDefaultDictionaryName(importName, column);
@@ -164,17 +175,20 @@ public class ImportJob extends Job {
 			out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dict.getName()), dict);
 
 
-			dict.setDataset(dataset);
+			dict.setDataset(table.getDataset());
 			dict.setName(name);
 		}
 
 
 		return out;
 	}
+
 	/**
-	 * Import shared Dictionaries, create new Dictionary if not already present. Create mappings from incoming to already present dict.
+	 * Import all dictionaries. Shared dictionaries are merge into existing ones. All are distributed to corresponding workers.
+	 * Create mappings for shared dictionaries dict.
+	 * This is not synchronized because the methods is called within the job execution.
 	 */
-	private static synchronized Map<String, DictionaryMapping> importSharedDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+	private static Map<String, DictionaryMapping> importDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -183,30 +197,44 @@ public class ImportJob extends Job {
 
 		final Map<String, DictionaryMapping> out = new HashMap<>();
 
-		log.trace("Importing Shared Dictionaries");
+		log.trace("Importing Dictionaries");
 
 		for (Column column : columns) {
 
-			if (column.getSharedDictionary() == null) {
+			if (column.getType() != MajorTypeId.STRING) {
 				continue;
 			}
 
 			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
 			// but could also be an error :/ Most likely the former
-			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
+			final Dictionary importDictionary = dicts.get(column.getName());
+			if (!dicts.containsKey(column.getName()) || importDictionary == null) {
 				log.trace("No Dictionary for {}", column);
 				continue;
 			}
 
+
+			if (column.getSharedDictionary() == null) {
+				// Normal Dictionary -> no merge necessary, just distribute
+				log.trace("Sending {} to all Workers", importDictionary);
+				namespace.getStorage().updateDictionary(importDictionary);
+				namespace.sendToAll(new UpdateDictionary(importDictionary));
+				continue;
+			}
+
+			// It's a shared dictionary
+
 			final String sharedDictionaryName = column.getSharedDictionary();
-			final Dictionary importDictionary = dicts.get(column.getName());
 
 			log.debug("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
 
 			final Dataset dataset = namespace.getDataset();
-			final Dictionary sharedDictionary = Optional
-					.ofNullable(namespace.getStorage().getDictionary(new DictionaryId(dataset.getId(), sharedDictionaryName)))
-					.orElse(new MapDictionary(dataset, sharedDictionaryName));
+			final Dictionary sharedDictionary = namespace.getStorage().getDictionary(new DictionaryId(dataset.getId(), sharedDictionaryName));
+
+			if (sharedDictionary == null) {
+				// Should never be reached because shared dicts are precreated in ImportJob#createNamespacedDictionaryReplacements
+				throw new IllegalStateException("Expected the shared dictionary {} to be present in the storage");
+			}
 
 			log.debug("Merging into shared Dictionary[{}]", sharedDictionary);
 
@@ -241,26 +269,19 @@ public class ImportJob extends Job {
 		log.trace("Updating primary dictionary");
 
 		// Update primary dictionary: load new data, and create mapping.
-		final DictionaryMapping primaryMapping = importPrimaryDictionary(primaryDictionary);
+		final DictionaryMapping primaryMapping = importPrimaryDictionary(dictionaries.getPrimaryDictionary());
 
 		getProgressReporter().report(1);
 
 		// Distribute the new IDs among workers
 		distributeWorkerResponsibilities(primaryMapping);
 
-		// Persist Dictionaries on manager and shards
-		for (Dictionary dict : normalDictionaries.values()) {
-			log.trace("Sending {} to all Workers", dict);
-			namespace.getStorage().updateDictionary(dict);
-			namespace.sendToAll(new UpdateDictionary(dict));
-		}
-
-
-
 		getProgressReporter().report(1);
 
-		log.debug("Done reading data. Contains {} Entities.", container.size());
 
+		log.info("Importing Dictionaries");
+
+		Map<String, DictionaryMapping> sharedDictionaryMappings = importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
 		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
 
