@@ -29,7 +29,7 @@ interface APICallType {
 interface QueryResultT extends APICallType {
   datasetId?: string;
   resultCount?: number;
-  resultUrl?: string;
+  resultUrls?: string[];
   resultColumns?: ColumnDescription[];
   queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
@@ -62,7 +62,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
       success: true,
       error: null,
       resultCount: data.numberOfResults,
-      resultUrl: data.resultUrl,
+      resultUrls: data.resultUrls,
       resultColumns: data.columnDescriptions,
       queryType: data.queryType,
     };

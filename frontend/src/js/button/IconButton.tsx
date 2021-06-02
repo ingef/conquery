@@ -11,7 +11,7 @@ interface StyledFaIconProps extends FaIconPropsT {
   hasChildren: boolean;
 }
 
-const StyledFaIcon = styled(FaIcon)<StyledFaIconProps>`
+const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
   color: ${({ theme, active, red }) =>
     red ? theme.col.red : active ? theme.col.blueGrayDark : theme.col.black};
   font-size: ${({ theme, large, small }) =>
@@ -20,7 +20,7 @@ const StyledFaIcon = styled(FaIcon)<StyledFaIconProps>`
     hasChildren ? (tight ? "5px" : "10px") : "0"};
 `;
 
-const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
+const SxButton = styled(BasicButton)<{ frame?: boolean }>`
   background-color: transparent;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.black};
@@ -70,8 +70,8 @@ const IconButton: React.FC<IconButtonPropsT> = ({
   small,
   ...restProps
 }) => (
-  <StyledTransparentButton active={active} {...restProps}>
-    <StyledFaIcon
+  <SxButton active={active} {...restProps}>
+    <SxFaIcon
       main
       left={left}
       regular={regular}
@@ -85,7 +85,7 @@ const IconButton: React.FC<IconButtonPropsT> = ({
       {...iconProps}
     />
     {children}
-  </StyledTransparentButton>
+  </SxButton>
 );
 
 export default IconButton;
