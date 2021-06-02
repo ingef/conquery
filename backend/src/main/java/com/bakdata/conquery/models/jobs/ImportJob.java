@@ -204,38 +204,26 @@ public class ImportJob extends Job {
 			log.debug("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
 
 			final Dataset dataset = namespace.getDataset();
-			final Dictionary sharedDictionary = namespace.getStorage().getDictionary(new DictionaryId(dataset.getId(), sharedDictionaryName));
+			final Dictionary sharedDictionary = Optional
+					.ofNullable(namespace.getStorage().getDictionary(new DictionaryId(dataset.getId(), sharedDictionaryName)))
+					.orElse(new MapDictionary(dataset, sharedDictionaryName));
 
 			log.debug("Merging into shared Dictionary[{}]", sharedDictionary);
 
-			DictionaryMapping mapping = extendSharedDictionary(dataset,importDictionary, sharedDictionaryName, sharedDictionary);
 
-			// We need to update the storages for now in this synchronized part
-			namespace.getStorage().updateDictionary(mapping.getTargetDictionary());
-			namespace.sendToAll(new UpdateDictionary(mapping.getTargetDictionary()));
+			DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
+
+			if (mapping.getNumberOfNewIds() != 0) {
+				// We need to update the storages for now in this synchronized part
+				namespace.getStorage().updateDictionary(mapping.getTargetDictionary());
+				namespace.sendToAll(new UpdateDictionary(mapping.getTargetDictionary()));
+			}
 
 			out.put(column.getName(), mapping);
 
 		}
 
 		return out;
-	}
-
-	private static DictionaryMapping extendSharedDictionary(Dataset dataset, Dictionary incoming, String targetDictionaryName, Dictionary targetDict) {
-
-		log.debug("Merging into shared Dictionary[{}]", targetDictionaryName);
-
-		if (targetDict == null) {
-			targetDict = new MapDictionary(dataset, targetDictionaryName);
-		}
-
-		targetDict = Dictionary.copyUncompressed(targetDict);
-
-		DictionaryMapping mapping = DictionaryMapping.create(incoming, targetDict);
-
-		targetDict.setName(targetDictionaryName);
-
-		return mapping;
 	}
 
 	private static String computeDefaultDictionaryName(String importName, Column column) {
@@ -399,7 +387,7 @@ public class ImportJob extends Job {
 
 		Dictionary primaryDict = Dictionary.copyUncompressed(orig);
 
-		DictionaryMapping primaryMapping = DictionaryMapping.create(primaryDictionary, primaryDict);
+		DictionaryMapping primaryMapping = DictionaryMapping.createAndImport(primaryDictionary, primaryDict);
 		log.debug("Mapped {} new ids", primaryMapping.getNumberOfNewIds());
 
 		//if no new ids we shouldn't recompress and store
