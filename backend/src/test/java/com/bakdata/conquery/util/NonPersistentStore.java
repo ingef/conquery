@@ -1,13 +1,13 @@
 package com.bakdata.conquery.util;
 
-import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
-import com.bakdata.conquery.io.storage.Store;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
+
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.storage.Store;
+import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 
 public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
@@ -24,12 +24,12 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
     }
 
     @Override
-    public SerializingStore.IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+    public SerializingStore.IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
         final SerializingStore.IterationStatistic stats = new SerializingStore.IterationStatistic();
         map.forEach(new BiConsumer<KEY, VALUE>() {
             @Override
             public void accept(KEY key, VALUE value) {
-                consumer.accept(key,value, stats.getTotalProcessed());
+                consumer.accept(key,value);
                 stats.incrTotalProcessed();
 
             }

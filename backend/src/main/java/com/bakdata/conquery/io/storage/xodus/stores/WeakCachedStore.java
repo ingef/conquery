@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiConsumer;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.Store;
@@ -68,7 +69,7 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+	public IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
 		throw new UnsupportedOperationException();
 	}
 

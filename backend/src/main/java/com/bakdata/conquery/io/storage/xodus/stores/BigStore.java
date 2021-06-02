@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -111,9 +112,9 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	@Override
-	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		return metaStore.forEach((key, value, length) -> {
-			consumer.accept(key, createValue(key, value), length);
+	public IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
+		return metaStore.forEach((key, value) -> {
+			consumer.accept(key, createValue(key, value));
 		});
 	}
 
@@ -154,7 +155,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	@Override
 	public Collection<KEY> getAllKeys() {
 		List<KEY> out = new ArrayList<>();
-		metaStore.forEach((key, value, size) -> out.add(key));
+		metaStore.forEach((key, value) -> out.add(key));
 		return out;
 	}
 

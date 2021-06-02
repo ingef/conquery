@@ -3,7 +3,7 @@ package com.bakdata.conquery.io.storage.xodus.stores;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
@@ -11,22 +11,22 @@ import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Stopwatch;
-import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@RequiredArgsConstructor @Slf4j
+@RequiredArgsConstructor
+@Slf4j
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
-	private static final  ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
-	
+	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
+
 	private ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
 	private final Store<KEY, VALUE> store;
-	
+
 	@Override
 	public void add(KEY key, VALUE value) {
-		if(cache.putIfAbsent(key, value)!=null) {
-			throw new IllegalStateException("The id "+key+" is alread part of this store");
+		if (cache.putIfAbsent(key, value) != null) {
+			throw new IllegalStateException("The id " + key + " is alread part of this store");
 		}
 		store.add(key, value);
 	}
@@ -38,7 +38,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+	public IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -53,10 +53,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		cache.remove(key);
 		store.remove(key);
 	}
-	
+
 	@Override
 	public int count() {
-		if(cache.isEmpty()) {
+		if (cache.isEmpty()) {
 			return store.count();
 		}
 		return cache.size();
@@ -64,37 +64,37 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void fillCache() {
-		AtomicLong totalSize = new AtomicLong(0);
 		int count = count();
 		cache = new ConcurrentHashMap<KEY, VALUE>(count);
 		final ProgressBar bar;
 		Stopwatch timer = Stopwatch.createStarted();
-		
-		if(count>100) {
+
+		if (count > 100) {
 			synchronized (PROGRESS_BAR) {
 				bar = PROGRESS_BAR;
 				bar.addMaxValue(count);
 			}
-			log.info("\tloading store {}", this);
 		}
 		else {
 			bar = null;
 		}
-		
-		store.forEach((key, value, size) -> {
+
+		log.info("\tloading store {}", this);
+
+		store.forEach((key, value) -> {
 			try {
-				totalSize.addAndGet(size);
 				cache.put(key, value);
 			}
 			catch (RuntimeException e) {
 				if (e.getCause() != null && e.getCause() instanceof IdReferenceResolvingException) {
-					log.warn("Probably failed to read id '{}' because it is not yet present, skipping",
-						((IdReferenceResolvingException) e.getCause()).getValue(),
-						e
+					log.warn(
+							"Probably failed to read id '{}' because it is not yet present, skipping",
+							((IdReferenceResolvingException) e.getCause()).getValue(),
+							e
 					);
 				}
 				else {
-					throw  e;
+					throw e;
 				}
 			}
 			finally {
@@ -103,11 +103,12 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				}
 			}
 		});
+
+
 		log.info(
-				"\tloaded store {}: {} entries, {} within {}",
+				"\tloaded Store[{}]: {} entries within {}",
 				this,
 				cache.values().size(),
-				BinaryByteUnit.format(totalSize.get()),
 				timer.stop()
 		);
 	}
@@ -121,10 +122,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public void inject(Injectable injectable) {
 		store.inject(injectable);
 	}
-	
+
 	@Override
 	public String toString() {
-		return "cached "+store.toString();
+		return "cached " + store.toString();
 	}
 
 	@Override

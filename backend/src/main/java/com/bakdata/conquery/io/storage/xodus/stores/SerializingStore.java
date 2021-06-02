@@ -6,9 +6,16 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 
 import javax.validation.Validator;
 
@@ -31,13 +38,14 @@ import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Key-value-store from {@link KEY} type values to {@link VALUE} values. ACID consistent, stored on disk using {@link jetbrains.exodus.env.Store} via {@link XodusStore}.
  * <p>
- * Values are (de-)serialized using {@linkplain objectMapper}.
+ * Values are (de-)serialized using {@linkplain ObjectMapper}.
  *
  * @param <KEY>   type of keys
  * @param <VALUE> type of values.
@@ -47,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	public static final String DUMP_FILE_EXTENTION = "json";
-	
+
 	/**
 	 * Used for serializing keys.
 	 */
@@ -98,7 +106,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * If set, all values that cannot be read are dumped as single files into this directory.
 	 */
 	private final File unreadableValuesDumpDir;
-	
+
 	private final boolean removeUnreadablesFromUnderlyingStore;
 
 	private final ObjectMapper objectMapper;
@@ -129,20 +137,22 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		keyReader = objectMapper
 							.readerFor(storeInfo.getKeyType())
 							.withView(InternalOnly.class);
-		
+
 		removeUnreadablesFromUnderlyingStore = config.isRemoveUnreadableFromStore();
-		
+
 		// Prepare dump directory if there is one set in the config
 		Optional<File> dumpUnreadable = config.getUnreadableDataDumpDirectory();
-		if(dumpUnreadable.isPresent()) {
+		if (dumpUnreadable.isPresent()) {
 			unreadableValuesDumpDir = dumpUnreadable.get();
-			if(!unreadableValuesDumpDir.exists()) {
+			if (!unreadableValuesDumpDir.exists()) {
 				unreadableValuesDumpDir.mkdirs();
 			}
-			else if(!unreadableValuesDumpDir.isDirectory()) {
-				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
+			else if (!unreadableValuesDumpDir.isDirectory()) {
+				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir
+																																						   .getAbsolutePath()));
 			}
-		} else {
+		}
+		else {
 			unreadableValuesDumpDir = null;
 		}
 	}
@@ -163,12 +173,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public VALUE get(KEY key) {
 		ByteIterable binValue = store.get(writeKey(key));
 		try {
-			return readValue(binValue);			
-		} catch (Exception e) {
-			if(unreadableValuesDumpDir != null) {
-				dumpToFile(binValue, key.toString(), unreadableValuesDumpDir, storeInfo.getName(), objectMapper);
-			}
-			if(removeUnreadablesFromUnderlyingStore) {
+			return readValue(binValue);
+		}
+		catch (Exception e) {
+			dumpToFile(binValue, key.toString(), unreadableValuesDumpDir, storeInfo.getName(), objectMapper);
+			if (removeUnreadablesFromUnderlyingStore) {
 				remove(key);
 				// Null seems to be an acceptable return value in this case
 				return null;
@@ -183,59 +192,98 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Depending on the {@link XodusStoreFactory} corrupt entries may be dump to a file and/or removed from the store.
 	 * These entries are not submitted to the consumer.
 	 */
+	@SneakyThrows
 	@Override
-	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+	public IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
 		IterationStatistic result = new IterationStatistic();
-		ArrayList<ByteIterable> unreadables = new ArrayList<>();
-		store.forEach((k, v) -> {
+		Set<ByteIterable> unreadables = new HashSet<>();
+
+		final ExecutorService service = Executors.newCachedThreadPool();
+
+		List<CompletableFuture<?>> futures = new ArrayList<>();
+
+		log.info("Begin reading store");
+
+		store.forEach((rawKey, rawValue) -> {
 			result.incrTotalProcessed();
 
 			// Try to read the key first
-			KEY key = getDeserializedAndDumpFailed(
-				k,
-				this::readKey,
-				() -> new String(k.getBytesUnsafe()),
-				v,
-				"Could not parse key [{}]");
-			if (key == null) {
-				unreadables.add(k);
-				result.incrFailedKeys();
-				return;
-			}
+			final CompletableFuture<KEY> futureKey =
+					CompletableFuture.supplyAsync(() -> {
+						if (log.isTraceEnabled()) {
+							log.trace("Reading Key `{}`", new String(rawKey.getBytesUnsafe()));
+						}
 
-			// Try to read the value
-			VALUE value = getDeserializedAndDumpFailed(
-				v, 
-				this::readValue, 
-				() -> key.toString(),
-				v, 
-				"Could not parse value for key [{}]");
-			if (value == null) {
-				unreadables.add(k);
-				result.incrFailedValues();
-				return;
-			}
+						return readKey(rawKey);
+					}, service)
+									 .exceptionally(
+											 (exc) -> {
+												 log.warn("Could not parse Key `{}`", new String(rawKey.getBytesUnsafe()), exc);
 
-			// Apply the consumer to key and value
-			try {
-				consumer.accept(key, value, v.getLength());
-			}
-			catch (Exception e) {
-				log.warn("Unable to apply for-each consumer on key[{}]", key, e);
-			}
+												 result.incrFailedKeys();
+												 unreadables.add(rawKey);
+
+												 return null;
+											 });
+
+
+			final CompletableFuture<VALUE> futureValue =
+					CompletableFuture.supplyAsync(() -> {
+						if (log.isTraceEnabled()) {
+							log.trace("Reading Value for Key `{}`", new String(rawKey.getBytesUnsafe()));
+						}
+
+						return readValue(rawValue);
+					}, service)
+									 .exceptionally(
+											 (exc) -> {
+												 final String keyOfDump = new String(rawKey.getBytesUnsafe());
+
+												 log.warn("Could not parse Value for Key `{}`", keyOfDump, exc);
+
+												 result.incrFailedValues();
+
+												 unreadables.add(rawKey);
+
+												 dumpToFile(rawValue, keyOfDump, unreadableValuesDumpDir, storeInfo.getName(), objectMapper);
+
+												 return null;
+											 });
+
+			final CompletableFuture<Void> combined =
+					futureKey.thenAcceptBothAsync(futureValue, consumer, service)
+							 .exceptionally(
+									 (exc) -> {
+										 log.warn("Unable to apply for-each consumer on Key {}", new String(rawKey.getBytesUnsafe()), exc);
+										 unreadables.add(rawKey);
+
+										 return null;
+									 }
+							 );
+
+			futures.addAll(List.of(futureKey, futureValue, combined));
 
 		});
+
+		// await all futures.
+		futures.forEach(CompletableFuture::join);
+
+		service.shutdown();
+		//TODO better wait
+		service.awaitTermination(1, TimeUnit.DAYS);
+
 		// Print some statistics
 		int total = result.getTotalProcessed();
 		log.debug(
-			String.format(
-				"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
-				this.storeInfo.getName(),
-				total,
-				result.getFailedKeys(),
-				total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
-				result.getFailedValues(),
-				total > 0 ? (float) result.getFailedValues() / total * 100 : 0));
+				String.format(
+						"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
+						this.storeInfo.getName(),
+						total,
+						result.getFailedKeys(),
+						total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
+						result.getFailedValues(),
+						total > 0 ? (float) result.getFailedValues() / total * 100 : 0
+				));
 
 		// Remove corrupted entries from the store if configured so
 		if (removeUnreadablesFromUnderlyingStore) {
@@ -243,33 +291,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			unreadables.forEach(store::remove);
 		}
 		return result;
-	}
-	
-	/**
-	 * Deserializes the gives serial value (either a key or a value of an store entry) to a concrete object. If that fails the entry-value is dumped if configured so to a file using the entry-key for the filename.
-	 * @param <TYPE> The deserialized object type.
-	 * @param serial The to be deserialized object (key or value of an entry)
-	 * @param deserializer The concrete deserializer to use.
-	 * @param onFailKeyStringSupplier When deserilization failed and dump is enabled this is used in the dump file name.
-	 * @param onFailOrigValue Will be the dumpfile content rendered as a json.
-	 * @param onFailWarnMsgFmt The warn message that will be logged on failure.
-	 * @return
-	 */
-	private <TYPE> TYPE getDeserializedAndDumpFailed(ByteIterable serial, Function<ByteIterable, TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, ByteIterable onFailOrigValue, String onFailWarnMsgFmt ){
-		try {
-			return deserializer.apply(serial);			
-		} catch (Exception e) {
-			if(unreadableValuesDumpDir != null) {
-				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), unreadableValuesDumpDir, storeInfo.getName(), objectMapper);
-			}
-			if(log.isTraceEnabled()){
-				// With trace also print the stacktrace
-				log.trace(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
-			} else {
-				log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get());
-			}
-		}
-		return null;
 	}
 
 	@Override
@@ -330,7 +351,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				log.trace("Written Messagepack ({}): {}", valueType.getName(), json);
 			}
 			return new ArrayByteIterable(bytes);
-		} catch (JsonProcessingException e) {
+		}
+		catch (JsonProcessingException e) {
 			throw new RuntimeException("Failed to write " + obj, e);
 		}
 	}
@@ -344,23 +366,30 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 		try {
 			return reader.readValue(obj.getBytesUnsafe(), 0, obj.getLength());
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(obj.getBytesUnsafe()), e);
 		}
 	}
 
 	/**
 	 * Dumps the content of an unreadable value to a file as a json (it tries to parse it as an object and than tries to dump it as a json).
-	 * @param obj The object to dump.
-	 * @param keyOfDump The key under which the unreadable value is accessible. It is used for the file name.
+	 *
+	 * @param obj               The object to dump.
+	 * @param keyOfDump         The key under which the unreadable value is accessible. It is used for the file name.
 	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
-	 * @param storeName The name of the store which is also used in the dump file name.
+	 * @param storeName         The name of the store which is also used in the dump file name.
 	 */
-	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, @NonNull File unreadableDumpDir, @NonNull String storeName, ObjectMapper objectMapper) {
+	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, File unreadableDumpDir, @NonNull String storeName, ObjectMapper objectMapper) {
+
+		if (unreadableDumpDir == null) {
+			return;
+		}
+
 		// Create dump filehandle
 		File dumpfile = new File(unreadableDumpDir, makeDumpfileName(keyOfDump, storeName));
-		if(dumpfile.exists()) {
-			log.warn("Abort dumping of file {} because it already exists.",dumpfile);
+		if (dumpfile.exists()) {
+			log.trace("Abort dumping of file {} because it already exists.", dumpfile);
 			return;
 		}
 		// Write dump
@@ -369,8 +398,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
 			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
 		}
-		catch (IOException e) {
-			log.error("Unable to dump unreadable value of key `{}` to file `{}`",keyOfDump, dumpfile, e);
+		catch (Exception e) {
+			log.error("Unable to dump unreadable value of key `{}` to file `{}`", keyOfDump, dumpfile, e);
 		}
 	}
 
@@ -380,12 +409,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 */
 	private static String makeDumpfileName(String keyOfDump, String storeName) {
 		return FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(
-			String.format("%s-%s-%s.%s",
-				DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
-				storeName,
-				keyOfDump,
-				DUMP_FILE_EXTENTION
-			)).replaceAll("_");
+				String.format(
+						"%s-%s-%s.%s",
+						DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
+						storeName,
+						keyOfDump,
+						DUMP_FILE_EXTENTION
+				)).replaceAll("_");
 	}
 
 	@Override
@@ -429,20 +459,32 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Data
 	public static class IterationStatistic {
-		private int totalProcessed = 0;
-		private int failedKeys = 0;
-		private int failedValues = 0;
-		
+		private AtomicInteger totalProcessed = new AtomicInteger(0);
+		private AtomicInteger failedKeys = new AtomicInteger(0);
+		private AtomicInteger failedValues = new AtomicInteger(0);
+
+		public int getTotalProcessed() {
+			return totalProcessed.get();
+		}
+
+		public int getFailedKeys() {
+			return failedKeys.get();
+		}
+
+		public int getFailedValues() {
+			return failedValues.get();
+		}
+
 		public void incrTotalProcessed() {
-			totalProcessed++;
+			totalProcessed.incrementAndGet();
 		}
-		
+
 		public void incrFailedKeys() {
-			failedKeys++;
+			failedKeys.incrementAndGet();
 		}
-		
+
 		public void incrFailedValues() {
-			failedValues++;
+			failedValues.incrementAndGet();
 		}
 	}
 }

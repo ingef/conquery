@@ -13,7 +13,6 @@ import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Store;
 import jetbrains.exodus.env.StoreConfig;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -21,23 +20,23 @@ public class XodusStore {
 	private final Store store;
 	private final Environment environment;
 	private final long timeoutHalfMillis; // milliseconds
-	private final Collection<Store>  openStores;
+	private final Collection<Store> openStores;
 	private final Consumer<Environment> envCloseHook;
 	private final Consumer<Environment> envRemoveHook;
 
 	public XodusStore(Environment env, IStoreInfo storeId, Collection<Store> openStoresInEnv, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
-		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
+		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout() / 2;
 		this.environment = env;
 		this.openStores = openStoresInEnv;
 		this.envCloseHook = envCloseHook;
 		this.envRemoveHook = envRemoveHook;
 		this.store = env.computeInTransaction(
-			t->env.openStore(storeId.getName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
+				t -> env.openStore(storeId.getName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
 		);
 		openStoresInEnv.add(store);
 	}
-	
+
 	public boolean add(ByteIterable key, ByteIterable value) {
 		return environment.computeInTransaction(t -> store.add(t, key, value));
 	}
@@ -49,23 +48,25 @@ public class XodusStore {
 	/**
 	 * Iterate over all key-value pairs in a consistent manner.
 	 * The transaction is read only!
+	 *
 	 * @param consumer function called for-each key-value pair.
 	 */
 	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
 		AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
 		AtomicBoolean done = new AtomicBoolean(false);
-		while(!done.get()) {
+
+		while (!done.get()) {
 			environment.executeInReadonlyTransaction(t -> {
-				try(Cursor c = store.openCursor(t)) {
+				try (Cursor c = store.openCursor(t)) {
 					//try to load everything in the same transaction
 					//but keep within half of the timeout time
 					long start = System.currentTimeMillis();
 					//search where we left of
-					if(lastKey.get() != null) {
+					if (lastKey.get() != null) {
 						c.getSearchKey(lastKey.get());
 					}
-					while(System.currentTimeMillis()-start < timeoutHalfMillis) {
-						if(!c.getNext()) {
+					while (System.currentTimeMillis() - start < timeoutHalfMillis) {
+						if (!c.getNext()) {
 							done.set(true);
 							return;
 						}
@@ -80,7 +81,7 @@ public class XodusStore {
 	public boolean update(ByteIterable key, ByteIterable value) {
 		return environment.computeInTransaction(t -> store.put(t, key, value));
 	}
-	
+
 	public boolean remove(ByteIterable key) {
 		return environment.computeInTransaction(t -> store.delete(t, key));
 	}
@@ -93,7 +94,7 @@ public class XodusStore {
 	public void clear() {
 		environment.executeInExclusiveTransaction(t -> {
 			Cursor cursor = store.openCursor(t);
-			while(cursor.getNext()){
+			while (cursor.getNext()) {
 				cursor.deleteCurrent();
 			}
 		});
@@ -105,9 +106,9 @@ public class XodusStore {
 			return;
 		}
 		log.debug("Removing store {} from environment {}", store, environment.getLocation());
-		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
+		environment.executeInTransaction(t -> environment.removeStore(store.getName(), t));
 		close();
-		if (openStores.isEmpty()){
+		if (openStores.isEmpty()) {
 			// Last Store closes the Environment
 			log.info("Removed last XodusStore in Environment. Removing Environment as well: {}", environment.getLocation());
 			envRemoveHook.accept(environment);
@@ -123,7 +124,7 @@ public class XodusStore {
 			log.info("Closed XodusStore: {}", this);
 			return;
 		}
-		if (openStores.isEmpty()){
+		if (openStores.isEmpty()) {
 			// Last Store closes the Environment
 			log.info("Closed last XodusStore in Environment. Closing Environment as well: {}", environment.getLocation());
 			envCloseHook.accept(environment);
@@ -132,6 +133,6 @@ public class XodusStore {
 
 	@Override
 	public String toString() {
-		return "XodusStore[" + environment.getLocation() + ":" +store.getName() +"}";
+		return "XodusStore[" + environment.getLocation() + ":" + store.getName() + "}";
 	}
 }

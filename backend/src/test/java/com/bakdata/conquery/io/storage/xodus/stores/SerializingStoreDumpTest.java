@@ -94,14 +94,13 @@ public class SerializingStoreDumpTest {
 			// Reopen the store with the initial value and try to iterate over all entries
 			// (this triggers the dump or removal of invalid entries)
 			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER);
-			IterationStatistic expectedResult = new IterationStatistic();
-			expectedResult.setTotalProcessed(2);
-			expectedResult.setFailedKeys(0);
-			expectedResult.setFailedValues(1);
 
 			// Iterate (do nothing with the entries themselves)
-			IterationStatistic result = store.forEach((k, v, s) -> {});
-			assertThat(result).isEqualTo(expectedResult);
+			IterationStatistic result = store.forEach((k, v) -> {});
+
+			assertThat(result.getTotalProcessed()).as("Total Processed").isEqualTo(2);
+			assertThat(result.getFailedKeys()).as("Failed Keys").isEqualTo(0);
+			assertThat(result.getFailedValues()).as("Failed Values").isEqualTo(1);
 		}
 
 		// Test if the correct number of dumpfiles was generated
@@ -147,19 +146,21 @@ public class SerializingStoreDumpTest {
 			// Reopen the store with the initial value and try to iterate over all entries
 			// (this triggers the dump or removal of invalid entries)
 			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER);
-			IterationStatistic expectedResult = new IterationStatistic();
-			expectedResult.setTotalProcessed(2);
-			expectedResult.setFailedKeys(1);
-			expectedResult.setFailedValues(0);
 
 			// Iterate (do nothing with the entries themselves)
-			IterationStatistic result = store.forEach((k, v, s) -> {});
-			assertThat(result).isEqualTo(expectedResult);
+			IterationStatistic result = store.forEach((k, v) -> {});
+
+			assertThat(result.getTotalProcessed()).as("Total Processed").isEqualTo(2);
+			assertThat(result.getFailedKeys()).as("Failed Keys").isEqualTo(1);
+			assertThat(result.getFailedValues()).as("Failed Values").isEqualTo(1);
 		}
 
 		// Test if the correct number of dumpfiles was generated
 		Condition<File> dumpFileCond = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION), "dump file");
-		assertThat(tmpDir.listFiles()).areExactly(1, dumpFileCond);
+		assertThat(tmpDir.listFiles())
+				.filteredOn(dumpFileCond)
+				.hasSize(1);
+
 
 		// Test if the dump is correct
 		File dumpFile = getDumpFile(dumpFileCond);
@@ -169,7 +170,7 @@ public class SerializingStoreDumpTest {
 
 	/**
 	 * Tests if entries with corrupted are removed from the store if configured so.
-	 * The dump itself is not testet.
+	 * The dump itself is not tested.
 	 */
 	@Test
 	public void testCorruptionRemoval() throws JSONException, IOException {
@@ -183,14 +184,15 @@ public class SerializingStoreDumpTest {
 			store.add(new UserId("testU1"), user);
 		}
 
-		{ // Insert two corrupt entries. One with a corrupt key and the other one with a
-			// corrupt value
+		{
+			// Insert two corrupt entries. One with a corrupt key and the other one with a corrupt value
 			{
 				SerializingStore<String, QueryDescription> store = createSerializedStore(
 					config,
 					env,
 					Validators.newValidator(),
 					new CorruptableStoreInfo(StoreInfo.AUTH_USER.getName(), String.class, QueryDescription.class));
+
 				store.add("not a valid conquery Id", cQuery);
 			}
 
@@ -200,35 +202,36 @@ public class SerializingStoreDumpTest {
 					env,
 					Validators.newValidator(),
 					new CorruptableStoreInfo(StoreInfo.AUTH_USER.getName(), UserId.class, QueryDescription.class));
+
 				store.add(new UserId("testU2"), cQuery);
 			}
 		}
+
+
 
 		{
 			// Reopen the store with correct configuration and try to iterate over all
 			// entries (this triggers the dump or removal of invalid entries)
 			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER);
-			IterationStatistic expectedResult = new IterationStatistic();
-			expectedResult.setTotalProcessed(3);
-			expectedResult.setFailedKeys(1);
-			expectedResult.setFailedValues(1);
 
 			// Iterate (do nothing with the entries themselves)
-			IterationStatistic result = store.forEach((k, v, s) -> {});
-			assertThat(result).isEqualTo(expectedResult);
+			IterationStatistic result = store.forEach((k, v) -> {});
+
+			assertThat(result.getTotalProcessed()).as("Processed").isEqualTo(3);
+			assertThat(result.getFailedKeys()).as("Failed keys").isEqualTo(1);
+			assertThat(result.getFailedValues()).as("Failed values").isEqualTo(2);
 		}
 
 		{
 			// Reopen again to check that the corrupted values have been removed previously
 			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), StoreInfo.AUTH_USER);
-			IterationStatistic expectedResult = new IterationStatistic();
-			expectedResult.setTotalProcessed(1);
-			expectedResult.setFailedKeys(0);
-			expectedResult.setFailedValues(0);
 
 			// Iterate (do nothing with the entries themselves)
-			IterationStatistic result = store.forEach((k, v, s) -> {});
-			assertThat(result).isEqualTo(expectedResult);
+			IterationStatistic result = store.forEach((k, v) -> {});
+
+			assertThat(result.getTotalProcessed()).as("Total Processed.").isEqualTo(1);
+			assertThat(result.getFailedKeys()).as("Failed Keys").isEqualTo(0);
+			assertThat(result.getFailedValues()).as("Failed Values").isEqualTo(0);
 		}
 	}
 
