@@ -12,8 +12,8 @@ import javax.ws.rs.*;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
+import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
-import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -32,7 +32,7 @@ import io.dropwizard.jersey.PATCH;
 public class StoredQueriesResource extends HDatasets {
 
 	@Inject
-	private StoredQueriesProcessor processor;
+	private QueryProcessor processor;
 
 	@GET
 	public List<ExecutionStatus> getAllQueries(@PathParam(DATASET) Dataset dataset, @QueryParam("all-providers") Optional<Boolean> allProviders) {
@@ -43,12 +43,19 @@ public class StoredQueriesResource extends HDatasets {
 	@GET
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+
+		user.authorize(getDataset(), Ability.READ);
+		user.authorize(query, Ability.READ);
+
 		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
 	}
 
 	@PATCH
 	@Path("{" + QUERY + "}")
 	public FullExecutionStatus patchQuery(@PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders, MetaDataPatch patch) throws JSONException {
+		user.authorize(getDataset(), Ability.READ);
+		user.authorize(query, Ability.READ);
+
 		processor.patchQuery(user, query, patch);
 		
 		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
@@ -57,12 +64,17 @@ public class StoredQueriesResource extends HDatasets {
 	@DELETE
 	@Path("{" + QUERY + "}")
 	public void deleteQuery(@PathParam(QUERY) ManagedExecution<?> query) {
-		processor.deleteQuery(query, user);
+		user.authorize(getDataset(), Ability.READ);
+		user.authorize(query, Ability.READ);
+		user.authorize(query, Ability.DELETE);
+
+		processor.deleteQuery(query);
 	}
 
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
 	public FullExecutionStatus reexecute(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+		user.authorize(dataset, Ability.READ);
 		user.authorize(query, Ability.READ);
 
 		processor.reexecute(query);

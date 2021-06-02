@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
+import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
@@ -55,7 +55,7 @@ public class StoredQueriesProcessorTest {
 	// Marked Unused, but does inject itself.
 	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE,new DevelopmentAuthorizationConfig());
 
-	private static final StoredQueriesProcessor processor = new StoredQueriesProcessor(new DatasetRegistry(0), STORAGE, new ConqueryConfig());
+	private static final QueryProcessor processor = new QueryProcessor(new DatasetRegistry(0), STORAGE, new ConqueryConfig());
 
 	private static final Dataset DATASET_0 = new Dataset() {{setName("dataset0");}};
 	private static final Dataset DATASET_1 = new Dataset() {{setName("dataset1");}};

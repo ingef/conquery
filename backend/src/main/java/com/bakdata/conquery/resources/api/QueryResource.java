@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.resources.hierarchies.HDatasets;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,15 +34,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class QueryResource {
 
-	private final QueryProcessor processor;
+	@Inject
+	private QueryProcessor processor;
 
 	@Context
 	protected HttpServletRequest servletRequest;
-
-	@Inject
-	public QueryResource(QueryProcessor processor) {
-		this.processor = processor;
-	}
 
 	@POST
 	public Response postQuery(@Auth User user, @PathParam(DATASET) Dataset dataset, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
@@ -52,26 +47,21 @@ public class QueryResource {
 
 		user.authorize(dataset, Ability.READ);
 
-		return Response.ok(
-				processor.postQuery(
-						dataset,
-						query,
-						RequestAwareUriBuilder.fromRequest(servletRequest),
-						user,
-						allProviders.orElse(false)
-				))
-					   .status(Status.CREATED)
-					   .build();
+		ManagedExecution<?> execution = processor.postQuery(dataset, query, user);
+
+		return Response.ok(processor.getQueryFullStatus(execution, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false)))
+				.status(Status.CREATED)
+				.build();
 	}
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query) {
+	public void cancel(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query) {
 
 		user.authorize(dataset, Ability.READ);
 		user.authorize(query, Ability.CANCEL);
 
-		return processor.cancel(
+		processor.cancel(
 				user,
 				dataset,
 				query,
@@ -85,15 +75,12 @@ public class QueryResource {
 			throws InterruptedException {
 
 		user.authorize(dataset, Ability.READ);
+		user.authorize(query, Ability.READ);
 
 		query.awaitDone(1, TimeUnit.SECONDS);
 
 
-		return processor.getStatus(
-				query,
-				RequestAwareUriBuilder.fromRequest(servletRequest),
-				user,
-				allProviders.orElse(false)
-		);
+
+		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
 	}
 }
