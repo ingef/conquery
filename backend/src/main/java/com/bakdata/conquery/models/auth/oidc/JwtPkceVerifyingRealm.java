@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -33,11 +34,15 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
     private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 
-    private PublicKey publicKey;
+    private final PublicKey publicKey;
+    private final String[] allowedAudiences;
+    private final TokenVerifier.Predicate<AccessToken>[] additionalTokenChecks;
 
-    public JwtPkceVerifyingRealm(PublicKey publicKey) {
+    public JwtPkceVerifyingRealm(@NonNull PublicKey publicKey, @NonNull String[] allowedAudiences, TokenVerifier.Predicate<AccessToken>[] additionalTokenChecks) {
 
         this.publicKey = publicKey;
+        this.allowedAudiences = allowedAudiences;
+        this.additionalTokenChecks = additionalTokenChecks;
         this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
         this.setAuthenticationTokenClass(TOKEN_CLASS);
     }
@@ -46,16 +51,18 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
     @Override
     protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         log.trace("Creating token verifier");
-        TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class);
-
-        verifier = verifier.publicKey(publicKey)
-                .withChecks(JsonWebToken::isActive);
+        TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class)
+                .withDefaultChecks()
+                .publicKey(publicKey)
+                .audience(allowedAudiences)
+                .withChecks(additionalTokenChecks);
 
         String subject;
         log.trace("Verifying token");
         AccessToken accessToken = null;
         try {
-            verifier.verify();
+            verifier
+                    .verify();
             accessToken = verifier.getToken();
         } catch (VerificationException e) {
             log.trace("Verification failed",e);
@@ -77,7 +84,7 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
         }
 
 
-        return new ConqueryAuthenticationInfo(new UserId(subject), token, this, true,alternativeIds);
+        return new ConqueryAuthenticationInfo(new UserId(subject), token, this, true, alternativeIds);
     }
 
 }

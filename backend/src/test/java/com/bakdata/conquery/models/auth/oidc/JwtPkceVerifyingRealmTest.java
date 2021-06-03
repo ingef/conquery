@@ -9,6 +9,7 @@ import org.apache.shiro.authc.BearerToken;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 
 import java.security.KeyPair;
@@ -24,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JwtPkceVerifyingRealmTest {
 
+    private static String AUDIENCE = "test_aud";
     private static JwtPkceVerifyingRealm REALM;
     private static RSAPrivateKey PRIVATE_KEY;
     private static RSAPublicKey PUBLIC_KEY;
@@ -38,7 +40,7 @@ class JwtPkceVerifyingRealmTest {
         PUBLIC_KEY = (RSAPublicKey) pair.getPublic();
 
         // Create the realm
-        REALM = new JwtPkceVerifyingRealm(PUBLIC_KEY);
+        REALM = new JwtPkceVerifyingRealm(PUBLIC_KEY, new String[] {AUDIENCE}, new TokenVerifier.Predicate[0]);
     }
 
 
@@ -50,21 +52,52 @@ class JwtPkceVerifyingRealmTest {
 
         Date issueDate = new Date();
         Date expDate = DateUtils.addMinutes(issueDate, 1);
-        String token = JWT.create().withIssuer(REALM.getName()).withSubject(expected.getEmail()).withIssuedAt(issueDate).withExpiresAt(expDate).sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+        String token = JWT.create()
+                .withIssuer(REALM.getName())
+                .withAudience(AUDIENCE)
+                .withSubject(expected.getEmail())
+                .withIssuedAt(issueDate)
+                .withExpiresAt(expDate)
+                .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
         BearerToken accessToken = new BearerToken(token);
 
         assertThat(REALM.doGetConqueryAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
     }
 
     @Test
-    void verifyInvalidToken() {
+    void verifyInvalidTokenAudience() {
+
+        // Setup the expected user id
+        UserId expected = new UserId("Test");
+
+        Date issueDate = new Date();
+        Date expDate = DateUtils.addMinutes(issueDate, 1);
+        String token = JWT.create()
+                .withIssuer(REALM.getName())
+                .withAudience("wrong_aud")
+                .withSubject(expected.getEmail())
+                .withIssuedAt(issueDate)
+                .withExpiresAt(expDate)
+                .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+        BearerToken accessToken = new BearerToken(token);
+
+        assertThatCode(() -> REALM.doGetConqueryAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
+    }
+
+    @Test
+    void verifyInvalidTokenOutdated() {
 
         // Setup the expected user id
         UserId expected = new UserId("Test");
 
         Date issueDate = new Date();
         Date expDate = DateUtils.addMinutes(issueDate, -1);
-        String token = JWT.create().withIssuer(REALM.getName()).withSubject(expected.getEmail()).withIssuedAt(issueDate).withExpiresAt(expDate).sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+        String token = JWT.create()
+                .withIssuer(REALM.getName())
+                .withSubject(expected.getEmail())
+                .withIssuedAt(issueDate)
+                .withExpiresAt(expDate)
+                .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
         BearerToken accessToken = new BearerToken(token);
 
         assertThatCode(() -> REALM.doGetConqueryAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);

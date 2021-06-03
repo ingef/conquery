@@ -11,9 +11,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.shiro.realm.Realm;
+import org.keycloak.TokenVerifier;
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jwk.JWKParser;
+import org.keycloak.representations.AccessToken;
 
 import java.security.PublicKey;
 
@@ -30,9 +32,11 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
      * It can be retrieved from the IDP.
      */
     private JWK jwk;
+    private String[] allowedAudiences = {};
 
     public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {
-        return new JwtPkceVerifyingRealm(getPublicKey(jwk));
+        TokenVerifier.Predicate<AccessToken>[] additionalVerifiers = new TokenVerifier.Predicate[0];
+        return new JwtPkceVerifyingRealm(getPublicKey(jwk), allowedAudiences, additionalVerifiers);
     }
 
 
