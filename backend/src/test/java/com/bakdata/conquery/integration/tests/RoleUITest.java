@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
-import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 
 /**
@@ -52,7 +51,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			user.addRole(storage, mandator);
 
 
-			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), RoleUIResource.class, "getRole")
+			URI classBase = conquery.defaultAdminURIBuilder().path(RoleUIResource.class, "getRole")
 				.buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
 	
 			Response response = conquery

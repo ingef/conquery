@@ -18,14 +18,12 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.resources.api.QueryResource;
-import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.experimental.UtilityClass;
@@ -82,10 +80,8 @@ public class IntegrationUtils {
 	}
 
 	private static URI getPostQueryURI(StandaloneSupport conquery) {
-		return HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), QueryResource.class, "postQuery")
-							  .buildFromMap(Map.of(
-									  "dataset", conquery.getDataset().getId()
-							  ));
+		return conquery.defaultApiURIBuilder().path(QueryResource.class,"postQuery").buildFromMap(Map.of(
+				"dataset", conquery.getDataset().getId()));
 	}
 
 	private static JsonNode getRawExecutionStatus(String id, StandaloneSupport conquery, User user) {
@@ -112,7 +108,7 @@ public class IntegrationUtils {
 	}
 
 	private static URI getQueryStatusURI(StandaloneSupport conquery, String id) {
-		return HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), QueryResource.class, "getStatus")
+		return conquery.defaultApiURIBuilder().path( QueryResource.class, "getStatus")
 							  .buildFromMap(Map.of(
 									  "query", id, "dataset", conquery.getDataset().getId()
 							  ));

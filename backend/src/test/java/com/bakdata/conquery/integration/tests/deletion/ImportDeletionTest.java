@@ -34,7 +34,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
-import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -131,13 +130,13 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Issuing deletion of import {}", importId);
 
-			final URI deleteImportUri =
-					HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "deleteImportView")
-								   .buildFromMap(Map.of(
-										   ResourceConstants.DATASET, conquery.getDataset().getId(),
-										   ResourceConstants.TABLE, importId.getTable(),
-										   ResourceConstants.IMPORT_ID, importId
-								   ));
+			final URI deleteImportUri = conquery.defaultAdminURIBuilder()
+												.path(AdminTablesResource.class, "deleteImportView")
+												.buildFromMap(Map.of(
+														ResourceConstants.DATASET, conquery.getDataset().getId(),
+														ResourceConstants.TABLE, importId.getTable(),
+														ResourceConstants.IMPORT_ID, importId
+												));
 
 			final Response delete = conquery.getClient().target(deleteImportUri).request(MediaType.APPLICATION_JSON).delete();
 

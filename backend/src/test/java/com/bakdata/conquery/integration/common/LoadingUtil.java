@@ -43,7 +43,6 @@ import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColum
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
-import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -162,7 +161,7 @@ public class LoadingUtil {
 		for (File file : preprocessedFiles) {
 			assertThat(file).exists();
 
-			final URI addImport = HierarchyHelper.fromHierachicalPathResourceMethod(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
+			final URI addImport = support.defaultAdminURIBuilder().path(AdminDatasetResource.class, "addImport")
 												 .queryParam("file", file)
 												 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
 
