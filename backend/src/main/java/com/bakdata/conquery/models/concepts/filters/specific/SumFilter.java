@@ -84,7 +84,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	}
 
 	@Override
-	public FilterNode createAggregator(RANGE value) {
+	public FilterNode createFilterNode(RANGE value) {
 		ColumnAggregator<?> aggregator = getAggregator();
 
 		if (distinctByColumn != null) {

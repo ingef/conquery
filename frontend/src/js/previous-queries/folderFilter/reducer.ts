@@ -8,7 +8,7 @@ import {
   removeFolderFromFilter,
   setFolderFilter,
   toggleFoldersOpen,
-  toggleNoFoldersFilder,
+  toggleNoFoldersFilter,
 } from "./actions";
 
 export type PreviousQueriesFolderFilterStateT = {
@@ -47,7 +47,7 @@ const reducer = (
         noFoldersActive: false,
         folders: [...folders.slice(0, idx), ...folders.slice(idx + 1)],
       };
-    case getType(toggleNoFoldersFilder):
+    case getType(toggleNoFoldersFilter):
       return { ...state, noFoldersActive: !state.noFoldersActive, folders: [] };
     case getType(toggleFoldersOpen):
       storeUserSettings({

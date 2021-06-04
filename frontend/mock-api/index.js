@@ -73,7 +73,7 @@ module.exports = function (app, port) {
         if (dice <= 0.1) {
           res.status(422);
           res.send(ERROR);
-        } else if (dice > 0.1 && dice <= 0.9) {
+        } else if (dice > 0.1 && dice <= 0.7) {
           res.send(
             JSON.stringify({
               id: 1,
@@ -81,7 +81,7 @@ module.exports = function (app, port) {
               progress: Math.floor(Math.random() * 10) / 10,
             }),
           );
-        } else if (dice > 0.9 && dice <= 0.95) {
+        } else if (dice > 0.7 && dice <= 0.75) {
           res.send(
             JSON.stringify({
               id: 1,
@@ -100,7 +100,17 @@ module.exports = function (app, port) {
               id: 1,
               status: "DONE",
               numberOfResults: 5,
-              resultUrl: `/api/results/results.csv`,
+              resultUrls: [
+                `/api/results/results.xlsx`,
+                `/api/results/results.csv`,
+              ],
+              columnDescriptions: [
+                {
+                  label: "Money Range",
+                  selectId: null,
+                  type: "MONEY",
+                },
+              ],
             }),
           );
         }
@@ -167,16 +177,17 @@ module.exports = function (app, port) {
 
       setTimeout(() => {
         const ids = [];
-        const possibleTags = [
-          "research",
-          "fun",
-          "test",
-          "group 1",
-          "group 1 – details",
-          "important",
-          "jk",
-          "interesting",
-          "a rather long tagname",
+        const possibleTagsWithProbabilities = [
+          ["research", 0.3],
+          ["fun", 0.02],
+          ["test", 0.02],
+          ["group 1", 0.2],
+          ["group 1 – details", 0.2],
+          ["important", 0.02],
+          ["jk", 0.02],
+          ["interesting", 0.03],
+          ["a rather long tagname", 0.001],
+          ["Another very long long tagname, 2020", 0.001],
         ];
 
         for (var i = 25600; i < 35600; i++) {
@@ -188,14 +199,20 @@ module.exports = function (app, port) {
             numberOfResults: notExecuted
               ? null
               : Math.floor(Math.random() * 500000),
-            tags: shuffleArray(possibleTags.filter(() => Math.random() < 0.3)),
+            tags: shuffleArray(
+              possibleTagsWithProbabilities
+                .filter(([, prob]) => Math.random() < prob)
+                .map(([tag]) => tag),
+            ),
             createdAt: new Date(
               Date.now() - Math.floor(Math.random() * 10000000),
             ).toISOString(),
             own: Math.random() < 0.1,
             canExpand: Math.random() < 0.8,
             shared: Math.random() < 0.8,
-            resultUrl: notExecuted ? null : `/api/results/results.csv`,
+            resultUrls: notExecuted
+              ? []
+              : [`/api/results/results.xlsx`, `/api/results/results.csv`],
             ownerName: "System",
             ...(Math.random() > 0.2
               ? { queryType: "CONCEPT_QUERY" }

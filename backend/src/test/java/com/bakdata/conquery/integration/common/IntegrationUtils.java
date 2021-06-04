@@ -17,6 +17,8 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.FullExecutionStatus;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
@@ -135,7 +137,7 @@ public class IntegrationUtils {
 									.post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
 
 
-		assertThat(response.getStatusInfo().getStatusCode())
+		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", postQueryURI)
 				.isEqualTo(expectedResponseCode);
 
 		if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
@@ -162,6 +164,27 @@ public class IntegrationUtils {
 		}
 
 		return ManagedExecutionId.Parser.INSTANCE.parse(id);
+	}
+
+	public static FullExecutionStatus getExecutionStatus(StandaloneSupport conquery, ManagedExecutionId executionId, User user, int expectedResponseCode) {
+		final URI queryStatusURI = getQueryStatusURI(conquery, executionId.toString());
+
+		final String userToken = conquery.getAuthorizationController()
+				.getConqueryTokenRealm()
+				.createTokenForUser(user.getId());
+
+		Response response = conquery.getClient()
+				.target(queryStatusURI)
+				.request(MediaType.APPLICATION_JSON_TYPE)
+				.header("Authorization", "Bearer " + userToken)
+				.get();
+
+
+		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", queryStatusURI)
+				.isEqualTo(expectedResponseCode);
+
+
+		return response.readEntity(FullExecutionStatus.class);
 	}
 
 }
