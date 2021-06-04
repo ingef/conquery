@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -25,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JwtPkceVerifyingRealmTest {
 
+    public static final String HTTP_REALM_URL = "http://realm.url";
     private static String AUDIENCE = "test_aud";
     private static JwtPkceVerifyingRealm REALM;
     private static RSAPrivateKey PRIVATE_KEY;
@@ -40,7 +42,11 @@ class JwtPkceVerifyingRealmTest {
         PUBLIC_KEY = (RSAPublicKey) pair.getPublic();
 
         // Create the realm
-        REALM = new JwtPkceVerifyingRealm(PUBLIC_KEY, new String[] {AUDIENCE}, new TokenVerifier.Predicate[0]);
+        REALM = new JwtPkceVerifyingRealm(
+                PUBLIC_KEY,
+                new String[] {AUDIENCE},
+                List.of(JwtPkceVerifyingRealmFactory.ScriptedTokenChecker.create("t.getOtherClaims().get(\"groups\").equals(\"conquery\")")),
+                HTTP_REALM_URL);
     }
 
 
@@ -54,6 +60,30 @@ class JwtPkceVerifyingRealmTest {
         Date expDate = DateUtils.addMinutes(issueDate, 1);
         String token = JWT.create()
                 .withIssuer(REALM.getName())
+                .withIssuer(HTTP_REALM_URL)
+                .withAudience(AUDIENCE)
+                .withSubject(expected.getEmail())
+                .withIssuedAt(issueDate)
+                .withExpiresAt(expDate)
+                .withClaim("groups", "conquery")
+                .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+        BearerToken accessToken = new BearerToken(token);
+
+        assertThat(REALM.doGetConqueryAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+    }
+
+
+    @Test
+    void verifyInvalidTokenMissingCustomClaim() {
+
+        // Setup the expected user id
+        UserId expected = new UserId("Test");
+
+        Date issueDate = new Date();
+        Date expDate = DateUtils.addMinutes(issueDate, 1);
+        String token = JWT.create()
+                .withIssuer(REALM.getName())
+                .withIssuer(HTTP_REALM_URL)
                 .withAudience(AUDIENCE)
                 .withSubject(expected.getEmail())
                 .withIssuedAt(issueDate)
@@ -61,7 +91,7 @@ class JwtPkceVerifyingRealmTest {
                 .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
         BearerToken accessToken = new BearerToken(token);
 
-        assertThat(REALM.doGetConqueryAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+        assertThatCode(() -> REALM.doGetConqueryAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
     }
 
     @Test
@@ -75,6 +105,7 @@ class JwtPkceVerifyingRealmTest {
         String token = JWT.create()
                 .withIssuer(REALM.getName())
                 .withAudience("wrong_aud")
+                .withIssuer(HTTP_REALM_URL)
                 .withSubject(expected.getEmail())
                 .withIssuedAt(issueDate)
                 .withExpiresAt(expDate)
@@ -94,6 +125,7 @@ class JwtPkceVerifyingRealmTest {
         Date expDate = DateUtils.addMinutes(issueDate, -1);
         String token = JWT.create()
                 .withIssuer(REALM.getName())
+                .withIssuer(HTTP_REALM_URL)
                 .withSubject(expected.getEmail())
                 .withIssuedAt(issueDate)
                 .withExpiresAt(expDate)

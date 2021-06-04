@@ -23,6 +23,7 @@ import org.keycloak.representations.JsonWebToken;
 
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -36,13 +37,16 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
     private final PublicKey publicKey;
     private final String[] allowedAudiences;
+    private final TokenVerifier.Predicate<AccessToken>[] defaultTokenChecks;
     private final TokenVerifier.Predicate<AccessToken>[] additionalTokenChecks;
 
-    public JwtPkceVerifyingRealm(@NonNull PublicKey publicKey, @NonNull String[] allowedAudiences, TokenVerifier.Predicate<AccessToken>[] additionalTokenChecks) {
+    public JwtPkceVerifyingRealm(@NonNull PublicKey publicKey, @NonNull String[] allowedAudiences, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, @NonNull String issuer) {
 
         this.publicKey = publicKey;
         this.allowedAudiences = allowedAudiences;
-        this.additionalTokenChecks = additionalTokenChecks;
+        Object[] veriferObjects = additionalTokenChecks.toArray();
+        this.additionalTokenChecks = Arrays.copyOf(veriferObjects, veriferObjects.length,TokenVerifier.Predicate[].class);
+        this.defaultTokenChecks = new TokenVerifier.Predicate[] {new TokenVerifier.RealmUrlCheck(issuer), TokenVerifier.SUBJECT_EXISTS_CHECK, TokenVerifier.IS_ACTIVE};
         this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
         this.setAuthenticationTokenClass(TOKEN_CLASS);
     }
@@ -52,7 +56,7 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
     protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         log.trace("Creating token verifier");
         TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class)
-                .withDefaultChecks()
+                .withChecks(defaultTokenChecks)
                 .publicKey(publicKey)
                 .audience(allowedAudiences)
                 .withChecks(additionalTokenChecks);
