@@ -61,6 +61,8 @@ interface PropsT {
   onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
+  onSelectInputTableView: (tableIdx: number) => void;
+  onResetTable: (tableIdx: number) => void;
 }
 
 const MenuColumn: FC<PropsT> = ({
@@ -73,6 +75,8 @@ const MenuColumn: FC<PropsT> = ({
   onDropConcept,
   onRemoveConcept,
   onToggleTable,
+  onSelectInputTableView,
+  onResetTable,
 }) => {
   const { t } = useTranslation();
   const isOnlyOneTableIncluded =
@@ -102,15 +106,13 @@ const MenuColumn: FC<PropsT> = ({
             <MenuColumnItem
               key={tableIdx}
               table={table}
-              isActive={
-                editorState.selectedInputTableIdx === tableIdx &&
-                !editorState.detailsViewActive
-              }
+              isActive={editorState.selectedInputTableIdx === tableIdx}
               isOnlyOneTableIncluded={isOnlyOneTableIncluded}
               blocklistedTables={blocklistedTables}
               allowlistedTables={allowlistedTables}
-              onClick={() => editorState.onSelectInputTableView(tableIdx)}
+              onClick={() => onSelectInputTableView(tableIdx)}
               onToggleTable={(value) => onToggleTable(tableIdx, value)}
+              onResetTable={() => onResetTable(tableIdx)}
             />
           ))}
         </div>

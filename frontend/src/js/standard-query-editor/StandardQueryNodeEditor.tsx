@@ -17,6 +17,7 @@ import {
   setFilterValue,
   switchFilterMode,
   resetAllFilters,
+  resetTable,
   toggleTimestamps,
   setSelects,
   setTableSelects,
@@ -91,6 +92,7 @@ const StandardQueryNodeEditor = () => {
       }
       onSwitchFilterMode={(...args) => dispatch(switchFilterMode(...args))}
       onResetAllFilters={() => dispatch(resetAllFilters())}
+      onResetTable={(tableIdx: number) => dispatch(resetTable({ tableIdx }))}
       onToggleTimestamps={() => dispatch(toggleTimestamps())}
       onToggleSecondaryIdExclude={() => dispatch(toggleSecondaryIdExclude())}
       onSetDateColumn={(tableIdx: number, value) =>
