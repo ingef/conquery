@@ -13,7 +13,7 @@ public class RealFilterNode extends NumberFilterNode<Range.DoubleRange> {
 
 	@Override
 	public RealFilterNode doClone(CloneContext ctx) {
-		return new RealFilterNode(getColumn(), filterValue);
+		return new RealFilterNode(getColumn(), getFilterValue());
 	}
 
 	@Override

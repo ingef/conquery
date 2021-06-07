@@ -60,7 +60,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 			return Optional.empty();
 		}
 
-		query.checkRequiredTables(ctx.getStorage());
+		query.checkRequiredTables();
 		query.init(entity, ctx);
 
 		if (!query.isOfInterest(entity)) {

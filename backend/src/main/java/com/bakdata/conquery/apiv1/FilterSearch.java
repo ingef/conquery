@@ -1,6 +1,13 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.bakdata.conquery.models.concepts.filters.event.AbstractSelectFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -13,9 +20,6 @@ import com.univocity.parsers.csv.CsvParser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
-import java.util.*;
 
 
 @Slf4j

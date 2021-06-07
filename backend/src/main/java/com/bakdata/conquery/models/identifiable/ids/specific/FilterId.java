@@ -7,13 +7,12 @@ import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class FilterId extends AId<Filter<?>> implements NamespacedId {
+public class FilterId extends AId<Filter> implements NamespacedId {
 
 	private final ConnectorId connector;
 	private final String filter;

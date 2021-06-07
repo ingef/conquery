@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.filters.specific;
+package com.bakdata.conquery.models.concepts.filters.event;
 
 import java.math.BigDecimal;
 
@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Column;
@@ -15,6 +16,7 @@ import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "NUMBER", base = Filter.class)
-public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends SingleColumnFilter<RANGE> {
+public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends SingleColumnFilter implements EventFilter<RANGE> {
 
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
@@ -54,8 +56,7 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(RANGE value) {
-
+	public EventFilterNode createEventFilter(RANGE value) {
 		switch (getColumn().getType()) {
 			case MONEY:
 				return new MoneyFilterNode(getColumn(), (Range.LongRange) value);
@@ -69,5 +70,6 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 			default:
 				throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
 		}
+
 	}
 }

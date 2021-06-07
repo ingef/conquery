@@ -19,7 +19,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.api.description.FEValue;
-import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.concepts.filters.event.AbstractSelectFilter;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HFilters;
 import lombok.Data;

@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
@@ -90,11 +91,11 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	/**
 	 * Allows concepts to create their own altered FiltersNode if necessary.
 	 */
-	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
-		if (filters.isEmpty() && aggregators.isEmpty()) {
+	public QPNode createConceptQuery(QueryPlanContext context, List<EventFilterNode<?>> eventFilters, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
+		if (filters.isEmpty() && aggregators.isEmpty() && eventFilters.isEmpty()) {
 			return new Leaf();
 		}
-		return FiltersNode.create(filters, aggregators, eventDateAggregators);
+		return FiltersNode.create(eventFilters, filters, aggregators, eventDateAggregators);
 	}
 
 	@Override

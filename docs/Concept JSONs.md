@@ -190,7 +190,7 @@ This filter represents a select in the front end. This means that the user can s
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.BigMultiSelectFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.event.BigMultiSelectFilter`
 
 Supported Fields:
 
@@ -214,7 +214,7 @@ This filter represents a select in the front end. This means that the user can s
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.CountFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.aggregate.CountFilter`
 
 Supported Fields:
 
@@ -236,7 +236,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.CountQuartersFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.aggregate.CountQuartersFilter`
 
 Supported Fields:
 
@@ -256,7 +256,7 @@ This filter represents a select in the front end. This means that the user can s
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.DateDistanceFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.event.DateDistanceFilter`
 
 Supported Fields:
 
@@ -277,7 +277,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.DurationSumFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.aggregate.DurationSumFilter`
 
 Supported Fields:
 
@@ -297,7 +297,7 @@ This filter represents a filter on an integer columnof each event.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.NumberFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.event.NumberFilter`
 
 Supported Fields:
 
@@ -317,7 +317,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.PrefixTextFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.event.PrefixTextFilter`
 
 Supported Fields:
 
@@ -337,7 +337,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.QuartersInYearFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.aggregate.QuartersInYearFilter`
 
 Supported Fields:
 
@@ -357,7 +357,7 @@ This filter represents a select in the front end. This means that the user can s
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.MultiSelectFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.event.MultiSelectFilter`
 
 Supported Fields:
 
@@ -381,7 +381,7 @@ This filter represents a select in the front end. This means that the user can s
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.SelectFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.event.SelectFilter`
 
 Example:
 
@@ -415,7 +415,7 @@ This filter represents a filter on the sum of one integer column.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.SumFilter`
+Java Type: `com.bakdata.conquery.models.concepts.filters.aggregate.SumFilter`
 
 Supported Fields:
 

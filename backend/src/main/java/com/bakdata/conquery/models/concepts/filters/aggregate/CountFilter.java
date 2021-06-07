@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.filters.specific;
+package com.bakdata.conquery.models.concepts.filters.aggregate;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
@@ -26,7 +27,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Getter
 @Setter
 @CPSType(id = "COUNT", base = Filter.class)
-public class CountFilter extends Filter<Range.LongRange> {
+public class CountFilter extends Filter implements AggregationFilter<Range.LongRange> {
 
 	@Valid
 	@NotNull
@@ -50,7 +51,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public FilterNode createFilterNode(Range.LongRange value) {
+	public FilterNode createAggregationFilter(Range.LongRange value) {
 		if (distinct || distinctByColumn != null) {
 			if (ArrayUtils.isEmpty(distinctByColumn) || distinctByColumn.length < 2) {
 				return new RangeFilterNode(

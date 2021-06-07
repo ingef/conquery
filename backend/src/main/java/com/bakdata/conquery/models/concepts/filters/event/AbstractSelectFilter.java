@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.filters.specific;
+package com.bakdata.conquery.models.concepts.filters.event;
 
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -11,6 +11,7 @@ import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.api.description.FEValue;
+import com.bakdata.conquery.models.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -31,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @RequiredArgsConstructor
 @Slf4j
-public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
+public abstract class AbstractSelectFilter<VALUE> extends SingleColumnFilter implements EventFilter<VALUE> {
 
 	/**
 	 * user given mapping from the values in the CSVs to shown labels

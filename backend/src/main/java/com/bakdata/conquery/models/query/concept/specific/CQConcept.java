@@ -20,6 +20,9 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
+import com.bakdata.conquery.models.concepts.SelectHolder;
+import com.bakdata.conquery.models.concepts.filters.AggregationFilter;
+import com.bakdata.conquery.models.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.CBlock;
@@ -37,6 +40,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.EventDateUnionAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
@@ -149,11 +153,26 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		List<QPNode> tableNodes = new ArrayList<>();
 		for (CQTable table : tables) {
 
-			List<FilterNode<?>> filters = table.getFilters().stream()
-											   .map(FilterValue::createNode)
-											   .collect(Collectors.toList());
+
+			//TODO clean this up using streams etc
+			List<FilterNode<?>> filters = new ArrayList<>(table.getFilters().size());
+			List<EventFilterNode<?>> eventFilters = new ArrayList<>(table.getFilters().size());
 
 			//add filter to children
+			for (FilterValue filterValue : table.getFilters()) {
+
+				// Event filters are handled separately, so we separate them here already.
+				if (filterValue.getFilter() instanceof EventFilter){
+					EventFilterNode eventFilter = ((EventFilter) filterValue.getFilter()).createEventFilter(filterValue.getValue());
+
+					eventFilters.add(eventFilter);
+				}
+				if (filterValue.getFilter() instanceof AggregationFilter){
+
+					FilterNode agg = ((AggregationFilter) filterValue.getFilter()).createAggregationFilter(filterValue.getValue());
+					filters.add(agg);
+				}
+			}
 
 			List<Aggregator<?>> aggregators = new ArrayList<>();
 
@@ -180,7 +199,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			aggregators.addAll(eventDateUnionAggregators);
 
-			final QPNode filtersNode = getConcept().createConceptQuery(context, filters, aggregators, eventDateUnionAggregators);
+			final QPNode filtersNode = getConcept().createConceptQuery(context, eventFilters, filters, aggregators, eventDateUnionAggregators);
+
 
 			// Link up the ExistsAggregators to the node
 			existsAggregators.forEach(agg -> agg.setReference(filtersNode));

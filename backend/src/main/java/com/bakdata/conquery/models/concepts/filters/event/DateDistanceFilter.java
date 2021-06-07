@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.filters.specific;
+package com.bakdata.conquery.models.concepts.filters.event;
 
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
@@ -9,11 +9,13 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Getter @Setter @Slf4j
 @CPSType(id="DATE_DISTANCE", base=Filter.class)
-public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
+public class DateDistanceFilter extends SingleColumnFilter implements EventFilter<Range.LongRange> {
 
 	@NotNull
 	private ChronoUnit timeUnit = ChronoUnit.YEARS;
@@ -46,8 +48,9 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 		}
 	}
 	
+
 	@Override
-	public FilterNode createFilterNode(Range.LongRange value) {
+	public EventFilterNode createEventFilter(Range.LongRange value) {
 		return new DateDistanceFilterNode(getColumn(), timeUnit, value);
 	}
 }

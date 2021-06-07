@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.api.description.FEValidityDate;
 import com.bakdata.conquery.models.api.description.FEValue;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.concepts.filters.Filter;
@@ -245,7 +244,7 @@ public class FrontEndConceptBuilder {
 		return result;
 	}
 
-	public static FEFilter createFilter(Filter<?> filter) {
+	public static FEFilter createFilter(Filter filter) {
 		FEFilter f = FEFilter.builder()
 							 .id(filter.getId())
 							 .label(filter.getLabel())

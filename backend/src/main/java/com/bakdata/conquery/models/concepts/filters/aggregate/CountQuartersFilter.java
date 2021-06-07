@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.filters.specific;
+package com.bakdata.conquery.models.concepts.filters.aggregate;
 
 import java.util.EnumSet;
 
@@ -6,6 +6,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -18,7 +19,7 @@ import lombok.Setter;
 
 @Setter @Getter
 @CPSType(id="COUNT_QUARTERS", base=Filter.class)
-public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
+public class CountQuartersFilter extends SingleColumnFilter implements AggregationFilter<Range.LongRange> {
 	
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
@@ -32,7 +33,7 @@ public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
 	}
 
 	@Override
-	public FilterNode createFilterNode(Range.LongRange value) {
+	public FilterNode createAggregationFilter(Range.LongRange value) {
 		if (getColumn().getType() == MajorTypeId.DATE_RANGE) {
 			return new RangeFilterNode(value, new CountQuartersOfDateRangeAggregator(getColumn()));
 		}

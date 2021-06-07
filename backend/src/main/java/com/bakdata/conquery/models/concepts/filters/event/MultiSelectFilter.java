@@ -1,9 +1,10 @@
-package com.bakdata.conquery.models.concepts.filters.specific;
+package com.bakdata.conquery.models.concepts.filters.event;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,15 +14,15 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@CPSType(id = "BIG_MULTI_SELECT", base = Filter.class)
-public class BigMultiSelectFilter extends AbstractSelectFilter<String[]> {
+@CPSType(id = "SELECT", base = Filter.class)
+public class MultiSelectFilter extends AbstractSelectFilter<String[]> {
 
-	public BigMultiSelectFilter() {
-		super(-1, FEFilterType.BIG_MULTI_SELECT);
+	public MultiSelectFilter() {
+		super(128, FEFilterType.MULTI_SELECT);
 	}
 
 	@Override
-	public FilterNode createFilterNode(String[] value) {
+	public EventFilterNode createEventFilter(String[] value) {
 		return new MultiSelectFilterNode(getColumn(), value);
 	}
 }

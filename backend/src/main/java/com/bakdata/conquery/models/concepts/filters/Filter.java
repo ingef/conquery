@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -29,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @Slf4j
-public abstract class Filter<FE_TYPE> extends Labeled<FilterId> implements NamespacedIdentifiable<FilterId> {
+public abstract class Filter extends Labeled<FilterId> implements NamespacedIdentifiable<FilterId> {
 
 	private String unit;
 	private String description;
@@ -49,7 +48,6 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> implements Names
 	@JsonIgnore
 	public abstract Column[] getRequiredColumns();
 
-	public abstract FilterNode<?> createFilterNode(FE_TYPE filterValue);
 
 	@Override
 	public FilterId createId() {

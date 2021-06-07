@@ -1,9 +1,10 @@
-package com.bakdata.conquery.models.concepts.filters.specific;
+package com.bakdata.conquery.models.concepts.filters.event;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.SelectFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,8 +23,9 @@ public class SelectFilter extends AbstractSelectFilter<String> {
 		super(128, FEFilterType.SELECT);
 	}
 
+
 	@Override
-	public FilterNode<?> createFilterNode(String value) {
+	public EventFilterNode<String> createEventFilter(String value) {
 		return new SelectFilterNode(getColumn(), value);
 	}
 }

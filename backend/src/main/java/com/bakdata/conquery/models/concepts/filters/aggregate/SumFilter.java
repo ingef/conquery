@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.filters.specific;
+package com.bakdata.conquery.models.concepts.filters.aggregate;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.concepts.filters.AggregationFilter;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -36,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "SUM", base = Filter.class)
-public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
+public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter implements AggregationFilter<RANGE> {
 
 
 	@Valid
@@ -84,8 +85,8 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	}
 
 	@Override
-	public FilterNode createFilterNode(RANGE value) {
-		ColumnAggregator<?> aggregator = getAggregator();
+	public FilterNode createAggregationFilter(RANGE value) {
+		ColumnAggregator<?> aggregator = selectAggregator();
 
 		if (distinctByColumn != null) {
 			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn()));
@@ -98,7 +99,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 		return new RangeFilterNode(value, aggregator);
 	}
 
-	private ColumnAggregator<?> getAggregator() {
+	private ColumnAggregator<?> selectAggregator() {
 		if (getSubtractColumn() == null) {
 			switch (getColumn().getType()) {
 				case MONEY:

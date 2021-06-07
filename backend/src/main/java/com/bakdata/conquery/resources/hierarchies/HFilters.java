@@ -15,5 +15,5 @@ import lombok.Setter;
 public abstract class HFilters extends HConnectors {
 
 	@PathParam(FILTER)
-	protected Filter<?> filter;
+	protected Filter filter;
 }

@@ -42,7 +42,7 @@ public class ConceptTreeConnector extends Connector {
 	private CTCondition condition = null;
 
 	@Valid @JsonManagedReference
-	private List<Filter<?>> filters = new ArrayList<>();
+	private List<Filter> filters = new ArrayList<>();
 
 	@JsonIgnore
 	@ValidationMethod(message = "Table and Column usage are exclusive")
@@ -70,7 +70,7 @@ public class ConceptTreeConnector extends Connector {
 	}
 
 	@Override
-	public List<Filter<?>> collectAllFilters() {
+	public List<Filter> collectAllFilters() {
 		return filters;
 	}
 

@@ -17,7 +17,7 @@ import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.concepts.filters.event.AbstractSelectFilter;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;

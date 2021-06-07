@@ -56,9 +56,9 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	@Getter(AccessLevel.NONE)
 	@Setter(AccessLevel.NONE)
 	@Valid
-	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
+	private transient IdMap<FilterId, Filter> allFiltersMap;
 
-	public Collection<Filter<?>> getFilters() {
+	public Collection<Filter> getFilters() {
 		return allFiltersMap.values();
 	}
 
@@ -105,10 +105,10 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	}
 
 	@JsonIgnore
-	public abstract List<Filter<?>> collectAllFilters();
+	public abstract List<Filter> collectAllFilters();
 
 	public synchronized void addImport(Import imp) {
-		for (Filter<?> f : collectAllFilters()) {
+		for (Filter f : collectAllFilters()) {
 			f.addImport(imp);
 		}
 	}
