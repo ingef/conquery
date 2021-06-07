@@ -73,7 +73,7 @@ const QueryResults: FC<PropsT> = ({
         const ending = url.split(".").reverse()[0];
 
         return (
-          <SxDownloadButton frame url={resultUrls[0]}>
+          <SxDownloadButton frame url={url}>
             {ending.toUpperCase()}
           </SxDownloadButton>
         );
