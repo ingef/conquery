@@ -112,6 +112,7 @@ export interface QueryNodeEditorPropsT {
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
   onResetAllFilters: () => void;
+  onResetTable: (tableIdx: number) => void;
   onToggleTimestamps?: () => void;
   onToggleSecondaryIdExclude?: () => void;
   onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
@@ -139,23 +140,16 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const dispatch = useDispatch();
 
   const {
-    setDetailsViewActive,
     toggleEditLabel,
     setInputTableViewActive,
     setFocusedInput,
     reset,
   } = createQueryNodeEditorActions(props.name);
 
-  // TODO: Move all of the callbacks out of that object and pass individually where necessary
-  const editorState = {
-    ...(props.editorState || {}),
-    onSelectDetailsView: () => dispatch(setDetailsViewActive()),
-    onToggleEditLabel: () => dispatch(toggleEditLabel()),
-    onSelectInputTableView: (tableIdx: number) =>
-      dispatch(setInputTableViewActive(tableIdx)),
-    onReset: () => dispatch(reset()),
-  };
-
+  const onSelectInputTableView = (tableIdx: number) =>
+    dispatch(setInputTableViewActive(tableIdx));
+  const onReset = () => dispatch(reset());
+  const onToggleEditLabel = () => dispatch(toggleEditLabel());
   const onShowDescription = (filterIdx: number) =>
     dispatch(setFocusedInput(filterIdx));
 
@@ -163,7 +157,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     if (!node) return;
 
     props.onCloseModal();
-    editorState.onReset();
+    onReset();
   }
 
   // To make sure that Close button is always visible and to consider
@@ -203,12 +197,12 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
                 text={node.label}
                 tooltip={t("help.editConceptName")}
                 selectTextOnMount={true}
-                editing={editorState.editingLabel}
+                editing={props.editorState.editingLabel}
                 onSubmit={(value) => {
                   props.onUpdateLabel(value);
-                  editorState.onToggleEditLabel();
+                  onToggleEditLabel();
                 }}
-                onToggleEdit={editorState.onToggleEditLabel}
+                onToggleEdit={onToggleEditLabel}
               />
             )}
             {node.isPreviousQuery && (node.label || node.id || node.ids)}
@@ -230,13 +224,15 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
           <ScrollContainer>
             <SxMenuColumn
               node={node}
-              editorState={editorState}
+              editorState={props.editorState}
               showTables={props.showTables}
               blocklistedTables={props.blocklistedTables}
               allowlistedTables={props.allowlistedTables}
               onDropConcept={props.onDropConcept}
               onRemoveConcept={props.onRemoveConcept}
               onToggleTable={props.onToggleTable}
+              onSelectInputTableView={onSelectInputTableView}
+              onResetTable={props.onResetTable}
             />
             <ContentColumn
               node={node}

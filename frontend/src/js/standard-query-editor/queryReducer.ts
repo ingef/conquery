@@ -1,3 +1,5 @@
+import { getType } from "typesafe-actions";
+
 import type {
   AndQueryT,
   TableT,
@@ -19,7 +21,7 @@ import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTre
 import type { TreesT } from "../concept-trees/reducer";
 import { isMultiSelectFilter } from "../model/filter";
 import { selectsWithDefaults } from "../model/select";
-import { resetAllFiltersInTables } from "../model/table";
+import { resetAllFiltersInTables, tableWithDefaults } from "../model/table";
 import {
   LOAD_PREVIOUS_QUERY_START,
   LOAD_PREVIOUS_QUERY_SUCCESS,
@@ -59,6 +61,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_DATE_COLUMN,
 } from "./actionTypes";
+import { resetTable } from "./actions";
 import type {
   StandardQueryNodeT,
   DragItemQuery,
@@ -429,6 +432,7 @@ const resetNodeAllFilters = (state: StandardQueryStateT) => {
   const node = state[andIdx].elements[orIdx];
 
   const newState = setElementProperties(state, andIdx, orIdx, {
+    excludeFromSecondaryIdQuery: false,
     excludeTimestamps: false,
     selects: selectsWithDefaults(node.selects),
   });
@@ -438,6 +442,33 @@ const resetNodeAllFilters = (state: StandardQueryStateT) => {
   const tables = resetAllFiltersInTables(node.tables);
 
   return updateNodeTables(newState, andIdx, orIdx, tables);
+};
+
+const resetNodeTable = (
+  state: StandardQueryStateT,
+  action: { payload: { tableIdx: number } },
+) => {
+  const nodeIdx = selectEditedNodePosition(state);
+  if (!nodeIdx) return state;
+  const { andIdx, orIdx } = nodeIdx;
+
+  const node = state[andIdx].elements[orIdx];
+
+  if (!node.tables) return state;
+
+  const { tableIdx } = action.payload;
+
+  const table = node.tables[tableIdx];
+
+  if (!table) return state;
+
+  return updateNodeTable(
+    state,
+    andIdx,
+    orIdx,
+    tableIdx,
+    tableWithDefaults(table),
+  );
 };
 
 const setGroupDate = (state: StandardQueryStateT, action: any) => {
@@ -1051,6 +1082,8 @@ const query = (
       return setNodeSelects(state, action);
     case RESET_ALL_FILTERS:
       return resetNodeAllFilters(state);
+    case getType(resetTable):
+      return resetNodeTable(state, action);
     case SWITCH_FILTER_MODE:
       return switchNodeFilterMode(state, action);
     case TOGGLE_TIMESTAMPS:

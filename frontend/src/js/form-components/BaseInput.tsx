@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import type { CurrencyConfigT } from "../api/types";
 import IconButton from "../button/IconButton";
+import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 
 import CurrencyInput from "./CurrencyInput";
@@ -115,7 +116,7 @@ const BaseInput = (props: Props) => {
           {...inputProps}
         />
       )}
-      {exists(props.value) && (
+      {exists(props.value) && !isEmpty(props.value) && (
         <ClearZoneIconButton
           tiny
           icon="times"

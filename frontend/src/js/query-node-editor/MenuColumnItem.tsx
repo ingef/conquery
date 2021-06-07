@@ -1,12 +1,13 @@
 import styled from "@emotion/styled";
 import React, { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import FaIcon from "../icon/FaIcon";
 import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
+import WithTooltip from "../tooltip/WithTooltip";
 
-const MenuColumnButton = styled("div")<{ disabled?: boolean }>`
+const Container = styled("div")<{ disabled?: boolean }>`
   font-size: ${({ theme }) => theme.font.md};
   line-height: 21px;
   padding: 8px 15px;
@@ -15,9 +16,10 @@ const MenuColumnButton = styled("div")<{ disabled?: boolean }>`
     disabled ? theme.col.gray : theme.col.black};
   width: 100%;
   text-align: left;
-  display: inline-flex;
+  display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   background-color: transparent;
 
   &:hover {
@@ -35,14 +37,15 @@ const SxIconButton = styled(IconButton)`
     line-height: ${({ theme }) => theme.font.lg};
   }
 `;
-const SxFaIcon = styled(FaIcon)`
-  font-size: ${({ theme }) => theme.font.lg};
-  line-height: ${({ theme }) => theme.font.lg};
-`;
 
 const Label = styled("span")`
   padding-left: 10px;
   line-height: ${({ theme }) => theme.font.lg};
+`;
+
+const Row = styled("div")`
+  display: flex;
+  align-items: center;
 `;
 
 interface PropsT {
@@ -53,17 +56,19 @@ interface PropsT {
   allowlistedTables?: string[];
   onClick: () => void;
   onToggleTable: (value: boolean) => void;
+  onResetTable: () => void;
 }
 
 const MenuColumnItem: FC<PropsT> = ({
   table,
-  isActive,
   isOnlyOneTableIncluded,
   blocklistedTables,
   allowlistedTables,
   onClick,
   onToggleTable,
+  onResetTable,
 }) => {
+  const { t } = useTranslation();
   const isDisabled = tableIsDisabled(
     table,
     blocklistedTables,
@@ -76,29 +81,46 @@ const MenuColumnItem: FC<PropsT> = ({
   const isFilterActive = tableHasActiveFilters(table);
 
   return (
-    <MenuColumnButton disabled={isDisabled} onClick={onClick}>
-      <SxIconButton
-        regular
-        icon={includable ? "square" : "check-square"}
-        disabled={isDisabled || (!includable && !excludable)}
-        onClick={(event) => {
-          // To prevent selecting the table as well, see above
-          event.stopPropagation();
+    <Container disabled={isDisabled} onClick={onClick}>
+      <Row>
+        <SxIconButton
+          regular
+          icon={includable ? "square" : "check-square"}
+          disabled={isDisabled || (!includable && !excludable)}
+          onClick={(event) => {
+            // To prevent selecting the table as well, see above
+            event.stopPropagation();
 
-          if (isDisabled) {
-            return;
-          }
+            if (isDisabled) {
+              return;
+            }
 
-          if (includable || excludable) {
-            onToggleTable(!table.exclude);
-          }
-        }}
-      />
-      <Label>{table.label}</Label>
+            if (includable || excludable) {
+              onToggleTable(!table.exclude);
+            }
+          }}
+        />
+        <Label>{table.label}</Label>
+      </Row>
       {isFilterActive && (
-        <SxFaIcon right white={isActive} light={!isActive} icon="filter" />
+        <WithTooltip text={t("queryNodeEditor.resetSettings")}>
+          <SxIconButton
+            active
+            icon="filter"
+            onClick={(event) => {
+              // To prevent selecting the table as well, see above
+              event.stopPropagation();
+
+              if (isDisabled) {
+                return;
+              }
+
+              onResetTable();
+            }}
+          />
+        </WithTooltip>
       )}
-    </MenuColumnButton>
+    </Container>
   );
 };
 
