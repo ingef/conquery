@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.concept;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceKeyDeserializer;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.concepts.filters.EventFilter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -33,10 +35,13 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.concept.filter.CQUnfilteredTable;
+import com.bakdata.conquery.models.query.concept.filter.CQFilteredTable;
+import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.filter.ValidityDateContainer;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan.TableExportDescription;
+import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
@@ -69,7 +74,7 @@ public class TableExportQuery extends IQuery {
 	private Range<LocalDate> dateRange = Range.all();
 	@NotEmpty
 	@Valid
-	private List<CQUnfilteredTable> tables;
+	private List<CQFilteredTable> tables;
 
 	@InternalOnly
 	@JsonDeserialize(keyUsing = NsIdReferenceKeyDeserializer.class)
@@ -85,16 +90,26 @@ public class TableExportQuery extends IQuery {
 
 		//TODO collect column positions, pull validity-dates to the front, collect secondaryIds to the front and merge them
 
-		for (CQUnfilteredTable table : tables) {
-			Connector connector = table.getTable();
+		for (CQFilteredTable table : tables) {
+			Connector connector = table.getConnector();
 
 			// if no dateColumn is provided, we use the default instead which is always the first one.
 			// Set to null if none-available in the connector.
 			final Column validityDateColumn = findValidityDateColumn(connector, table.getDateColumn());
 
+			List<EventFilterNode<?>> filters = new ArrayList<>(table.getFilters().size());
+
+			// Handle only EventFilters here as the rest wont work
+			for (FilterValue<?> filterValue : table.getFilters()) {
+				if(filterValue.getFilter() instanceof EventFilter){
+					filters.add(createEventFilterNode(filterValue));
+				}
+			}
+
 			final TableExportDescription exportDescription = new TableExportDescription(
 					connector.getTable(),
-					validityDateColumn
+					validityDateColumn,
+					FiltersNode.create(filters, Collections.emptyList(), Collections.emptyList())
 			);
 
 			resolvedConnectors.add(exportDescription);
@@ -106,6 +121,10 @@ public class TableExportQuery extends IQuery {
 				resolvedConnectors,
 				positions
 		);
+	}
+
+	private EventFilterNode createEventFilterNode(FilterValue<?> filterValue) {
+		return ((EventFilter) filterValue.getFilter()).createEventFilter(filterValue.getValue());
 	}
 
 	@Override
@@ -125,7 +144,7 @@ public class TableExportQuery extends IQuery {
 
 		// SecondaryIds are grouped from all tables, and at the beginning
 		tables.stream()
-			  .map(cqUnfilteredTable -> cqUnfilteredTable.getTable().getTable().getColumns())
+			  .map(cqFilteredTable -> cqFilteredTable.getConnector().getTable().getColumns())
 			  .flatMap(Arrays::stream)
 			  .map(Column::getSecondaryId)
 			  .filter(Objects::nonNull)
@@ -135,8 +154,8 @@ public class TableExportQuery extends IQuery {
 			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
 
 
-		for (CQUnfilteredTable table : tables) {
-			Connector connector = table.getTable();
+		for (CQFilteredTable table : tables) {
+			Connector connector = table.getConnector();
 			final Column validityDateColumn = findValidityDateColumn(connector, table.getDateColumn());
 
 			if (validityDateColumn != null) {

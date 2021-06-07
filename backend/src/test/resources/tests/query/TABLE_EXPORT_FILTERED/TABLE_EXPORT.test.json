@@ -1,0 +1,90 @@
+{
+  "type": "QUERY_TEST",
+  "label": "TABLE_EXPORT Test",
+  "expectedCsv": "tests/query/TABLE_EXPORT_FILTERED/expected.csv",
+  "query": {
+    "type": "TABLE_EXPORT",
+    "tables": [
+      {
+        "id": "concept.connector",
+        "dateColumn": {
+          "value": "concept.connector.datum"
+        },
+        "filters": [
+          {
+            "filter": "concept.connector.value",
+            "type": "REAL_RANGE",
+            "value": {
+              "min": 1
+            }
+          }
+        ]
+      }
+    ],
+    "dateRange": {
+      "min": "2000-01-01",
+      "max": "2020-12-31"
+    },
+    "query": {
+      "type": "CONCEPT_QUERY",
+      "root": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector"
+          }
+        ]
+      }
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          },
+          "filters": {
+            "name": "value",
+            "column": "table1.value",
+            "type": "NUMBER"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/TABLE_EXPORT_FILTERED/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "sid",
+            "type": "STRING"
+          },
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          }
+        ]
+      }
+    ]
+  }
+}

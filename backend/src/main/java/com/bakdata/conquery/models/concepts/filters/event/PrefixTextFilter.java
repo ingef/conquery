@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.filter.event.PrefixTextFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,6 +30,7 @@ public class PrefixTextFilter extends SingleColumnFilter implements EventFilter<
 		return EnumSet.of(MajorTypeId.STRING);
 	}
 
+	@Override
 	public EventFilterNode<String> createEventFilter(String value) {
 		return new PrefixTextFilterNode(getColumn(), value);
 	}

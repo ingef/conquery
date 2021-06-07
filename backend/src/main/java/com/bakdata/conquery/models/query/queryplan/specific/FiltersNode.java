@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.concept.TableExportQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -17,13 +18,13 @@ import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 
 @ToString(of = {"filters", "aggregators"})
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class FiltersNode extends QPNode {
 
 	private boolean hit = false;
@@ -43,10 +44,8 @@ public class FiltersNode extends QPNode {
 	private List<Aggregator<CDateSet>> eventDateAggregators;
 
 
+
 	public static FiltersNode create(List<EventFilterNode<?>> eventFilters, List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
-		if (filters.isEmpty() && aggregators.isEmpty()) {
-			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
-		}
 
 
 		final FiltersNode filtersNode = new FiltersNode();
@@ -75,16 +74,23 @@ public class FiltersNode extends QPNode {
 
 	@Override
 	public final void acceptEvent(Bucket bucket, int event) {
-		for (EventFilterNode<?> f : eventFilters) {
-			if (!f.checkEvent(bucket, event)) {
-				return;
-			}
+		if (!checkEvent(bucket, event)) {
+			return;
 		}
 
 		filters.forEach(f -> f.acceptEvent(bucket, event));
 		aggregators.forEach(a -> a.acceptEvent(bucket, event));
 
 		hit = true;
+	}
+
+	public boolean checkEvent(Bucket bucket, int event) {
+		for(EventFilterNode<?> f : eventFilters) {
+			if (!f.checkEvent(bucket, event)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
