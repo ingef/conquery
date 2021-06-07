@@ -12,10 +12,11 @@ import {
   SelectOptionT,
 } from "../api/types";
 import TransparentButton from "../button/TransparentButton";
+import { exists } from "../common/helpers/exists";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import EditableText from "../form-components/EditableText";
 import type { ModeT } from "../form-components/InputRange";
-import { nodeIsConceptQueryNode } from "../model/node";
+import { nodeHasActiveFilters, nodeIsConceptQueryNode } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
@@ -170,7 +171,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   // that QueryNodeEditor may be contained in a horizontally resizeable panel
   // that's resized independent of the window width.
   // TODO: Once https://caniuse.com/css-container-queries ships, use those instead
-  const parentRef = useRef<HTMLDivElement>(null);
+  const parentRef = useRef<HTMLDivElement | null>(null);
   const [parentWidth, setParentWidth] = useState<number>(0);
   const isCompact = parentWidth < COMPACT_WIDTH;
   useResizeObserver(
@@ -184,8 +185,17 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
 
   if (!node) return null;
 
+  const hasActiveFilters = exists(node) && nodeHasActiveFilters(node);
+
   return (
-    <Root ref={parentRef}>
+    <Root
+      ref={(instance) => {
+        if (instance && parentWidth === 0) {
+          setParentWidth(instance.getBoundingClientRect().width);
+        }
+        parentRef.current = instance;
+      }}
+    >
       <ContentWrap>
         <Hotkeys keyName="escape" onKeyDown={close} />
         <Header>
@@ -193,7 +203,9 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             style={{
               maxWidth:
                 parentWidth -
-                (isCompact ? RIGHT_SIDE_WIDTH_COMPACT : RIGHT_SIDE_WIDTH),
+                (isCompact || !hasActiveFilters
+                  ? RIGHT_SIDE_WIDTH_COMPACT
+                  : RIGHT_SIDE_WIDTH),
             }}
           >
             {nodeIsConceptQueryNode(node) && (
@@ -214,11 +226,12 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             {node.isPreviousQuery && (node.label || node.id || node.ids)}
           </NodeName>
           <Row>
-            <ResetAllFiltersButton
-              node={node}
-              onResetAllFilters={props.onResetAllFilters}
-              compact={isCompact}
-            />
+            {hasActiveFilters && (
+              <ResetAllFiltersButton
+                onClick={props.onResetAllFilters}
+                compact={isCompact}
+              />
+            )}
             <WithTooltip text={t("common.closeEsc")}>
               <CloseButton small onClick={close}>
                 {t("common.close")}
