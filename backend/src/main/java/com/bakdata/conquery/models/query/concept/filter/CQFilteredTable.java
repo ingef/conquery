@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.query.concept.filter;
 
+import java.util.Collections;
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -10,12 +13,14 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class CQUnfilteredTable {
+public class CQFilteredTable {
 	@JsonProperty("id")
 	@NsIdRef
-	private Connector table;
+	private Connector connector;
 
 	@Nullable
 	private ValidityDateContainer dateColumn;
+
+	private List<FilterValue<?>> filters = Collections.emptyList();
 
 }

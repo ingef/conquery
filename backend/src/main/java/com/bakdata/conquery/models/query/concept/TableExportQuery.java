@@ -109,7 +109,7 @@ public class TableExportQuery extends IQuery {
 			final TableExportDescription exportDescription = new TableExportDescription(
 					connector.getTable(),
 					validityDateColumn,
-					FiltersNode.create(filters, Collections.emptyList(), Collections.emptyList())
+					FiltersNode.create(filters, Collections.emptyList(), Collections.emptyList(), Collections.emptyList())
 			);
 
 			resolvedConnectors.add(exportDescription);
