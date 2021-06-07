@@ -32,7 +32,7 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 
 	@Override
 	public PrefixTextFilterNode doClone(CloneContext ctx) {
-		return new PrefixTextFilterNode(getColumn(), filterValue);
+		return new PrefixTextFilterNode(getColumn(), getFilterValue());
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 		String value = store.getElement(id);
 
 		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
-		return value.startsWith(filterValue);
+		return value.startsWith(getFilterValue());
 	}
 
 	@Override

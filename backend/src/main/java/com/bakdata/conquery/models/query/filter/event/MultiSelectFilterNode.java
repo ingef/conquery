@@ -53,7 +53,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		selectedValues = selectedValuesCache.computeIfAbsent(bucket.getImp(),imp -> findIds(bucket, filterValue));
+		selectedValues = selectedValuesCache.computeIfAbsent(bucket.getImp(),imp -> findIds(bucket, getFilterValue()));
 	}
 
 	private int[] findIds(Bucket bucket, String[] values) {
@@ -95,7 +95,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	@Override
 	public MultiSelectFilterNode doClone(CloneContext ctx) {
 		// We reuse the cache
-		return new MultiSelectFilterNode(getColumn(), filterValue, selectedValuesCache);
+		return new MultiSelectFilterNode(getColumn(), getFilterValue(), selectedValuesCache);
 	}
 
 	@Override

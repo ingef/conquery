@@ -15,7 +15,7 @@ public class DecimalFilterNode extends NumberFilterNode<Range<BigDecimal>> {
 
 	@Override
 	public DecimalFilterNode doClone(CloneContext ctx) {
-		return new DecimalFilterNode(getColumn(), filterValue);
+		return new DecimalFilterNode(getColumn(), getFilterValue());
 	}
 
 	@Override

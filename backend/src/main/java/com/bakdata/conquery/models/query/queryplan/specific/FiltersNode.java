@@ -43,21 +43,11 @@ public class FiltersNode extends QPNode {
 	private List<Aggregator<CDateSet>> eventDateAggregators;
 
 
-	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
+	public static FiltersNode create(List<EventFilterNode<?>> eventFilters, List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
 		if (filters.isEmpty() && aggregators.isEmpty()) {
 			throw new IllegalStateException("Unable to create FilterNode without filters or aggregators.");
 		}
 
-		final List<EventFilterNode<?>> eventFilters = new ArrayList<>(filters.size());
-
-		// Select only Event Filtering nodes as they are used differently.
-		for (FilterNode<?> filter : filters) {
-			if (!(filter instanceof EventFilterNode)) {
-				continue;
-			}
-
-			eventFilters.add((EventFilterNode<?>) filter);
-		}
 
 		final FiltersNode filtersNode = new FiltersNode();
 		filtersNode.setAggregators(aggregators);

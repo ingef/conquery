@@ -13,7 +13,7 @@ public class MoneyFilterNode extends NumberFilterNode<Range.LongRange> {
 
 	@Override
 	public MoneyFilterNode doClone(CloneContext ctx) {
-		return new MoneyFilterNode(getColumn(), filterValue);
+		return new MoneyFilterNode(getColumn(), getFilterValue());
 	}
 
 	@Override

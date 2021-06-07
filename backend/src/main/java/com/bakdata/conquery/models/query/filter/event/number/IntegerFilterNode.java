@@ -13,7 +13,7 @@ public class IntegerFilterNode extends NumberFilterNode<Range.LongRange> {
 
 	@Override
 	public IntegerFilterNode doClone(CloneContext ctx) {
-		return new IntegerFilterNode(getColumn(), filterValue);
+		return new IntegerFilterNode(getColumn(), getFilterValue());
 	}
 
 	@Override

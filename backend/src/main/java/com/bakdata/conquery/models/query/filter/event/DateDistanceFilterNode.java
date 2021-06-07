@@ -48,7 +48,7 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 
 	@Override
 	public DateDistanceFilterNode doClone(CloneContext ctx) {
-		return new DateDistanceFilterNode(getColumn(), unit, filterValue);
+		return new DateDistanceFilterNode(getColumn(), unit, getFilterValue());
 	}
 
 	@Override
@@ -65,7 +65,7 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 
 		final long between = unit.between(date, reference);
 
-		return filterValue.contains(between);
+		return getFilterValue().contains(between);
 	}
 
 	@Override

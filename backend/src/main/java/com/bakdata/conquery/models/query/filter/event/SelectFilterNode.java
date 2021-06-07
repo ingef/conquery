@@ -33,12 +33,12 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	@Override
 	public void nextBlock(Bucket bucket) {
 		//you can then also skip the block if the id is -1
-		selectedId = ((StringStore) bucket.getStore(getColumn())).getId(filterValue);
+		selectedId = ((StringStore) bucket.getStore(getColumn())).getId(getFilterValue());
 	}
 
 	@Override
 	public SelectFilterNode doClone(CloneContext ctx) {
-		return new SelectFilterNode(getColumn(), filterValue);
+		return new SelectFilterNode(getColumn(), getFilterValue());
 	}
 
 	@Override
@@ -54,7 +54,7 @@ public class SelectFilterNode extends EventFilterNode<String> {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return ((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(filterValue) != -1;
+		return ((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(getFilterValue()) != -1;
 	}
 
 	@Override
