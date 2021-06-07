@@ -117,7 +117,7 @@
   },
   "deletePreviousQueryFolderModal": {
     "areYouSure": "Diesen Ordner wirklich löschen?",
-    "description": "Alle Anfragen werden aus diesem Ordner entfernt, bleiben aber gespeichert."
+    "description": "Alle Anfragen aus dem Ordner {{folder}} werden aus dem Ordner entfernt, bleiben aber gespeichert."
   },
   "sharePreviousQueryModal": {
     "headline": "Anfrage freigeben: ",

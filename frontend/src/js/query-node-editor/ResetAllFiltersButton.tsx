@@ -3,30 +3,29 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { nodeHasActiveFilters } from "../model/node";
-import type { StandardQueryNodeT } from "../standard-query-editor/types";
+import WithTooltip from "../tooltip/WithTooltip";
 
-const Container = styled("div")`
+const SxWithTooltip = styled(WithTooltip)`
   text-transform: uppercase;
   white-space: nowrap;
 `;
 
 interface Props {
-  node: StandardQueryNodeT;
-  onResetAllFilters: () => void;
+  compact?: boolean;
+  onClick: () => void;
 }
 
-const ResetAllFiltersButton: FC<Props> = ({ node, onResetAllFilters }) => {
+const ResetAllFiltersButton: FC<Props> = ({ compact, onClick }) => {
   const { t } = useTranslation();
 
-  if (!nodeHasActiveFilters(node)) return null;
-
   return (
-    <Container>
-      <IconButton active onClick={onResetAllFilters} icon="undo">
-        {t("queryNodeEditor.resetSettings")}
+    <SxWithTooltip
+      text={compact ? t("queryNodeEditor.resetSettings") : undefined}
+    >
+      <IconButton active onClick={onClick} icon="undo">
+        {!compact && t("queryNodeEditor.resetSettings")}
       </IconButton>
-    </Container>
+    </SxWithTooltip>
   );
 };
 
