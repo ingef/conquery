@@ -21,10 +21,15 @@ const Container = styled("div")<{ disabled?: boolean }>`
   align-items: center;
   justify-content: space-between;
   background-color: transparent;
+  cursor: pointer;
 
   &:hover {
     text-decoration: underline;
   }
+`;
+
+const SxWithTooltip = styled(WithTooltip)`
+  display: flex !important;
 `;
 
 const SxIconButton = styled(IconButton)`
@@ -103,7 +108,7 @@ const MenuColumnItem: FC<PropsT> = ({
         <Label>{table.label}</Label>
       </Row>
       {isFilterActive && (
-        <WithTooltip text={t("queryNodeEditor.resetSettings")}>
+        <SxWithTooltip text={t("queryNodeEditor.resetSettings")}>
           <SxIconButton
             active
             icon="filter"
@@ -118,7 +123,7 @@ const MenuColumnItem: FC<PropsT> = ({
               onResetTable();
             }}
           />
-        </WithTooltip>
+        </SxWithTooltip>
       )}
     </Container>
   );

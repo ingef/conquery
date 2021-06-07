@@ -30,11 +30,10 @@ export const tableHasActiveFilters = (table: TableWithFilterValueT) => {
 
 const tableHasNonDefaultDateColumn = (table: TableWithFilterValueT) =>
   exists(table.dateColumn) &&
-  !!table.dateColumn.options &&
   table.dateColumn.options.length > 0 &&
-  exists(table.dateColumn.defaultValue)
+  (exists(table.dateColumn.defaultValue)
     ? table.dateColumn.value !== table.dateColumn.defaultValue
-    : table.dateColumn.value !== table.dateColumn.options[0].value;
+    : table.dateColumn.value !== table.dateColumn.options[0].value);
 
 export function tableIsDisabled(
   table: TableWithFilterValueT,
