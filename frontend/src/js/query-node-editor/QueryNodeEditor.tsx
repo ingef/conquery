@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React from "react";
+import React, { useCallback, useRef, useState } from "react";
 import Hotkeys from "react-hot-keys";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -12,6 +12,7 @@ import {
   SelectOptionT,
 } from "../api/types";
 import TransparentButton from "../button/TransparentButton";
+import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import EditableText from "../form-components/EditableText";
 import type { ModeT } from "../form-components/InputRange";
 import { nodeIsConceptQueryNode } from "../model/node";
@@ -129,6 +130,10 @@ export interface QueryNodeEditorPropsT {
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
 }
 
+const COMPACT_WIDTH = 500;
+const RIGHT_SIDE_WIDTH = 320;
+const RIGHT_SIDE_WIDTH_COMPACT = 150;
+
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -161,14 +166,36 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     editorState.onReset();
   }
 
+  // To make sure that Close button is always visible and to consider
+  // that QueryNodeEditor may be contained in a horizontally resizeable panel
+  // that's resized independent of the window width.
+  // TODO: Once https://caniuse.com/css-container-queries ships, use those instead
+  const parentRef = useRef<HTMLDivElement>(null);
+  const [parentWidth, setParentWidth] = useState<number>(0);
+  const isCompact = parentWidth < COMPACT_WIDTH;
+  useResizeObserver(
+    useCallback((entry: ResizeObserverEntry) => {
+      if (entry) {
+        setParentWidth(entry.contentRect.width);
+      }
+    }, []),
+    parentRef.current,
+  );
+
   if (!node) return null;
 
   return (
-    <Root>
+    <Root ref={parentRef}>
       <ContentWrap>
         <Hotkeys keyName="escape" onKeyDown={close} />
         <Header>
-          <NodeName>
+          <NodeName
+            style={{
+              maxWidth:
+                parentWidth -
+                (isCompact ? RIGHT_SIDE_WIDTH_COMPACT : RIGHT_SIDE_WIDTH),
+            }}
+          >
             {nodeIsConceptQueryNode(node) && (
               <EditableText
                 large
@@ -190,6 +217,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             <ResetAllFiltersButton
               node={node}
               onResetAllFilters={props.onResetAllFilters}
+              compact={isCompact}
             />
             <WithTooltip text={t("common.closeEsc")}>
               <CloseButton small onClick={close}>
