@@ -6,7 +6,24 @@ import FaIcon from "../icon/FaIcon";
 import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
-import MenuColumnButton from "./MenuColumnButton";
+const MenuColumnButton = styled("div")<{ disabled?: boolean }>`
+  font-size: ${({ theme }) => theme.font.md};
+  line-height: 21px;
+  padding: 8px 15px;
+  font-weight: 700;
+  color: ${({ theme, disabled }) =>
+    disabled ? theme.col.gray : theme.col.black};
+  width: 100%;
+  text-align: left;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: transparent;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
 
 const SxIconButton = styled(IconButton)`
   font-size: ${({ theme }) => theme.font.lg};
@@ -53,25 +70,32 @@ const MenuColumnItem: FC<PropsT> = ({
     allowlistedTables,
   );
 
-  // TODO: This creates an invalid DOM nesting, a <button> inside a <button>
-  //       Yet, this is the way we can get it to work in IE11
-  //       => Try to use a clickable div and a nested button instead
+  const includable = table.exclude;
+  const excludable = !isOnlyOneTableIncluded;
+
+  const isFilterActive = tableHasActiveFilters(table);
+
   return (
-    <MenuColumnButton active={isActive} disabled={isDisabled} onClick={onClick}>
+    <MenuColumnButton disabled={isDisabled} onClick={onClick}>
       <SxIconButton
         regular
-        icon={table.exclude ? "square" : "check-square"}
-        disabled={isDisabled || (!table.exclude && isOnlyOneTableIncluded)}
+        icon={includable ? "square" : "check-square"}
+        disabled={isDisabled || (!includable && !excludable)}
         onClick={(event) => {
           // To prevent selecting the table as well, see above
           event.stopPropagation();
 
-          if (!isDisabled && (table.exclude || !isOnlyOneTableIncluded))
+          if (isDisabled) {
+            return;
+          }
+
+          if (includable || excludable) {
             onToggleTable(!table.exclude);
+          }
         }}
       />
       <Label>{table.label}</Label>
-      {tableHasActiveFilters(table) && (
+      {isFilterActive && (
         <SxFaIcon right white={isActive} light={!isActive} icon="filter" />
       )}
     </MenuColumnButton>

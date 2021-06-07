@@ -43,6 +43,7 @@ export interface RangeFilterValueT {
 export interface RangeFilterT extends FilterBaseT {
   type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE";
   value: RangeFilterValueT | null;
+  defaultValue?: RangeFilterValueT;
   unit?: string;
   mode: "range" | "exact";
   precision?: number;

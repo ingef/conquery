@@ -1,5 +1,6 @@
 import type { TableT } from "../api/types";
-import { isEmpty, compose } from "../common/helpers";
+import { compose, isEmpty } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
 import { filtersWithDefaults } from "./filter";
@@ -13,20 +14,27 @@ export const tableIsEditable = (table: TableWithFilterValueT) =>
 export const tablesHaveActiveFilter = (tables: TableWithFilterValueT[]) =>
   tables.some((table) => tableHasActiveFilters(table));
 
-export const tableHasActiveFilters = (table: TableWithFilterValueT) =>
-  objectHasSelectedSelects(table) ||
-  tableHasNonDefaultDateColumn(table) ||
-  (table.filters &&
+export const tableHasActiveFilters = (table: TableWithFilterValueT) => {
+  const activeSelects = objectHasSelectedSelects(table);
+  const activeDateColumn = tableHasNonDefaultDateColumn(table);
+  const activeFilters =
+    table.filters &&
     table.filters.some(
       (filter) =>
-        !isEmpty(filter.value) && filter.value !== filter.defaultValue,
-    ));
+        !isEmpty(filter.value) &&
+        (isEmpty(filter.defaultValue) || filter.value !== filter.defaultValue),
+    );
+
+  return activeSelects || activeDateColumn || activeFilters;
+};
 
 const tableHasNonDefaultDateColumn = (table: TableWithFilterValueT) =>
-  !!table.dateColumn &&
+  exists(table.dateColumn) &&
   !!table.dateColumn.options &&
   table.dateColumn.options.length > 0 &&
-  table.dateColumn.value !== table.dateColumn.options[0].value;
+  exists(table.dateColumn.defaultValue)
+    ? table.dateColumn.value !== table.dateColumn.defaultValue
+    : table.dateColumn.value !== table.dateColumn.options[0].value;
 
 export function tableIsDisabled(
   table: TableWithFilterValueT,

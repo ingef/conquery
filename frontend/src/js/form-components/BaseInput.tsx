@@ -109,7 +109,7 @@ const BaseInput = (props: Props) => {
             safeOnChange(value);
           }}
           onKeyPress={(e) => handleKeyPress(e)}
-          value={props.value || ""}
+          value={exists(props.value) ? props.value : ""}
           large={props.large}
           onBlur={props.onBlur}
           {...inputProps}

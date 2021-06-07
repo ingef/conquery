@@ -1,13 +1,14 @@
 import styled from "@emotion/styled";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import type { WrappedFieldProps } from "redux-form";
 
 import type { CurrencyConfigT } from "../api/types";
+import { exists } from "../common/helpers/exists";
 
 import InputPlain from "./InputPlain";
 import InputRangeHeader from "./InputRangeHeader";
 import ToggleButton from "./ToggleButton";
+import { InputProps } from "./types";
 
 const Container = styled("div")`
   width: 100%;
@@ -25,8 +26,14 @@ const SxInputPlain = styled(InputPlain)`
   }
 `;
 
+interface ValueT {
+  min?: number | null;
+  max?: number | null;
+  exact?: number | null;
+}
+
 export type ModeT = "range" | "exact";
-interface PropsType extends WrappedFieldProps {
+interface PropsType extends InputProps<ValueT | null> {
   moneyRange?: boolean;
   label: string;
   unit?: string;
@@ -41,23 +48,16 @@ interface PropsType extends WrappedFieldProps {
   onSwitchMode: (mode: ModeT) => void;
   tooltip?: string;
   pattern?: string;
-  input: {
-    value: {
-      exact?: number;
-      min?: number;
-      max?: number;
-    } | null;
-  };
   currencyConfig?: CurrencyConfigT;
 }
 
-function getMinMaxExact(value) {
-  if (!value) return { min: "", max: "", exact: "" };
+function getMinMaxExact(value: ValueT | null) {
+  if (!value) return { min: null, max: null, exact: null };
 
   return {
-    min: value.min || "",
-    max: value.max || "",
-    exact: value.exact || "",
+    min: exists(value.min) ? value.min : null,
+    max: exists(value.max) ? value.max : null,
+    exact: exists(value.exact) ? value.exact : null,
   };
 }
 
@@ -74,11 +74,12 @@ const InputRange = ({
   unit,
   tooltip,
   onSwitchMode,
-  input: { value, onChange },
+  input: { value, defaultValue, onChange },
 }: PropsType) => {
   const { t } = useTranslation();
   // Make sure undefined / null is never set as a value, but an empty string instead
   const val = getMinMaxExact(value);
+  const defaultVal = defaultValue || {};
   const isRangeMode = mode === "range";
 
   const inputProps = {
@@ -146,6 +147,7 @@ const InputRange = ({
               tinyLabel={true}
               input={{
                 value: val.min,
+                defaultValue: defaultVal.min,
                 onChange: (value) => onChangeValue("min", value),
               }}
               inputProps={inputProps}
@@ -159,6 +161,7 @@ const InputRange = ({
               tinyLabel={true}
               input={{
                 value: val.max,
+                defaultValue: defaultVal.max,
                 onChange: (value) => onChangeValue("max", value),
               }}
               inputProps={inputProps}
@@ -169,11 +172,12 @@ const InputRange = ({
             inputType="number"
             currencyConfig={currencyConfig}
             money={moneyRange}
-            placeholder="-"
+            placeholder={placeholder}
             label={t("inputRange.exactLabel")}
             tinyLabel={true}
             input={{
               value: val.exact,
+              defaultValue: defaultVal.exact,
               onChange: (value) => onChangeValue("exact", value),
             }}
             inputProps={inputProps}
