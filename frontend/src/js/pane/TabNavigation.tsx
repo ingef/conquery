@@ -16,10 +16,10 @@ const Root = styled("div")`
 const Headline = styled("h2")<{ active: boolean }>`
   font-size: ${({ theme }) => theme.font.sm};
   margin-bottom: 0;
-  margin-top: 5px;
+  margin-top: 6px;
   padding: 0 12px;
   letter-spacing: 1px;
-  line-height: 38px;
+  line-height: 30px;
   text-transform: uppercase;
   flex-shrink: 0;
 

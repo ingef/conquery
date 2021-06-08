@@ -48,7 +48,7 @@ const Spacer = styled("span")`
 `;
 
 const Logo = styled("div")`
-  height: 50px;
+  height: 40px;
   width: ${({ theme }) => theme.img.logoWidth};
   background-image: url(${({ theme }) => theme.img.logo});
   background-repeat: no-repeat;

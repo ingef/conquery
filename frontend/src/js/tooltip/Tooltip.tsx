@@ -21,7 +21,7 @@ import type { AdditionalInfosType } from "./reducer";
 const Root = styled("div")`
   width: 100%;
   height: 100%;
-  padding: 50px 0 10px;
+  padding: 40px 0 10px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -31,12 +31,12 @@ const Root = styled("div")`
 
 const Header = styled("h2")`
   background-color: white;
-  height: 47px;
+  height: 40px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   border-bottom: 1px solid #ccc;
-  margin: 0 0 5px;
+  margin: 0;
   padding: 0 20px;
   font-size: ${({ theme }) => theme.font.sm};
   letter-spacing: 1px;
@@ -45,7 +45,7 @@ const Header = styled("h2")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 const Content = styled("div")`
-  padding: 10px 20px;
+  padding: 15px 20px 10px;
   width: 100%;
   flex-grow: 1;
   overflow-y: auto;
@@ -127,7 +127,8 @@ const InfoHeadline = styled("h4")`
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
-  top: 58px;
+  padding: 6px 15px;
+  top: 45px;
   right: 0;
   border-right: 0;
   border-top-right-radius: 0;
