@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.validation.Validator;
 
@@ -14,6 +15,7 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -29,6 +31,10 @@ public class ModificationShieldedWorkerStorage {
 
 	public Validator getValidator() {
 		return delegate.getValidator();
+	}
+
+	public Set<ManagedExecutionId> getCancelledQueries() {
+		return delegate.getWorker().getCancelled();
 	}
 
 	public CentralRegistry getCentralRegistry() {

@@ -19,9 +19,13 @@ public class QueryJob implements Callable<Optional<EntityResult>>{
 	
 	@Override
 	public Optional<EntityResult> call() throws Exception {
+		if(ctx.isQueryCancelled()){
+			return Optional.empty();
+		}
+
 		try {
 			CloneContext cCtx = new CloneContext(ctx.getStorage());
-			QueryPlan queryPlan = this.plan.clone(cCtx);
+			QueryPlan queryPlan = plan.clone(cCtx);
 			
 			return queryPlan.execute(ctx, entity);
 		}
@@ -33,4 +37,5 @@ public class QueryJob implements Callable<Optional<EntityResult>>{
 			throw new ConqueryError.ExecutionJobErrorWrapper(entity,new ConqueryError.UnknownError(e));
 		}
 	}
+
 }

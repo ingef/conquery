@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -32,31 +31,26 @@ public class QueryExecutor implements Closeable {
 		this.pool = MoreExecutors.listeningDecorator(executor);
 	}
 
-	// TODO inline Entry key/value as id and QueryPlan
-	public ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry) {
-		return execute(result, context, entry, pool);
-	}
+	public ShardResult execute(ManagedExecutionId executionId, QueryPlan<?> queryPlan, ShardResult result, QueryExecutionContext context) {
+		Collection<Entity> entities = context.getBucketManager().getEntities().values();
 
-	public static ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry, ListeningExecutorService executor) {
-		ManagedExecutionId executionId = entry.getKey();
-		Collection<Entity> entries = context.getBucketManager().getEntities().values();
-
-		if(entries.isEmpty()) {
+		if(entities.isEmpty()) {
 			log.warn("entries for query {} are empty", executionId);
 		}
 
-		QueryPlan queryPlan = entry.getValue();
 		List<ListenableFuture<Optional<EntityResult>>> futures = new ArrayList<>();
 
-		for (Entity entity : entries) {
+
+		for (Entity entity : entities) {
 			QueryJob queryJob = new QueryJob(context, queryPlan, entity);
-			ListenableFuture<Optional<EntityResult>> submit = executor.submit(queryJob);
+			ListenableFuture<Optional<EntityResult>> submit = pool.submit(queryJob);
 			futures.add(submit);
 		}
 
 		ListenableFuture<List<Optional<EntityResult>>> future = Futures.allAsList(futures);
 		result.setFuture(future);
 		future.addListener(result::finish, MoreExecutors.directExecutor());
+
 		return result;
 	}
 
