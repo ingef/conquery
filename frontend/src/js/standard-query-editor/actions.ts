@@ -20,21 +20,13 @@ import type { ModeT } from "../form-components/InputRange";
 import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 
 import {
-  DROP_AND_NODE,
-  DROP_OR_NODE,
-  DELETE_NODE,
-  DELETE_GROUP,
   TOGGLE_EXCLUDE_GROUP,
   LOAD_QUERY,
-  CLEAR_QUERY,
   EXPAND_PREVIOUS_QUERY,
   SELECT_NODE_FOR_EDITING,
   DESELECT_NODE,
-  UPDATE_NODE_LABEL,
   ADD_CONCEPT_TO_NODE,
   REMOVE_CONCEPT_FROM_NODE,
-  TOGGLE_TABLE,
-  SET_FILTER_VALUE,
   SET_SELECTS,
   SET_TABLE_SELECTS,
   RESET_ALL_FILTERS,
@@ -54,32 +46,35 @@ import type {
   DragItemQuery,
 } from "./types";
 
-export type StandardQueryEditorActions = ActionType<typeof resetTable>;
+export type StandardQueryEditorActions = ActionType<
+  | typeof resetTable
+  | typeof dropAndNode
+  | typeof dropOrNode
+  | typeof clearQuery
+  | typeof deleteNode
+  | typeof deleteGroup
+  | typeof updateNodeLabel
+  | typeof toggleTable
+  | typeof setFilterValue
+>;
 
-export const dropAndNode = (
-  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode,
-) => ({
-  type: DROP_AND_NODE,
-  payload: { item },
-});
+export const dropAndNode = createAction("query-editor/DROP_AND_NODE")<{
+  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode;
+}>();
 
-export const dropOrNode = (
-  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode,
-  andIdx: number,
-) => ({
-  type: DROP_OR_NODE,
-  payload: { item, andIdx },
-});
+export const dropOrNode = createAction("query-editor/DROP_OR_NODE")<{
+  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode;
+  andIdx: number;
+}>();
 
-export const deleteNode = (andIdx: number, orIdx: number) => ({
-  type: DELETE_NODE,
-  payload: { andIdx, orIdx },
-});
+export const deleteNode = createAction("query-editor/DELETE_NODE")<{
+  andIdx: number;
+  orIdx: number;
+}>();
 
-export const deleteGroup = (andIdx: number) => ({
-  type: DELETE_GROUP,
-  payload: { andIdx },
-});
+export const deleteGroup = createAction("query-editor/DELETE_GROUP")<{
+  andIdx: number;
+}>();
 
 export const toggleExcludeGroup = (andIdx: number) => ({
   type: TOGGLE_EXCLUDE_GROUP,
@@ -91,7 +86,7 @@ export const loadQuery = (query: StandardQueryStateT) => ({
   payload: { query },
 });
 
-export const clearQuery = () => ({ type: CLEAR_QUERY });
+export const clearQuery = createAction("query-editor/CLEAR_QUERY")();
 
 const findPreviousQueryIds = (node: QueryNodeT, queries = []): string[] => {
   switch (node.type) {
@@ -160,10 +155,10 @@ export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
 
 export const deselectNode = () => ({ type: DESELECT_NODE });
 
-export const updateNodeLabel = (label: string) => ({
-  type: UPDATE_NODE_LABEL,
-  payload: { label },
-});
+export const updateNodeLabel = createAction("query-editor/UPDATE_NODE_LABEL")<{
+  label: string;
+}>();
+
 export const addConceptToNode = (concept: DragItemConceptTreeNode) => ({
   type: ADD_CONCEPT_TO_NODE,
   payload: { concept },
@@ -173,19 +168,16 @@ export const removeConceptFromNode = (conceptId: ConceptIdT) => ({
   payload: { conceptId },
 });
 
-export const toggleTable = (tableIdx: number, isExcluded: boolean) => ({
-  type: TOGGLE_TABLE,
-  payload: { tableIdx, isExcluded },
-});
+export const toggleTable = createAction("query-editor/TOGGLE_TABLE")<{
+  tableIdx: number;
+  isExcluded: boolean;
+}>();
 
-export const setFilterValue = (
-  tableIdx: number,
-  filterIdx: number,
-  value: unknown,
-) => ({
-  type: SET_FILTER_VALUE,
-  payload: { tableIdx, filterIdx, value },
-});
+export const setFilterValue = createAction("query-editor/SET_FILTER_VALUE")<{
+  tableIdx: number;
+  filterIdx: number;
+  value: unknown;
+}>();
 
 export const setTableSelects = (tableIdx: number, value: unknown) => ({
   type: SET_TABLE_SELECTS,

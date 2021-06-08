@@ -1,4 +1,4 @@
-import { getType } from "typesafe-actions";
+import { ActionType, getType } from "typesafe-actions";
 
 import type {
   AndQueryT,
@@ -15,11 +15,13 @@ import type {
   FilterIdT,
   ConceptIdT,
 } from "../api/types";
+import { Action } from "../app/actions";
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 import type { TreesT } from "../concept-trees/reducer";
 import { isMultiSelectFilter } from "../model/filter";
+import { nodeIsConceptQueryNode } from "../model/node";
 import { selectsWithDefaults } from "../model/select";
 import { resetAllFiltersInTables, tableWithDefaults } from "../model/table";
 import {
@@ -35,20 +37,13 @@ import {
 import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
 
 import {
-  DROP_AND_NODE,
-  DROP_OR_NODE,
-  DELETE_NODE,
-  DELETE_GROUP,
   TOGGLE_EXCLUDE_GROUP,
   LOAD_QUERY,
-  CLEAR_QUERY,
   EXPAND_PREVIOUS_QUERY,
   SELECT_NODE_FOR_EDITING,
   DESELECT_NODE,
-  UPDATE_NODE_LABEL,
   ADD_CONCEPT_TO_NODE,
   REMOVE_CONCEPT_FROM_NODE,
-  TOGGLE_TABLE,
   SET_FILTER_VALUE,
   SET_TABLE_SELECTS,
   SET_SELECTS,
@@ -61,13 +56,24 @@ import {
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_DATE_COLUMN,
 } from "./actionTypes";
-import { resetTable } from "./actions";
+import {
+  dropAndNode,
+  dropOrNode,
+  resetTable,
+  clearQuery,
+  deleteGroup,
+  deleteNode,
+  toggleTable,
+  updateNodeLabel,
+  setFilterValue,
+} from "./actions";
 import type {
   StandardQueryNodeT,
   DragItemQuery,
   QueryGroupType,
   DragItemNode,
   DragItemConceptTreeNode,
+  FilterWithValueType,
 } from "./types";
 
 export type StandardQueryStateT = QueryGroupType[];
@@ -159,17 +165,12 @@ const setAllElementsProperties = (node, properties) => {
   }));
 };
 
-const dropAndNode = (
+const onDropAndNode = (
   state: StandardQueryStateT,
-  action: {
-    payload: {
-      item: DragItemNode | DragItemQuery | DragItemConceptTreeNode;
-    };
-  },
+  { item }: ActionType<typeof dropAndNode>["payload"],
 ) => {
   const group = state[state.length - 1];
   const dateRangeOfLastGroup = group ? group.dateRange : undefined;
-  const { item } = action.payload;
 
   const nextState: StandardQueryStateT = [
     ...state,
@@ -180,23 +181,17 @@ const dropAndNode = (
   ];
 
   return item.moved
-    ? deleteNode(nextState, {
-        payload: { andIdx: item.andIdx, orIdx: item.orIdx },
+    ? onDeleteNode(nextState, {
+        andIdx: item.andIdx,
+        orIdx: item.orIdx,
       })
     : nextState;
 };
 
-const dropOrNode = (
+const onDropOrNode = (
   state: StandardQueryStateT,
-  action: {
-    payload: {
-      item: DragItemNode | DragItemQuery | DragItemConceptTreeNode;
-      andIdx: number;
-    };
-  },
+  { item, andIdx }: ActionType<typeof dropOrNode>["payload"],
 ) => {
-  const { item, andIdx } = action.payload;
-
   const nextState = [
     ...state.slice(0, andIdx),
     {
@@ -208,22 +203,22 @@ const dropOrNode = (
 
   return item.moved
     ? item.andIdx === andIdx
-      ? deleteNode(nextState, {
-          payload: { andIdx: item.andIdx, orIdx: item.orIdx + 1 },
+      ? onDeleteNode(nextState, {
+          andIdx: item.andIdx,
+          orIdx: item.orIdx + 1,
         })
-      : deleteNode(nextState, {
-          payload: { andIdx: item.andIdx, orIdx: item.orIdx },
+      : onDeleteNode(nextState, {
+          andIdx: item.andIdx,
+          orIdx: item.orIdx,
         })
     : nextState;
 };
 
 // Delete a single Node (concept inside a group)
-const deleteNode = (
+const onDeleteNode = (
   state: StandardQueryStateT,
-  action: { payload: { andIdx: number; orIdx: number } },
+  { andIdx, orIdx }: ActionType<typeof deleteNode>["payload"],
 ) => {
-  const { andIdx, orIdx } = action.payload;
-
   return [
     ...state.slice(0, andIdx),
     {
@@ -237,9 +232,10 @@ const deleteNode = (
   ].filter((and) => !!and.elements && and.elements.length > 0);
 };
 
-const deleteGroup = (state: StandardQueryStateT, action: any) => {
-  const { andIdx } = action.payload;
-
+const onDeleteGroup = (
+  state: StandardQueryStateT,
+  { andIdx }: ActionType<typeof deleteGroup>["payload"],
+) => {
   return [...state.slice(0, andIdx), ...state.slice(andIdx + 1)];
 };
 
@@ -289,9 +285,10 @@ const updateNodeTables = (
   return setElementProperties(state, andIdx, orIdx, { tables });
 };
 
-const toggleNodeTable = (state: StandardQueryStateT, action: any) => {
-  const { tableIdx, isExcluded } = action.payload;
-
+const onToggleNodeTable = (
+  state: StandardQueryStateT,
+  { tableIdx, isExcluded }: ActionType<typeof toggleTable>["payload"],
+) => {
   const nodePosition = selectEditedNodePosition(state);
   if (!nodePosition) return state;
 
@@ -319,22 +316,29 @@ const selectEditedNodePosition = (state: StandardQueryStateT) => {
   return null;
 };
 
-const setNodeFilterProperties = (state, action, properties) => {
-  const { tableIdx, filterIdx } = action.payload;
-
+const setNodeFilterProperties = (
+  state: StandardQueryStateT,
+  { tableIdx, filterIdx }: { tableIdx: number; filterIdx: number },
+  properties: Partial<FilterWithValueType>,
+) => {
   const node = selectEditedNodePosition(state);
 
   if (!node) return state;
 
   const { andIdx, orIdx } = node;
-  const table = state[andIdx].elements[orIdx].tables[tableIdx];
+
+  const nodeFromState = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(nodeFromState)) return state;
+
+  const table = nodeFromState.tables[tableIdx];
   const { filters } = table;
 
   if (!filters) return state;
 
   const filter = filters[filterIdx];
 
-  const newTable = {
+  const newTable: TableT = {
     ...table,
     filters: [
       ...filters.slice(0, filterIdx),
@@ -349,10 +353,11 @@ const setNodeFilterProperties = (state, action, properties) => {
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
-const setNodeFilterValue = (state: StandardQueryStateT, action: any) => {
-  const { value } = action.payload;
-
-  return setNodeFilterProperties(state, action, { value });
+const setNodeFilterValue = (
+  state: StandardQueryStateT,
+  payload: ActionType<typeof setFilterValue>["payload"],
+) => {
+  return setNodeFilterProperties(state, payload, { value: payload.value });
 };
 
 const setNodeTableSelects = (state: StandardQueryStateT, action: any) => {
@@ -897,11 +902,12 @@ const insertUploadedConceptList = (state: StandardQueryStateT, action: any) => {
   if (!queryElement) return state;
 
   return andIdx === null
-    ? dropAndNode(state, {
-        payload: { item: queryElement },
+    ? onDropAndNode(state, {
+        item: queryElement,
       })
-    : dropOrNode(state, {
-        payload: { andIdx, item: queryElement },
+    : onDropOrNode(state, {
+        andIdx,
+        item: queryElement,
       });
 };
 
@@ -912,7 +918,10 @@ const selectNodeForEditing = (
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
 };
 
-const updateNodeLabel = (state: StandardQueryStateT, action: any) => {
+const onUpdateNodeLabel = (
+  state: StandardQueryStateT,
+  { label }: ActionType<typeof updateNodeLabel>["payload"],
+) => {
   const node = selectEditedNodePosition(state);
 
   if (!node) return state;
@@ -920,7 +929,7 @@ const updateNodeLabel = (state: StandardQueryStateT, action: any) => {
   const { andIdx, orIdx } = node;
 
   return setElementProperties(state, andIdx, orIdx, {
-    label: action.payload.label,
+    label,
   });
 };
 
@@ -1045,37 +1054,37 @@ const removeConceptFromNode = (state: StandardQueryStateT, action: any) => {
 // ]
 const query = (
   state: StandardQueryStateT = initialState,
-  action: any,
+  action: Action,
 ): StandardQueryStateT => {
   switch (action.type) {
-    case DROP_AND_NODE:
-      return dropAndNode(state, action);
-    case DROP_OR_NODE:
-      return dropOrNode(state, action);
-    case DELETE_NODE:
-      return deleteNode(state, action);
-    case DELETE_GROUP:
-      return deleteGroup(state, action);
+    case getType(clearQuery):
+      return initialState;
+    case getType(dropAndNode):
+      return onDropAndNode(state, action.payload);
+    case getType(dropOrNode):
+      return onDropOrNode(state, action.payload);
+    case getType(deleteNode):
+      return onDeleteNode(state, action.payload);
+    case getType(deleteGroup):
+      return onDeleteGroup(state, action.payload);
     case TOGGLE_EXCLUDE_GROUP:
       return toggleExcludeGroup(state, action);
     case LOAD_QUERY:
       return loadQuery(state, action);
-    case CLEAR_QUERY:
-      return initialState;
     case SELECT_NODE_FOR_EDITING:
       return selectNodeForEditing(state, action);
     case DESELECT_NODE:
       return setAllElementsProperties(state, { isEditing: false });
-    case UPDATE_NODE_LABEL:
-      return updateNodeLabel(state, action);
+    case getType(updateNodeLabel):
+      return onUpdateNodeLabel(state, action);
     case ADD_CONCEPT_TO_NODE:
       return addConceptToNode(state, action);
     case REMOVE_CONCEPT_FROM_NODE:
       return removeConceptFromNode(state, action);
-    case TOGGLE_TABLE:
-      return toggleNodeTable(state, action);
-    case SET_FILTER_VALUE:
-      return setNodeFilterValue(state, action);
+    case getType(toggleTable):
+      return onToggleNodeTable(state, action.payload);
+    case getType(setFilterValue):
+      return setNodeFilterValue(state, action.payload);
     case SET_TABLE_SELECTS:
       return setNodeTableSelects(state, action);
     case SET_SELECTS:

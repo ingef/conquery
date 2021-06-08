@@ -73,13 +73,13 @@ const StandardQueryNodeEditor = () => {
       currencyConfig={currencyConfig}
       onLoadFilterSuggestions={onLoadFilterSuggestions}
       onCloseModal={() => dispatch(deselectNode())}
-      onUpdateLabel={(label: string) => dispatch(updateNodeLabel(label))}
+      onUpdateLabel={(label: string) => dispatch(updateNodeLabel({ label }))}
       onDropConcept={(concept) => dispatch(addConceptToNode(concept))}
       onRemoveConcept={(conceptId: ConceptIdT) =>
         dispatch(removeConceptFromNode(conceptId))
       }
       onToggleTable={(tableIdx: number, isExcluded: boolean) =>
-        dispatch(toggleTable(tableIdx, isExcluded))
+        dispatch(toggleTable({ tableIdx, isExcluded }))
       }
       onSelectSelects={(value) => {
         dispatch(setSelects(value));
@@ -88,7 +88,7 @@ const StandardQueryNodeEditor = () => {
         dispatch(setTableSelects(tableIdx, value))
       }
       onSetFilterValue={(tableIdx: number, filterIdx: number, value) =>
-        dispatch(setFilterValue(tableIdx, filterIdx, value))
+        dispatch(setFilterValue({ tableIdx, filterIdx, value }))
       }
       onSwitchFilterMode={(...args) => dispatch(switchFilterMode(...args))}
       onResetAllFilters={() => dispatch(resetAllFilters())}

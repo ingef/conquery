@@ -91,16 +91,16 @@ const Query = () => {
 
   const onDropAndNode = (
     item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
-  ) => dispatch(dropAndNode(item));
+  ) => dispatch(dropAndNode({ item }));
   const onDropConceptListFile = (file: File, andIdx: number | null) =>
     dispatch(openQueryUploadConceptListModal(andIdx, file));
   const onDropOrNode = (
     item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
     andIdx: number,
-  ) => dispatch(dropOrNode(item, andIdx));
+  ) => dispatch(dropOrNode({ item, andIdx }));
   const onDeleteNode = (andIdx: number, orIdx: number) =>
-    dispatch(deleteNode(andIdx, orIdx));
-  const onDeleteGroup = (andIdx: number) => dispatch(deleteGroup(andIdx));
+    dispatch(deleteNode({ andIdx, orIdx }));
+  const onDeleteGroup = (andIdx: number) => dispatch(deleteGroup({ andIdx }));
   const onToggleExcludeGroup = (andIdx: number) =>
     dispatch(toggleExcludeGroup(andIdx));
   const onToggleTimestamps = (andIdx: number, orIdx: number) =>
