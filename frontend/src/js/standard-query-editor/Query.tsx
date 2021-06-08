@@ -55,8 +55,9 @@ const Groups = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  padding: 0 0 20px;
+  margin: 0 0 10px;
   flex-grow: 1;
+  overflow: auto;
 `;
 
 const QueryGroupConnector = styled("p")`
