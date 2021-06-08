@@ -139,9 +139,9 @@ const RIGHT_SIDE_WIDTH_COMPACT = 150;
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const [editingLabel, setEditingLabel] = useState<boolean>(false);
 
   const {
-    toggleEditLabel,
     setInputTableViewActive,
     setFocusedInput,
     reset,
@@ -150,7 +150,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const onSelectInputTableView = (tableIdx: number) =>
     dispatch(setInputTableViewActive(tableIdx));
   const onReset = () => dispatch(reset());
-  const onToggleEditLabel = () => dispatch(toggleEditLabel());
   const onShowDescription = (filterIdx: number) =>
     dispatch(setFocusedInput(filterIdx));
 
@@ -209,12 +208,12 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
                 text={node.label}
                 tooltip={t("help.editConceptName")}
                 selectTextOnMount={true}
-                editing={props.editorState.editingLabel}
+                editing={editingLabel}
                 onSubmit={(value) => {
                   props.onUpdateLabel(value);
-                  onToggleEditLabel();
+                  setEditingLabel(false);
                 }}
-                onToggleEdit={onToggleEditLabel}
+                onToggleEdit={() => setEditingLabel(!editingLabel)}
               />
             )}
             {node.isPreviousQuery && (node.label || node.id || node.ids)}

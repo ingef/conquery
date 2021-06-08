@@ -4,7 +4,6 @@ export const createQueryNodeEditorActions = (type: string) => {
   const {
     SET_INPUT_TABLE_VIEW_ACTIVE,
     SET_FOCUSED_INPUT,
-    TOGGLE_EDIT_LABEL,
     RESET,
   } = createActionTypes(type);
 
@@ -16,13 +15,11 @@ export const createQueryNodeEditorActions = (type: string) => {
     type: SET_FOCUSED_INPUT,
     filterIdx,
   });
-  const toggleEditLabel = () => ({ type: TOGGLE_EDIT_LABEL });
   const reset = () => ({ type: RESET });
 
   return {
     setInputTableViewActive,
     setFocusedInput,
-    toggleEditLabel,
     reset,
   };
 };
