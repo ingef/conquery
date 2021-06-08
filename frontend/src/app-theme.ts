@@ -23,8 +23,8 @@ export const theme: Theme = {
   },
   img: {
     logo: logo,
-    logoWidth: "175px",
-    logoBackgroundSize: "175px 45px",
+    logoWidth: "172px",
+    logoBackgroundSize: "172px 40px",
     spinner: spinner,
   },
   font: {
