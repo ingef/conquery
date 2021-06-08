@@ -12,7 +12,6 @@ import {
   SelectOptionT,
 } from "../api/types";
 import TransparentButton from "../button/TransparentButton";
-import { exists } from "../common/helpers/exists";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import EditableText from "../form-components/EditableText";
 import type { ModeT } from "../form-components/InputRange";
@@ -178,7 +177,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
 
   if (!node) return null;
 
-  const hasActiveFilters = exists(node) && nodeHasActiveFilters(node);
+  const hasActiveFilters = nodeHasActiveFilters(node);
 
   return (
     <Root
