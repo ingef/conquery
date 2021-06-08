@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.auth.permissions;
 
+import com.bakdata.conquery.io.cps.CPSType;
+
 import java.util.Set;
 
 /**
@@ -7,6 +9,7 @@ import java.util.Set;
  * The forms are programmatically distinguished from their CPSType.
  *
  */
+@CPSType(id = "FORM_TYPE", base = StringPermissionBuilder.class)
 public class FormPermission extends StringPermissionBuilder {
 	
 	public static final String DOMAIN = "forms";

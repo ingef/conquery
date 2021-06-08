@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -36,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class DatasetRegistry extends IdResolveContext implements Closeable {
 
-	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
+	private final ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
 	@NotNull
 	@Getter
 	@Setter
@@ -47,7 +48,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 	@Getter
 	@JsonIgnore
-	private transient ConcurrentMap<SocketAddress, ShardNodeInformation> shardNodes = new ConcurrentHashMap<>();
+	private final transient ConcurrentMap<SocketAddress, ShardNodeInformation> shardNodes = new ConcurrentHashMap<>();
 	@Getter @Setter @JsonIgnore
 	private transient MetaStorage metaStorage;
 
@@ -66,16 +67,10 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		if(removed != null) {
 			metaStorage.getCentralRegistry().remove(removed.getDataset());
 
-			getShardNodes().values().forEach(s -> s.send(new RemoveWorker(id)));
+			getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(removed.getDataset())));
 
 			workers.keySet().removeIf(w->w.getDataset().equals(id));
-			try {
-				// remove all associated data.
-				removed.getStorage().removeStorage();
-			}
-			catch(Exception e) {
-				log.error("Failed to delete storage "+removed, e);
-			}
+			removed.remove();
 		}
 	}
 
@@ -114,10 +109,6 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 	public List<Dataset> getAllDatasets() {
 		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
-	}
-	
-	public <C extends Collection<Dataset>> C getAllDatasets(Supplier<C> collectionSupplier) {
-		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toCollection(collectionSupplier));
 	}
 
 	public Collection<Namespace> getDatasets() {

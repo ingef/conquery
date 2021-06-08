@@ -50,7 +50,7 @@
             <label for="update">Reload automatically.</label><br>
 			<script type="text/javascript">
 				setTimeout(function () {
-                    if(!document.getElementById("updated").checked){
+                    if(!document.getElementById("update").checked){
                         return
                     }
 					

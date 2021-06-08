@@ -22,7 +22,7 @@ public class NegatingNode extends QPChainNode {
 	public NegatingNode(@NonNull QPNode child, @NonNull DateAggregationAction dateAction) {
 		super(child);
 		this.dateAggregator = new DateAggregator(dateAction);
-		dateAggregator.register(child.getDateAggregators());
+		dateAggregator.registerAll(child.getDateAggregators());
 	}
 
 	private NegatingNode(@NonNull QPNode child, @NonNull DateAggregator dateAggregator) {

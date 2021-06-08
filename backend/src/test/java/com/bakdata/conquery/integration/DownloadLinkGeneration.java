@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -18,6 +19,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -26,8 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DownloadLinkGeneration extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
-
-	private static final String BASE = "http://localhost";
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
@@ -46,30 +46,35 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		// Create execution for download
 		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset());
 
-		DatasetRegistry datasetRegistry = conquery.getDatasetsProcessor().getDatasetRegistry();
-		{			
+		conquery.getMetaStorage().addExecution(exec);
+
+		user.addPermission(
+				conquery.getMetaStorage(),
+				DatasetPermission.onInstance(Set.of(Ability.READ), conquery.getDataset().getId()));
+
+		{
 			// Try to generate a download link: should not be possible, because the execution isn't run yet
-			Optional<URL> url = exec.getDownloadURL(UriBuilder.fromUri(URI.create(BASE)), AuthorizationHelper.buildDatasetAbilityMap(user, datasetRegistry));
-			assertThat(url).isEmpty();
+			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
+			assertThat(status.getResultUrls()).isEmpty();
 		}
 
 		{			
 			// Thinker the state of the execution and try again: still not possible because of missing permissions
 			exec.setState(ExecutionState.DONE);
-			
-			Optional<URL> url = exec.getDownloadURL(UriBuilder.fromUri(URI.create(BASE)), AuthorizationHelper.buildDatasetAbilityMap(user, datasetRegistry));
-			assertThat(url).isEmpty();
+
+			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
+			assertThat(status.getResultUrls()).isEmpty();
 		}
 
 		{			
-			// Add permissions: now it should be possible
+			// Add permission to download: now it should be possible
 			user.addPermission(
 				conquery.getMetaStorage(),
-				DatasetPermission.onInstance(Set.of(Ability.READ, Ability.DOWNLOAD), conquery.getDataset().getId()));
-			
-			Optional<URL> url = exec.getDownloadURL(UriBuilder.fromUri(URI.create(BASE)), AuthorizationHelper.buildDatasetAbilityMap(user, datasetRegistry));
+				DatasetPermission.onInstance(Set.of(Ability.DOWNLOAD), conquery.getDataset().getId()));
+
+			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here
-			assertThat(url).contains(new URL(String.format("%s/datasets/%s/result/%s.csv", BASE, conquery.getDataset().getId(), exec.getId())));
+			assertThat(status.getResultUrls()).contains(new URL(String.format("%s/datasets/%s/result/%s.csv", conquery.defaultApiURIBuilder().toString(), conquery.getDataset().getId(), exec.getId())));
 		}
 	}
 

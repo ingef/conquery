@@ -14,7 +14,9 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,7 +36,7 @@ import lombok.Setter;
 @Setter
 @JsonDeserialize(using = CBlockDeserializer.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-public class CBlock extends IdentifiableImpl<CBlockId> {
+public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIdentifiable<CBlockId> {
 
 	/**
 	 * Estimate the memory usage of CBlocks.
@@ -191,5 +193,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 		long bits = includedConcepts[index];
 
 		return (bits & requiredBits) != 0L;
+	}
+
+	@Override
+	@JsonIgnore
+	public Dataset getDataset() {
+		return bucket.getDataset();
 	}
 }

@@ -8,7 +8,7 @@ const Root = styled("div")<{ left?: boolean; right?: boolean }>`
   width: 100%;
   height: 100%;
 
-  padding: ${({ left, right }) => (left || right ? "50px 0 10px" : "0")};
+  padding: ${({ left, right }) => (left || right ? "40px 0 10px" : "0")};
 `;
 
 const Container = styled("div")`

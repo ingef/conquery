@@ -6,5 +6,6 @@ export const STOP_QUERY_SUCCESS = "query-runners/STOP_QUERY_SUCCESS";
 export const STOP_QUERY_ERROR = "query-runners/STOP_QUERY_ERROR";
 export const QUERY_RESULT_START = "query-runners/QUERY_RESULT_START";
 export const QUERY_RESULT_RESET = "query-runners/QUERY_RESULT_RESET";
+export const QUERY_RESULT_RUNNING = "query-runners/QUERY_RESULT_RUNNING";
 export const QUERY_RESULT_SUCCESS = "query-runners/QUERY_RESULT_SUCCESS";
 export const QUERY_RESULT_ERROR = "query-runners/QUERY_RESULT_ERROR";

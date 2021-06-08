@@ -2,13 +2,15 @@ import styled from "@emotion/styled";
 import React, { FC } from "react";
 import Hotkeys from "react-hot-keys";
 
+import { exists } from "../common/helpers/exists";
 import Preview from "../preview/Preview";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryResults from "./QueryResults";
 import QueryRunnerButton from "./QueryRunnerButton";
 import QueryRunnerInfo from "./QueryRunnerInfo";
-import QueryRunningSpinner from "./QueryRunningSpinner";
+import QueryRunningProgress from "./QueryRunningProgress";
+import { QueryRunningSpinner } from "./QueryRunningSpinner";
 import type { QueryRunnerStateT } from "./reducer";
 
 const Root = styled("div")`
@@ -58,6 +60,8 @@ const QueryRunner: FC<PropsT> = ({
     !!queryRunner &&
     !!(queryRunner.startQuery.loading || queryRunner.stopQuery.loading);
 
+  const progress = queryRunner?.progress;
+
   return (
     <Root>
       <Hotkeys
@@ -79,17 +83,21 @@ const QueryRunner: FC<PropsT> = ({
       </Left>
       <Right>
         <LoadingGroup>
-          <QueryRunningSpinner isQueryRunning={isQueryRunning} />
+          {exists(progress) && <QueryRunningProgress progress={progress} />}
+          {isQueryRunning && <QueryRunningSpinner />}
           {!!queryRunner && <QueryRunnerInfo queryRunner={queryRunner} />}
         </LoadingGroup>
         {!!queryRunner &&
           !!queryRunner.queryResult &&
           !queryRunner.queryResult.error &&
           !queryRunner.queryResult.loading &&
+          exists(queryRunner.queryResult.resultCount) &&
+          exists(queryRunner.queryResult.resultColumns) &&
+          exists(queryRunner.queryResult.resultUrls) &&
           !isQueryRunning && (
             <QueryResults
               resultCount={queryRunner.queryResult.resultCount}
-              resultUrl={queryRunner.queryResult.resultUrl}
+              resultUrls={queryRunner.queryResult.resultUrls}
               resultColumns={queryRunner.queryResult.resultColumns}
               queryType={queryRunner.queryResult.queryType}
             />

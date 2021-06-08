@@ -20,13 +20,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
-import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.views.View;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -49,15 +47,14 @@ public class DatasetsUIResource extends HAdmin {
 
 
 	@PathParam(DATASET)
-	protected DatasetId datasetId;
+	protected Dataset dataset;
 	protected Namespace namespace;
 
 	@PostConstruct
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getDatasetRegistry().get(datasetId);
-		ResourceUtil.throwNotFoundIfNull(datasetId,namespace);
+		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 
 	@GET

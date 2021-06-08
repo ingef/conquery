@@ -42,8 +42,7 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 			return deserializeId(text, idParser, checkForInjectedPrefix, ctxt);
 		}
 		catch (Exception e) {
-
-			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse an " + idClass.getSimpleName() + " from " + text);
+			return (ID) ctxt.handleWeirdStringValue(idClass, text, "Could not parse `" + idClass.getSimpleName() + "` from `" + text + "`: " + e.getMessage());
 		}
 	}
 
@@ -63,7 +62,7 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 	private static String findDatasetName(DeserializationContext ctx) throws JsonMappingException {
 		Dataset dataset = Jackson.findInjectable(ctx, Dataset.class);
 
-		if(dataset != null){
+		if (dataset != null) {
 			return dataset.getName();
 		}
 
@@ -71,7 +70,7 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 
 		DatasetId id = Jackson.findInjectable(ctx, DatasetId.class);
 
-		if(id != null) {
+		if (id != null) {
 			return id.getName();
 		}
 		return null;

@@ -4,19 +4,14 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -30,9 +25,6 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,67 +34,53 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class QueryResource {
 
-	private QueryProcessor processor;
-	private ResourceUtil dsUtil;
-
 	@Inject
-	public QueryResource(QueryProcessor processor) {
-		this.processor = processor;
-		dsUtil = new ResourceUtil(processor.getDatasetRegistry());
-	}
+	private QueryProcessor processor;
+
+	@Context
+	protected HttpServletRequest servletRequest;
 
 	@POST
-	public Response postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid QueryDescription query, @Context HttpServletRequest req) {
-		log.info("Query posted on dataset {} by user {} ({}).", datasetId, user.getId(), user.getName());
+	public Response postQuery(@Auth User user, @PathParam(DATASET) Dataset dataset, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
 
-		return Response.ok(
-				processor.postQuery(
-						dsUtil.getDataset(datasetId),
-						query,
-						RequestAwareUriBuilder.fromRequest(req),
-						user
-				))
-					   .status(Status.CREATED)
-					   .build();
+		log.info("Query posted on dataset {} by user {} ({}).", dataset.getId(), user.getId(), user.getName());
+
+		user.authorize(dataset, Ability.READ);
+
+		ManagedExecution<?> execution = processor.postQuery(dataset, query, user);
+
+		return Response.ok(processor.getQueryFullStatus(execution, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false)))
+				.status(Status.CREATED)
+				.build();
 	}
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) {
+	public void cancel(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query) {
 
-		final ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
+		user.authorize(dataset, Ability.READ);
+		user.authorize(query, Ability.CANCEL);
 
-		ResourceUtil.throwNotFoundIfNull(queryId, query);
-
-		final Dataset dataset = dsUtil.getDataset(datasetId);
-
-		ResourceUtil.throwNotFoundIfNull(datasetId, dataset);
-
-		return processor.cancel(
+		processor.cancel(
 				user,
 				dataset,
 				query,
-				RequestAwareUriBuilder.fromRequest(req)
+				RequestAwareUriBuilder.fromRequest(servletRequest)
 		);
 	}
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req)
+	public FullExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders)
 			throws InterruptedException {
 
-		ManagedExecution<?> query = dsUtil.getManagedQuery(queryId);
-
-		ResourceUtil.throwNotFoundIfNull(queryId, query);
-
+		user.authorize(dataset, Ability.READ);
 		user.authorize(query, Ability.READ);
 
-		query.awaitDone(10, TimeUnit.SECONDS);
+		query.awaitDone(1, TimeUnit.SECONDS);
 
-		return processor.getStatus(
-				query,
-				RequestAwareUriBuilder.fromRequest(req),
-				user
-		);
+
+
+		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
 	}
 }

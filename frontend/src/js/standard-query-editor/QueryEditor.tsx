@@ -9,8 +9,8 @@ import StandardQueryNodeEditor from "./StandardQueryNodeEditor";
 const Root = styled("div")`
   flex-grow: 1;
   height: 100%;
-  overflow: auto;
   padding: 0 10px 10px 10px;
+  overflow: hidden;
 `;
 
 export const QueryEditor = () => {

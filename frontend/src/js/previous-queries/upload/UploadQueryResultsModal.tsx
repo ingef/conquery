@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import React, { FC, useState } from "react";
-import { DropTargetMonitor } from "react-dnd";
 import { useTranslation } from "react-i18next";
 
 import ErrorMessage from "../../error-message/ErrorMessage";

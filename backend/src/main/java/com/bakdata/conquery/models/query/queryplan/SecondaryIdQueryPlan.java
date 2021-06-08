@@ -16,8 +16,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -86,6 +88,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 			// Prepend SecondaryId to result-line.
 			result.add(ArrayUtils.insert(0, child.getValue().result().getValues(), child.getKey()));
 		}
+
 
 		if (result.isEmpty()) {
 			return Optional.empty();
@@ -161,7 +164,8 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		query.nextTable(ctx, currentTable);
 		for (ConceptQueryPlan c : childPerKey.values()) {
-			c.nextTable(ctx, currentTable);
+			QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(ctx, c::getValidityDateAggregator);
+			c.nextTable(context, currentTable);
 		}
 	}
 
@@ -184,8 +188,10 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
 
-		plan.init(query.getEntity(), currentContext);
-		plan.nextTable(currentContext, secondaryIdColumn.getTable());
+		QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
+
+		plan.init(query.getEntity(), context);
+		plan.nextTable(context, secondaryIdColumn.getTable());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);
 
@@ -203,21 +209,14 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public CDateSet getValidityDates(MultilineEntityResult result) {
+	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		if(!query.isAggregateValidityDates()) {
-			return CDateSet.create();
+			return Optional.empty();
 		}
 
-		CDateSet dateSet = CDateSet.create();
-		for(Object[] resultLine : result.listResultLines()) {
-			Object dates = resultLine[VALIDITY_DATE_POSITION];
+		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
+		childPerKey.values().forEach(c -> c.getValidityDateAggregator().ifPresent(agg::register));
 
-			if(dates == null) {
-				continue;
-			}
-
-			dateSet.addAll((CDateSet) dates);
-		}
-		return dateSet;
+		return agg.hasChildren() ? Optional.of(agg) : Optional.empty();
 	}
 }

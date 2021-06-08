@@ -6,7 +6,7 @@
     "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {{adjective}} Beispiel-Fehlermeldung"
   },
   "leftPane": {
-    "conceptTrees": "Konzeptbäume",
+    "conceptTrees": "Konzepte",
     "previousQueries": "Anfragen",
     "formConfigs": "Formulare"
   },
@@ -16,10 +16,10 @@
     "externalForms": "Formular-Editor"
   },
   "conceptTreeList": {
-    "loading": "Lade Konzeptbäume",
-    "loadingTree": "Lade Konzeptbaum: {{tree}}",
-    "error": "Konnte Konzeptbaum {{tree}} nicht laden.",
-    "noTrees": "Keine Konzeptbäume",
+    "loading": "Lade Konzepte",
+    "loadingTree": "Lade Konzept: {{tree}}",
+    "error": "Konnte Konzept {{tree}} nicht laden.",
+    "noTrees": "Keine Konzepte",
     "noTreesExplanation": "Wahrscheinlich ist beim Laden etwas schiefgelaufen. Bitte erneut laden.",
     "openAll": "Alle aufklappen",
     "closeAll": "Einzeln aufklappen",
@@ -81,10 +81,10 @@
     "error": "Konnte Datensätze nicht laden"
   },
   "queryNodeEditor": {
-    "conceptTree": "Konzeptbaum",
+    "conceptTree": "Konzept",
     "queryNode": "Abfrageknoten",
     "conceptNodes": "Konzeptknoten",
-    "conceptNodeTables": "Anfragetabellen",
+    "conceptNodeTables": "Quellen",
     "properties": "Allgemeine Einstellungen",
     "reset": "Zurücksetzen",
     "resetSettings": "Änderungen zurücksetzen",
@@ -95,12 +95,12 @@
     "description": "Beschreibung",
     "noDescriptionProvided": "Keine Beschreibung verfügbar.",
     "selectAFilter": "Kein Filter ausgewählt.",
-    "dropConcept": "Füge weitere Konzepte des selben Konzeptbaumes hinzu",
+    "dropConcept": "Füge weitere Elemente des selben Konzeptes hinzu",
     "includeSubnodes": "Untergeordnete Konzepte einbeziehen",
     "tooManyValues": "{{count}} Werte ausgewählt",
     "filters": "Filter",
-    "selects": "Zusatzwerte",
-    "commonSelects": "Allgemeine Zusatzwerte",
+    "selects": "Ausgabewerte",
+    "commonSelects": "Allgemeine Ausgabewerte",
     "nodeNotFound": "Konzept nicht gefunden",
     "selectValidityDate": "Relevanter Zeitraum",
     "dateColumn": "Datumsspalte",
@@ -114,6 +114,10 @@
   },
   "deletePreviousQueryModal": {
     "areYouSure": "Diese Anfrage wirklich löschen?"
+  },
+  "deletePreviousQueryFolderModal": {
+    "areYouSure": "Diesen Ordner wirklich löschen?",
+    "description": "Alle Anfragen aus dem Ordner {{folder}} werden aus dem Ordner entfernt, bleiben aber gespeichert."
   },
   "sharePreviousQueryModal": {
     "headline": "Anfrage freigeben: ",
@@ -139,7 +143,7 @@
     "closeEsc": "Schließen (ESC)",
     "close": "Schließen",
     "create": "Erstellen",
-    "addTag": "Schlagwort hinzufügen",
+    "addTag": "Zu Ordner hinzufügen",
     "share": "Freigeben",
     "shared": "Freigegeben",
     "loading": "Lade ...",
@@ -163,12 +167,12 @@
   },
   "reactSelect": {
     "placeholder": "Auswählen ...",
-    "tagPlaceholder": "Schlagwort ...",
+    "tagPlaceholder": "Ordner ...",
     "searchPlaceholder": "Suchen ...",
     "dndPlaceholder": "Auswählen oder Datei hochladen ...",
     "backspaceToRemove": "Backspace zum Entfernen drücken",
     "noResults": "Keine Werte gefunden",
-    "createTag": "Schlagwort erstellen: {{label}}",
+    "createTag": "Zu Ordner hinzufügen: {{label}}",
     "searchFor": "Suchen nach: {{label}}",
     "clearAll": "Alle entfernen",
     "clearValue": "Wert entfernen"
@@ -187,7 +191,7 @@
     "today": "Heute",
     "dateFormat": "dd.MM.yyyy",
     "tooltip": {
-      "possiblePattern": "j2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
+      "possiblePattern": "Folgende Abkürzungen sind erlaubt: <br/> Eingabe: j2020/j.2020 wird zu: Von 01.01.2020; Bis 31.12.2020 <br/> Eingabe: q2.2020 wird zu: Von 01.04.2020; Bis 30.06.2020 <br/> Eingabe: m8.2020 wird zu: Von 01.08.2020; Bis 31.08.2020"
     }
   },
   "inputMultiSelect": {
@@ -206,9 +210,10 @@
     "downloadResults": "Ergebnisse herunterladen",
     "loadError": "Konnte Anfrage nicht laden",
     "renameError": "Konnte Anfrage nicht umbenennen",
-    "retagError": "Konnte Schlagwörter nicht speichern",
+    "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Anfrage nicht freigeben",
-    "deleteError": "Konnte Anfrage nicht löschen"
+    "deleteError": "Konnte Anfrage nicht löschen",
+    "editFolders": "Ordner bearbeiten"
   },
   "previousQueriesFilter": {
     "all": "Alle",
@@ -311,15 +316,15 @@
     "colon": "Doppelpunkt",
     "comma": "Komma",
     "id": "ID",
-    "dateSet": "DATUMSBEREICH",
-    "startDate": "START_DATUM",
-    "endDate": "END_DATUM",
-    "ignore": "IGNORIEREN"
+    "dateSet": "Datumsbereich",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "ignore": "Ignorieren"
   },
   "uploadConceptListModal": {
     "headline": "Konzepte aus Liste einfügen",
     "label": "Name der Liste",
-    "selectConceptRootNode": "Konzeptbaum-Wurzel auswählen",
+    "selectConceptRootNode": "Konzept-Wurzel auswählen",
     "insertNode": "Jetzt einfügen",
     "result": "Ergebnis",
     "resolvedCodes": "1 Wert aufgelöst.",
@@ -333,11 +338,14 @@
     "headline": "Filter-Werte aus Liste einfügen"
   },
   "conceptListDetailsModal": {
-    "conceptTreeRoot": "Konzeptbaum",
+    "conceptTreeRoot": "Konzept",
     "conceptCodes": "Konzeptcodes"
   },
   "uploadQueryResults": {
     "uploadResults": "Lade Anfrageergebnis hoch"
+  },
+  "previousQueriesFolderButton": {
+    "tooltip": "Ordner anzeigen / verstecken"
   },
   "authorization": {
     "unauthorized": "Authorisierung fehlgeschlagen. Ein Authorisierungs-Token fehlt, oder ist abgelaufen"
@@ -373,7 +381,7 @@
   "formConfig": {
     "loadError": "Konnte Konfiguration nicht laden",
     "renameError": "Konnte Konfiguration nicht umbenennen",
-    "retagError": "Konnte Schlagwörter nicht speichern",
+    "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Konfiguration nicht freigeben",
     "deleteError": "Konnte Konfiguration nicht löschen"
   },
@@ -384,14 +392,22 @@
     "resetAll": "Zurück zu Standardansicht",
     "closeAll": "Alle Konzepte schließen"
   },
+  "folders": {
+    "headline": "Ordner",
+    "noFolders": "ohne",
+    "allQueries": "Alle"
+  },
+  "editPreviousQueryFoldersModal": {
+    "headline": "Ordner bearbeiten"
+  },
   "help": {
-    "tabConceptTrees": "Auswahl der Konzepte aus den Konzeptbäumen zur Verwendung in Editor oder Formular-Editor.",
-    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung in Editor, Zeit-Editor oder Formular-Editor.",
+    "tabConceptTrees": "Auswahl der Konzepte zur Verwendung im Editor oder Formular-Editor.",
+    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung im Editor, Zeit-Editor oder Formular-Editor.",
     "tabFormConfigs": "Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
     "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
     "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",
     "tabFormEditor": "Hier können Auswertungen und Analysen zu bestehenden Anfragen erstellt werden.",
-    "datasetSelector": "Auswahl des Datensatzes – die jeweiligen Konzeptbäume, Anfragen und Formulare werden geladen.",
+    "datasetSelector": "Auswahl des Datensatzes – die jeweiligen Konzepte, Anfragen und Formulare werden geladen.",
     "excludeTimestamps": "Auswahl führt dazu, dass die Datumswerte des Konzepts bei der Weiterverarbeitung nicht berücksichtigt werden.",
     "excludeFromSecondaryIdQuery": "Auswahl führt dazu, dass dieses Konzept nicht in der Analyse-Ebene berücksichtigt wird, falls eine Analyse-Ebene gewählt wurde.",
     "editConceptName": "Konzeptname bearbeiten",

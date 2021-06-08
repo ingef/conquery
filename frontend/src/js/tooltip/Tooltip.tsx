@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
+import { StateT } from "app-types";
 import React from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown/with-html";
-import { connect } from "react-redux";
-import type { Dispatch } from "redux-thunk";
+import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../button/IconButton";
 import type { SearchT } from "../concept-trees/reducer";
@@ -21,7 +21,7 @@ import type { AdditionalInfosType } from "./reducer";
 const Root = styled("div")`
   width: 100%;
   height: 100%;
-  padding: 50px 0 10px;
+  padding: 40px 0 10px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -31,12 +31,12 @@ const Root = styled("div")`
 
 const Header = styled("h2")`
   background-color: white;
-  height: 47px;
+  height: 40px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   border-bottom: 1px solid #ccc;
-  margin: 0 0 5px;
+  margin: 0;
   padding: 0 20px;
   font-size: ${({ theme }) => theme.font.sm};
   letter-spacing: 1px;
@@ -45,7 +45,7 @@ const Header = styled("h2")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 const Content = styled("div")`
-  padding: 10px 20px;
+  padding: 12px 20px 10px;
   width: 100%;
   flex-grow: 1;
   overflow-y: auto;
@@ -127,32 +127,35 @@ const InfoHeadline = styled("h4")`
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
-  top: 58px;
+  padding: 6px 15px;
+  top: 45px;
   right: 0;
   border-right: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 `;
 
-type PropsType = {
-  additionalInfos: AdditionalInfosType;
-  displayTooltip: boolean;
-  toggleAdditionalInfos: boolean;
-  onToggleDisplayTooltip: Function;
-  onToggleAdditionalInfos: Function;
-  search: SearchT;
-};
-
-const Tooltip = (props: PropsType) => {
+const Tooltip = () => {
   const { t } = useTranslation();
-  if (!props.displayTooltip) return <ActivateTooltip />;
 
-  const {
-    additionalInfos,
-    toggleAdditionalInfos,
-    onToggleDisplayTooltip,
-    onToggleAdditionalInfos,
-  } = props;
+  const additionalInfos = useSelector<StateT, AdditionalInfosType>(
+    (state) => state.tooltip.additionalInfos,
+  );
+  const displayTooltip = useSelector<StateT, boolean>(
+    (state) => state.tooltip.displayTooltip,
+  );
+  const toggleAdditionalInfos = useSelector<StateT, boolean>(
+    (state) => state.tooltip.toggleAdditionalInfos,
+  );
+  const search = useSelector<StateT, SearchT>(
+    (state) => state.conceptTrees.search,
+  );
+
+  const dispatch = useDispatch();
+  const onToggleDisplayTooltip = () => dispatch(toggleTooltip());
+  const onToggleAdditionalInfos = () => dispatch(toggleInfos());
+
+  if (!displayTooltip) return <ActivateTooltip />;
 
   const {
     label,
@@ -163,24 +166,19 @@ const Tooltip = (props: PropsType) => {
     dateRange,
   } = additionalInfos;
 
-  const searchHighlight = (text) => {
+  const searchHighlight = (text: string) => {
     return (
       <Highlighter
-        searchWords={props.search.words || []}
+        searchWords={search.words || []}
         autoEscape={true}
         textToHighlight={text || ""}
       />
     );
   };
 
-  const renderers = {
-    text: ({ value, children, nodeKey }) => searchHighlight(value),
-  };
-
   return (
     <Root>
       <StyledIconButton
-        small
         frame
         onClick={onToggleDisplayTooltip}
         icon="angle-left"
@@ -217,7 +215,9 @@ const Tooltip = (props: PropsType) => {
                 <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
                 <Markdown
                   escapeHtml={true}
-                  renderers={renderers}
+                  renderers={{
+                    text: ({ value }) => searchHighlight(value),
+                  }}
                   source={info.value}
                 />
               </PieceOfInfo>
@@ -228,18 +228,4 @@ const Tooltip = (props: PropsType) => {
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    additionalInfos: state.tooltip.additionalInfos,
-    displayTooltip: state.tooltip.displayTooltip,
-    toggleAdditionalInfos: state.tooltip.toggleAdditionalInfos,
-    search: state.conceptTrees.search,
-  };
-};
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onToggleDisplayTooltip: () => dispatch(toggleTooltip()),
-  onToggleAdditionalInfos: () => dispatch(toggleInfos()),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Tooltip);
+export default Tooltip;

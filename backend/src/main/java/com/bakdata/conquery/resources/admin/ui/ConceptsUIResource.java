@@ -13,12 +13,10 @@ import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
-import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,23 +30,16 @@ import lombok.Setter;
 public class ConceptsUIResource extends HAdmin {
 
 	@PathParam(CONCEPT)
-	protected ConceptId conceptId;
 	protected Concept<?> concept;
 	@PathParam(DATASET)
-	protected DatasetId datasetId;
+	protected Dataset dataset;
 	protected Namespace namespace;
 
 	@PostConstruct
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getDatasetRegistry().get(datasetId);
-
-		ResourceUtil.throwNotFoundIfNull(datasetId, namespace);
-
-		this.concept = namespace.getStorage().getConcept(conceptId);
-
-		ResourceUtil.throwNotFoundIfNull(conceptId, concept);
+		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 
 	@GET

@@ -43,6 +43,7 @@ export interface RangeFilterValueT {
 export interface RangeFilterT extends FilterBaseT {
   type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE";
   value: RangeFilterValueT | null;
+  defaultValue?: RangeFilterValueT;
   unit?: string;
   mode: "range" | "exact";
   precision?: number;
@@ -292,9 +293,14 @@ export interface ColumnDescription {
 export interface GetQueryResponseDoneT {
   status: "DONE";
   numberOfResults: number;
-  resultUrl: string;
+  resultUrls: string[];
   columnDescriptions: ColumnDescription[];
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+}
+
+export interface GetQueryRunningResponseT {
+  status: "RUNNING";
+  progress?: number;
 }
 
 // TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
@@ -310,7 +316,10 @@ export interface ErrorResponseT {
   context?: Record<string, string>; // More information to maybe display in translated messages
 }
 
-export type GetQueryResponseT = GetQueryResponseDoneT | GetQueryErrorResponseT;
+export type GetQueryResponseT =
+  | GetQueryRunningResponseT
+  | GetQueryResponseDoneT
+  | GetQueryErrorResponseT;
 
 export interface GetStoredQueryResponseT {
   id: QueryIdT;
@@ -321,7 +330,7 @@ export interface GetStoredQueryResponseT {
   system: boolean;
   ownerName: string;
   numberOfResults: number;
-  resultUrl: string;
+  resultUrls: string[];
   requiredTime: number; // TODO: Not used
   tags?: string[];
   query: QueryT;

@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import { StateT } from "app-types";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,8 +7,13 @@ import { useSelector, useDispatch } from "react-redux";
 import type { ColumnDescription } from "../api/types";
 import { useAuthToken } from "../api/useApi";
 import { openPreview } from "../preview/actions";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import IconButton from "./IconButton";
+
+const SxIconButton = styled(IconButton)`
+  white-space: nowrap;
+`;
 
 interface PropsT {
   columns: ColumnDescription[];
@@ -35,13 +41,13 @@ const PreviewButton: FC<PropsT> = ({
   )}&charset=utf-8&pretty=false`;
 
   return (
-    <IconButton
-      icon={isLoading ? "spinner" : "search"}
-      onClick={() => onOpenPreview(href)}
-      {...restProps}
-    >
-      {t("preview.preview")}
-    </IconButton>
+    <WithTooltip text={t("preview.preview")} className={className}>
+      <SxIconButton
+        icon={isLoading ? "spinner" : "search"}
+        onClick={() => onOpenPreview(href)}
+        {...restProps}
+      />
+    </WithTooltip>
   );
 };
 

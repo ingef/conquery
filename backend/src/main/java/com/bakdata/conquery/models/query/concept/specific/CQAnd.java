@@ -1,6 +1,10 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -66,7 +70,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 		if (createExists()) {
 			final ExistsAggregator existsAggregator = new ExistsAggregator(node.collectRequiredTables());
 			existsAggregator.setReference(node);
-			plan.addAggregator(existsAggregator);
+			plan.registerAggregator(existsAggregator);
 		}
 
 		return node;

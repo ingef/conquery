@@ -7,6 +7,7 @@ import type {
 import {
   QUERY_RESULT_ERROR,
   QUERY_RESULT_RESET,
+  QUERY_RESULT_RUNNING,
   QUERY_RESULT_START,
   QUERY_RESULT_SUCCESS,
   START_QUERY_ERROR,
@@ -25,20 +26,21 @@ interface APICallType {
   errorContext?: Record<string, string>;
 }
 
+interface QueryResultT extends APICallType {
+  datasetId?: string;
+  resultCount?: number;
+  resultUrls?: string[];
+  resultColumns?: ColumnDescription[];
+  queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+}
+
 export interface QueryRunnerStateT {
   runningQuery: string | null;
+  progress?: number;
   queryRunning: boolean;
   startQuery: APICallType;
   stopQuery: APICallType;
-  queryResult:
-    | (APICallType & {
-        datasetId?: string;
-        resultCount?: number;
-        resultUrl?: string;
-        resultColumns?: ColumnDescription[];
-        queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
-      })
-    | null;
+  queryResult: QueryResultT | null;
 }
 
 export default function createQueryRunnerReducer(type: QueryTypeT) {
@@ -60,7 +62,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
       success: true,
       error: null,
       resultCount: data.numberOfResults,
-      resultUrl: data.resultUrl,
+      resultUrls: data.resultUrls,
       resultColumns: data.columnDescriptions,
       queryType: data.queryType,
     };
@@ -107,6 +109,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
         return {
           ...state,
           runningQuery: null,
+          progress: undefined,
           queryRunning: false,
           startQuery: {},
           stopQuery: { success: true },
@@ -121,6 +124,8 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
       // To check for query results
       case QUERY_RESULT_START:
         return { ...state, queryResult: { loading: true } };
+      case QUERY_RESULT_RUNNING:
+        return { ...state, progress: action.payload.progress };
       case QUERY_RESULT_RESET:
         return { ...state, queryResult: { loading: false } };
       case QUERY_RESULT_SUCCESS:
@@ -133,6 +138,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
           ...state,
           queryResult,
           runningQuery: null,
+          progress: undefined,
           queryRunning: false,
         };
       case QUERY_RESULT_ERROR:
@@ -141,6 +147,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
         return {
           ...state,
           runningQuery: null,
+          progress: undefined,
           queryRunning: false,
           queryResult: {
             loading: false,

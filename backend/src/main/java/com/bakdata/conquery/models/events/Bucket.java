@@ -15,6 +15,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
@@ -27,6 +28,7 @@ import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -49,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-public class Bucket extends IdentifiableImpl<BucketId> {
+public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
 
 	@Min(0)
 	private final int bucket;
@@ -187,4 +189,9 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 		return out;
 	}
 
+	@JsonIgnore
+	@Override
+	public Dataset getDataset() {
+		return getTable().getDataset();
+	}
 }

@@ -10,18 +10,19 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.ResourceFile;
+import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
 import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.io.result.csv.QueryToCSVRenderer;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -40,9 +41,9 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	}
 
 	@Override
-	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
+	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
-		DatasetId dataset = standaloneSupport.getNamespace().getDataset().getId();
+		Dataset dataset = standaloneSupport.getDataset();
 
 		IQuery query = getQuery();
 
@@ -50,9 +51,12 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 				.describedAs("Query Validation Errors")
 				.isEmpty();
 
+
 		log.info("{} QUERY INIT", getLabel());
 
-		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, standaloneSupport.getTestUser(), standaloneSupport.getDataset(), standaloneSupport.getConfig());
+		final ConqueryConfig config = standaloneSupport.getConfig();
+		final User testUser = standaloneSupport.getTestUser();
+		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, testUser, dataset, config);
 
 		managed.awaitDone(10, TimeUnit.SECONDS);
 		while (managed.getState() != ExecutionState.DONE && managed.getState() != ExecutionState.FAILED) {
@@ -66,31 +70,34 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		}
 
 		//check result info size
-		ResultInfoCollector resultInfos = managed.collectResultInfos();
+		List<ResultInfo> resultInfos = managed.getResultInfo();
 
 		assertThat(
 				managed.getResults().stream()
-					   .flatMap(EntityResult::streamValues)
+						.flatMap(EntityResult::streamValues)
 		)
 				.as("Should have same size as result infos")
-				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
+				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
 
+		IdMappingState mappingState = config.getIdMapping().initToExternal(testUser, managed);
 		PrintSettings
 				PRINT_SETTINGS =
-				new PrintSettings(false, Locale.ENGLISH, standaloneSupport.getNamespace().getNamespaces(), standaloneSupport.getConfig(), (columnInfo) -> columnInfo.getSelect()
-																																		 .getId()
-																																		 .toStringWithoutDataset());
-		IdMappingState mappingState = standaloneSupport.getConfig().getIdMapping().initToExternal(standaloneSupport.getTestUser(), managed);
+				new PrintSettings(
+						false,
+						Locale.ENGLISH,
+						namespaces,
+						config,
+						cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, config.getIdMapping(), mappingState),
+						(columnInfo) -> columnInfo.getSelect().getId().toStringWithoutDataset()
+				);
 
-		List<String> actual = QueryToCSVRenderer
-									  .toCSV(
-											  PRINT_SETTINGS,
-											  List.of(managed),
-											  cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, standaloneSupport.getConfig()
-																																 .getIdMapping(), mappingState),
-											  standaloneSupport.getConfig().getCsv().createWriter(),
-											  standaloneSupport.getConfig().getIdMapping().getPrintIdFields())
-									  .collect(Collectors.toList());
+		CsvLineStreamRenderer renderer = new CsvLineStreamRenderer(config.getCsv().createWriter(), PRINT_SETTINGS);
+
+		List<String> actual = renderer.toStream(
+				config.getIdMapping().getPrintIdFields(),
+				resultInfos,
+				managed.streamResults()
+		).collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();
 

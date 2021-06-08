@@ -12,11 +12,11 @@
       "label": "select",
       "tables": [
         {
-          "id": "select.connector"
+          "id": "select.connector",
+          "selects": [
+            "select.connector.select"
+          ]
         }
-      ],
-      "selects": [
-        "select.connector.select"
       ]
     }
   },

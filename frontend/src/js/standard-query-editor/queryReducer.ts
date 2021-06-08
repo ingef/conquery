@@ -1,3 +1,5 @@
+import { getType } from "typesafe-actions";
+
 import type {
   AndQueryT,
   TableT,
@@ -19,7 +21,7 @@ import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTre
 import type { TreesT } from "../concept-trees/reducer";
 import { isMultiSelectFilter } from "../model/filter";
 import { selectsWithDefaults } from "../model/select";
-import { resetAllFiltersInTables } from "../model/table";
+import { resetAllFiltersInTables, tableWithDefaults } from "../model/table";
 import {
   LOAD_PREVIOUS_QUERY_START,
   LOAD_PREVIOUS_QUERY_SUCCESS,
@@ -59,6 +61,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_DATE_COLUMN,
 } from "./actionTypes";
+import { resetTable } from "./actions";
 import type {
   StandardQueryNodeT,
   DragItemQuery,
@@ -429,6 +432,7 @@ const resetNodeAllFilters = (state: StandardQueryStateT) => {
   const node = state[andIdx].elements[orIdx];
 
   const newState = setElementProperties(state, andIdx, orIdx, {
+    excludeFromSecondaryIdQuery: false,
     excludeTimestamps: false,
     selects: selectsWithDefaults(node.selects),
   });
@@ -438,6 +442,33 @@ const resetNodeAllFilters = (state: StandardQueryStateT) => {
   const tables = resetAllFiltersInTables(node.tables);
 
   return updateNodeTables(newState, andIdx, orIdx, tables);
+};
+
+const resetNodeTable = (
+  state: StandardQueryStateT,
+  action: { payload: { tableIdx: number } },
+) => {
+  const nodeIdx = selectEditedNodePosition(state);
+  if (!nodeIdx) return state;
+  const { andIdx, orIdx } = nodeIdx;
+
+  const node = state[andIdx].elements[orIdx];
+
+  if (!node.tables) return state;
+
+  const { tableIdx } = action.payload;
+
+  const table = node.tables[tableIdx];
+
+  if (!table) return state;
+
+  return updateNodeTable(
+    state,
+    andIdx,
+    orIdx,
+    tableIdx,
+    tableWithDefaults(table),
+  );
 };
 
 const setGroupDate = (state: StandardQueryStateT, action: any) => {
@@ -488,12 +519,14 @@ const mergeFiltersFromSavedConcept = (
 
   if (!savedTable.filters) return null;
 
-  return savedTable.filters.map((filter) => {
+  return savedTable.filters.map((savedFilter) => {
     // TODO: Improve the api and don't use `.filter`, but `.id` or `.filterId`
-    const matchingFilter = table.filters!.find((f) => f.filter === filter.id);
+    const matchingFilter = table.filters!.find(
+      (f) => f.filter === savedFilter.id,
+    );
 
     if (!matchingFilter) {
-      return filter;
+      return savedFilter;
     }
 
     if (isRangeFilterConfig(matchingFilter)) {
@@ -505,44 +538,44 @@ const mergeFiltersFromSavedConcept = (
           ? { mode: "exact", value: { exact: matchingFilter.value.min } }
           : { mode: "range", value: matchingFilter.value };
 
-      return { ...filter, ...filterDetails };
+      return { ...savedFilter, ...filterDetails };
     }
 
     if (isMultiSelectFilterConfig(matchingFilter)) {
       const filterDetails = {
         ...matchingFilter,
-        type: filter.type, // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
+        type: savedFilter.type, // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
         value: matchingFilter.value
           .map((val) => {
-            if (!isMultiSelectFilter(filter)) {
+            if (!isMultiSelectFilter(savedFilter)) {
               console.error(
-                `Filter: ${filter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`,
+                `Filter: ${savedFilter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`,
               );
               return val;
             } else {
               // There is the possibility, that we have a BIG_MULTI_SELECT that loads options async.
               // Then filter.options would be empty and we wouldn't find it
-              return filter.options.find((op) => op.value === val);
+              return savedFilter.options.find((op) => op.value === val) || val;
             }
           })
           .filter(exists),
         // For BIG MULTI SELECT only, to be able to load all non-loaded options form the defaultValue later
         defaultValue: matchingFilter.value.filter((val) => {
-          if (!isMultiSelectFilter(filter)) {
+          if (!isMultiSelectFilter(savedFilter)) {
             console.error(
-              `Filter: ${filter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`,
+              `Filter: ${savedFilter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`,
             );
             return false;
           }
 
-          return !exists(filter.options.find((opt) => opt.value === val));
+          return !exists(savedFilter.options.find((opt) => opt.value === val));
         }),
       };
 
-      return { ...filter, ...filterDetails };
+      return { ...savedFilter, ...filterDetails };
     }
 
-    return { ...filter, ...matchingFilter };
+    return { ...savedFilter, ...matchingFilter };
   });
 };
 
@@ -1049,6 +1082,8 @@ const query = (
       return setNodeSelects(state, action);
     case RESET_ALL_FILTERS:
       return resetNodeAllFilters(state);
+    case getType(resetTable):
+      return resetNodeTable(state, action);
     case SWITCH_FILTER_MODE:
       return switchNodeFilterMode(state, action);
     case TOGGLE_TIMESTAMPS:

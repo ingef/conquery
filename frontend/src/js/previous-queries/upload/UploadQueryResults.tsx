@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -8,26 +8,23 @@ import type { DatasetIdT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import { queryResultReset, useStartQuery } from "../../query-runner/actions";
 import { QueryRunnerStateT } from "../../query-runner/reducer";
+import WithTooltip from "../../tooltip/WithTooltip";
 
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
-import { openUploadModal, closeUploadModal } from "./actions";
+
+const SxIconButton = styled(IconButton)`
+  padding: 10px 6px;
+`;
 
 interface PropsT {
+  className?: string;
   datasetId: DatasetIdT | null;
 }
 
-const Root = styled("div")`
-  margin-bottom: 5px;
-  padding: 0 10px;
-`;
-
-const UploadQueryResults = ({ datasetId }: PropsT) => {
+const UploadQueryResults = ({ className, datasetId }: PropsT) => {
   const { t } = useTranslation();
   const queryRunner = useSelector<StateT, QueryRunnerStateT>(
     (state) => state.uploadQueryResults.queryRunner,
-  );
-  const isModalOpen = useSelector<StateT, boolean>(
-    (state) => state.uploadQueryResults.isModalOpen,
   );
 
   const loading = queryRunner.startQuery.loading || !!queryRunner.runningQuery;
@@ -37,13 +34,13 @@ const UploadQueryResults = ({ datasetId }: PropsT) => {
     !!queryRunner.startQuery.error ||
     (!!queryRunner.queryResult && !!queryRunner.queryResult.error);
 
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const dispatch = useDispatch();
-  const onOpenModal = () => dispatch(openUploadModal());
 
   const startExternalQuery = useStartQuery("external");
 
   const onCloseModal = () => {
-    dispatch(closeUploadModal());
+    setIsModalOpen(false);
     dispatch(queryResultReset("external"));
   };
   const onUpload = (query: any) => {
@@ -53,10 +50,17 @@ const UploadQueryResults = ({ datasetId }: PropsT) => {
   };
 
   return (
-    <Root>
-      <IconButton frame icon="upload" onClick={onOpenModal}>
-        {t("uploadQueryResults.uploadResults")}
-      </IconButton>
+    <>
+      <WithTooltip
+        text={t("uploadQueryResults.uploadResults")}
+        className={className}
+      >
+        <SxIconButton
+          frame
+          icon="upload"
+          onClick={() => setIsModalOpen(true)}
+        />
+      </WithTooltip>
       {isModalOpen && (
         <UploadQueryResultsModal
           onClose={onCloseModal}
@@ -66,7 +70,7 @@ const UploadQueryResults = ({ datasetId }: PropsT) => {
           error={error}
         />
       )}
-    </Root>
+    </>
   );
 };
 

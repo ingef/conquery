@@ -4,7 +4,12 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.commands.ShardNode;
@@ -27,6 +32,9 @@ import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
+import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -123,9 +131,18 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			log.info("Issuing deletion of import {}", importId);
 
-			conquery.getDatasetsProcessor().deleteImport(importId);
+			final URI deleteImportUri =
+					HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "deleteImportView")
+								   .buildFromMap(Map.of(
+										   ResourceConstants.DATASET, conquery.getDataset().getId(),
+										   ResourceConstants.TABLE, importId.getTable(),
+										   ResourceConstants.IMPORT_ID, importId
+								   ));
 
-			Thread.sleep(100);
+			final Response delete = conquery.getClient().target(deleteImportUri).request(MediaType.APPLICATION_JSON).delete();
+
+			assertThat(delete.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+
 			conquery.waitUntilWorkDone();
 
 		}
@@ -133,7 +150,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		// State after deletion.
 		{
 			log.info("Checking state after deletion");
-			// We have deleted an import now there should be two less!
+			// We have deleted an import now there should be one less!
 			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 1);
 
 			// The deleted import should not be found.

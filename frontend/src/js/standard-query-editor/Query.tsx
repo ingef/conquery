@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import QueryGroupModal from "js/query-group-modal/QueryGroupModal";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,7 +9,9 @@ import { exists } from "../common/helpers/exists";
 import { TreesT } from "../concept-trees/reducer";
 import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+import QueryGroupModal from "../query-group-modal/QueryGroupModal";
 import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
 import QueryEditorDropzone from "./QueryEditorDropzone";
@@ -42,12 +43,21 @@ const Container = styled("div")`
   flex-direction: column;
 `;
 
+const PaddedTop = styled("div")`
+  padding-top: 70px;
+`;
+
+const SxWithTooltip = styled(WithTooltip)`
+  display: block !important;
+`;
+
 const Groups = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: flex-start;
-  padding: 0 0 20px;
+  margin: 0 0 10px;
   flex-grow: 1;
+  overflow: auto;
 `;
 
 const QueryGroupConnector = styled("p")`
@@ -183,13 +193,16 @@ const Query = () => {
                 {t("common.and")}
               </QueryGroupConnector>,
             ])}
-            <QueryEditorDropzone
-              isAnd
-              tooltip={t("help.editorDropzoneAnd")}
-              onDropNode={onDropAndNode}
-              onDropFile={(file) => onDropConceptListFile(file, null)}
-              onLoadPreviousQuery={onLoadPreviousQuery}
-            />
+            <PaddedTop>
+              <SxWithTooltip text={t("help.editorDropzoneAnd")} lazy>
+                <QueryEditorDropzone
+                  isAnd
+                  onDropNode={onDropAndNode}
+                  onDropFile={(file) => onDropConceptListFile(file, null)}
+                  onLoadPreviousQuery={onLoadPreviousQuery}
+                />
+              </SxWithTooltip>
+            </PaddedTop>
           </Groups>
           <QueryFooter />
         </>
