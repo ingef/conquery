@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/github/license/bakdata/conquery.svg)](https://github.com/bakdata/conquery/blob/develop/LICENSE)
 
 
-![conquery Screenshot](images/screenshot-v3.png)
+![conquery Screenshot](images/screenshot-v4.png)
 
 Conquery is a powerful web-based tool to compose and execute queries against large event-like data sets.
 
