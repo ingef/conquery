@@ -14,10 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 
 @Slf4j
@@ -63,15 +60,17 @@ public class FiltersNode extends QPNode {
                 continue;
             }
             throw new IllegalArgumentException("Unknown filter type: " + filter.getClass().getName());
-
-            final FiltersNode filtersNode = new FiltersNode();
-            filtersNode.setAggregators(aggregators);
-            filtersNode.setAggregationFilters(aggregationFilters);
-            filtersNode.setEventFilters(eventFilters);
-            filtersNode.setEventDateAggregators(eventDateAggregators);
-
-            return filtersNode;
         }
+
+
+        final FiltersNode filtersNode = new FiltersNode();
+        filtersNode.setAggregators(aggregators);
+        filtersNode.setAggregationFilters(aggregationFilters);
+        filtersNode.setEventFilters(eventFilters);
+        filtersNode.setEventDateAggregators(eventDateAggregators);
+
+        return filtersNode;
+    }
 
 
         @Override
@@ -91,7 +90,7 @@ public class FiltersNode extends QPNode {
         }
 
         @Override
-        public final Optional<Boolean> eventFiltersApply (Bucket bucket,int event){
+        public final Optional<Boolean> eventFiltersApply (Bucket bucket, int event){
             if (eventFilters.isEmpty()) {
                 return Optional.empty();
             }
