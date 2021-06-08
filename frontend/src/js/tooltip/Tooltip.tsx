@@ -45,7 +45,7 @@ const Header = styled("h2")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 const Content = styled("div")`
-  padding: 15px 20px 10px;
+  padding: 12px 20px 10px;
   width: 100%;
   flex-grow: 1;
   overflow-y: auto;
