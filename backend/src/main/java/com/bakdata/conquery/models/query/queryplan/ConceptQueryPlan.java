@@ -120,7 +120,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
  		checkRequiredTables(resolvedCtx.getStorage());
 
-		if (requiredTables.get().isEmpty()) {
+		if (requiredTables.get().isEmpty() && subQueries.isEmpty()) {
 			return Optional.empty();
 		}
 
@@ -181,7 +181,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	}
 
 	public boolean isContained() {
-		return accepted && aggregationFiltersApply().orElse(true);
+		return (accepted || requiredTables.get().isEmpty()) && aggregationFiltersApply().orElse(true);
 	}
 
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {

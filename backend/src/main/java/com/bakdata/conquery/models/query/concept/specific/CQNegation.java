@@ -43,10 +43,10 @@ public class CQNegation extends CQElement {
 		Preconditions.checkNotNull(dateAction);
 		if (asSubquery) {
 			ConceptQueryPlan qp = new ConceptQueryPlan(false);
-			qp.setChild(new NegatingNode(child.createQueryPlan(context, qp), dateAction));
+			qp.setChild(child.createQueryPlan(context, qp));
 			qp.getDateAggregator().registerAll(qp.getChild().getDateAggregators());
 			plan.addSubquery(qp);
-			return new SubQueryNode(qp);
+			return new NegatingNode(new SubQueryNode(qp), dateAction);
 		}
 
 		return new NegatingNode(child.createQueryPlan(context, plan), dateAction);
