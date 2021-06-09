@@ -1,15 +1,11 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
@@ -34,7 +30,6 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	@Min(0)
 	private int entityBucketSize;
 
-	private final Set<ManagedExecutionId> cancelled = new HashSet<>();
 
 	@Override
 	public WorkerId createId() {

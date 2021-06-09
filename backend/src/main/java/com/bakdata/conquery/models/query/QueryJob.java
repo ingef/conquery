@@ -19,6 +19,7 @@ public class QueryJob implements Callable<Optional<EntityResult>>{
 	
 	@Override
 	public Optional<EntityResult> call() throws Exception {
+
 		if(ctx.isQueryCancelled()){
 			return Optional.empty();
 		}

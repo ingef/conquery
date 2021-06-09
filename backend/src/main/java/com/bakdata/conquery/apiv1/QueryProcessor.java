@@ -279,13 +279,18 @@ public class QueryProcessor {
 
 	public void cancel(User user, Dataset dataset, ManagedExecution<?> query) {
 
+		// Does not make sense to cancel a query that isn't running.
+		if(!query.getState().equals(ExecutionState.RUNNING)){
+			return;
+		}
+
 		log.debug("{} cancelled Query[{}]", user, query.getId());
 
 		final Namespace namespace = getDatasetRegistry().get(dataset.getId());
 
-		namespace.sendToAll(new CancelQuery(query.getId()));
-
 		query.setState(ExecutionState.CANCELED);
+
+		namespace.sendToAll(new CancelQuery(query.getId()));
 	}
 
 

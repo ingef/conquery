@@ -4,8 +4,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -25,7 +27,22 @@ public class QueryExecutor implements Closeable {
 
 	private final ThreadPoolExecutor executor;
 	private final ListeningExecutorService pool;
-	
+
+	private final Set<ManagedExecutionId> cancelledQueries = new HashSet<>();
+
+	//TODO better name
+	public void uncancelQuery(ManagedExecutionId query) {
+		cancelledQueries.remove(query);
+	}
+
+	public void cancelQuery(ManagedExecutionId query) {
+		cancelledQueries.add(query);
+	}
+
+	public boolean isCancelled(ManagedExecutionId query){
+		return cancelledQueries.contains(query);
+	}
+
 	public QueryExecutor(ThreadPoolExecutor executor) {
 		this.executor = executor;
 		this.pool = MoreExecutors.listeningDecorator(executor);
@@ -40,7 +57,7 @@ public class QueryExecutor implements Closeable {
 
 		List<ListenableFuture<Optional<EntityResult>>> futures = new ArrayList<>();
 
-
+		//TODO experiment with CompletableFutures and composition here instead.
 		for (Entity entity : entities) {
 			QueryJob queryJob = new QueryJob(context, queryPlan, entity);
 			ListenableFuture<Optional<EntityResult>> submit = pool.submit(queryJob);

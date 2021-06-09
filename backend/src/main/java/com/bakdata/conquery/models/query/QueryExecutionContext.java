@@ -27,6 +27,8 @@ public class QueryExecutionContext {
 
 	private final ManagedExecutionId executionId;
 
+	private final QueryExecutor executor;
+
 	private Column validityDateColumn;
 	@NonNull
 	private CDateSet dateRestriction = CDateSet.createFull();
@@ -46,6 +48,6 @@ public class QueryExecutionContext {
 	}
 
 	boolean isQueryCancelled() {
-		return getStorage().getCancelledQueries().contains(getExecutionId());
+		return executor.isCancelled(executionId);
 	}
 }
