@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -14,6 +15,7 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.SubQueryNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.google.common.base.Preconditions;
@@ -25,16 +27,28 @@ import lombok.Setter;
 @Getter
 public class CQNegation extends CQElement {
 
-	@Valid @NotNull @Getter @Setter
+	@Valid
 	private CQElement child;
 
 	@InternalOnly
-	@Getter @Setter
 	private DateAggregationAction dateAction;
+
+	/**
+	 * If true the child is evaluated as a sub query.
+	 */
+	private boolean asSubquery = true;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		Preconditions.checkNotNull(dateAction);
+		if (asSubquery) {
+			ConceptQueryPlan qp = new ConceptQueryPlan(false);
+			qp.setChild(new NegatingNode(child.createQueryPlan(context, qp), dateAction));
+			qp.getDateAggregator().registerAll(qp.getChild().getDateAggregators());
+			plan.addSubquery(qp);
+			return new SubQueryNode(qp);
+		}
+
 		return new NegatingNode(child.createQueryPlan(context, plan), dateAction);
 	}
 

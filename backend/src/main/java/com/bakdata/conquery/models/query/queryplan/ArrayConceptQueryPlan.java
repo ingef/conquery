@@ -48,10 +48,10 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	}
 
 	@Override
-	public ArrayConceptQueryPlan clone(CloneContext ctx) {
+	public ArrayConceptQueryPlan doClone(CloneContext ctx) {
 		List<ConceptQueryPlan> childPlanClones = new ArrayList<>();
 		for (ConceptQueryPlan child : childPlans) {
-			childPlanClones.add(child.clone(ctx));
+			childPlanClones.add(ctx.clone(child));
 		}
 		ArrayConceptQueryPlan aqClone = new ArrayConceptQueryPlan(generateDateAggregation);
 		aqClone.childPlans = new ArrayList<>(childPlanClones);

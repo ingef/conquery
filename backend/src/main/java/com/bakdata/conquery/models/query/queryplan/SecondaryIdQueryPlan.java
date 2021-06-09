@@ -38,7 +38,6 @@ import org.apache.commons.lang3.ArrayUtils;
 @Setter
 public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
-	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;
 	private final ConceptQueryPlan query;
 	private final SecondaryIdDescription secondaryId;
 
@@ -186,7 +185,8 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 */
 	private ConceptQueryPlan createChild(Column secondaryIdColumn, QueryExecutionContext currentContext, Bucket currentBucket) {
 
-		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
+		CloneContext cloneContext = new CloneContext(currentContext.getStorage());
+		ConceptQueryPlan plan = cloneContext.clone(query);
 
 		QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
 
@@ -199,8 +199,8 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public QueryPlan clone(CloneContext ctx) {
-		return new SecondaryIdQueryPlan(query.clone(ctx), secondaryId, tablesWithSecondaryId, tablesWithoutSecondaryId);
+	public QueryPlan doClone(CloneContext ctx) {
+		return new SecondaryIdQueryPlan(ctx.clone(query), secondaryId, tablesWithSecondaryId, tablesWithoutSecondaryId);
 	}
 
 	@Override

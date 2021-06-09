@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
@@ -66,7 +67,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			
 			CloneContext clCtx = new CloneContext(ctx.getStorage());
 						
-			ArrayConceptQueryPlan subPlan = features.clone(clCtx);
+			ArrayConceptQueryPlan subPlan = clCtx.clone(features);
 			subPlans.add(subPlan);
 	
 			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
@@ -129,8 +130,8 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public FormQueryPlan clone(CloneContext ctx) {
-		return new FormQueryPlan(dateContexts, features.clone(ctx));
+	public FormQueryPlan doClone(CloneContext ctx) {
+		return new FormQueryPlan(dateContexts, ctx.clone(features));
 	}
 
 	@Override
@@ -138,6 +139,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return features.isOfInterest(entity);
 	}
 
+	@NotNull
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);

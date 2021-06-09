@@ -242,11 +242,11 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public RelativeFormQueryPlan clone(CloneContext ctx) {
-		RelativeFormQueryPlan copy = new RelativeFormQueryPlan(
-			query.clone(ctx),
-			featurePlan.clone(ctx),
-			outcomePlan.clone(ctx),
+	public RelativeFormQueryPlan doClone(CloneContext ctx) {
+		return new RelativeFormQueryPlan(
+			ctx.clone(query),
+			ctx.clone(featurePlan),
+			ctx.clone(outcomePlan),
 			indexSelector,
 			indexPlacement,
 			timeCountBefore,
@@ -254,7 +254,6 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			timeUnit,
 			resolutionsAndAlignmentMap
 		);
-		return copy;
 	}
 
 	@Override

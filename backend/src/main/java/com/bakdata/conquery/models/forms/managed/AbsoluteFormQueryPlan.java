@@ -16,7 +16,7 @@ import java.util.Optional;
 @Getter @RequiredArgsConstructor
 public class AbsoluteFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
-	private final QueryPlan query;
+	private final QueryPlan<EntityResult> query;
 	private final FormQueryPlan subPlan;
 	
 	@Override
@@ -32,10 +32,10 @@ public class AbsoluteFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public AbsoluteFormQueryPlan clone(CloneContext ctx) {
+	public AbsoluteFormQueryPlan doClone(CloneContext ctx) {
 		return new AbsoluteFormQueryPlan(
-			query.clone(ctx),
-			subPlan.clone(ctx)
+				ctx.clone(query),
+				ctx.clone(subPlan)
 		);
 	}
 

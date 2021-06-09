@@ -11,17 +11,17 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class QueryJob implements Callable<Optional<EntityResult>>{
+public class QueryJob<R extends EntityResult> implements Callable<Optional<R>>{
 
 	private final QueryExecutionContext ctx;
-	private final QueryPlan plan;
+	private final QueryPlan<R> plan;
 	private final Entity entity;
 	
 	@Override
-	public Optional<EntityResult> call() throws Exception {
+	public Optional<R> call() throws Exception {
 		try {
 			CloneContext cCtx = new CloneContext(ctx.getStorage());
-			QueryPlan queryPlan = this.plan.clone(cCtx);
+			QueryPlan<R> queryPlan = cCtx.clone(this.plan);
 			
 			return queryPlan.execute(ctx, entity);
 		}

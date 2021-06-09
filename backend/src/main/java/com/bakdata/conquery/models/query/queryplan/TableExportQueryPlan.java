@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * The QueryPlan creates a full dump of the given table within a certain
@@ -27,14 +28,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
-	private final QueryPlan subPlan;
+	private final QueryPlan<EntityResult> subPlan;
 	private final CDateRange dateRange;
 	private final List<TableExportDescription> tables;
 	private final int totalColumns;
 
 	@Override
-	public QueryPlan clone(CloneContext ctx) {
-		return new TableExportQueryPlan(subPlan.clone(ctx), dateRange, tables, totalColumns);
+	public TableExportQueryPlan doClone(CloneContext ctx) {
+		return new TableExportQueryPlan(ctx.clone(subPlan), dateRange, tables, totalColumns);
 	}
 
 	@Override
@@ -42,6 +43,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return subPlan.isOfInterest(entity);
 	}
 
+	@NotNull
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		// TODO figure out where the dates are

@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ import java.util.function.Function;
 public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 
-    private final QueryPlan query;
+    private final QueryPlan<EntityResult> query;
     private final ArrayConceptQueryPlan features;
     private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
     private final CDateRange dateRestriction;
@@ -45,7 +46,7 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
             return Optional.empty();
         }
 
-        Optional<DateAggregator> validityDateAggregator = query.getValidityDateAggregator();
+        Optional<Aggregator<CDateSet>> validityDateAggregator = query.getValidityDateAggregator();
         if (validityDateAggregator.isEmpty()) {
             return Optional.empty();
         }
@@ -65,10 +66,10 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
     }
 
     @Override
-    public EntityDateQueryPlan clone(CloneContext ctx) {
+    public EntityDateQueryPlan doClone(CloneContext ctx) {
         return new EntityDateQueryPlan(
-                query.clone(ctx),
-                features.clone(ctx),
+                ctx.clone(query),
+                ctx.clone(features),
                 resolutionsAndAlignments,
                 dateRestriction
         );
@@ -79,6 +80,7 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
         return query.isOfInterest(entity);
     }
 
+    @NotNull
     @Override
     public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
         return query.getValidityDateAggregator();

@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 @Setter
@@ -28,15 +29,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
-	public static final int VALIDITY_DATE_POSITION = 0;
-	@Getter
-	@Setter
 	private ThreadLocal<Set<Table>> requiredTables = new ThreadLocal<>();
 	private QPNode child;
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
 	private DateAggregator dateAggregator = new DateAggregator(DateAggregationAction.MERGE);
+	private List<ConceptQueryPlan> subQueries = new ArrayList<>();
+	private boolean accepted = false;
 
 	public ConceptQueryPlan(boolean generateDateAggregator) {
 		if (generateDateAggregator){
@@ -44,8 +44,12 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		}
 	}
 
+	public void addSubquery(ConceptQueryPlan subplan) {
+		subQueries.add(0, subplan);
+	}
+
 	@Override
-	public ConceptQueryPlan clone(CloneContext ctx) {
+	public ConceptQueryPlan doClone(CloneContext ctx) {
 		checkRequiredTables(ctx.getStorage());
 
 		// We set the date aggregator if needed by manually in the following for loop
@@ -58,6 +62,9 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 		clone.dateAggregator = ctx.clone(dateAggregator);
 		clone.setRequiredTables(this.getRequiredTables());
+		for (ConceptQueryPlan subQuery : this.subQueries) {
+			clone.addSubquery(ctx.clone(subQuery));
+		}
 		return clone;
 	}
 
@@ -104,28 +111,29 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	}
 
 	@Override
-	public Optional<SinglelineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
-		
-		// Only override if none has been set from a higher level
-		ctx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
+	public Optional<SinglelineEntityResult> execute(final QueryExecutionContext ctx, Entity entity) {
 
- 		checkRequiredTables(ctx.getStorage());
+		subQueries.forEach(sub -> sub.execute(ctx, entity));
+
+		// Only override if none has been set from a higher level
+		QueryExecutionContext resolvedCtx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
+
+ 		checkRequiredTables(resolvedCtx.getStorage());
 
 		if (requiredTables.get().isEmpty()) {
 			return Optional.empty();
 		}
 
-		init(entity, ctx);
+		init(entity, resolvedCtx);
 
 		if(!isOfInterest(entity)){
 			return Optional.empty();
 		}
 
-		boolean accepted = false;
 		// Always do one go-round with ALL_IDS_TABLE.
-		final Table allIdsTable = ctx.getStorage().getDataset().getAllIdsTable();
+		final Table allIdsTable = resolvedCtx.getStorage().getDataset().getAllIdsTable();
 		if (requiredTables.get().contains(allIdsTable)) {
-			nextTable(ctx, allIdsTable);
+			nextTable(resolvedCtx, allIdsTable);
 			nextBlock(EmptyBucket.getInstance());
 			nextEvent(EmptyBucket.getInstance(), 0);
 			accepted = true;
@@ -136,9 +144,9 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 				continue;
 			}
 
-			nextTable(ctx, currentTable);
+			nextTable(resolvedCtx, currentTable);
 
-			final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
+			final List<Bucket> tableBuckets = resolvedCtx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
 
 			log.trace("Table[{}] has {} buckets for Entity[{}]", currentTable, tableBuckets, entity);
 
@@ -165,11 +173,15 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 			}
 		}
 
-		if (accepted && aggregationFiltersApply().orElse(true)) {
+		if (isContained()) {
 			return Optional.of(result());
 		}
 		log.warn("entity {} not contained", entity.getId());
 		return Optional.empty();
+	}
+
+	public boolean isContained() {
+		return accepted && aggregationFiltersApply().orElse(true);
 	}
 
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
@@ -197,6 +209,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		return child.isOfInterest(entity);
 	}
 
+	@NotNull
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
 		if(!isAggregateValidityDates()) {
@@ -208,7 +221,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	}
 
 	public boolean isAggregateValidityDates() {
-		return dateAggregator.equals(aggregators.get(0));
+		return (!aggregators.isEmpty()) && dateAggregator.equals(aggregators.get(0));
 	}
 
 	public boolean isOfInterest(Bucket bucket) {
@@ -218,6 +231,5 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	public Set<Table> collectRequiredTables() {
 		return child.collectRequiredTables();
 	}
-
 
 }
