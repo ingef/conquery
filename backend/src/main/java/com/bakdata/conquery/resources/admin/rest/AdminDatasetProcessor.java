@@ -283,18 +283,4 @@ public class AdminDatasetProcessor {
 				}
 		));
 	}
-
-
-
-
-	public void updateMatchingStats(DatasetId datasetId) {
-		final Namespace ns = getDatasetRegistry().get(datasetId);
-
-		ns.getJobManager().addSlowJob(new SimpleJob("Initiate Update Matching Stats and FilterSearch",
-				() -> {
-					ns.sendToAll(new UpdateMatchingStatsMessage());
-					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
-				}
-		));
-	}
 }
