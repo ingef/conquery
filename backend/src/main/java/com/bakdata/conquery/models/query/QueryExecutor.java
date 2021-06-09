@@ -57,7 +57,6 @@ public class QueryExecutor implements Closeable {
 
 		List<ListenableFuture<Optional<EntityResult>>> futures = new ArrayList<>();
 
-		//TODO experiment with CompletableFutures and composition here instead.
 		for (Entity entity : entities) {
 			QueryJob queryJob = new QueryJob(context, queryPlan, entity);
 			ListenableFuture<Optional<EntityResult>> submit = pool.submit(queryJob);

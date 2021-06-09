@@ -71,6 +71,8 @@ public class QueryProcessor {
 	 */
 	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, User user) {
 
+		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), user.getId());
+
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
 		// For the future a better data structure might be desired that also regards similar QueryVisitors of different configuration
@@ -107,7 +109,8 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final ManagedExecution<?> execution = tryReuse(query, executionId, datasetRegistry, config);
+			final ManagedExecution<?> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config))
+															 .orElse(null);
 
 			if (execution != null) {
 				return execution;
@@ -125,14 +128,14 @@ public class QueryProcessor {
 		return mq;
 	}
 
-	private ManagedExecution<?> tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	/**
+	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
+	 */
+	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
-		// If this is only a re-executing query, execute the underlying query instead.
-		if (maybeId.isEmpty()) {
-			return null;
-		}
 
-		final ManagedExecution<?> execution = maybeId.map(datasetRegistry.getMetaRegistry()::resolve).orElse(null);
+
+		final ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
 
 		if(execution == null){
 			return null;
@@ -178,26 +181,26 @@ public class QueryProcessor {
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
 
 		return allQueries.stream()
-				// The following only checks the dataset, under which the query was submitted, but a query can target more that
-				// one dataset.
-				.filter(q -> q.getDataset().equals(datasetId))
-				// to exclude subtypes from somewhere else
-				.filter(QueryProcessor::canFrontendRender)
-				.filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
-				// We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
-				// However, for other executions we check because those are probably shared.
-				.filter(q -> user.isPermitted(q, Ability.READ))
-				.map(mq -> {
-					OverviewExecutionStatus status = mq.buildStatusOverview(
-							uriBuilder.clone(),
-							user,
-							datasetAbilities
-					);
-					if (mq.isReadyToDownload(datasetAbilities)){
-						setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder, allProviders);
-					}
-					return status;
-				});
+						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
+						 // one dataset.
+						 .filter(q -> q.getDataset().equals(datasetId))
+						 // to exclude subtypes from somewhere else
+						 .filter(QueryProcessor::canFrontendRender)
+						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
+						 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
+						 // However, for other executions we check because those are probably shared.
+						 .filter(q -> user.isPermitted(q, Ability.READ))
+						 .map(mq -> {
+							 OverviewExecutionStatus status = mq.buildStatusOverview(
+									 uriBuilder.clone(),
+									 user,
+									 datasetAbilities
+							 );
+							 if (mq.isReadyToDownload(datasetAbilities)) {
+								 setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder, allProviders);
+							 }
+							 return status;
+						 });
 	}
 
 
@@ -209,8 +212,7 @@ public class QueryProcessor {
 	 * @param renderer The renderer that are requested for a result url generation.
 	 * @param exec The execution that is used for generating the url
 	 * @param uriBuilder The Uribuilder with the base configuration to generate the urls
-	 * @param allProviders If true, the {@link ResultRendererProvider#isHidden()} is ignored and a result urls is generated
-	 *                     anyways
+	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
 	 * @param <S> The type of the provided and returned status
 	 * @return The modified status
 	 */
@@ -267,12 +269,12 @@ public class QueryProcessor {
 			}
 
 			try {
-
+				log.trace("Adding Query on Dataset[{}]", dataset.getId());
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
 				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
 			}
 			catch (Exception e) {
-				log.trace("Could not translate " + query + " to dataset " + targetDataset, e);
+				log.trace("Could not translate Query[{}] to Dataset[{}]", mq.getId(), targetDataset.getId(), e);
 			}
 		}
 	}
@@ -298,6 +300,7 @@ public class QueryProcessor {
 	public void patchQuery(User user, ManagedExecution<?> execution, MetaDataPatch patch) throws JSONException {
 
 		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
+
 		patch.applyTo(execution, storage, user);
 		storage.updateExecution(execution);
 
@@ -317,15 +320,17 @@ public class QueryProcessor {
 		}
 	}
 
-	public void reexecute(ManagedExecution<?> query) {
+	public void reexecute(User user, ManagedExecution<?> query) {
+		log.debug("User[{}] reexecuted Query[{}]", user, query);
+
 		if(!query.getState().equals(ExecutionState.RUNNING)) {
 			ExecutionManager.execute(getDatasetRegistry(), query, config);
 		}
 	}
 
 
-	public void deleteQuery(ManagedExecution<?> execution) {
-
+	public void deleteQuery(User user, ManagedExecution<?> execution) {
+		log.debug("User[{}] deleted Query[{}]", user.getId(), execution.getId());
 		storage.removeExecution(execution.getId());
 	}
 

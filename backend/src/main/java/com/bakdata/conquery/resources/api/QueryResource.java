@@ -50,7 +50,6 @@ public class QueryResource {
 	@POST
 	public Response postQuery(@Auth User user, @PathParam(DATASET) Dataset dataset, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
 
-		log.info("Query posted on dataset {} by user {} ({}).", dataset.getId(), user.getId(), user.getName());
 
 		user.authorize(dataset, Ability.READ);
 
