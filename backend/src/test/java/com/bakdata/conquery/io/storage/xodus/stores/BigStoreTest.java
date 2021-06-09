@@ -5,9 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.SequenceInputStream;
+import java.io.PipedInputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.StoreInfo;
@@ -22,7 +23,6 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Iterators;
 import com.google.common.primitives.Ints;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.util.DataSize;
@@ -91,9 +91,10 @@ public class BigStoreTest {
 		store.add(nDict.getId(), nDict);
 
 		// check if the bytes in the store are the same as bytes
-		assertThat(
-			new SequenceInputStream(Iterators.asEnumeration(
-				store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore()).map(ByteArrayInputStream::new).iterator())))
+		final PipedInputStream sink = new PipedInputStream();
+		store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore(), sink, Executors.newFixedThreadPool(2));
+
+		assertThat(sink)
 					.hasSameContentAs(new ByteArrayInputStream(bytes));
 
 		EncodedDictionary copy = new EncodedDictionary(store.get(nDict.getId()), StringTypeEncoded.Encoding.UTF8);
@@ -121,10 +122,12 @@ public class BigStoreTest {
 		store.add(nDict.getId(), nDict);
 
 		// check if the bytes in the store are the same as bytes
-		assertThat(
-			new SequenceInputStream(Iterators.asEnumeration(
-				store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore()).map(ByteArrayInputStream::new).iterator())))
-					.hasSameContentAs(new ByteArrayInputStream(bytes));
+		final PipedInputStream sink = new PipedInputStream();
+		store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore(), sink, Executors.newFixedThreadPool(2));
+
+		assertThat(sink)
+				.hasSameContentAs(new ByteArrayInputStream(bytes));
+
 
 		Dictionary copy = store.get(nDict.getId());
 		assertThat(copy).isEmpty();

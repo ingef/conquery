@@ -1,25 +1,23 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.SequenceInputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import javax.validation.Validator;
 import javax.validation.constraints.NotEmpty;
@@ -41,7 +39,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.IteratorUtils;
 
 /**
  * Store for big files. Files are stored in chunks of 100MB, it therefore requires two stores: one for metadata maintained in {@link BigStoreMetaKeys} the other for the data. BigStoreMeta contains a list of {@link UUID} which describe a single value in the store, to be read in order.
@@ -108,23 +105,30 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		metaStore.update(key, writeValue(value));
 	}
 
+	@SneakyThrows
 	@Override
 	public VALUE get(KEY key) {
 		BigStoreMetaKeys meta = metaStore.get(key);
 		if (meta == null) {
 			return null;
 		}
-		return createValue(key, meta);
+		return createValue(key, meta, Executors.newFixedThreadPool(2));
 	}
 
-	@SneakyThrows//TODO properly handle this InterruptedException
-	@Override
+	@Override @SneakyThrows
 	public IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
 		final ExecutorService service = Executors.newWorkStealingPool();
 
 
 		final IterationStatistic statistic = metaStore.forEach((key, value) -> {
-			service.submit(() -> consumer.accept(key, createValue(key, value)));
+			service.submit(() -> {
+				try {
+					consumer.accept(key, createValue(key, value, service));
+				}
+				catch (IOException e) {
+					//TODO
+				}
+			});
 		});
 
 		service.shutdown();
@@ -200,7 +204,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 			try (OutputStream os = cos) {
 				valueWriter.writeValue(
-						cos,
+						os,
 						value
 				);
 			}
@@ -210,12 +214,11 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		}
 	}
 
-	private VALUE createValue(KEY key, BigStoreMetaKeys meta) {
-		Iterator<ByteArrayInputStream> it = meta.loadData(dataStore)
-												.map(ByteArrayInputStream::new)
-												.iterator();
+	private VALUE createValue(KEY key, BigStoreMetaKeys meta, ExecutorService service) throws IOException {
+		final PipedInputStream sink = new PipedInputStream();
+		meta.loadData(dataStore, sink, service);
 
-		try (InputStream in = new BufferedInputStream(new SequenceInputStream(IteratorUtils.asEnumeration(it)))) {
+		try (InputStream in = new BufferedInputStream(sink)) {
 			return valueReader.readValue(in);
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to read " + key, e);
@@ -235,8 +238,35 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		private final UUID[] parts;
 		private final long size;
 
-		public Stream<byte[]> loadData(SerializingStore<UUID, byte[]> dataStore) {
-			return Arrays.stream(parts).map(dataStore::get);
+		public void loadData(SerializingStore<UUID, byte[]> dataStore, PipedInputStream sink, ExecutorService service) throws IOException {
+			final PipedOutputStream outputStream = new PipedOutputStream(sink);
+
+			CompletableFuture<Void> current = CompletableFuture.completedFuture(null);
+
+			for (UUID id : parts) {
+				CompletableFuture<byte[]> part = CompletableFuture.supplyAsync(() -> dataStore.get(id), service);
+
+				current = current.thenAcceptBothAsync(part, (ignored, incoming) -> {
+					try {
+						log.info("{} done", id);
+						outputStream.write(incoming);
+					}
+					catch (IOException e) {
+						//TODO
+					}
+				}, service);
+			}
+
+			current.whenComplete((ignored, exc) -> {
+				try {
+					log.info("all done");
+					outputStream.flush();
+					outputStream.close();
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			});
 		}
 	}
 
