@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.PipedInputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.StoreInfo;
@@ -92,7 +91,7 @@ public class BigStoreTest {
 
 		// check if the bytes in the store are the same as bytes
 		final PipedInputStream sink = new PipedInputStream();
-		store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore(), sink, Executors.newFixedThreadPool(2));
+		store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore(), sink);
 
 		assertThat(sink)
 					.hasSameContentAs(new ByteArrayInputStream(bytes));
@@ -123,7 +122,7 @@ public class BigStoreTest {
 
 		// check if the bytes in the store are the same as bytes
 		final PipedInputStream sink = new PipedInputStream();
-		store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore(), sink, Executors.newFixedThreadPool(2));
+		store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore(), sink);
 
 		assertThat(sink)
 				.hasSameContentAs(new ByteArrayInputStream(bytes));

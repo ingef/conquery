@@ -57,6 +57,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	@Getter @Setter
 	private int chunkByteSize;
 
+	private final ExecutorService service = Executors.newCachedThreadPool();
+
 
 	public BigStore(XodusStoreFactory config, Validator validator, Environment env, StoreInfo storeInfo, Collection<jetbrains.exodus.env.Store> openStores, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook, ObjectMapper mapper) {
 		this.storeInfo = storeInfo;
@@ -112,18 +114,17 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		if (meta == null) {
 			return null;
 		}
-		return createValue(key, meta, Executors.newFixedThreadPool(2));
+		return createValue(key, meta);
 	}
 
 	@Override @SneakyThrows
 	public IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
-		final ExecutorService service = Executors.newWorkStealingPool();
 
 
 		final IterationStatistic statistic = metaStore.forEach((key, value) -> {
 			service.submit(() -> {
 				try {
-					consumer.accept(key, createValue(key, value, service));
+					consumer.accept(key, createValue(key, value));
 				}
 				catch (IOException e) {
 					//TODO
@@ -214,9 +215,9 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		}
 	}
 
-	private VALUE createValue(KEY key, BigStoreMetaKeys meta, ExecutorService service) throws IOException {
+	private VALUE createValue(KEY key, BigStoreMetaKeys meta) throws IOException {
 		final PipedInputStream sink = new PipedInputStream();
-		meta.loadData(dataStore, sink, service);
+		meta.loadData(dataStore, sink);
 
 		try (InputStream in = new BufferedInputStream(sink)) {
 			return valueReader.readValue(in);
@@ -233,12 +234,12 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 	@Getter
 	@RequiredArgsConstructor(onConstructor = @__({@JsonCreator}))
-	public static class BigStoreMetaKeys {
+	public class BigStoreMetaKeys {
 		@NotEmpty
 		private final UUID[] parts;
 		private final long size;
 
-		public void loadData(SerializingStore<UUID, byte[]> dataStore, PipedInputStream sink, ExecutorService service) throws IOException {
+		public void loadData(SerializingStore<UUID, byte[]> dataStore, PipedInputStream sink) throws IOException {
 			final PipedOutputStream outputStream = new PipedOutputStream(sink);
 
 			CompletableFuture<Void> current = CompletableFuture.completedFuture(null);
