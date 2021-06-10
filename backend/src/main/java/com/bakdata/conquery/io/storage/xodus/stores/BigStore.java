@@ -27,12 +27,15 @@ import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreInfo;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.primitives.Ints;
 import jetbrains.exodus.env.Environment;
+import lombok.Data;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
-	private final SerializingStore<KEY, UUID[]> metaStore;
+	private final SerializingStore<KEY, KeysContainer> metaStore;
 	private final SerializingStore<UUID, byte[]> dataStore;
 	private final ObjectWriter valueWriter;
 	private ObjectReader valueReader;
@@ -66,7 +69,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		final SimpleStoreInfo metaStoreInfo = new SimpleStoreInfo(
 				storeInfo.getName() + "_META",
 				storeInfo.getKeyType(),
-				UUID[].class
+				KeysContainer.class
 		);
 
 		metaStore = new SerializingStore<>(
@@ -107,7 +110,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	@SneakyThrows
 	@Override
 	public VALUE get(KEY key) {
-		UUID[] meta = metaStore.get(key);
+		KeysContainer meta = metaStore.get(key);
 		if (meta == null) {
 			return null;
 		}
@@ -146,13 +149,13 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 	@Override
 	public void remove(KEY key) {
-		UUID[] parts = metaStore.get(key);
+		KeysContainer parts = metaStore.get(key);
 
 		if (parts == null) {
 			return;
 		}
 
-		for (UUID id : parts) {
+		for (UUID id : parts.getKeys()) {
 			dataStore.remove(id);
 		}
 		metaStore.remove(key);
@@ -179,7 +182,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		return out;
 	}
 
-	private UUID[] writeValue(VALUE value) {
+	private KeysContainer writeValue(VALUE value) {
 		try {
 			AtomicLong size = new AtomicLong();
 			List<UUID> uuids = new ArrayList<>();
@@ -206,13 +209,13 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 						value
 				);
 			}
-			return uuids.toArray(new UUID[0]);
+			return new KeysContainer(uuids.toArray(new UUID[0]));
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to write " + value, e);
 		}
 	}
 
-	private VALUE createValue(KEY key, UUID[] meta) throws IOException {
+	private VALUE createValue(KEY key, KeysContainer meta) throws IOException {
 
 		final PipedInputStream sink = loadData(meta);
 
@@ -229,14 +232,14 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		dataStore.close();
 	}
 
-	PipedInputStream loadData(UUID[] parts) throws IOException {
+	PipedInputStream loadData(KeysContainer parts) throws IOException {
 		final PipedInputStream sink = new PipedInputStream();
 		final PipedOutputStream outputStream = new PipedOutputStream(sink);
 
 		CompletableFuture<Void> current = CompletableFuture.completedFuture(null);
 
-		for (int i = 0, partsLength = parts.length; i < partsLength; i++) {
-			UUID id = parts[i];
+		for (int i = 0, partsLength = parts.getKeys().length; i < partsLength; i++) {
+			UUID id = parts.getKeys()[i];
 			CompletableFuture<byte[]> part = CompletableFuture.supplyAsync(() -> dataStore.get(id), service);
 			final int curIdx = i;
 
@@ -286,5 +289,11 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	public void removeStore() {
 		metaStore.removeStore();
 		dataStore.removeStore();
+	}
+
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	static class KeysContainer {
+		private final UUID[] keys;
 	}
 }
