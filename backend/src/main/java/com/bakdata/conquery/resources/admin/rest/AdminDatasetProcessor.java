@@ -226,14 +226,13 @@ public class AdminDatasetProcessor {
 	@SneakyThrows
 	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-		ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize())
-				.ifPresent(job -> namespace.getJobManager().addSlowJob(job));
+		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize());
+		namespace.getJobManager().addSlowJob(job);
 	}
 
 	public synchronized void deleteImport(Import imp) {
 		final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
-
-
+		
 		namespace.getStorage().removeImport(imp.getId());
 		namespace.sendToAll(new RemoveImportJob(imp));
 

@@ -62,7 +62,7 @@ public class ImportJob extends Job {
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static Optional<ImportJob> create(Namespace namespace, InputStream inputStream, int entityBucketSize) throws IOException {
+	public static ImportJob create(Namespace namespace, InputStream inputStream, int entityBucketSize) throws IOException {
 		try(PreprocessedReader parser = new PreprocessedReader(inputStream)){
 
 			final Dataset ds = namespace.getDataset();
@@ -103,21 +103,16 @@ public class ImportJob extends Job {
 
 			log.debug("Done reading data. Contains {} Entities.", container.size());
 
-			if (container.isEmpty()) {
-				log.warn("Import was empty. Skipping.");
-				return Optional.empty();
-			}
-
 			log.info("Importing {} into {}", header.getName(), tableId);
 
-			return Optional.of(new ImportJob(
+			return new ImportJob(
 					namespace,
 					table,
 					entityBucketSize,
 					header,
 					dictionaries,
 					container
-			));
+			);
 		}
 	}
 
