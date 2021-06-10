@@ -66,7 +66,6 @@ public class ImportJob extends Job {
 		try(PreprocessedReader parser = new PreprocessedReader(inputStream)){
 
 			final Dataset ds = namespace.getDataset();
-			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
 
 			// We parse semi-manually as the incoming file consist of multiple documents we only read progressively:
 			// 1) the header to check metadata
@@ -89,7 +88,7 @@ public class ImportJob extends Job {
 				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
 			}
 			log.trace("Begin reading Dictionaries");
-
+			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
 			PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
 			Map<DictionaryId, Dictionary> dictReplacements = createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage());
@@ -150,35 +149,14 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-
 			if (column.getSharedDictionary() != null) {
-				// If the column is based on a shared dict. We reference a new empty dictionary or the existing one
-				// but without updated entries. The entries are updated later on, see ImportJob#applyDictionaryMappings.
-				Dictionary sharedDict = null;
-				synchronized (storage.getLockDummy()) {
-					sharedDict = storage.getDictionary(new DictionaryId(table.getDataset().getId(), column.getSharedDictionary()));
-					if (sharedDict == null) {
-						sharedDict = new MapDictionary(table.getDataset(), column.getSharedDictionary());
-						storage.updateDictionary(sharedDict);
-					}
-				}
-				out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dicts.get(column.getName()).getName()), sharedDict);
+				column.createSharedDictionaryReplacement(dicts, storage, out);
 				continue;
 			}
 
 			// Its a normal dictionary (only valid for this column in this import)
-
-			final Dictionary dict = dicts.get(column.getName());
-			final String name = computeDefaultDictionaryName(importName, column);
-
-
-			out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dict.getName()), dict);
-
-
-			dict.setDataset(table.getDataset());
-			dict.setName(name);
+			column.createdSingleColumnDictionaryReplacement(dicts, importName, out);
 		}
-
 
 		return out;
 	}
@@ -252,10 +230,6 @@ public class ImportJob extends Job {
 		}
 
 		return out;
-	}
-
-	private static String computeDefaultDictionaryName(String importName, Column column) {
-		return String.format("%s#%s", importName, column.getId().toString());
 	}
 
 
