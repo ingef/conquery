@@ -127,7 +127,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 					consumer.accept(key, createValue(key, value));
 				}
 				catch (IOException e) {
-					//TODO
+					log.error("Failed to accept", e);
 				}
 			});
 		});
@@ -255,21 +255,21 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 						outputStream.write(incoming);
 					}
 					catch (IOException e) {
-						//TODO
+						log.error("Failed to write chunk", e);
 					}
 				}, service);
 			}
 
-			current.whenComplete((ignored, exc) -> {
+			current.whenCompleteAsync((ignored, exc) -> {
 				try {
 					log.info("all done");
 					outputStream.flush();
 					outputStream.close();
 				}
 				catch (IOException e) {
-					e.printStackTrace();
+					log.error("Failed to flush", e);
 				}
-			});
+			}, service);
 		}
 	}
 
