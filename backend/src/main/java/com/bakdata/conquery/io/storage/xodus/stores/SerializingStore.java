@@ -244,7 +244,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 												 // When we cannot read the value, we dump it using dumpToFile
 												 final String keyOfDump = new String(rawKey.getBytesUnsafe());
 
-												 log.warn("Could not parse Value for Key `{}`", keyOfDump, log.isTraceEnabled() ? exc : null);
+												 log.warn("Could not parse Value for Key `{}`", keyOfDump, exc);
 
 												 result.incrFailedValues();
 
