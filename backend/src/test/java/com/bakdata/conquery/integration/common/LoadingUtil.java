@@ -161,9 +161,11 @@ public class LoadingUtil {
 		for (File file : preprocessedFiles) {
 			assertThat(file).exists();
 
-			final URI addImport = support.defaultAdminURIBuilder().path(AdminDatasetResource.class, "addImport")
-												 .queryParam("file", file)
-												 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
+			final URI addImport = support.defaultAdminURIBuilder()
+													.path(AdminDatasetResource.class)
+													.path(AdminDatasetResource.class, "addImport")
+													.queryParam("file", file)
+													.buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
 
 			final Response response = support.getClient()
 											 .target(addImport)

@@ -80,8 +80,11 @@ public class IntegrationUtils {
 	}
 
 	private static URI getPostQueryURI(StandaloneSupport conquery) {
-		return conquery.defaultApiURIBuilder().path(QueryResource.class,"postQuery").buildFromMap(Map.of(
-				"dataset", conquery.getDataset().getId()));
+		return conquery.defaultApiURIBuilder()
+				.path(QueryResource.class)
+				.buildFromMap(
+						Map.of("dataset", conquery.getDataset().getId())
+				);
 	}
 
 	private static JsonNode getRawExecutionStatus(String id, StandaloneSupport conquery, User user) {
@@ -108,10 +111,12 @@ public class IntegrationUtils {
 	}
 
 	private static URI getQueryStatusURI(StandaloneSupport conquery, String id) {
-		return conquery.defaultApiURIBuilder().path( QueryResource.class, "getStatus")
-							  .buildFromMap(Map.of(
-									  "query", id, "dataset", conquery.getDataset().getId()
-							  ));
+		return conquery.defaultApiURIBuilder()
+				.path(QueryResource.class)
+				.path(QueryResource.class, "getStatus")
+				.buildFromMap(Map.of(
+					  "query", id, "dataset", conquery.getDataset().getId()
+				 ));
 	}
 
 	/**

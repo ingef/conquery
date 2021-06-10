@@ -78,8 +78,9 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			}
 		}
 		{
-			final URI uri = conquery.defaultAdminURIBuilder().path( DatasetsUIResource.class, "getDataset")
-										   .buildFromMap(Map.of("dataset", conquery.getDataset().getName()));
+			final URI uri = conquery.defaultAdminURIBuilder()
+					.path(DatasetsUIResource.class)
+					.buildFromMap(Map.of("dataset", conquery.getDataset().getName()));
 
 			final Response actual = conquery.getClient().target(uri).request().get();
 			assertThat(actual)
@@ -108,8 +109,10 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	}
 
 	private static Response uploadTable(StandaloneSupport conquery, ObjectNode table) {
-		final URI addTable = conquery.defaultAdminURIBuilder().path( AdminDatasetResource.class, "addTable")
-											.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
+		final URI addTable = conquery.defaultAdminURIBuilder()
+				.path(AdminDatasetResource.class)
+				.path(AdminDatasetResource.class, "addTable")
+				.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
 
 		return conquery.getClient()
 					   .target(addTable)
@@ -119,10 +122,12 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	}
 
 	private static Set<FESecondaryId> fetchSecondaryIdDescriptions(StandaloneSupport conquery) throws java.io.IOException {
-		final URI uri = conquery.defaultApiURIBuilder().path(DatasetResource.class, "getRoot")
-									   .buildFromMap(Map.of(
-											   "dataset", conquery.getDataset().getName()
-									   ));
+		final URI uri = conquery.defaultApiURIBuilder()
+				.path(DatasetResource.class)
+				.path(DatasetResource.class, "getRoot")
+				.buildFromMap(Map.of(
+						"dataset", conquery.getDataset().getName()
+				));
 
 
 		// We cannot effectively parse a full FERoot so we resort to only parsing the field.
@@ -142,11 +147,12 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	}
 
 	private static Response uploadDescription(StandaloneSupport conquery, SecondaryIdDescription description) {
-		final URI uri = conquery.defaultAdminURIBuilder().path( AdminDatasetResource.class, "addSecondaryId")
-
-									   .buildFromMap(Map.of(
-											   "dataset", conquery.getDataset().getName()
-									   ));
+		final URI uri = conquery.defaultAdminURIBuilder()
+				.path( AdminDatasetResource.class)
+				.path( AdminDatasetResource.class, "addSecondaryId")
+				.buildFromMap(Map.of(
+					"dataset", conquery.getDataset().getName()
+				));
 
 		return conquery.getClient()
 					   .target(uri)
@@ -158,11 +164,13 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 
 	private static Response deleteDescription(StandaloneSupport conquery, SecondaryIdDescriptionId id) {
-		final URI uri = conquery.defaultAdminURIBuilder().path( AdminDatasetResource.class, "deleteSecondaryId")
-									   .buildFromMap(Map.of(
-											   "dataset", conquery.getDataset().getName(),
-											   "secondaryId", id
-									   ));
+		final URI uri = conquery.defaultAdminURIBuilder()
+				.path(AdminDatasetResource.class)
+				.path(AdminDatasetResource.class, "deleteSecondaryId")
+				.buildFromMap(Map.of(
+						"dataset", conquery.getDataset().getName(),
+						"secondaryId", id
+				));
 
 
 		return conquery.getClient()
@@ -172,11 +180,12 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 	}
 
 	private static Response deleteTable(StandaloneSupport conquery, TableId id) {
-		final URI uri = conquery.defaultAdminURIBuilder().path( AdminTablesResource.class, "remove")
-									   .buildFromMap(Map.of(
-											   "dataset", conquery.getDataset().getName(),
-											   "table", id
-									   ));
+		final URI uri = conquery.defaultAdminURIBuilder()
+				.path(AdminTablesResource.class)
+				.buildFromMap(Map.of(
+						"dataset", conquery.getDataset().getName(),
+						"table", id
+				));
 
 
 		return conquery.getClient()

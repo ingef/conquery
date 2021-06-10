@@ -97,7 +97,9 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		// Reuse by API
 		{
 			final URI reexecuteUri =
-					conquery.defaultApiURIBuilder().path(StoredQueriesResource.class, "reexecute")
+					conquery.defaultApiURIBuilder()
+							.path(StoredQueriesResource.class)
+							.path(StoredQueriesResource.class, "reexecute")
 								   .buildFromMap(Map.of(
 										   ResourceConstants.DATASET, conquery.getDataset().getName(),
 										   ResourceConstants.QUERY, execution.getId().toString()

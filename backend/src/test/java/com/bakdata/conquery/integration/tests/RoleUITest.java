@@ -51,7 +51,9 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			user.addRole(storage, mandator);
 
 
-			URI classBase = conquery.defaultAdminURIBuilder().path(RoleUIResource.class, "getRole")
+			URI classBase = conquery.defaultAdminURIBuilder()
+					.path(RoleUIResource.class)
+					.path(RoleUIResource.class, "getRole")
 				.buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
 	
 			Response response = conquery

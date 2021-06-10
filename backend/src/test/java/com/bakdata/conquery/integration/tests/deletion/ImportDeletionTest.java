@@ -131,12 +131,13 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Issuing deletion of import {}", importId);
 
 			final URI deleteImportUri = conquery.defaultAdminURIBuilder()
-												.path(AdminTablesResource.class, "deleteImportView")
-												.buildFromMap(Map.of(
-														ResourceConstants.DATASET, conquery.getDataset().getId(),
-														ResourceConstants.TABLE, importId.getTable(),
-														ResourceConstants.IMPORT_ID, importId
-												));
+					.path(AdminTablesResource.class)
+					.path(AdminTablesResource.class, "deleteImportView")
+					.buildFromMap(Map.of(
+							ResourceConstants.DATASET, conquery.getDataset().getId(),
+							ResourceConstants.TABLE, importId.getTable(),
+							ResourceConstants.IMPORT_ID, importId
+					));
 
 			final Response delete = conquery.getClient().target(deleteImportUri).request(MediaType.APPLICATION_JSON).delete();
 
