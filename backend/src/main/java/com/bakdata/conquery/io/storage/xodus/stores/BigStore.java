@@ -155,7 +155,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 			return;
 		}
 
-		for (UUID id : parts.getKeys()) {
+		for (UUID id : parts.getParts()) {
 			dataStore.remove(id);
 		}
 		metaStore.remove(key);
@@ -209,7 +209,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 						value
 				);
 			}
-			return new KeysContainer(uuids.toArray(new UUID[0]));
+			return new KeysContainer(uuids.toArray(new UUID[0]), -1);
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to write " + value, e);
 		}
@@ -238,8 +238,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 		CompletableFuture<Void> current = CompletableFuture.completedFuture(null);
 
-		for (int i = 0, partsLength = parts.getKeys().length; i < partsLength; i++) {
-			UUID id = parts.getKeys()[i];
+		for (int i = 0, partsLength = parts.getParts().length; i < partsLength; i++) {
+			UUID id = parts.getParts()[i];
 			CompletableFuture<byte[]> part = CompletableFuture.supplyAsync(() -> dataStore.get(id), service);
 			final int curIdx = i;
 
@@ -294,6 +294,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	static class KeysContainer {
-		private final UUID[] keys;
+		private final UUID[] parts;
+		private final int size;
 	}
 }
