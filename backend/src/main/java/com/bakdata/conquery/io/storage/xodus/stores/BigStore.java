@@ -244,12 +244,14 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 			CompletableFuture<Void> current = CompletableFuture.completedFuture(null);
 
-			for (UUID id : parts) {
+			for (int i = 0, partsLength = parts.length; i < partsLength; i++) {
+				UUID id = parts[i];
 				CompletableFuture<byte[]> part = CompletableFuture.supplyAsync(() -> dataStore.get(id), service);
+				final int curIdx = i;
 
 				current = current.thenAcceptBothAsync(part, (ignored, incoming) -> {
 					try {
-						log.info("{} done", id);
+						log.info("idx = {} / {} done", curIdx, id);
 						outputStream.write(incoming);
 					}
 					catch (IOException e) {
