@@ -20,7 +20,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import javax.validation.Validator;
-import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
@@ -28,26 +27,24 @@ import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreInfo;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.primitives.Ints;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Store for big files. Files are stored in chunks of 100MB, it therefore requires two stores: one for metadata maintained in {@link BigStoreMetaKeys} the other for the data. BigStoreMeta contains a list of {@link UUID} which describe a single value in the store, to be read in order.
+ * Store for big files. Files are stored in chunks of 100MB, it therefore requires two stores: one for metadata maintained in the other for the data. BigStoreMeta contains a list of {@link UUID} which describe a single value in the store, to be read in order.
  */
 @Getter
 @Slf4j
 public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
-	private final SerializingStore<KEY, BigStoreMetaKeys> metaStore;
+	private final SerializingStore<KEY, UUID[]> metaStore;
 	private final SerializingStore<UUID, byte[]> dataStore;
 	private final ObjectWriter valueWriter;
 	private ObjectReader valueReader;
@@ -69,7 +66,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		final SimpleStoreInfo metaStoreInfo = new SimpleStoreInfo(
 				storeInfo.getName() + "_META",
 				storeInfo.getKeyType(),
-				BigStoreMetaKeys.class
+				UUID[].class
 		);
 
 		metaStore = new SerializingStore<>(
@@ -110,7 +107,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	@SneakyThrows
 	@Override
 	public VALUE get(KEY key) {
-		BigStoreMetaKeys meta = metaStore.get(key);
+		UUID[] meta = metaStore.get(key);
 		if (meta == null) {
 			return null;
 		}
@@ -149,13 +146,13 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 	@Override
 	public void remove(KEY key) {
-		BigStoreMetaKeys meta = metaStore.get(key);
+		UUID[] parts = metaStore.get(key);
 
-		if (meta == null) {
+		if (parts == null) {
 			return;
 		}
 
-		for (UUID id : meta.getParts()) {
+		for (UUID id : parts) {
 			dataStore.remove(id);
 		}
 		metaStore.remove(key);
@@ -182,7 +179,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		return out;
 	}
 
-	private BigStoreMetaKeys writeValue(VALUE value) {
+	private UUID[] writeValue(VALUE value) {
 		try {
 			AtomicLong size = new AtomicLong();
 			List<UUID> uuids = new ArrayList<>();
@@ -209,15 +206,15 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 						value
 				);
 			}
-			return new BigStoreMetaKeys(uuids.toArray(new UUID[0]), size.get());
+			return uuids.toArray(new UUID[0]);
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to write " + value, e);
 		}
 	}
 
-	private VALUE createValue(KEY key, BigStoreMetaKeys meta) throws IOException {
-		final PipedInputStream sink = new PipedInputStream();
-		meta.loadData(dataStore, sink);
+	private VALUE createValue(KEY key, UUID[] meta) throws IOException {
+
+		final PipedInputStream sink = loadData(meta);
 
 		try (InputStream in = new BufferedInputStream(sink)) {
 			return valueReader.readValue(in);
@@ -232,45 +229,40 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		dataStore.close();
 	}
 
-	@Getter
-	@RequiredArgsConstructor(onConstructor = @__({@JsonCreator}))
-	public class BigStoreMetaKeys {
-		@NotEmpty
-		private final UUID[] parts;
-		private final long size;
+	PipedInputStream loadData(UUID[] parts) throws IOException {
+		final PipedInputStream sink = new PipedInputStream();
+		final PipedOutputStream outputStream = new PipedOutputStream(sink);
 
-		public void loadData(SerializingStore<UUID, byte[]> dataStore, PipedInputStream sink) throws IOException {
-			final PipedOutputStream outputStream = new PipedOutputStream(sink);
+		CompletableFuture<Void> current = CompletableFuture.completedFuture(null);
 
-			CompletableFuture<Void> current = CompletableFuture.completedFuture(null);
+		for (int i = 0, partsLength = parts.length; i < partsLength; i++) {
+			UUID id = parts[i];
+			CompletableFuture<byte[]> part = CompletableFuture.supplyAsync(() -> dataStore.get(id), service);
+			final int curIdx = i;
 
-			for (int i = 0, partsLength = parts.length; i < partsLength; i++) {
-				UUID id = parts[i];
-				CompletableFuture<byte[]> part = CompletableFuture.supplyAsync(() -> dataStore.get(id), service);
-				final int curIdx = i;
-
-				current = current.thenAcceptBothAsync(part, (ignored, incoming) -> {
-					try {
-						log.info("idx = {} / {} done", curIdx, id);
-						outputStream.write(incoming);
-					}
-					catch (IOException e) {
-						log.error("Failed to write chunk", e);
-					}
-				}, service);
-			}
-
-			current.whenCompleteAsync((ignored, exc) -> {
+			current = current.thenAcceptBothAsync(part, (ignored, incoming) -> {
 				try {
-					log.info("all done");
-					outputStream.flush();
-					outputStream.close();
+					log.info("idx = {} / {} done", curIdx, id);
+					outputStream.write(incoming);
 				}
 				catch (IOException e) {
-					log.error("Failed to flush", e);
+					log.error("Failed to write chunk", e);
 				}
 			}, service);
 		}
+
+		current.whenCompleteAsync((ignored, exc) -> {
+			try {
+				log.info("all done");
+				outputStream.flush();
+				outputStream.close();
+			}
+			catch (IOException e) {
+				log.error("Failed to flush", e);
+			}
+		}, service);
+
+		return sink;
 	}
 
 	@Override

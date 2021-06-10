@@ -90,8 +90,7 @@ public class BigStoreTest {
 		store.add(nDict.getId(), nDict);
 
 		// check if the bytes in the store are the same as bytes
-		final PipedInputStream sink = new PipedInputStream();
-		store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore(), sink);
+		final PipedInputStream sink = store.loadData(store.getMetaStore().get(nDict.getId()));
 
 		assertThat(sink)
 					.hasSameContentAs(new ByteArrayInputStream(bytes));
@@ -121,8 +120,8 @@ public class BigStoreTest {
 		store.add(nDict.getId(), nDict);
 
 		// check if the bytes in the store are the same as bytes
-		final PipedInputStream sink = new PipedInputStream();
-		store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore(), sink);
+		final PipedInputStream sink = store.loadData(store.getMetaStore().get(nDict.getId()));
+
 
 		assertThat(sink)
 				.hasSameContentAs(new ByteArrayInputStream(bytes));
