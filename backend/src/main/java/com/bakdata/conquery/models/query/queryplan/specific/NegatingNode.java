@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.DateAggregator;

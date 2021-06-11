@@ -46,7 +46,9 @@ public class CQNegation extends CQElement {
 			qp.setChild(child.createQueryPlan(context, qp));
 			qp.getDateAggregator().registerAll(qp.getChild().getDateAggregators());
 			plan.addSubquery(qp);
-			return new NegatingNode(new SubQueryNode(qp), dateAction);
+			final SubQueryNode child = new SubQueryNode(qp, context.getStorage());
+			child.getSubAggregators().forEach(plan::registerAggregator);
+			return new NegatingNode(child, dateAction);
 		}
 
 		return new NegatingNode(child.createQueryPlan(context, plan), dateAction);
