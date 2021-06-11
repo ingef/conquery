@@ -31,6 +31,7 @@ public class QueryExecutionContext {
 	private Connector connector;
 	private final ModificationShieldedWorkerStorage storage;
 	private final BucketManager bucketManager;
+	@NonNull
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 
 
