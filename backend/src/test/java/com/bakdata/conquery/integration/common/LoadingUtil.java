@@ -162,7 +162,7 @@ public class LoadingUtil {
 		for (File file : preprocessedFiles) {
 			assertThat(file).exists();
 
-			final URI addImport = HierarchyHelper.fromHierachicalPathResourceMethod(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
+			final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
 												 .queryParam("file", file)
 												 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
 
