@@ -95,7 +95,7 @@
     "description": "Beschreibung",
     "noDescriptionProvided": "Keine Beschreibung verfügbar.",
     "selectAFilter": "Kein Filter ausgewählt.",
-    "dropConcept": "Füge weitere Konzepte des selben Konzeptes hinzu",
+    "dropConcept": "Füge weitere Elemente des selben Konzeptes hinzu",
     "includeSubnodes": "Untergeordnete Konzepte einbeziehen",
     "tooManyValues": "{{count}} Werte ausgewählt",
     "filters": "Filter",
@@ -117,7 +117,7 @@
   },
   "deletePreviousQueryFolderModal": {
     "areYouSure": "Diesen Ordner wirklich löschen?",
-    "description": "Alle Anfragen werden aus diesem Ordner entfernt, bleiben aber gespeichert."
+    "description": "Alle Anfragen aus dem Ordner {{folder}} werden aus dem Ordner entfernt, bleiben aber gespeichert."
   },
   "sharePreviousQueryModal": {
     "headline": "Anfrage freigeben: ",
@@ -401,8 +401,8 @@
     "headline": "Ordner bearbeiten"
   },
   "help": {
-    "tabConceptTrees": "Auswahl der Konzepte aus den Konzepten zur Verwendung in Editor oder Formular-Editor.",
-    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung in Editor, Zeit-Editor oder Formular-Editor.",
+    "tabConceptTrees": "Auswahl der Konzepte zur Verwendung im Editor oder Formular-Editor.",
+    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung im Editor, Zeit-Editor oder Formular-Editor.",
     "tabFormConfigs": "Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
     "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
     "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",

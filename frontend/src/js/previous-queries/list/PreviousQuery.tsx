@@ -188,9 +188,9 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
                 />
               </WithTooltip>
             )}
-            {!!query.resultUrl ? (
+            {query.resultUrls.length > 0 ? (
               <WithTooltip text={t("previousQuery.downloadResults")}>
-                <SxDownloadButton tight small bare url={query.resultUrl}>
+                <SxDownloadButton tight small bare url={query.resultUrls[0]}>
                   {peopleFoundText}
                 </SxDownloadButton>
               </WithTooltip>

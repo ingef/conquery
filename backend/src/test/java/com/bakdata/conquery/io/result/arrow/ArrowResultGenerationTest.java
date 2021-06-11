@@ -135,8 +135,10 @@ public class ArrowResultGenerationTest {
 
         renderToStream((root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
                 printSettings,
+                BATCH_SIZE,
                 printIdFields,
-                BATCH_SIZE, mquery.streamResults(), mquery.getResultInfo());
+                mquery.getResultInfo(),
+                mquery.streamResults());
 
         InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 

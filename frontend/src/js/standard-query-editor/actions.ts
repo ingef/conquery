@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
+import { ActionType, createAction } from "typesafe-actions";
 
 import {
   PostPrefixForSuggestionsParams,
@@ -52,6 +53,8 @@ import type {
   DragItemNode,
   DragItemQuery,
 } from "./types";
+
+export type StandardQueryEditorActions = ActionType<typeof resetTable>;
 
 export const dropAndNode = (
   item: DragItemConceptTreeNode | DragItemQuery | DragItemNode,
@@ -201,6 +204,10 @@ export const setDateColumn = (tableIdx: number, value) => ({
 export const resetAllFilters = () => ({
   type: RESET_ALL_FILTERS,
 });
+
+export const resetTable = createAction("query-editor/RESET_TABLE")<{
+  tableIdx: number;
+}>();
 
 export const switchFilterMode = (
   tableIdx: number,

@@ -50,7 +50,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public FilterNode createAggregator(Range.LongRange value) {
+	public FilterNode createFilterNode(Range.LongRange value) {
 		if (distinct || distinctByColumn != null) {
 			if (ArrayUtils.isEmpty(distinctByColumn) || distinctByColumn.length < 2) {
 				return new RangeFilterNode(

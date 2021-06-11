@@ -16,6 +16,8 @@ import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jwk.JWKParser;
 
 import java.security.PublicKey;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A realm that verifies oauth tokens using PKCE.
@@ -31,8 +33,14 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
      */
     private JWK jwk;
 
+    /**
+     * Which claims hold alternative Ids of the user in case the user name does not match a user.
+     * Pay attention, that the user must not be able to alter the value of any of these claims.
+     */
+    private List<String> alternativeIdClaims = Collections.emptyList();
+
     public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {
-        return new JwtPkceVerifyingRealm(getPublicKey(jwk));
+        return new JwtPkceVerifyingRealm(getPublicKey(jwk), alternativeIdClaims);
     }
 
 

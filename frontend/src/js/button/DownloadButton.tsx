@@ -1,8 +1,13 @@
+import styled from "@emotion/styled";
 import React, { ReactNode, FC } from "react";
 
 import { useAuthToken } from "../api/useApi";
 
 import IconButton, { IconButtonPropsT } from "./IconButton";
+
+const SxIconButton = styled(IconButton)`
+  white-space: nowrap;
+`;
 
 interface PropsT extends Omit<IconButtonPropsT, "icon" | "onClick"> {
   url: string;
@@ -26,9 +31,9 @@ const DownloadButton: FC<PropsT> = ({
 
   return (
     <a href={href} className={className}>
-      <IconButton {...restProps} icon={icon} onClick={() => {}}>
+      <SxIconButton {...restProps} icon={icon} onClick={() => {}}>
         {children}
-      </IconButton>
+      </SxIconButton>
     </a>
   );
 };

@@ -1,0 +1,98 @@
+{
+  "type": "QUERY_TEST",
+  "label": "AND DURATION SUM Test",
+  "expectedCsv": "tests/query/MERGE/OR_EVENT_DATE_EXCLUDED/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "dateAggregationMode" : "MERGE",
+    "root": {
+      "type": "OR",
+      "children": [
+        {
+          "type": "CONCEPT",
+          "excludeFromTimeAggregation" : true,
+          "ids": [
+            "tree.a"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector",
+              "selects": [
+                "tree.connector.date_union"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree.b"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "tree",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table.column",
+        "selects" : {
+          "type" : "EVENT_DATE_UNION",
+          "name" : "date_union"
+        },
+        "validityDates": {
+          "name": "datum",
+          "column": "table.datum"
+        }
+      },
+      "children": [
+        {
+          "name": "a",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "A"
+          },
+          "children": []
+        },
+        {
+          "name": "b",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "B"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/MERGE/OR_EVENT_DATE_EXCLUDED/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

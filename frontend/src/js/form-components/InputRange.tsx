@@ -1,13 +1,14 @@
 import styled from "@emotion/styled";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import type { WrappedFieldProps } from "redux-form";
 
 import type { CurrencyConfigT } from "../api/types";
+import { exists } from "../common/helpers/exists";
 
+import InputPlain from "./InputPlain";
 import InputRangeHeader from "./InputRangeHeader";
-import InputText from "./InputText";
 import ToggleButton from "./ToggleButton";
+import { InputProps } from "./types";
 
 const Container = styled("div")`
   width: 100%;
@@ -15,7 +16,7 @@ const Container = styled("div")`
   flex-direction: row;
 `;
 
-const StyledInputText = styled(InputText)`
+const SxInputPlain = styled(InputPlain)`
   input {
     width: 100%;
     min-width: 50px;
@@ -25,10 +26,15 @@ const StyledInputText = styled(InputText)`
   }
 `;
 
+interface ValueT {
+  min?: number | null;
+  max?: number | null;
+  exact?: number | null;
+}
+
 export type ModeT = "range" | "exact";
-interface PropsType extends WrappedFieldProps {
-  inputType: string;
-  valueType?: string;
+interface PropsType extends InputProps<ValueT | null> {
+  moneyRange?: boolean;
   label: string;
   unit?: string;
   limits?: {
@@ -42,23 +48,16 @@ interface PropsType extends WrappedFieldProps {
   onSwitchMode: (mode: ModeT) => void;
   tooltip?: string;
   pattern?: string;
-  input: {
-    value: {
-      exact?: number;
-      min?: number;
-      max?: number;
-    } | null;
-  };
   currencyConfig?: CurrencyConfigT;
 }
 
-function getMinMaxExact(value) {
-  if (!value) return { min: "", max: "", exact: "" };
+function getMinMaxExact(value: ValueT | null) {
+  if (!value) return { min: null, max: null, exact: null };
 
   return {
-    min: value.min || "",
-    max: value.max || "",
-    exact: value.exact || "",
+    min: exists(value.min) ? value.min : null,
+    max: exists(value.max) ? value.max : null,
+    exact: exists(value.exact) ? value.exact : null,
   };
 }
 
@@ -68,19 +67,19 @@ const InputRange = ({
   currencyConfig,
   pattern,
   mode,
-  inputType,
-  valueType,
+  moneyRange,
   placeholder,
   disabled,
   label,
   unit,
   tooltip,
   onSwitchMode,
-  input: { value, onChange },
+  input: { value, defaultValue, onChange },
 }: PropsType) => {
   const { t } = useTranslation();
   // Make sure undefined / null is never set as a value, but an empty string instead
   const val = getMinMaxExact(value);
+  const defaultVal = defaultValue || {};
   const isRangeMode = mode === "range";
 
   const inputProps = {
@@ -90,26 +89,32 @@ const InputRange = ({
     pattern: pattern,
   };
 
-  const onChangeValue = (type, newValue) => {
+  const onChangeValue = (type: "exact" | "max" | "min", newValue: number) => {
     const nextValue = newValue >= 0 ? newValue : null;
 
-    if (type === "exact")
-      if (nextValue === null) onChange(null);
-      else onChange({ exact: nextValue });
-    else if (type === "min" || type === "max")
+    if (type === "exact") {
+      if (nextValue === null) {
+        onChange(null);
+      } else {
+        onChange({ exact: nextValue });
+      }
+    } else if (type === "min" || type === "max") {
       if (
         nextValue === null &&
         ((value && value.min === null && type === "max") ||
           (value && value.max === null && type === "min"))
-      )
+      ) {
         onChange(null);
-      else
+      } else {
         onChange({
           min: value ? value.min : null,
           max: value ? value.max : null,
           [type]: nextValue,
         });
-    else onChange(null);
+      }
+    } else {
+      onChange(null);
+    }
   };
 
   return (
@@ -133,43 +138,46 @@ const InputRange = ({
       <Container>
         {isRangeMode ? (
           <>
-            <StyledInputText
-              inputType={inputType}
+            <SxInputPlain<number>
+              inputType="number"
               currencyConfig={currencyConfig}
-              valueType={valueType}
+              money={moneyRange}
               placeholder={placeholder}
               label={t("inputRange.minLabel")}
               tinyLabel={true}
               input={{
                 value: val.min,
+                defaultValue: defaultVal.min,
                 onChange: (value) => onChangeValue("min", value),
               }}
               inputProps={inputProps}
             />
-            <StyledInputText
-              inputType={inputType}
+            <SxInputPlain<number>
+              inputType="number"
               currencyConfig={currencyConfig}
-              valueType={valueType}
+              money={moneyRange}
               placeholder={placeholder}
               label={t("inputRange.maxLabel")}
               tinyLabel={true}
               input={{
                 value: val.max,
+                defaultValue: defaultVal.max,
                 onChange: (value) => onChangeValue("max", value),
               }}
               inputProps={inputProps}
             />
           </>
         ) : (
-          <InputText
-            inputType={inputType}
+          <InputPlain<number>
+            inputType="number"
             currencyConfig={currencyConfig}
-            valueType={valueType}
-            placeholder="-"
+            money={moneyRange}
+            placeholder={placeholder}
             label={t("inputRange.exactLabel")}
             tinyLabel={true}
             input={{
               value: val.exact,
+              defaultValue: defaultVal.exact,
               onChange: (value) => onChangeValue("exact", value),
             }}
             inputProps={inputProps}

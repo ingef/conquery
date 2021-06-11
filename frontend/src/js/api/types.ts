@@ -43,6 +43,7 @@ export interface RangeFilterValueT {
 export interface RangeFilterT extends FilterBaseT {
   type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE";
   value: RangeFilterValueT | null;
+  defaultValue?: RangeFilterValueT;
   unit?: string;
   mode: "range" | "exact";
   precision?: number;
@@ -292,7 +293,7 @@ export interface ColumnDescription {
 export interface GetQueryResponseDoneT {
   status: "DONE";
   numberOfResults: number;
-  resultUrl: string;
+  resultUrls: string[];
   columnDescriptions: ColumnDescription[];
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
@@ -329,7 +330,7 @@ export interface GetStoredQueryResponseT {
   system: boolean;
   ownerName: string;
   numberOfResults: number;
-  resultUrl: string;
+  resultUrls: string[];
   requiredTime: number; // TODO: Not used
   tags?: string[];
   query: QueryT;

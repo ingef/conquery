@@ -29,11 +29,7 @@ public abstract class Form implements QueryDescription {
 	}
 
 	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset);
-	
-	@Override
-	public ManagedForm toManagedExecution(User user, Dataset submittedDataset) {
-		return new ManagedForm(this, user, submittedDataset);
-	}
+
 
 	@Override
 	public void authorize(User user, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors) {

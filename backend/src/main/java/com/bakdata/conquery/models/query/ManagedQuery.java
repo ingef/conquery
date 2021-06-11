@@ -66,7 +66,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
 @NoArgsConstructor
-public class ManagedQuery extends ManagedExecution<ShardResult> {
+public class ManagedQuery extends ManagedExecution<ShardResult> implements SingleTableResult {
 
 	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 70;
 	@JsonIgnore
@@ -195,6 +195,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
+	@JsonIgnore
 	public Set<NamespacedIdentifiable<?>> getUsedNamespacedIds() {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		query.visit(collector);
@@ -223,6 +224,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
+	@JsonIgnore
 	public QueryDescription getSubmitted() {
 		return query;
 	}
@@ -230,17 +232,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	public Stream<EntityResult> streamResults() {
 		return getResults().stream();
-	}
-
-	@Override
-	protected URL getDownloadURLInternal(@NonNull UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException {
-		return url
-					   .path(ResultCsvResource.class)
-					   .resolveTemplate(ResourceConstants.DATASET, dataset.getName())
-					   .path(ResultCsvResource.class, ResultCsvResource.GET_CSV_PATH_METHOD)
-					   .resolveTemplate(ResourceConstants.QUERY, getId().toString())
-					   .build()
-					   .toURL();
 	}
 
 	/**

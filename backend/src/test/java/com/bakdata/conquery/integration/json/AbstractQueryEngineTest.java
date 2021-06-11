@@ -41,7 +41,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	}
 
 	@Override
-	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
+	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
 		Dataset dataset = standaloneSupport.getDataset();
 

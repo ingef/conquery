@@ -3,7 +3,7 @@ import * as React from "react";
 
 import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
 
-import BasicButton from "./BasicButton";
+import BasicButton, { BasicButtonProps } from "./BasicButton";
 
 interface StyledFaIconProps extends FaIconPropsT {
   tight?: boolean;
@@ -11,7 +11,7 @@ interface StyledFaIconProps extends FaIconPropsT {
   hasChildren: boolean;
 }
 
-const StyledFaIcon = styled(FaIcon)<StyledFaIconProps>`
+const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
   color: ${({ theme, active, red }) =>
     red ? theme.col.red : active ? theme.col.blueGrayDark : theme.col.black};
   font-size: ${({ theme, large, small }) =>
@@ -20,7 +20,7 @@ const StyledFaIcon = styled(FaIcon)<StyledFaIconProps>`
     hasChildren ? (tight ? "5px" : "10px") : "0"};
 `;
 
-const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
+const SxButton = styled(BasicButton)<{ frame?: boolean }>`
   background-color: transparent;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.black};
@@ -42,8 +42,7 @@ const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
   }
 `;
 
-export interface IconButtonPropsT
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface IconButtonPropsT extends BasicButtonProps {
   iconProps?: IconStyleProps;
   active?: boolean;
   large?: boolean;
@@ -55,7 +54,6 @@ export interface IconButtonPropsT
   left?: boolean;
   frame?: boolean;
   bare?: boolean;
-  onClick?: React.ButtonHTMLAttributes<HTMLButtonElement>["onClick"];
 }
 
 // A button that is prefixed by an icon
@@ -72,8 +70,8 @@ const IconButton: React.FC<IconButtonPropsT> = ({
   small,
   ...restProps
 }) => (
-  <StyledTransparentButton active={active} {...restProps}>
-    <StyledFaIcon
+  <SxButton active={active} {...restProps}>
+    <SxFaIcon
       main
       left={left}
       regular={regular}
@@ -87,7 +85,7 @@ const IconButton: React.FC<IconButtonPropsT> = ({
       {...iconProps}
     />
     {children}
-  </StyledTransparentButton>
+  </SxButton>
 );
 
 export default IconButton;

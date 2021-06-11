@@ -6,12 +6,14 @@ import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.nio.charset.Charset;
@@ -57,4 +59,16 @@ public class ResultUtil {
 		}
 		return StandardCharsets.UTF_8;
 	}
+
+
+	/**
+	 * Throws a "Bad Request" response if the execution result is not a single table.
+	 * @param exec the execution to test
+	 */
+	public static void checkSingleTableResult(ManagedExecution<?> exec) {
+		if (!(exec instanceof SingleTableResult)){
+			throw new BadRequestException("Execution cannot be rendered as the requested format");
+		}
+	}
+
 }

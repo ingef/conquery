@@ -242,24 +242,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			status.setOwner(owner.getId());
 			status.setOwnerName(owner.getLabel());
 		}
-		status.setResultUrl(getDownloadURL(url, datasetAbilities).orElse(null));
 	}
-	
-
-	@SneakyThrows({MalformedURLException.class, IllegalArgumentException.class, UriBuilderException.class})
-	public final Optional<URL> getDownloadURL(UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
-		if(url == null || !isReadyToDownload(datasetAbilities)) {
-			// url might be null because no url was wished and no builder was provided
-			return Optional.empty();
-		}
-		return Optional.ofNullable(getDownloadURLInternal(url));
-	}
-
-	/**
-	 * Allows the implementation to define an specific endpoint from where the result is to be downloaded.
-	 */
-	@Nullable
-	protected abstract URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException;
 
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
@@ -346,7 +329,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setQuery(canExpand ? getSubmitted() : null);
 	}
 
-	protected boolean isReadyToDownload(Map<DatasetId, Set<Ability>> datasetAbilities) {
+	public boolean isReadyToDownload(Map<DatasetId, Set<Ability>> datasetAbilities) {
 		if (state != ExecutionState.DONE) {
 			// No url for unfinished executions, quick return
 			return false;
@@ -420,10 +403,4 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return ExecutionPermission.onInstance(abilities,getId());
 	}
-
-	@JsonIgnore
-	public abstract List<ResultInfo> getResultInfo();
-
-	@JsonIgnore
-	public abstract Stream<EntityResult> streamResults();
 }

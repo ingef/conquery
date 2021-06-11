@@ -21,7 +21,7 @@ public class BigMultiSelectFilter extends AbstractSelectFilter<String[]> {
 	}
 
 	@Override
-	public FilterNode createAggregator(String[] value) {
+	public FilterNode createFilterNode(String[] value) {
 		return new MultiSelectFilterNode(getColumn(), value);
 	}
 }
