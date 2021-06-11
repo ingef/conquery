@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
@@ -84,13 +85,14 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 		return table.getDataset();
 	}
 
-	public void createSharedDictionaryReplacement(Map<String, Dictionary> dicts, NamespaceStorage storage, Map<DictionaryId, Dictionary> out) {
+	public void createSharedDictionaryReplacement(Map<String, Dictionary> dicts, NamespaceStorage storage, Map<DictionaryId, Dictionary> out, IdMutex<DictionaryId> sharedDictionaryLocks) {
 		Preconditions.checkArgument(sharedDictionary != null && type.equals(MajorTypeId.STRING));
 		// If the column is based on a shared dict. We reference a new empty dictionary or the existing one
 		// but without updated entries. The entries are updated later on, see ImportJob#applyDictionaryMappings.
 		Dictionary sharedDict = null;
-		synchronized (storage.getLockDummy()) {
-			sharedDict = storage.getDictionary(new DictionaryId(table.getDataset().getId(), getSharedDictionary()));
+		final DictionaryId sharedDictId = new DictionaryId(table.getDataset().getId(), getSharedDictionary());
+		try(IdMutex.Locked lock = sharedDictionaryLocks.acquire(sharedDictId)) {
+			sharedDict = storage.getDictionary(sharedDictId);
 			if (sharedDict == null) {
 				sharedDict = new MapDictionary(table.getDataset(), getSharedDictionary());
 				storage.updateDictionary(sharedDict);

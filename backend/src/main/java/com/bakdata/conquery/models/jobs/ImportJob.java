@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
@@ -62,7 +63,7 @@ public class ImportJob extends Job {
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static ImportJob create(Namespace namespace, InputStream inputStream, int entityBucketSize) throws IOException {
+	public static ImportJob create(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks) throws IOException {
 		try(PreprocessedReader parser = new PreprocessedReader(inputStream)){
 
 			final Dataset ds = namespace.getDataset();
@@ -91,7 +92,7 @@ public class ImportJob extends Job {
 			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
 			PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
-			Map<DictionaryId, Dictionary> dictReplacements = createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage());
+			Map<DictionaryId, Dictionary> dictReplacements = createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage(), sharedDictionaryLocks);
 
 			// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
 			parser.addAllReplacements(dictReplacements);
@@ -120,7 +121,7 @@ public class ImportJob extends Job {
 	/**
 	 * Collects all dictionaries that map only to columns of this import.
 	 */
-	private static Map<DictionaryId, Dictionary> createLocalIdReplacements(Map<String, Dictionary> dicts, Table table, String importName, NamespaceStorage storage) {
+	private static Map<DictionaryId, Dictionary> createLocalIdReplacements(Map<String, Dictionary> dicts, Table table, String importName, NamespaceStorage storage, IdMutex<DictionaryId> sharedDictionaryLocks) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -145,7 +146,7 @@ public class ImportJob extends Job {
 			}
 
 			if (column.getSharedDictionary() != null) {
-				column.createSharedDictionaryReplacement(dicts, storage, out);
+				column.createSharedDictionaryReplacement(dicts, storage, out, sharedDictionaryLocks);
 				continue;
 			}
 

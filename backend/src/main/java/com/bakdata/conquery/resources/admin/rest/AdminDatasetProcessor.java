@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
@@ -61,6 +62,7 @@ public class AdminDatasetProcessor {
 	private final String storagePrefix;
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
+	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
 
 	public synchronized Dataset addDataset(String name) throws JSONException {
@@ -226,7 +228,7 @@ public class AdminDatasetProcessor {
 	@SneakyThrows
 	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize());
+		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks);
 		namespace.getJobManager().addSlowJob(job);
 	}
 

@@ -23,8 +23,4 @@ public interface ConqueryStorage extends Closeable {
 	 * Remove the storage.
 	 */
 	void removeStorage();
-
-	default Object getLockDummy() {
-		return this;
-	}
 }
