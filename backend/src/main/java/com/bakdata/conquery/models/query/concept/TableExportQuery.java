@@ -20,8 +20,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.serializer.IdReferenceKeySerializer;
-import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceKeyDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefKeys;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -42,8 +41,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -72,8 +69,7 @@ public class TableExportQuery extends IQuery {
 	private List<CQUnfilteredTable> tables;
 
 	@InternalOnly
-	@JsonDeserialize(keyUsing = NsIdReferenceKeyDeserializer.class)
-	@JsonSerialize(keyUsing = IdReferenceKeySerializer.class)
+	@NsIdRefKeys
 	private Map<Column, Integer> positions;
 
 	@JsonIgnore
