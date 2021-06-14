@@ -120,21 +120,24 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	public IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
 
 		List<CompletableFuture<?>> futures = new ArrayList<>();
-
+		// We have to maintain our own futures and jobs on the outside, as we submit more tasks on top of the metaStores tasks
 
 		final IterationStatistic statistic = metaStore.forEach((key, chunkKeys) -> {
 			service.submit(() -> {
 				try {
-					final CompletableFuture<Void> futureLoaded = loadData(chunkKeys.parts)
-																		 .thenAccept(data -> consumer.accept(key, data));
-					futures.add(futureLoaded);
+					final CompletableFuture<Void> futureLoaded =
+							loadData(chunkKeys.parts)
+									.thenAccept(data -> consumer.accept(key, data));
 
-				}catch (Exception e){
+					futures.add(futureLoaded);
+				}
+				catch (Exception e) {
 					log.error("Failed to read value for key {}", key, e);
 				}
 			});
 		});
 
+		// now wait for finalization of tasks before closing down
 		futures.forEach(CompletableFuture::join);
 
 		service.shutdown();
@@ -246,43 +249,39 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		// First is just a dummy.
 		CompletableFuture<Void> current = CompletableFuture.completedFuture(null);
 
-		for (int i = 0; i < parts.length; i++) {
-			final UUID id = parts[i];
-			final int curIdx = i;
+		for (final UUID id : parts) {
+			final CompletableFuture<?> prior = current;
 
 			// Submit chunk loading
-			CompletableFuture<byte[]> part = CompletableFuture.supplyAsync(() -> {
+			current = CompletableFuture.runAsync(() -> {
+				log.trace("Begin loading chunk {}", id);
 				final byte[] out = dataStore.get(id);
-				log.trace("idx = {} loaded", curIdx);
-				return out;
-			}, service);
 
-			// Then weave jobs to pipe in-order, by concatenating by the dummy.
-			current = current.thenAcceptBoth(part, (ignored, incoming) -> {
-				try {
-					log.trace("idx = {} written", curIdx);
-					outputStream.write(incoming);
-				}
-				catch (IOException e) {
-					log.error("Failed to write chunk", e);
-				}
-			});
+				// Wait till prior chunk is finished to write the next chunk
+				prior.join();
+
+				outputStream.write(out);
+			}, service);
 		}
 
+		// Read value in separate thread to minimize buffering
 		final CompletableFuture<VALUE> out = CompletableFuture.supplyAsync(() -> {
 			try {
-				return valueReader.readValue(sink);
+				final VALUE value = valueReader.readValue(sink);
+				sink.close();
+				return value;
 			}
 			catch (IOException e) {
 				throw new RuntimeException(e);
 			}
 		}, service);
 
+		// When done close the pipes
 		current.whenComplete((ignored, exc) -> {
+			// Fail the outgoing Future by supplying the inner exception.
 			if (exc != null) {
 				log.error("Error loading {}", parts, exc);
 				out.completeExceptionally(exc);
-				return;
 			}
 
 			try {
