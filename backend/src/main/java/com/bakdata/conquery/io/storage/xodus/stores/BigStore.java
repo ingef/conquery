@@ -119,17 +119,23 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	@SneakyThrows
 	public IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
 
+		List<CompletableFuture<?>> futures = new ArrayList<>();
+
 
 		final IterationStatistic statistic = metaStore.forEach((key, chunkKeys) -> {
 			service.submit(() -> {
 				try {
-					final VALUE value1 = createValue(key, chunkKeys);
-					consumer.accept(key, value1);
+					final CompletableFuture<Void> futureLoaded = loadData(chunkKeys.parts)
+																		 .thenAccept(data -> consumer.accept(key, data));
+					futures.add(futureLoaded);
+
 				}catch (Exception e){
 					log.error("Failed to read value for key {}", key, e);
 				}
 			});
 		});
+
+		futures.forEach(CompletableFuture::join);
 
 		service.shutdown();
 
