@@ -259,8 +259,11 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 				// Wait till prior chunk is finished to write the next chunk
 				prior.join();
-
-				outputStream.write(out);
+				try {
+					outputStream.write(out);
+				}catch (Exception e){
+					throw new RuntimeException(e);
+				}
 			}, service);
 		}
 
