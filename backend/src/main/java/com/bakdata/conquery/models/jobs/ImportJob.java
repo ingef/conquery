@@ -36,6 +36,7 @@ import com.bakdata.conquery.models.preproc.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
@@ -147,11 +148,11 @@ public class ImportJob extends Job {
 
 			if (column.getSharedDictionary() != null) {
 				column.createSharedDictionaryReplacement(dicts, storage, out, sharedDictionaryLocks);
-				continue;
 			}
-
-			// Its a normal dictionary (only valid for this column in this import)
-			column.createdSingleColumnDictionaryReplacement(dicts, importName, out);
+			else {
+				// Its a normal dictionary (only valid for this column in this import)
+				column.createdSingleColumnDictionaryReplacement(dicts, importName, out);
+			}
 		}
 
 		return out;
@@ -182,7 +183,7 @@ public class ImportJob extends Job {
 			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
 			// but could also be an error :/ Most likely the former
 			final Dictionary importDictionary = dicts.get(column.getName());
-			if (!dicts.containsKey(column.getName()) || importDictionary == null) {
+			if (importDictionary == null) {
 				log.trace("No Dictionary for {}", column);
 				continue;
 			}
@@ -190,45 +191,42 @@ public class ImportJob extends Job {
 
 			if (column.getSharedDictionary() == null) {
 				// Normal Dictionary -> no merge necessary, just distribute
-				log.trace("Sending {} to all Workers", importDictionary);
-				namespace.getStorage().updateDictionary(importDictionary);
-				namespace.sendToAll(new UpdateDictionary(importDictionary));
-				continue;
+				distributeDictionary(namespace, importDictionary);
 			}
+			else {
+				// It's a shared dictionary
 
-			// It's a shared dictionary
+				final String sharedDictionaryName = column.getSharedDictionary();
 
-			final String sharedDictionaryName = column.getSharedDictionary();
+				log.trace("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
 
-			log.debug("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
+				final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
+				final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
 
-			final Dataset dataset = namespace.getDataset();
-			final Dictionary sharedDictionary = namespace.getStorage().getDictionary(new DictionaryId(dataset.getId(), sharedDictionaryName));
+				// This should never fail, becaus the dictionary is pre-created in the replacement generation step
+				ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
 
-			if (sharedDictionary == null) {
-				// Should never be reached because shared dicts are precreated in ImportJob#createNamespacedDictionaryReplacements
-				throw new IllegalStateException("Expected the shared dictionary {} to be present in the storage");
+				log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
+
+
+				DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
+
+				if (mapping.getNumberOfNewIds() != 0) {
+					distributeDictionary(namespace, mapping.getTargetDictionary());
+				}
+
+				out.put(column.getName(), mapping);
 			}
-
-			log.debug("Merging into shared Dictionary[{}]", sharedDictionary);
-
-
-			DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
-
-			if (mapping.getNumberOfNewIds() != 0) {
-				// We need to update the storages for now in this synchronized part
-				namespace.getStorage().updateDictionary(mapping.getTargetDictionary());
-				namespace.sendToAll(new UpdateDictionary(mapping.getTargetDictionary()));
-			}
-
-			out.put(column.getName(), mapping);
-
 		}
 
 		return out;
 	}
 
-
+	private static void distributeDictionary(Namespace namespace, Dictionary dictionary) {
+		log.trace("Sending {} to all Workers", dictionary);
+		namespace.getStorage().updateDictionary(dictionary);
+		namespace.sendToAll(new UpdateDictionary(dictionary));
+	}
 
 
 	@Override
