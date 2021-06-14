@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -63,16 +64,17 @@ public class AdminUIResource extends HAdmin {
 		.toArray(String[]::new);
 
 	private final AdminProcessor processor;
+	private final UIProcessor uiProcessor;
 
 	@GET
 	public View getIndex() {
-		return new UIView<>("index.html.ftl", processor.getUIContext());
+		return new UIView<>("index.html.ftl", uiProcessor.getUIContext());
 	}
 
 	@GET
 	@Path("script")
 	public View getScript() {
-		return new UIView<>("script.html.ftl", processor.getUIContext());
+		return new UIView<>("script.html.ftl", uiProcessor.getUIContext());
 	}
 
 	/**
@@ -112,18 +114,6 @@ public class AdminUIResource extends HAdmin {
 		catch(Exception e) {
 			return ExceptionUtils.getStackTrace(e);
 		}
-	}
-
-
-	@GET
-	@Path("datasets")
-	public View getDatasets() {
-		return new UIView<>("datasets.html.ftl", processor.getUIContext(), processor.getDatasetRegistry().getAllDatasets());
-	}
-
-	@POST @Path("/update-matching-stats/{"+ DATASET +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)
-	public void updateMatchingStats(@Auth User user, @PathParam(DATASET) Dataset dataset) throws JSONException {
-		processor.updateMatchingStats(dataset);
 	}
 
 	@POST
@@ -168,7 +158,7 @@ public class AdminUIResource extends HAdmin {
 										))
 						)
 						.build();
-		return new UIView<>("jobs.html.ftl", processor.getUIContext(), status);
+		return new UIView<>("jobs.html.ftl", uiProcessor.getUIContext(), status);
 	}
 
 	@POST @Path("/jobs") @Consumes(MediaType.MULTIPART_FORM_DATA)

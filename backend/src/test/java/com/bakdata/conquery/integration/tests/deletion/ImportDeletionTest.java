@@ -1,16 +1,5 @@
 package com.bakdata.conquery.integration.tests.deletion;
 
-import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.File;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -40,6 +29,18 @@ import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
+
+import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test if Imports can be deleted and safely queried.
@@ -234,7 +235,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.preprocessTmp(conquery.getTmpDir(), List.of(descriptionFile));
 
 			//import preprocessedFiles
-			conquery.getDatasetsProcessor().addImport(conquery.getNamespace(), preprocessedFile);
+			conquery.getDatasetsProcessor().addImport(conquery.getNamespace(), new GZIPInputStream(new FileInputStream(preprocessedFile)));
 			conquery.waitUntilWorkDone();
 		}
 

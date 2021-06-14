@@ -17,7 +17,17 @@
 	{
 		"method": "GET",
 		"path": "/datasets",
-		"clazz": "AdminResource"
+		"clazz": "AdminDatasetsResource"
+	},
+	{
+		"method": "POST",
+		"path": "/datasets",
+		"clazz": "AdminDatasetsResource"
+	},
+	{
+		"method": "GET",
+		"path": "/datasets",
+		"clazz": "AdminDatasetsResource"
 	},
 	{
 		"method": "DELETE",
@@ -55,6 +65,11 @@
 		"path": "/datasets/{dataset}/imports",
 		"clazz": "AdminDatasetResource"
 	},
+	{
+		"method": "POST",
+		"path": "/datasets/{dataset}/cqpp",
+		"clazz": "AdminDatasetResource"
+	},
     {
       "method": "POST",
       "path": "/datasets/{dataset}/tables",
@@ -79,11 +94,6 @@
 		"method": "POST",
 		"path": "/datasets/{dataset}/label",
 		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "POST",
-		"path": "/datasets",
-		"clazz": "AdminResource"
 	},
 	{
 		"method": "GET",
@@ -192,13 +202,8 @@
 	},
 	{
 		"method": "POST",
-		"path": "/update-matching-stats/{dataset}",
-		"clazz": "AdminUIResource"
-	},
-	{
-		"method": "GET",
-		"path": "/datasets",
-		"clazz": "AdminUIResource"
+		"path": "/datasets/{dataset}/update-matching-stats",
+		"clazz": "AdminDatasetResource"
 	},
 	{
 		"method": "GET",

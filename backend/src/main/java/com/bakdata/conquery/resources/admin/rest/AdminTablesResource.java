@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -35,6 +36,9 @@ import lombok.Setter;
 @Getter @Setter
 @Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
 public class AdminTablesResource extends HAdmin {
+
+	@Inject
+	private AdminDatasetProcessor processor;
 	
 	@PathParam(DATASET)
 	protected Dataset dataset;

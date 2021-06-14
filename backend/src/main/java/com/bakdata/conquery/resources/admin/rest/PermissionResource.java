@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
@@ -13,6 +14,8 @@ import com.bakdata.conquery.resources.hierarchies.HPermissions;
 @Consumes(ExtraMimeTypes.JSON_STRING)
 public class PermissionResource extends HPermissions {
 
+	@Inject
+	protected AdminProcessor processor;
 	
 	/**
 	 * We let SHIRO parse the permission from a string, instead of letting Jackson map it directly to an object.

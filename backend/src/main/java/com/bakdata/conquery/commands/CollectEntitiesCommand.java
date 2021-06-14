@@ -1,6 +1,7 @@
 package com.bakdata.conquery.commands;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -116,8 +118,8 @@ public class CollectEntitiesCommand extends Command {
 
 		@Override
 		public void execute() throws Exception {
-			try (final PreprocessedReader parser = Preprocessed.createReader(file, Map.of(Dataset.PLACEHOLDER.getId(), Dataset.PLACEHOLDER))) {
-
+			try (final PreprocessedReader parser = new PreprocessedReader(new GZIPInputStream(new FileInputStream(file)))) {
+				parser.addReplacement(Dataset.PLACEHOLDER.getId(), Dataset.PLACEHOLDER);
 				final PreprocessedHeader header = parser.readHeader();
 				log.info("Reading {}", header.getName());
 

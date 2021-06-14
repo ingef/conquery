@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -51,7 +52,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		PersistentIdMap persistentIdMap = IdMapSerialisationTest.createTestPersistentMap();
 
 		ManagerNode manager = testConquery.getStandaloneCommand().getManager();
-
+		AdminDatasetProcessor adminDatasetProcessor = manager.getAdmin().getAdminDatasetProcessor();
 		AdminProcessor adminProcessor = manager.getAdmin().getAdminProcessor();
 
 
@@ -71,12 +72,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		namespaceStorage.updateIdMapping(persistentIdMap);
 
 
-		final Dataset dataset1 = adminProcessor.addDataset(TEST_DATASET_1);
-		final Dataset dataset2 = adminProcessor.addDataset(TEST_DATASET_2);
-		final Dataset dataset3 = adminProcessor.addDataset(TEST_DATASET_3);
-		final Dataset dataset4 = adminProcessor.addDataset(TEST_DATASET_4);
-		final Dataset dataset5 = adminProcessor.addDataset(TEST_DATASET_5);
-		final Dataset dataset6 = adminProcessor.addDataset(TEST_DATASET_6);
+		final Dataset dataset1 = adminDatasetProcessor.addDataset(TEST_DATASET_1);
+		final Dataset dataset2 = adminDatasetProcessor.addDataset(TEST_DATASET_2);
+		final Dataset dataset3 = adminDatasetProcessor.addDataset(TEST_DATASET_3);
+		final Dataset dataset4 = adminDatasetProcessor.addDataset(TEST_DATASET_4);
+		final Dataset dataset5 = adminDatasetProcessor.addDataset(TEST_DATASET_5);
+		final Dataset dataset6 = adminDatasetProcessor.addDataset(TEST_DATASET_6);
 
 		{// Auth testing (deletion and permission grant)
 			// build constellation
@@ -170,12 +171,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
 
 		// Cleanup
-		adminProcessor.deleteDataset(dataset1);
-		adminProcessor.deleteDataset(dataset2);
-		adminProcessor.deleteDataset(dataset3);
-		adminProcessor.deleteDataset(dataset4);
-		adminProcessor.deleteDataset(dataset5);
-		adminProcessor.deleteDataset(dataset6);
+		adminDatasetProcessor.deleteDataset(dataset1);
+		adminDatasetProcessor.deleteDataset(dataset2);
+		adminDatasetProcessor.deleteDataset(dataset3);
+		adminDatasetProcessor.deleteDataset(dataset4);
+		adminDatasetProcessor.deleteDataset(dataset5);
+		adminDatasetProcessor.deleteDataset(dataset6);
 	}
 }
 
