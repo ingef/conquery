@@ -138,6 +138,9 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, Table currentTable) {
 
+		// Execute sub-queries withour secondary id
+		childPerKey.values().forEach(q -> q.executeSubQueries(ctx, entity));
+
 		nextTable(ctx, currentTable);
 
 		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
@@ -191,6 +194,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
 
 		plan.init(query.getEntity(), context);
+		plan.executeSubQueries(context, getQuery().getEntity());
 		plan.nextTable(context, secondaryIdColumn.getTable());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);

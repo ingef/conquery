@@ -3,11 +3,9 @@ package com.bakdata.conquery.models.query.concept.specific;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -42,13 +40,7 @@ public class CQNegation extends CQElement {
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		Preconditions.checkNotNull(dateAction);
 		if (asSubquery) {
-			ConceptQueryPlan qp = new ConceptQueryPlan(false);
-			qp.setChild(child.createQueryPlan(context, qp));
-			qp.getDateAggregator().registerAll(qp.getChild().getDateAggregators());
-			plan.addSubquery(qp);
-			final SubQueryNode child = new SubQueryNode(qp, context.getStorage());
-			child.getSubAggregators().forEach(plan::registerAggregator);
-			return new NegatingNode(child, dateAction);
+			return new NegatingNode(SubQueryNode.create(child, context, plan, false), dateAction);
 		}
 
 		return new NegatingNode(child.createQueryPlan(context, plan), dateAction);

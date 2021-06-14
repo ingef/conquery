@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.SubQueryNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -51,6 +52,11 @@ public class CQReusedQuery extends CQElement {
 
 	private boolean excludeFromSecondaryId = false;
 
+	/**
+	 * If true the child is evaluated as a sub query.
+	 */
+	private boolean asSubquery = true;
+
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
 		if(query != null) {
@@ -66,7 +72,13 @@ public class CQReusedQuery extends CQElement {
 			context = context.withSelectedSecondaryId(null);
 		}
 
-		return resolvedQuery.getReusableComponents()
+		final CQElement reusableComponents = resolvedQuery.getReusableComponents();
+
+		if (asSubquery) {
+			return SubQueryNode.create(reusableComponents, context, plan, true);
+		}
+
+		return reusableComponents
 							.createQueryPlan(context, plan);
 	}
 

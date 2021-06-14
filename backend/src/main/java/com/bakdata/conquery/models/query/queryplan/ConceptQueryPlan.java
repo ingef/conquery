@@ -113,7 +113,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	@Override
 	public Optional<SinglelineEntityResult> execute(final QueryExecutionContext ctx, Entity entity) {
 
-		subQueries.forEach(sub -> sub.execute(ctx, entity));
+		executeSubQueries(ctx, entity);
 
 		// Only override if none has been set from a higher level
 		QueryExecutionContext resolvedCtx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
@@ -178,6 +178,10 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		}
 		log.warn("entity {} not contained", entity.getId());
 		return Optional.empty();
+	}
+
+	public void executeSubQueries(QueryExecutionContext ctx, Entity entity) {
+		subQueries.forEach(sub -> sub.execute(ctx, entity));
 	}
 
 	public boolean isContained() {

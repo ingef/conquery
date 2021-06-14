@@ -1,15 +1,15 @@
 package com.bakdata.conquery.models.query.queryplan;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import lombok.RequiredArgsConstructor;
 
 import java.util.*;
 
@@ -18,7 +18,7 @@ public class SubQueryNode extends QPNode {
     private final ConceptQueryPlan plan;
     private final ConceptQueryPlan aggregatorPlan;
 
-    public SubQueryNode(ConceptQueryPlan subplan, ModificationShieldedWorkerStorage storage) {
+    private SubQueryNode(ConceptQueryPlan subplan, ModificationShieldedWorkerStorage storage) {
         this.plan =subplan;
         this.aggregatorPlan = new CloneContext(storage).clone(plan);
     }
@@ -81,5 +81,20 @@ public class SubQueryNode extends QPNode {
     @Override
     public void collectRequiredTables(Set<Table> requiredTables) {
         requiredTables.addAll(aggregatorPlan.collectRequiredTables());
+    }
+
+    public static SubQueryNode create(CQElement child, QueryPlanContext context, ConceptQueryPlan plan, boolean generateDateAggregator){
+
+        // TODO introduce CQSubQuery
+        ConceptQueryPlan qp = new ConceptQueryPlan(false);
+        if (generateDateAggregator) {
+            qp.setDateAggregator(plan.getDateAggregator());
+        }
+        qp.setChild(child.createQueryPlan(context, qp));
+        qp.getDateAggregator().registerAll(qp.getChild().getDateAggregators());
+        plan.addSubquery(qp);
+        final SubQueryNode subNode = new SubQueryNode(qp, context.getStorage());
+        subNode.getSubAggregators().forEach(plan::registerAggregator);
+        return subNode;
     }
 }
