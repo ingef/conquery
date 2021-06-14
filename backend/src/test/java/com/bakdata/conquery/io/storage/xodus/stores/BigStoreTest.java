@@ -2,10 +2,8 @@ package com.bakdata.conquery.io.storage.xodus.stores;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.PipedInputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 
@@ -90,10 +88,10 @@ public class BigStoreTest {
 		store.add(nDict.getId(), nDict);
 
 		// check if the bytes in the store are the same as bytes
-		final PipedInputStream sink = store.loadData(store.getMetaStore().get(nDict.getId()));
+		final Dictionary sink = store.get(nDict.getId());
 
 		assertThat(sink)
-					.hasSameContentAs(new ByteArrayInputStream(bytes));
+				.usingFieldByFieldElementComparator().isEqualTo(nDict);
 
 		EncodedDictionary copy = new EncodedDictionary(store.get(nDict.getId()), StringTypeEncoded.Encoding.UTF8);
 		for (int v = 0; v < 1000000; v++) {
@@ -120,11 +118,10 @@ public class BigStoreTest {
 		store.add(nDict.getId(), nDict);
 
 		// check if the bytes in the store are the same as bytes
-		final PipedInputStream sink = store.loadData(store.getMetaStore().get(nDict.getId()));
+		final Dictionary sink = store.get(nDict.getId());
 
 
-		assertThat(sink)
-				.hasSameContentAs(new ByteArrayInputStream(bytes));
+		assertThat(sink).usingFieldByFieldElementComparator().isEqualTo(nDict);
 
 
 		Dictionary copy = store.get(nDict.getId());

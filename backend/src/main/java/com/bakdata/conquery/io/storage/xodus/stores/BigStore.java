@@ -1,9 +1,7 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
-import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -12,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -54,7 +53,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 	private final StoreInfo storeInfo;
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	private int chunkByteSize;
 
 	private final ExecutorService service = Executors.newCachedThreadPool();
@@ -93,7 +93,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		);
 
 
-
 		this.valueWriter = mapper.writerFor(storeInfo.getValueType());
 		this.valueReader = mapper.readerFor(storeInfo.getValueType());
 	}
@@ -107,7 +106,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		metaStore.update(key, writeValue(value));
 	}
 
-	@SneakyThrows
 	@Override
 	public VALUE get(KEY key) {
 		KeysContainer meta = metaStore.get(key);
@@ -117,24 +115,21 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		return createValue(key, meta);
 	}
 
-	@Override @SneakyThrows
+	@Override
+	@SneakyThrows
 	public IterationStatistic forEach(BiConsumer<KEY, VALUE> consumer) {
 
 
-		final IterationStatistic statistic = metaStore.forEach((key, value) -> {
+		final IterationStatistic statistic = metaStore.forEach((key, chunkKeys) -> {
 			service.submit(() -> {
-				try {
-					consumer.accept(key, createValue(key, value));
-				}
-				catch (IOException e) {
-					log.error("Failed to accept", e);
-				}
+				final VALUE value1 = createValue(key, chunkKeys);
+				consumer.accept(key, value1);
 			});
 		});
 
 		service.shutdown();
 
-		while(!service.awaitTermination(30, TimeUnit.SECONDS)){
+		while (!service.awaitTermination(30, TimeUnit.SECONDS)) {
 			log.debug("Still waiting for {} to load.", this);
 		}
 
@@ -210,19 +205,20 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 				);
 			}
 			return new KeysContainer(uuids.toArray(new UUID[0]), -1);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new RuntimeException("Failed to write " + value, e);
 		}
 	}
 
-	private VALUE createValue(KEY key, KeysContainer meta) throws IOException {
+	private VALUE createValue(KEY key, KeysContainer meta) {
 
-		final PipedInputStream sink = loadData(meta);
-
-		try (InputStream in = new BufferedInputStream(sink)) {
-			return valueReader.readValue(in);
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to read " + key, e);
+		try {
+			return loadData(meta.parts).get();
+		}
+		catch (InterruptedException | ExecutionException e) {
+			log.error("Failed to load {}", key, e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -232,40 +228,64 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		dataStore.close();
 	}
 
-	PipedInputStream loadData(KeysContainer parts) throws IOException {
+	@SneakyThrows
+	private CompletableFuture<VALUE> loadData(UUID[] parts) {
 		final PipedInputStream sink = new PipedInputStream();
 		final PipedOutputStream outputStream = new PipedOutputStream(sink);
 
+		// First is just a dummy.
 		CompletableFuture<Void> current = CompletableFuture.completedFuture(null);
 
-		for (int i = 0, partsLength = parts.getParts().length; i < partsLength; i++) {
-			UUID id = parts.getParts()[i];
-			CompletableFuture<byte[]> part = CompletableFuture.supplyAsync(() -> dataStore.get(id), service);
+		for (int i = 0; i < parts.length; i++) {
+			final UUID id = parts[i];
 			final int curIdx = i;
 
-			current = current.thenAcceptBothAsync(part, (ignored, incoming) -> {
+			// Submit chunk loading
+			CompletableFuture<byte[]> part = CompletableFuture.supplyAsync(() -> {
+				final byte[] out = dataStore.get(id);
+				log.trace("idx = {} loaded", curIdx);
+				return out;
+			}, service);
+
+			// Then weave jobs to pipe in-order, by concatenating by the dummy.
+			current = current.thenAcceptBoth(part, (ignored, incoming) -> {
 				try {
-					log.info("idx = {} / {} done", curIdx, id);
+					log.trace("idx = {} written", curIdx);
 					outputStream.write(incoming);
 				}
 				catch (IOException e) {
 					log.error("Failed to write chunk", e);
 				}
-			}, service);
+			});
 		}
 
-		current.whenCompleteAsync((ignored, exc) -> {
+		final CompletableFuture<VALUE> out = CompletableFuture.supplyAsync(() -> {
 			try {
-				log.info("all done");
+				return valueReader.readValue(sink);
+			}
+			catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}, service);
+
+		current.whenComplete((ignored, exc) -> {
+			if (exc != null) {
+				log.error("Error loading {}", parts, exc);
+				out.completeExceptionally(exc);
+				return;
+			}
+
+			try {
+				log.trace("{} all done", parts);
 				outputStream.flush();
 				outputStream.close();
 			}
 			catch (IOException e) {
 				log.error("Failed to flush", e);
 			}
-		}, service);
+		});
 
-		return sink;
+		return out;
 	}
 
 	@Override
@@ -295,6 +315,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	static class KeysContainer {
 		private final UUID[] parts;
-		private final int size;
+		private final int size; //TODO unused
 	}
 }
