@@ -91,8 +91,6 @@ const QueryRunner: FC<PropsT> = ({
           !!queryRunner.queryResult &&
           !queryRunner.queryResult.error &&
           !queryRunner.queryResult.loading &&
-          exists(queryRunner.queryResult.resultCount) &&
-          exists(queryRunner.queryResult.resultColumns) &&
           exists(queryRunner.queryResult.resultUrls) &&
           !isQueryRunning && (
             <QueryResults
