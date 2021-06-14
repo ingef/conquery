@@ -122,8 +122,12 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 		final IterationStatistic statistic = metaStore.forEach((key, chunkKeys) -> {
 			service.submit(() -> {
-				final VALUE value1 = createValue(key, chunkKeys);
-				consumer.accept(key, value1);
+				try {
+					final VALUE value1 = createValue(key, chunkKeys);
+					consumer.accept(key, value1);
+				}catch (Exception e){
+					log.error("Failed to read value for key {}", key, e);
+				}
 			});
 		});
 
