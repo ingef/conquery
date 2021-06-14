@@ -93,6 +93,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 		final DictionaryId sharedDictId = new DictionaryId(table.getDataset().getId(), getSharedDictionary());
 		try(IdMutex.Locked lock = sharedDictionaryLocks.acquire(sharedDictId)) {
 			sharedDict = storage.getDictionary(sharedDictId);
+			// Create dictionary if not yet present
 			if (sharedDict == null) {
 				sharedDict = new MapDictionary(table.getDataset(), getSharedDictionary());
 				storage.updateDictionary(sharedDict);
