@@ -9,6 +9,10 @@ import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+
+/**
+ * Annotation for Maps where the keys are supposed to be NsIdRefs
+ */
 @JacksonAnnotationsInside
 @JsonDeserialize(keyUsing = NsIdReferenceKeyDeserializer.class)
 @JsonSerialize(keyUsing = IdReferenceKeySerializer.class)

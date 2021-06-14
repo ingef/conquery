@@ -14,6 +14,9 @@ import com.fasterxml.jackson.databind.deser.ContextualKeyDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+/**
+ * Deserializer for Map keys. See {@link NsIdRef} for details.
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 public class NsIdReferenceKeyDeserializer<ID extends NamespacedId & IId<VALUE>, VALUE extends NamespacedIdentifiable<? extends ID>> extends KeyDeserializer implements ContextualKeyDeserializer {
