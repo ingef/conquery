@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.develop;
+package com.bakdata.conquery.models.config.auth;
 
 import java.util.List;
 import java.util.Set;

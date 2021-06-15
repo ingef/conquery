@@ -1,10 +1,11 @@
-package com.bakdata.conquery.models.auth.oidc;
+package com.bakdata.conquery.models.config.auth;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.oidc.JwtPkceVerifyingRealm;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Data;

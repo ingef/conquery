@@ -9,7 +9,7 @@ import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
-import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
+import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;

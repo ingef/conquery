@@ -26,7 +26,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
-import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
+import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;

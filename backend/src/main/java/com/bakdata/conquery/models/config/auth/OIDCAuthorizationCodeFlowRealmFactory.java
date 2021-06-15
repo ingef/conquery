@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.oidc.codeflow;
+package com.bakdata.conquery.models.config.auth;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;

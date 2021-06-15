@@ -20,7 +20,7 @@ Different types of AuthorizationConfig can be used by setting `type` to one of t
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.auth.DefaultAuthorizationConfig`
+Java Type: `com.bakdata.conquery.models.config.auth.DefaultAuthorizationConfig`
 
 No fields can be set for this type.
 
@@ -31,7 +31,7 @@ No fields can be set for this type.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig`
+Java Type: `com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig`
 
 No fields can be set for this type.
 
@@ -63,7 +63,7 @@ A realm that verifies oauth tokens using PKCE.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.auth.oidc.JwtPkceVerifyingRealmFactory`
+Java Type: `com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory`
 
 Supported Fields:
 
@@ -77,7 +77,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.auth.basic.LocalAuthenticationConfig`
+Java Type: `com.bakdata.conquery.models.config.auth.LocalAuthenticationConfig`
 
 Supported Fields:
 
@@ -94,7 +94,7 @@ Factory for a simple realm that just forwards tokens to the IDP for verification
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.auth.oidc.codeflow.OIDCAuthorizationCodeFlowRealmFactory`
+Java Type: `com.bakdata.conquery.models.config.auth.OIDCAuthorizationCodeFlowRealmFactory`
 
 Supported Fields:
 
@@ -108,7 +108,7 @@ Realm that supports the Open ID Connect Resource-Owner-Password-Credential-Flow 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.auth.oidc.passwordflow.OIDCResourceOwnerPasswordCredentialRealmFactory`
+Java Type: `com.bakdata.conquery.models.config.auth.OIDCResourceOwnerPasswordCredentialRealmFactory`
 
 Supported Fields:
 

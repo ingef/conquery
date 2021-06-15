@@ -17,7 +17,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
-import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
+import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.basic;
+package com.bakdata.conquery.models.config.auth;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -10,6 +10,9 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
+import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
+import com.bakdata.conquery.models.auth.basic.UserAuthenticationManagementProcessor;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
 import com.bakdata.conquery.resources.unprotected.LoginResource;
