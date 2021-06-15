@@ -79,8 +79,6 @@ public class TableExportQuery extends IQuery {
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
 		List<TableExportDescription> resolvedConnectors = new ArrayList<>();
 
-		//TODO collect column positions, pull validity-dates to the front, collect secondaryIds to the front and merge them
-
 		for (CQUnfilteredTable table : tables) {
 			Connector connector = table.getTable();
 
@@ -119,7 +117,7 @@ public class TableExportQuery extends IQuery {
 
 		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
 
-		// SecondaryIds are grouped from all tables, and at the beginning
+		// SecondaryIds are pulled to the front and grouped over all tables
 		tables.stream()
 			  .map(cqUnfilteredTable -> cqUnfilteredTable.getTable().getTable().getColumns())
 			  .flatMap(Arrays::stream)
@@ -139,42 +137,48 @@ public class TableExportQuery extends IQuery {
 				positions.putIfAbsent(validityDateColumn, 0);
 			}
 
+			// Set column positions, set SecondaryId positions to precomputed ones.
 			for (Column column : connector.getTable().getColumns()) {
-				if(column.getSecondaryId() != null){
-					positions.computeIfAbsent(column, col -> secondaryIdPositions.get(column.getSecondaryId()));
-				}
-				else {
-					positions.computeIfAbsent(column, col -> currentPosition.getAndIncrement());
-				}
+				positions.computeIfAbsent(column, col -> col.getSecondaryId() != null
+														  ? secondaryIdPositions.get(col.getSecondaryId())
+														  : currentPosition.getAndIncrement());
 			}
 		}
 
-		resultInfos = new ResultInfo[currentPosition.get()];
+		resultInfos = createResultInfos(currentPosition.get(), secondaryIdPositions, positions);
+	}
 
-		resultInfos[0] = ConqueryConstants.DATES_INFO;
+	private static ResultInfo[] createResultInfos(int size, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
 
-		secondaryIdPositions.forEach((desc, pos) -> resultInfos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.IdT.INSTANCE));
+		ResultInfo[] infos = new ResultInfo[size];
+
+		infos[0] = ConqueryConstants.DATES_INFO;
+
+		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
+			SecondaryIdDescription desc = e.getKey();
+			Integer pos = e.getValue();
+			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.IdT.INSTANCE);
+		}
 
 		for (Map.Entry<Column, Integer> entry : positions.entrySet()) {
+
 			// 0 Position is date, already covered
 			final int position = entry.getValue();
-
-			if (position == 0) {
-				continue;
-			}
 
 			// SecondaryIds are pulled to the front, already covered.
 			final Column column = entry.getKey();
 
-			if (column.getSecondaryId() != null) {
+			if (position == 0 || column.getSecondaryId() != null) {
 				continue;
 			}
 
-			resultInfos[position] = new SimpleResultInfo(column.getTable().getLabel() + " - " + column.getLabel(), ResultType.resolveResultType(column.getType()));
+			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " - " + column.getLabel(), ResultType.resolveResultType(column.getType()));
 		}
+
+		return infos;
 	}
 
-	public Column findValidityDateColumn(Connector connector, ValidityDateContainer dateColumn) {
+	private static Column findValidityDateColumn(Connector connector, ValidityDateContainer dateColumn) {
 		// if no dateColumn is provided, we use the default instead which is always the first one.
 		// Set to null if none-available in the connector.
 		if (dateColumn != null) {
@@ -190,8 +194,7 @@ public class TableExportQuery extends IQuery {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-
-		if(resultInfos == null){
+		if (resultInfos == null) {
 			return;
 		}
 
