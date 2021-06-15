@@ -1,6 +1,10 @@
-package com.bakdata.conquery.models.identifiable.mapping;
+package com.bakdata.conquery.models.config;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.DefaultIdMappingAccessor;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.List;

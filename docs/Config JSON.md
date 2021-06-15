@@ -142,7 +142,7 @@ Different types of IdMappingConfig can be used by setting `type` to one of the f
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.identifiable.mapping.NoIdMapping`
+Java Type: `com.bakdata.conquery.models.config.NoIdMapping`
 
 No fields can be set for this type.
 
@@ -153,7 +153,7 @@ No fields can be set for this type.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.identifiable.mapping.SimpleIdMapping`
+Java Type: `com.bakdata.conquery.models.config.SimpleIdMapping`
 
 No fields can be set for this type.
 

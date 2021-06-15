@@ -1,9 +1,10 @@
-package com.bakdata.conquery.models.identifiable.mapping;
+package com.bakdata.conquery.models.config;
 
 import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.mapping.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 

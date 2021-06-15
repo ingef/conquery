@@ -1,0 +1,13 @@
+name: "AutoDoc"
+
+on:
+  pull_request:
+    paths:
+      - "autodoc/**"
+      - "backend/**"
+      - ".github/workflows/run_autodoc.yml" # self reference
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
