@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
@@ -279,6 +278,9 @@ public class QueryProcessor {
 		}
 	}
 
+	/**
+	 * Cancel a running query: Sending cancellation to shards, which will cause them to stop executing them, results are not sent back, and incoming results will be discarded.
+	 */
 	public void cancel(User user, Dataset dataset, ManagedExecution<?> query) {
 
 		// Does not make sense to cancel a query that isn't running.
@@ -295,9 +297,7 @@ public class QueryProcessor {
 		namespace.sendToAll(new CancelQuery(query.getId()));
 	}
 
-
-
-	public void patchQuery(User user, ManagedExecution<?> execution, MetaDataPatch patch) throws JSONException {
+	public void patchQuery(User user, ManagedExecution<?> execution, MetaDataPatch patch) {
 
 		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 

@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -11,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Send message to worker to execute {@code query} on the workers associated entities.
+ * Send message to Workers issuing a cancellation of Query.
+ *
+ * See {@link com.bakdata.conquery.apiv1.QueryProcessor#cancel(User, Dataset, ManagedExecution)}.
  */
 @Slf4j
 @CPSType(id = "CANCEL_QUERY", base = NamespacedMessage.class)
