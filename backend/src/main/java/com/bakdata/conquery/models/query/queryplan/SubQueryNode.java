@@ -35,11 +35,12 @@ public class SubQueryNode extends QPNode {
 
     @Override
     public boolean isOfInterest(Entity entity) {
-        return plan.isContained();
+        return plan.isOfInterest(entity);
     }
 
     @Override
     public void init(Entity entity, QueryExecutionContext context) {
+        plan.init(entity, context);
         aggregatorPlan.init(entity, context);
     }
 
