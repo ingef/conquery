@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.execution;
+package com.bakdata.conquery.apiv1;
 
 import java.util.Collection;
 import java.util.List;
@@ -6,7 +6,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;

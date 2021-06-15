@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.models.config.auth;
 
 import java.util.List;
 
@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 

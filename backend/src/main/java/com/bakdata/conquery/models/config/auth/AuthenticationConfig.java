@@ -1,7 +1,8 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.models.config.auth;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.execution;
+package com.bakdata.conquery.apiv1;
 
 import lombok.NoArgsConstructor;
 

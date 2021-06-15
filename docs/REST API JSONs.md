@@ -762,7 +762,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.execution.ExecutionStatus`
+Java Type: `com.bakdata.conquery.apiv1.ExecutionStatus`
 
 Supported Fields:
 
@@ -890,7 +890,7 @@ This status holds extensive information about the query description and meta dat
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.execution.FullExecutionStatus`
+Java Type: `com.bakdata.conquery.apiv1.FullExecutionStatus`
 
 Supported Fields:
 
@@ -953,7 +953,7 @@ Light weight description of an execution. Rendering the overview should not caus
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.execution.OverviewExecutionStatus`
+Java Type: `com.bakdata.conquery.apiv1.OverviewExecutionStatus`
 
 Supported Fields:
 
