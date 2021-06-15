@@ -261,7 +261,7 @@ Query type that combines a set of {@link ConceptQuery}s which are separately eva
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.ArrayConceptQuery`
+Java Type: `ArrayConceptQuery`
 
 Supported Fields:
 
@@ -277,7 +277,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.ConceptQuery`
+Java Type: `ConceptQuery`
 
 Supported Fields:
 
@@ -343,7 +343,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.SecondaryIdQuery`
+Java Type: `SecondaryIdQuery`
 
 Supported Fields:
 
@@ -362,7 +362,7 @@ A TABLE_EXPORT creates a full export of the given tables. It ignores selects com
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.TableExportQuery`
+Java Type: `TableExportQuery`
 
 Supported Fields:
 
@@ -388,7 +388,7 @@ Different types of CQElement can be used by setting `type` to one of the followi
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.CQAnd`
+Java Type: `CQAnd`
 
 Supported Fields:
 
@@ -405,7 +405,7 @@ Creates a query that will contain all entities where {@code preceding} contains 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.temporal.CQBeforeTemporalQuery`
+Java Type: `CQBeforeTemporalQuery`
 
 Supported Fields:
 
@@ -419,7 +419,7 @@ Creates a query that will contain all entities where {@code preceding} contains 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.temporal.CQBeforeOrSameTemporalQuery`
+Java Type: `CQBeforeOrSameTemporalQuery`
 
 Supported Fields:
 
@@ -433,7 +433,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.CQConcept`
+Java Type: `CQConcept`
 
 Supported Fields:
 
@@ -453,7 +453,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.CQDateRestriction`
+Java Type: `CQDateRestriction`
 
 Supported Fields:
 
@@ -469,7 +469,7 @@ Creates a query that will contain all entities where {@code preceding} contains 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.temporal.CQDaysBeforeTemporalQuery`
+Java Type: `CQDaysBeforeTemporalQuery`
 
 Supported Fields:
 
@@ -483,7 +483,7 @@ Creates a query that will contain all entities where {@code preceding} contains 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.temporal.CQDaysBeforeOrNeverTemporalQuery`
+Java Type: `CQDaysBeforeOrNeverTemporalQuery`
 
 Supported Fields:
 
@@ -497,7 +497,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.CQExternal`
+Java Type: `CQExternal`
 
 Supported Fields:
 
@@ -513,7 +513,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.CQNegation`
+Java Type: `CQNegation`
 
 Supported Fields:
 
@@ -529,7 +529,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.CQOr`
+Java Type: `CQOr`
 
 Supported Fields:
 
@@ -546,7 +546,7 @@ A wrapper for {@link CQElement}s to provide additional infos to parts of a query
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.ResultInfoDecorator`
+Java Type: `ResultInfoDecorator`
 
 Supported Fields:
 
@@ -562,7 +562,7 @@ Creates a query that will contain all entities where {@code preceding} contains 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.temporal.CQSameTemporalQuery`
+Java Type: `CQSameTemporalQuery`
 
 Supported Fields:
 
@@ -576,7 +576,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.query.concept.specific.CQReusedQuery`
+Java Type: `CQReusedQuery`
 
 Supported Fields:
 
@@ -791,7 +791,7 @@ This class represents the root node of the concepts as it is presented to the fr
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.api.description.FERoot`
+Java Type: `com.bakdata.conquery.apiv1.frontend.FERoot`
 
 No fields can be set for this type.
 
@@ -802,7 +802,7 @@ This class represents a values of a SELECT filter.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.api.description.FEValue`
+Java Type: `com.bakdata.conquery.apiv1.frontend.FEValue`
 
 Supported Fields:
 
@@ -912,7 +912,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/execution/ExecutionStatus.java#L36) | status | one of NEW, RUNNING, CANCELED, FAILED, DONE | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/execution/ExecutionStatus.java#L33) | system | `boolean` | `false` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/execution/ExecutionStatus.java#L23) | tags | list of `String` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/execution/FullExecutionStatus.java#L64-L66) | availableSecondaryIds | list of ID of `@NsIdRefCollection Set<SecondaryIdDescription>` | `null` |  | Possible {@link SecondaryIdDescription}s available, of {@link com.bakdata.conquery.models.concepts.Concept}s used in this Query. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/execution/FullExecutionStatus.java#L64-L66) | availableSecondaryIds | list of ID of `@NsIdRefCollection Set<SecondaryIdDescription>` | `null` |  | Possible {@link SecondaryIdDescription}s available, of {@link com.bakdata.conquery.models.datasets.concepts.Concept}s used in this Query. | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/execution/FullExecutionStatus.java#L44-L46) | canExpand | `boolean` | `false` |  | Indicates if the concepts that are included in the query description can be accessed by the user. | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/execution/FullExecutionStatus.java#L39-L41) | columnDescriptions | list of `ColumnDescriptor` | `null` |  | Holds a description for each column, present in the result. | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/execution/FullExecutionStatus.java#L54-L56) | error | `ConqueryErrorInfo` | `null` |  | Is set when the QueryFailed | 

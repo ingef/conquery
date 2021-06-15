@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
@@ -61,7 +62,7 @@ public class FullExecutionStatus extends ExecutionStatus {
 	private Collection<GroupId> groups;
 
 	/**
-	 * Possible {@link SecondaryIdDescription}s available, of {@link com.bakdata.conquery.models.concepts.Concept}s used in this Query.
+	 * Possible {@link SecondaryIdDescription}s available, of {@link com.bakdata.conquery.models.datasets.concepts.Concept}s used in this Query.
 	 */
 	@NsIdRefCollection
 	private Set<SecondaryIdDescription> availableSecondaryIds;

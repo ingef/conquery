@@ -7,7 +7,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
-import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Table;
 import com.google.common.collect.MoreCollectors;
 import lombok.Getter;

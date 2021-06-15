@@ -20,7 +20,7 @@ This is a single node or concept in a concept tree.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.tree.TreeConcept`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept`
 
 Supported Fields:
 
@@ -52,7 +52,7 @@ This condition connects multiple conditions with an and.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.conditions.AndCondition`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.conditions.AndCondition`
 
 Supported Fields:
 
@@ -66,7 +66,7 @@ This condition requires the value of another column to be equal to a given value
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.conditions.ColumnEqualCondition`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.conditions.ColumnEqualCondition`
 
 Supported Fields:
 
@@ -81,7 +81,7 @@ This condition requires each value to be exactly as given in the list.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.conditions.EqualCondition`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.conditions.EqualCondition`
 
 Supported Fields:
 
@@ -95,7 +95,7 @@ A condition that is a groovy script and thus able to represent everything.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.conditions.GroovyCondition`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.conditions.GroovyCondition`
 
 Supported Fields:
 
@@ -109,7 +109,7 @@ This condition matches if its child does not.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.conditions.NotCondition`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.conditions.NotCondition`
 
 Supported Fields:
 
@@ -123,7 +123,7 @@ This condition connects multiple conditions with an or.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.conditions.OrCondition`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.conditions.OrCondition`
 
 Supported Fields:
 
@@ -137,7 +137,7 @@ This condition requires each value to start with one of the given values.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.conditions.PrefixCondition`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.conditions.PrefixCondition`
 
 Supported Fields:
 
@@ -151,7 +151,7 @@ This condition requires each value to start with a prefix between the two given 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.conditions.PrefixRangeCondition`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.conditions.PrefixRangeCondition`
 
 Supported Fields:
 
@@ -166,7 +166,7 @@ This condition requires that the selected Column has a value.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.conditions.IsPresentCondition`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.conditions.IsPresentCondition`
 
 Supported Fields:
 
@@ -190,7 +190,7 @@ This filter represents a select in the front end. This means that the user can s
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.BigMultiSelectFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.BigMultiSelectFilter`
 
 Supported Fields:
 
@@ -214,7 +214,7 @@ This filter represents a select in the front end. This means that the user can s
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.CountFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.CountFilter`
 
 Supported Fields:
 
@@ -236,7 +236,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.CountQuartersFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.CountQuartersFilter`
 
 Supported Fields:
 
@@ -256,7 +256,7 @@ This filter represents a select in the front end. This means that the user can s
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.DateDistanceFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.DateDistanceFilter`
 
 Supported Fields:
 
@@ -277,7 +277,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.DurationSumFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.DurationSumFilter`
 
 Supported Fields:
 
@@ -297,7 +297,7 @@ This filter represents a filter on an integer columnof each event.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.NumberFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter`
 
 Supported Fields:
 
@@ -317,7 +317,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.PrefixTextFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.PrefixTextFilter`
 
 Supported Fields:
 
@@ -337,7 +337,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.QuartersInYearFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.QuartersInYearFilter`
 
 Supported Fields:
 
@@ -357,7 +357,7 @@ This filter represents a select in the front end. This means that the user can s
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.MultiSelectFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.MultiSelectFilter`
 
 Supported Fields:
 
@@ -381,7 +381,7 @@ This filter represents a select in the front end. This means that the user can s
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.SelectFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter`
 
 Example:
 
@@ -415,7 +415,7 @@ This filter represents a filter on the sum of one integer column.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.SumFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter`
 
 Supported Fields:
 
@@ -447,7 +447,7 @@ Different types of Select can be used by setting `type` to one of the following 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.CountSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountSelect`
 
 Supported Fields:
 
@@ -466,7 +466,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.CountOccurencesSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountOccurencesSelect`
 
 Supported Fields:
 
@@ -485,7 +485,7 @@ Entity is included when the number of distinct quarters for all events is within
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.CountQuartersSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountQuartersSelect`
 
 Supported Fields:
 
@@ -503,7 +503,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DateDistanceSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect`
 
 Supported Fields:
 
@@ -522,7 +522,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DateUnionSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateUnionSelect`
 
 Supported Fields:
 
@@ -540,7 +540,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.DistinctSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect`
 
 Supported Fields:
 
@@ -558,7 +558,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DurationSumSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DurationSumSelect`
 
 Supported Fields:
 
@@ -576,7 +576,7 @@ Collects the event dates that are corresponding to an enclosing {@link Connector
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.EventDateUnionSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDateUnionSelect`
 
 Supported Fields:
 
@@ -592,7 +592,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.EventDurationSumSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect`
 
 Supported Fields:
 
@@ -608,7 +608,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.ExistsSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect`
 
 Supported Fields:
 
@@ -624,7 +624,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.FirstValueSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect`
 
 Supported Fields:
 
@@ -642,7 +642,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.LastValueSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.LastValueSelect`
 
 Supported Fields:
 
@@ -660,7 +660,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.PrefixSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.specific.PrefixSelect`
 
 Supported Fields:
 
@@ -679,7 +679,7 @@ Output first, last or random Year-Quarter in time
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.QuarterSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.specific.QuarterSelect`
 
 Supported Fields:
 
@@ -696,7 +696,7 @@ Entity is included when the the number of quarters with events is within a speci
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.QuartersInYearSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.specific.QuartersInYearSelect`
 
 Supported Fields:
 
@@ -714,7 +714,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.RandomValueSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.RandomValueSelect`
 
 Supported Fields:
 
@@ -732,7 +732,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.SumSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect`
 
 Supported Fields:
 
@@ -757,7 +757,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.tree.ConceptTreeChild`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild`
 
 Supported Fields:
 
@@ -776,7 +776,7 @@ A connector represents the connection between a column and a concept.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.Connector`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.Connector`
 
 Supported Fields:
 
@@ -811,7 +811,7 @@ This class represents a simple Key-Value pair as it is used in the additionInfos
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.common.KeyValue`
+Java Type: `com.bakdata.conquery.apiv1.KeyValue`
 
 Supported Fields:
 
@@ -826,7 +826,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.ValidityDate`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.ValidityDate`
 
 Supported Fields:
 
@@ -846,7 +846,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.concepts.select.concept.UniversalSelect`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect`
 
 A Marker UniversalSelect is any of:
 * [EVENT_DATE_UNION](#EVENT_DATE_UNION)
