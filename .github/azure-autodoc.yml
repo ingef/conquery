@@ -32,7 +32,7 @@ steps:
       workingDirectory: ./
       script: |
         git fetch
-        git checkout $(System.PullRequest.SourceBranch)
+        git checkout ${{System.PullRequest.SourceBranch}}
   - task: Maven@3
     displayName: autodoc
     inputs:
@@ -59,7 +59,7 @@ steps:
         git config --global user.name "bakdata-bot"
         git add docs/*
         git commit --message "automatic update to docs"
-        git push || exit 1
+        git push origin HEAD:${{System.PullRequest.SourceBranch}} || exit 1
         echo "Documentation updated"
 
         exit 0
