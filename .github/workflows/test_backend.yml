@@ -26,7 +26,7 @@ jobs:
         with:
           java-version: 11
       - name: Build Backend
-        run: mvn -T 1C install -pl -DskipTests
+        run: mvn -T 1C install -pl backend -DskipTests
       - name: Unit Test
         run: mvn test -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
       - name: Programmatic Integration Tests
