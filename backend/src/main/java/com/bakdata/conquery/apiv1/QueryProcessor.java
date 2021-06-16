@@ -66,6 +66,7 @@ public class QueryProcessor {
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
+	 *
 	 * @return
 	 */
 	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, User user) {
@@ -108,11 +109,10 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final ManagedExecution<?> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config))
-															 .orElse(null);
+			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config));
 
-			if (execution != null) {
-				return execution;
+			if (execution.isPresent()) {
+				return execution.get();
 			}
 		}
 
@@ -132,11 +132,9 @@ public class QueryProcessor {
 	 */
 	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
-
-
 		final ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
 
-		if(execution == null){
+		if (execution == null) {
 			return null;
 		}
 
@@ -203,23 +201,23 @@ public class QueryProcessor {
 	}
 
 
-
 	/**
 	 * Sets the result urls for the given result renderer. Result urls are only rendered for providers that match the
 	 * result type of the execution.
-	 * @param status The status that is edited.
-	 * @param renderer The renderer that are requested for a result url generation.
-	 * @param exec The execution that is used for generating the url
-	 * @param uriBuilder The Uribuilder with the base configuration to generate the urls
+	 *
+	 * @param status       The status that is edited.
+	 * @param renderer     The renderer that are requested for a result url generation.
+	 * @param exec         The execution that is used for generating the url
+	 * @param uriBuilder   The Uribuilder with the base configuration to generate the urls
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
-	 * @param <S> The type of the provided and returned status
+	 * @param <S>          The type of the provided and returned status
 	 * @return The modified status
 	 */
-	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders){
+	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		List<URL> resultUrls = renderer.stream()
-				.map(r -> r.generateResultURL(exec,uriBuilder.clone(), allProviders))
-				.flatMap(Optional::stream).collect(Collectors.toList());
+									   .map(r -> r.generateResultURL(exec, uriBuilder.clone(), allProviders))
+									   .flatMap(Optional::stream).collect(Collectors.toList());
 
 		status.setResultUrls(resultUrls);
 
@@ -284,11 +282,11 @@ public class QueryProcessor {
 	public void cancel(User user, Dataset dataset, ManagedExecution<?> query) {
 
 		// Does not make sense to cancel a query that isn't running.
-		if(!query.getState().equals(ExecutionState.RUNNING)){
+		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			return;
 		}
 
-		log.debug("{} cancelled Query[{}]", user, query.getId());
+		log.info("{} cancelled Query[{}]", user, query.getId());
 
 		final Namespace namespace = getDatasetRegistry().get(dataset.getId());
 
@@ -299,7 +297,7 @@ public class QueryProcessor {
 
 	public void patchQuery(User user, ManagedExecution<?> execution, MetaDataPatch patch) {
 
-		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
+		log.info("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 
 		patch.applyTo(execution, storage, user);
 		storage.updateExecution(execution);
@@ -321,16 +319,16 @@ public class QueryProcessor {
 	}
 
 	public void reexecute(User user, ManagedExecution<?> query) {
-		log.debug("User[{}] reexecuted Query[{}]", user, query);
+		log.info("User[{}] reexecuted Query[{}]", user, query);
 
-		if(!query.getState().equals(ExecutionState.RUNNING)) {
+		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			ExecutionManager.execute(getDatasetRegistry(), query, config);
 		}
 	}
 
 
 	public void deleteQuery(User user, ManagedExecution<?> execution) {
-		log.debug("User[{}] deleted Query[{}]", user.getId(), execution.getId());
+		log.info("User[{}] deleted Query[{}]", user.getId(), execution.getId());
 		storage.removeExecution(execution.getId());
 	}
 
@@ -341,7 +339,7 @@ public class QueryProcessor {
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
 		final FullExecutionStatus status = query.buildStatusFull(storage, url, user, datasetRegistry, datasetAbilities);
 
-		if (query.isReadyToDownload(datasetAbilities)){
+		if (query.isReadyToDownload(datasetAbilities)) {
 			setDownloadUrls(status, config.getResultProviders(), query, url, allProviders);
 		}
 		return status;
