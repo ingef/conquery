@@ -11,7 +11,14 @@ import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -43,7 +50,6 @@ public class QueryResource {
 	@POST
 	public Response postQuery(@Auth User user, @PathParam(DATASET) Dataset dataset, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
 
-		log.info("Query posted on dataset {} by user {} ({}).", dataset.getId(), user.getId(), user.getName());
 
 		user.authorize(dataset, Ability.READ);
 
@@ -64,8 +70,7 @@ public class QueryResource {
 		processor.cancel(
 				user,
 				dataset,
-				query,
-				RequestAwareUriBuilder.fromRequest(servletRequest)
+				query
 		);
 	}
 

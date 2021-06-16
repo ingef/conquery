@@ -8,7 +8,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.ws.rs.*;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
@@ -68,7 +75,7 @@ public class StoredQueriesResource extends HDatasets {
 		user.authorize(query, Ability.READ);
 		user.authorize(query, Ability.DELETE);
 
-		processor.deleteQuery(query);
+		processor.deleteQuery(user, query);
 	}
 
 	@POST
@@ -77,7 +84,7 @@ public class StoredQueriesResource extends HDatasets {
 		user.authorize(dataset, Ability.READ);
 		user.authorize(query, Ability.READ);
 
-		processor.reexecute(query);
+		processor.reexecute(user, query);
 		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
 	}
 }
