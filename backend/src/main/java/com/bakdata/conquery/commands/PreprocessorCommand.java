@@ -1,6 +1,7 @@
 package com.bakdata.conquery.commands;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.zip.GZIPInputStream;
 
 import javax.validation.Validator;
 
@@ -70,7 +72,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 
-			try (final PreprocessedReader parser = Preprocessed.createReader(preprocessingJob.getPreprocessedFile(), Collections.emptyMap())) {
+			try (final PreprocessedReader parser = new PreprocessedReader(new GZIPInputStream(new FileInputStream(preprocessingJob.getPreprocessedFile())))) {
 
 				PreprocessedHeader header = parser.readHeader();
 

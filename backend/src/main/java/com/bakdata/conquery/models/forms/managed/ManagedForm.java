@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -11,10 +9,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.Form;
@@ -38,17 +34,11 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.univocity.parsers.csv.CsvWriter;
-import com.univocity.parsers.csv.CsvWriterSettings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -162,8 +152,6 @@ public abstract class ManagedForm extends ManagedExecution<FormSharedResult> {
 					)
 				);
 				break;
-			case CANCELED:
-				// Ideally sub queries can not be canceled by a user, so do nothing
 			case NEW:
 			case RUNNING:
 			default:

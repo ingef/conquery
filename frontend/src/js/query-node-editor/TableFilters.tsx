@@ -150,6 +150,7 @@ const TableFilters = (props: PropsT) => {
                   moneyRange
                   input={{
                     value: filter.value,
+                    defaultValue: filter.defaultValue,
                     onChange: (value) =>
                       props.onSetFilterValue(filterIdx, value),
                   }}

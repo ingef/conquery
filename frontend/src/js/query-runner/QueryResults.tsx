@@ -6,6 +6,7 @@ import type { ColumnDescription } from "../api/types";
 import DownloadButton from "../button/DownloadButton";
 import PreviewButton from "../button/PreviewButton";
 import { isEmpty } from "../common/helpers/commonHelper";
+import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 
 const Root = styled("div")`
@@ -38,9 +39,9 @@ const Bold = styled("span")`
 `;
 
 interface PropsT {
-  resultCount: number;
   resultUrls: string[];
-  resultColumns: ColumnDescription[];
+  resultCount?: number | null; // For forms, won't usually have a count
+  resultColumns?: ColumnDescription[] | null; // For forms, won't usually have resultColumns
   queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
 
@@ -68,12 +69,14 @@ const QueryResults: FC<PropsT> = ({
             : t("queryRunner.resultCount")}
         </LgText>
       )}
-      {!!csvUrl && <SxPreviewButton columns={resultColumns} url={csvUrl} />}
+      {!!csvUrl && exists(resultColumns) && (
+        <SxPreviewButton columns={resultColumns} url={csvUrl} />
+      )}
       {resultUrls.map((url) => {
         const ending = url.split(".").reverse()[0];
 
         return (
-          <SxDownloadButton frame url={resultUrls[0]}>
+          <SxDownloadButton frame url={url}>
             {ending.toUpperCase()}
           </SxDownloadButton>
         );

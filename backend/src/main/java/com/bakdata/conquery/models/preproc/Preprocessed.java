@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.preproc;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +10,6 @@ import java.util.HashMap;
 import java.util.IntSummaryStatistics;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -86,25 +84,6 @@ public class Preprocessed {
 			final Parser parser = columns[index].getParser();
 			values[index] = parser.createColumnValues();
 		}
-	}
-
-	/**
-	 * Creates a Jackson Parser to read CQPP documents. They consist of a {@link PreprocessedHeader} {@link PreprocessedDictionaries} {@link PreprocessedData} in order. But their order depends on each other.
-	 *
-	 * This is heavily tied to {@link Preprocessed#write(File)} and {@link ImportJob#execute()}
-	 * @return
-	 */
-	public static PreprocessedReader createReader(File importFile, Map<IId<?>, Identifiable<?>> replacements) throws IOException {
-		final InputStream in = new GZIPInputStream(new FileInputStream(importFile));
-
-		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
-		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
-
-		final JsonParser parser = namespaceCollection.injectInto(Jackson.BINARY_MAPPER.copy())
-													 .enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-													 .getFactory()
-													 .createParser(in);
-		return new PreprocessedReader(parser);
 	}
 
 

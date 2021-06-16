@@ -29,53 +29,80 @@ import lombok.extern.slf4j.Slf4j;
  * Send message to worker to execute {@code query} on the workers associated entities.
  */
 @Slf4j
-@CPSType(id="EXECUTE_QUERY", base=NamespacedMessage.class)
-@AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(callSuper=true)
+@CPSType(id = "EXECUTE_QUERY", base = NamespacedMessage.class)
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString(callSuper = true)
 public class ExecuteQuery extends WorkerMessage {
 
 	private ManagedExecution<?> execution;
 
 	@Override
 	public void react(Worker context) throws Exception {
-		log.info("Started {} {}", execution.getClass().getSimpleName(), execution.getId());
+		final ManagedExecutionId executionId = execution.getId();
+
+		log.info("Started {} {}", execution.getClass().getSimpleName(), executionId);
+
+		// Execution might have been cancelled before so we uncancel it here.
+		context.getQueryExecutor().unsetQueryCancelled(executionId);
+
+
 		Set<Entry<ManagedExecutionId, QueryPlan>> plans = null;
 		// Generate query plans for this execution. For ManagedQueries this is only one plan.
 		// For ManagedForms there might be multiple plans, which originate from ManagedQueries.
 		// The results are send directly to these ManagesQueries
 		try {
-			plans = execution.createQueryPlans(new QueryPlanContext(context)).entrySet();		
-		} catch (Exception e) {
+			plans = execution.createQueryPlans(new QueryPlanContext(context)).entrySet();
+		}
+		catch (Exception e) {
 			ConqueryError err = asConqueryError(e);
-			log.warn("Failed to create query plans for {}.", execution.getId(), err );
+			log.warn("Failed to create query plans for {}.", executionId, err);
 			ShardResult result = execution.getInitializedShardResult(null);
 			sendFailureToManagerNode(result, context, err);
 			return;
 		}
-		
+
 		// Execute all plans.
-		for(Entry<ManagedExecutionId, QueryPlan> entry : plans) {
+		for (Entry<ManagedExecutionId, QueryPlan> entry : plans) {
 			ShardResult result = execution.getInitializedShardResult(entry);
 			result.setWorkerId(context.getInfo().getId());
-			try {
-				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage(), context.getBucketManager()), entry);
-				// Send result back
-				result.getFuture().addListener(
-						() -> {
-							log.debug("Worker[{}] Finished Query[{}] of Execution[{}] with {} results",
-									  context.getInfo().getId(),
-									  result.getQueryId(),
-									  execution.getId(),
-									  result.getResults().size()
-							);
 
-							result.send(context);
-						},
-						MoreExecutors.directExecutor()
-				);
-			} catch(Exception e) {
+			try {
+				final QueryExecutionContext executionContext = new QueryExecutionContext(executionId, context.getQueryExecutor(), context.getStorage(), context.getBucketManager());
+
+				context.getQueryExecutor()
+					   .execute(entry.getKey(), entry.getValue(), result, executionContext);
+				// Send result back
+				result.getFuture()
+					  .addListener(
+							  () -> {
+
+								  log.debug(
+										  "Worker[{}] Finished Query[{}] of Execution[{}] with {} results",
+										  context.getInfo().getId(),
+										  result.getQueryId(),
+										  executionId,
+										  result.getResults().size()
+								  );
+
+								  if (context.getQueryExecutor().isCancelled(executionId)) {
+									  // Query is done so we no longer need the cancellation entry.
+									  context.getQueryExecutor().unsetQueryCancelled(executionId);
+								  }
+								  // Don't send results for cancelled queries.
+								  else {
+									  result.send(context);
+								  }
+							  },
+							  MoreExecutors.directExecutor()
+					  );
+			}
+			catch (Exception e) {
 				ConqueryError err = asConqueryError(e);
-				log.warn("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), err );
-				sendFailureToManagerNode(result, context,  asConqueryError(err));
+				log.warn("Error while executing {} (with subquery: {})", executionId, entry.getKey(), err);
+				sendFailureToManagerNode(result, context, asConqueryError(err));
 				return;
 			}
 		}

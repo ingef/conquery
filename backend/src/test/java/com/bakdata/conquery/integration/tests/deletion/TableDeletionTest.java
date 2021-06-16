@@ -113,7 +113,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
 
 			final URI deleteTable =
-					HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "remove")
+					HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "remove")
 					.buildFromMap(Map.of(
 							ResourceConstants.DATASET, conquery.getDataset().getName(),
 							ResourceConstants.TABLE, tableId.toString()

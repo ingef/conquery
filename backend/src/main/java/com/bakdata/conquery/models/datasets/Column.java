@@ -1,19 +1,26 @@
 package com.bakdata.conquery.models.datasets;
 
 import java.io.ObjectInputStream;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
@@ -76,5 +83,57 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Override
 	public Dataset getDataset() {
 		return table.getDataset();
+	}
+
+	/**
+	 * Creates an id-replacement mapping for shared dictionaries for an {@link Import}.
+	 * Because Imports are bound to a {@link com.bakdata.conquery.models.worker.Namespace} but the {@link com.bakdata.conquery.models.preproc.Preprocessed} files are not
+	 * they contain dummy-{@link NsIdRef}. These References are mapped to actual object with valid ids through this
+	 * generated mapping.
+	 *
+	 * In this method for shared dictionaries, it is ensured, that the shared dictionary exists in the storage and it is
+	 * created if not.
+	 * @param dicts The mapping of column names in the Import to dictionaries in the Import
+	 * @param storage The {@link NamespaceStorage} that backs the dictionaries
+	 * @param out The collection for the generated replacement, that are needed during the deserialization of the next
+	 *            part of the {@link com.bakdata.conquery.models.preproc.Preprocessed}-file
+	 * @param sharedDictionaryLocks A collection of locks used for the synchronized creation of shared dictionaries.
+	 */
+	public void createSharedDictionaryReplacement(Map<String, Dictionary> dicts, NamespaceStorage storage, Map<DictionaryId, Dictionary> out, IdMutex<DictionaryId> sharedDictionaryLocks) {
+		Preconditions.checkArgument(sharedDictionary != null && type.equals(MajorTypeId.STRING));
+		// If the column is based on a shared dict. We reference a new empty dictionary or the existing one
+		// but without updated entries. The entries are updated later on, see ImportJob#applyDictionaryMappings.
+		Dictionary sharedDict = null;
+		final DictionaryId sharedDictId = new DictionaryId(table.getDataset().getId(), getSharedDictionary());
+		try(IdMutex.Locked lock = sharedDictionaryLocks.acquire(sharedDictId)) {
+			sharedDict = storage.getDictionary(sharedDictId);
+			// Create dictionary if not yet present
+			if (sharedDict == null) {
+				sharedDict = new MapDictionary(table.getDataset(), getSharedDictionary());
+				storage.updateDictionary(sharedDict);
+			}
+		}
+		out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dicts.get(getName()).getName()), sharedDict);
+	}
+
+
+	/**
+	 * See {@link Column#createSharedDictionaryReplacement(Map, NamespaceStorage, Map, IdMutex)}
+	 */
+	public void createdSingleColumnDictionaryReplacement(Map<String, Dictionary> dicts, String importName, Map<DictionaryId, Dictionary> out) {
+		Preconditions.checkArgument(sharedDictionary == null && type.equals(MajorTypeId.STRING));
+		
+		final Dictionary dict = dicts.get(getName());
+		final String name = computeDefaultDictionaryName(importName);
+
+		out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dict.getName()), dict);
+
+		dict.setDataset(table.getDataset());
+		dict.setName(name);
+	}
+
+
+	private String computeDefaultDictionaryName(String importName) {
+		return String.format("%s#%s", importName, getId().toString());
 	}
 }

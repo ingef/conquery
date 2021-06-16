@@ -98,7 +98,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		// Reuse by API
 		{
 			final URI reexecuteUri =
-					HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), StoredQueriesResource.class, "reexecute")
+					HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), StoredQueriesResource.class, "reexecute")
 								   .buildFromMap(Map.of(
 										   ResourceConstants.DATASET, conquery.getDataset().getName(),
 										   ResourceConstants.QUERY, execution.getId().toString()

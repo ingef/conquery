@@ -27,6 +27,12 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	@Setter
 	private Column column;
 
+	/**
+	 * Shared between all executing Threads to maximize utilization.
+	 */
+	private ConcurrentMap<Import, int[]> selectedValuesCache;
+	private int[] selectedValues;
+
 	public MultiSelectFilterNode(Column column, String[] filterValue) {
 		super(filterValue);
 		this.column = column;
@@ -38,11 +44,12 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 		selectedValuesCache = cache;
 	}
 
-	/**
-	 * Shared between all executing Threads to maximize utilization.
-	 */
-	private ConcurrentMap<Import, int[]> selectedValuesCache;
-	private int[] selectedValues;
+	@Override
+	public void setFilterValue(String[] strings) {
+		selectedValuesCache = new ConcurrentHashMap<>();
+		selectedValues = null;
+		super.setFilterValue(strings);
+	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {

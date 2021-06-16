@@ -31,6 +31,7 @@ public class ModificationShieldedWorkerStorage {
 		return delegate.getValidator();
 	}
 
+
 	public CentralRegistry getCentralRegistry() {
 		return delegate.getCentralRegistry();
 	}

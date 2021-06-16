@@ -5,24 +5,22 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.preproc.GroovyPredicate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
-import groovy.util.GroovyScriptEngine;
-import lombok.*;
-import org.apache.shiro.realm.Realm;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.keycloak.TokenVerifier;
-import org.keycloak.authorization.client.Configuration;
 import org.keycloak.common.VerificationException;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jwk.JWKParser;
 import org.keycloak.representations.AccessToken;
-import org.keycloak.representations.JsonWebToken;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -52,6 +50,12 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
     @NotEmpty
     private List<String> additionalTokenChecks = Collections.emptyList();
 
+    /**
+     * Which claims hold alternative Ids of the user in case the user name does not match a user.
+     * Pay attention, that the user must not be able to alter the value of any of these claims.
+     */
+    private List<String> alternativeIdClaims = Collections.emptyList();
+
     public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {
         List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
 
@@ -59,7 +63,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
             additionalVerifiers.add(ScriptedTokenChecker.create(additionalTokenCheck));
         }
 
-        return new JwtPkceVerifyingRealm(getPublicKey(jwk), allowedAudiences, additionalVerifiers, issuer);
+        return new JwtPkceVerifyingRealm(getPublicKey(jwk), allowedAudiences, additionalVerifiers, issuer, alternativeIdClaims);
     }
 
 

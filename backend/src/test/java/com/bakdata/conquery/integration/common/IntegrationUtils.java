@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.FullExecutionStatus;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
@@ -82,7 +81,7 @@ public class IntegrationUtils {
 	}
 
 	private static URI getPostQueryURI(StandaloneSupport conquery) {
-		return HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), QueryResource.class, "postQuery")
+		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "postQuery")
 							  .buildFromMap(Map.of(
 									  "dataset", conquery.getDataset().getId()
 							  ));
@@ -112,7 +111,7 @@ public class IntegrationUtils {
 	}
 
 	private static URI getQueryStatusURI(StandaloneSupport conquery, String id) {
-		return HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultApiURIBuilder(), QueryResource.class, "getStatus")
+		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getStatus")
 							  .buildFromMap(Map.of(
 									  "query", id, "dataset", conquery.getDataset().getId()
 							  ));
