@@ -95,4 +95,8 @@ public class EmptyBucket extends Bucket {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 
+	@Override
+	public boolean has(int event, Column column) {
+		return false;
+	}
 }

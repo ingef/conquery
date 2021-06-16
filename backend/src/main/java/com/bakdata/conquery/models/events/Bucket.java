@@ -116,7 +116,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return start.get(entityId) + length.get(entityId);
 	}
 
-	public final boolean has(int event, Column column) {
+	public boolean has(int event, Column column) {
 		return getStore(column).has(event);
 	}
 
