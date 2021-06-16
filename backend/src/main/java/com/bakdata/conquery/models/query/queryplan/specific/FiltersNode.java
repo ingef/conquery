@@ -11,6 +11,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import it.unimi.dsi.fastutil.longs.Long2BooleanMap;
+import it.unimi.dsi.fastutil.longs.Long2BooleanMaps;
+import it.unimi.dsi.fastutil.longs.Long2BooleanSortedMaps;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +42,8 @@ public class FiltersNode extends QPNode {
 
     @Setter(AccessLevel.PRIVATE)
     private List<Aggregator<CDateSet>> eventDateAggregators;
+
+    private Long2BooleanMap eventFilterCache = Long2BooleanMaps.EMPTY_MAP;
 
 
     public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
@@ -91,6 +96,16 @@ public class FiltersNode extends QPNode {
 
         @Override
         public final Optional<Boolean> eventFiltersApply (Bucket bucket, int event){
+            Optional<Boolean> result = eventFiltersApplyProvider(bucket, event);
+            eventFilterCache = result.map(r -> Long2BooleanMaps.singleton(getLongKey(bucket, event), (boolean) r)).orElse(Long2BooleanMaps.EMPTY_MAP);
+            return result;
+        }
+
+    private long getLongKey(Bucket bucket, int event) {
+        return ((long) bucket.getBucket()) << Integer.SIZE | event;
+    }
+
+    private Optional<Boolean> eventFiltersApplyProvider (Bucket bucket, int event){
             if (eventFilters.isEmpty()) {
                 return Optional.empty();
             }
@@ -108,6 +123,11 @@ public class FiltersNode extends QPNode {
 
         @Override
         public final void acceptEvent (Bucket bucket,int event){
+            if(!eventFilterCache.getOrDefault(getLongKey(bucket, event), true)) {
+                return;
+            }
+
+            // TODO what happens if the event was rejected by this event filters, but accepted by a similar concept without filters under the same OR-parent ?
 
             log.warn("Accepting events for entity {}", getEntity().getId());
 

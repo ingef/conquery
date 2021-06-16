@@ -45,7 +45,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	}
 
 	public void addSubquery(ConceptQueryPlan subplan) {
-		subQueries.add(0, subplan);
+		subQueries.add(subplan);
 	}
 
 	@Override
