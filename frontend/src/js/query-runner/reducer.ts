@@ -22,15 +22,15 @@ import { QueryTypeT } from "./actions";
 interface APICallType {
   loading?: boolean;
   success?: boolean;
-  error?: string | boolean;
+  error?: string | boolean | null;
   errorContext?: Record<string, string>;
 }
 
 interface QueryResultT extends APICallType {
   datasetId?: string;
-  resultCount?: number;
+  resultCount?: number | null;
   resultUrls?: string[];
-  resultColumns?: ColumnDescription[];
+  resultColumns?: ColumnDescription[] | null;
   queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
 
