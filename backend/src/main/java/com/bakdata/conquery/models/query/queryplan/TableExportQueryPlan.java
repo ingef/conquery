@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -27,14 +28,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
-	private final QueryPlan subPlan;
+	private final QueryPlan<? extends EntityResult> subPlan;
 	private final CDateRange dateRange;
 	private final List<TableExportDescription> tables;
-	private final int totalColumns;
+	private final Map<Column, Integer> positions;
 
 	@Override
-	public QueryPlan clone(CloneContext ctx) {
-		return new TableExportQueryPlan(subPlan.clone(ctx), dateRange, tables, totalColumns);
+	public QueryPlan<MultilineEntityResult> clone(CloneContext ctx) {
+		return new TableExportQueryPlan(subPlan.clone(ctx), dateRange, tables, positions);
 	}
 
 	@Override
@@ -44,19 +45,22 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		// TODO figure out where the dates are
+		// TODO create a fake aggregator and feed it inside the loop, return it here.
 		return Optional.empty();
 	}
 
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
-		Optional<EntityResult> result = subPlan.execute(ctx, entity);
+		Optional<? extends EntityResult> result = subPlan.execute(ctx, entity);
 
 		if (result.isEmpty() || tables.isEmpty()) {
 			return Optional.empty();
 		}
 
 		List<Object[]> results = new ArrayList<>();
+
+		final int totalColumns = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
+
 		for (TableExportDescription exportDescription : tables) {
 
 
@@ -79,15 +83,19 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 					}
 
 					Object[] entry = new Object[totalColumns];
-					for (int col = 0; col < exportDescription.getTable().getColumns().length; col++) {
-						final Column column = exportDescription.getTable().getColumns()[col];
+
+					for (Column column : exportDescription.getTable().getColumns()) {
 
 						if (!bucket.has(event, column)) {
 							continue;
 						}
 
-						// depending on context use pretty printing or script value
-						entry[exportDescription.getColumnOffset() + col] = bucket.createScriptValue(event, column);
+						if(column.equals(exportDescription.getValidityDateColumn())){
+							entry[0] = List.of(bucket.getAsDateRange(event, column));
+						}
+						else {
+							entry[positions.get(column)] = bucket.createScriptValue(event, column);
+						}
 					}
 
 					results.add(entry);
@@ -107,6 +115,5 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		private final Table table;
 		@Nullable
 		private final Column validityDateColumn;
-		private final int columnOffset;
 	}
 }
