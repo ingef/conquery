@@ -292,10 +292,11 @@ export interface ColumnDescription {
 // TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
   status: "DONE";
-  numberOfResults: number;
+  numberOfResults: number | null;
   resultUrls: string[];
-  columnDescriptions: ColumnDescription[];
+  columnDescriptions: ColumnDescription[] | null;
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
+  requiredTime: number; // In ms, unused at the moment
 }
 
 export interface GetQueryRunningResponseT {
