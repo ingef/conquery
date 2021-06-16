@@ -46,7 +46,7 @@ public class ExecuteQuery extends WorkerMessage {
 		log.info("Started {} {}", execution.getClass().getSimpleName(), executionId);
 
 		// Execution might have been cancelled before so we uncancel it here.
-		context.getQueryExecutor().uncancelQuery(executionId);
+		context.getQueryExecutor().unsetQueryCancelled(executionId);
 
 
 		Set<Entry<ManagedExecutionId, QueryPlan>> plans = null;
@@ -89,7 +89,7 @@ public class ExecuteQuery extends WorkerMessage {
 
 								  if (context.getQueryExecutor().isCancelled(executionId)) {
 									  // Query is done so we no longer need the cancellation entry.
-									  context.getQueryExecutor().uncancelQuery(executionId);
+									  context.getQueryExecutor().unsetQueryCancelled(executionId);
 								  }
 								  // Don't send results for cancelled queries.
 								  else {

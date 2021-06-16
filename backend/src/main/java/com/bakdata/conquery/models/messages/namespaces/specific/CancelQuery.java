@@ -29,6 +29,6 @@ public class CancelQuery extends WorkerMessage {
 	@Override
 	public void react(Worker context) throws Exception {
 		log.debug("Cancelling Query[{}]", executionId);
-		context.getQueryExecutor().cancelQuery(executionId);
+		context.getQueryExecutor().setQueryCancelled(executionId);
 	}
 }

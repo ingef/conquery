@@ -30,12 +30,11 @@ public class QueryExecutor implements Closeable {
 
 	private final Set<ManagedExecutionId> cancelledQueries = new HashSet<>();
 
-	//TODO better name
-	public void uncancelQuery(ManagedExecutionId query) {
+	public void unsetQueryCancelled(ManagedExecutionId query) {
 		cancelledQueries.remove(query);
 	}
 
-	public void cancelQuery(ManagedExecutionId query) {
+	public void setQueryCancelled(ManagedExecutionId query) {
 		cancelledQueries.add(query);
 	}
 
