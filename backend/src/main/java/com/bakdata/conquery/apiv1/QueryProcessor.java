@@ -292,7 +292,7 @@ public class QueryProcessor {
 
 		final Namespace namespace = getDatasetRegistry().get(dataset.getId());
 
-		query.setState(ExecutionState.CANCELED);
+		query.setState(ExecutionState.NEW);
 
 		namespace.sendToAll(new CancelQuery(query.getId()));
 	}

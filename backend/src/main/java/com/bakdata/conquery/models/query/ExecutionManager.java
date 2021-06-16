@@ -89,7 +89,7 @@ public class ExecutionManager {
 
 		final E query = (E) getQuery(result.getQueryId());
 
-		if(query.getState().equals(ExecutionState.CANCELED)){
+		if(query.getState().equals(ExecutionState.NEW)){
 			return;
 		}
 
