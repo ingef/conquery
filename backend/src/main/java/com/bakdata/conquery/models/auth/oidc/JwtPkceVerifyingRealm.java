@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
+import org.keycloak.Token;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 import org.keycloak.jose.jwk.JWK;
@@ -21,6 +23,7 @@ import org.keycloak.jose.jwk.JWKParser;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.JsonWebToken;
 
+import java.lang.reflect.Array;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,16 +40,18 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
     private final PublicKey publicKey;
     private final String[] allowedAudiences;
-    private final TokenVerifier.Predicate<AccessToken>[] defaultTokenChecks;
-    private final TokenVerifier.Predicate<AccessToken>[] additionalTokenChecks;
+    private final TokenVerifier.Predicate<JsonWebToken>[] tokenChecks;
 
     public JwtPkceVerifyingRealm(@NonNull PublicKey publicKey, @NonNull String[] allowedAudiences, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, @NonNull String issuer) {
 
         this.publicKey = publicKey;
         this.allowedAudiences = allowedAudiences;
         Object[] veriferObjects = additionalTokenChecks.toArray();
-        this.additionalTokenChecks = Arrays.copyOf(veriferObjects, veriferObjects.length,TokenVerifier.Predicate[].class);
-        this.defaultTokenChecks = new TokenVerifier.Predicate[] {new TokenVerifier.RealmUrlCheck(issuer), TokenVerifier.SUBJECT_EXISTS_CHECK, TokenVerifier.IS_ACTIVE};
+        tokenChecks = new ImmutableList.Builder<TokenVerifier.Predicate<JsonWebToken>>()
+                .add(new TokenVerifier.RealmUrlCheck(issuer), TokenVerifier.SUBJECT_EXISTS_CHECK, TokenVerifier.IS_ACTIVE)
+                .addAll((Iterable<? extends TokenVerifier.Predicate<JsonWebToken>>) additionalTokenChecks)
+                .build()
+                .toArray((TokenVerifier.Predicate<JsonWebToken>[])Array.newInstance(TokenVerifier.Predicate.class,0));
         this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
         this.setAuthenticationTokenClass(TOKEN_CLASS);
     }
@@ -56,10 +61,9 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
     protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         log.trace("Creating token verifier");
         TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class)
-                .withChecks(defaultTokenChecks)
+                .withChecks(tokenChecks)
                 .publicKey(publicKey)
-                .audience(allowedAudiences)
-                .withChecks(additionalTokenChecks);
+                .audience(allowedAudiences);
 
         String subject;
         log.trace("Verifying token");
