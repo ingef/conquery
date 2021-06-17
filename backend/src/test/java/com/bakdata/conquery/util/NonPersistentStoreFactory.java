@@ -44,7 +44,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
     }
 
     @Override
-    public Collection<WorkerStorage> loadWorkerStorages(List<String> pathName) {
+    public Collection<WorkerStorage> loadWorkerStorages() {
 
         return Collections.emptyList();
     }

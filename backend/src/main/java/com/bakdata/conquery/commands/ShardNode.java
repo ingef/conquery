@@ -71,8 +71,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	 * Flags if the instance name should be a prefix for the instances storage.
 	 */
 	@Getter
-	@Setter
-	private boolean useNameForStoragePrefix = false;
+	private final boolean useNameForStoragePrefix = false;
 
 	public ShardNode() {
 		this(DEFAULT_NAME);
@@ -81,8 +80,6 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	public ShardNode(String name) {
 		super(name, "Connects this instance as a ShardNode to a running ManagerNode.");		
 	}
-	
-
 
 
 	@Override
@@ -113,7 +110,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 				config.configureObjectMapper(Jackson.BINARY_MAPPER)
 				, getConfig().getCluster().getEntityBucketSize());
 
-		for(WorkerStorage workerStorage : config.getStorage().loadWorkerStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName())) ) {
+		for(WorkerStorage workerStorage : config.getStorage().loadWorkerStorages() ) {
 			workers.createWorker(workerStorage, config.isFailOnError());
 		}
 

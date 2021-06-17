@@ -145,19 +145,19 @@ public class XodusStoreFactory implements StoreFactory {
     @Override
     @SneakyThrows
     public Collection<NamespaceStorage> loadNamespaceStorages(List<String> pathName) {
-		return loadNamespacedStores("dataset_", pathName, (elements) -> new NamespaceStorage(validator, this, elements));
+		return loadNamespacedStores("dataset_", (elements) -> new NamespaceStorage(validator, this, elements));
     }
 
     @Override
     @SneakyThrows
-    public Collection<WorkerStorage> loadWorkerStorages(List<String> pathName) {
-		return loadNamespacedStores("worker_", pathName, (elements) -> new WorkerStorage(validator, this, elements));
+    public Collection<WorkerStorage> loadWorkerStorages() {
+		return loadNamespacedStores("worker_", (elements) -> new WorkerStorage(validator, this, elements));
     }
 
 
-	private <T extends NamespacedStorage> ConcurrentLinkedQueue<T> loadNamespacedStores(String prefix, List<String> pathName, Function<List<String>, T> creator)
+	private <T extends NamespacedStorage> ConcurrentLinkedQueue<T> loadNamespacedStores(String prefix,  Function<List<String>, T> creator)
 			throws InterruptedException {
-		File baseDir = getStorageDir(pathName);
+		File baseDir = getDirectory().toFile();
 
 		if (baseDir.mkdirs()) {
 			log.warn("Had to create Storage Dir at `{}`", baseDir);

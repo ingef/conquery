@@ -69,7 +69,6 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		}
 
 
-		manager.setUseNameForStoragePrefix(false);
 		conquery.setManager(manager);
 		conquery.run(managerConfig, environment);
 
@@ -92,7 +91,6 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 
 			tasks.add(starterPool.submit(() -> {
 				ShardNode sc = new ShardNode(ShardNode.DEFAULT_NAME + id);
-				sc.setUseNameForStoragePrefix(false);
 
 				shardNodes.add(sc);
 

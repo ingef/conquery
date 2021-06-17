@@ -41,7 +41,7 @@ public interface StoreFactory {
 
 	Collection<NamespaceStorage> loadNamespaceStorages(List<String> pathName);
 
-	Collection<WorkerStorage> loadWorkerStorages(List<String> pathName);
+	Collection<WorkerStorage> loadWorkerStorages();
 
 	// NamespacedStorage (Important for serdes communication between manager and shards)
 	SingletonStore<Dataset> createDatasetStore(List<String> pathName);
