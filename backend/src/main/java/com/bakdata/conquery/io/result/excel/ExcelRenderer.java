@@ -46,11 +46,13 @@ public class ExcelRenderer {
 
     private final SXSSFWorkbook workbook;
     private final ImmutableMap<String, CellStyle> styles;
+    private final int maxColumnWidth;
 
 
     public ExcelRenderer(ExcelConfig config) {
         workbook = new SXSSFWorkbook();
         styles = config.generateStyles(workbook);
+        maxColumnWidth = config.getMaxColumnWidth();
     }
 
     @FunctionalInterface
@@ -68,6 +70,7 @@ public class ExcelRenderer {
 
         // TODO internationalize
         SXSSFSheet sheet = workbook.createSheet("Result");
+        sheet.trackAllColumnsForAutoSizing();
 
 
         // Create a table environment inside the excel sheet
@@ -78,7 +81,6 @@ public class ExcelRenderer {
         int writtenLines = writeBody(sheet, info, cfg, exec.streamResults());
 
         postProcessTable(idHeaders, info, table, writtenLines);
-
 
         workbook.write(outputStream);
         workbook.dispose();
@@ -95,11 +97,10 @@ public class ExcelRenderer {
         // Auto-width fit all columns
         final XSSFSheet sheet = table.getXSSFSheet();
         for (int colIdx = 0; colIdx < table.getColumnCount(); colIdx++) {
-            if (colIdx >= idHeaders.size() && info.get(colIdx - idHeaders.size()).getType().equals(ConqueryConstants.DATES_INFO.getType())) {
-                // Don't auto size dateRange Lists as they tend to be long
-                continue;
-            }
             sheet.autoSizeColumn(colIdx);
+            if(sheet.getColumnWidth(colIdx) > maxColumnWidth) {
+                sheet.setColumnWidth(colIdx, maxColumnWidth);
+            }
         }
 
         // TODO Add auto filters. This won't work with excel yet
