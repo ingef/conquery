@@ -4,6 +4,8 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import javax.ws.rs.WebApplicationException;
+
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -99,8 +101,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			// Delete the import.
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
 			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteDataset(dataset))
-					.isInstanceOf(IllegalArgumentException.class);
-
+					.isInstanceOf(WebApplicationException.class);
 
 			//TODO use api
 			conquery.getNamespace().getStorage().getTables()
