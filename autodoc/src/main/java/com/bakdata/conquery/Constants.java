@@ -78,7 +78,6 @@ import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
-import com.bakdata.conquery.resources.api.StoredQueriesResource;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
