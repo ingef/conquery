@@ -58,7 +58,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### JWT_PKCE_REALM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L22-L24)</sup></sub></sup>
+### JWT_PKCE_REALM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L32-L34)</sup></sub></sup>
 A realm that verifies oauth tokens using PKCE.
 
 <details><summary>Details</summary><p>
