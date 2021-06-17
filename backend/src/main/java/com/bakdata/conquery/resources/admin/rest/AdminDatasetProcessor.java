@@ -87,10 +87,7 @@ public class AdminDatasetProcessor {
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
 
-
-		final List<String> pathName = List.of("dataset_" + name);
-
-		NamespaceStorage datasetStorage = new NamespaceStorage(validator, config.getStorage(), pathName);
+		NamespaceStorage datasetStorage = new NamespaceStorage(validator, config.getStorage(), "dataset_" + name);
 
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);

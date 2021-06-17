@@ -67,12 +67,6 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	private ScheduledExecutorService scheduler;
 	private Environment environment;
 
-	/**
-	 * Flags if the instance name should be a prefix for the instances storage.
-	 */
-	@Getter
-	private final boolean useNameForStoragePrefix = false;
-
 	public ShardNode() {
 		this(DEFAULT_NAME);
 	}
@@ -150,7 +144,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator, useNameForStoragePrefix ? getName() : ".");
+		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator);
 		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode

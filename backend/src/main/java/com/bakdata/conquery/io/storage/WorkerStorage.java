@@ -2,15 +2,9 @@ package com.bakdata.conquery.io.storage;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import javax.validation.Validator;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-
-import javax.validation.Validator;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -35,7 +29,7 @@ public class WorkerStorage extends NamespacedStorage {
     @Getter
     private final boolean registerImports = false;
 
-    public WorkerStorage(Validator validator, StoreFactory storageFactory, List<String> pathName) {
+    public WorkerStorage(Validator validator, StoreFactory storageFactory, String pathName) {
         super(validator, storageFactory, pathName);
 
         worker = storageFactory.createWorkerInformationStore(pathName);

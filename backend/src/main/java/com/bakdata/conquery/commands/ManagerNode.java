@@ -3,7 +3,6 @@ package com.bakdata.conquery.commands;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -180,7 +179,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	private void loadMetaStorage() {
 		log.info("Started meta storage");
-		this.storage = new MetaStorage(validator, config.getStorage(), false ? List.of(getName()) : Collections.emptyList(), datasetRegistry);
+		this.storage = new MetaStorage(validator, config.getStorage(), datasetRegistry);
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 
@@ -191,7 +190,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void loadNamespaces() {
-		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(false ? List.of(getName()) : Collections.emptyList())) {
+		for(NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages()) {
 			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER).writerWithView(InternalOnly.class));
 			datasetRegistry.add(ns);
 		}

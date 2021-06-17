@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.validation.Validator;
 
@@ -48,7 +47,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	@Getter
 	private final Validator validator;
 	@Getter @ToString.Include
-	private final List<String> pathName;
+	private final String pathName;
 
 	protected SingletonStore<Dataset> dataset;
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
@@ -57,7 +56,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorage(Validator validator, StoreFactory storageFactory, List<String> pathName) {
+	public NamespacedStorage(Validator validator, StoreFactory storageFactory, String pathName) {
 		this.validator = validator;
 		this.pathName = pathName;
 

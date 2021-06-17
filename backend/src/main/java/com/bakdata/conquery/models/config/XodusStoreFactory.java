@@ -6,10 +6,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -144,7 +144,7 @@ public class XodusStoreFactory implements StoreFactory {
 
     @Override
     @SneakyThrows
-    public Collection<NamespaceStorage> loadNamespaceStorages(List<String> pathName) {
+    public Collection<NamespaceStorage> loadNamespaceStorages() {
 		return loadNamespacedStores("dataset_", (elements) -> new NamespaceStorage(validator, this, elements));
     }
 
@@ -155,7 +155,7 @@ public class XodusStoreFactory implements StoreFactory {
     }
 
 
-	private <T extends NamespacedStorage> ConcurrentLinkedQueue<T> loadNamespacedStores(String prefix,  Function<List<String>, T> creator)
+	private <T extends NamespacedStorage> Queue<T> loadNamespacedStores(String prefix, Function<String, T> creator)
 			throws InterruptedException {
 		File baseDir = getDirectory().toFile();
 
@@ -167,11 +167,12 @@ public class XodusStoreFactory implements StoreFactory {
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
 
 
-		for (File directory : baseDir.listFiles((file, name) -> name.startsWith(prefix))) {
+		for (File directory : baseDir.listFiles((file, name) -> file.isDirectory()  && name.startsWith(prefix))) {
+
+			final String name = directory.getName();
 
 			loaders.submit(() -> {
 				try {
-					List<String> pathElems = getRelativePathElements(directory.toPath());
 					ConqueryMDC.setLocation(directory.toString());
 
 					if (!environmentHasStores(directory)) {
@@ -179,7 +180,7 @@ public class XodusStoreFactory implements StoreFactory {
 						return;
 					}
 
-					T workerStorage = creator.apply(pathElems);
+					T workerStorage = creator.apply(name);
 					log.debug("BEGIN reading Storage");
 					workerStorage.loadData();
 
@@ -225,22 +226,22 @@ public class XodusStoreFactory implements StoreFactory {
     }
 
     @Override
-    public SingletonStore<Dataset> createDatasetStore(List<String> pathName) {
+    public SingletonStore<Dataset> createDatasetStore(String pathName) {
         return DATASET.singleton(createStore(findEnvironment(pathName), validator, DATASET));
     }
 
     @Override
-    public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, List<String> pathName) {
+    public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName) {
         return SECONDARY_IDS.identifiable(createStore(findEnvironment(pathName), validator, SECONDARY_IDS), centralRegistry);
     }
 
     @Override
-    public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, List<String> pathName) {
+    public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName) {
         return TABLES.identifiable(createStore(findEnvironment(pathName), validator, TABLES), centralRegistry);
     }
 
 	@Override
-	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, List<String> pathName) {
+	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName) {
 		final Environment environment = findEnvironment(pathName);
 
 		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(centralRegistry);
@@ -264,32 +265,32 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
     @Override
-    public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, List<String> pathName) {
+    public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName) {
         return CONCEPTS.identifiable(createStore(findEnvironment(pathName), validator, CONCEPTS), centralRegistry);
     }
 
     @Override
-    public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, List<String> pathName) {
+    public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName) {
         return IMPORTS.identifiable(createStore(findEnvironment(pathName), validator, IMPORTS), centralRegistry);
     }
 
     @Override
-    public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, List<String> pathName) {
+    public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName) {
         return C_BLOCKS.identifiable(createStore(findEnvironment(pathName), validator, C_BLOCKS), centralRegistry);
     }
 
     @Override
-    public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, List<String> pathName) {
+    public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName) {
         return BUCKETS.identifiable(createStore(findEnvironment(pathName), validator, BUCKETS), centralRegistry);
     }
 
     @Override
-    public SingletonStore<WorkerInformation> createWorkerInformationStore(List<String> pathName) {
+    public SingletonStore<WorkerInformation> createWorkerInformationStore(String pathName) {
         return WORKER.singleton(createStore(findEnvironment(pathName), validator, WORKER));
     }
 
 	@Override
-	public SingletonStore<PersistentIdMap> createIdMappingStore(List<String> pathName) {
+	public SingletonStore<PersistentIdMap> createIdMappingStore(String pathName) {
 		final Environment environment = findEnvironment(pathName);
 
 		synchronized (openStoresInEnv) {
@@ -301,46 +302,49 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
     @Override
-    public SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(List<String> pathName) {
+    public SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName) {
         return WORKER_TO_BUCKETS.singleton(createStore(findEnvironment(pathName), validator, WORKER_TO_BUCKETS));
     }
 
     @Override
-    public SingletonStore<StructureNode[]> createStructureStore(List<String> pathName, SingletonNamespaceCollection centralRegistry) {
+    public SingletonStore<StructureNode[]> createStructureStore(String pathName, SingletonNamespaceCollection centralRegistry) {
         return STRUCTURE.singleton(createStore(findEnvironment(pathName), validator, STRUCTURE), centralRegistry);
     }
 
     @Override
-    public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName) {
-        return EXECUTIONS.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "executions")), validator, EXECUTIONS), centralRegistry, datasetRegistry);
+    public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName) {
+        return EXECUTIONS.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "executions")), validator, EXECUTIONS), centralRegistry, datasetRegistry);
     }
 
     @Override
-    public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName) {
-        return FORM_CONFIG.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "formConfigs")), validator, FORM_CONFIG), centralRegistry, datasetRegistry);
+    public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName) {
+        return FORM_CONFIG.identifiable(createStore(findEnvironment(resolveSubDir(pathName,  "formConfigs")), validator, FORM_CONFIG), centralRegistry, datasetRegistry);
     }
 
     @Override
-    public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return AUTH_USER.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "users")), validator, AUTH_USER), centralRegistry);
+    public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName) {
+        return AUTH_USER.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER), centralRegistry);
     }
 
     @Override
-    public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return AUTH_ROLE.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "roles")), validator, AUTH_ROLE), centralRegistry);
+    public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName) {
+        return AUTH_ROLE.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE), centralRegistry);
     }
 
 
     @Override
-    public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return AUTH_GROUP.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "groups")), validator, AUTH_GROUP), centralRegistry);
+    public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName) {
+        return AUTH_GROUP.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP), centralRegistry);
     }
 
-    private List<String> appendToNewPath(List<String> pathName, String... subdirs) {
-        List<String> path = new ArrayList<>();
-        path.addAll(pathName);
-		path.addAll(Arrays.asList(subdirs));
-        return path;
+    private File resolveSubDir(String... subdirs) {
+		Path current = getDirectory();
+
+		for (String dir : subdirs) {
+			current = current.resolve(dir);
+		}
+
+		return current.toFile();
     }
 
     /**
@@ -348,7 +352,7 @@ public class XodusStoreFactory implements StoreFactory {
      */
 	@NonNull
 	@JsonIgnore
-	private File getStorageDir(List<String> pathName) {
+	private File getStorageDir(String pathName) {
 		return getDirectory().resolve(String.join("/", pathName)).toFile();
     }
 
@@ -358,7 +362,7 @@ public class XodusStoreFactory implements StoreFactory {
         }
     }
 
-    private Environment findEnvironment(List<String> pathName) {
+    private Environment findEnvironment(String pathName) {
         synchronized (activeEnvironments) {
             File path = getStorageDir(pathName);
             return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(p, getXodus().createConfig()));

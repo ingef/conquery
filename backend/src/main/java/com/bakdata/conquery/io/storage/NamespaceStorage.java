@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.storage;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 
 import javax.validation.Validator;
@@ -31,7 +30,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	@Getter
 	private final boolean registerImports = true;
 
-	public NamespaceStorage(Validator validator, StoreFactory storageFactory, List<String> pathName) {
+	public NamespaceStorage(Validator validator, StoreFactory storageFactory, String pathName) {
 		super(validator, storageFactory, pathName);
 
 		idMapping = storageFactory.createIdMappingStore(pathName);
