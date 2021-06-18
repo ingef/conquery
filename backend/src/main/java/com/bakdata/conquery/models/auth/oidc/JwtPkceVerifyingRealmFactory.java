@@ -47,7 +47,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
     private String[] allowedAudiences = {};
     @NotEmpty
     private String issuer;
-    @NotEmpty
+    @NotNull
     private List<String> additionalTokenChecks = Collections.emptyList();
 
     /**
