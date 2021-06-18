@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.result.excel;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -18,7 +17,6 @@ import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.jetbrains.annotations.NotNull;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
@@ -70,33 +68,35 @@ public class ExcelRenderer {
 
         // TODO internationalize
         SXSSFSheet sheet = workbook.createSheet("Result");
-        sheet.trackAllColumnsForAutoSizing();
+        try {
+            sheet.trackAllColumnsForAutoSizing();
 
 
-        // Create a table environment inside the excel sheet
-        XSSFTable table = createTableEnvironment(exec, sheet);
+            // Create a table environment inside the excel sheet
+            XSSFTable table = createTableEnvironment(exec, sheet);
 
-        writeHeader(sheet, idHeaders,info,cfg, table);
+            writeHeader(sheet, idHeaders, info, cfg, table);
 
-        int writtenLines = writeBody(sheet, info, cfg, exec.streamResults());
+            int writtenLines = writeBody(sheet, info, cfg, exec.streamResults());
 
-        postProcessTable(idHeaders, info, table, writtenLines);
+            postProcessTable(idHeaders, sheet, table, writtenLines);
 
-        workbook.write(outputStream);
-        workbook.dispose();
+            workbook.write(outputStream);
+        } finally {
+            workbook.dispose();
+        }
 
     }
 
-    private void postProcessTable(List<String> idHeaders, List<ResultInfo> info, XSSFTable table, int writtenLines) {
+    private void postProcessTable(List<String> idHeaders, SXSSFSheet sheet, XSSFTable table, int writtenLines) {
         // Extend the table area to the added data
         CellReference topLeft = new CellReference(0,0);
         CellReference bottomRight = new CellReference(writtenLines + 1, table.getColumnCount() - 1);
         AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         table.setArea(newArea);
 
-        // Auto-width fit all columns
-        final XSSFSheet sheet = table.getXSSFSheet();
-        for (int colIdx = 0; colIdx < table.getColumnCount(); colIdx++) {
+        // Auto-width fit tracked columns
+        for (Integer colIdx : sheet.getTrackedColumnsForAutoSizing()) {
             sheet.autoSizeColumn(colIdx);
             if(sheet.getColumnWidth(colIdx) > maxColumnWidth) {
                 sheet.setColumnWidth(colIdx, maxColumnWidth);
@@ -133,30 +133,55 @@ public class ExcelRenderer {
             PrintSettings cfg,
             XSSFTable table){
 
-        Row header = sheet.createRow(0);
 
         CTTableColumns columns = table.getCTTable().addNewTableColumns();
         columns.setCount(idHeaders.size() + infos.size());
 
-        int currentColumn = 0;
-        for (String idHeader : idHeaders) {
-            CTTableColumn column = columns.addNewTableColumn();
-            // Table column ids MUST be set and MUST start at 1, excel will fail otherwise
-            column.setId(currentColumn+1);
-            column.setName(idHeader);
-            Cell headerCell = header.createCell(currentColumn);
-            headerCell.setCellValue(idHeader);
-            currentColumn++;
-        }
+        // We need to iterate twice over our result info.
+        {
+            // First to create the columns and track them for auto size before the first row is written
+            int currentColumn = 0;
+            for (String idHeader : idHeaders) {
+                CTTableColumn column = columns.addNewTableColumn();
+                // Table column ids MUST be set and MUST start at 1, excel will fail otherwise
+                column.setId(currentColumn+1);
+                column.setName(idHeader);
+                sheet.trackColumnForAutoSizing(currentColumn);
 
-        for (ResultInfo info : infos) {
-            final String columnName = info.getUniqueName(cfg);
-            CTTableColumn column = columns.addNewTableColumn();
-            column.setId(currentColumn+1);
-            column.setName(columnName);
-            Cell headerCell = header.createCell(currentColumn);
-            headerCell.setCellValue(columnName);
-            currentColumn++;
+                currentColumn++;
+            }
+
+            for (ResultInfo info : infos) {
+                final String columnName = info.getUniqueName(cfg);
+                CTTableColumn column = columns.addNewTableColumn();
+                column.setId(currentColumn+1);
+                column.setName(columnName);
+                if (!(info.getType() instanceof ResultType.ListT)){
+                    // Don't auto size Columns of type list.
+                    sheet.trackColumnForAutoSizing(currentColumn);
+                }
+
+                currentColumn++;
+            }
+        }
+        {
+            // Second to create the header row set the header name of each cell.
+            Row header = sheet.createRow(0);
+            int currentColumn = 0;
+            for (String idHeader : idHeaders) {
+                Cell headerCell = header.createCell(currentColumn);
+                headerCell.setCellValue(idHeader);
+
+                currentColumn++;
+            }
+
+            for (ResultInfo info : infos) {
+                final String columnName = info.getUniqueName(cfg);
+                Cell headerCell = header.createCell(currentColumn);
+                headerCell.setCellValue(columnName);
+
+                currentColumn++;
+            }
         }
     }
 
