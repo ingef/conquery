@@ -1,5 +1,34 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -18,27 +47,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
-
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
 
 @Slf4j
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -73,15 +81,23 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("label")
-	public void setlabel(String label) throws IOException, JSONException {
+	public void setLabel(String label) {
 		Dataset ds = namespace.getDataset();
 		ds.setLabel(label);
 		namespace.getStorage().updateDataset(ds);
 	}
 
 	@POST
+	@Path("weight")
+	public void setWeight(@Min(0) int weight) {
+		Dataset ds = namespace.getDataset();
+		ds.setWeight(weight);
+		namespace.getStorage().updateDataset(ds);
+	}
+
+	@POST
 	@Path("tables")
-	public void addTable(Table table) throws IOException, JSONException {
+	public void addTable(Table table) {
 		processor.addTable(table, namespace);
 	}
 
@@ -89,8 +105,8 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
-	public void uploadImport(@NotNull InputStream importStream, @QueryParam("name") Optional<String> importName) throws IOException, JSONException {
-		log.info("Importing from file upload {}", importName.orElse(""));
+	public void uploadImport(@NotNull InputStream importStream) throws IOException, JSONException {
+		log.info("Importing from file upload");
 		processor.addImport(namespace, new GZIPInputStream(importStream));
 	}
 
@@ -147,7 +163,7 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Path("structure")
 	public void setStructure(@NotNull @Valid StructureNode[] structure) throws JSONException {
-		processor.setStructure(namespace.getDataset(), structure);
+		processor.setStructure(namespace, structure);
 	}
 
 
