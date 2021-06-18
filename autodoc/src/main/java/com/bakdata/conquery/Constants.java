@@ -146,7 +146,6 @@ public class Constants {
 				 .resource(FilterResource.class)
 				 .resource(QueryResource.class)
 				 .resource(ResultCsvResource.class)
-				 .resource(StoredQueriesResource.class)
 				 .base(new Base(QueryDescription.class, ""))
 				 .base(new Base(CQElement.class, ""))
 				 .base(new Base(FilterValue.class, ""))
