@@ -4,6 +4,8 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.google.common.collect.ImmutableList;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -15,6 +17,7 @@ import org.keycloak.common.VerificationException;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.JsonWebToken;
 
+import java.lang.reflect.Array;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +32,16 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
     private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 
     private final PublicKey publicKey;
+    private final String[] allowedAudiences;
+    private final TokenVerifier.Predicate<JsonWebToken>[] tokenChecks;
     private final List<String> alternativeIdClaims;
+    private final String issuer;
 
-    public JwtPkceVerifyingRealm(PublicKey publicKey, List<String> alternativeIdClaims) {
-
+    public JwtPkceVerifyingRealm(@NonNull PublicKey publicKey, @NonNull String[] allowedAudiences, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, @NonNull String issuer, List<String> alternativeIdClaims) {
         this.publicKey = publicKey;
+        this.allowedAudiences = allowedAudiences;
+        this.issuer = issuer;
+        this.tokenChecks = additionalTokenChecks.toArray((TokenVerifier.Predicate<JsonWebToken>[])Array.newInstance(TokenVerifier.Predicate.class,0));
         this.alternativeIdClaims = alternativeIdClaims;
         this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
         this.setAuthenticationTokenClass(TOKEN_CLASS);
@@ -43,10 +51,11 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
     @Override
     protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         log.trace("Creating token verifier");
-        TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class);
-
-        verifier = verifier.publicKey(publicKey)
-                .withChecks(JsonWebToken::isActive);
+        TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class)
+                .withChecks(new TokenVerifier.RealmUrlCheck(issuer), TokenVerifier.SUBJECT_EXISTS_CHECK, TokenVerifier.IS_ACTIVE)
+                .withChecks(tokenChecks)
+                .publicKey(publicKey)
+                .audience(allowedAudiences);
 
         String subject;
         log.trace("Verifying token");
@@ -61,7 +70,7 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
         subject = accessToken.getSubject();
 
         if (subject == null) {
-            // Should not happen, as sub is mandatory in a access_token
+            // Should not happen, as sub is mandatory in an access_token
             throw new UnsupportedTokenException("Unable to extract a subject from the provided token.");
         }
 
@@ -78,7 +87,7 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
             alternativeIds.add(new UserId((String) altId));
         }
 
-        return new ConqueryAuthenticationInfo(new UserId(subject), token, this, true,alternativeIds);
+        return new ConqueryAuthenticationInfo(new UserId(subject), token, this, true, alternativeIds);
     }
 
 }
