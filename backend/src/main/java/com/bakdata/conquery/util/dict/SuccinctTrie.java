@@ -14,8 +14,7 @@ import com.bakdata.conquery.util.BufferUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.AbstractIterator;
-import it.unimi.dsi.fastutil.bytes.Byte2ObjectArrayMap;
-import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
+import it.unimi.dsi.fastutil.bytes.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +26,8 @@ public class SuccinctTrie extends Dictionary {
 
 	@Getter
 	private int nodeCount;
+	@Getter
+	private int depth = 0;
 	@Getter
 	private int entryCount;
 	@Getter
@@ -122,6 +123,10 @@ public class SuccinctTrie extends Dictionary {
 				next.setParent(current);
 				current.addChild(next);
 				nodeCount++;
+
+				if(next.depth > depth) {
+					depth = next.depth;
+				}
 
 				if (nodeCount > Integer.MAX_VALUE - 10) {
 					throw new IllegalStateException("This dictionary is too large " + nodeCount);
@@ -260,27 +265,22 @@ public class SuccinctTrie extends Dictionary {
 	}
 
 
-	public void getReverse(int intValue, IoBuffer buffer) {
+	public void getReverse(int intValue, ByteArrayList buf) {
 		checkCompressed("use compress before performing getReverse on the trie");
 
 		if (intValue >= reverseLookup.length) {
 			throw new IllegalArgumentException(String.format("intValue %d too high, no such key in the trie (Have only %d values)", intValue, reverseLookup.length));
 		}
-		int nodeIndex = reverseLookup[intValue];
-		while (parentIndex[nodeIndex] != -1) {
-			// resolve nodeIndex and append byteValue
-			buffer.put(keyPartArray[nodeIndex]);
-			nodeIndex = parentIndex[nodeIndex];
-		}
-		buffer.flip();
 
-		//reverse bytes
-		byte tmp;
-		int length = buffer.limit();
-		for (int i = 0; i < length / 2; i++) {
-			tmp = buffer.get(i);
-			buffer.put(i, buffer.get(length - i - 1));
-			buffer.put(length - i - 1, tmp);
+		int nodeIndex = reverseLookup[intValue];
+		getReverseInternal(buf, nodeIndex);
+	}
+
+	private void getReverseInternal(ByteArrayList buf, int nodeIndex) {
+		final int parentIndex = this.parentIndex[nodeIndex];
+		if (parentIndex != -1) {
+			getReverseInternal(buf, parentIndex);
+			buf.add(keyPartArray[nodeIndex]);
 		}
 	}
 
@@ -302,22 +302,20 @@ public class SuccinctTrie extends Dictionary {
 
 	@Override
 	public Iterator<DictionaryEntry> iterator() {
-		IoBuffer buffer = IoBuffer.allocate(512);
-		buffer.setAutoExpand(true);
+
 		return new AbstractIterator<DictionaryEntry>() {
 
+			private ByteArrayList buf = new ByteArrayList(depth);
 			private int index = 0;
 
 			@Override
 			protected DictionaryEntry computeNext() {
 				if (index == entryCount) {
-					buffer.free();
 					return endOfData();
 				}
-				getReverse(index++, buffer);
-				byte[] result = BufferUtil.toBytes(buffer);
-				buffer.clear();
-				return new DictionaryEntry(index, result);
+				buf.clear();
+				getReverse(index++, buf);
+				return new DictionaryEntry(index, buf.toByteArray());
 			}
 		};
 	}
@@ -330,6 +328,7 @@ public class SuccinctTrie extends Dictionary {
 		private HelpNode parent;
 		private int value = -1;
 		private int positionInArray = -1;
+		private int depth = 0;
 
 		public HelpNode(HelpNode parent, byte key) {
 			this.parent = parent;
@@ -337,6 +336,7 @@ public class SuccinctTrie extends Dictionary {
 		}
 
 		public void addChild(HelpNode child) {
+			child.setDepth(this.depth+1);
 			this.children.put(child.partialKey, child);
 		}
 
@@ -344,13 +344,9 @@ public class SuccinctTrie extends Dictionary {
 
 	@Override
 	public byte[] getElement(int id) {
-		IoBuffer buffer = IoBuffer.allocate(512);
-		buffer.setAutoExpand(true);
-		getReverse(id, buffer);
-		byte[] out = new byte[buffer.limit()-buffer.position()];
-		buffer.get(out);
-		buffer.free();
-		return out;
+		ByteArrayList buf = new ByteArrayList(depth);
+		getReverse(id, buf);
+		return buf.toByteArray();
 	}
 
 	@Override
