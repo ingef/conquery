@@ -10,6 +10,7 @@ import {
   getDateStringFromShortcut,
   DateStringMinMax,
 } from "../common/helpers/dateHelper";
+import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 import BaseInput from "./BaseInput";
@@ -48,6 +49,7 @@ interface PropsT {
   inline?: boolean;
   large?: boolean;
   center?: boolean;
+  autoFocus?: boolean;
   input: {
     value: DateStringMinMax;
     onChange: (value: DateStringMinMax) => void;
@@ -66,17 +68,25 @@ function getDisplayDate(
   return formatDateFromState(dateString, dateFormat);
 }
 
-const InputDateRange: FC<PropsT> = (props) => {
+const InputDateRange: FC<PropsT> = ({
+  large,
+  inline,
+  center,
+  label,
+  autoFocus,
+  labelSuffix,
+  input: { value, onChange },
+}) => {
   const { t } = useTranslation();
 
   const onSetDate = (date: DateStringMinMax) => {
-    props.input.onChange(date);
+    onChange(date);
   };
 
-  const onSetWhatDate = (what: "min" | "max", value: string) => {
-    props.input.onChange({
-      ...props.input.value,
-      [what]: value,
+  const onSetWhatDate = (what: "min" | "max", val: string) => {
+    onChange({
+      ...value,
+      [what]: val,
     });
   };
 
@@ -110,20 +120,14 @@ const InputDateRange: FC<PropsT> = (props) => {
     }
   };
 
-  const {
-    large,
-    inline,
-    center,
-    label,
-    labelSuffix,
-    input: { value },
-  } = props;
-
   // To display the date depending on the locale
   const displayDateFormat = t("inputDateRange.dateFormat");
 
   const min = getDisplayDate("min", value, displayDateFormat);
   const max = getDisplayDate("max", value, displayDateFormat);
+
+  const isMinValid = exists(value.min && parseDate(min, displayDateFormat));
+  const isMaxValid = exists(value.max && parseDate(max, displayDateFormat));
 
   return (
     <Root center={center}>
@@ -139,13 +143,15 @@ const InputDateRange: FC<PropsT> = (props) => {
           <BaseInput
             inputType="text"
             value={min}
+            valid={isMinValid}
+            invalid={min.length !== 0 && !isMinValid}
             placeholder={displayDateFormat.toUpperCase()}
             onChange={(val) =>
               onChangeRaw("min", val as string, displayDateFormat)
             }
             onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
             inputProps={{
-              autoFocus: true,
+              autoFocus,
             }}
           />
         </StyledLabeled>
@@ -153,6 +159,8 @@ const InputDateRange: FC<PropsT> = (props) => {
           <BaseInput
             inputType="text"
             value={max}
+            valid={isMaxValid}
+            invalid={max.length !== 0 && !isMaxValid}
             placeholder={displayDateFormat.toUpperCase()}
             onChange={(val) =>
               onChangeRaw("max", val as string, displayDateFormat)

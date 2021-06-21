@@ -100,6 +100,7 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
       <InputDateRange
         large
         inline
+        autoFocus
         label={t("queryGroupModal.dateRange")}
         labelSuffix={
           <>

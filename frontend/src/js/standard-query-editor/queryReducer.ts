@@ -1,7 +1,3 @@
-import {
-  queryGroupModalResetAllDates,
-  queryGroupModalSetDate,
-} from "js/query-group-modal/actions";
 import { ActionType, getType } from "typesafe-actions";
 
 import type {
@@ -33,6 +29,10 @@ import {
   LOAD_PREVIOUS_QUERY_ERROR,
   RENAME_PREVIOUS_QUERY_SUCCESS,
 } from "../previous-queries/list/actionTypes";
+import {
+  queryGroupModalResetAllDates,
+  queryGroupModalSetDate,
+} from "../query-group-modal/actions";
 import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
 
 import {
