@@ -231,9 +231,9 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
                 compact={isCompact}
               />
             )}
-            <WithTooltip text={t("common.closeEsc")}>
+            <WithTooltip text={t("common.saveAndCloseEsc")}>
               <CloseButton small onClick={close}>
-                {t("common.close")}
+                {t("common.save")}
               </CloseButton>
             </WithTooltip>
           </Row>
