@@ -43,7 +43,9 @@ const SecondaryIdSelector: FC = () => {
 
   const dispatch = useDispatch();
   const onSetSelectedSecondaryId = (id: string | null) => {
-    dispatch(setSelectedSecondaryId(id === "standard" ? null : id));
+    dispatch(
+      setSelectedSecondaryId({ secondaryId: id === "standard" ? null : id }),
+    );
   };
 
   const availableSecondaryIds = Array.from(

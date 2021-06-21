@@ -1,7 +1,10 @@
+import {
+  queryGroupModalResetAllDates,
+  queryGroupModalSetDate,
+} from "js/query-group-modal/actions";
 import { ActionType, getType } from "typesafe-actions";
 
 import type {
-  AndQueryT,
   TableT,
   OrNodeT,
   DateRestrictionNodeT,
@@ -30,32 +33,8 @@ import {
   LOAD_PREVIOUS_QUERY_ERROR,
   RENAME_PREVIOUS_QUERY_SUCCESS,
 } from "../previous-queries/list/actionTypes";
-import {
-  QUERY_GROUP_MODAL_SET_DATE,
-  QUERY_GROUP_MODAL_RESET_ALL_DATES,
-} from "../query-group-modal/actionTypes";
 import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
 
-import {
-  TOGGLE_EXCLUDE_GROUP,
-  LOAD_QUERY,
-  EXPAND_PREVIOUS_QUERY,
-  SELECT_NODE_FOR_EDITING,
-  DESELECT_NODE,
-  ADD_CONCEPT_TO_NODE,
-  REMOVE_CONCEPT_FROM_NODE,
-  SET_FILTER_VALUE,
-  SET_TABLE_SELECTS,
-  SET_SELECTS,
-  RESET_ALL_FILTERS,
-  SWITCH_FILTER_MODE,
-  TOGGLE_TIMESTAMPS,
-  TOGGLE_SECONDARY_ID_EXCLUDE,
-  LOAD_FILTER_SUGGESTIONS_START,
-  LOAD_FILTER_SUGGESTIONS_SUCCESS,
-  LOAD_FILTER_SUGGESTIONS_ERROR,
-  SET_DATE_COLUMN,
-} from "./actionTypes";
 import {
   dropAndNode,
   dropOrNode,
@@ -66,6 +45,19 @@ import {
   toggleTable,
   updateNodeLabel,
   setFilterValue,
+  toggleExcludeGroup,
+  loadQuery,
+  toggleTimestamps,
+  toggleSecondaryIdExclude,
+  resetAllFilters,
+  addConceptToNode,
+  removeConceptFromNode,
+  switchFilterMode,
+  setDateColumn,
+  setSelects,
+  setTableSelects,
+  expandPreviousQuery,
+  loadFilterSuggestions,
 } from "./actions";
 import type {
   StandardQueryNodeT,
@@ -155,16 +147,6 @@ const setElementProperties = (
   return setGroupProperties(node, andIdx, groupProperties);
 };
 
-const setAllElementsProperties = (node, properties) => {
-  return node.map((group) => ({
-    ...group,
-    elements: group.elements.map((element) => ({
-      ...element,
-      ...properties,
-    })),
-  }));
-};
-
 const onDropAndNode = (
   state: StandardQueryStateT,
   { item }: ActionType<typeof dropAndNode>["payload"],
@@ -239,9 +221,10 @@ const onDeleteGroup = (
   return [...state.slice(0, andIdx), ...state.slice(andIdx + 1)];
 };
 
-const toggleExcludeGroup = (state: StandardQueryStateT, action: any) => {
-  const { andIdx } = action.payload;
-
+const onToggleExcludeGroup = (
+  state: StandardQueryStateT,
+  { andIdx }: ActionType<typeof toggleExcludeGroup>["payload"],
+) => {
   return [
     ...state.slice(0, andIdx),
     {
@@ -250,13 +233,6 @@ const toggleExcludeGroup = (state: StandardQueryStateT, action: any) => {
     },
     ...state.slice(andIdx + 1),
   ];
-};
-
-const loadQuery = (state: StandardQueryStateT, action: any) => {
-  // In case there is no query, keep state the same
-  if (!action.payload.query) return state;
-
-  return action.payload.query;
 };
 
 const updateNodeTable = (
@@ -287,12 +263,13 @@ const updateNodeTables = (
 
 const onToggleNodeTable = (
   state: StandardQueryStateT,
-  { tableIdx, isExcluded }: ActionType<typeof toggleTable>["payload"],
+  {
+    andIdx,
+    orIdx,
+    tableIdx,
+    isExcluded,
+  }: ActionType<typeof toggleTable>["payload"],
 ) => {
-  const nodePosition = selectEditedNodePosition(state);
-  if (!nodePosition) return state;
-
-  const { andIdx, orIdx } = nodePosition;
   const node = state[andIdx].elements[orIdx];
   const table = {
     ...node.tables[tableIdx],
@@ -302,31 +279,16 @@ const onToggleNodeTable = (
   return updateNodeTable(state, andIdx, orIdx, tableIdx, table);
 };
 
-const selectEditedNodePosition = (state: StandardQueryStateT) => {
-  for (let andIdx = 0; andIdx < state.length; andIdx++) {
-    for (let orIdx = 0; orIdx < state[andIdx].elements.length; orIdx++) {
-      const node = state[andIdx].elements[orIdx];
-
-      if (node.isEditing) {
-        return { andIdx, orIdx };
-      }
-    }
-  }
-
-  return null;
-};
-
 const setNodeFilterProperties = (
   state: StandardQueryStateT,
-  { tableIdx, filterIdx }: { tableIdx: number; filterIdx: number },
+  {
+    andIdx,
+    orIdx,
+    tableIdx,
+    filterIdx,
+  }: { andIdx: number; orIdx: number; tableIdx: number; filterIdx: number },
   properties: Partial<FilterWithValueType>,
 ) => {
-  const node = selectEditedNodePosition(state);
-
-  if (!node) return state;
-
-  const { andIdx, orIdx } = node;
-
   const nodeFromState = state[andIdx].elements[orIdx];
 
   if (!nodeIsConceptQueryNode(nodeFromState)) return state;
@@ -360,9 +322,15 @@ const setNodeFilterValue = (
   return setNodeFilterProperties(state, payload, { value: payload.value });
 };
 
-const setNodeTableSelects = (state: StandardQueryStateT, action: any) => {
-  const { tableIdx, value } = action.payload;
-  const { andIdx, orIdx } = selectEditedNodePosition(state);
+const setNodeTableSelects = (
+  state: StandardQueryStateT,
+  {
+    andIdx,
+    orIdx,
+    tableIdx,
+    value,
+  }: ActionType<typeof setTableSelects>["payload"],
+) => {
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { selects } = table;
 
@@ -380,12 +348,15 @@ const setNodeTableSelects = (state: StandardQueryStateT, action: any) => {
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
-const setNodeTableDateColumn = (state: StandardQueryStateT, action: any) => {
-  const nodeIdx = selectEditedNodePosition(state);
-  if (!nodeIdx) return state;
-  const { andIdx, orIdx } = nodeIdx;
-
-  const { tableIdx, value } = action.payload;
+const setNodeTableDateColumn = (
+  state: StandardQueryStateT,
+  {
+    andIdx,
+    orIdx,
+    tableIdx,
+    value,
+  }: ActionType<typeof setDateColumn>["payload"],
+) => {
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { dateColumn } = table;
 
@@ -401,13 +372,10 @@ const setNodeTableDateColumn = (state: StandardQueryStateT, action: any) => {
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
-const setNodeSelects = (state: StandardQueryStateT, action: any) => {
-  const nodeIdx = selectEditedNodePosition(state);
-  if (!nodeIdx) return state;
-  const { andIdx, orIdx } = nodeIdx;
-
-  const { value } = action.payload;
-
+const setNodeSelects = (
+  state: StandardQueryStateT,
+  { andIdx, orIdx, value }: ActionType<typeof setSelects>["payload"],
+) => {
   const { selects } = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
@@ -420,20 +388,30 @@ const setNodeSelects = (state: StandardQueryStateT, action: any) => {
   });
 };
 
-const switchNodeFilterMode = (state: StandardQueryStateT, action: any) => {
-  const { mode } = action.payload;
-
-  return setNodeFilterProperties(state, action, {
+const switchNodeFilterMode = (
+  state: StandardQueryStateT,
+  {
+    andIdx,
+    orIdx,
+    tableIdx,
+    filterIdx,
     mode,
-    value: null,
-  });
+  }: ActionType<typeof switchFilterMode>["payload"],
+) => {
+  return setNodeFilterProperties(
+    state,
+    { andIdx, orIdx, tableIdx, filterIdx },
+    {
+      mode,
+      value: null,
+    },
+  );
 };
 
-const resetNodeAllFilters = (state: StandardQueryStateT) => {
-  const nodeIdx = selectEditedNodePosition(state);
-  if (!nodeIdx) return state;
-  const { andIdx, orIdx } = nodeIdx;
-
+const resetNodeAllFilters = (
+  state: StandardQueryStateT,
+  { andIdx, orIdx }: ActionType<typeof resetAllFilters>["payload"],
+) => {
   const node = state[andIdx].elements[orIdx];
 
   const newState = setElementProperties(state, andIdx, orIdx, {
@@ -451,17 +429,11 @@ const resetNodeAllFilters = (state: StandardQueryStateT) => {
 
 const resetNodeTable = (
   state: StandardQueryStateT,
-  action: { payload: { tableIdx: number } },
+  { andIdx, orIdx, tableIdx }: ActionType<typeof resetTable>["payload"],
 ) => {
-  const nodeIdx = selectEditedNodePosition(state);
-  if (!nodeIdx) return state;
-  const { andIdx, orIdx } = nodeIdx;
-
   const node = state[andIdx].elements[orIdx];
 
   if (!node.tables) return state;
-
-  const { tableIdx } = action.payload;
 
   const table = node.tables[tableIdx];
 
@@ -476,15 +448,17 @@ const resetNodeTable = (
   );
 };
 
-const setGroupDate = (state: StandardQueryStateT, action: any) => {
-  const { andIdx, date } = action.payload;
-
+const setGroupDate = (
+  state: StandardQueryStateT,
+  { andIdx, date }: ActionType<typeof queryGroupModalSetDate>["payload"],
+) => {
   return setGroupProperties(state, andIdx, { dateRange: date });
 };
 
-const resetGroupDates = (state: StandardQueryStateT, action: any) => {
-  const { andIdx } = action.payload;
-
+const resetGroupDates = (
+  state: StandardQueryStateT,
+  { andIdx }: ActionType<typeof queryGroupModalResetAllDates>["payload"],
+) => {
   return setGroupProperties(state, andIdx, { dateRange: null });
 };
 
@@ -719,15 +693,11 @@ const expandNode = (
 // a) merge elements with concept data from concept trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (action: {
-  payload: {
-    rootConcepts: TreesT;
-    query: AndQueryT;
-    expandErrorMessage: string;
-  };
-}) => {
-  const { rootConcepts, query, expandErrorMessage } = action.payload;
-
+const onExpandPreviousQuery = ({
+  rootConcepts,
+  query,
+  expandErrorMessage,
+}: ActionType<typeof expandPreviousQuery>["payload"]) => {
   return query.root.children.map((child) =>
     expandNode(rootConcepts, child, expandErrorMessage),
   );
@@ -812,59 +782,52 @@ const renamePreviousQuery = (state: StandardQueryStateT, action: any) => {
   });
 };
 
-function getPositionFromActionOrEditedNode(
+const onToggleTimestamps = (
   state: StandardQueryStateT,
-  action: any,
-) {
-  const { andIdx, orIdx } = action.payload;
-
-  if (exists(andIdx) && exists(orIdx)) {
-    return { andIdx, orIdx };
-  }
-
-  return selectEditedNodePosition(state);
-}
-
-const toggleTimestamps = (state: StandardQueryStateT, action: any) => {
-  const nodeIdx = getPositionFromActionOrEditedNode(state, action);
-  if (!nodeIdx) return state;
-  const { andIdx, orIdx } = nodeIdx;
-
+  { andIdx, orIdx }: ActionType<typeof toggleTimestamps>["payload"],
+) => {
   return setElementProperties(state, andIdx, orIdx, {
     excludeTimestamps: !state[andIdx].elements[orIdx].excludeTimestamps,
   });
 };
 
-const toggleSecondaryIdExclude = (state: StandardQueryStateT, action: any) => {
-  const nodeIdx = getPositionFromActionOrEditedNode(state, action);
-  if (!nodeIdx) return state;
-  const { andIdx, orIdx } = nodeIdx;
-
+const onToggleSecondaryIdExclude = (
+  state: StandardQueryStateT,
+  { andIdx, orIdx }: ActionType<typeof toggleSecondaryIdExclude>["payload"],
+) => {
   return setElementProperties(state, andIdx, orIdx, {
     excludeFromSecondaryIdQuery: !state[andIdx].elements[orIdx]
       .excludeFromSecondaryIdQuery,
   });
 };
 
-const loadFilterSuggestionsStart = (state: StandardQueryStateT, action: any) =>
-  setNodeFilterProperties(state, action, { isLoading: true });
+const loadFilterSuggestionsStart = (
+  state: StandardQueryStateT,
+  payload: ActionType<typeof loadFilterSuggestions.request>["payload"],
+) => setNodeFilterProperties(state, payload, { isLoading: true });
 
 const loadFilterSuggestionsSuccess = (
   state: StandardQueryStateT,
-  action: any,
+  {
+    data,
+    ...rest
+  }: ActionType<typeof loadFilterSuggestions.success>["payload"],
 ) => {
   // When [] comes back from the API, don't touch the current options
-  if (!action.payload.data || action.payload.data.length === 0)
-    return setNodeFilterProperties(state, action, { isLoading: false });
+  if (!data || data.length === 0) {
+    return setNodeFilterProperties(state, rest, { isLoading: false });
+  }
 
-  return setNodeFilterProperties(state, action, {
+  return setNodeFilterProperties(state, rest, {
     isLoading: false,
-    options: action.payload.data,
+    options: data,
   });
 };
 
-const loadFilterSuggestionsError = (state: StandardQueryStateT, action: any) =>
-  setNodeFilterProperties(state, action, { isLoading: false });
+const loadFilterSuggestionsError = (
+  state: StandardQueryStateT,
+  payload: ActionType<typeof loadFilterSuggestions.failure>["payload"],
+) => setNodeFilterProperties(state, payload, { isLoading: false });
 
 const createQueryNodeFromConceptListUploadResult = (
   label: string,
@@ -911,54 +874,38 @@ const insertUploadedConceptList = (state: StandardQueryStateT, action: any) => {
       });
 };
 
-const selectNodeForEditing = (
-  state: StandardQueryStateT,
-  { payload: { andIdx, orIdx } }: any,
-) => {
-  return setElementProperties(state, andIdx, orIdx, { isEditing: true });
-};
-
 const onUpdateNodeLabel = (
   state: StandardQueryStateT,
-  { label }: ActionType<typeof updateNodeLabel>["payload"],
+  { andIdx, orIdx, label }: ActionType<typeof updateNodeLabel>["payload"],
 ) => {
-  const node = selectEditedNodePosition(state);
-
-  if (!node) return state;
-
-  const { andIdx, orIdx } = node;
-
   return setElementProperties(state, andIdx, orIdx, {
     label,
   });
 };
 
-const addConceptToNode = (
+const onAddConceptToNode = (
   state: StandardQueryStateT,
-  action: { payload: { concept: DragItemConceptTreeNode } },
+  { andIdx, orIdx, concept }: ActionType<typeof addConceptToNode>["payload"],
 ) => {
-  const nodePosition = selectEditedNodePosition(state);
-
-  if (!nodePosition) return state;
-
-  const { andIdx, orIdx } = nodePosition;
   const node = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
-    ids: [...action.payload.concept.ids, ...node.ids],
+    ids: [...concept.ids, ...node.ids],
   });
 };
 
-const removeConceptFromNode = (state: StandardQueryStateT, action: any) => {
-  const nodePosition = selectEditedNodePosition(state);
-
-  if (!nodePosition) return state;
-
-  const { andIdx, orIdx } = nodePosition;
+const onRemoveConceptFromNode = (
+  state: StandardQueryStateT,
+  {
+    andIdx,
+    orIdx,
+    conceptId,
+  }: ActionType<typeof removeConceptFromNode>["payload"],
+) => {
   const node = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
-    ids: node.ids.filter((id) => id !== action.payload.conceptId),
+    ids: node.ids.filter((id) => id !== conceptId),
   });
 };
 
@@ -968,14 +915,9 @@ const removeConceptFromNode = (state: StandardQueryStateT, action: any) => {
 //       => If we do, use this method, if we don't remove it
 // -----------------------------
 //
-// const toggleIncludeSubnodes = (state: StateType, action: Object) => {
+// const toggleIncludeSubnodes = (state: StateType, { andIdx, orIdx }: Object) => {
 //   const { includeSubnodes } = action.payload;
 
-//   const nodePosition = selectEditedNodePosition(state);
-
-//   if (!nodePosition) return state;
-
-//   const { andIdx, orIdx } = nodePosition;
 //   const node = state[andIdx].elements[orIdx];
 //   const concept = getConceptById(node.ids);
 
@@ -1067,44 +1009,40 @@ const query = (
       return onDeleteNode(state, action.payload);
     case getType(deleteGroup):
       return onDeleteGroup(state, action.payload);
-    case TOGGLE_EXCLUDE_GROUP:
-      return toggleExcludeGroup(state, action);
-    case LOAD_QUERY:
-      return loadQuery(state, action);
-    case SELECT_NODE_FOR_EDITING:
-      return selectNodeForEditing(state, action);
-    case DESELECT_NODE:
-      return setAllElementsProperties(state, { isEditing: false });
+    case getType(toggleExcludeGroup):
+      return onToggleExcludeGroup(state, action.payload);
+    case getType(loadQuery):
+      return action.payload.query;
     case getType(updateNodeLabel):
-      return onUpdateNodeLabel(state, action);
-    case ADD_CONCEPT_TO_NODE:
-      return addConceptToNode(state, action);
-    case REMOVE_CONCEPT_FROM_NODE:
-      return removeConceptFromNode(state, action);
+      return onUpdateNodeLabel(state, action.payload);
+    case getType(addConceptToNode):
+      return onAddConceptToNode(state, action.payload);
+    case getType(removeConceptFromNode):
+      return onRemoveConceptFromNode(state, action.payload);
     case getType(toggleTable):
       return onToggleNodeTable(state, action.payload);
     case getType(setFilterValue):
       return setNodeFilterValue(state, action.payload);
-    case SET_TABLE_SELECTS:
-      return setNodeTableSelects(state, action);
-    case SET_SELECTS:
-      return setNodeSelects(state, action);
-    case RESET_ALL_FILTERS:
-      return resetNodeAllFilters(state);
+    case getType(setTableSelects):
+      return setNodeTableSelects(state, action.payload);
+    case getType(setSelects):
+      return setNodeSelects(state, action.payload);
+    case getType(resetAllFilters):
+      return resetNodeAllFilters(state, action.payload);
     case getType(resetTable):
-      return resetNodeTable(state, action);
-    case SWITCH_FILTER_MODE:
-      return switchNodeFilterMode(state, action);
-    case TOGGLE_TIMESTAMPS:
-      return toggleTimestamps(state, action);
-    case TOGGLE_SECONDARY_ID_EXCLUDE:
-      return toggleSecondaryIdExclude(state, action);
-    case QUERY_GROUP_MODAL_SET_DATE:
-      return setGroupDate(state, action);
-    case QUERY_GROUP_MODAL_RESET_ALL_DATES:
-      return resetGroupDates(state, action);
-    case EXPAND_PREVIOUS_QUERY:
-      return expandPreviousQuery(action);
+      return resetNodeTable(state, action.payload);
+    case getType(switchFilterMode):
+      return switchNodeFilterMode(state, action.payload);
+    case getType(toggleTimestamps):
+      return onToggleTimestamps(state, action.payload);
+    case getType(toggleSecondaryIdExclude):
+      return onToggleSecondaryIdExclude(state, action.payload);
+    case getType(queryGroupModalSetDate):
+      return setGroupDate(state, action.payload);
+    case getType(queryGroupModalResetAllDates):
+      return resetGroupDates(state, action.payload);
+    case getType(expandPreviousQuery):
+      return onExpandPreviousQuery(action.payload);
     case LOAD_PREVIOUS_QUERY_START:
       return loadPreviousQueryStart(state, action);
     case LOAD_PREVIOUS_QUERY_SUCCESS:
@@ -1113,16 +1051,16 @@ const query = (
       return loadPreviousQueryError(state, action);
     case RENAME_PREVIOUS_QUERY_SUCCESS:
       return renamePreviousQuery(state, action);
-    case LOAD_FILTER_SUGGESTIONS_START:
-      return loadFilterSuggestionsStart(state, action);
-    case LOAD_FILTER_SUGGESTIONS_SUCCESS:
-      return loadFilterSuggestionsSuccess(state, action);
-    case LOAD_FILTER_SUGGESTIONS_ERROR:
-      return loadFilterSuggestionsError(state, action);
+    case getType(loadFilterSuggestions.request):
+      return loadFilterSuggestionsStart(state, action.payload);
+    case getType(loadFilterSuggestions.success):
+      return loadFilterSuggestionsSuccess(state, action.payload);
+    case getType(loadFilterSuggestions.failure):
+      return loadFilterSuggestionsError(state, action.payload);
     case QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
       return insertUploadedConceptList(state, action);
-    case SET_DATE_COLUMN:
-      return setNodeTableDateColumn(state, action);
+    case getType(setDateColumn):
+      return setNodeTableDateColumn(state, action.payload);
     default:
       return state;
   }

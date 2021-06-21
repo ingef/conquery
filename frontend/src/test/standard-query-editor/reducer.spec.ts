@@ -38,7 +38,13 @@ describe("standard query editor", () => {
       ];
       state[0].elements[0].tables[0].filters[0].value = [1];
 
-      const action = setFilterValue({ tableIdx: 0, filterIdx: 0, value: [] });
+      const action = setFilterValue({
+        andIdx: 0,
+        orIdx: 0,
+        tableIdx: 0,
+        filterIdx: 0,
+        value: [],
+      });
       const updatedState = reducer(state, action);
 
       expect(updatedState[0].elements[0].tables[0].filters[0].value).toEqual(
