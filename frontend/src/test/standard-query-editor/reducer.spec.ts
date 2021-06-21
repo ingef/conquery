@@ -1,6 +1,6 @@
 import {
   setFilterValue,
-  loadFilterSuggestionsSuccess,
+  loadFilterSuggestions,
 } from "../../js/standard-query-editor/actions";
 import reducer from "../../js/standard-query-editor/queryReducer";
 
@@ -62,7 +62,13 @@ describe("standard query editor", () => {
         { value: "1", label: "1" },
         { value: "2", label: "2" },
       ];
-      const action = loadFilterSuggestionsSuccess(options, 0, 0);
+      const action = loadFilterSuggestions.success({
+        data: options,
+        andIdx: 0,
+        orIdx: 0,
+        tableIdx: 0,
+        filterIdx: 0,
+      });
       const updatedState = reducer(state, action);
 
       expect(updatedState[0].elements[0].tables[0].filters[0].options).toEqual(
@@ -80,7 +86,13 @@ describe("standard query editor", () => {
       state[0].elements[0].tables[0].filters[0].options = options;
 
       const newOptions = [];
-      const action = loadFilterSuggestionsSuccess(newOptions, 0, 0);
+      const action = loadFilterSuggestions.success({
+        data: newOptions,
+        andIdx: 0,
+        orIdx: 0,
+        tableIdx: 0,
+        filterIdx: 0,
+      });
       const updatedState = reducer(state, action);
 
       expect(updatedState[0].elements[0].tables[0].filters[0].options).toEqual(
