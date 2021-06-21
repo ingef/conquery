@@ -152,6 +152,13 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const onShowDescription = (filterIdx: number) =>
     dispatch(setFocusedInput(filterIdx));
 
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const onCommonSettingsClick = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   function close() {
     if (!node) return;
 
@@ -232,13 +239,14 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
           </Row>
         </Header>
         <Wrapper>
-          <ScrollContainer>
+          <ScrollContainer ref={scrollContainerRef}>
             <SxMenuColumn
               node={node}
               editorState={props.editorState}
               showTables={props.showTables}
               blocklistedTables={props.blocklistedTables}
               allowlistedTables={props.allowlistedTables}
+              onCommonSettingsClick={onCommonSettingsClick}
               onDropConcept={props.onDropConcept}
               onRemoveConcept={props.onRemoveConcept}
               onToggleTable={props.onToggleTable}
