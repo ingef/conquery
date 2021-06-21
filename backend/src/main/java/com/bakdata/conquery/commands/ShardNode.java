@@ -1,6 +1,7 @@
 package com.bakdata.conquery.commands;
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -111,9 +112,12 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 				getConfig().getQueries().getExecutionPool().getMaxThreads(),
 				config.configureObjectMapper(Jackson.MAPPER),
 				config.configureObjectMapper(Jackson.BINARY_MAPPER)
-				, getConfig().getCluster().getEntityBucketSize());
+				, getConfig().getCluster().getEntityBucketSize()
+		);
 
-		for(WorkerStorage workerStorage : config.getStorage().loadWorkerStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName())) ) {
+		final Collection<WorkerStorage> workerStorages =config.getStorage().loadWorkerStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()));
+
+		for(WorkerStorage workerStorage : workerStorages) {
 			workers.createWorker(workerStorage, config.isFailOnError());
 		}
 

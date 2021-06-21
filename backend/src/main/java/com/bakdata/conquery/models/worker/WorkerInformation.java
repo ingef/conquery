@@ -30,6 +30,7 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	@Min(0)
 	private int entityBucketSize;
 
+
 	@Override
 	public WorkerId createId() {
 		return new WorkerId(dataset, getName());

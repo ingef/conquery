@@ -3,6 +3,7 @@ package com.bakdata.conquery.commands;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -196,7 +197,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void loadNamespaces() {
-		for( NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()))) {
+		final Collection<NamespaceStorage> storages =
+				config.getStorage().loadNamespaceStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()));
+		for(NamespaceStorage namespaceStorage : storages) {
 			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER).writerWithView(InternalOnly.class));
 			datasetRegistry.add(ns);
 		}

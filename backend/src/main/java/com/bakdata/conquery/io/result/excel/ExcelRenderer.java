@@ -38,7 +38,6 @@ import java.util.stream.Stream;
 public class ExcelRenderer {
     
     private final static Map<Class<? extends ResultType>,TypeWriter> TYPE_WRITER_MAP = Map.of(
-            ResultType.BooleanT.class, ExcelRenderer::writeBooleanCell,
             ResultType.DateT.class, ExcelRenderer::writeDateCell,
             ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
             ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
@@ -216,6 +215,9 @@ public class ExcelRenderer {
         cell.setCellValue(info.getType().printNullable(settings,value));
     }
 
+    /**
+     * Is not used at the moment because at least the german Excel does not seem to understand its own boolean format.
+     */
     private static void writeBooleanCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
         if (value instanceof Boolean) {
             Boolean aBoolean = (Boolean) value;

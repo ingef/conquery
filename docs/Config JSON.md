@@ -58,7 +58,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### JWT_PKCE_REALM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L20-L22)</sup></sub></sup>
+### JWT_PKCE_REALM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L32-L34)</sup></sub></sup>
 A realm that verifies oauth tokens using PKCE.
 
 <details><summary>Details</summary><p>
@@ -69,7 +69,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L28-L31) | jwk | `JWK` | `null` |  | The public key information that is used to validate signed JWT. It can be retrieved from the IDP. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L50) | additionalTokenChecks | list of `String` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L46) | allowedAudiences | list of `String` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L53-L56) | alternativeIdClaims | list of `String` | `[]` |  | Which claims hold alternative Ids of the user in case the user name does not match a user. Pay attention, that the user must not be able to alter the value of any of these claims. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L48) | issuer | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/oidc/JwtPkceVerifyingRealmFactory.java#L40-L43) | jwk | `@NotNull JWK` | `null` |  | The public key information that is used to validate signed JWT. It can be retrieved from the IDP. | 
 </p></details>
 
 ### LOCAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java#L25)</sup></sub></sup>
@@ -252,7 +256,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java#L64) | storage | `@Valid @NotNull StoreFactory` |  |  |  | 
 </p></details>
 
-### Type CurrencyConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig$CurrencyConfig.java)</sup></sub></sup>
+### Type CurrencyConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L20)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -263,10 +267,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig$CurrencyConfig.java) | decimalScale | `int` | `2` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig$CurrencyConfig.java) | decimalSeparator | `String` | `","` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig$CurrencyConfig.java) | prefix | `String` | `"€"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig$CurrencyConfig.java) | thousandSeparator | `String` | `"."` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L26) | decimalScale | `int` | `2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L25) | decimalSeparator | `String` | `","` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L23) | prefix | `String` | `"€"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L24) | thousandSeparator | `String` | `"."` |  |  | 
 </p></details>
 
 ### Type FrontendConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L13)</sup></sub></sup>
@@ -426,7 +430,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java#L51) | treeMaxPageSize | `int` or `null` | `null` |  |  | 
 </p></details>
 
-### Type XodusStoreFactory<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L80)</sup></sub></sup>
+### Type XodusStoreFactory<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L81)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -437,12 +441,12 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L87) | directory | `Path` | `"file://./storage"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L98) | nThreads | `@javax.validation.constraints.Min(1) int` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L101-L103) | removeUnreadableFromStore | `boolean` | `false` |  | Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L106-L108) | unreadableDataDumpDirectory | `Optional<File>` | `null` |  | When set, all values that could not be deserialized from the persistent store, are dump into individual files. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L94) | useWeakDictionaryCaching | `boolean` | `true` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L89) | validateOnWrite | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L95) | weakCacheDuration | `@NotNull Duration` | `"48 hours"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L90) | xodus | [XodusConfig](#Type-XodusConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L88) | directory | `Path` | `"file://./storage"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L99) | nThreads | `@javax.validation.constraints.Min(1) int` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L102-L104) | removeUnreadableFromStore | `boolean` | `false` |  | Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L107-L109) | unreadableDataDumpDirectory | `Optional<File>` | `null` |  | When set, all values that could not be deserialized from the persistent store, are dump into individual files. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L95) | useWeakDictionaryCaching | `boolean` | `true` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L90) | validateOnWrite | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L96) | weakCacheDuration | `@NotNull Duration` | `"48 hours"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L91) | xodus | [XodusConfig](#Type-XodusConfig) |  |  |  | 
 </p></details>
