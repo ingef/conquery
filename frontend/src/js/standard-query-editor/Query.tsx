@@ -25,7 +25,6 @@ import {
   deleteGroup,
   toggleExcludeGroup,
   useExpandPreviousQuery,
-  selectNodeForEditing,
   toggleTimestamps,
   toggleSecondaryIdExclude,
 } from "./actions";
@@ -68,7 +67,11 @@ const QueryGroupConnector = styled("p")`
   text-align: center;
 `;
 
-const Query = () => {
+const Query = ({
+  setEditedNode,
+}: {
+  setEditedNode: (node: { andIdx: number; orIdx: number } | null) => void;
+}) => {
   const { t } = useTranslation();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
     (state) => state.datasets.selectedDatasetId,
@@ -91,24 +94,22 @@ const Query = () => {
 
   const onDropAndNode = (
     item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
-  ) => dispatch(dropAndNode(item));
+  ) => dispatch(dropAndNode({ item }));
   const onDropConceptListFile = (file: File, andIdx: number | null) =>
     dispatch(openQueryUploadConceptListModal(andIdx, file));
   const onDropOrNode = (
     item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
     andIdx: number,
-  ) => dispatch(dropOrNode(item, andIdx));
+  ) => dispatch(dropOrNode({ item, andIdx }));
   const onDeleteNode = (andIdx: number, orIdx: number) =>
-    dispatch(deleteNode(andIdx, orIdx));
-  const onDeleteGroup = (andIdx: number) => dispatch(deleteGroup(andIdx));
+    dispatch(deleteNode({ andIdx, orIdx }));
+  const onDeleteGroup = (andIdx: number) => dispatch(deleteGroup({ andIdx }));
   const onToggleExcludeGroup = (andIdx: number) =>
-    dispatch(toggleExcludeGroup(andIdx));
+    dispatch(toggleExcludeGroup({ andIdx }));
   const onToggleTimestamps = (andIdx: number, orIdx: number) =>
-    dispatch(toggleTimestamps(andIdx, orIdx));
+    dispatch(toggleTimestamps({ andIdx, orIdx }));
   const onToggleSecondaryIdExclude = (andIdx: number, orIdx: number) =>
-    dispatch(toggleSecondaryIdExclude(andIdx, orIdx));
-  const onSelectNodeForEditing = (andIdx: number, orIdx: number) =>
-    dispatch(selectNodeForEditing(andIdx, orIdx));
+    dispatch(toggleSecondaryIdExclude({ andIdx, orIdx }));
   const onLoadPreviousQuery = (queryId: PreviousQueryIdT) => {
     if (datasetId) {
       loadPreviousQuery(datasetId, queryId);
@@ -176,7 +177,7 @@ const Query = () => {
                 onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
                 onDeleteGroup={() => onDeleteGroup(andIdx)}
                 onEditClick={(orIdx: number) =>
-                  onSelectNodeForEditing(andIdx, orIdx)
+                  setEditedNode({ andIdx, orIdx })
                 }
                 onExpandClick={onExpandPreviousQuery}
                 onExcludeClick={() => onToggleExcludeGroup(andIdx)}
