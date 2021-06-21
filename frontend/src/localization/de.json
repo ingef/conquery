@@ -361,7 +361,7 @@
     "previewHeadline": "Ergebnis-CSV",
     "previewSubline": "Auszug der ersten {{count}} Zeilen",
     "statisticsHeadline": "Spaltenstatistik",
-    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werten als 0 interpretiert.",
+    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werden als 0 interpretiert.",
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",
