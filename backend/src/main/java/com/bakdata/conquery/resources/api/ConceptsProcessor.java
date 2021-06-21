@@ -55,29 +55,32 @@ import org.apache.commons.lang3.tuple.Pair;
 public class ConceptsProcessor {
 	
 	private final DatasetRegistry namespaces;
-	private final LoadingCache<Concept<?>, FEList> nodeCache = CacheBuilder.newBuilder()
-		.softValues()
-		.expireAfterWrite(10, TimeUnit.MINUTES)
-		.build(new CacheLoader<Concept<?>, FEList>() {
-			@Override
-			public FEList load(Concept<?> concept) throws Exception {
-				return FrontEndConceptBuilder.createTreeMap(concept);
-			}
-		});
-	
-	private final LoadingCache<Pair<AbstractSelectFilter<?>, String>,List<FEValue>> searchCache = CacheBuilder.newBuilder()
-		.expireAfterAccess(Duration.ofMinutes(2))
-		.build( new CacheLoader<>() {
 
-			@Override
-			public List<FEValue> load(Pair<AbstractSelectFilter<?>, String> filterAndSearch) throws Exception {
-				String searchTerm = filterAndSearch.getValue();
-				AbstractSelectFilter<?> filter = filterAndSearch.getKey();
-				log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
-				return autocompleteTextFilter(filter, searchTerm);
-			}
-			
-		});
+	private final LoadingCache<Concept<?>, FEList> nodeCache =
+			CacheBuilder.newBuilder()
+						.softValues()
+						.expireAfterWrite(10, TimeUnit.MINUTES)
+						.build(new CacheLoader<Concept<?>, FEList>() {
+							@Override
+							public FEList load(Concept<?> concept) throws Exception {
+								return FrontEndConceptBuilder.createTreeMap(concept);
+							}
+						});
+
+	private final LoadingCache<Pair<AbstractSelectFilter<?>, String>, List<FEValue>> searchCache =
+			CacheBuilder.newBuilder()
+						.expireAfterAccess(Duration.ofMinutes(2))
+						.build(new CacheLoader<>() {
+
+							@Override
+							public List<FEValue> load(Pair<AbstractSelectFilter<?>, String> filterAndSearch) throws Exception {
+								String searchTerm = filterAndSearch.getValue();
+								AbstractSelectFilter<?> filter = filterAndSearch.getKey();
+								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
+								return autocompleteTextFilter(filter, searchTerm);
+							}
+
+						});
 		
 	public FERoot getRoot(NamespaceStorage storage, User user) {
 

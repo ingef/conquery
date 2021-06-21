@@ -152,8 +152,6 @@ public abstract class ManagedForm extends ManagedExecution<FormSharedResult> {
 					)
 				);
 				break;
-			case CANCELED:
-				// Ideally sub queries can not be canceled by a user, so do nothing
 			case NEW:
 			case RUNNING:
 			default:

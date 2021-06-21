@@ -88,6 +88,11 @@ public class ExecutionManager {
 		final MetaStorage storage = namespace.getNamespaces().getMetaStorage();
 
 		final E query = (E) getQuery(result.getQueryId());
+
+		if(!query.getState().equals(ExecutionState.RUNNING)){
+			return;
+		}
+
 		query.addResult(storage, result);
 
 		if (query.getState() == ExecutionState.DONE || query.getState() == ExecutionState.FAILED) {

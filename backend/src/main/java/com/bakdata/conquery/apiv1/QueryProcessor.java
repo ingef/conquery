@@ -1,6 +1,8 @@
 package com.bakdata.conquery.apiv1;
 
 import com.bakdata.conquery.apiv1.query.*;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
@@ -11,13 +13,15 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.*;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.*;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
+import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
+import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryTranslator;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -51,9 +55,12 @@ public class QueryProcessor {
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
+	 *
 	 * @return
 	 */
 	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, User user) {
+
+		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), user.getId());
 
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
@@ -91,10 +98,10 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final ManagedExecution<?> execution = tryReuse(query, executionId, datasetRegistry, config);
+			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config));
 
-			if (execution != null) {
-				return execution;
+			if (execution.isPresent()) {
+				return execution.get();
 			}
 		}
 
@@ -109,16 +116,14 @@ public class QueryProcessor {
 		return mq;
 	}
 
-	private ManagedExecution<?> tryReuse(QueryDescription query, Optional<ManagedExecutionId> maybeId, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	/**
+	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
+	 */
+	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
-		// If this is only a re-executing query, execute the underlying query instead.
-		if (maybeId.isEmpty()) {
-			return null;
-		}
+		final ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
 
-		final ManagedExecution<?> execution = maybeId.map(datasetRegistry.getMetaRegistry()::resolve).orElse(null);
-
-		if(execution == null){
+		if (execution == null) {
 			return null;
 		}
 
@@ -162,47 +167,46 @@ public class QueryProcessor {
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
 
 		return allQueries.stream()
-				// The following only checks the dataset, under which the query was submitted, but a query can target more that
-				// one dataset.
-				.filter(q -> q.getDataset().equals(datasetId))
-				// to exclude subtypes from somewhere else
-				.filter(QueryProcessor::canFrontendRender)
-				.filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
-				// We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
-				// However, for other executions we check because those are probably shared.
-				.filter(q -> user.isPermitted(q, Ability.READ))
-				.map(mq -> {
-					OverviewExecutionStatus status = mq.buildStatusOverview(
-							uriBuilder.clone(),
-							user,
-							datasetAbilities
-					);
-					if (mq.isReadyToDownload(datasetAbilities)){
-						setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder, allProviders);
-					}
-					return status;
-				});
+						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
+						 // one dataset.
+						 .filter(q -> q.getDataset().equals(datasetId))
+						 // to exclude subtypes from somewhere else
+						 .filter(QueryProcessor::canFrontendRender)
+						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
+						 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
+						 // However, for other executions we check because those are probably shared.
+						 .filter(q -> user.isPermitted(q, Ability.READ))
+						 .map(mq -> {
+							 OverviewExecutionStatus status = mq.buildStatusOverview(
+									 uriBuilder.clone(),
+									 user,
+									 datasetAbilities
+							 );
+							 if (mq.isReadyToDownload(datasetAbilities)) {
+								 setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder, allProviders);
+							 }
+							 return status;
+						 });
 	}
-
 
 
 	/**
 	 * Sets the result urls for the given result renderer. Result urls are only rendered for providers that match the
 	 * result type of the execution.
-	 * @param status The status that is edited.
-	 * @param renderer The renderer that are requested for a result url generation.
-	 * @param exec The execution that is used for generating the url
-	 * @param uriBuilder The Uribuilder with the base configuration to generate the urls
-	 * @param allProviders If true, the {@link ResultRendererProvider#isHidden()} is ignored and a result urls is generated
-	 *                     anyways
-	 * @param <S> The type of the provided and returned status
+	 *
+	 * @param status       The status that is edited.
+	 * @param renderer     The renderer that are requested for a result url generation.
+	 * @param exec         The execution that is used for generating the url
+	 * @param uriBuilder   The Uribuilder with the base configuration to generate the urls
+	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
+	 * @param <S>          The type of the provided and returned status
 	 * @return The modified status
 	 */
-	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders){
+	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		List<URL> resultUrls = renderer.stream()
-				.map(r -> r.generateResultURL(exec,uriBuilder.clone(), allProviders))
-				.flatMap(Optional::stream).collect(Collectors.toList());
+									   .map(r -> r.generateResultURL(exec, uriBuilder.clone(), allProviders))
+									   .flatMap(Optional::stream).collect(Collectors.toList());
 
 		status.setResultUrls(resultUrls);
 
@@ -251,26 +255,39 @@ public class QueryProcessor {
 			}
 
 			try {
-
+				log.trace("Adding Query on Dataset[{}]", dataset.getId());
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
 				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
 			}
 			catch (Exception e) {
-				log.trace("Could not translate " + query + " to dataset " + targetDataset, e);
+				log.trace("Could not translate Query[{}] to Dataset[{}]", mq.getId(), targetDataset.getId(), e);
 			}
 		}
 	}
 
-	public void cancel(User user, Dataset dataset, ManagedExecution<?> query, UriBuilder urlb) {
-		// TODO implement query cancel functionality
-		return;
+	/**
+	 * Cancel a running query: Sending cancellation to shards, which will cause them to stop executing them, results are not sent back, and incoming results will be discarded.
+	 */
+	public void cancel(User user, Dataset dataset, ManagedExecution<?> query) {
+
+		// Does not make sense to cancel a query that isn't running.
+		if (!query.getState().equals(ExecutionState.RUNNING)) {
+			return;
+		}
+
+		log.info("{} cancelled Query[{}]", user, query.getId());
+
+		final Namespace namespace = getDatasetRegistry().get(dataset.getId());
+
+		query.setState(ExecutionState.NEW);
+
+		namespace.sendToAll(new CancelQuery(query.getId()));
 	}
 
+	public void patchQuery(User user, ManagedExecution<?> execution, MetaDataPatch patch) {
 
+		log.info("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 
-	public void patchQuery(User user, ManagedExecution<?> execution, MetaDataPatch patch) throws JSONException {
-
-		log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 		patch.applyTo(execution, storage, user);
 		storage.updateExecution(execution);
 
@@ -290,15 +307,17 @@ public class QueryProcessor {
 		}
 	}
 
-	public void reexecute(ManagedExecution<?> query) {
-		if(!query.getState().equals(ExecutionState.RUNNING)) {
+	public void reexecute(User user, ManagedExecution<?> query) {
+		log.info("User[{}] reexecuted Query[{}]", user, query);
+
+		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			ExecutionManager.execute(getDatasetRegistry(), query, config);
 		}
 	}
 
 
-	public void deleteQuery(ManagedExecution<?> execution) {
-
+	public void deleteQuery(User user, ManagedExecution<?> execution) {
+		log.info("User[{}] deleted Query[{}]", user.getId(), execution.getId());
 		storage.removeExecution(execution.getId());
 	}
 
@@ -309,7 +328,7 @@ public class QueryProcessor {
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
 		final FullExecutionStatus status = query.buildStatusFull(storage, url, user, datasetRegistry, datasetAbilities);
 
-		if (query.isReadyToDownload(datasetAbilities)){
+		if (query.isReadyToDownload(datasetAbilities)) {
 			setDownloadUrls(status, config.getResultProviders(), query, url, allProviders);
 		}
 		return status;

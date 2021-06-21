@@ -4,9 +4,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -26,37 +27,45 @@ public class QueryExecutor implements Closeable {
 
 	private final ThreadPoolExecutor executor;
 	private final ListeningExecutorService pool;
-	
+
+	private final Set<ManagedExecutionId> cancelledQueries = new HashSet<>();
+
+	public void unsetQueryCancelled(ManagedExecutionId query) {
+		cancelledQueries.remove(query);
+	}
+
+	public void setQueryCancelled(ManagedExecutionId query) {
+		cancelledQueries.add(query);
+	}
+
+	public boolean isCancelled(ManagedExecutionId query){
+		return cancelledQueries.contains(query);
+	}
+
 	public QueryExecutor(ThreadPoolExecutor executor) {
 		this.executor = executor;
 		this.pool = MoreExecutors.listeningDecorator(executor);
 	}
 
-	// TODO inline Entry key/value as id and QueryPlan
-	public ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry) {
-		return execute(result, context, entry, pool);
-	}
+	public ShardResult execute(ManagedExecutionId executionId, QueryPlan<?> queryPlan, ShardResult result, QueryExecutionContext context) {
+		Collection<Entity> entities = context.getBucketManager().getEntities().values();
 
-	public static ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry, ListeningExecutorService executor) {
-		ManagedExecutionId executionId = entry.getKey();
-		Collection<Entity> entries = context.getBucketManager().getEntities().values();
-
-		if(entries.isEmpty()) {
-			log.warn("entries for query {} are empty", executionId);
+		if(entities.isEmpty()) {
+			log.warn("Entities for query {} are empty", executionId);
 		}
 
-		QueryPlan queryPlan = entry.getValue();
 		List<ListenableFuture<Optional<EntityResult>>> futures = new ArrayList<>();
 
-		for (Entity entity : entries) {
+		for (Entity entity : entities) {
 			QueryJob queryJob = new QueryJob(context, queryPlan, entity);
-			ListenableFuture<Optional<EntityResult>> submit = executor.submit(queryJob);
+			ListenableFuture<Optional<EntityResult>> submit = pool.submit(queryJob);
 			futures.add(submit);
 		}
 
 		ListenableFuture<List<Optional<EntityResult>>> future = Futures.allAsList(futures);
 		result.setFuture(future);
 		future.addListener(result::finish, MoreExecutors.directExecutor());
+
 		return result;
 	}
 
