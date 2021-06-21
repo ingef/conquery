@@ -69,9 +69,6 @@ public class ExcelRenderer {
         // TODO internationalize
         SXSSFSheet sheet = workbook.createSheet("Result");
         try {
-            sheet.trackAllColumnsForAutoSizing();
-
-
             // Create a table environment inside the excel sheet
             XSSFTable table = createTableEnvironment(exec, sheet);
 
@@ -94,15 +91,7 @@ public class ExcelRenderer {
         CellReference bottomRight = new CellReference(writtenLines + 1, table.getColumnCount() - 1);
         AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         table.setArea(newArea);
-
-        // Auto-width fit tracked columns
-        for (Integer colIdx : sheet.getTrackedColumnsForAutoSizing()) {
-            sheet.autoSizeColumn(colIdx);
-            if(sheet.getColumnWidth(colIdx) > maxColumnWidth) {
-                sheet.setColumnWidth(colIdx, maxColumnWidth);
-            }
-        }
-
+        
         // TODO Add auto filters. This won't work with excel yet
         //sheet.setAutoFilter(new CellRangeAddress(1, 1, 1, bottomRight.getCol()));
 
@@ -146,7 +135,6 @@ public class ExcelRenderer {
                 // Table column ids MUST be set and MUST start at 1, excel will fail otherwise
                 column.setId(currentColumn+1);
                 column.setName(idHeader);
-                sheet.trackColumnForAutoSizing(currentColumn);
 
                 currentColumn++;
             }
@@ -156,13 +144,11 @@ public class ExcelRenderer {
                 CTTableColumn column = columns.addNewTableColumn();
                 column.setId(currentColumn+1);
                 column.setName(columnName);
-                if (!(info.getType() instanceof ResultType.ListT)){
-                    // Don't auto size Columns of type list.
-                    sheet.trackColumnForAutoSizing(currentColumn);
-                }
 
                 currentColumn++;
             }
+            // Track all columns until we wrote the header of each
+            sheet.trackAllColumnsForAutoSizing();
         }
         {
             // Second to create the header row set the header name of each cell.
@@ -183,6 +169,12 @@ public class ExcelRenderer {
                 currentColumn++;
             }
         }
+
+        // Auto size all columns according to their header and remove tracking
+        for (Integer colIndex : sheet.getTrackedColumnsForAutoSizing()) {
+            sheet.autoSizeColumn(colIndex);
+        }
+        sheet.untrackAllColumnsForAutoSizing();
     }
 
     private int writeBody(
