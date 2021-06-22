@@ -1,4 +1,6 @@
-import { RENAME_PREVIOUS_QUERY_SUCCESS } from "../previous-queries/list/actionTypes";
+import { Action } from "js/app/actions";
+import { renamePreviousQuery } from "js/previous-queries/list/actions";
+import { getType } from "typesafe-actions";
 
 import {
   DROP_TIMEBASED_NODE,
@@ -355,7 +357,7 @@ const initialState = {
 // }
 const timebasedQuery = (
   state: TimebasedQueryStateT = initialState,
-  action: Object,
+  action: Action,
 ): TimebasedQueryStateT => {
   switch (action.type) {
     case DROP_TIMEBASED_NODE:
@@ -378,7 +380,7 @@ const timebasedQuery = (
       return addTimebasedCondition(state, action);
     case REMOVE_TIMEBASED_CONDITION:
       return removeTimebasedCondition(state, action);
-    case RENAME_PREVIOUS_QUERY_SUCCESS:
+    case getType(renamePreviousQuery.success):
       return renamePreviousQueries(state, action);
     case CLEAR_TIMEBASED_QUERY:
       return initialState;

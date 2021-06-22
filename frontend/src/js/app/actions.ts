@@ -1,5 +1,6 @@
 import type { PreviousQueriesFilterActions } from "../previous-queries/filter/actions";
 import type { FolderFilterActions } from "../previous-queries/folderFilter/actions";
+import { PreviousQueryListActions } from "../previous-queries/list/actions";
 import type { PreviousQueriesSearchActions } from "../previous-queries/search/actions";
 import { QueryGroupModalActions } from "../query-group-modal/actions";
 import { QueryUploadConceptListModalActions } from "../query-upload-concept-list-modal/actions";
@@ -18,4 +19,5 @@ export type Action =
   | QueryGroupModalActions
   | QueryUploadConceptListModalActions
   | UploadConceptListModalActions
-  | SnackMessageActions;
+  | SnackMessageActions
+  | PreviousQueryListActions;
