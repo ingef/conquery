@@ -45,7 +45,7 @@ export const useDeletePreviousQueryFolder = (
         onSuccess();
       }
     } catch (e) {
-      dispatch(setMessage(t("previousQuery.retagError")));
+      dispatch(setMessage({ message: t("previousQuery.retagError") }));
     }
   };
 };

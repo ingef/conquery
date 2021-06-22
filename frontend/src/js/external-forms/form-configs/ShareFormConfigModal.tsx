@@ -140,7 +140,7 @@ const ShareFormConfigModal = ({
 
       onShareSuccess();
     } catch (e) {
-      dispatch(setMessage(t("previousQuery.shareError")));
+      dispatch(setMessage({ message: t("previousQuery.shareError") }));
     }
   }
 

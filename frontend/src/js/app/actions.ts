@@ -3,6 +3,7 @@ import type { FolderFilterActions } from "../previous-queries/folderFilter/actio
 import type { PreviousQueriesSearchActions } from "../previous-queries/search/actions";
 import { QueryGroupModalActions } from "../query-group-modal/actions";
 import { QueryUploadConceptListModalActions } from "../query-upload-concept-list-modal/actions";
+import { SnackMessageActions } from "../snack-message/actions";
 import type { StandardQueryEditorActions } from "../standard-query-editor/actions";
 import { UploadConceptListModalActions } from "../upload-concept-list-modal/actions";
 
@@ -16,4 +17,5 @@ export type Action =
   | StandardQueryEditorActions
   | QueryGroupModalActions
   | QueryUploadConceptListModalActions
-  | UploadConceptListModalActions;
+  | UploadConceptListModalActions
+  | SnackMessageActions;

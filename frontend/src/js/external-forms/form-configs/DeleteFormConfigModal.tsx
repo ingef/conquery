@@ -34,7 +34,7 @@ const DeleteFormConfigModal = ({
 
       onDeleteSuccess();
     } catch (e) {
-      dispatch(setMessage(t("formConfig.deleteError")));
+      dispatch(setMessage({ message: t("formConfig.deleteError") }));
     }
   }
 

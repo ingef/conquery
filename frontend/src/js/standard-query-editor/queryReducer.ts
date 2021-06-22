@@ -116,7 +116,11 @@ const filterItem = (
   }
 };
 
-const setGroupProperties = (node, andIdx, properties) => {
+const setGroupProperties = (
+  node: StandardQueryStateT,
+  andIdx: number,
+  properties: Partial<QueryGroupType>,
+) => {
   return [
     ...node.slice(0, andIdx),
     {

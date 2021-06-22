@@ -54,7 +54,7 @@ export const useLoadDatasets = () => {
 
       return loadTrees(defaultId);
     } catch (e) {
-      dispatch(setMessage(t("datasetSelector.error")));
+      dispatch(setMessage({ message: t("datasetSelector.error") }));
       dispatch(loadDatasetsError(e));
     }
   };

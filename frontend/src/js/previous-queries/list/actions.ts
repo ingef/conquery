@@ -59,7 +59,7 @@ export const useLoadPreviousQueries = () => {
 
       return dispatch(loadPreviousQueriesSuccess(result));
     } catch (e) {
-      dispatch(setMessage(t("previousQueries.error")));
+      dispatch(setMessage({ message: t("previousQueries.error") }));
 
       return dispatch(loadPreviousQueriesError(e));
     }
