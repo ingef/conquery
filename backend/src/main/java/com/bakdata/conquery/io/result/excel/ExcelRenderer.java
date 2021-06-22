@@ -44,13 +44,11 @@ public class ExcelRenderer {
 
     private final SXSSFWorkbook workbook;
     private final ImmutableMap<String, CellStyle> styles;
-    private final int maxColumnWidth;
 
 
     public ExcelRenderer(ExcelConfig config) {
         workbook = new SXSSFWorkbook();
         styles = config.generateStyles(workbook);
-        maxColumnWidth = config.getMaxColumnWidth();
     }
 
     @FunctionalInterface
@@ -150,7 +148,7 @@ public class ExcelRenderer {
                 column.setName(columnName);
 
                 sheet.trackColumnForAutoSizing(currentColumn);
-                
+
                 currentColumn++;
             }
         }

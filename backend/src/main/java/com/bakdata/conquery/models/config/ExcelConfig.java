@@ -44,15 +44,6 @@ public class ExcelConfig {
 	 */
 	private Map<String, CellStyler> styles = Collections.emptyMap();
 
-	/**
-	 * Maximum column width after auto column sizing. The unit is 1/256th of a character width.
-	 * For further details see {@link org.apache.poi.xssf.usermodel.XSSFSheet#getColumnWidth(int)}.
-	 *
-	 * @Implnote The default here is approx. 30 characters, which allows to present a date range and indicate,
-	 * that there might be more in data the cell.
-	 */
-	private int maxColumnWidth = 6144; // 1/256th of a character width
-
 
 	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook){
 		ImmutableMap.Builder<String, CellStyle> styles = ImmutableMap.builder();
