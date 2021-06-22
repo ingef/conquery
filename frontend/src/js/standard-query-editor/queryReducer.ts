@@ -376,10 +376,12 @@ const setNodeSelects = (
   state: StandardQueryStateT,
   { andIdx, orIdx, value }: ActionType<typeof setSelects>["payload"],
 ) => {
-  const { selects } = state[andIdx].elements[orIdx];
+  const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
 
   return setElementProperties(state, andIdx, orIdx, {
-    selects: selects.map((select) => ({
+    selects: node.selects.map((select) => ({
       ...select,
       selected:
         !!value &&
@@ -417,10 +419,12 @@ const resetNodeAllFilters = (
   const newState = setElementProperties(state, andIdx, orIdx, {
     excludeFromSecondaryIdQuery: false,
     excludeTimestamps: false,
-    selects: selectsWithDefaults(node.selects),
+    selects: nodeIsConceptQueryNode(node)
+      ? selectsWithDefaults(node.selects)
+      : [],
   });
 
-  if (!node.tables) return newState;
+  if (!nodeIsConceptQueryNode(node)) return newState;
 
   const tables = resetAllFiltersInTables(node.tables);
 
@@ -433,7 +437,7 @@ const resetNodeTable = (
 ) => {
   const node = state[andIdx].elements[orIdx];
 
-  if (!node.tables) return state;
+  if (!nodeIsConceptQueryNode(node)) return state;
 
   const table = node.tables[tableIdx];
 
@@ -895,6 +899,8 @@ const onAddConceptToNode = (
 ) => {
   const node = state[andIdx].elements[orIdx];
 
+  if (!nodeIsConceptQueryNode(node)) return state;
+
   return setElementProperties(state, andIdx, orIdx, {
     ids: [...concept.ids, ...node.ids],
   });
@@ -909,6 +915,8 @@ const onRemoveConceptFromNode = (
   }: ActionType<typeof removeConceptFromNode>["payload"],
 ) => {
   const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
 
   return setElementProperties(state, andIdx, orIdx, {
     ids: node.ids.filter((id) => id !== conceptId),

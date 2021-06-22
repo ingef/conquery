@@ -1,8 +1,13 @@
-// flow
 import type { SelectorT } from "../api/types";
-import type { SelectedSelectorT } from "../standard-query-editor/types";
+import type {
+  ConceptQueryNodeType,
+  SelectedSelectorT,
+  TableWithFilterValueT,
+} from "../standard-query-editor/types";
 
-export function objectHasSelectedSelects(obj) {
+export function objectHasSelectedSelects(
+  obj: ConceptQueryNodeType | TableWithFilterValueT,
+) {
   return (
     obj &&
     obj.selects &&
