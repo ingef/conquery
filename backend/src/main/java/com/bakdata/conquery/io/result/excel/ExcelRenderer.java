@@ -136,6 +136,10 @@ public class ExcelRenderer {
                 column.setId(currentColumn+1);
                 column.setName(idHeader);
 
+                // Track column explicitly, because sheet.trackAllColumnsForAutoSizing() does not work with
+                // sheet.getTrackedColumnsForAutoSizing(), if no flush has happened
+                sheet.trackColumnForAutoSizing(currentColumn);
+
                 currentColumn++;
             }
 
@@ -145,10 +149,10 @@ public class ExcelRenderer {
                 column.setId(currentColumn+1);
                 column.setName(columnName);
 
+                sheet.trackColumnForAutoSizing(currentColumn);
+                
                 currentColumn++;
             }
-            // Track all columns until we wrote the header of each
-            sheet.trackAllColumnsForAutoSizing();
         }
         {
             // Second to create the header row set the header name of each cell.
