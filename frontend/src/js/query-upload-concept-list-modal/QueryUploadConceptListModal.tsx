@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { TreesT } from "../concept-trees/reducer";
 import UploadConceptListModal from "../upload-concept-list-modal/UploadConceptListModal";
+import { resetUploadConceptListModal } from "../upload-concept-list-modal/actions";
 
 import {
   acceptQueryUploadConceptListModal,
@@ -17,15 +18,22 @@ const QueryUploadConceptListModal: FC = () => {
   );
 
   const dispatch = useDispatch();
-  const onClose = () => dispatch(closeQueryUploadConceptListModal());
-  const onAccept = (label: string, rootConcepts: TreesT, resolved: string[]) =>
+  const onClose = () => {
+    dispatch(closeQueryUploadConceptListModal());
+    dispatch(resetUploadConceptListModal());
+  };
+  const onAccept = (
+    label: string,
+    rootConcepts: TreesT,
+    resolvedConcepts: string[],
+  ) =>
     dispatch(
-      acceptQueryUploadConceptListModal(
-        context.andIdx,
+      acceptQueryUploadConceptListModal({
+        andIdx: context.andIdx,
         label,
         rootConcepts,
-        resolved,
-      ),
+        resolvedConcepts,
+      }),
     );
 
   if (!context.isOpen) return null;

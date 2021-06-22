@@ -1,14 +1,15 @@
+import { getType } from "typesafe-actions";
+
 import type { PostConceptResolveResponseT } from "../api/types";
+import { Action } from "../app/actions";
 import { stripFilename } from "../common/helpers/fileHelper";
 
 import {
-  SELECT_CONCEPT_ROOT_NODE,
-  RESOLVE_CONCEPTS_START,
-  RESOLVE_CONCEPTS_SUCCESS,
-  RESOLVE_CONCEPTS_ERROR,
-  INIT,
-  RESET,
-} from "./actionTypes";
+  initUploadConceptListModal,
+  resetUploadConceptListModal,
+  resolveConcepts,
+  selectConceptRootNode,
+} from "./actions";
 
 export type UploadConceptListModalStateT = {
   filename: string | null;
@@ -30,10 +31,10 @@ const initialState: UploadConceptListModalStateT = {
 
 const uploadConcepts = (
   state: UploadConceptListModalStateT = initialState,
-  action: Object,
+  action: Action,
 ) => {
   switch (action.type) {
-    case INIT:
+    case getType(initUploadConceptListModal):
       const { filename, rows } = action.payload;
 
       return {
@@ -43,33 +44,33 @@ const uploadConcepts = (
         selectedConceptRootNode: null,
         resolved: null,
       };
-    case SELECT_CONCEPT_ROOT_NODE:
+    case getType(selectConceptRootNode):
       return {
         ...state,
-        selectedConceptRootNode: action.conceptId,
+        selectedConceptRootNode: action.payload.conceptId,
         resolved: null,
       };
-    case RESOLVE_CONCEPTS_START:
+    case getType(resolveConcepts.request):
       return {
         ...state,
         loading: true,
         error: null,
       };
-    case RESOLVE_CONCEPTS_ERROR:
+    case getType(resolveConcepts.failure):
       return {
         ...state,
         loading: false,
         resolved: null,
         error: action.payload,
       };
-    case RESOLVE_CONCEPTS_SUCCESS:
+    case getType(resolveConcepts.success):
       return {
         ...state,
         loading: false,
         error: null,
         resolved: action.payload.data,
       };
-    case RESET:
+    case getType(resetUploadConceptListModal):
       return initialState;
     default:
       return state;
