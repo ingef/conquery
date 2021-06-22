@@ -33,7 +33,7 @@ import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
 } from "../query-group-modal/actions";
-import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
+import { acceptQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
 
 import {
   dropAndNode,
@@ -853,9 +853,15 @@ const createQueryNodeFromConceptListUploadResult = (
     : null;
 };
 
-const insertUploadedConceptList = (state: StandardQueryStateT, action: any) => {
-  const { label, rootConcepts, resolvedConcepts, andIdx } = action.payload;
-
+const insertUploadedConceptList = (
+  state: StandardQueryStateT,
+  {
+    label,
+    rootConcepts,
+    resolvedConcepts,
+    andIdx,
+  }: ActionType<typeof acceptQueryUploadConceptListModal>["payload"],
+) => {
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
     rootConcepts,
@@ -1057,8 +1063,8 @@ const query = (
       return loadFilterSuggestionsSuccess(state, action.payload);
     case getType(loadFilterSuggestions.failure):
       return loadFilterSuggestionsError(state, action.payload);
-    case QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
-      return insertUploadedConceptList(state, action);
+    case getType(acceptQueryUploadConceptListModal):
+      return insertUploadedConceptList(state, action.payload);
     case getType(setDateColumn):
       return setNodeTableDateColumn(state, action.payload);
     default:
