@@ -2,7 +2,7 @@
   "title": {
     "de": "Fullexport"
   },
-  "type": "JUPYEND_FORM@TABLE_EXPORT",
+  "type": "FULL_EXPORT_FORM",
   "headline": {
     "de": "Fullexport"
   },

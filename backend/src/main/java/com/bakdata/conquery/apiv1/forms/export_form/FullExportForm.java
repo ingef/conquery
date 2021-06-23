@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -53,17 +54,17 @@ public class FullExportForm extends Form {
 	@JsonIgnore
 	private ManagedQuery queryGroup;
 
-	@NotNull
+	@Nullable
 	@Valid
-	private Range<LocalDate> dateRange;
+	private Range<LocalDate> dateRange = Range.all();
 
 	@NotEmpty
-	private List<CQElement> features = ImmutableList.of();
+	private List<CQElement> tables = ImmutableList.of();
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
-		features.forEach(feature -> feature.visit(visitor));
+		tables.forEach(feature -> feature.visit(visitor));
 	}
 
 
@@ -71,16 +72,16 @@ public class FullExportForm extends Form {
 	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
 
 		final List<CQUnfilteredTable> unfilteredTables =
-				features.stream()
-						.flatMap(feature -> {
+				tables.stream()
+					  .flatMap(feature -> {
 							final Stream.Builder<Visitable> builder = Stream.builder();
 							feature.visit(builder);
 							return builder.build();
 						})
-						.filter(CQConcept.class::isInstance)
-						.map(CQConcept.class::cast)
-						.flatMap(concept -> concept.getTables().stream())
-						.map(table -> {
+					  .filter(CQConcept.class::isInstance)
+					  .map(CQConcept.class::cast)
+					  .flatMap(concept -> concept.getTables().stream())
+					  .map(table -> {
 							final CQUnfilteredTable unfilteredTable = new CQUnfilteredTable();
 
 							unfilteredTable.setTable(table.getConnector());
@@ -88,7 +89,7 @@ public class FullExportForm extends Form {
 
 							return unfilteredTable;
 						})
-						.collect(Collectors.toList());
+					  .collect(Collectors.toList());
 
 		final TableExportQuery exportQuery = new TableExportQuery(queryGroup.getQuery());
 		exportQuery.setDateRange(getDateRange());

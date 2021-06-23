@@ -31,7 +31,7 @@ public final class ValidatorHelper {
 				Object root = entry.getKey().orElse(null);
 				if(root != null) {					
 					sb.append("\nValidation failed on: ").append(root.getClass());
-					if(log.isTraceEnabled() &&  root != null) {
+					if(log.isTraceEnabled()) {
 						sb.append("(").append(root.toString()).append(")");
 					}
 				}
