@@ -7,7 +7,7 @@ on:
 
 jobs:
   trigger-external-action:
-    runs-on: curlimages/curl:7.77.0
+    runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
       - name: Trigger webhook event
