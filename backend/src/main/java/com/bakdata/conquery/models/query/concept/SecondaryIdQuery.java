@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.annotation.CheckForNull;
 import javax.validation.constraints.NotNull;
@@ -19,7 +20,11 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.*;
+import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -27,13 +32,9 @@ import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import lombok.extern.slf4j.XSlf4j;
-import org.jetbrains.annotations.TestOnly;
 
 @Getter
 @Setter
@@ -159,9 +160,8 @@ public class SecondaryIdQuery extends IQuery {
 	}
 
 	@Override
-	public long countResults(List<EntityResult> results) {
-		return results.stream()
-					  .map(EntityResult::listResultLines)
+	public long countResults(Stream<EntityResult> results) {
+		return results.map(EntityResult::listResultLines)
 					  .mapToLong(List::size)
 					  .sum();
 	}

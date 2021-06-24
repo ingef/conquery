@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -59,8 +59,9 @@ public abstract class IQuery implements QueryDescription {
 	 *
 	 * @see ManagedQuery#finish(MetaStorage, ExecutionState) for how it's used.
 	 * @return the number of results in the result List.
+	 * @param results
 	 */
-	public long countResults(List<EntityResult> results) {
-		return results.size();
+	public long countResults(Stream<EntityResult> results) {
+		return results.count();
 	}
 }

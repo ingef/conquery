@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.storage;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.validation.Validator;
 
@@ -28,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MetaStorage implements ConqueryStorage{
 
     private IdentifiableStore<ManagedExecution<?>> executions;
+
     private IdentifiableStore<FormConfig> formConfigs;
     private IdentifiableStore<User> authUser;
     private IdentifiableStore<Role> authRole;

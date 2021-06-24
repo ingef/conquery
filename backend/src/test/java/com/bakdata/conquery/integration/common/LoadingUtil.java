@@ -35,7 +35,6 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
@@ -73,7 +72,7 @@ public class LoadingUtil {
 
 			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 
-			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
+			ManagedExecution<?> managed = support.getNamespace().getQueryManager().createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
 			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
@@ -87,7 +86,7 @@ public class LoadingUtil {
 			IQuery query = mapper.readerFor(IQuery.class).readValue(queryNode);
 			UUID queryId = new UUID(0L, id++);
 
-			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),query, queryId, user, support.getNamespace().getDataset());
+			ManagedExecution<?> managed = support.getNamespace().getQueryManager().createQuery(support.getNamespace().getNamespaces(),query, queryId, user, support.getNamespace().getDataset());
 			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {

@@ -1,14 +1,9 @@
 package com.bakdata.conquery.models.query;
 
-import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -18,7 +13,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriBuilderException;
 
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.QueryDescription;
@@ -49,8 +43,6 @@ import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
@@ -75,37 +67,22 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	protected transient Namespace namespace;
 	// Needs to be resolved externally before being executed
 	private IQuery query;
+
 	/**
 	 * The number of contained entities the last time this query was executed.
-	 *
-	 * @param lastResultCount the new count for JACKSON
-	 * @returns the number of contained entities
 	 */
 	private Long lastResultCount;
+
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private transient int involvedWorkers;
 	@JsonIgnore
-	private transient int executingThreads;
+	private transient AtomicInteger executingThreads = new AtomicInteger(0);
 	@JsonIgnore
 	private transient ConqueryConfig config;
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
-	@JsonIgnore @ToString.Exclude
-	private transient SoftReference<List<EntityResult>> results = new SoftReference<>(new ArrayList<>());
 
-	public List<EntityResult> getResults() {
-		if(results.get() == null){
-			results = new SoftReference<>(new ArrayList<>());
-		}
-
-		return results.get();
-	}
-
-	@Override
-	public ExecutionState getState() {
-		return results.get() == null ? ExecutionState.NEW : super.getState();
-	}
 
 	public ManagedQuery(IQuery query, User owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
@@ -115,12 +92,12 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@Override
 	protected void doInitExecutable(@NonNull DatasetRegistry namespaces, ConqueryConfig config) {
 		this.config = config;
-		this.namespace = namespaces.get(getDataset().getId());
-		this.involvedWorkers = namespace.getWorkers().size();
+
+		namespace = namespaces.get(getDataset().getId());
+
+		involvedWorkers = namespace.getWorkers().size();
+
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
-		if (getLabel() == null) {
-			setLabel(makeAutoLabel(new PrintSettings(true, Locale.ROOT,namespaces, config, null)));
-		}
 	}
 
 	@Override
@@ -129,20 +106,25 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		if (result.getError().isPresent()) {
 			fail(storage, result.getError().get());
+			return;
 		}
 
-		synchronized (this) {
-			executingThreads--;
-			getResults().addAll(result.getResults());
-			if (executingThreads == 0 && getState() == ExecutionState.RUNNING) {
-				finish(storage, ExecutionState.DONE);
-			}
+		final int remaining = executingThreads.decrementAndGet();
+
+		getExecutionManager().addQueryResult(getId(), result.getResults());
+
+		if (remaining == 0 && getState() == ExecutionState.RUNNING) {
+			finish(storage, ExecutionState.DONE);
 		}
+	}
+
+	public Stream<EntityResult> streamResults() {
+		return getExecutionManager().getQueryResults(getId());
 	}
 
 	@Override
 	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
-		lastResultCount = query.countResults(getResults());
+		lastResultCount = query.countResults(streamResults());
 
 		super.finish(storage, executionState);
 	}
@@ -150,12 +132,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@Override
 	public void start() {
 		super.start();
-		synchronized (this) {
-			executingThreads = involvedWorkers;
-		}
 
-
-		getResults().clear();
+		executingThreads.set(involvedWorkers);
 	}
 
 	@Override
@@ -237,11 +215,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@JsonIgnore
 	public QueryDescription getSubmitted() {
 		return query;
-	}
-
-	@Override
-	public Stream<EntityResult> streamResults() {
-		return getResults().stream();
 	}
 
 	/**

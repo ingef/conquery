@@ -116,8 +116,10 @@ public class QueryProcessor {
 			}
 		}
 
+		final ExecutionManager queryManager = datasetRegistry.get(dataset.getId()).getQueryManager();
+
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user, dataset, config);
+		ManagedExecution<?> mq = queryManager.runQuery(datasetRegistry, query, user, dataset, config);
 
 		if (query instanceof IQuery) {
 			translateToOtherDatasets(dataset, query, user, mq);
@@ -161,7 +163,8 @@ public class QueryProcessor {
 
 		log.trace("Re-executing Query {}", execution);
 
-		ExecutionManager.execute(datasetRegistry, execution, config);
+		datasetRegistry.get(execution.getDataset().getId()).getQueryManager()
+					   .execute(datasetRegistry, execution, config);
 
 		return execution;
 
@@ -268,7 +271,9 @@ public class QueryProcessor {
 			try {
 				log.trace("Adding Query on Dataset[{}]", dataset.getId());
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
-				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
+
+				datasetRegistry.get(dataset.getId()).getQueryManager()
+							   .createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
 			}
 			catch (Exception e) {
 				log.trace("Could not translate Query[{}] to Dataset[{}]", mq.getId(), targetDataset.getId(), e);
@@ -322,7 +327,9 @@ public class QueryProcessor {
 		log.info("User[{}] reexecuted Query[{}]", user, query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
-			ExecutionManager.execute(getDatasetRegistry(), query, config);
+			datasetRegistry.get(query.getDataset().getId())
+						   .getQueryManager()
+						   .execute(getDatasetRegistry(), query, config);
 		}
 	}
 

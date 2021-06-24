@@ -1,7 +1,11 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -15,11 +19,17 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalCause;
+import com.google.common.cache.RemovalNotification;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
@@ -29,19 +39,46 @@ public class ExecutionManager {
 	@NonNull
 	private final Namespace namespace;
 
-	public static ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config) {
+	private final Cache<ManagedExecutionId, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
+																									 .softValues()
+																									 .removalListener(this::executionRemoved)
+																									 .build();
+
+	private void executionRemoved(RemovalNotification<ManagedExecutionId, List<?>> removalNotification) {
+
+		// If removal was done intentionally we assume it was also handled properly
+		if(removalNotification.getCause() == RemovalCause.EXPLICIT){
+			return;
+		}
+
+		final ManagedExecutionId executionId = removalNotification.getKey();
+
+		final ManagedExecution<?> execution = namespace.getNamespaces().getMetaStorage().getExecution(executionId);
+
+		// Execution might've already been deleted
+		if(execution == null) {
+			return;
+		}
+
+		log.warn("Evicted Results for Query[{}] (Reason: {})", executionId, removalNotification.getCause());
+
+		execution.setState(ExecutionState.NEW);
+	}
+
+
+	// TODO make this instance method instead.
+	public ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config) {
 		final ManagedExecution<?> execution = createExecution(datasets, query, user, submittedDataset);
 		execute(datasets, execution, config);
 
 		return execution;
 	}
 
-	public static void execute(DatasetRegistry datasets, ManagedExecution<?> execution, ConqueryConfig config) {
+	public void execute(DatasetRegistry datasets, ManagedExecution<?> execution, ConqueryConfig config) {
 		// Initialize the query / create subqueries
 		execution.initExecutable(datasets, config);
 
 		log.info("Executing Query[{}] in Datasets[{}]", execution.getQueryId(), execution.getRequiredDatasets());
-
 
 		execution.start();
 
@@ -50,23 +87,15 @@ public class ExecutionManager {
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 		for (Namespace namespace : execution.getRequiredDatasets()) {
-			namespace.getQueryManager().executeQueryInNamespace(execution);
+			namespace.sendToAll(new ExecuteQuery(execution));
 		}
 	}
 
-	public static ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset) {
+	public ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset) {
 		return createQuery(datasets, query, UUID.randomUUID(), user, submittedDataset);
 	}
 
-	/**
-	 * Send message for query execution to all workers.
-	 */
-	private ManagedExecution<?> executeQueryInNamespace(ManagedExecution<?> query) {
-		namespace.sendToAll(new ExecuteQuery(query));
-		return query;
-	}
-
-	public static ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, User user, Dataset submittedDataset) {
+	public ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, User user, Dataset submittedDataset) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution<?> managed = query.toManagedExecution(user, submittedDataset);
 
@@ -84,7 +113,7 @@ public class ExecutionManager {
 	 *
 	 * @param result
 	 */
-	public <R extends ShardResult, E extends ManagedExecution<R>> void addQueryResult(R result) {
+	public <R extends ShardResult, E extends ManagedExecution<R>> void handleQueryResult(R result) {
 		final MetaStorage storage = namespace.getNamespaces().getMetaStorage();
 
 		final E query = (E) getQuery(result.getQueryId());
@@ -108,4 +137,20 @@ public class ExecutionManager {
 		return Objects.requireNonNull(namespace.getStorage().getMetaStorage().getExecution(id), "Unable to find query " + id.toString());
 	}
 
+	@SneakyThrows//TODO handle properly
+	public void addQueryResult(ManagedExecutionId id, List<EntityResult> queryResults) {
+		executionResults.get(id, ArrayList::new)
+						.add(queryResults);
+	}
+
+	public void clearQueryResults(ManagedExecutionId id) {
+		executionResults.invalidate(id);
+	}
+
+	@SneakyThrows//TODO handle properly
+	public Stream<EntityResult> getQueryResults(ManagedExecutionId id) {
+		return executionResults.get(id, Collections::emptyList)
+							   .stream()
+							   .flatMap(List::stream);
+	}
 }
