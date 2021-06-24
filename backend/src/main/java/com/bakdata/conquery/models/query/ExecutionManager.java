@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -17,7 +16,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
@@ -39,34 +37,29 @@ public class ExecutionManager {
 	@NonNull
 	private final Namespace namespace;
 
-	private final Cache<ManagedExecutionId, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
+	private final Cache<ManagedExecution<?>, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
 																									 .softValues()
 																									 .removalListener(this::executionRemoved)
 																									 .build();
 
-	private void executionRemoved(RemovalNotification<ManagedExecutionId, List<?>> removalNotification) {
+	/**
+	 * Manage state of evicted Queries, setting them to NEW.
+	 */
+	private void executionRemoved(RemovalNotification<ManagedExecution<?>, List<?>> removalNotification) {
 
 		// If removal was done intentionally we assume it was also handled properly
 		if(removalNotification.getCause() == RemovalCause.EXPLICIT){
 			return;
 		}
 
-		final ManagedExecutionId executionId = removalNotification.getKey();
+		final ManagedExecution<?> execution = removalNotification.getKey();
 
-		final ManagedExecution<?> execution = namespace.getNamespaces().getMetaStorage().getExecution(executionId);
-
-		// Execution might've already been deleted
-		if(execution == null) {
-			return;
-		}
-
-		log.warn("Evicted Results for Query[{}] (Reason: {})", executionId, removalNotification.getCause());
+		log.warn("Evicted Results for Query[{}] (Reason: {})", execution.getId(), removalNotification.getCause());
 
 		execution.setState(ExecutionState.NEW);
 	}
 
 
-	// TODO make this instance method instead.
 	public ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config) {
 		final ManagedExecution<?> execution = createExecution(datasets, query, user, submittedDataset);
 		execute(datasets, execution, config);
@@ -116,7 +109,7 @@ public class ExecutionManager {
 	public <R extends ShardResult, E extends ManagedExecution<R>> void handleQueryResult(R result) {
 		final MetaStorage storage = namespace.getNamespaces().getMetaStorage();
 
-		final E query = (E) getQuery(result.getQueryId());
+		final E query = (E) storage.getExecution(result.getQueryId());
 
 		if(!query.getState().equals(ExecutionState.RUNNING)){
 			return;
@@ -133,22 +126,18 @@ public class ExecutionManager {
 		}
 	}
 
-	public ManagedExecution<?> getQuery(@NonNull ManagedExecutionId id) {
-		return Objects.requireNonNull(namespace.getStorage().getMetaStorage().getExecution(id), "Unable to find query " + id.toString());
-	}
-
 	@SneakyThrows//TODO handle properly
-	public void addQueryResult(ManagedExecutionId id, List<EntityResult> queryResults) {
+	public void addQueryResult(ManagedExecution<?> id, List<EntityResult> queryResults) {
 		executionResults.get(id, ArrayList::new)
 						.add(queryResults);
 	}
 
-	public void clearQueryResults(ManagedExecutionId id) {
+	public void clearQueryResults(ManagedExecution<?> id) {
 		executionResults.invalidate(id);
 	}
 
 	@SneakyThrows//TODO handle properly
-	public Stream<EntityResult> getQueryResults(ManagedExecutionId id) {
+	public Stream<EntityResult> getQueryResults(ManagedExecution<?> id) {
 		return executionResults.get(id, Collections::emptyList)
 							   .stream()
 							   .flatMap(List::stream);

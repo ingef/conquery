@@ -111,7 +111,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		final int remaining = executingThreads.decrementAndGet();
 
-		getExecutionManager().addQueryResult(getId(), result.getResults());
+		getExecutionManager().addQueryResult(this, result.getResults());
 
 		if (remaining == 0 && getState() == ExecutionState.RUNNING) {
 			finish(storage, ExecutionState.DONE);
@@ -119,7 +119,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	public Stream<EntityResult> streamResults() {
-		return getExecutionManager().getQueryResults(getId());
+		return getExecutionManager().getQueryResults(this);
 	}
 
 	@Override

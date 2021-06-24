@@ -184,7 +184,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			startTime = LocalDateTime.now();
 
 			setState(ExecutionState.RUNNING);
-			getExecutionManager().clearQueryResults(getId());
+			getExecutionManager().clearQueryResults(this);
 
 			execution = new CountDownLatch(1);
 		}
