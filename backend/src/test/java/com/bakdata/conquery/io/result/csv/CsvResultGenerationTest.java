@@ -1,5 +1,18 @@
 package com.bakdata.conquery.io.result.csv;
 
+import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
+import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -15,18 +28,6 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-
-import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
-import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class CsvResultGenerationTest {
@@ -67,8 +68,9 @@ public class CsvResultGenerationTest {
 
 			;
 
-			public List<EntityResult> getResults() {
-				return new ArrayList<>(results);
+			@Override
+			public Stream<EntityResult> streamResults() {
+				return results.stream();
 			}
 		};
 
