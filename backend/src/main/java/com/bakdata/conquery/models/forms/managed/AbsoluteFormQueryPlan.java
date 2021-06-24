@@ -35,7 +35,7 @@ public class AbsoluteFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	public AbsoluteFormQueryPlan clone(CloneContext ctx) {
 		return new AbsoluteFormQueryPlan(
 			query.clone(ctx),
-			subPlan
+			subPlan.clone(ctx)
 		);
 	}
 

@@ -115,6 +115,10 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Diese Anfrage wirklich löschen?"
   },
+  "deletePreviousQueryFolderModal": {
+    "areYouSure": "Diesen Ordner wirklich löschen?",
+    "description": "Alle Anfragen aus dem Ordner {{folder}} werden aus dem Ordner entfernt, bleiben aber gespeichert."
+  },
   "sharePreviousQueryModal": {
     "headline": "Anfrage freigeben: ",
     "groupsLabel": "Gruppen mit denen die Anfrage geteilt werden soll",
@@ -124,6 +128,7 @@
     "back": "Zurück",
     "any": "Beliebig",
     "save": "Speichern",
+    "saveAndCloseEsc": "Speichern und Schließen (ESC)",
     "edit": "Bearbeiten",
     "cancel": "Abbrechen",
     "delete": "Löschen",
@@ -356,7 +361,7 @@
     "previewHeadline": "Ergebnis-CSV",
     "previewSubline": "Auszug der ersten {{count}} Zeilen",
     "statisticsHeadline": "Spaltenstatistik",
-    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werten als 0 interpretiert.",
+    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werden als 0 interpretiert.",
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",
@@ -390,7 +395,8 @@
   },
   "folders": {
     "headline": "Ordner",
-    "noFolders": "ohne"
+    "noFolders": "ohne",
+    "allQueries": "Alle"
   },
   "editPreviousQueryFoldersModal": {
     "headline": "Ordner bearbeiten"

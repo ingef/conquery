@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 public class IdMutex<T extends IId<?>> {
 	private final ConcurrentHashMap<T, Locked> mutexMap = new ConcurrentHashMap<>();
 	
-	public Locked acquire(T key) {
+	public Locked acquire(final T key) {
 		Locked lock = mutexMap.get(key);
 		if(lock == null) {
 			synchronized (mutexMap) {

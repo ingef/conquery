@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React from "react";
+import React, { useCallback, useRef, useState } from "react";
 import Hotkeys from "react-hot-keys";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -12,9 +12,10 @@ import {
   SelectOptionT,
 } from "../api/types";
 import TransparentButton from "../button/TransparentButton";
+import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import EditableText from "../form-components/EditableText";
 import type { ModeT } from "../form-components/InputRange";
-import { nodeIsConceptQueryNode } from "../model/node";
+import { nodeHasActiveFilters, nodeIsConceptQueryNode } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
@@ -111,6 +112,7 @@ export interface QueryNodeEditorPropsT {
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
   onResetAllFilters: () => void;
+  onResetTable: (tableIdx: number) => void;
   onToggleTimestamps?: () => void;
   onToggleSecondaryIdExclude?: () => void;
   onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
@@ -129,46 +131,82 @@ export interface QueryNodeEditorPropsT {
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
 }
 
+const COMPACT_WIDTH = 500;
+const RIGHT_SIDE_WIDTH = 320;
+const RIGHT_SIDE_WIDTH_COMPACT = 150;
+
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const [editingLabel, setEditingLabel] = useState<boolean>(false);
 
   const {
-    setDetailsViewActive,
-    toggleEditLabel,
     setInputTableViewActive,
     setFocusedInput,
     reset,
   } = createQueryNodeEditorActions(props.name);
 
-  // TODO: Move all of the callbacks out of that object and pass individually where necessary
-  const editorState = {
-    ...(props.editorState || {}),
-    onSelectDetailsView: () => dispatch(setDetailsViewActive()),
-    onToggleEditLabel: () => dispatch(toggleEditLabel()),
-    onSelectInputTableView: (tableIdx: number) =>
-      dispatch(setInputTableViewActive(tableIdx)),
-    onReset: () => dispatch(reset()),
-  };
-
+  const onSelectInputTableView = (tableIdx: number) =>
+    dispatch(setInputTableViewActive(tableIdx));
+  const onReset = () => dispatch(reset());
   const onShowDescription = (filterIdx: number) =>
     dispatch(setFocusedInput(filterIdx));
+
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const onCommonSettingsClick = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   function close() {
     if (!node) return;
 
     props.onCloseModal();
-    editorState.onReset();
+    onReset();
   }
+
+  // To make sure that Close button is always visible and to consider
+  // that QueryNodeEditor may be contained in a horizontally resizeable panel
+  // that's resized independent of the window width.
+  // TODO: Once https://caniuse.com/css-container-queries ships, use those instead
+  const parentRef = useRef<HTMLDivElement | null>(null);
+  const [parentWidth, setParentWidth] = useState<number>(0);
+  const isCompact = parentWidth < COMPACT_WIDTH;
+  useResizeObserver(
+    useCallback((entry: ResizeObserverEntry) => {
+      if (entry) {
+        setParentWidth(entry.contentRect.width);
+      }
+    }, []),
+    parentRef.current,
+  );
 
   if (!node) return null;
 
+  const hasActiveFilters = nodeHasActiveFilters(node);
+
   return (
-    <Root>
+    <Root
+      ref={(instance) => {
+        if (instance && parentWidth === 0) {
+          setParentWidth(instance.getBoundingClientRect().width);
+        }
+        parentRef.current = instance;
+      }}
+    >
       <ContentWrap>
         <Hotkeys keyName="escape" onKeyDown={close} />
         <Header>
-          <NodeName>
+          <NodeName
+            style={{
+              maxWidth:
+                parentWidth -
+                (isCompact || !hasActiveFilters
+                  ? RIGHT_SIDE_WIDTH_COMPACT
+                  : RIGHT_SIDE_WIDTH),
+            }}
+          >
             {nodeIsConceptQueryNode(node) && (
               <EditableText
                 large
@@ -176,39 +214,44 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
                 text={node.label}
                 tooltip={t("help.editConceptName")}
                 selectTextOnMount={true}
-                editing={editorState.editingLabel}
+                editing={editingLabel}
                 onSubmit={(value) => {
                   props.onUpdateLabel(value);
-                  editorState.onToggleEditLabel();
+                  setEditingLabel(false);
                 }}
-                onToggleEdit={editorState.onToggleEditLabel}
+                onToggleEdit={() => setEditingLabel(!editingLabel)}
               />
             )}
             {node.isPreviousQuery && (node.label || node.id || node.ids)}
           </NodeName>
           <Row>
-            <ResetAllFiltersButton
-              node={node}
-              onResetAllFilters={props.onResetAllFilters}
-            />
-            <WithTooltip text={t("common.closeEsc")}>
+            {hasActiveFilters && (
+              <ResetAllFiltersButton
+                onClick={props.onResetAllFilters}
+                compact={isCompact}
+              />
+            )}
+            <WithTooltip text={t("common.saveAndCloseEsc")}>
               <CloseButton small onClick={close}>
-                {t("common.close")}
+                {t("common.save")}
               </CloseButton>
             </WithTooltip>
           </Row>
         </Header>
         <Wrapper>
-          <ScrollContainer>
+          <ScrollContainer ref={scrollContainerRef}>
             <SxMenuColumn
               node={node}
-              editorState={editorState}
+              editorState={props.editorState}
               showTables={props.showTables}
               blocklistedTables={props.blocklistedTables}
               allowlistedTables={props.allowlistedTables}
+              onCommonSettingsClick={onCommonSettingsClick}
               onDropConcept={props.onDropConcept}
               onRemoveConcept={props.onRemoveConcept}
               onToggleTable={props.onToggleTable}
+              onSelectInputTableView={onSelectInputTableView}
+              onResetTable={props.onResetTable}
             />
             <ContentColumn
               node={node}

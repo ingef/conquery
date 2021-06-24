@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -20,9 +21,11 @@ import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.RequiredArgsConstructor;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
 @RequiredArgsConstructor
@@ -32,7 +35,7 @@ public class ResultExcelProcessor {
 	private final ConqueryConfig config;
 
 
-	public Response getExcelResult(User user, ManagedExecutionId execId, DatasetId datasetId, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getExcelResult(User user, E exec, DatasetId datasetId, boolean pretty) {
 		ConqueryMDC.setLocation(user.getName());
 		final Namespace namespace = datasetRegistry.get(datasetId);
 		Dataset dataset = namespace.getDataset();
@@ -40,12 +43,9 @@ public class ResultExcelProcessor {
 		user.authorize(dataset, Ability.DOWNLOAD);
 
 
-		ManagedExecution<?> exec = datasetRegistry.getMetaStorage().getExecution(execId);
-
-		ResourceUtil.throwNotFoundIfNull(execId, exec);
-
 
 		user.authorize(exec, Ability.READ);
+
 
 		IdMappingConfig idMapping = config.getIdMapping();
 		IdMappingState mappingState = idMapping.initToExternal(user, exec);
@@ -63,10 +63,11 @@ public class ResultExcelProcessor {
 		StreamingOutput out = output -> excelRenderer.renderToStream(
 				settings,
 				idMapping.getPrintIdFields(),
-				exec,
+				(ManagedExecution<?> & SingleTableResult)exec,
 				output
 		);
 
 		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx");
 	}
+
 }

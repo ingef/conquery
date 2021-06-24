@@ -22,15 +22,15 @@ import { QueryTypeT } from "./actions";
 interface APICallType {
   loading?: boolean;
   success?: boolean;
-  error?: string | boolean;
+  error?: string | boolean | null;
   errorContext?: Record<string, string>;
 }
 
 interface QueryResultT extends APICallType {
   datasetId?: string;
-  resultCount?: number;
-  resultUrl?: string;
-  resultColumns?: ColumnDescription[];
+  resultCount?: number | null;
+  resultUrls?: string[];
+  resultColumns?: ColumnDescription[] | null;
   queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
 
@@ -62,7 +62,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
       success: true,
       error: null,
       resultCount: data.numberOfResults,
-      resultUrl: data.resultUrl,
+      resultUrls: data.resultUrls,
       resultColumns: data.columnDescriptions,
       queryType: data.queryType,
     };

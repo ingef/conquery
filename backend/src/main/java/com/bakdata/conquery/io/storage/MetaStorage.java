@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.storage;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.validation.Validator;
 
@@ -32,7 +33,6 @@ public class MetaStorage implements ConqueryStorage{
     private IdentifiableStore<Role> authRole;
     private IdentifiableStore<Group> authGroup;
 
-
     @Getter
     private DatasetRegistry datasetRegistry;
     @Getter
@@ -49,7 +49,7 @@ public class MetaStorage implements ConqueryStorage{
 		authGroup = storageFactory.createGroupStore(centralRegistry, pathName);
 		// Executions depend on users
 		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, pathName);
-		formConfigs = storageFactory.createFormConfigStore(centralRegistry, pathName);
+		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, pathName);
     }
 
     @Override

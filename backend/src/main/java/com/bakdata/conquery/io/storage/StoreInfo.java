@@ -116,7 +116,7 @@ public enum StoreInfo implements IStoreInfo {
     /**
      * Store holding a single value.
      */
-    public <VALUE> SingletonStore<VALUE> singleton(Store baseStore, Injectable... injectables) {
+    public <VALUE> SingletonStore<VALUE> singleton(Store<Boolean,VALUE> baseStore, Injectable... injectables) {
         return new SingletonStore<>(baseStore, injectables);
     }
 

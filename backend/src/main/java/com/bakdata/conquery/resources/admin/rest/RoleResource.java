@@ -6,6 +6,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -23,6 +24,10 @@ import com.bakdata.conquery.resources.hierarchies.HAdmin;
 
 @Path(ROLES_PATH_ELEMENT)
 public class RoleResource extends HAdmin {
+
+
+	@Inject
+	protected AdminProcessor processor;
 
 	@POST
 	public Response postRole(Role role) throws JSONException {

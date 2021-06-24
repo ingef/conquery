@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
+import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
 import {
   PostPrefixForSuggestionsParams,
@@ -13,39 +14,17 @@ import type {
   QueryNodeT,
   PostFilterSuggestionsResponseT,
 } from "../api/types";
-import { defaultSuccess, defaultError } from "../common/actions";
+import {
+  defaultSuccess,
+  defaultError,
+  ErrorObject,
+  errorPayload,
+  successPayload,
+} from "../common/actions";
 import type { TreesT } from "../concept-trees/reducer";
 import type { ModeT } from "../form-components/InputRange";
 import { useLoadPreviousQuery } from "../previous-queries/list/actions";
 
-import {
-  DROP_AND_NODE,
-  DROP_OR_NODE,
-  DELETE_NODE,
-  DELETE_GROUP,
-  TOGGLE_EXCLUDE_GROUP,
-  LOAD_QUERY,
-  CLEAR_QUERY,
-  EXPAND_PREVIOUS_QUERY,
-  SELECT_NODE_FOR_EDITING,
-  DESELECT_NODE,
-  UPDATE_NODE_LABEL,
-  ADD_CONCEPT_TO_NODE,
-  REMOVE_CONCEPT_FROM_NODE,
-  TOGGLE_TABLE,
-  SET_FILTER_VALUE,
-  SET_SELECTS,
-  SET_TABLE_SELECTS,
-  RESET_ALL_FILTERS,
-  SWITCH_FILTER_MODE,
-  TOGGLE_TIMESTAMPS,
-  LOAD_FILTER_SUGGESTIONS_START,
-  LOAD_FILTER_SUGGESTIONS_SUCCESS,
-  LOAD_FILTER_SUGGESTIONS_ERROR,
-  SET_DATE_COLUMN,
-  SET_SELECTED_SECONDARY_ID,
-  TOGGLE_SECONDARY_ID_EXCLUDE,
-} from "./actionTypes";
 import { StandardQueryStateT } from "./queryReducer";
 import type {
   DragItemConceptTreeNode,
@@ -53,42 +32,59 @@ import type {
   DragItemQuery,
 } from "./types";
 
-export const dropAndNode = (
-  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode,
-) => ({
-  type: DROP_AND_NODE,
-  payload: { item },
-});
+export type StandardQueryEditorActions = ActionType<
+  | typeof resetTable
+  | typeof dropAndNode
+  | typeof dropOrNode
+  | typeof loadQuery
+  | typeof clearQuery
+  | typeof deleteNode
+  | typeof deleteGroup
+  | typeof updateNodeLabel
+  | typeof toggleTable
+  | typeof setFilterValue
+  | typeof toggleExcludeGroup
+  | typeof toggleSecondaryIdExclude
+  | typeof toggleTimestamps
+  | typeof resetAllFilters
+  | typeof removeConceptFromNode
+  | typeof addConceptToNode
+  | typeof switchFilterMode
+  | typeof setSelects
+  | typeof setTableSelects
+  | typeof setDateColumn
+  | typeof setSelectedSecondaryId
+  | typeof expandPreviousQuery
+  | typeof loadFilterSuggestions
+>;
 
-export const dropOrNode = (
-  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode,
-  andIdx: number,
-) => ({
-  type: DROP_OR_NODE,
-  payload: { item, andIdx },
-});
+export const dropAndNode = createAction("query-editor/DROP_AND_NODE")<{
+  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode;
+}>();
 
-export const deleteNode = (andIdx: number, orIdx: number) => ({
-  type: DELETE_NODE,
-  payload: { andIdx, orIdx },
-});
+export const dropOrNode = createAction("query-editor/DROP_OR_NODE")<{
+  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode;
+  andIdx: number;
+}>();
 
-export const deleteGroup = (andIdx: number) => ({
-  type: DELETE_GROUP,
-  payload: { andIdx },
-});
+export const deleteNode = createAction("query-editor/DELETE_NODE")<{
+  andIdx: number;
+  orIdx: number;
+}>();
 
-export const toggleExcludeGroup = (andIdx: number) => ({
-  type: TOGGLE_EXCLUDE_GROUP,
-  payload: { andIdx },
-});
+export const deleteGroup = createAction("query-editor/DELETE_GROUP")<{
+  andIdx: number;
+}>();
 
-export const loadQuery = (query: StandardQueryStateT) => ({
-  type: LOAD_QUERY,
-  payload: { query },
-});
+export const toggleExcludeGroup = createAction(
+  "query-editor/TOGGLE_EXCLUDE_GROUP",
+)<{ andIdx: number }>();
 
-export const clearQuery = () => ({ type: CLEAR_QUERY });
+export const loadQuery = createAction("query-editor/LOAD_QUERY")<{
+  query: StandardQueryStateT;
+}>();
+
+export const clearQuery = createAction("query-editor/CLEAR_QUERY")();
 
 const findPreviousQueryIds = (node: QueryNodeT, queries = []): string[] => {
   switch (node.type) {
@@ -110,6 +106,14 @@ const findPreviousQueryIds = (node: QueryNodeT, queries = []): string[] => {
   }
 };
 
+export const expandPreviousQuery = createAction(
+  "query-editor/EXPAND_PREVIOUS_QUERY",
+)<{
+  rootConcepts: TreesT;
+  query: AndQueryT;
+  expandErrorMessage: string;
+}>();
+
 const isAndQuery = (query: QueryT): query is AndQueryT => {
   return query.root.type === "AND";
 };
@@ -129,14 +133,13 @@ export const useExpandPreviousQuery = () => {
 
     const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
 
-    dispatch({
-      type: EXPAND_PREVIOUS_QUERY,
-      payload: {
+    dispatch(
+      expandPreviousQuery({
         rootConcepts,
         query,
         expandErrorMessage: t("queryEditor.couldNotExpandNode"),
-      },
-    });
+      }),
+    );
 
     await Promise.all(
       nestedPreviousQueryIds.map((queryId) =>
@@ -145,108 +148,115 @@ export const useExpandPreviousQuery = () => {
     );
 
     dispatch(
-      setSelectedSecondaryId(query.secondaryId ? query.secondaryId : null),
+      setSelectedSecondaryId({
+        secondaryId: query.secondaryId ? query.secondaryId : null,
+      }),
     );
   };
 };
 
-export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
-  type: SELECT_NODE_FOR_EDITING,
-  payload: { andIdx, orIdx },
-});
+export const updateNodeLabel = createAction("query-editor/UPDATE_NODE_LABEL")<{
+  andIdx: number;
+  orIdx: number;
+  label: string;
+}>();
 
-export const deselectNode = () => ({ type: DESELECT_NODE });
+export const addConceptToNode = createAction(
+  "query-editor/ADD_CONCEPT_TO_NODE",
+)<{
+  andIdx: number;
+  orIdx: number;
+  concept: DragItemConceptTreeNode;
+}>();
 
-export const updateNodeLabel = (label: string) => ({
-  type: UPDATE_NODE_LABEL,
-  payload: { label },
-});
-export const addConceptToNode = (concept: DragItemConceptTreeNode) => ({
-  type: ADD_CONCEPT_TO_NODE,
-  payload: { concept },
-});
-export const removeConceptFromNode = (conceptId: ConceptIdT) => ({
-  type: REMOVE_CONCEPT_FROM_NODE,
-  payload: { conceptId },
-});
+export const removeConceptFromNode = createAction(
+  "query-editor/REMOVE_CONCEPT_FROM_NODE",
+)<{ andIdx: number; orIdx: number; conceptId: ConceptIdT }>();
 
-export const toggleTable = (tableIdx: number, isExcluded: boolean) => ({
-  type: TOGGLE_TABLE,
-  payload: { tableIdx, isExcluded },
-});
+export const toggleTable = createAction("query-editor/TOGGLE_TABLE")<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  isExcluded: boolean;
+}>();
 
-export const setFilterValue = (
-  tableIdx: number,
-  filterIdx: number,
-  value: unknown,
-) => ({
-  type: SET_FILTER_VALUE,
-  payload: { tableIdx, filterIdx, value },
-});
+export const setFilterValue = createAction("query-editor/SET_FILTER_VALUE")<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  filterIdx: number;
+  value: unknown;
+}>();
 
-export const setTableSelects = (tableIdx: number, value: unknown) => ({
-  type: SET_TABLE_SELECTS,
-  payload: { tableIdx, value },
-});
-export const setSelects = (value) => ({
-  type: SET_SELECTS,
-  payload: { value },
-});
+export const setTableSelects = createAction("query-editor/SET_TABLE_SELECTS")<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  value: unknown;
+}>();
+export const setSelects = createAction("query-editor/SET_SELECTS")<{
+  andIdx: number;
+  orIdx: number;
+  value: unknown;
+}>();
+export const setDateColumn = createAction("query-editor/SET_DATE_COLUMN")<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  value: unknown;
+}>();
 
-export const setDateColumn = (tableIdx: number, value) => ({
-  type: SET_DATE_COLUMN,
-  payload: { tableIdx, value },
-});
+export const resetAllFilters = createAction("query-editor/RESET_ALL_FILTERS")<{
+  andIdx: number;
+  orIdx: number;
+}>();
 
-export const resetAllFilters = () => ({
-  type: RESET_ALL_FILTERS,
-});
+export const resetTable = createAction("query-editor/RESET_TABLE")<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+}>();
 
-export const switchFilterMode = (
-  tableIdx: number,
-  filterIdx: number,
-  mode: ModeT,
-) => ({
-  type: SWITCH_FILTER_MODE,
-  payload: { tableIdx, filterIdx, mode },
-});
+export const switchFilterMode = createAction(
+  "query-editor/SWITCH_FILTER_MODE",
+)<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  filterIdx: number;
+  mode: ModeT;
+}>();
 
-export const toggleTimestamps = (andIdx?: number, orIdx?: number) => ({
-  type: TOGGLE_TIMESTAMPS,
-  payload: { andIdx, orIdx },
-});
+export const toggleTimestamps = createAction("query-editor/TOGGLE_TIMESTAMPS")<{
+  andIdx: number;
+  orIdx: number;
+}>();
 
-export const toggleSecondaryIdExclude = (andIdx?: number, orIdx?: number) => ({
-  type: TOGGLE_SECONDARY_ID_EXCLUDE,
-  payload: { andIdx, orIdx },
-});
+export const toggleSecondaryIdExclude = createAction(
+  "query-editor/TOGGLE_SECONDARY_ID_EXCLUDE",
+)<{ andIdx: number; orIdx: number }>();
 
-export const loadFilterSuggestionsStart = (
-  tableIdx: number,
-  filterIdx: number,
-) => ({
-  type: LOAD_FILTER_SUGGESTIONS_START,
-  payload: { tableIdx, filterIdx },
-});
+interface FilterContext {
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  filterIdx: number;
+}
+export const loadFilterSuggestions = createAsyncAction(
+  "query-editor/LOAD_FILTER_SUGGESTIONS_START",
+  "query-editor/LOAD_FILTER_SUGGESTIONS_SUCCESS",
+  "query-editor/LOAD_FILTER_SUGGESTIONS_ERROR",
+)<
+  FilterContext,
+  FilterContext & {
+    data: PostFilterSuggestionsResponseT;
+  },
+  FilterContext & ErrorObject
+>();
 
-export const loadFilterSuggestionsSuccess = (
-  suggestions: PostFilterSuggestionsResponseT,
-  tableIdx: number,
-  filterIdx: number,
-) =>
-  defaultSuccess(LOAD_FILTER_SUGGESTIONS_SUCCESS, suggestions, {
-    tableIdx,
-    filterIdx,
-  });
-
-export const loadFilterSuggestionsError = (
-  error: Error,
-  tableIdx: number,
-  filterIdx: number,
-) =>
-  defaultError(LOAD_FILTER_SUGGESTIONS_ERROR, error, { tableIdx, filterIdx });
-
-export const useLoadFilterSuggestions = () => {
+export const useLoadFilterSuggestions = (
+  editedNode: { andIdx: number; orIdx: number } | null,
+) => {
   const dispatch = useDispatch();
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
 
@@ -255,18 +265,20 @@ export const useLoadFilterSuggestions = () => {
     tableIdx: number,
     filterIdx: number,
   ) => {
-    dispatch(loadFilterSuggestionsStart(tableIdx, filterIdx));
+    if (!editedNode) return;
+
+    const context = { ...editedNode, tableIdx, filterIdx };
+
+    dispatch(loadFilterSuggestions.request(context));
 
     return postPrefixForSuggestions(params).then(
-      (r) => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
-      (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx)),
+      (r) =>
+        dispatch(loadFilterSuggestions.success(successPayload(r, context))),
+      (e) => dispatch(loadFilterSuggestions.failure(errorPayload(e, context))),
     );
   };
 };
 
-export const setSelectedSecondaryId = (secondaryId: string | null) => {
-  return {
-    type: SET_SELECTED_SECONDARY_ID,
-    payload: { secondaryId },
-  };
-};
+export const setSelectedSecondaryId = createAction(
+  "query-editor/SET_SELECTED_SECONDARY_ID",
+)<{ secondaryId: string | null }>();

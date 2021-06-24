@@ -9,7 +9,6 @@ import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
 import { QueryNodeEditorStateT } from "../query-node-editor/reducer";
 
 import {
-  deselectNode,
   updateNodeLabel,
   addConceptToNode,
   removeConceptFromNode,
@@ -17,6 +16,7 @@ import {
   setFilterValue,
   switchFilterMode,
   resetAllFilters,
+  resetTable,
   toggleTimestamps,
   setSelects,
   setTableSelects,
@@ -24,23 +24,26 @@ import {
   toggleSecondaryIdExclude,
   useLoadFilterSuggestions,
 } from "./actions";
-import type { StandardQueryStateT } from "./queryReducer";
 import { StandardQueryNodeT } from "./types";
 
-const findNodeBeingEdited = (query: StandardQueryStateT) =>
-  query
-    .reduce<StandardQueryNodeT[]>(
-      (acc, group) => [...acc, ...group.elements],
-      [],
-    )
-    .find((element) => element.isEditing);
+interface EditedNodePosition {
+  andIdx: number;
+  orIdx: number;
+}
 
-const StandardQueryNodeEditor = () => {
+interface Props {
+  editedNode: EditedNodePosition | null;
+  setEditedNode: (node: EditedNodePosition | null) => void;
+}
+
+const StandardQueryNodeEditor = ({ editedNode, setEditedNode }: Props) => {
   const datasetId = useSelector<StateT, DatasetIdT | null>(
     (state) => state.datasets.selectedDatasetId,
   );
-  const node = useSelector<StateT, StandardQueryNodeT | undefined>((state) =>
-    findNodeBeingEdited(state.queryEditor.query),
+  const node = useSelector<StateT, StandardQueryNodeT | null>((state) =>
+    editedNode
+      ? state.queryEditor.query[editedNode.andIdx].elements[editedNode.orIdx]
+      : null,
   );
   const showTables =
     !!node &&
@@ -55,12 +58,14 @@ const StandardQueryNodeEditor = () => {
     (state) => state.startup.config.currency,
   );
 
-  const onLoadFilterSuggestions = useLoadFilterSuggestions();
+  const onLoadFilterSuggestions = useLoadFilterSuggestions(editedNode);
   const dispatch = useDispatch();
 
-  if (!datasetId || !node) {
+  if (!datasetId || !node || !editedNode) {
     return null;
   }
+
+  const { andIdx, orIdx } = editedNode;
 
   return (
     <QueryNodeEditor
@@ -71,30 +76,41 @@ const StandardQueryNodeEditor = () => {
       showTables={showTables}
       currencyConfig={currencyConfig}
       onLoadFilterSuggestions={onLoadFilterSuggestions}
-      onCloseModal={() => dispatch(deselectNode())}
-      onUpdateLabel={(label: string) => dispatch(updateNodeLabel(label))}
-      onDropConcept={(concept) => dispatch(addConceptToNode(concept))}
+      onCloseModal={() => setEditedNode(null)}
+      onUpdateLabel={(label: string) =>
+        dispatch(updateNodeLabel({ andIdx, orIdx, label }))
+      }
+      onDropConcept={(concept) =>
+        dispatch(addConceptToNode({ andIdx, orIdx, concept }))
+      }
       onRemoveConcept={(conceptId: ConceptIdT) =>
-        dispatch(removeConceptFromNode(conceptId))
+        dispatch(removeConceptFromNode({ andIdx, orIdx, conceptId }))
       }
       onToggleTable={(tableIdx: number, isExcluded: boolean) =>
-        dispatch(toggleTable(tableIdx, isExcluded))
+        dispatch(toggleTable({ andIdx, orIdx, tableIdx, isExcluded }))
       }
       onSelectSelects={(value) => {
-        dispatch(setSelects(value));
+        dispatch(setSelects({ andIdx, orIdx, value }));
       }}
       onSelectTableSelects={(tableIdx: number, value) =>
-        dispatch(setTableSelects(tableIdx, value))
+        dispatch(setTableSelects({ andIdx, orIdx, tableIdx, value }))
       }
       onSetFilterValue={(tableIdx: number, filterIdx: number, value) =>
-        dispatch(setFilterValue(tableIdx, filterIdx, value))
+        dispatch(setFilterValue({ andIdx, orIdx, tableIdx, filterIdx, value }))
       }
-      onSwitchFilterMode={(...args) => dispatch(switchFilterMode(...args))}
-      onResetAllFilters={() => dispatch(resetAllFilters())}
-      onToggleTimestamps={() => dispatch(toggleTimestamps())}
-      onToggleSecondaryIdExclude={() => dispatch(toggleSecondaryIdExclude())}
+      onSwitchFilterMode={(tableIdx, filterIdx, mode) =>
+        dispatch(switchFilterMode({ andIdx, orIdx, tableIdx, filterIdx, mode }))
+      }
+      onResetAllFilters={() => dispatch(resetAllFilters({ andIdx, orIdx }))}
+      onResetTable={(tableIdx: number) =>
+        dispatch(resetTable({ andIdx, orIdx, tableIdx }))
+      }
+      onToggleTimestamps={() => dispatch(toggleTimestamps({ andIdx, orIdx }))}
+      onToggleSecondaryIdExclude={() =>
+        dispatch(toggleSecondaryIdExclude({ andIdx, orIdx }))
+      }
       onSetDateColumn={(tableIdx: number, value) =>
-        dispatch(setDateColumn(tableIdx, value))
+        dispatch(setDateColumn({ andIdx, orIdx, tableIdx, value }))
       }
     />
   );

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
+import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
@@ -41,8 +41,10 @@ import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.api.ResultArrowFileResource;
+import com.bakdata.conquery.resources.api.ResultArrowStreamResource;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
+import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
@@ -53,7 +55,7 @@ public class StoredQueriesProcessorTest {
 	// Marked Unused, but does inject itself.
 	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE,new DevelopmentAuthorizationConfig());
 
-	private static final StoredQueriesProcessor processor = new StoredQueriesProcessor(new DatasetRegistry(0), STORAGE, new ConqueryConfig());
+	private static final QueryProcessor processor = new QueryProcessor(new DatasetRegistry(0), STORAGE, new ConqueryConfig());
 
 	private static final Dataset DATASET_0 = new Dataset() {{setName("dataset0");}};
 	private static final Dataset DATASET_1 = new Dataset() {{setName("dataset1");}};
@@ -100,7 +102,7 @@ public class StoredQueriesProcessorTest {
 	@Test
 	public void getQueriesFiltered() {
 
-		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, URI_BUILDER, USERS[0], queries)
+		List<ExecutionStatus> infos = processor.getQueriesFiltered(DATASET_0, URI_BUILDER, USERS[0], queries, true)
 											   .collect(Collectors.toList());
 
 		assertThat(infos)
@@ -175,6 +177,11 @@ public class StoredQueriesProcessorTest {
 	private static ExecutionStatus makeState(ManagedExecutionId id, User owner, User callingUser, ExecutionState state, String typeLabel, SecondaryIdDescriptionId secondaryId) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 
+		final ManagedQuery execMock = new ManagedQuery() {{
+			setDataset(DATASET_0);
+			setQueryId(id.getExecution());
+		}};
+
 		status.setTags(new String[0]);
 		status.setLabel(id.getExecution().toString());
 		status.setPristineLabel(true);
@@ -187,13 +194,11 @@ public class StoredQueriesProcessorTest {
 		status.setQueryType(typeLabel);
 		status.setSecondaryId(secondaryId); // This is probably not interesting on the overview (only if there is an filter for the search)
 		if(state.equals(DONE)) {
-			status.setResultUrl(URI_BUILDER.clone()
-					.path(ResultCsvResource.class)
-					.resolveTemplate(ResourceConstants.DATASET, id.getDataset())
-					.path(ResultCsvResource.class, ResultCsvResource.GET_CSV_PATH_METHOD)
-					.resolveTemplate(ResourceConstants.QUERY, id.toString())
-					.build()
-					.toURL());
+			status.setResultUrls(List.of(
+					ResultExcelResource.getDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultCsvResource.getDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultArrowFileResource.getDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultArrowStreamResource.getDownloadURL(URI_BUILDER.clone(), execMock)));
 		}
 
 		return status;

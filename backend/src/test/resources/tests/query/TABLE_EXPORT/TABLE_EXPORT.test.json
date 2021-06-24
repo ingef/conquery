@@ -6,15 +6,15 @@
     "type": "TABLE_EXPORT",
     "tables": [
       {
-        "id": "number.number_connector",
+        "id": "concept.connector",
         "dateColumn": {
-          "value": "number.number_connector.datum"
+          "value": "concept.connector.datum"
         }
       },
       {
-        "id": "number.number_connector2",
+        "id": "concept.connector2",
         "dateColumn": {
-          "value": "number.number_connector2.datum"
+          "value": "concept.connector2.datum"
         }
       }
     ],
@@ -26,16 +26,15 @@
       "type": "CONCEPT_QUERY",
       "root": {
         "ids": [
-          "number"
+          "concept"
         ],
         "type": "CONCEPT",
-        "label": "vs",
         "tables": [
           {
-            "id": "number.number_connector",
+            "id": "concept.connector",
             "filters": [
               {
-                "filter": "number.number_connector.value",
+                "filter": "concept.connector.value",
                 "type": "REAL_RANGE",
                 "value": {
                   "min": 1,
@@ -45,10 +44,10 @@
             ]
           },
           {
-            "id": "number.number_connector2",
+            "id": "concept.connector2",
             "filters": [
               {
-                "filter": "number.number_connector2.value",
+                "filter": "concept.connector2.value",
                 "type": "REAL_RANGE",
                 "value": {
                   "min": 1,
@@ -63,34 +62,32 @@
   },
   "concepts": [
     {
-      "label": "number",
+      "name": "concept",
       "type": "TREE",
       "connectors": [
         {
-          "label": "number_connector",
-          "table": "vers_stamm",
+          "name": "connector",
+          "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm.datum"
+            "column": "table1.datum"
           },
           "filters": {
-            "label": "value",
-            "description": "xy",
-            "column": "vers_stamm.value",
+            "name": "value",
+            "column": "table1.value",
             "type": "NUMBER"
           }
         },
         {
-          "label": "number_connector2",
-          "table": "vers_stamm2",
+          "label": "connector2",
+          "table": "table2",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm2.datum"
+            "column": "table2.datum"
           },
           "filters": {
-            "label": "value",
-            "description": "xy",
-            "column": "vers_stamm2.value",
+            "name": "value",
+            "column": "table2.value",
             "type": "NUMBER"
           }
         }
@@ -98,10 +95,14 @@
     }
   ],
   "content": {
+    "secondaryIds" : {
+      "name" : "sid",
+      "label" : "SecondaryId"
+    },
     "tables": [
       {
         "csv": "tests/query/TABLE_EXPORT/content.csv",
-        "name": "vers_stamm",
+        "name": "table1",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -109,7 +110,8 @@
         "columns": [
           {
             "name": "sid",
-            "type": "STRING"
+            "type": "STRING",
+            "secondaryId" : "sid"
           },
           {
             "name": "value",
@@ -123,7 +125,7 @@
       },
       {
         "csv": "tests/query/TABLE_EXPORT/content2.csv",
-        "name": "vers_stamm2",
+        "name": "table2",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -131,7 +133,8 @@
         "columns": [
           {
             "name": "sid",
-            "type": "STRING"
+            "type": "STRING",
+            "secondaryId" : "sid"
           },
           {
             "name": "value",

@@ -42,6 +42,7 @@ import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRe
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -225,6 +226,11 @@ public class FormConfigTest {
 		@Override
 		public String getFormType() {
 			return "test-form";
+		}
+
+		@Override
+		public ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset) {
+			return new ManagedInternalForm(this, user, submittedDataset);
 		}
 
 		@Override

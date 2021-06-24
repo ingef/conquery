@@ -19,8 +19,6 @@ import java.util.Set;
  */
 public abstract class HAdmin extends HAuthorized implements Authorized {
 
-	@Inject
-	protected AdminProcessor processor;
 	
 	@Override
 	@PostConstruct

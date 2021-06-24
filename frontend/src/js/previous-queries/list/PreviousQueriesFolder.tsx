@@ -47,8 +47,9 @@ const PreviousQueriesFolder: FC<Props> = ({
       empty={empty}
       onClick={onClick}
       className={className}
+      title={folder}
     >
-      <FaIcon icon="folder" regular={empty} main />
+      <FaIcon icon="folder" regular={empty} active />
       <Text>{folder}</Text>
     </Folder>
   );

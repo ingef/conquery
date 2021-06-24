@@ -1,7 +1,16 @@
 package com.bakdata.conquery.models.preproc;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
+import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
@@ -22,40 +31,60 @@ public class PreprocessedReader implements AutoCloseable {
 
 	@Accessors(fluent = true)
 	@RequiredArgsConstructor
-	private enum LastRead {
+	public enum LastRead {
 		DATA(null), DICTIONARIES(DATA), HEADER(DICTIONARIES), BEGIN(HEADER);
 
 		@Getter
 		private final LastRead next;
 	}
 
-	private LastRead read = LastRead.BEGIN;
+	@Getter
+	private LastRead lastRead = LastRead.BEGIN;
 	private final JsonParser parser;
+	private final Map<IId<?>, Identifiable<?>> replacements = new HashMap<>();
+
+	public PreprocessedReader(InputStream inputStream) throws IOException {
+		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
+		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
+
+		parser = namespaceCollection.injectInto(Jackson.BINARY_MAPPER.copy())
+				.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+				.getFactory()
+				.createParser(inputStream);
+	}
+
+	public void addReplacement(IId<?> id, Identifiable<?> replacement) {
+		this.replacements.put(id, replacement);
+	}
+
+	public <K extends IId<?>, V extends Identifiable<?>> void addAllReplacements(Map<K, V> replacements) {
+		this.replacements.putAll(replacements);
+	}
 
 	public PreprocessedHeader readHeader() throws IOException {
-		Preconditions.checkState(read.equals(LastRead.BEGIN));
+		Preconditions.checkState(lastRead.equals(LastRead.BEGIN));
 
 		final PreprocessedHeader header = parser.readValueAs(PreprocessedHeader.class);
 
-		read = read.next();
+		lastRead = lastRead.next();
 		return header;
 	}
 
 	public PreprocessedDictionaries readDictionaries() throws IOException {
-		Preconditions.checkState(read.equals(LastRead.HEADER));
+		Preconditions.checkState(lastRead.equals(LastRead.HEADER));
 
 		final PreprocessedDictionaries dictionaries = parser.readValueAs(PreprocessedDictionaries.class);
 
-		read = read.next();
+		lastRead = lastRead.next();
 		return dictionaries;
 	}
 
 	public PreprocessedData readData() throws IOException {
-		Preconditions.checkState(read.equals(LastRead.DICTIONARIES));
+		Preconditions.checkState(lastRead.equals(LastRead.DICTIONARIES));
 
 		final PreprocessedData dictionaries = parser.readValueAs(PreprocessedData.class);
 
-		read = read.next();
+		lastRead = lastRead.next();
 		return dictionaries;
 	}
 

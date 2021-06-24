@@ -1,12 +1,12 @@
 package com.bakdata.conquery.io.result.excel;
 
-import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
@@ -16,9 +16,10 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jetbrains.annotations.NotNull;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTable;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumn;
@@ -37,19 +38,18 @@ import java.util.stream.Stream;
 public class ExcelRenderer {
     
     private final static Map<Class<? extends ResultType>,TypeWriter> TYPE_WRITER_MAP = Map.of(
-            ResultType.BooleanT.class, ExcelRenderer::writeBooleanCell,
             ResultType.DateT.class, ExcelRenderer::writeDateCell,
             ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
             ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
             ResultType.NumericT.class, ExcelRenderer::writeNumericCell
     );
 
-    private final XSSFWorkbook workbook;
+    private final SXSSFWorkbook workbook;
     private final ImmutableMap<String, CellStyle> styles;
 
 
     public ExcelRenderer(ExcelConfig config) {
-        workbook = new XSSFWorkbook();
+        workbook = new SXSSFWorkbook();
         styles = config.generateStyles(workbook);
     }
 
@@ -58,16 +58,16 @@ public class ExcelRenderer {
         void writeCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles);
     }
 
-    public void renderToStream(
+    public <E extends ManagedExecution<?> & SingleTableResult> void renderToStream(
             PrintSettings cfg,
             List<String> idHeaders,
-            ManagedExecution<?> exec,
+            E exec,
             OutputStream outputStream) throws IOException {
         List<ResultInfo> info = exec.getResultInfo();
 
 
         // TODO internationalize
-        XSSFSheet sheet = workbook.createSheet("Result");
+        SXSSFSheet sheet = workbook.createSheet("Result");
 
 
         // Create a table environment inside the excel sheet
@@ -81,6 +81,7 @@ public class ExcelRenderer {
 
 
         workbook.write(outputStream);
+        workbook.dispose();
 
     }
 
@@ -109,8 +110,8 @@ public class ExcelRenderer {
     }
 
     @NotNull
-    private XSSFTable createTableEnvironment(ManagedExecution<?> exec, XSSFSheet sheet) {
-        XSSFTable table = sheet.createTable(null);
+    private XSSFTable createTableEnvironment(ManagedExecution<?> exec, SXSSFSheet sheet) {
+        XSSFTable table = sheet.getWorkbook().getXSSFWorkbook().getSheet(sheet.getSheetName()).createTable(null);
 
         CTTable cttable = table.getCTTable();
         table.setName(exec.getLabelWithoutAutoLabelSuffix());
@@ -125,7 +126,7 @@ public class ExcelRenderer {
     }
 
     private void writeHeader(
-            XSSFSheet sheet,
+            SXSSFSheet sheet,
             List<String> idHeaders,
             List<ResultInfo> infos,
             PrintSettings cfg,
@@ -214,6 +215,9 @@ public class ExcelRenderer {
         cell.setCellValue(info.getType().printNullable(settings,value));
     }
 
+    /**
+     * Is not used at the moment because at least the german Excel does not seem to understand its own boolean format.
+     */
     private static void writeBooleanCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
         if (value instanceof Boolean) {
             Boolean aBoolean = (Boolean) value;

@@ -209,10 +209,10 @@ public class QueryUtils {
 
 
 
-	public static QueryExecutionContext determineDateAggregatorForContext(QueryExecutionContext ctx, Supplier<Optional<Aggregator<CDateSet>>> getValidityDateAggregator) {
+	public static QueryExecutionContext determineDateAggregatorForContext(QueryExecutionContext ctx, Supplier<Optional<Aggregator<CDateSet>>> altValidityDateAggregator) {
 		if (ctx.getQueryDateAggregator().isPresent()) {
 			return ctx;
 		}
-		return ctx.withQueryDateAggregator(getValidityDateAggregator.get());
+		return ctx.withQueryDateAggregator(altValidityDateAggregator.get());
 	}
 }

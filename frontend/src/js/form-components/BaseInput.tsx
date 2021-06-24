@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import type { CurrencyConfigT } from "../api/types";
 import IconButton from "../button/IconButton";
+import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 
 import CurrencyInput from "./CurrencyInput";
@@ -13,8 +14,22 @@ const Root = styled("div")`
   display: inline-block;
 `;
 
-const Input = styled("input")<{ large?: boolean }>`
+const Input = styled("input")<{
+  large?: boolean;
+  valid?: boolean;
+  invalid?: boolean;
+}>`
+  outline: 0;
+  border: 1px solid
+    ${({ theme, valid, invalid }) =>
+      invalid
+        ? theme.col.red
+        : valid
+        ? theme.col.green
+        : theme.col.grayMediumLight};
+  font-size: ${({ theme }) => theme.font.md};
   min-width: 170px;
+
   padding: ${({ large }) =>
     large ? "10px 30px 10px 14px" : "8px 30px 8px 10px"};
   font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
@@ -48,6 +63,8 @@ interface Props {
   className?: string;
   inputType: string;
   money?: boolean;
+  valid?: boolean;
+  invalid?: boolean;
   placeholder?: string;
   value: number | string | null;
   large?: boolean;
@@ -109,13 +126,15 @@ const BaseInput = (props: Props) => {
             safeOnChange(value);
           }}
           onKeyPress={(e) => handleKeyPress(e)}
-          value={props.value || ""}
+          value={exists(props.value) ? props.value : ""}
           large={props.large}
+          valid={props.valid}
+          invalid={props.invalid}
           onBlur={props.onBlur}
           {...inputProps}
         />
       )}
-      {exists(props.value) && (
+      {exists(props.value) && !isEmpty(props.value) && (
         <ClearZoneIconButton
           tiny
           icon="times"

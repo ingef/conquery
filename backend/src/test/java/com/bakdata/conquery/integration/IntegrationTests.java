@@ -48,7 +48,6 @@ public class IntegrationTests {
 	private final File workDir;
 	@Getter @RegisterExtension
 	public static TestConqueryConfig DEFAULT_CONFIG = new TestConqueryConfig();
-	private final String defaultConfigString;
 
 	@SneakyThrows(IOException.class)
 	public IntegrationTests(String defaultTestRoot, String defaultTestRootPackage) {
@@ -56,7 +55,6 @@ public class IntegrationTests {
 		this.defaultTestRootPackage = defaultTestRootPackage;
 		this.workDir = Files.createTempDirectory("conqueryIntegrationTest").toFile();
 		TestConquery.configurePathsAndLogging(DEFAULT_CONFIG, this.workDir);
-		defaultConfigString = CONFIG_WRITER.writeValueAsString(DEFAULT_CONFIG);
 	}
 
 	public List<DynamicNode> jsonTests() {

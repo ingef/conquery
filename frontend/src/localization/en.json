@@ -115,6 +115,10 @@
   "deletePreviousQueryModal": {
     "areYouSure": "Should this query be deleted?"
   },
+  "deletePreviousQueryFolderModal": {
+    "areYouSure": "Are you sure you want to delete this folder?",
+    "description": "All queries from the folder {{folder}} will be removed from the folder, but will remain stored."
+  },
   "sharePreviousQueryModal": {
     "headline": "Sharing query: ",
     "groupsLabel": "Groups to share the query with",
@@ -124,6 +128,7 @@
     "back": "Back",
     "any": "Any",
     "save": "Save",
+    "saveAndCloseEsc": "Save and close (ESC)",
     "edit": "Edit",
     "cancel": "Cancel",
     "delete": "Delete",
@@ -390,7 +395,8 @@
   },
   "folders": {
     "headline": "Folders",
-    "noFolders": "none"
+    "noFolders": "none",
+    "allQueries": "All"
   },
   "editPreviousQueryFoldersModal": {
     "headline": "Edit folders"

@@ -49,7 +49,7 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> implements Names
 	@JsonIgnore
 	public abstract Column[] getRequiredColumns();
 
-	public abstract FilterNode createAggregator(FE_TYPE filterValue);
+	public abstract FilterNode<?> createFilterNode(FE_TYPE filterValue);
 
 	@Override
 	public FilterId createId() {

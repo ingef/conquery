@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -149,7 +150,7 @@ public class XodusStoreFactory implements StoreFactory {
     }
 
 
-	private <T extends NamespacedStorage> ConcurrentLinkedQueue<T> loadNamespacedStores(String prefix, List<String> pathName, Function<List<String>, T> creator)
+	private <T extends NamespacedStorage> Collection<T> loadNamespacedStores(String prefix, List<String> pathName, Function<List<String>, T> creator)
 			throws InterruptedException {
 		File baseDir = getStorageDir(pathName);
 
@@ -157,7 +158,7 @@ public class XodusStoreFactory implements StoreFactory {
 			log.warn("Had to create Storage Dir at `{}`", baseDir);
 		}
 
-		ConcurrentLinkedQueue<T> storages = new ConcurrentLinkedQueue<>();
+		Queue<T> storages = new ConcurrentLinkedQueue<>();
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
 
 
@@ -192,6 +193,8 @@ public class XodusStoreFactory implements StoreFactory {
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+
+
 			log.debug("Waiting for Worker storages to load. {} are already finished.", storages.size());
 		}
 
@@ -310,8 +313,8 @@ public class XodusStoreFactory implements StoreFactory {
     }
 
     @Override
-    public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, List<String> pathName) {
-        return FORM_CONFIG.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "formConfigs")), validator, FORM_CONFIG), centralRegistry);
+    public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, List<String> pathName) {
+        return FORM_CONFIG.identifiable(createStore(findEnvironment(appendToNewPath(pathName, "meta", "formConfigs")), validator, FORM_CONFIG), centralRegistry, datasetRegistry);
     }
 
     @Override

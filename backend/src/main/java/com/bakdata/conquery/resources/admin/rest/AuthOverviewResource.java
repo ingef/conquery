@@ -2,6 +2,7 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.GROUP_ID;
 
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -18,6 +19,9 @@ import com.bakdata.conquery.util.io.FileUtil;
  */
 @Produces(AdditionalMediaTypes.CSV)
 public class AuthOverviewResource extends HAuthOverview {
+
+	@Inject
+	protected AdminProcessor processor;
 
 	@GET
 	@Path("csv")

@@ -4,10 +4,10 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -15,12 +15,12 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.QueryParam;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
+import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
-import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -39,40 +39,52 @@ import io.dropwizard.jersey.PATCH;
 public class StoredQueriesResource extends HDatasets {
 
 	@Inject
-	private StoredQueriesProcessor processor;
+	private QueryProcessor processor;
 
 	@GET
-	public List<ExecutionStatus> getAllQueries(@PathParam(DATASET) Dataset dataset) {
-		return processor.getAllQueries(getNamespace(), servletRequest, user)
+	public List<ExecutionStatus> getAllQueries(@PathParam(DATASET) Dataset dataset, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+		return processor.getAllQueries(getNamespace(), servletRequest, user, allProviders.orElse(false))
 						.collect(Collectors.toList());
 	}
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecution<?> query) {
-		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest));
+	public FullExecutionStatus getSingleQueryInfo(@PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+
+		user.authorize(getDataset(), Ability.READ);
+		user.authorize(query, Ability.READ);
+
+		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
 	}
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus patchQuery(@PathParam(QUERY) ManagedExecution<?> query, MetaDataPatch patch) throws JSONException {
+	public FullExecutionStatus patchQuery(@PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders, MetaDataPatch patch) throws JSONException {
+		user.authorize(getDataset(), Ability.READ);
+		user.authorize(query, Ability.READ);
+
 		processor.patchQuery(user, query, patch);
 		
-		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest));
+		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
 	}
 
 	@DELETE
 	@Path("{" + QUERY + "}")
 	public void deleteQuery(@PathParam(QUERY) ManagedExecution<?> query) {
-		processor.deleteQuery(query, user);
+		user.authorize(getDataset(), Ability.READ);
+		user.authorize(query, Ability.READ);
+		user.authorize(query, Ability.DELETE);
+
+		processor.deleteQuery(user, query);
 	}
 
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
-	public FullExecutionStatus reexecute(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query, @Context HttpServletRequest req) {
-
+	public FullExecutionStatus reexecute(@Auth User user, @PathParam(DATASET) Dataset dataset, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+		user.authorize(dataset, Ability.READ);
 		user.authorize(query, Ability.READ);
 
-		return processor.reexecute(user, query, RequestAwareUriBuilder.fromRequest(req));
+		processor.reexecute(user, query);
+		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
 	}
 }

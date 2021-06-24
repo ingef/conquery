@@ -18,7 +18,7 @@ import java.util.Optional;
  */
 public class EventDurationSumAggregator implements Aggregator<Long> {
 
-	private Optional<Aggregator<CDateSet>> queryDateAggregator;
+	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
 	private Column validityDateColumn;
@@ -54,7 +54,11 @@ public class EventDurationSumAggregator implements Aggregator<Long> {
 	@Override
 	public Long getAggregationResult() {
 
-		queryDateAggregator.map(Aggregator::getAggregationResult).ifPresent(set::retainAll);
+		queryDateAggregator
+				.map(Aggregator::getAggregationResult)
+				.ifPresent(
+						set::retainAll
+				);
 
 		return set.countDays();
 	}

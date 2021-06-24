@@ -6,6 +6,7 @@ import type { ColumnDescription } from "../api/types";
 import DownloadButton from "../button/DownloadButton";
 import PreviewButton from "../button/PreviewButton";
 import { isEmpty } from "../common/helpers/commonHelper";
+import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 
 const Root = styled("div")`
@@ -15,21 +16,22 @@ const Root = styled("div")`
 `;
 
 const Text = styled("p")`
-  margin: 0 10px 0 0;
+  margin: 0;
   line-height: 1;
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
 const LgText = styled(Text)`
   font-size: ${({ theme }) => theme.font.lg};
+  white-space: nowrap;
 `;
 
-const StyledDownloadButton = styled(DownloadButton)`
-  display: inline-block;
+const SxDownloadButton = styled(DownloadButton)`
+  margin-left: 10px;
 `;
 
 const SxPreviewButton = styled(PreviewButton)`
-  margin-right: 10px;
+  margin-left: 10px;
 `;
 
 const Bold = styled("span")`
@@ -37,21 +39,20 @@ const Bold = styled("span")`
 `;
 
 interface PropsT {
-  resultCount: number;
-  resultUrl: string;
-  resultColumns: ColumnDescription[];
+  resultUrls: string[];
+  resultCount?: number | null; // For forms, won't usually have a count
+  resultColumns?: ColumnDescription[] | null; // For forms, won't usually have resultColumns
   queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
 
 const QueryResults: FC<PropsT> = ({
-  resultUrl,
+  resultUrls,
   resultCount,
   resultColumns,
   queryType,
 }) => {
   const { t } = useTranslation();
-  const isDownloadAllowed = !!resultUrl;
-  const ending = isDownloadAllowed ? resultUrl.split(".").reverse()[0] : null;
+  const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
 
   return (
     <Root>
@@ -68,14 +69,18 @@ const QueryResults: FC<PropsT> = ({
             : t("queryRunner.resultCount")}
         </LgText>
       )}
-      {ending === "csv" && (
-        <SxPreviewButton columns={resultColumns} url={resultUrl} />
+      {!!csvUrl && exists(resultColumns) && (
+        <SxPreviewButton columns={resultColumns} url={csvUrl} />
       )}
-      {isDownloadAllowed && ending && (
-        <StyledDownloadButton frame primary ending={ending} url={resultUrl}>
-          {ending.toUpperCase()}
-        </StyledDownloadButton>
-      )}
+      {resultUrls.map((url) => {
+        const ending = url.split(".").reverse()[0];
+
+        return (
+          <SxDownloadButton frame url={url}>
+            {ending.toUpperCase()}
+          </SxDownloadButton>
+        );
+      })}
     </Root>
   );
 };

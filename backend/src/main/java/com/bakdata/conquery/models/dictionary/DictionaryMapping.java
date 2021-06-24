@@ -28,7 +28,7 @@ public class DictionaryMapping {
 
 	private final int numberOfNewIds;
 
-	public static DictionaryMapping create(Dictionary from, Dictionary to) {
+	public static DictionaryMapping createAndImport(Dictionary from, Dictionary to) {
 
 		int[] source2TargetMap = new int[from.size()];
 		int newIds = 0;

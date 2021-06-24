@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.storage;
 
 import java.io.Closeable;
+import java.util.concurrent.locks.Lock;
 
 import javax.validation.Validator;
 

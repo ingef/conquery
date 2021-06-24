@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -11,10 +9,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.Form;
@@ -38,17 +34,11 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.univocity.parsers.csv.CsvWriter;
-import com.univocity.parsers.csv.CsvWriterSettings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -67,7 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_FORM")
 @NoArgsConstructor
-public class ManagedForm extends ManagedExecution<FormSharedResult> {
+public abstract class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 	/**
 	 * The form that was submitted through the api.
@@ -162,8 +152,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 					)
 				);
 				break;
-			case CANCELED:
-				// Ideally sub queries can not be canceled by a user, so do nothing
 			case NEW:
 			case RUNNING:
 			default:
@@ -208,6 +196,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 	@Override
+	@JsonIgnore
 	public Set<Namespace> getRequiredDatasets() {
 		return flatSubQueries.values().stream()
 			.map(ManagedQuery::getRequiredDatasets)
@@ -216,27 +205,11 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 	@Override
+	@JsonIgnore
 	public QueryDescription getSubmitted() {
 		return submittedForm;
 	}
 
-
-	@Override
-	public List<ResultInfo> getResultInfo() {
-		if(getSubQueries().size() != 1) {
-			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
-		}
-		return getSubQueries().values().iterator().next().get(0).getResultInfo();
-	}
-
-	@Override
-	public Stream<EntityResult> streamResults() {
-		if(subQueries.size() != 1) {
-			// Get the query, only if there is only one query set in the whole execution
-			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
-		}
-		return subQueries.values().iterator().next().stream().flatMap(ManagedQuery::streamResults);
-	}
 
 	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
@@ -261,18 +234,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 			return;
 		}
 		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions(datasetRegistry));
-	}
-
-
-	@Override
-	protected URL getDownloadURLInternal(UriBuilder url) throws MalformedURLException, IllegalArgumentException, UriBuilderException {
-		return url
-			.path(ResultCsvResource.class)
-			.resolveTemplate(ResourceConstants.DATASET, getDataset().getName())
-			.path(ResultCsvResource.class, ResultCsvResource.GET_CSV_PATH_METHOD)
-			.resolveTemplate(ResourceConstants.QUERY, getId().toString())
-			.build()
-			.toURL();
 	}
 
 

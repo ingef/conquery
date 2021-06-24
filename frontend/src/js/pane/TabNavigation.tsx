@@ -5,7 +5,7 @@ import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
   padding: 0 20px;
   background-color: white;
@@ -16,10 +16,10 @@ const Root = styled("div")`
 const Headline = styled("h2")<{ active: boolean }>`
   font-size: ${({ theme }) => theme.font.sm};
   margin-bottom: 0;
-  margin-top: 5px;
+  margin-top: 6px;
   padding: 0 12px;
   letter-spacing: 1px;
-  line-height: 38px;
+  line-height: 30px;
   text-transform: uppercase;
   flex-shrink: 0;
 
