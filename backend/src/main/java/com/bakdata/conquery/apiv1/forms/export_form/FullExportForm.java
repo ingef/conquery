@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
@@ -71,24 +70,15 @@ public class FullExportForm extends Form {
 	@Override
 	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
 
+		// Forms are sent as an array of standard queries containing AND/OR of CQConcepts, we ignore everything and just convert the CQConcepts into CQUnfiltered for export.
+
 		final List<CQUnfilteredTable> unfilteredTables =
 				tables.stream()
-					  .flatMap(feature -> {
-							final Stream.Builder<Visitable> builder = Stream.builder();
-							feature.visit(builder);
-							return builder.build();
-						})
+					  .flatMap(Visitable::stream)
 					  .filter(CQConcept.class::isInstance)
 					  .map(CQConcept.class::cast)
 					  .flatMap(concept -> concept.getTables().stream())
-					  .map(table -> {
-							final CQUnfilteredTable unfilteredTable = new CQUnfilteredTable();
-
-							unfilteredTable.setTable(table.getConnector());
-							unfilteredTable.setDateColumn(table.getDateColumn());
-
-							return unfilteredTable;
-						})
+					  .map(table -> new CQUnfilteredTable(table.getConnector(), table.getDateColumn()))
 					  .collect(Collectors.toList());
 
 		final TableExportQuery exportQuery = new TableExportQuery(queryGroup.getQuery());
