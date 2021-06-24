@@ -27,8 +27,6 @@ public abstract class Labeled<ID extends IId<? extends Labeled<? extends ID>>> e
 	 *
 	 * @jsonExample "someLabel"
 	 */
-	@NotEmpty
-	@ToString.Include
 	private String label;
 
 
@@ -44,7 +42,8 @@ public abstract class Labeled<ID extends IId<? extends Labeled<? extends ID>>> e
 		return DEFAULT_NAME_UNWANTED.replaceFrom(label.toLowerCase(), "_");
 	}
 
-
+	@NotEmpty
+	@ToString.Include
 	public String getLabel() {
 		if (label == null) {
 			return getName();
