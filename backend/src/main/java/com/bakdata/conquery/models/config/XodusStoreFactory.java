@@ -353,7 +353,7 @@ public class XodusStoreFactory implements StoreFactory {
 	@NonNull
 	@JsonIgnore
 	private File getStorageDir(String pathName) {
-		return getDirectory().resolve(String.join("/", pathName)).toFile();
+		return getDirectory().resolve(pathName).toFile();
     }
 
     private Environment findEnvironment(@NonNull File path) {

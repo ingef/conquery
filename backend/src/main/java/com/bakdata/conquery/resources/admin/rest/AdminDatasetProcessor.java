@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.WebApplicationException;
@@ -75,8 +74,6 @@ public class AdminDatasetProcessor {
 	private final MetaStorage storage; // TODO Remove
 	private final ConqueryConfig config;
 	private final Validator validator;
-	@Nullable
-	private final String storagePrefix;
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();

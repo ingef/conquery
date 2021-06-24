@@ -61,7 +61,6 @@ public class AdminServlet {
 		// freemarker support
 		jerseyConfig.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)));
 
-		final String storagePrefix = ".";
 
 		adminProcessor = new AdminProcessor(
 				manager.getConfig(),
@@ -76,7 +75,6 @@ public class AdminServlet {
 				manager.getStorage(),
 				manager.getConfig(),
 				manager.getValidator(),
-				storagePrefix,
 				manager.getDatasetRegistry(),
 				manager.getJobManager()
 		);
