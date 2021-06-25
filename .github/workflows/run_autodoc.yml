@@ -34,22 +34,8 @@ jobs:
         run: mvn install -T 1C -DskipTests -pl '!executable'
       - name: Build AutoDoc
         run: mvn exec:java -f autodoc/pom.xml -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
-      - name: push new docs
-        run: |
-            echo "Diffing the generated docs with the previous state"
-
-            if git diff --quiet HEAD
-            then
-              echo "No changes detected"
-              exit 0
-            fi
-
-            echo "Documentation needs update"
-            git config --global user.email "bot@bakdata.com"
-            git config --global user.name "bakdata-bot"
-            git add docs/*
-            git commit --message "automatic update to docs"
-            git push || exit 1
-            echo "Documentation updated"
-
-            exit 0
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: $GITHUB_HEAD_REF
