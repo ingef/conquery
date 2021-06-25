@@ -51,7 +51,6 @@ import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
@@ -89,12 +88,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	// For registering form providers
 	private FormScanner formScanner;
-	/**
-	 * Flags if the instance name should be a prefix for the instances storage.
-	 */
-	@Getter
-	@Setter
-	private boolean useNameForStoragePrefix = false;
+
 
 	public ManagerNode() {
 		this(DEFAULT_NAME);
@@ -186,7 +180,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	private void loadMetaStorage() {
 		log.info("Started meta storage");
-		this.storage = new MetaStorage(validator, config.getStorage(), ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()), datasetRegistry);
+		this.storage = new MetaStorage(validator, config.getStorage(), datasetRegistry);
 		this.storage.loadData();
 		log.info("MetaStorage loaded {}", this.storage);
 
@@ -197,8 +191,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void loadNamespaces() {
-		final Collection<NamespaceStorage> storages =
-				config.getStorage().loadNamespaceStorages(ConqueryCommand.getStoragePathParts(useNameForStoragePrefix, getName()));
+		final Collection<NamespaceStorage > storages =
+				config.getStorage().loadNamespaceStorages();
 		for(NamespaceStorage namespaceStorage : storages) {
 			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER).writerWithView(InternalOnly.class));
 			datasetRegistry.add(ns);

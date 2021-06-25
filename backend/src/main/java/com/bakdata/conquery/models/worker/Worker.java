@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import javax.validation.Validator;
@@ -82,17 +81,16 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public static Worker newWorker(
-		@NonNull Dataset dataset,
-		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-		@NonNull ExecutorService executorService,
-		@NonNull StoreFactory config,
-		@NonNull String storagePrefix,
-		@NonNull String directory,
-		@NonNull Validator validator,
-		boolean failOnError,
-		int entityBucketSize) {
+			@NonNull Dataset dataset,
+			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+			@NonNull ExecutorService executorService,
+			@NonNull StoreFactory config,
+			@NonNull String directory,
+			@NonNull Validator validator,
+			boolean failOnError,
+			int entityBucketSize) {
 
-		WorkerStorage workerStorage = new WorkerStorage(validator, config, List.of(storagePrefix,directory));
+		WorkerStorage workerStorage = new WorkerStorage(validator, config, "worker_" + directory);
 
 		// On the worker side we don't have to set the object writer vor ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();
