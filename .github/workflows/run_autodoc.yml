@@ -36,6 +36,7 @@ jobs:
         run: mvn exec:java -f autodoc/pom.xml -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
       - name: Commit files
         run: |
+          echo ${{ env.GITHUB_REF }}
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git commit -m "Update AutoDoc" -a
@@ -43,4 +44,4 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.GITHUB_REF }}
+          branch: ${{ github.head_ref }}
