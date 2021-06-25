@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -31,6 +32,7 @@ public class StringTypeEncoded implements StringStore {
 	@NonNull
 	private Encoding encoding;
 
+	@JsonIgnore
 	private final LoadingCache<Integer,String> elementCache;
 
 	@JsonCreator
