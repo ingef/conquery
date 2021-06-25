@@ -62,7 +62,7 @@
     "react-split-pane": "^0.1.91",
     "react-tippy": "^1.4.0",
     "react-window": "^1.8.6",
-    "redux": "^4.0.5",
+    "redux": "^4.1.0",
     "redux-form": "^8.3.7",
     "redux-multi": "^0.1.12",
     "redux-thunk": "^2.3.0",
