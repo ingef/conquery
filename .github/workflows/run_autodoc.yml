@@ -31,7 +31,7 @@ jobs:
         with:
           java-version: 11
       - name: Build Backend
-        run: mvn -T 1C install -pl backend -DskipTests
+        run: mvn install -T 1C -DskipTests -pl '!executable'
       - name: Build AutoDoc
         run: mvn exec:java -f autodoc/pom.xml -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
       - name: push new docs
