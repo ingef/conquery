@@ -83,6 +83,12 @@ public class ExcelRenderer {
 
     }
 
+    /**
+     * Do postprocessing on the result to improve the visuals:
+     *  - Set the area of the table environment
+     *  - Freeze the id columns
+     *  - Add autofilters (not for now)
+     */
     private void postProcessTable(List<String> idHeaders, SXSSFSheet sheet, XSSFTable table, int writtenLines) {
         // Extend the table area to the added data
         CellReference topLeft = new CellReference(0,0);
@@ -97,6 +103,9 @@ public class ExcelRenderer {
         sheet.createFreezePane(idHeaders.size(), 1);
     }
 
+    /**
+     * Create a table environment, which improves mainly the visuals of the produced table.
+     */
     @NotNull
     private XSSFTable createTableEnvironment(ManagedExecution<?> exec, SXSSFSheet sheet) {
         XSSFTable table = sheet.getWorkbook().getXSSFWorkbook().getSheet(sheet.getSheetName()).createTable(null);
@@ -113,6 +122,10 @@ public class ExcelRenderer {
         return table;
     }
 
+    /**
+     * Write the header and initialize the columns for the table environment.
+     * Also autosize the columns according to the header width.
+     */
     private void writeHeader(
             SXSSFSheet sheet,
             List<String> idHeaders,
@@ -190,6 +203,9 @@ public class ExcelRenderer {
         return resultLines.mapToInt(l -> this.writeRowsForEntity(infos,l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg)).sum();
     }
 
+    /**
+     * Writes the result lines for each entity.
+     */
     private int writeRowsForEntity(
             List<ResultInfo> infos,
             EntityResult internalRow,
