@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -11,11 +12,11 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.io.BaseEncoding;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 /**
  *
@@ -30,16 +31,28 @@ public class StringTypeEncoded implements StringStore {
 	@NonNull
 	private Encoding encoding;
 
+	private final LoadingCache<Integer,String> elementCache;
+
 	@JsonCreator
 	public StringTypeEncoded(StringTypeDictionary subType, Encoding encoding) {
 		super();
 		this.subType = subType;
 		this.encoding = encoding;
+		elementCache = CacheBuilder.newBuilder()
+				.maximumSize(100)
+				.build(new CacheLoader<Integer, String>() {
+					@Override
+					@ParametersAreNonnullByDefault
+					public String load(Integer key) throws Exception {
+						return encoding.encode(subType.getElement(key));
+					}
+				});
 	}
 
 	@Override
+	@SneakyThrows
 	public String getElement(int value) {
-		return encoding.encode(subType.getElement(value));
+		return elementCache.get(value);
 	}
 
 	@Override
