@@ -4,7 +4,6 @@ on:
   pull_request:
     paths:
       - "backend/**"
-      - ".github/workflows/test_backend.yml" # self reference
 
 jobs:
   tests:
