@@ -21,8 +21,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.api.description.FEList;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.apiv1.frontend.FEList;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HConcepts;
 import lombok.Getter;

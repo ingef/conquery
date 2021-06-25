@@ -1,5 +1,11 @@
 package com.bakdata.conquery.io.result;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -7,12 +13,6 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Stream;
 
 /**
  * Result renderer for query tests.
@@ -26,7 +26,6 @@ public class CsvLineStreamRenderer {
 
 	public Stream<String> toStream(List<String> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream) {
 
-		List<String> headers = new ArrayList<>(idHeaders);
 		writer.addStringValues(idHeaders);
 		infos.forEach(i -> writer.addValue(i.getUniqueName(cfg)));
 

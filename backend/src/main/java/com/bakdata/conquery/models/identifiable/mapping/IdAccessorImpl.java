@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.models.query.concept.specific.CQExternal;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;

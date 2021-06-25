@@ -1,8 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
@@ -10,7 +7,6 @@ import io.dropwizard.setup.Environment;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.eclipse.jetty.util.component.ContainerLifeCycle;
-import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> {
@@ -65,7 +61,7 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 	}
 
 	/**
-	 * Runs the command with the given {@link Environment} and {@link Configuration}.
+	 * Runs the command with the given {@link Environment} and {@link ConqueryConfig}.
 	 *
 	 * @param environment   the configured environment
 	 * @param namespace	 the parsed command line namespace
@@ -74,8 +70,4 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 	 */
 	protected abstract void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception;
 
-	@NotNull
-	public static List<String> getStoragePathParts(boolean useNameForStoragePrefix, String name) {
-		return useNameForStoragePrefix ? List.of(name) : Collections.emptyList();
-	}
 }

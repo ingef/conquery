@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;

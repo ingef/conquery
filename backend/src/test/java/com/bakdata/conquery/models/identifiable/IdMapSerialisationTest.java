@@ -5,7 +5,7 @@ import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
-import com.bakdata.conquery.models.identifiable.mapping.SimpleIdMapping;
+import com.bakdata.conquery.models.config.SimpleIdMapping;
 
 public class IdMapSerialisationTest {
 

@@ -1,0 +1,48 @@
+{
+  "title": {
+    "de": "Fullexport"
+  },
+  "type": "FULL_EXPORT_FORM",
+  "headline": {
+    "de": "Fullexport"
+  },
+  "fields": [
+    {
+      "name": "queryGroup",
+      "type": "RESULT_GROUP",
+      "label": {
+        "de": "Versichertengruppe (Anfrage)"
+      },
+      "dropzoneLabel": {
+        "de": "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu."
+      },
+      "validations": [
+        "NOT_EMPTY"
+      ]
+    },
+    {
+      "name": "dateRange",
+      "type": "DATE_RANGE",
+      "label": {
+        "de": "Ausgabezeitraum"
+      },
+      "validations": [
+        "NOT_EMPTY"
+      ]
+    },
+    {
+      "name": "tables",
+      "type": "CONCEPT_LIST",
+      "label": {
+        "de": "Datenquellen"
+      },
+      "isTwoDimensional": false,
+      "conceptDropzoneLabel": {
+        "de": "Definiere hier die auszuspielenden Datenquellen."
+      },
+      "validations": [
+        "NOT_EMPTY"
+      ]
+    }
+  ]
+}

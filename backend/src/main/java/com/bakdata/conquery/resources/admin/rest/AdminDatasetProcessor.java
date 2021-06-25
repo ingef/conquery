@@ -10,6 +10,21 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.validation.Validator;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import javax.annotation.Nullable;
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
@@ -21,14 +36,20 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.StructureNode;
-import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
-import com.bakdata.conquery.models.concepts.select.concept.specific.EventDurationSumSelect;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.StructureNode;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -37,6 +58,9 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -58,7 +82,6 @@ import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
-import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.NonNull;
@@ -76,8 +99,6 @@ public class AdminDatasetProcessor {
 	private final MetaStorage storage; // TODO Remove
 	private final ConqueryConfig config;
 	private final Validator validator;
-	@Nullable
-	private final String storagePrefix;
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
@@ -95,11 +116,7 @@ public class AdminDatasetProcessor {
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
 
-		final List<String> pathName = Strings.isNullOrEmpty(storagePrefix)
-				? List.of("dataset_" + name)
-				: List.of(storagePrefix, "dataset_" + name);
-
-		NamespaceStorage datasetStorage = new NamespaceStorage(validator, config.getStorage(), pathName);
+		NamespaceStorage datasetStorage = new NamespaceStorage(validator, config.getStorage(), "dataset_" + name);
 
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);

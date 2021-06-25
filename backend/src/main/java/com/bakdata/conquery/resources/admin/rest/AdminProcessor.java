@@ -1,10 +1,28 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
-import com.bakdata.conquery.models.auth.entities.*;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.RoleOwner;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
@@ -14,8 +32,12 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.admin.ui.model.*;
+import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
+import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
+import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
+import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
+import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.Multimap;
@@ -24,13 +46,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-
-import javax.annotation.Nullable;
-import javax.validation.Validator;
-import java.io.StringWriter;
-import java.util.*;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
 
 /**
  * This class holds the logic for several admin http endpoints.
@@ -48,8 +63,7 @@ public class AdminProcessor {
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
-	@Nullable
-	private final String storagePrefix;
+
 
 
 	public synchronized void addRole(Role role) throws JSONException {

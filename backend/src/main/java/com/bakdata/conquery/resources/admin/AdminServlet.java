@@ -8,7 +8,18 @@ import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
-import com.bakdata.conquery.resources.admin.rest.*;
+import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
+import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
+import com.bakdata.conquery.resources.admin.rest.GroupResource;
+import com.bakdata.conquery.resources.admin.rest.PermissionResource;
+import com.bakdata.conquery.resources.admin.rest.RoleResource;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
+import com.bakdata.conquery.resources.admin.rest.UserResource;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.AuthOverviewUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
@@ -49,7 +60,7 @@ public class AdminServlet {
 		jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
 		// freemarker support
 		jerseyConfig.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)));
-		final String storagePrefix = manager.isUseNameForStoragePrefix() ? manager.getName() : ".";
+
 
 		adminProcessor = new AdminProcessor(
 				manager.getConfig(),
@@ -57,15 +68,13 @@ public class AdminServlet {
 				manager.getDatasetRegistry(),
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
-				manager.getValidator(),
-				storagePrefix
+				manager.getValidator()
 		);
 
 		adminDatasetProcessor = new AdminDatasetProcessor(
 				manager.getStorage(),
 				manager.getConfig(),
 				manager.getValidator(),
-				storagePrefix,
 				manager.getDatasetRegistry(),
 				manager.getJobManager()
 		);

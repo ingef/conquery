@@ -14,15 +14,10 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
-import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
-import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.util.DateFormats;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
