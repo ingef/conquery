@@ -131,9 +131,9 @@ public class StoredQueriesProcessorTest {
 	private static ManagedForm mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
 		return new ManagedForm(new ExportForm(), user, dataset) {
 			{
-				state = execState;
-				creationTime = LocalDateTime.MIN;
-				queryId =id.getExecution();
+				setState(execState);
+				setCreationTime(LocalDateTime.MIN);
+				setQueryId(id.getExecution());
 			}
 		};
 	}
@@ -166,9 +166,9 @@ public class StoredQueriesProcessorTest {
 	private static ManagedQuery mockManagedQuery(IQuery queryDescription, User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
 		return new ManagedQuery(queryDescription, user, dataset) {
 			{
-				state = execState;
-				creationTime = LocalDateTime.MIN;
-				queryId = id.getExecution();
+				setState(execState);
+				setCreationTime(LocalDateTime.MIN);
+				setQueryId(id.getExecution());
 			}
 		};
 	}

@@ -93,20 +93,24 @@ public class QueryProcessor {
 
 		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
+		final ExecutionManager executionManager = namespace.getExecutionManager();
+
 
 		// If this is only a re-executing query, try to execute the underlying query instead.
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config));
+			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager));
 
 			if (execution.isPresent()) {
 				return execution.get();
 			}
 		}
 
+
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user, dataset, config);
+		ManagedExecution<?> mq = executionManager.runQuery(datasetRegistry, query, user, dataset, config);
 
 		if (query instanceof IQuery) {
 			translateToOtherDatasets(dataset, query, user, mq);
@@ -119,7 +123,7 @@ public class QueryProcessor {
 	/**
 	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
 	 */
-	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager) {
 
 		final ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
 
@@ -150,7 +154,7 @@ public class QueryProcessor {
 
 		log.trace("Re-executing Query {}", execution);
 
-		ExecutionManager.execute(datasetRegistry, execution, config);
+		executionManager.execute(datasetRegistry, execution, config);
 
 		return execution;
 
@@ -214,6 +218,9 @@ public class QueryProcessor {
 	}
 
 
+	/**
+	 * Test if the query is structured in a way the Frontend can render it.
+	 */
 	private static boolean canFrontendRender(ManagedExecution<?> q) {
 		if (!(q instanceof ManagedQuery)) {
 			return false;
@@ -245,7 +252,9 @@ public class QueryProcessor {
 		IQuery translateable = (IQuery) query;
 		// translate the query for all other datasets of user and submit it.
 		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
+
 			final Dataset targetDataset = targetNamespace.getDataset();
+
 			if (targetDataset.equals(dataset)) {
 				continue;
 			}
@@ -257,7 +266,9 @@ public class QueryProcessor {
 			try {
 				log.trace("Adding Query on Dataset[{}]", dataset.getId());
 				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
-				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
+
+				targetNamespace.getExecutionManager()
+							   .createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
 			}
 			catch (Exception e) {
 				log.trace("Could not translate Query[{}] to Dataset[{}]", mq.getId(), targetDataset.getId(), e);
@@ -279,7 +290,7 @@ public class QueryProcessor {
 
 		final Namespace namespace = getDatasetRegistry().get(dataset.getId());
 
-		query.setState(ExecutionState.NEW);
+		query.reset();
 
 		namespace.sendToAll(new CancelQuery(query.getId()));
 	}
@@ -311,13 +322,18 @@ public class QueryProcessor {
 		log.info("User[{}] reexecuted Query[{}]", user, query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
-			ExecutionManager.execute(getDatasetRegistry(), query, config);
+			datasetRegistry.get(query.getDataset().getId())
+						   .getExecutionManager()
+						   .execute(getDatasetRegistry(), query, config);
 		}
 	}
 
 
 	public void deleteQuery(User user, ManagedExecution<?> execution) {
 		log.info("User[{}] deleted Query[{}]", user.getId(), execution.getId());
+
+		execution.getExecutionManager().clearQueryResults(execution);
+
 		storage.removeExecution(execution.getId());
 	}
 

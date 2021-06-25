@@ -22,7 +22,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -44,7 +49,7 @@ public class Namespace implements Closeable {
 	private transient NamespaceStorage storage;
 
 	@JsonIgnore
-	private transient ExecutionManager queryManager;
+	private transient ExecutionManager executionManager;
 
 	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
 	@JsonIgnore
@@ -66,7 +71,7 @@ public class Namespace implements Closeable {
 
 	public Namespace(NamespaceStorage storage, boolean failOnError, ObjectWriter objectWriter) {
 		this.storage = storage;
-		this.queryManager = new ExecutionManager(this);
+		this.executionManager = new ExecutionManager(this);
 		this.jobManager = new JobManager(storage.getDataset().getName(), failOnError);
 		this.objectWriter = objectWriter;
 	}
