@@ -1,10 +1,7 @@
 package com.bakdata.conquery.util.dict;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -14,10 +11,12 @@ import com.bakdata.conquery.util.BufferUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.bytes.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.mina.core.buffer.IoBuffer;
 
 @CPSType(id="SUCCINCT_TRIE", base=Dictionary.class)
@@ -112,9 +111,9 @@ public class SuccinctTrie extends Dictionary {
 		checkUncompressed("No put allowed after compression");
 
 		// insert help nodes
-		int nodeIndex = 0;
+		int nodeIndex = key.length-1;
 		HelpNode current = root;
-		while (nodeIndex < key.length) {
+		while (nodeIndex >= 0) {
 			// check if a prefix node exists
 			HelpNode next = current.children.get(key[nodeIndex]);
 			if (next == null) {
@@ -133,7 +132,7 @@ public class SuccinctTrie extends Dictionary {
 				}
 			}
 			current = next;
-			nodeIndex++;
+			nodeIndex--;
 		}
 
 		// end of key, write the value into current
@@ -217,8 +216,8 @@ public class SuccinctTrie extends Dictionary {
 	public int getId(byte[] value) {
 		if (!compressed) {
 			HelpNode node = root;
-			for (byte val : value) {
-				node = findChildWithKey(node, val);
+			for (int i = value.length-1; i >= 0; i--) {
+				node = findChildWithKey(node, value[i]);
 				if (node == null) {
 					return -1;
 				}
@@ -229,9 +228,9 @@ public class SuccinctTrie extends Dictionary {
 
 		int node = 0;
 		// Traverse the tree along the byte[], exiting when we don't find a match
-		for (byte val : value) {
+		for (int i = value.length-1; i >= 0; i--) {
 
-			node = childIdWithKey(node, val);
+			node = childIdWithKey(node, value[i]);
 
 			if (node == -1) {
 				// no fitting child found
@@ -273,7 +272,11 @@ public class SuccinctTrie extends Dictionary {
 		}
 
 		int nodeIndex = reverseLookup[intValue];
-		getReverseInternal(buf, nodeIndex);
+		int parentIndex = -1;
+		while ((parentIndex = this.parentIndex[nodeIndex]) != -1) {
+			buf.add(keyPartArray[nodeIndex]);
+			nodeIndex = parentIndex;
+		};
 	}
 
 	private void getReverseInternal(ByteArrayList buf, int nodeIndex) {
@@ -299,6 +302,7 @@ public class SuccinctTrie extends Dictionary {
 		private final int key;
 		private final String value;
 	}
+
 
 	@Override
 	public Iterator<DictionaryEntry> iterator() {
