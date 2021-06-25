@@ -49,6 +49,15 @@ const DimmedNote = styled(Heading3)`
   font-weight: 400;
 `;
 
+const CommonSettingsLabel = styled(Heading3)`
+  padding: 15px 15px 0;
+  margin: 0;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 interface PropsT {
   className?: string;
 
@@ -58,6 +67,7 @@ interface PropsT {
   allowlistedTables?: string[];
   blocklistedTables?: string[];
 
+  onCommonSettingsClick: () => void;
   onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
@@ -72,6 +82,7 @@ const MenuColumn: FC<PropsT> = ({
   showTables,
   blocklistedTables,
   allowlistedTables,
+  onCommonSettingsClick,
   onDropConcept,
   onRemoveConcept,
   onToggleTable,
@@ -99,6 +110,9 @@ const MenuColumn: FC<PropsT> = ({
       )}
       {!node.isPreviousQuery && showTables && (
         <div>
+          <CommonSettingsLabel onClick={onCommonSettingsClick}>
+            {t("queryNodeEditor.properties")}
+          </CommonSettingsLabel>
           <HeadingBetween>
             {t("queryNodeEditor.conceptNodeTables")}
           </HeadingBetween>

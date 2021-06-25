@@ -11,6 +11,7 @@ import {
   CONCEPT_TREE_NODE,
   FORM_CONCEPT_NODE,
 } from "../../common/constants/dndTypes";
+import { getUniqueFileRows } from "../../common/helpers";
 import { compose, includes } from "../../common/helpers/commonHelper";
 import { exists } from "../../common/helpers/exists";
 import {
@@ -425,7 +426,11 @@ const FormConceptGroup = (props: PropsType) => {
 
   const dispatch = useDispatch();
 
-  const initModal = (file: File) => dispatch(initUploadConceptListModal(file));
+  const initModal = async (file: File) => {
+    const rows = await getUniqueFileRows(file);
+
+    return dispatch(initUploadConceptListModal({ rows, filename: file.name }));
+  };
   const resetModal = () => dispatch(resetUploadConceptListModal());
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -436,7 +441,11 @@ const FormConceptGroup = (props: PropsType) => {
     resetModal(); // For the common UploadConceptListModal
   };
 
-  const onDropFile = async (file, valueIdx, conceptIdx) => {
+  const onDropFile = async (
+    file: File,
+    valueIdx: number,
+    conceptIdx: number,
+  ) => {
     setModalContext({ valueIdx, conceptIdx });
 
     // For the common UploadConceptListModal

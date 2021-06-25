@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React from "react";
+import React, { useState } from "react";
 
 import QueryUploadConceptListModal from "../query-upload-concept-list-modal/QueryUploadConceptListModal";
 
@@ -14,10 +14,18 @@ const Root = styled("div")`
 `;
 
 export const QueryEditor = () => {
+  const [editedNode, setEditedNode] = useState<{
+    andIdx: number;
+    orIdx: number;
+  } | null>(null);
+
   return (
     <Root>
-      <Query />
-      <StandardQueryNodeEditor />
+      <Query setEditedNode={setEditedNode} />
+      <StandardQueryNodeEditor
+        editedNode={editedNode}
+        setEditedNode={setEditedNode}
+      />
       <QueryUploadConceptListModal />
     </Root>
   );

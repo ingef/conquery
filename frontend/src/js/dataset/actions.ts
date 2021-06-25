@@ -108,7 +108,7 @@ export const useSelectDataset = () => {
       if (!nextDataset || !nextDataset.query) {
         dispatch(clearQuery());
       } else {
-        dispatch(loadQuery(nextDataset.query));
+        dispatch(loadQuery({ query: nextDataset.query }));
       }
 
       loadTrees(datasetId);

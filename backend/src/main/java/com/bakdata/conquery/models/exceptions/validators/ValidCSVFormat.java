@@ -18,7 +18,7 @@ import javax.validation.Payload;
 
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat.ValidCSVFormatList;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat.ValidCSVFormatValidator;
-import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal.FormatColumn;
 
 
 @Target({ FIELD, TYPE_USE })

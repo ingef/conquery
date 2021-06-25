@@ -9,7 +9,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.api.description.FERoot;
+import com.bakdata.conquery.apiv1.frontend.FERoot;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
 import lombok.Setter;
 
