@@ -89,6 +89,8 @@ const ContentColumn: FC<PropsT> = ({
       itemsRef.current[selectedTableIdx]
     ) {
       itemsRef.current[selectedTableIdx]?.scrollIntoView({
+        block: "start",
+        inline: "start",
         behavior: "smooth",
       });
     }

@@ -55,13 +55,17 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
 
   const onSetDate = (date: DateStringMinMax) => {
     dispatch(
-      queryGroupModalSetDate(andIdx, {
-        min: date.min || undefined,
-        max: date.max || undefined,
+      queryGroupModalSetDate({
+        andIdx,
+        date: {
+          min: date.min || undefined,
+          max: date.max || undefined,
+        },
       }),
     );
   };
-  const onResetAllDates = () => dispatch(queryGroupModalResetAllDates(andIdx));
+  const onResetAllDates = () =>
+    dispatch(queryGroupModalResetAllDates({ andIdx }));
 
   if (!group) return null;
 
@@ -96,6 +100,7 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
       <InputDateRange
         large
         inline
+        autoFocus
         label={t("queryGroupModal.dateRange")}
         labelSuffix={
           <>

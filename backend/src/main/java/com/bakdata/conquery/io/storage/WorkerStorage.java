@@ -6,13 +6,8 @@ import java.util.List;
 
 import javax.validation.Validator;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-
-import javax.validation.Validator;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
-import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;

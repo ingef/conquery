@@ -1,31 +1,34 @@
 import { useDispatch } from "react-redux";
+import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
 import { usePostConceptsListToResolve } from "../api/api";
-import type { ConceptIdT } from "../api/types";
-import { defaultSuccess, defaultError } from "../common/actions";
+import type { ConceptIdT, PostConceptResolveResponseT } from "../api/types";
+import { errorPayload, ErrorObject } from "../common/actions";
 import { exists } from "../common/helpers/exists";
-import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import { useDatasetId } from "../dataset/selectors";
 
-import {
-  SELECT_CONCEPT_ROOT_NODE,
-  RESOLVE_CONCEPTS_START,
-  RESOLVE_CONCEPTS_SUCCESS,
-  RESOLVE_CONCEPTS_ERROR,
-  INIT,
-  RESET,
-} from "./actionTypes";
+export type UploadConceptListModalActions = ActionType<
+  | typeof resolveConcepts
+  | typeof selectConceptRootNode
+  | typeof initUploadConceptListModal
+  | typeof resetUploadConceptListModal
+>;
 
-export const resolveConceptsStart = () => ({ type: RESOLVE_CONCEPTS_START });
-export const resolveConceptsSuccess = (res: any, payload?: Object) =>
-  defaultSuccess(RESOLVE_CONCEPTS_SUCCESS, res, payload);
-export const resolveConceptsError = (err: any) =>
-  defaultError(RESOLVE_CONCEPTS_ERROR, err);
+export const resolveConcepts = createAsyncAction(
+  "upload-concept-list-modal/RESOLVE_CONCEPTS_START",
+  "upload-concept-list-modal/RESOLVE_CONCEPTS_SUCCESS",
+  "upload-concept-list-modal/RESOLVE_CONCEPTS_ERROR",
+)<
+  undefined,
+  {
+    data: PostConceptResolveResponseT;
+  },
+  ErrorObject
+>();
 
-export const selectConceptRootNode = (conceptId: ConceptIdT) => ({
-  type: SELECT_CONCEPT_ROOT_NODE,
-  conceptId,
-});
+export const selectConceptRootNode = createAction(
+  "upload-concept-list-modal/SELECT_CONCEPT_ROOT_NODE",
+)<{ conceptId: ConceptIdT }>();
 
 export const useSelectConceptRootNodeAndResolveCodes = () => {
   const dispatch = useDispatch();
@@ -34,33 +37,31 @@ export const useSelectConceptRootNodeAndResolveCodes = () => {
 
   return (treeId: string | null, conceptCodes: string[]) => {
     if (exists(treeId)) {
-      dispatch(selectConceptRootNode(treeId));
+      dispatch(selectConceptRootNode({ conceptId: treeId }));
     } else {
-      return dispatch(selectConceptRootNode(""));
+      return dispatch(selectConceptRootNode({ conceptId: "" }));
     }
 
     if (!datasetId) {
       return;
     }
 
-    dispatch(resolveConceptsStart());
+    dispatch(resolveConcepts.request());
 
     return postConceptsListToResolve(datasetId, treeId, conceptCodes).then(
-      (r) => dispatch(resolveConceptsSuccess(r)),
-      (e) => dispatch(resolveConceptsError(e)),
+      (r) => dispatch(resolveConcepts.success({ data: r })),
+      (e) => dispatch(resolveConcepts.failure(errorPayload(e, {}))),
     );
   };
 };
 
-export const initUploadConceptListModal = (file: File) => async (dispatch) => {
-  const rows = await getUniqueFileRows(file);
+export const initUploadConceptListModal = createAction(
+  "upload-concept-list-modal/INIT",
+)<{
+  rows: string[];
+  filename: string;
+}>();
 
-  return dispatch({
-    type: INIT,
-    payload: { rows, filename: file.name },
-  });
-};
-
-export const resetUploadConceptListModal = () => ({
-  type: RESET,
-});
+export const resetUploadConceptListModal = createAction(
+  "upload-concept-list-modal/RESET",
+)();

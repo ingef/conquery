@@ -20,7 +20,7 @@ public class ImportColumn extends NamedImpl<ImportColumnId> implements Namespace
 	@JsonBackReference @NotNull
 	private final Import parent;
 
-	// Only used on ManagerNode for com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter.addImport
+	// Only used on ManagerNode for com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter.addImport
 	// Can Probably be removed.
 	private final ColumnStore typeDescription;
 
