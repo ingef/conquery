@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -69,24 +68,22 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	protected transient Namespace namespace;
 	// Needs to be resolved externally before being executed
 	private IQuery query;
+
 	/**
 	 * The number of contained entities the last time this query was executed.
-	 *
-	 * @param lastResultCount the new count for JACKSON
-	 * @returns the number of contained entities
 	 */
 	private Long lastResultCount;
+
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private transient int involvedWorkers;
 	@JsonIgnore
-	private transient int executingThreads;
+	private transient AtomicInteger executingThreads = new AtomicInteger(0);
 	@JsonIgnore
 	private transient ConqueryConfig config;
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
-	@JsonIgnore @ToString.Exclude
-	private transient List<EntityResult> results = new ArrayList<>();
+
 
 	public ManagedQuery(IQuery query, User owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
@@ -96,12 +93,12 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@Override
 	protected void doInitExecutable(@NonNull DatasetRegistry namespaces, ConqueryConfig config) {
 		this.config = config;
-		this.namespace = namespaces.get(getDataset().getId());
-		this.involvedWorkers = namespace.getWorkers().size();
+
+		namespace = namespaces.get(getDataset().getId());
+
+		involvedWorkers = namespace.getWorkers().size();
+
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
-		if (label == null) {
-			label = makeAutoLabel(new PrintSettings(true, Locale.ROOT,namespaces, config, null));
-		}
 	}
 
 	@Override
@@ -110,20 +107,25 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		if (result.getError().isPresent()) {
 			fail(storage, result.getError().get());
+			return;
 		}
 
-		synchronized (this) {
-			executingThreads--;
-			results.addAll(result.getResults());
-			if (executingThreads == 0 && state == ExecutionState.RUNNING) {
-				finish(storage, ExecutionState.DONE);
-			}
+		final int remaining = executingThreads.decrementAndGet();
+
+		getExecutionManager().addQueryResult(this, result.getResults());
+
+		if (remaining == 0 && getState() == ExecutionState.RUNNING) {
+			finish(storage, ExecutionState.DONE);
 		}
+	}
+
+	public Stream<EntityResult> streamResults() {
+		return getExecutionManager().streamQueryResults(this);
 	}
 
 	@Override
 	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
-		lastResultCount = query.countResults(results);
+		lastResultCount = query.countResults(streamResults());
 
 		super.finish(storage, executionState);
 	}
@@ -131,17 +133,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@Override
 	public void start() {
 		super.start();
-		synchronized (this) {
-			executingThreads = involvedWorkers;
-		}
 
-
-		if (results != null) {
-			results.clear();
-		}
-		else {
-			results = new ArrayList<>();
-		}
+		executingThreads.set(involvedWorkers);
 	}
 
 	@Override
@@ -225,11 +218,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		return query;
 	}
 
-	@Override
-	public Stream<EntityResult> streamResults() {
-		return getResults().stream();
-	}
-
 	/**
 	 * Creates a default label based on the submitted {@link QueryDescription}.
 	 * The Label is customized by mentioning that a description contained a
@@ -244,13 +232,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		int sbStartSize = sb.length();
 
-		QueryVisitor visitor = new QueryVisitor() {
+		QueryVisitor visitor = t -> sortedContents.computeIfAbsent(t.getClass(), (clazz) -> new ArrayList<>()).add(t);
 
-			@Override
-			public void accept(Visitable t) {
-				sortedContents.computeIfAbsent(t.getClass(), (clazz) -> new ArrayList<>()).add(t);
-			}
-		};
 		query.visit(visitor);
 
 		// Check for CQExternal

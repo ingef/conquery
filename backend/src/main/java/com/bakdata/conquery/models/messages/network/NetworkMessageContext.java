@@ -37,18 +37,13 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 		private final ConqueryConfig config;
 		private final Validator validator;
 		private NetworkSession rawSession;
-		/**
-		 * Important in Standalone mode so, shards can differentiate their storages.
-		 */
-		private final String storagePrefix;
 
-		public ShardNodeNetworkContext(JobManager jobManager, NetworkSession session, Workers workers, ConqueryConfig config, Validator validator, String storagePrefix) {
+		public ShardNodeNetworkContext(JobManager jobManager, NetworkSession session, Workers workers, ConqueryConfig config, Validator validator) {
 			super(jobManager, session, config.getCluster().getBackpressure());
 			this.workers = workers;
 			this.config = config;
 			this.validator = validator;
 			this.rawSession = session;
-			this.storagePrefix = storagePrefix;
 		}
 	}
 	

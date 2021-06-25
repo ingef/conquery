@@ -33,8 +33,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/ConceptElement.java#L20) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/tree/TreeConcept.java#L53) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/tree/TreeConcept.java#L60) | selects | list of [UniversalSelect](#Marker-UniversalSelect) | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 
@@ -205,8 +205,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/AbstractSelectFilter.java#L58) | searchType | one of PREFIX, CONTAINS, EXACT | `"EXACT"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/AbstractSelectFilter.java#L50) | template | [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/AbstractSelectFilter.java#L41) | values | `Set<String>` | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### COUNT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/CountFilter.java#L23-L25)</sup></sub></sup>
@@ -227,8 +227,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/CountFilter.java#L31) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/CountFilter.java#L36) | distinct | `boolean` | `false` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/CountFilter.java#L39) | distinctByColumn | list of ID of `@Valid @NsIdRefCollection Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### COUNT_QUARTERS<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/CountQuartersFilter.java#L19)</sup></sub></sup>
@@ -247,8 +247,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/SingleColumnFilter.java#L20) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### DATE_DISTANCE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/DateDistanceFilter.java#L22-L24)</sup></sub></sup>
@@ -268,8 +268,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/SingleColumnFilter.java#L20) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/DateDistanceFilter.java#L29) | timeUnit | one of NANOS, MICROS, MILLIS, SECONDS, MINUTES, HOURS, HALF_DAYS, DAYS, WEEKS, MONTHS, YEARS, DECADES, CENTURIES, MILLENNIA, ERAS, FOREVER | `"YEARS"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### DURATION_SUM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/DurationSumFilter.java#L20)</sup></sub></sup>
@@ -288,8 +288,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/SingleColumnFilter.java#L20) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### NUMBER<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/NumberFilter.java#L23-L25)</sup></sub></sup>
@@ -308,8 +308,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/SingleColumnFilter.java#L20) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### PREFIX_TEXT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/PrefixTextFilter.java#L16)</sup></sub></sup>
@@ -328,8 +328,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/SingleColumnFilter.java#L20) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### QUARTERS_IN_YEAR<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/QuartersInYearFilter.java#L18)</sup></sub></sup>
@@ -348,8 +348,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/SingleColumnFilter.java#L20) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/MultiSelectFilter.java#L11-L13)</sup></sub></sup>
@@ -372,8 +372,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/AbstractSelectFilter.java#L58) | searchType | one of PREFIX, CONTAINS, EXACT | `"EXACT"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/AbstractSelectFilter.java#L50) | template | [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/AbstractSelectFilter.java#L41) | values | `Set<String>` | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### SINGLE_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L11-L15)</sup></sub></sup>
@@ -406,8 +406,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/AbstractSelectFilter.java#L58) | searchType | one of PREFIX, CONTAINS, EXACT | `"EXACT"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/AbstractSelectFilter.java#L50) | template | [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/AbstractSelectFilter.java#L41) | values | `Set<String>` | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### SUM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SumFilter.java#L32-L34)</sup></sub></sup>
@@ -428,8 +428,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SumFilter.java#L42) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SumFilter.java#L55) | distinctByColumn | ID of `@Valid @NsIdRef Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SumFilter.java#L49) | subtractColumn | ID of `@Valid @NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 
@@ -457,8 +457,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/CountSelect.java#L29) | column | ID of `@NsIdRef @NotNull Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/CountSelect.java#L20) | distinct | `boolean` | `false` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/CountSelect.java#L24) | distinctByColumn | ID of `@NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### COUNT_OCCURENCES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/CountOccurencesSelect.java#L20)</sup></sub></sup>
@@ -476,8 +476,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/CountOccurencesSelect.java#L28) | selection | list of `String` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### COUNT_QUARTERS<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/CountQuartersSelect.java#L16-L19)</sup></sub></sup>
@@ -494,8 +494,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### DATE_DISTANCE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/DateDistanceSelect.java#L20)</sup></sub></sup>
@@ -513,8 +513,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/DateDistanceSelect.java#L35) | timeUnit | one of NANOS, MICROS, MILLIS, SECONDS, MINUTES, HOURS, HALF_DAYS, DAYS, WEEKS, MONTHS, YEARS, DECADES, CENTURIES, MILLENNIA, ERAS, FOREVER | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### DATE_UNION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/DateUnionSelect.java#L15)</sup></sub></sup>
@@ -531,8 +531,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### DISTINCT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/DistinctSelect.java#L11)</sup></sub></sup>
@@ -549,8 +549,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### DURATION_SUM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/DurationSumSelect.java#L15)</sup></sub></sup>
@@ -567,8 +567,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### EVENT_DATE_UNION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/concept/specific/EventDateUnionSelect.java#L16-L19)</sup></sub></sup>
@@ -583,8 +583,8 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `"ResultHeadersC10n.dates"` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `"resultheadersc10n_dates"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `"ResultHeadersC10n.dates"` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `"resultheadersc10n_dates"` |  |  | 
 </p></details>
 
 ### EVENT_DURATION_SUM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/concept/specific/EventDurationSumSelect.java#L16)</sup></sub></sup>
@@ -599,8 +599,8 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### EXISTS<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/concept/specific/ExistsSelect.java#L15)</sup></sub></sup>
@@ -615,8 +615,8 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### FIRST<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/FirstValueSelect.java#L11)</sup></sub></sup>
@@ -633,8 +633,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### LAST<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/LastValueSelect.java#L11)</sup></sub></sup>
@@ -651,8 +651,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### PREFIX<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/PrefixSelect.java#L17)</sup></sub></sup>
@@ -670,8 +670,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/PrefixSelect.java#L25) | prefix | `String` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### QUARTER<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/QuarterSelect.java#L14-L16)</sup></sub></sup>
@@ -687,8 +687,8 @@ Supported Fields:
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/QuarterSelect.java#L22) | sample | one of EARLIEST, LATEST, RANDOM | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### QUARTERS_IN_YEAR<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/QuartersInYearSelect.java#L15-L17)</sup></sub></sup>
@@ -705,8 +705,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### RANDOM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/RandomValueSelect.java#L11)</sup></sub></sup>
@@ -723,8 +723,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L35) | description | `String` | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L32-L35) | categorical | `boolean` | ? |  | Indicates if the values in the specified column belong to a categorical set (bounded number of values). | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/SingleColumnSelect.java#L27) | column | ID of `@NonNull Column` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### SUM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/SumSelect.java#L30)</sup></sub></sup>
@@ -742,8 +742,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/SumSelect.java#L41) | column | ID of `@NsIdRef @NotNull Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/SumSelect.java#L36) | distinctByColumn | ID of `@NsIdRef Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/SumSelect.java#L45) | subtractColumn | ID of `@NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 
@@ -767,8 +767,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/ConceptElement.java#L20) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/tree/ConceptTreeChild.java#L24) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/tree/ConceptTreeChild.java#L40) | condition | [@NotNull CTCondition](#Base-CTCondition) | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### Type Connector<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/Connector.java#L35-L37)</sup></sub></sup>
@@ -784,8 +784,8 @@ Supported Fields:
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/Connector.java#L65) | selects | list of [Select](#Base-Select) | ? |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/Connector.java#L47) | validityDates | list of [ValidityDate](#Type-ValidityDate) | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | ? | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | ? | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
 ### Type FilterTemplate<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L9)</sup></sub></sup>
@@ -833,8 +833,8 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/ValidityDate.java#L25) | column | ID of `@NsIdRef @NotNull Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L21-L24) | label | `String` | `null` | "someLabel" | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L12) | name | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L25-L29) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
 ---

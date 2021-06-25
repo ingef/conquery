@@ -11,8 +11,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -120,11 +126,10 @@ public class ArrowResultGenerationTest {
                 return coll.getInfos();
             }
 
-            ;
-
-            public List<EntityResult> getResults() {
-                return new ArrayList<>(results);
-            }
+			@Override
+			public Stream<EntityResult> streamResults() {
+				return results.stream();
+			}
         };
 
         // First we write to the buffer, than we read from it and parse it as TSV

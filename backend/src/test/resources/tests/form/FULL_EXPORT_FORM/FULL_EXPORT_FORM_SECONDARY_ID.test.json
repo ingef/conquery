@@ -1,0 +1,62 @@
+{
+  "type": "FORM_TEST",
+  "label": "FULL_EXPORT_FORM",
+  "expectedCsv": {
+    "results": "/tests/form/FULL_EXPORT_FORM//expected.csv"
+  },
+  "form": {
+    "type": "FULL_EXPORT_FORM",
+    "tables": [
+      {
+        "type": "CONCEPT",
+        "ids": "abc-concept",
+        "tables": {
+          "id": "abc-concept.connector2"
+        }
+      },
+      {
+        "type": "AND",
+        "children": {
+          "type": "CONCEPT",
+          "ids": "geschlecht",
+          "tables": {
+            "id": "geschlecht.geschlecht",
+            "dateColumn" : {
+              "value" : "geschlecht.geschlecht.erster_tag"
+            }
+          }
+        }
+      }
+    ],
+    "queryGroup": "00000000-0000-0000-0000-000000000001"
+  },
+  "concepts": [
+    "/tests/form/shared/abc.concept.json",
+    "/tests/form/shared/geschlecht.concept.json"
+  ],
+  "content": {
+    "tables": [
+      "/tests/form/shared/vers_stamm.table.json",
+      "/tests/form/shared/abc.table.json"
+    ],
+    "secondaryIds" : [
+      {
+        "name": "secondary"
+      }
+    ],
+    "previousQueries": [
+      {
+        "type": "CONCEPT_QUERY",
+        "root": {
+          "ids": [
+            "abc-concept"
+          ],
+          "tables": {
+            "id": "abc-concept.connector"
+          },
+          "type": "CONCEPT"
+        }
+      }
+    ]
+  }
+}

@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.storage;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
 
 import javax.validation.Validator;
 
@@ -28,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class MetaStorage implements ConqueryStorage{
 
     private IdentifiableStore<ManagedExecution<?>> executions;
+
     private IdentifiableStore<FormConfig> formConfigs;
     private IdentifiableStore<User> authUser;
     private IdentifiableStore<Role> authRole;
@@ -40,16 +40,17 @@ public class MetaStorage implements ConqueryStorage{
     @Getter
     protected final Validator validator;
 
-    public MetaStorage(Validator validator, StoreFactory storageFactory, List<String> pathName, DatasetRegistry datasetRegistry) {
+    public MetaStorage(Validator validator, StoreFactory storageFactory, DatasetRegistry datasetRegistry) {
         this.datasetRegistry = datasetRegistry;
         this.validator = validator;
 
-		authUser = storageFactory.createUserStore(centralRegistry, pathName);
-		authRole = storageFactory.createRoleStore(centralRegistry, pathName);
-		authGroup = storageFactory.createGroupStore(centralRegistry, pathName);
+
+		authUser = storageFactory.createUserStore(centralRegistry, "meta");
+		authRole = storageFactory.createRoleStore(centralRegistry, "meta");
+		authGroup = storageFactory.createGroupStore(centralRegistry, "meta");
 		// Executions depend on users
-		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, pathName);
-		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, pathName);
+		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, "meta");
+		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta");
     }
 
     @Override

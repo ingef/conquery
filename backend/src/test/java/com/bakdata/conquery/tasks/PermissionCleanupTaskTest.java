@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
 class PermissionCleanupTaskTest {
 
 
-    private MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null, null);
+    private MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
 
     @AfterEach
     public void teardownAfterEach() {

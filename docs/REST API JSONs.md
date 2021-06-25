@@ -316,6 +316,22 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/ExportForm.java#L55) | timeMode | `@NotNull @Valid Mode` | `null` |  |  | 
 </p></details>
 
+### FULL_EXPORT_FORM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L44)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.apiv1.forms.export_form.FullExportForm`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L56) | dateRange | `@Valid Range<LocalDate>` |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L49) | queryGroupId | ID of `ManagedExecution` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L60) | tables | list of [CQElement](#Base-CQElement) | `[]` |  |  | 
+</p></details>
+
 ### RELATIVE_FORM_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L31)</sup></sub></sup>
 
 
@@ -338,7 +354,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L49) | timeUnit | one of DAYS, QUARTERS, YEARS | ? |  |  | 
 </p></details>
 
-### SECONDARY_ID_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L33)</sup></sub></sup>
+### SECONDARY_ID_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L37)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -349,12 +365,12 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L46) | dateAggregationMode | one of NONE, MERGE, INTERSECT, LOGICAL | `"MERGE"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L50-L52) | query | [CONCEPT_QUERY](#CONCEPT_QUERY) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L39) | root | [@NotNull CQElement](#Base-CQElement) | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L42) | secondaryId | ID of `@NsIdRef @NotNull SecondaryIdDescription` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L56) | withSecondaryId | list of ID of `@NsIdRefCollection Set<Column>` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L60) | withoutSecondaryId | list of ID of `@NsIdRefCollection Set<Table>` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L50) | dateAggregationMode | one of NONE, MERGE, INTERSECT, LOGICAL | `"MERGE"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L54-L56) | query | [CONCEPT_QUERY](#CONCEPT_QUERY) | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L43) | root | [@NotNull CQElement](#Base-CQElement) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L46) | secondaryId | ID of `@NsIdRef @NotNull SecondaryIdDescription` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L60) | withSecondaryId | list of ID of `@NsIdRefCollection Set<Column>` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L64) | withoutSecondaryId | list of ID of `@NsIdRefCollection Set<Table>` | ␀ |  |  | 
 </p></details>
 
 ### TABLE_EXPORT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L41-L43)</sup></sub></sup>
@@ -441,11 +457,11 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/CQElement.java#L31-L33) | label | `String` | `null` |  | Allows the user to define labels. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L82) | aggregateEventDates | `@javax.validation.constraints.NotNull boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L83) | aggregateEventDates | `@javax.validation.constraints.NotNull boolean` | ␀ |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L62-L64) | elements | list of ID of `ConceptElement<?>` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L80) | excludeFromSecondaryIdQuery | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L79) | excludeFromTimeAggregation | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L75) | selects | list of ID of `Select` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L81) | excludeFromSecondaryIdQuery | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L80) | excludeFromTimeAggregation | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L76) | selects | list of ID of `Select` | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L70) | tables | list of [CQTable](#Type-CQTable) | `[]` |  |  | 
 </p></details>
 

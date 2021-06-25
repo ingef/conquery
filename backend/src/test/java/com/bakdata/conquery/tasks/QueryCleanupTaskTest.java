@@ -43,7 +43,7 @@ class QueryCleanupTaskTest {
 		return managedQuery;
 	}
 
-	private MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null, null);
+	private MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
 
 	@AfterEach
 	public void teardownAfterEach() {

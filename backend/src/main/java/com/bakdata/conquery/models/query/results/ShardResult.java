@@ -24,17 +24,20 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @CPSType(id = "SHARD_RESULT", base = ShardResult.class)
-@Getter @Setter @Slf4j @ToString(onlyExplicitlyIncluded = true)
+@Getter
+@Setter
+@Slf4j
+@ToString(onlyExplicitlyIncluded = true)
 public class ShardResult {
 
 	@ToString.Include
 	private ManagedExecutionId queryId;
 
 	private List<EntityResult> results = new ArrayList<>();
-	
+
 	@ToString.Include
 	private LocalDateTime startTime = LocalDateTime.now();
 	@ToString.Include
@@ -51,19 +54,21 @@ public class ShardResult {
 		if (finishTime != null) {
 			return;
 		}
-		
+
 		if (error.isPresent()) {
 			setFinishTime();
 			return;
 		}
 
 		try {
-			results =  Uninterruptibles.getUninterruptibly(future).stream()
-					.flatMap(Optional::stream)
-					.collect(Collectors.toList());
-		} catch (ConqueryError e) {
+			results = Uninterruptibles.getUninterruptibly(future).stream()
+									  .flatMap(Optional::stream)
+									  .collect(Collectors.toList());
+		}
+		catch (ConqueryError e) {
 			error = Optional.of(e);
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			error = Optional.of(new ConqueryError.UnknownError(e));
 		}
 		setFinishTime();
@@ -71,7 +76,9 @@ public class ShardResult {
 
 	private void setFinishTime() {
 		finishTime = LocalDateTime.now();
-		log.info("Query {} finished {} with {} results within {}", queryId, error.isEmpty()? "successful" : "faulty", results.size(), Duration.between(startTime, finishTime));
+		log.info("Query {} finished {} with {} results within {}", queryId, error.isEmpty()
+																			? "successful"
+																			: "faulty", results.size(), Duration.between(startTime, finishTime));
 	}
 
 	public synchronized void send(MessageSender<NamespaceMessage> session) {
