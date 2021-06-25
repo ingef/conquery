@@ -1,5 +1,22 @@
 package com.bakdata.conquery.models.execution;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.apiv1.ExecutionStatus;
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.OverviewExecutionStatus;
@@ -13,10 +30,10 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -48,18 +65,6 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.UriBuilder;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -309,9 +314,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		QueryDescription query = getSubmitted();
 		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
-		Set<ConqueryPermission> permissions = new HashSet<>();
 
-		final Set<Concept> concepts = namespacesIdCollector.getIdentifiables()
+		final Set<Concept<?>> concepts = namespacesIdCollector.getIdentifiables()
 														  .stream()
 														  .filter(ConceptElement.class::isInstance)
 														  .map(ConceptElement.class::cast)
@@ -386,12 +390,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 	
 	@JsonIgnore
-	abstract protected void makeDefaultLabel(StringBuilder sb, PrintSettings cfg);
+	protected abstract String makeDefaultLabel(PrintSettings cfg);
 	
 	protected String makeAutoLabel(PrintSettings cfg) {
-		StringBuilder sb = new StringBuilder();
-		makeDefaultLabel(sb, cfg);
-		return sb.append(AUTO_LABEL_SUFFIX).toString();
+		return makeDefaultLabel(cfg) +  AUTO_LABEL_SUFFIX;
 	}
 
 	@Override

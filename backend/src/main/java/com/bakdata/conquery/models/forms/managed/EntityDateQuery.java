@@ -10,18 +10,18 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
+import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -55,13 +55,14 @@ public class EntityDateQuery extends IQuery {
     @Override
     public EntityDateQueryPlan createQueryPlan(QueryPlanContext context) {
         // Clear all selects we need only the date union which is enforced through the content
-        query.visit(v -> {
-            if(v instanceof CQConcept) {
-                CQConcept concept = ((CQConcept) v);
-                concept.setSelects(Collections.emptyList());
-                concept.getTables().forEach(t -> t.setSelects(Collections.emptyList()));
-            }
-        });
+        Visitable.stream(query)
+				 .filter(CQConcept.class::isInstance)
+				 .map(CQConcept.class::cast)
+				 .forEach(concept -> {
+					 concept.setSelects(Collections.emptyList());
+					 concept.getTables().forEach(t -> t.setSelects(Collections.emptyList()));
+				 });
+
         return new EntityDateQueryPlan(
                 query.createQueryPlan(context),
                 features.createQueryPlan(context),
