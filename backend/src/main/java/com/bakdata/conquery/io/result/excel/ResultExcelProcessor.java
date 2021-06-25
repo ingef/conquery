@@ -39,13 +39,10 @@ public class ResultExcelProcessor {
 		ConqueryMDC.setLocation(user.getName());
 		final Namespace namespace = datasetRegistry.get(datasetId);
 		Dataset dataset = namespace.getDataset();
+
 		user.authorize(dataset, Ability.READ);
 		user.authorize(dataset, Ability.DOWNLOAD);
-
-
-
 		user.authorize(exec, Ability.READ);
-
 
 		IdMappingConfig idMapping = config.getIdMapping();
 		IdMappingState mappingState = idMapping.initToExternal(user, exec);
@@ -54,9 +51,7 @@ public class ResultExcelProcessor {
 				I18n.LOCALE.get(),
 				datasetRegistry,
 				config,
-				(EntityResult cer) -> {
-					return ResultUtil.createId(namespace, cer, idMapping, mappingState);
-				});
+				(EntityResult cer) -> ResultUtil.createId(namespace, cer, idMapping, mappingState));
 
 		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel());
 
