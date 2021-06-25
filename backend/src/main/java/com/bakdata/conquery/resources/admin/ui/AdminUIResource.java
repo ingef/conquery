@@ -107,6 +107,8 @@ public class AdminUIResource extends HAdmin {
 		GroovyShell groovy = new GroovyShell(config);
 		groovy.setProperty("datasetRegistry", processor.getDatasetRegistry());
 		groovy.setProperty("jobManager", processor.getJobManager());
+		groovy.setProperty("config", processor.getConfig());
+		groovy.setProperty("storage", processor.getStorage());
 
 		try {
 			return groovy.evaluate(script);
