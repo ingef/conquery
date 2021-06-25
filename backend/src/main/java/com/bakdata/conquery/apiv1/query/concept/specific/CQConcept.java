@@ -69,6 +69,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@Valid
 	@NotEmpty
+	@NotNull
 	@JsonManagedReference
 	private List<CQTable> tables = Collections.emptyList();
 

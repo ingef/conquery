@@ -17,7 +17,7 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class PrintSettings {
 
-	private static final Function<Locale, NumberFormat> NUMBER_FORMAT = (locale) -> NumberFormat.getNumberInstance(locale);
+	private static final Function<Locale, NumberFormat> NUMBER_FORMAT = NumberFormat::getNumberInstance;
 	private static final Function<Locale, NumberFormat> DECIMAL_FORMAT = (locale) -> {
 		NumberFormat fmt = NumberFormat.getNumberInstance(locale);
 		fmt.setMaximumFractionDigits(Integer.MAX_VALUE);
