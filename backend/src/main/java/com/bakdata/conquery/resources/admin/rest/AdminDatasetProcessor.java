@@ -15,18 +15,34 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+import javax.validation.Validator;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.StructureNode;
-import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
-import com.bakdata.conquery.models.concepts.select.concept.specific.EventDurationSumSelect;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.StructureNode;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -34,10 +50,19 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
@@ -78,8 +103,15 @@ public class AdminDatasetProcessor {
 	private final JobManager jobManager;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
+	/**
+	 * Creates and initializes a new dataset if it does not already exist.
+	 */
+	public synchronized Dataset addDataset(String name) {
 
-	public synchronized Dataset addDataset(String name) throws JSONException {
+		if (datasetRegistry.get(new DatasetId(name)) != null) {
+			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
+		}
+
 		// create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
@@ -102,11 +134,14 @@ public class AdminDatasetProcessor {
 		return dataset;
 	}
 
+	/**
+	 * Delete dataset if it is empty.
+	 */
 	public synchronized void deleteDataset(Dataset dataset) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		if (!namespace.getStorage().getTables().isEmpty()) {
-			throw new IllegalArgumentException(
+			throw new WebApplicationException(
 					String.format(
 							"Cannot delete dataset `%s`, because it still has tables: `%s`",
 							dataset.getId(),
@@ -114,7 +149,8 @@ public class AdminDatasetProcessor {
 									.map(Table::getId)
 									.map(Objects::toString)
 									.collect(Collectors.joining(","))
-					));
+					),
+					Response.Status.CONFLICT);
 		}
 
 		namespace.close();
@@ -123,9 +159,16 @@ public class AdminDatasetProcessor {
 
 	}
 
+	/**
+	 * Add SecondaryId if it doesn't already exist.
+	 */
 	public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
 		final Dataset dataset = namespace.getDataset();
 		secondaryId.setDataset(dataset);
+
+		if (namespace.getStorage().getSecondaryId(secondaryId.getId()) != null) {
+			throw new WebApplicationException("SecondaryId already exists", Response.Status.CONFLICT);
+		}
 
 		log.info("Received new SecondaryId[{}]", secondaryId.getId());
 
@@ -134,6 +177,9 @@ public class AdminDatasetProcessor {
 		namespace.sendToAll(new UpdateSecondaryId(secondaryId));
 	}
 
+	/**
+	 * Delete SecondaryId if it does not have any dependents.
+	 */
 	public synchronized void deleteSecondaryId(@NonNull SecondaryIdDescription secondaryId) {
 		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset().getId());
 
@@ -160,7 +206,11 @@ public class AdminDatasetProcessor {
 		namespace.sendToAll(new RemoveSecondaryId(secondaryId));
 	}
 
-	public synchronized void addTable(@NonNull Table table, Namespace namespace) throws JSONException {
+	/**
+	 * Add table to Dataset if it doesn't already exist.
+	 */
+	@SneakyThrows
+	public synchronized void addTable(@NonNull Table table, Namespace namespace) {
 		Dataset dataset = namespace.getDataset();
 
 		if (table.getDataset() == null) {
@@ -170,52 +220,66 @@ public class AdminDatasetProcessor {
 			throw new IllegalArgumentException();
 		}
 
+		if (namespace.getStorage().getTable(table.getId()) != null) {
+			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
+		}
+
 		ValidatorHelper.failOnError(log, validator.validate(table));
 
 		for (int p = 0; p < table.getColumns().length; p++) {
 			table.getColumns()[p].setPosition(p);
 		}
 
-
 		namespace.getStorage().addTable(table);
 		namespace.sendToAll(new UpdateTable(table));
 	}
 
-
-
-	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) throws JSONException {
+	/**
+	 * Add the concept to the dataset if it does not exist yet.
+	 */
+	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
 		concept.setDataset(dataset);
 		ValidatorHelper.failOnError(log, validator.validate(concept));
-		// Register the Concept in the ManagerNode and Workers
+
 		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 		}
 
 		addAutomaticSelect(concept, () -> EventDurationSumSelect.create("event_duration_sum"));
 
+		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
 		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
 	}
 
+	/**
+	 * Adds some selects to the concept on all levels for convenience.
+	 */
 	private static void addAutomaticSelect(@NotNull Concept<?> concept, Supplier<UniversalSelect> selectCreator) {
-		if (concept instanceof TreeConcept) {
-			// Add to concept
-			TreeConcept treeConcept = (TreeConcept) concept;
-			final UniversalSelect select = selectCreator.get();
-			select.setHolder(treeConcept);
-			treeConcept.getSelects().add(select);
+		if (!(concept instanceof TreeConcept)) {
+			return;
+		}
 
-			// Add to connectors
-			for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
-				final UniversalSelect connectorSelect = selectCreator.get();
-				connectorSelect.setHolder(connector);
-				connector.getSelects().add(connectorSelect);
-			}
+		// Add to concept
+		TreeConcept treeConcept = (TreeConcept) concept;
+		final UniversalSelect select = selectCreator.get();
+		select.setHolder(treeConcept);
+		treeConcept.getSelects().add(select);
+
+		// Add to connectors
+		for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
+			final UniversalSelect connectorSelect = selectCreator.get();
+			connectorSelect.setHolder(connector);
+			connector.getSelects().add(connectorSelect);
 		}
 	}
 
+	/**
+	 * Uploads new IdMapping.
+	 */
+	public void setIdMapping(InputStream data, Namespace namespace) {
+		log.info("Received IdMapping for Dataset[{}]", namespace.getDataset().getId());
 
-	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
 		CsvParser parser = config.getCsv()
 				.withSkipHeader(false)
 				.withParseHeaders(false)
@@ -226,21 +290,30 @@ public class AdminDatasetProcessor {
 		namespace.getStorage().updateIdMapping(mapping);
 	}
 
+	/**
+	 * Uploads new Structure for namespace.
+	 */
+	public void setStructure(Namespace namespace, StructureNode[] structure) {
+		log.info("Add Structure for Dataset[{}]", namespace.getDataset().getId());
 
-	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {
-		datasetRegistry.get(dataset.getId()).getStorage().updateStructure(structure);
+		namespace.getStorage().updateStructure(structure);
 	}
 
 
-
-
+	/**
+	 * Reads an Import partially Importing it if not yet present, then submitting it for full import.
+	 */
 	@SneakyThrows
 	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
 		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks);
+
 		namespace.getJobManager().addSlowJob(job);
 	}
 
+	/**
+	 * Deletes an import.
+	 */
 	public synchronized void deleteImport(Import imp) {
 		final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
 		
@@ -251,6 +324,9 @@ public class AdminDatasetProcessor {
 		namespace.removeBucketAssignmentsForImportFormWorkers(imp);
 	}
 
+	/**
+	 * Deletes a table if it has no dependents or not forced to do so.
+	 */
 	public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
 		final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
 
@@ -275,6 +351,9 @@ public class AdminDatasetProcessor {
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
 	}
 
+	/**
+	 * Deletes a concept.
+	 */
 	public synchronized void deleteConcept(Concept<?> concept) {
 		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
 
@@ -283,6 +362,10 @@ public class AdminDatasetProcessor {
 				.addSlowJob(new SimpleJob("sendToAll: remove " + concept.getId(), () -> namespace.sendToAll(new RemoveConcept(concept))));
 	}
 
+	/**
+	 * Issues all Shards to do an UpdateMatchingStats.
+	 * @implNote This intentionally submits a SlowJob so that it will be queued after all jobs that are already in the queue (usually import jobs).
+	 */
 	public void updateMatchingStats(Dataset dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset.getId());
 

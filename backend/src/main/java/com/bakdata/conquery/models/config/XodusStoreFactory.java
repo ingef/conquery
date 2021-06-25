@@ -40,8 +40,8 @@ import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.StructureNode;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -163,7 +163,7 @@ public class XodusStoreFactory implements StoreFactory {
 			log.warn("Had to create Storage Dir at `{}`", baseDir);
 		}
 
-		ConcurrentLinkedQueue<T> storages = new ConcurrentLinkedQueue<>();
+		Queue<T> storages = new ConcurrentLinkedQueue<>();
 		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
 
 
@@ -199,6 +199,8 @@ public class XodusStoreFactory implements StoreFactory {
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+
+
 			log.debug("Waiting for Worker storages to load. {} are already finished.", storages.size());
 		}
 

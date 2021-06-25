@@ -3,11 +3,11 @@ package com.bakdata.conquery.resources.admin.rest;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -22,7 +22,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -32,7 +32,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
@@ -73,15 +72,23 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("label")
-	public void setlabel(String label) throws IOException, JSONException {
+	public void setLabel(String label) {
 		Dataset ds = namespace.getDataset();
 		ds.setLabel(label);
 		namespace.getStorage().updateDataset(ds);
 	}
 
 	@POST
+	@Path("weight")
+	public void setWeight(@Min(0) int weight) {
+		Dataset ds = namespace.getDataset();
+		ds.setWeight(weight);
+		namespace.getStorage().updateDataset(ds);
+	}
+
+	@POST
 	@Path("tables")
-	public void addTable(Table table) throws IOException, JSONException {
+	public void addTable(Table table) {
 		processor.addTable(table, namespace);
 	}
 
@@ -89,8 +96,8 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
-	public void uploadImport(@NotNull InputStream importStream, @QueryParam("name") Optional<String> importName) throws IOException, JSONException {
-		log.info("Importing from file upload {}", importName.orElse(""));
+	public void uploadImport(@NotNull InputStream importStream) throws IOException, JSONException {
+		log.info("Importing from file upload");
 		processor.addImport(namespace, new GZIPInputStream(importStream));
 	}
 
@@ -147,7 +154,7 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Path("structure")
 	public void setStructure(@NotNull @Valid StructureNode[] structure) throws JSONException {
-		processor.setStructure(namespace.getDataset(), structure);
+		processor.setStructure(namespace, structure);
 	}
 
 

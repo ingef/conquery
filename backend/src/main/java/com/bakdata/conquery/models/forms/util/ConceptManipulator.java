@@ -2,9 +2,8 @@ package com.bakdata.conquery.models.forms.util;
 
 import java.util.List;
 
-import c10n.annotations.De;
-import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 
 @Deprecated

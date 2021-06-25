@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.io.ObjectInputStream;
 import java.util.Map;
 import java.util.Objects;
 
@@ -100,11 +99,14 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 * @param sharedDictionaryLocks A collection of locks used for the synchronized creation of shared dictionaries.
 	 */
 	public void createSharedDictionaryReplacement(Map<String, Dictionary> dicts, NamespaceStorage storage, Map<DictionaryId, Dictionary> out, IdMutex<DictionaryId> sharedDictionaryLocks) {
-		Preconditions.checkArgument(sharedDictionary != null && type.equals(MajorTypeId.STRING));
+		Preconditions.checkArgument(type.equals(MajorTypeId.STRING), "Not a STRING Column.");
+		Preconditions.checkArgument(sharedDictionary != null, "Can only be used for Shared Dictionary based Columns");
 		// If the column is based on a shared dict. We reference a new empty dictionary or the existing one
 		// but without updated entries. The entries are updated later on, see ImportJob#applyDictionaryMappings.
+
 		Dictionary sharedDict = null;
 		final DictionaryId sharedDictId = new DictionaryId(table.getDataset().getId(), getSharedDictionary());
+
 		try(IdMutex.Locked lock = sharedDictionaryLocks.acquire(sharedDictId)) {
 			sharedDict = storage.getDictionary(sharedDictId);
 			// Create dictionary if not yet present
@@ -120,9 +122,10 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	/**
 	 * See {@link Column#createSharedDictionaryReplacement(Map, NamespaceStorage, Map, IdMutex)}
 	 */
-	public void createdSingleColumnDictionaryReplacement(Map<String, Dictionary> dicts, String importName, Map<DictionaryId, Dictionary> out) {
-		Preconditions.checkArgument(sharedDictionary == null && type.equals(MajorTypeId.STRING));
-		
+	public void createSingleColumnDictionaryReplacement(Map<String, Dictionary> dicts, String importName, Map<DictionaryId, Dictionary> out) {
+		Preconditions.checkArgument(type.equals(MajorTypeId.STRING), "Not a STRING Column.");
+		Preconditions.checkArgument(sharedDictionary == null, "Cannot be used for Shared Dictionary based Columns.");
+
 		final Dictionary dict = dicts.get(getName());
 		final String name = computeDefaultDictionaryName(importName);
 
