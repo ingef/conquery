@@ -12,7 +12,7 @@ on:
       - ".github/workflows/run_autodoc.yml" # self reference
 
 jobs:
-  tests:
+  generate_auto_doc:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -38,4 +38,4 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: $GITHUB_HEAD_REF
+          branch: ${{ env.GITHUB_HEAD_REF }}
