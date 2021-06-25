@@ -25,6 +25,7 @@ jobs:
             ${{ runner.os }}-maven-
       - uses: actions/checkout@v2
         with:
+          ref: ${{ github.head_ref }}
           submodules: true
       - name: Set up JDK
         uses: actions/setup-java@v1
