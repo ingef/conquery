@@ -2,10 +2,9 @@ package com.bakdata.conquery.models.auth.develop;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 
 import java.util.Objects;
 
