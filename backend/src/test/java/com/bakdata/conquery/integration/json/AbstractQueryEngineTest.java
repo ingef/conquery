@@ -54,7 +54,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		final User testUser = standaloneSupport.getTestUser();
-		ManagedQuery managed = (ManagedQuery) standaloneSupport.getNamespace().getQueryManager().runQuery(namespaces, query, testUser, dataset, config);
+		ManagedQuery managed = (ManagedQuery) standaloneSupport.getNamespace().getExecutionManager().runQuery(namespaces, query, testUser, dataset, config);
 
 		managed.awaitDone(10, TimeUnit.SECONDS);
 		while (managed.getState() != ExecutionState.DONE && managed.getState() != ExecutionState.FAILED) {

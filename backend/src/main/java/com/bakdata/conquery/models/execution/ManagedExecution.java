@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -135,7 +134,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null));
 			}
 
-			executionManager = datasetRegistry.get(getDataset().getId()).getQueryManager();
+			executionManager = datasetRegistry.get(getDataset().getId()).getExecutionManager();
 
 			doInitExecutable(datasetRegistry, config);
 			initialized = true;
@@ -324,7 +323,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		QueryDescription query = getSubmitted();
 		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
-		Set<ConqueryPermission> permissions = new HashSet<>();
 
 		final Set<Concept> concepts = namespacesIdCollector.getIdentifiables()
 														   .stream()
@@ -413,5 +411,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return ExecutionPermission.onInstance(abilities, getId());
+	}
+
+	public void reset() {
+		setState(ExecutionState.NEW);
+
+		executionManager.clearQueryResults(this);
 	}
 }

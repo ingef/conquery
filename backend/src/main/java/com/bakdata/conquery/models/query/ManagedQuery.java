@@ -119,7 +119,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	public Stream<EntityResult> streamResults() {
-		return getExecutionManager().getQueryResults(this);
+		return getExecutionManager().streamQueryResults(this);
 	}
 
 	@Override

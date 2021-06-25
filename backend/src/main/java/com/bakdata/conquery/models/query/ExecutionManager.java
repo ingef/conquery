@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.QueryDescription;
@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalCause;
 import com.google.common.cache.RemovalNotification;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -38,17 +37,17 @@ public class ExecutionManager {
 	private final Namespace namespace;
 
 	private final Cache<ManagedExecution<?>, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
-																									 .softValues()
-																									 .removalListener(this::executionRemoved)
-																									 .build();
+																									  .softValues()
+																									  .removalListener(this::executionRemoved)
+																									  .build();
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
 	private void executionRemoved(RemovalNotification<ManagedExecution<?>, List<?>> removalNotification) {
 
-		// If removal was done intentionally we assume it was also handled properly
-		if(removalNotification.getCause() == RemovalCause.EXPLICIT){
+		// If removal was done manually we assume it was also handled properly
+		if (!removalNotification.wasEvicted()) {
 			return;
 		}
 
@@ -56,7 +55,7 @@ public class ExecutionManager {
 
 		log.warn("Evicted Results for Query[{}] (Reason: {})", execution.getId(), removalNotification.getCause());
 
-		execution.setState(ExecutionState.NEW);
+		execution.reset();
 	}
 
 
@@ -111,13 +110,14 @@ public class ExecutionManager {
 
 		final E query = (E) storage.getExecution(result.getQueryId());
 
-		if(!query.getState().equals(ExecutionState.RUNNING)){
+		if (query.getState() != ExecutionState.RUNNING) {
 			return;
 		}
 
 		query.addResult(storage, result);
 
-		if (query.getState() == ExecutionState.DONE || query.getState() == ExecutionState.FAILED) {
+		// State changed to DONE or FAILED
+		if (query.getState() != ExecutionState.RUNNING) {
 			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(query.getOwner(), storage).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
@@ -126,20 +126,32 @@ public class ExecutionManager {
 		}
 	}
 
-	@SneakyThrows//TODO handle properly
-	public void addQueryResult(ManagedExecution<?> id, List<EntityResult> queryResults) {
-		executionResults.get(id, ArrayList::new)
+
+	/**
+	 * Register another result for the execution.
+	 */
+	@SneakyThrows(ExecutionException.class) // can only occur if ArrayList::new fails which is unlikely and would have other problems also
+	public void addQueryResult(ManagedExecution<?> execution, List<EntityResult> queryResults) {
+		// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
+		executionResults.get(execution, ArrayList::new)
 						.add(queryResults);
 	}
 
-	public void clearQueryResults(ManagedExecution<?> id) {
-		executionResults.invalidate(id);
+	/**
+	 * Discard the query's results.
+	 */
+	public void clearQueryResults(ManagedExecution<?> execution) {
+		executionResults.invalidate(execution);
 	}
 
-	@SneakyThrows//TODO handle properly
-	public Stream<EntityResult> getQueryResults(ManagedExecution<?> id) {
-		return executionResults.get(id, Collections::emptyList)
-							   .stream()
-							   .flatMap(List::stream);
+	/**
+	 * Stream the results of the query, if available.
+	 */
+	public Stream<EntityResult> streamQueryResults(ManagedExecution<?> execution) {
+		final List<List<EntityResult>> resultParts = executionResults.getIfPresent(execution);
+
+		return resultParts == null
+			   ? Stream.empty()
+			   : resultParts.stream().flatMap(List::stream);
 	}
 }
