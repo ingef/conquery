@@ -23,10 +23,7 @@ import { isMultiSelectFilter } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { selectsWithDefaults } from "../model/select";
 import { resetAllFiltersInTables, tableWithDefaults } from "../model/table";
-import {
-  loadPreviousQuery,
-  renamePreviousQuery,
-} from "../previous-queries/list/actions";
+import { loadQuery, renameQuery } from "../previous-queries/list/actions";
 import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
@@ -44,7 +41,7 @@ import {
   updateNodeLabel,
   setFilterValue,
   toggleExcludeGroup,
-  loadQuery,
+  loadSavedQuery,
   toggleTimestamps,
   toggleSecondaryIdExclude,
   resetAllFilters,
@@ -760,13 +757,13 @@ const updatePreviousQueries = (
 
 const loadPreviousQueryStart = (
   state: StandardQueryStateT,
-  action: ActionType<typeof loadPreviousQuery.request>,
+  action: ActionType<typeof loadQuery.request>,
 ) => {
   return updatePreviousQueries(state, action, { loading: true });
 };
 const loadPreviousQuerySuccess = (
   state: StandardQueryStateT,
-  action: ActionType<typeof loadPreviousQuery.success>,
+  action: ActionType<typeof loadQuery.success>,
 ) => {
   const { data } = action.payload;
 
@@ -783,7 +780,7 @@ const loadPreviousQuerySuccess = (
 };
 const loadPreviousQueryError = (
   state: StandardQueryStateT,
-  action: ActionType<typeof loadPreviousQuery.failure>,
+  action: ActionType<typeof loadQuery.failure>,
 ) => {
   return updatePreviousQueries(state, action, {
     loading: false,
@@ -792,7 +789,7 @@ const loadPreviousQueryError = (
 };
 const onRenamePreviousQuery = (
   state: StandardQueryStateT,
-  action: ActionType<typeof renamePreviousQuery.success>,
+  action: ActionType<typeof renameQuery.success>,
 ) => {
   return updatePreviousQueries(state, action, {
     loading: false,
@@ -1039,7 +1036,7 @@ const query = (
       return onDeleteGroup(state, action.payload);
     case getType(toggleExcludeGroup):
       return onToggleExcludeGroup(state, action.payload);
-    case getType(loadQuery):
+    case getType(loadSavedQuery):
       return action.payload.query;
     case getType(updateNodeLabel):
       return onUpdateNodeLabel(state, action.payload);
@@ -1071,13 +1068,13 @@ const query = (
       return resetGroupDates(state, action.payload);
     case getType(expandPreviousQuery):
       return onExpandPreviousQuery(action.payload);
-    case getType(loadPreviousQuery.request):
+    case getType(loadQuery.request):
       return loadPreviousQueryStart(state, action);
-    case getType(loadPreviousQuery.success):
+    case getType(loadQuery.success):
       return loadPreviousQuerySuccess(state, action);
-    case getType(loadPreviousQuery.failure):
+    case getType(loadQuery.failure):
       return loadPreviousQueryError(state, action);
-    case getType(renamePreviousQuery.success):
+    case getType(renameQuery.success):
       return onRenamePreviousQuery(state, action);
     case getType(loadFilterSuggestions.request):
       return loadFilterSuggestionsStart(state, action.payload);

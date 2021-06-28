@@ -8,7 +8,7 @@ import type { DatasetIdT } from "../api/types";
 import { getUniqueFileRows } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { TreesT } from "../concept-trees/reducer";
-import { useLoadPreviousQuery } from "../previous-queries/list/actions";
+import { useLoadQuery } from "../previous-queries/list/actions";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 import QueryGroupModal from "../query-group-modal/QueryGroupModal";
 import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
@@ -91,7 +91,7 @@ const Query = ({
   );
 
   const dispatch = useDispatch();
-  const loadPreviousQuery = useLoadPreviousQuery();
+  const loadQuery = useLoadQuery();
   const expandPreviousQuery = useExpandPreviousQuery();
 
   const onDropAndNode = (
@@ -119,9 +119,9 @@ const Query = ({
     dispatch(toggleTimestamps({ andIdx, orIdx }));
   const onToggleSecondaryIdExclude = (andIdx: number, orIdx: number) =>
     dispatch(toggleSecondaryIdExclude({ andIdx, orIdx }));
-  const onLoadPreviousQuery = (queryId: PreviousQueryIdT) => {
+  const onLoadQuery = (queryId: PreviousQueryIdT) => {
     if (datasetId) {
-      loadPreviousQuery(datasetId, queryId);
+      loadQuery(datasetId, queryId);
     }
   };
 
@@ -170,7 +170,7 @@ const Query = ({
           isInitial
           onDropNode={onDropAndNode}
           onDropFile={(file) => onDropConceptListFile(file, null)}
-          onLoadPreviousQuery={onLoadPreviousQuery}
+          onLoadPreviousQuery={onLoadQuery}
         />
       ) : (
         <>
@@ -191,7 +191,7 @@ const Query = ({
                 onExpandClick={onExpandPreviousQuery}
                 onExcludeClick={() => onToggleExcludeGroup(andIdx)}
                 onDateClick={() => setQueryGroupModalAndIdx(andIdx)}
-                onLoadPreviousQuery={onLoadPreviousQuery}
+                onLoadPreviousQuery={onLoadQuery}
                 onToggleTimestamps={(orIdx: number) =>
                   onToggleTimestamps(andIdx, orIdx)
                 }
@@ -209,7 +209,7 @@ const Query = ({
                   isAnd
                   onDropNode={onDropAndNode}
                   onDropFile={(file) => onDropConceptListFile(file, null)}
-                  onLoadPreviousQuery={onLoadPreviousQuery}
+                  onLoadPreviousQuery={onLoadQuery}
                 />
               </SxWithTooltip>
             </PaddedTop>

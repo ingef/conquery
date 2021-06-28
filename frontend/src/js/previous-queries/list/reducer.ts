@@ -4,12 +4,12 @@ import type { QueryIdT, UserGroupIdT } from "../../api/types";
 import { Action } from "../../app/actions";
 
 import {
-  deletePreviousQuerySuccess,
-  loadPreviousQueries,
-  loadPreviousQuery,
-  renamePreviousQuery,
-  retagPreviousQuery,
-  sharePreviousQuerySuccess,
+  deleteQuerySuccess,
+  loadQueries,
+  loadQuery,
+  renameQuery,
+  retagQuery,
+  shareQuerySuccess,
 } from "./actions";
 
 export type PreviousQueryIdT = string;
@@ -138,9 +138,9 @@ const previousQueriesReducer = (
   action: Action,
 ): PreviousQueriesStateT => {
   switch (action.type) {
-    case getType(loadPreviousQueries.request):
+    case getType(loadQueries.request):
       return { ...state, loading: true };
-    case getType(loadPreviousQueries.success):
+    case getType(loadQueries.success):
       return {
         ...state,
         loading: false,
@@ -148,23 +148,23 @@ const previousQueriesReducer = (
         tags: findUniqueTags(action.payload.data),
         names: findUniqueNames(action.payload.data),
       };
-    case getType(loadPreviousQueries.failure):
+    case getType(loadQueries.failure):
       return {
         ...state,
         loading: false,
         error: action.payload.message || null,
       };
-    case getType(loadPreviousQuery.request):
-    case getType(renamePreviousQuery.request):
-    case getType(retagPreviousQuery.request):
+    case getType(loadQuery.request):
+    case getType(renameQuery.request):
+    case getType(retagQuery.request):
       return updatePreviousQuery(state, action, { loading: true });
-    case getType(loadPreviousQuery.success):
+    case getType(loadQuery.success):
       return updatePreviousQuery(state, action, {
         loading: false,
         error: null,
         ...action.payload.data,
       });
-    case getType(renamePreviousQuery.success):
+    case getType(renameQuery.success):
       return {
         ...updatePreviousQuery(state, action, {
           loading: false,
@@ -174,7 +174,7 @@ const previousQueriesReducer = (
         }),
         names: updateUniqueNames(state.names, action.payload.label),
       };
-    case getType(retagPreviousQuery.success):
+    case getType(retagQuery.success):
       return {
         ...updatePreviousQuery(state, action, {
           loading: false,
@@ -183,7 +183,7 @@ const previousQueriesReducer = (
         }),
         tags: findNewTags([...state.tags, ...action.payload.tags]),
       };
-    case getType(sharePreviousQuerySuccess):
+    case getType(shareQuerySuccess):
       return updatePreviousQuery(state, action, {
         loading: false,
         error: null,
@@ -192,11 +192,11 @@ const previousQueriesReducer = (
           ? { shared: false }
           : { shared: true }),
       });
-    case getType(deletePreviousQuerySuccess):
+    case getType(deleteQuerySuccess):
       return deletePreviousQuery(state, action.payload);
-    case getType(loadPreviousQuery.failure):
-    case getType(renamePreviousQuery.failure):
-    case getType(retagPreviousQuery.failure):
+    case getType(loadQuery.failure):
+    case getType(renameQuery.failure):
+    case getType(retagQuery.failure):
       return updatePreviousQuery(state, action, {
         loading: false,
         error: action.payload.message,

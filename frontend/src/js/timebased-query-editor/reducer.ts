@@ -1,7 +1,7 @@
 import { ActionType, getType } from "typesafe-actions";
 
 import { Action } from "../app/actions";
-import { renamePreviousQuery } from "../previous-queries/list/actions";
+import { renameQuery } from "../previous-queries/list/actions";
 
 import {
   addTimebasedCondition,
@@ -105,7 +105,7 @@ const conditionResultsToArray = (conditions: TimebasedConditionT[]) => {
 
 const getPossibleIndexResults = (conditions: TimebasedConditionT[]) => {
   return conditions.reduce<TimebasedResultType[]>(
-    (possibleResults, condition, i) => {
+    (possibleResults, condition) => {
       if (condition.operator === "DAYS_OR_NO_EVENT_BEFORE" && condition.result1)
         possibleResults.push(condition.result1);
 
@@ -331,9 +331,9 @@ const onRemoveTimebasedCondition = (
   return ensureIndexResult({ ...nextState, indexResult: null });
 };
 
-const renamePreviousQueries = (
+const renameQueries = (
   state: TimebasedQueryStateT,
-  { queryId, label }: ActionType<typeof renamePreviousQuery.success>["payload"],
+  { queryId, label }: ActionType<typeof renameQuery.success>["payload"],
 ) => {
   return {
     ...state,
@@ -432,8 +432,8 @@ const timebasedQuery = (
       return onAddTimebasedCondition(state);
     case getType(removeTimebasedCondition):
       return onRemoveTimebasedCondition(state, action.payload);
-    case getType(renamePreviousQuery.success):
-      return renamePreviousQueries(state, action.payload);
+    case getType(renameQuery.success):
+      return renameQueries(state, action.payload);
     case getType(clearTimebasedQuery):
       return initialState;
     default:

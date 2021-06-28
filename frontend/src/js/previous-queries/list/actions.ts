@@ -1,16 +1,18 @@
+import { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
 import {
-  useGetStoredQueries,
-  usePatchStoredQuery,
-  useGetStoredQuery,
+  useGetQueries,
+  usePatchQuery,
+  useGetQuery,
+  useDeleteQuery,
 } from "../../api/api";
 import {
   DatasetIdT,
-  GetStoredQueriesResponseT,
-  GetStoredQueryResponseT,
+  GetQueriesResponseT,
+  GetQueryResponseT,
   QueryIdT,
 } from "../../api/types";
 import { ErrorObject, errorPayload } from "../../common/actions";
@@ -20,36 +22,36 @@ import { setMessage } from "../../snack-message/actions";
 import { PreviousQueryIdT } from "./reducer";
 
 export type PreviousQueryListActions = ActionType<
-  | typeof loadPreviousQueries
-  | typeof loadPreviousQuery
-  | typeof renamePreviousQuery
-  | typeof retagPreviousQuery
-  | typeof sharePreviousQuerySuccess
-  | typeof deletePreviousQuerySuccess
+  | typeof loadQueries
+  | typeof loadQuery
+  | typeof renameQuery
+  | typeof retagQuery
+  | typeof shareQuerySuccess
+  | typeof deleteQuerySuccess
 >;
 
-export const loadPreviousQueries = createAsyncAction(
-  "previous-queries/LOAD_PREVIOUS_QUERIES_START",
-  "previous-queries/LOAD_PREVIOUS_QUERIES_SUCCESS",
-  "previous-queries/LOAD_PREVIOUS_QUERIES_ERROR",
-)<undefined, { data: GetStoredQueriesResponseT }, ErrorObject>();
+export const loadQueries = createAsyncAction(
+  "queries/LOAD_QUERIES_START",
+  "queries/LOAD_QUERIES_SUCCESS",
+  "queries/LOAD_QUERIES_ERROR",
+)<undefined, { data: GetQueriesResponseT }, ErrorObject>();
 
-export const useLoadPreviousQueries = () => {
+export const useLoadQueries = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const getStoredQueries = useGetStoredQueries();
+  const getQueries = useGetQueries();
 
   return async (datasetId: DatasetIdT) => {
-    dispatch(loadPreviousQueries.request());
+    dispatch(loadQueries.request());
 
     try {
-      const data = await getStoredQueries(datasetId);
+      const data = await getQueries(datasetId);
 
-      return dispatch(loadPreviousQueries.success({ data }));
+      return dispatch(loadQueries.success({ data }));
     } catch (e) {
       dispatch(setMessage({ message: t("previousQueries.error") }));
 
-      return dispatch(loadPreviousQueries.failure(errorPayload(e, {})));
+      return dispatch(loadQueries.failure(errorPayload(e, {})));
     }
   };
 };
@@ -57,29 +59,29 @@ export const useLoadPreviousQueries = () => {
 interface QueryContext {
   queryId: QueryIdT;
 }
-export const loadPreviousQuery = createAsyncAction(
-  "previous-queries/LOAD_PREVIOUS_QUERY_START",
-  "previous-queries/LOAD_PREVIOUS_QUERY_SUCCESS",
-  "previous-queries/LOAD_PREVIOUS_QUERY_ERROR",
+export const loadQuery = createAsyncAction(
+  "queries/LOAD_QUERY_START",
+  "queries/LOAD_QUERY_SUCCESS",
+  "queries/LOAD_QUERY_ERROR",
 )<
   QueryContext,
-  QueryContext & { data: GetStoredQueryResponseT },
+  QueryContext & { data: GetQueryResponseT },
   QueryContext & ErrorObject
 >();
 
-export const useLoadPreviousQuery = () => {
+export const useLoadQuery = () => {
   const dispatch = useDispatch();
-  const getStoredQuery = useGetStoredQuery();
+  const getQuery = useGetQuery();
   const { t } = useTranslation();
 
   return (datasetId: DatasetIdT, queryId: PreviousQueryIdT) => {
-    dispatch(loadPreviousQuery.request({ queryId }));
+    dispatch(loadQuery.request({ queryId }));
 
-    return getStoredQuery(datasetId, queryId).then(
-      (r) => dispatch(loadPreviousQuery.success({ queryId, data: r })),
+    return getQuery(datasetId, queryId).then(
+      (r) => dispatch(loadQuery.success({ queryId, data: r })),
       () =>
         dispatch(
-          loadPreviousQuery.failure({
+          loadQuery.failure({
             queryId,
             message: t("previousQuery.loadError"),
           }),
@@ -88,25 +90,25 @@ export const useLoadPreviousQuery = () => {
   };
 };
 
-export const renamePreviousQuery = createAsyncAction(
-  "previous-queries/RENAME_PREVIOUS_QUERY_START",
-  "previous-queries/RENAME_PREVIOUS_QUERY_SUCCESS",
-  "previous-queries/RENAME_PREVIOUS_QUERY_ERROR",
+export const renameQuery = createAsyncAction(
+  "queries/RENAME_QUERY_START",
+  "queries/RENAME_QUERY_SUCCESS",
+  "queries/RENAME_QUERY_ERROR",
 )<QueryContext, QueryContext & { label: string }, QueryContext & ErrorObject>();
 
-export const useRenamePreviousQuery = () => {
+export const useRenameQuery = () => {
   const dispatch = useDispatch();
-  const patchStoredQuery = usePatchStoredQuery();
+  const patchQuery = usePatchQuery();
   const { t } = useTranslation();
 
   return (datasetId: DatasetIdT, queryId: PreviousQueryIdT, label: string) => {
-    dispatch(renamePreviousQuery.request({ queryId }));
+    dispatch(renameQuery.request({ queryId }));
 
-    return patchStoredQuery(datasetId, queryId, { label }).then(
-      () => dispatch(renamePreviousQuery.success({ queryId, label })),
+    return patchQuery(datasetId, queryId, { label }).then(
+      () => dispatch(renameQuery.success({ queryId, label })),
       () =>
         dispatch(
-          renamePreviousQuery.failure({
+          renameQuery.failure({
             queryId,
             message: t("previousQuery.renameError"),
           }),
@@ -115,19 +117,19 @@ export const useRenamePreviousQuery = () => {
   };
 };
 
-export const retagPreviousQuery = createAsyncAction(
-  "previous-queries/RETAG_PREVIOUS_QUERY_START",
-  "previous-queries/RETAG_PREVIOUS_QUERY_SUCCESS",
-  "previous-queries/RETAG_PREVIOUS_QUERY_ERROR",
+export const retagQuery = createAsyncAction(
+  "queries/RETAG_QUERY_START",
+  "queries/RETAG_QUERY_SUCCESS",
+  "queries/RETAG_QUERY_ERROR",
 )<
   QueryContext,
   QueryContext & { tags: string[] },
   QueryContext & ErrorObject
 >();
 
-export const useRetagPreviousQuery = () => {
+export const useRetagQuery = () => {
   const dispatch = useDispatch();
-  const patchStoredQuery = usePatchStoredQuery();
+  const patchQuery = usePatchQuery();
   const datasetId = useDatasetId();
   const { t } = useTranslation();
 
@@ -136,15 +138,15 @@ export const useRetagPreviousQuery = () => {
       return Promise.resolve();
     }
 
-    dispatch(retagPreviousQuery.request({ queryId }));
+    dispatch(retagQuery.request({ queryId }));
 
-    return patchStoredQuery(datasetId, queryId, { tags }).then(
+    return patchQuery(datasetId, queryId, { tags }).then(
       () => {
-        dispatch(retagPreviousQuery.success({ queryId, tags }));
+        dispatch(retagQuery.success({ queryId, tags }));
       },
       () =>
         dispatch(
-          retagPreviousQuery.failure({
+          retagQuery.failure({
             queryId,
             message: t("previousQuery.retagError"),
           }),
@@ -153,13 +155,41 @@ export const useRetagPreviousQuery = () => {
   };
 };
 
-export const sharePreviousQuerySuccess = createAction(
-  "previous-queries/TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS",
+export const shareQuerySuccess = createAction(
+  "queries/TOGGLE_SHARE_QUERY_SUCCESS",
 )<{
   queryId: string;
   groups: PreviousQueryIdT[];
 }>();
 
-export const deletePreviousQuerySuccess = createAction(
-  "previous-queries/DELETE_PREVIOUS_QUERY_SUCCESS",
-)<{ queryId: string }>();
+export const deleteQuerySuccess = createAction("queries/DELETE_QUERY_SUCCESS")<{
+  queryId: string;
+}>();
+
+export const useRemoveQuery = (
+  queryId: PreviousQueryIdT,
+  onSuccess?: () => void,
+) => {
+  const { t } = useTranslation();
+  const datasetId = useSelector<StateT, DatasetIdT | null>(
+    (state) => state.datasets.selectedDatasetId,
+  );
+  const dispatch = useDispatch();
+  const deleteQuery = useDeleteQuery();
+
+  return async () => {
+    if (!datasetId) return;
+
+    try {
+      await deleteQuery(datasetId, queryId);
+
+      dispatch(deleteQuerySuccess({ queryId }));
+
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (e) {
+      dispatch(setMessage({ message: t("previousQuery.deleteError") }));
+    }
+  };
+};
