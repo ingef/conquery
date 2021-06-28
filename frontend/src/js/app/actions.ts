@@ -6,6 +6,7 @@ import { QueryGroupModalActions } from "../query-group-modal/actions";
 import { QueryUploadConceptListModalActions } from "../query-upload-concept-list-modal/actions";
 import { SnackMessageActions } from "../snack-message/actions";
 import type { StandardQueryEditorActions } from "../standard-query-editor/actions";
+import { TimebasedActions } from "../timebased-query-editor/actions";
 import { UploadConceptListModalActions } from "../upload-concept-list-modal/actions";
 
 type ReduxInitAction = { type: "@@INIT" };
@@ -20,4 +21,5 @@ export type Action =
   | QueryUploadConceptListModalActions
   | UploadConceptListModalActions
   | SnackMessageActions
-  | PreviousQueryListActions;
+  | PreviousQueryListActions
+  | TimebasedActions;

@@ -1,7 +1,8 @@
 import styled from "@emotion/styled";
+import { StateT } from "app-types";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { connect } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../button/IconButton";
 
@@ -13,21 +14,25 @@ const Root = styled("div")`
   padding: 0 20px 0 10px;
 `;
 
-type PropsType = {
-  clearQuery: () => void;
-  isEnabled: boolean;
-};
-
-const TimebasedQueryClearButton = (props: PropsType) => {
+const TimebasedQueryClearButton = () => {
   const { t } = useTranslation();
+  const isEnabled = useSelector<StateT, boolean>(
+    (state) =>
+      state.timebasedQueryEditor.timebasedQuery.conditions.length > 1 ||
+      anyConditionFilled(state.timebasedQueryEditor.timebasedQuery),
+  );
+
+  const dispatch = useDispatch();
+  const clearQuery = () => dispatch(clearTimebasedQuery());
+
   return (
     <Root>
       <IconButton
         frame
-        onClick={props.clearQuery}
+        onClick={clearQuery}
         regular
         icon="trash-alt"
-        disabled={!props.isEnabled}
+        disabled={!isEnabled}
       >
         {t("common.clear")}
       </IconButton>
@@ -35,17 +40,4 @@ const TimebasedQueryClearButton = (props: PropsType) => {
   );
 };
 
-const mapStateToProps = (state) => ({
-  isEnabled:
-    state.timebasedQueryEditor.timebasedQuery.conditions.length > 1 ||
-    anyConditionFilled(state.timebasedQueryEditor.timebasedQuery),
-});
-
-const mapDispatchToProps = (dispatch) => ({
-  clearQuery: () => dispatch(clearTimebasedQuery()),
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(TimebasedQueryClearButton);
+export default TimebasedQueryClearButton;

@@ -19,21 +19,30 @@ const SxInputPlain = styled(InputPlain)`
 interface PropsType {
   minDays?: number | string | null;
   maxDays?: number | string | null;
-  onSetTimebasedConditionMinDays: Function;
-  onSetTimebasedConditionMaxDays: Function;
+  onSetTimebasedConditionMinDays?: (value: number | null) => void;
+  onSetTimebasedConditionMaxDays?: (value: number | null) => void;
 }
 
-const TimebasedConditionDayRange = (props: PropsType) => {
+const TimebasedConditionDayRange = ({
+  minDays,
+  maxDays,
+  onSetTimebasedConditionMinDays,
+  onSetTimebasedConditionMaxDays,
+}: PropsType) => {
   const { t } = useTranslation();
 
   return (
     <Container>
-      {props.minDays !== undefined && (
+      {minDays !== undefined && !!onSetTimebasedConditionMinDays && (
         <SxInputPlain
           inputType="number"
           input={{
-            value: props.minDays,
-            onChange: (value) => props.onSetTimebasedConditionMinDays(value),
+            value: minDays,
+            onChange: (value) => {
+              if (value === null || typeof value === "number") {
+                onSetTimebasedConditionMinDays(value);
+              }
+            },
           }}
           inputProps={{ min: 1, pattern: "^(?!-)\\d*$" }}
           placeholder={t("common.timeUnitDays")}
@@ -41,12 +50,16 @@ const TimebasedConditionDayRange = (props: PropsType) => {
           tinyLabel
         />
       )}
-      {props.maxDays !== undefined && (
+      {maxDays !== undefined && !!onSetTimebasedConditionMaxDays && (
         <SxInputPlain
           inputType="number"
           input={{
-            value: props.maxDays,
-            onChange: (value) => props.onSetTimebasedConditionMaxDays(value),
+            value: maxDays,
+            onChange: (value) => {
+              if (value === null || typeof value === "number") {
+                onSetTimebasedConditionMaxDays(value);
+              }
+            },
           }}
           inputProps={{ min: 1, pattern: "^(?!-)\\d*$" }}
           placeholder={t("common.timeUnitDays")}
