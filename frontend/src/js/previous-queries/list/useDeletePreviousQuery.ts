@@ -32,7 +32,7 @@ export const useDeletePreviousQuery = (
         onSuccess();
       }
     } catch (e) {
-      dispatch(setMessage(t("previousQuery.deleteError")));
+      dispatch(setMessage({ message: t("previousQuery.deleteError") }));
     }
   };
 };

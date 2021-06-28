@@ -1,28 +1,23 @@
-import type { UserGroupIdT } from "../../api/types";
+import { getType } from "typesafe-actions";
+
+import type { QueryIdT, UserGroupIdT } from "../../api/types";
+import { Action } from "../../app/actions";
 
 import {
-  LOAD_PREVIOUS_QUERIES_START,
-  LOAD_PREVIOUS_QUERIES_SUCCESS,
-  LOAD_PREVIOUS_QUERIES_ERROR,
-  LOAD_PREVIOUS_QUERY_START,
-  LOAD_PREVIOUS_QUERY_SUCCESS,
-  LOAD_PREVIOUS_QUERY_ERROR,
-  RENAME_PREVIOUS_QUERY_START,
-  RENAME_PREVIOUS_QUERY_SUCCESS,
-  RENAME_PREVIOUS_QUERY_ERROR,
-  RETAG_PREVIOUS_QUERY_START,
-  RETAG_PREVIOUS_QUERY_SUCCESS,
-  RETAG_PREVIOUS_QUERY_ERROR,
-  TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS,
-  DELETE_PREVIOUS_QUERY_SUCCESS,
-} from "./actionTypes";
+  deletePreviousQuerySuccess,
+  loadPreviousQueries,
+  loadPreviousQuery,
+  renamePreviousQuery,
+  retagPreviousQuery,
+  sharePreviousQuerySuccess,
+} from "./actions";
 
 export type PreviousQueryIdT = string;
 export interface PreviousQueryT {
   id: PreviousQueryIdT;
   label: string;
-  loading: boolean;
-  error: string | null;
+  loading?: boolean;
+  error?: string | null;
   numberOfResults: number;
   createdAt: string;
   tags: string[];
@@ -63,10 +58,10 @@ const findQuery = (queries: PreviousQueryT[], queryId: string | number) => {
 
 const updatePreviousQuery = (
   state: PreviousQueriesStateT,
-  action: Object,
+  { payload: { queryId } }: { payload: { queryId: QueryIdT } },
   attributes: Partial<PreviousQueryT>,
 ) => {
-  const { query, queryIdx } = findQuery(state.queries, action.payload.queryId);
+  const { query, queryIdx } = findQuery(state.queries, queryId);
 
   if (!query) return state;
 
@@ -89,20 +84,11 @@ const sortQueries = (queries: PreviousQueryT[]) => {
   });
 };
 
-const toggleQueryAttribute = (
+const deletePreviousQuery = (
   state: PreviousQueriesStateT,
-  action: Object,
-  attribute: keyof PreviousQueryT,
+  { queryId }: { queryId: QueryIdT },
 ) => {
-  const { query } = findQuery(state.queries, action.payload.queryId);
-
-  if (!query) return state;
-
-  return updatePreviousQuery(state, action, { [attribute]: !query[attribute] });
-};
-
-const deletePreviousQuery = (state: PreviousQueriesStateT, action: Object) => {
-  const { queryIdx } = findQuery(state.queries, action.payload.queryId);
+  const { queryIdx } = findQuery(state.queries, queryId);
 
   return {
     ...state,
@@ -149,12 +135,12 @@ const updateUniqueNames = (existingNames: string[], newName: string) => {
 
 const previousQueriesReducer = (
   state: PreviousQueriesStateT = initialState,
-  action: Object,
+  action: Action,
 ): PreviousQueriesStateT => {
   switch (action.type) {
-    case LOAD_PREVIOUS_QUERIES_START:
+    case getType(loadPreviousQueries.request):
       return { ...state, loading: true };
-    case LOAD_PREVIOUS_QUERIES_SUCCESS:
+    case getType(loadPreviousQueries.success):
       return {
         ...state,
         loading: false,
@@ -162,19 +148,23 @@ const previousQueriesReducer = (
         tags: findUniqueTags(action.payload.data),
         names: findUniqueNames(action.payload.data),
       };
-    case LOAD_PREVIOUS_QUERIES_ERROR:
-      return { ...state, loading: false, error: action.payload.message };
-    case LOAD_PREVIOUS_QUERY_START:
-    case RENAME_PREVIOUS_QUERY_START:
-    case RETAG_PREVIOUS_QUERY_START:
+    case getType(loadPreviousQueries.failure):
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.message || null,
+      };
+    case getType(loadPreviousQuery.request):
+    case getType(renamePreviousQuery.request):
+    case getType(retagPreviousQuery.request):
       return updatePreviousQuery(state, action, { loading: true });
-    case LOAD_PREVIOUS_QUERY_SUCCESS:
+    case getType(loadPreviousQuery.success):
       return updatePreviousQuery(state, action, {
         loading: false,
         error: null,
         ...action.payload.data,
       });
-    case RENAME_PREVIOUS_QUERY_SUCCESS:
+    case getType(renamePreviousQuery.success):
       return {
         ...updatePreviousQuery(state, action, {
           loading: false,
@@ -184,7 +174,7 @@ const previousQueriesReducer = (
         }),
         names: updateUniqueNames(state.names, action.payload.label),
       };
-    case RETAG_PREVIOUS_QUERY_SUCCESS:
+    case getType(retagPreviousQuery.success):
       return {
         ...updatePreviousQuery(state, action, {
           loading: false,
@@ -193,7 +183,7 @@ const previousQueriesReducer = (
         }),
         tags: findNewTags([...state.tags, ...action.payload.tags]),
       };
-    case TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS:
+    case getType(sharePreviousQuerySuccess):
       return updatePreviousQuery(state, action, {
         loading: false,
         error: null,
@@ -202,11 +192,11 @@ const previousQueriesReducer = (
           ? { shared: false }
           : { shared: true }),
       });
-    case DELETE_PREVIOUS_QUERY_SUCCESS:
-      return deletePreviousQuery(state, action);
-    case LOAD_PREVIOUS_QUERY_ERROR:
-    case RENAME_PREVIOUS_QUERY_ERROR:
-    case RETAG_PREVIOUS_QUERY_ERROR:
+    case getType(deletePreviousQuerySuccess):
+      return deletePreviousQuery(state, action.payload);
+    case getType(loadPreviousQuery.failure):
+    case getType(renamePreviousQuery.failure):
+    case getType(retagPreviousQuery.failure):
       return updatePreviousQuery(state, action, {
         loading: false,
         error: action.payload.message,

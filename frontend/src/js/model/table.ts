@@ -97,7 +97,7 @@ const tableWithDefaultSelects = (table: TableT) => ({
   selects: selectsWithDefaults(table.selects),
 });
 
-export const tableWithDefaults = (table: TableT) =>
+export const tableWithDefaults = (table: TableT): TableT =>
   compose(
     tableWithDefaultDateColumn,
     tableWithDefaultSelects,

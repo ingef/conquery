@@ -137,7 +137,7 @@ export const useLoadFormConfig = () => {
 
         dispatch(patchFormConfigSuccess(id, data));
       } catch (e) {
-        dispatch(setMessage(t("formConfig.loadError")));
+        dispatch(setMessage({ message: t("formConfig.loadError") }));
       }
       setLoading(false);
     },

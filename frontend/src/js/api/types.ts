@@ -333,7 +333,7 @@ export interface GetStoredQueryResponseT {
   numberOfResults: number;
   resultUrls: string[];
   requiredTime: number; // TODO: Not used
-  tags?: string[];
+  tags: string[];
   query: QueryT;
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   secondaryId: string | null;

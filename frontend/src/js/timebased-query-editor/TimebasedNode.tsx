@@ -11,6 +11,8 @@ import VerticalToggleButton, {
 } from "../form-components/VerticalToggleButton";
 import { DragItemQuery } from "../standard-query-editor/types";
 
+import { TimebasedResultType } from "./reducer";
+
 export interface DragItemTimebasedNode {
   conditionIdx: number;
   resultIdx: number;
@@ -44,24 +46,17 @@ const StyledVerticalToggleButton = styled(VerticalToggleButton)`
 `;
 
 interface PropsT {
-  node: Object;
+  node: TimebasedResultType;
   position: "left" | "right";
-  isIndexResult: boolean;
-  onRemove: Function;
-  onSetTimebasedNodeTimestamp: Function;
-  onSetTimebasedIndexResult: Function;
+  onRemove: () => void;
+  onSetTimebasedNodeTimestamp: (value: string) => void;
   conditionIdx: number;
   resultIdx: number;
-  connectDragSource: Function;
-  isIndexResultDisabled: boolean;
 }
 
 const TimebasedNode: FC<PropsT> = ({
   node,
-  // isIndexResult,
-  // isIndexResultDisabled,
   onRemove,
-  // onSetTimebasedIndexResult,
   onSetTimebasedNodeTimestamp,
   conditionIdx,
   resultIdx,

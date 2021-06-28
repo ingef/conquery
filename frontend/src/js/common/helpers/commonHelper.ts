@@ -1,10 +1,7 @@
 export const concat = (arr: []) => arr.reduce((a, b) => a.concat(b), []);
 
-export const compose = (...fns: Function[]) =>
-  fns.reduceRight(
-    (prevFn, nextFn) => (...args) => nextFn(prevFn(...args)),
-    (v) => v,
-  );
+export const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
+  fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);
 
 export const objectWithoutKey = (key: string) => (obj: Object) => {
   if (!obj.hasOwnProperty(key)) return obj;
