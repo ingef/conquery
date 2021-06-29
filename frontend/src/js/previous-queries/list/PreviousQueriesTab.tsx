@@ -18,7 +18,7 @@ import UploadQueryResults from "../upload/UploadQueryResults";
 import PreviousQueries from "./PreviousQueries";
 import PreviousQueriesFolderButton from "./PreviousQueriesFolderButton";
 import PreviousQueriesFolders from "./PreviousQueriesFolders";
-import { useLoadPreviousQueries } from "./actions";
+import { useLoadQueries } from "./actions";
 import { PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
 
@@ -105,11 +105,11 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
     canUploadResult(state),
   );
 
-  const loadPreviousQueries = useLoadPreviousQueries();
+  const loadQueries = useLoadQueries();
 
   useEffect(() => {
     if (datasetId) {
-      loadPreviousQueries(datasetId);
+      loadQueries(datasetId);
     }
   }, [datasetId]);
 

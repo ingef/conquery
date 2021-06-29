@@ -170,7 +170,7 @@ module.exports = function (app, port) {
     STORED QUERIES
   */
   app.get(
-    "/api/datasets/:datasetId/stored-queries",
+    "/api/datasets/:datasetId/queries",
     mockAuthMiddleware,
     function response(req, res) {
       res.setHeader("Content-Type", "application/json");
@@ -229,7 +229,7 @@ module.exports = function (app, port) {
   );
 
   app.get(
-    "/api/datasets/:datasetId/stored-queries/:id",
+    "/api/datasets/:datasetId/queries/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -239,7 +239,7 @@ module.exports = function (app, port) {
   );
 
   app.patch(
-    "/api/datasets/:datasetId/stored-queries/:id",
+    "/api/datasets/:datasetId/queries/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -249,7 +249,7 @@ module.exports = function (app, port) {
   );
 
   app.delete(
-    "/api/datasets/:datasetId/stored-queries/:id",
+    "/api/datasets/:datasetId/queries/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {

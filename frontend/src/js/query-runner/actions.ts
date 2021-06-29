@@ -16,7 +16,7 @@ import type {
 } from "../api/types";
 import { defaultError, defaultSuccess, ErrorObject } from "../common/actions";
 import { getExternalSupportedErrorMessage } from "../environment";
-import { useLoadPreviousQueries } from "../previous-queries/list/actions";
+import { useLoadQueries } from "../previous-queries/list/actions";
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { TimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
@@ -191,7 +191,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const getQuery = useGetQuery();
-  const loadPreviousQueries = useLoadPreviousQueries();
+  const loadQueries = useLoadQueries();
 
   const queryResult = (datasetId: DatasetIdT, queryId: QueryIdT) => {
     dispatch(queryResultStart(queryType));
@@ -206,7 +206,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
           dispatch(queryResultSuccess(queryType, r, datasetId));
 
           // Now there should be a new result that can be queried
-          loadPreviousQueries(datasetId);
+          loadQueries(datasetId);
         } else if (r.status === "CANCELED") {
         } else if (r.status === "FAILED") {
           dispatch(queryResultError(t, queryType, r));
