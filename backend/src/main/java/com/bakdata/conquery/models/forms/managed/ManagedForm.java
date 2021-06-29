@@ -113,15 +113,13 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	 */
 	@Override
 	public void addResult(@NonNull MetaStorage storage, FormShardResult result) {
-		ManagedExecutionId subquery = result.getSubQueryId();
 		if (result.getError().isPresent()) {
 			fail(storage, result.getError().get());
 			return;
 		}
 
-		ManagedExecutionId subQueryId = result.getSubqueryId();
+		ManagedExecutionId subQueryId = result.getSubQueryId();
 
-		//TODO clean this up, moving this logic to FormShardResult
 		ManagedQuery subQuery = flatSubQueries.get(subQueryId);
 		subQuery.addResult(storage, result);
 

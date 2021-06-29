@@ -16,9 +16,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -81,7 +79,7 @@ public class ExecutionManager {
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 		for (Namespace namespace : execution.getRequiredDatasets()) {
-			namespace.sendToAll(new ExecuteQuery(execution));
+			namespace.sendToAll(execution.createExecutionMessage());
 		}
 	}
 

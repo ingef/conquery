@@ -52,7 +52,7 @@ public class CQReusedQuery extends CQElement {
 	private boolean excludeFromSecondaryId = false;
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
 		if(query != null) {
 			requiredQueries.add(query);
 			query.getQuery().collectRequiredQueries(requiredQueries);

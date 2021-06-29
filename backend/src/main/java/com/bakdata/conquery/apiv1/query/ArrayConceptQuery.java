@@ -89,7 +89,7 @@ public class ArrayConceptQuery extends Query {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
 		childQueries.forEach(q -> q.collectRequiredQueries(requiredQueries));
 	}
 

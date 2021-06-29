@@ -68,7 +68,7 @@ public class RelativeFormQuery extends Query {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
 		query.collectRequiredQueries(requiredQueries);
 		features.collectRequiredQueries(requiredQueries);
 		outcomes.collectRequiredQueries(requiredQueries);
