@@ -1,11 +1,9 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -15,8 +13,14 @@ import java.util.stream.Stream;
 import javax.ws.rs.core.UriBuilder;
 
 import c10n.C10N;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.ExecutionStatus;
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -25,19 +29,13 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.apiv1.ExecutionStatus;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
@@ -192,22 +190,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	public Map<ManagedExecutionId, QueryPlan> createQueryPlans(QueryPlanContext context) {
-		if (context.getDataset().equals(getDataset())) {
-			return Map.of(this.getId(), query.createQueryPlan(context));
-		}
-		log.trace("Did not create a QueryPlan for the query {} because the plan corresponds to dataset {} but the execution worker belongs to {}.", getId(), getDataset(), context.getDataset());
-		return Collections.emptyMap();
-	}
-
-	@Override
-	public ShardResult getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry) {
-		ShardResult result = new ShardResult();
-		result.setQueryId(getId());
-		return result;
-	}
-
-	@Override
 	public Set<Namespace> getRequiredDatasets() {
 		return Set.of(namespace);
 	}
@@ -277,6 +259,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		if (sbStartSize == sb.length()) {
 			sb.append(getId().getExecution());
 		}
+	}
+
+	@Override
+	public WorkerMessage createExecutionMessage() {
+		return new ExecuteQuery(getId(), getQuery());
 	}
 
 	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {

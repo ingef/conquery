@@ -21,7 +21,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public abstract class IQuery implements QueryDescription {
 
-	public abstract QueryPlan createQueryPlan(QueryPlanContext context);
+	public abstract QueryPlan<?> createQueryPlan(QueryPlanContext context);
 	
 	public abstract void collectRequiredQueries(Set<ManagedExecution> requiredQueries);
 	

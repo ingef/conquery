@@ -16,6 +16,8 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
@@ -85,6 +87,16 @@ public class ExecutionManager {
 
 	public ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset) {
 		return createQuery(datasets, query, UUID.randomUUID(), user, submittedDataset);
+	}
+
+	/**
+	 * Send message for query execution to all workers.
+	 */
+	private ManagedExecution<?> executeQueryInNamespace(ManagedExecution<?> query) {
+		final WorkerMessage executionMessage = query.createExecutionMessage();
+
+		namespace.sendToAll(executionMessage);
+		return query;
 	}
 
 	public ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, User user, Dataset submittedDataset) {
