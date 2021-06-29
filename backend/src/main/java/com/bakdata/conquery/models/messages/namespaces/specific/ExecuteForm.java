@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -38,7 +38,7 @@ public class ExecuteForm extends WorkerMessage {
 
 	private final ManagedExecutionId formId;
 
-	private final Map<ManagedExecutionId, IQuery> queries;
+	private final Map<ManagedExecutionId, Query> queries;
 
 	private FormShardResult createResult(Worker worker, ManagedExecutionId subQueryId) {
 		return new FormShardResult(

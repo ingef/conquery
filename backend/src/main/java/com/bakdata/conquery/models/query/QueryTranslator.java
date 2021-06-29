@@ -3,14 +3,14 @@ package com.bakdata.conquery.models.query;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.apiv1.query.CQElement;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import lombok.experimental.UtilityClass;
@@ -18,7 +18,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class QueryTranslator {
 
-	public <T extends IQuery> T replaceDataset(DatasetRegistry namespaces, T element, Dataset target) {
+	public <T extends Query> T replaceDataset(DatasetRegistry namespaces, T element, Dataset target) {
 		if(element instanceof ConceptQuery) {
 			CQElement root = replaceDataset(namespaces, ((ConceptQuery) element).getRoot(), target.getId());
 			return (T) new ConceptQuery(root, ((ConceptQuery) element).getDateAggregationMode());

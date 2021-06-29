@@ -19,18 +19,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
-public abstract class IQuery implements QueryDescription {
+public abstract class Query implements QueryDescription {
 
 	public abstract QueryPlan<?> createQueryPlan(QueryPlanContext context);
 	
-	public abstract void collectRequiredQueries(Set<ManagedExecution> requiredQueries);
+	public abstract void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries);
 	
 	@Override
 	public abstract void resolve(QueryResolveContext context);
 	
-	public Set<ManagedExecution> collectRequiredQueries() {
-		Set<ManagedExecution> set = new HashSet<>();
-		this.collectRequiredQueries(set);
+	public Set<ManagedExecution<?>> collectRequiredQueries() {
+		Set<ManagedExecution<?>> set = new HashSet<>();
+		collectRequiredQueries(set);
 		return set;
 	}
 
@@ -48,7 +48,7 @@ public abstract class IQuery implements QueryDescription {
 	}
 
 	/**
-	 * Method that returns only the parts of the query to reusable by others. This allows switching between different implementations of {@link IQuery} between reuse.
+	 * Method that returns only the parts of the query to reusable by others. This allows switching between different implementations of {@link Query} between reuse.
 	 */
 	@JsonIgnore
 	public CQElement getReusableComponents() {

@@ -1,5 +1,21 @@
 package com.bakdata.conquery.apiv1.query;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.ValidityDateContainer;
@@ -29,14 +45,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-
 
 /**
  * A TABLE_EXPORT creates a full export of the given tables. It ignores selects completely.
@@ -46,12 +54,12 @@ import java.util.function.Consumer;
 @Setter
 @CPSType(id = "TABLE_EXPORT", base = QueryDescription.class)
 @RequiredArgsConstructor(onConstructor = @__({@JsonCreator}))
-public class TableExportQuery extends IQuery {
+public class TableExportQuery extends Query {
 
 	@Valid
 	@NotNull
 	@NonNull
-	protected IQuery query;
+	protected Query query;
 	@NotNull
 	private Range<LocalDate> dateRange = Range.all();
 	@NotEmpty

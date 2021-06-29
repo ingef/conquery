@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
-import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -33,7 +33,7 @@ public class ExecuteQuery extends WorkerMessage {
 
 	private final ManagedExecutionId id;
 
-	private final IQuery query;
+	private final Query query;
 
 
 

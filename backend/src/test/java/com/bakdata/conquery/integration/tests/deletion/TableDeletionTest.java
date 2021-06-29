@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -21,7 +22,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourceConstants;
@@ -71,7 +71,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.waitUntilWorkDone();
 		}
 
-		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
+		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		final int nImports = namespace.getStorage().getAllImports().size();
 

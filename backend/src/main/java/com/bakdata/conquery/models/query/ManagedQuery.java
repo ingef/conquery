@@ -15,7 +15,7 @@ import javax.ws.rs.core.UriBuilder;
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.ExecutionStatus;
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
-import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -65,8 +65,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@JsonIgnore
 	protected transient Namespace namespace;
 	// Needs to be resolved externally before being executed
-	private IQuery query;
-
+	private Query query;
 	/**
 	 * The number of contained entities the last time this query was executed.
 	 */
@@ -83,7 +82,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	private transient List<ColumnDescriptor> columnDescriptions;
 
 
-	public ManagedQuery(IQuery query, User owner, Dataset submittedDataset) {
+	public ManagedQuery(Query query, User owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
 		this.query = query;
 	}

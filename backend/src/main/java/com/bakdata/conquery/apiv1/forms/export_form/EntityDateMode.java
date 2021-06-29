@@ -9,6 +9,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
+import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -18,11 +21,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
-import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
@@ -62,7 +62,7 @@ public class EntityDateMode extends Mode {
     }
 
     @Override
-    public IQuery createSpecializedQuery(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+    public Query createSpecializedQuery(DatasetRegistry datasets, User user, Dataset submittedDataset) {
         CDateRange dateRestriction = dateRange == null ? CDateRange.all() : CDateRange.of(dateRange);
 
         return new EntityDateQuery(

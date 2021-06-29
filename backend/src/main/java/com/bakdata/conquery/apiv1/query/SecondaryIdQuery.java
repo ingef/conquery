@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "SECONDARY_ID_QUERY", base = QueryDescription.class)
-public class SecondaryIdQuery extends IQuery {
+public class SecondaryIdQuery extends Query {
 
 	@NotNull
 	private CQElement root;
