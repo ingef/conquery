@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -19,10 +20,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id = "UPDATE_MATCHING_STATS", base = NamespacedMessage.class)
@@ -37,44 +34,42 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 			return;
 		}
 
-		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(worker.getExecutorService());
 
 		getProgressReporter().setMax(worker.getStorage().getAllConcepts().size());
 
-		log.info("Starting to update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
+		log.info("BEGIN update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
 
 		// SubJobs collect into this Map.
-		final ConcurrentMap<ConceptElement<?>, MatchingStats.Entry>
-				messages =
+		final ConcurrentMap<ConceptElement<?>, MatchingStats.Entry> messages =
 				new ConcurrentHashMap<>(worker.getStorage().getAllConcepts().size()
 										* 5_000); // Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
 
-		List<ListenableFuture<?>> subJobs =
+		List<CompletableFuture<?>> subJobs =
 				worker.getStorage()
 					  .getAllConcepts()
 					  .stream()
-					  .map(concept -> executorService.submit(() -> calculateConceptMatches(concept, messages, worker)))
+					  .map(concept -> CompletableFuture.runAsync(() -> calculateConceptMatches(concept, messages, worker), worker.getExecutorService()))
 					  .collect(Collectors.toList());
 
 		log.debug("All jobs submitted. Waiting for completion.");
 
-		Futures.allAsList(subJobs).get();
+		CompletableFuture.allOf(subJobs.toArray(CompletableFuture[]::new)).join();
 
-		log.info("All threads are done.");
+		log.debug("All threads are done.");
 
-		if (!messages.isEmpty()) {
-			worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
+		if (messages.isEmpty()) {
+			log.warn("Results were empty.");
 		}
 		else {
-			log.warn("Results were empty.");
+			worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
 		}
 
 		getProgressReporter().done();
 	}
 
-	public void calculateConceptMatches(Concept<?> concept, ConcurrentMap<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
+	public void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
 
-		for (CBlock cBlock : new ArrayList<>(worker.getStorage().getAllCBlocks())) {
+		for (CBlock cBlock : worker.getStorage().getAllCBlocks()) {
 
 			if (!cBlock.getConnector().getConcept().equals(concept)) {
 				continue;
