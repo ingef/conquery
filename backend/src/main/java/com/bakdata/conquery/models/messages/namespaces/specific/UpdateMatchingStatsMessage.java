@@ -22,6 +22,9 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * For each {@link com.bakdata.conquery.models.query.queryplan.specific.ConceptNode} calculate the number of matching events and the span of date-ranges.
+ */
 @CPSType(id = "UPDATE_MATCHING_STATS", base = NamespacedMessage.class)
 @Slf4j
 public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
@@ -33,7 +36,6 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 			getProgressReporter().done();
 			return;
 		}
-
 
 		getProgressReporter().setMax(worker.getStorage().getAllConcepts().size());
 
