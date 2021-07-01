@@ -91,7 +91,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public boolean containsEntity(int entity) {
-		return start[entity - root] != -1;
+		return getEntityStart(entity) != -1;
 	}
 
 	public Iterable<BucketEntry> entries() {
@@ -104,11 +104,15 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public int getEntityStart(int entityId) {
-		return start[entityId - root];
+		return start[getEntityIndex(entityId)];
+	}
+
+	public int getEntityIndex(int entityId) {
+		return entityId - root;
 	}
 
 	public int getEntityEnd(int entityId) {
-		return ends[entityId - root];
+		return ends[getEntityIndex(entityId)];
 	}
 
 	public final boolean has(int event, Column column) {

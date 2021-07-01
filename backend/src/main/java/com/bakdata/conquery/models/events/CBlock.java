@@ -8,20 +8,19 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -40,14 +39,15 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	/**
 	 * Estimate the memory usage of CBlocks.
+	 *
 	 * @param depthEstimate estimate of depth of mostSpecificChildren
 	 */
-	public static long estimateMemoryBytes(long entities, long entries, double depthEstimate){
+	public static long estimateMemoryBytes(long entities, long entries, double depthEstimate) {
 		return Math.round(entities *
 						  (
-						  		Integer.BYTES + Long.BYTES // includedConcepts
-								+ Integer.BYTES // minDate
-								+ Integer.BYTES // maxDate
+								  Integer.BYTES + Long.BYTES // includedConcepts
+								  + Integer.BYTES // minDate
+								  + Integer.BYTES // maxDate
 						  )
 						  + entries * depthEstimate * Integer.BYTES // mostSpecificChildren (rough estimate, not resident on ManagerNode)
 		);
@@ -74,22 +74,19 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Statistic for fast lookup if entity is of interest.
 	 * Int array for memory performance.
 	 */
-	private final int[] minDate;
-	private final int[] maxDate;
+	private final CDateRange[] entitySpan;
 
 	public static CBlock createCBlock(Connector connector, Bucket bucket, int bucketSize) {
 		int root = bucket.getBucket() * bucketSize;
 
 		long[] includedConcepts = new long[bucketSize];
-
-		int[] minDate = new int[bucketSize];
-		int[] maxDate = new int[bucketSize];
+		CDateRange[] spans = new CDateRange[bucketSize];
 
 		Arrays.fill(includedConcepts, 0);
-		Arrays.fill(minDate, Integer.MIN_VALUE);
-		Arrays.fill(maxDate, Integer.MAX_VALUE);
 
-		return new CBlock(bucket, connector, root, includedConcepts, minDate, maxDate);
+		Arrays.fill(spans, CDateRange.all());
+
+		return new CBlock(bucket, connector, root, includedConcepts, spans);
 	}
 
 
@@ -97,7 +94,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Per event: represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
 	 */
-	// todo, can this be implemented using a store or at least with bytes only?
 	private int[][] mostSpecificChildren;
 
 
@@ -111,7 +107,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 
 	public int[] getEventMostSpecificChild(int event) {
-		if(mostSpecificChildren == null){
+		if (mostSpecificChildren == null) {
 			return null;
 		}
 
@@ -119,24 +115,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	}
 
 	public CDateRange getEntityDateRange(int entity) {
-		return CDateRange.of(getEntityMinDate(entity), getEntityMaxDate(entity));
-	}
-
-	public int getEntityMinDate(int entity) {
-		return minDate[getEntityIndex(entity)];
-	}
-
-	/**
-	 * calculate the offset of the entity into this CBlock.
-	 * @see this#root
-	 */
-	private int getEntityIndex(int entity) {
-		Preconditions.checkArgument(entity >=  root, "Entity is not of this CBlock.");
-		return entity - root;
-	}
-
-	public int getEntityMaxDate(int entity) {
-		return maxDate[getEntityIndex(entity)];
+		return entitySpan[bucket.getEntityIndex(entity)];
 	}
 
 	@Override
@@ -147,35 +126,13 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 
 	public void addEntityDateRange(int entity, CDateRange range) {
-		final int index = getEntityIndex(entity);
+		final int index = bucket.getEntityIndex(entity);
 
-		if (range.hasLowerBound()) {
-			final int minValue = range.getMinValue();
-
-			if (minDate[index] == Integer.MIN_VALUE) {
-				minDate[index] = minValue;
-			}
-			else {
-				int min = Math.min(minDate[index], minValue);
-				minDate[index] = min;
-			}
-		}
-
-		if (range.hasUpperBound()) {
-			final int maxValue = range.getMaxValue();
-
-			if (maxDate[index] == Integer.MAX_VALUE) {
-				maxDate[index] = maxValue;
-			}
-			else {
-				int max = Math.max(maxDate[index], maxValue);
-				maxDate[index]  = max;
-			}
-		}
+		entitySpan[index] = entitySpan[index].spanClosed(range);
 	}
 
 	public void addIncludedConcept(int entity, ConceptTreeNode<?> node) {
-		final int index = getEntityIndex(entity);
+		final int index = bucket.getEntityIndex(entity);
 
 		final long mask = node.calculateBitMask();
 		final long original = includedConcepts[index];
@@ -188,7 +145,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			return true;
 		}
 
-		final int index = getEntityIndex(entity);
+		final int index = bucket.getEntityIndex(entity);
 
 		long bits = includedConcepts[index];
 
