@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Create a mapping from one {@link Dictionary} to the other (Map source to target). Adding all ids in target, not in source, to source.
@@ -55,6 +56,10 @@ public class DictionaryMapping {
 
 	public int source2Target(int sourceId) {
 		return source2TargetMap[sourceId];
+	}
+
+	public int target2Source(int targetId) {
+		return ArrayUtils.indexOf(source2TargetMap, targetId);
 	}
 
 	/**
