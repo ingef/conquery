@@ -49,6 +49,11 @@ export interface TimebasedConditionT {
   minDaysOrNoEvent?: number | null;
 }
 
+export interface ValidatedTimebasedConditionT extends TimebasedConditionT {
+  result0: TimebasedResultType;
+  result1: TimebasedResultType;
+}
+
 export interface TimebasedQueryStateT {
   indexResult: string | null;
   conditions: TimebasedConditionT[];
