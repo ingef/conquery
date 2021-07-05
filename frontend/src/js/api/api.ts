@@ -32,7 +32,7 @@ import { useApi, useApiUnauthorized } from "./useApi";
 const PROTECTED_PREFIX = "/api";
 
 function getProtectedUrl(url: string) {
-  return apiUrl() + PROTECTED_PREFIX + url;
+  return apiUrl + PROTECTED_PREFIX + url;
 }
 
 export const useGetFrontendConfig = () => {
@@ -207,7 +207,7 @@ export const useGetMe = () => {
 
 export const usePostLogin = () => {
   const api = useApiUnauthorized<PostLoginResponseT>({
-    url: apiUrl() + "/auth",
+    url: apiUrl + "/auth",
     method: "POST",
   });
 

@@ -1,19 +1,17 @@
 import { applyMiddleware, compose, createStore, Store } from "redux";
+import multi from "redux-multi";
+import thunk from "redux-thunk";
 
 import buildAppReducer from "./app/reducers";
 import { isProduction } from "./environment";
-import devMiddleware from "./middleware/devMiddleware";
-import prodMiddleware from "./middleware/prodMiddleware";
 import { TabT } from "./pane/types";
 
 export function makeStore(initialState: Object, tabs: Object) {
-  const createMiddleware =
-    process.env.NODE_ENV === "production" ? prodMiddleware : devMiddleware;
-  const middleware = applyMiddleware(...createMiddleware());
+  const middleware = applyMiddleware(thunk, multi);
 
   let enhancer;
 
-  if (!isProduction()) {
+  if (!isProduction) {
     enhancer = compose(
       middleware,
       // Use the Redux devtools extention, but only in development

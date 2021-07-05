@@ -55,5 +55,6 @@ declare global {
   interface Window {
     datasetId: string | null;
     conceptTrees: Record<ConceptIdT, Record<ConceptIdT, ConceptT>>;
+    env: Record<string, string>; // To inject env variables at container runtime
   }
 }
