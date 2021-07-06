@@ -41,7 +41,7 @@ public class StringTypeEncoded implements StringStore {
 		this.subType = subType;
 		this.encoding = encoding;
 		elementCache = CacheBuilder.newBuilder()
-				.maximumSize(100)
+				.softValues()
 				.build(new CacheLoader<Integer, String>() {
 					@Override
 					@ParametersAreNonnullByDefault
