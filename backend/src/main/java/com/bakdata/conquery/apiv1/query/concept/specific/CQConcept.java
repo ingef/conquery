@@ -197,7 +197,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			final ConceptNode node = new ConceptNode(
 					elements,
-					CBlock.calculateBitMask(elements),
+					calculateBitMask(elements),
 					table,
 					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
 					new ValidityDateNode(validityDateColumn, filtersNode),
@@ -208,7 +208,6 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			tableNodes.add(node);
 		}
 
-
 		// We always merge on concept level
 		final QPNode outNode = OrNode.of(tableNodes, aggregateEventDates ? DateAggregationAction.MERGE : DateAggregationAction.BLOCK);
 
@@ -218,6 +217,17 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 						  .forEach(aggregator -> ((ExistsAggregator) aggregator).setReference(outNode));
 
 		return outNode;
+	}
+
+
+
+
+	private static long calculateBitMask(List<ConceptElement<?>> concepts) {
+		long mask = 0;
+		for (ConceptElement<?> concept : concepts) {
+			mask |= concept.calculateBitMask();
+		}
+		return mask;
 	}
 
 	/**

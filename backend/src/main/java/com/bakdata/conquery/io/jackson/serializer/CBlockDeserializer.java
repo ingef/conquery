@@ -41,7 +41,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
 				int[] mostSpecificChildren = block.getMostSpecificChildren()[event];
 
-				if (mostSpecificChildren == null || Connector.isNotContained(mostSpecificChildren)) {
+				if (Connector.isNotContained(mostSpecificChildren)) {
 					block.getMostSpecificChildren()[event] = Connector.NOT_CONTAINED;
 					continue;
 				}

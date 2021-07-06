@@ -10,6 +10,7 @@ import java.util.Map;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
@@ -106,29 +107,34 @@ public class BucketManager {
 						.put(cBlock.getBucket(), cBlock);
 	}
 
+	public Locked acquireLock(Connector connector) {
+		return cBlockLocks.acquire(connector.getId());
+	}
+
 	@SneakyThrows
 	public void fullUpdate() {
-		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this);
+		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getExecutorService());
 
 		for (Concept<?> c : storage.getAllConcepts()) {
-			for (Connector con : c.getConnectors()) {
-				try (Locked lock = cBlockLocks.acquire(con.getId())) {
-					for (Bucket bucket : storage.getAllBuckets()) {
+			if (!(c instanceof TreeConcept)) {
+				continue;
+			}
+			for (ConceptTreeConnector con : ((TreeConcept)c).getConnectors()) {
+				for (Bucket bucket : storage.getAllBuckets()) {
 
-						CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
+					CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
 
-						if (!con.getTable().equals(bucket.getTable())) {
-							continue;
-						}
-
-						if (hasCBlock(cBlockId)) {
-							log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.", cBlockId);
-							continue;
-						}
-
-						log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
-						job.addCBlock(bucket, con);
+					if (!con.getTable().equals(bucket.getTable())) {
+						continue;
 					}
+
+					if (hasCBlock(cBlockId)) {
+						log.trace("Skip calculation of CBlock[{}], because it was loaded from the storage.", cBlockId);
+						continue;
+					}
+
+					log.warn("CBlock[{}] missing in Storage. Queuing recalculation", cBlockId);
+					job.addCBlock(bucket, con);
 				}
 			}
 		}
@@ -146,23 +152,26 @@ public class BucketManager {
 		storage.addBucket(bucket);
 		registerBucket(bucket, entities, tableToBuckets);
 
-		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this);
+		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getExecutorService());
 
 		for (Concept<?> concept : storage.getAllConcepts()) {
-			for (Connector connector : concept.getConnectors()) {
-				try (Locked lock = cBlockLocks.acquire(connector.getId())) {
-					CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
-
-					if (!connector.getTable().equals(bucket.getTable())) {
-						continue;
-					}
-
-					if (hasCBlock(cBlockId)) {
-						continue;
-					}
-
-					job.addCBlock(bucket, connector);
+			if (!(concept instanceof TreeConcept)) {
+				continue;
+			}
+			for (ConceptTreeConnector connector : ((TreeConcept)concept).getConnectors()) {
+				if (!connector.getTable().equals(bucket.getTable())) {
+					continue;
 				}
+
+				CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
+
+
+				if (hasCBlock(cBlockId)) {
+					continue;
+				}
+
+				job.addCBlock(bucket, connector);
+
 			}
 		}
 
@@ -172,24 +181,26 @@ public class BucketManager {
 	public void addConcept(Concept<?> concept) {
 		storage.updateConcept(concept);
 
-		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this);
+		if (!(concept instanceof TreeConcept)){
+			return;
+		}
 
-		for (Connector connector : concept.getConnectors()) {
-			try (Locked lock = cBlockLocks.acquire(connector.getId())) {
+		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getExecutorService());
 
-				for (Bucket bucket : storage.getAllBuckets()) {
-					if (!bucket.getTable().equals(connector.getTable())) {
-						continue;
-					}
+		for (ConceptTreeConnector connector : ((TreeConcept)concept).getConnectors()) {
 
-					final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
-
-					if (hasCBlock(cBlockId)) {
-						continue;
-					}
-
-					job.addCBlock(bucket, connector);
+			for (Bucket bucket : storage.getAllBuckets()) {
+				if (!bucket.getTable().equals(connector.getTable())) {
+					continue;
 				}
+
+				final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
+
+				if (hasCBlock(cBlockId)) {
+					continue;
+				}
+
+				job.addCBlock(bucket, connector);
 			}
 		}
 		jobManager.addSlowJob(job);

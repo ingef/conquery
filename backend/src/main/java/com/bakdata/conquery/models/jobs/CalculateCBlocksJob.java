@@ -2,16 +2,19 @@ package com.bakdata.conquery.models.jobs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketEntry;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -31,13 +34,14 @@ public class CalculateCBlocksJob extends Job {
 	private final List<CalculationInformation> infos = new ArrayList<>();
 	private final WorkerStorage storage;
 	private final BucketManager bucketManager;
+	private final ExecutorService executorService;
 
 	@Override
 	public String getLabel() {
 		return "Calculate CBlocks[" + infos.size() + "]";
 	}
 
-	public void addCBlock(Bucket bucket, Connector connector) {
+	public void addCBlock(Bucket bucket, ConceptTreeConnector connector) {
 		infos.add(new CalculationInformation(connector, bucket));
 	}
 
@@ -49,21 +53,22 @@ public class CalculateCBlocksJob extends Job {
 
 		getProgressReporter().setMax(infos.size());
 
+
 		// todo compute in parallel.
 		for (CalculationInformation info : infos) {
 			try {
-				if (bucketManager.hasCBlock(info.getCBlockId())) {
-					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", info.getCBlockId());
-					continue;
+				try(IdMutex.Locked lock = bucketManager.acquireLock(info.connector)) {
+					if (bucketManager.hasCBlock(info.getCBlockId())) {
+						log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", info.getCBlockId());
+						continue;
+					}
+
+					CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize());
+
+					calculateEntityDateIndices(cBlock, info.getBucket());
+					bucketManager.addCalculatedCBlock(cBlock);
+					storage.addCBlock(cBlock);
 				}
-
-				CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize());
-
-				info.getConnector().calculateCBlock(cBlock, info.getBucket());
-
-				calculateEntityDateIndices(cBlock, info.getBucket());
-				bucketManager.addCalculatedCBlock(cBlock);
-				storage.addCBlock(cBlock);
 			}
 			catch (Exception e) {
 				throw new Exception(
@@ -112,7 +117,7 @@ public class CalculateCBlocksJob extends Job {
 	@Getter
 	@Setter
 	private static class CalculationInformation {
-		private final Connector connector;
+		private final ConceptTreeConnector connector;
 		private final Bucket bucket;
 
 		public CBlockId getCBlockId() {
