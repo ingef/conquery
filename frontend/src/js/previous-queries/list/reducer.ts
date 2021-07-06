@@ -106,7 +106,7 @@ const findUniqueTags = (queries: PreviousQueryT[]) => {
     if (query.tags) query.tags.forEach((tag) => uniqueTags.add(tag));
   });
 
-  return Array.from(uniqueTags);
+  return Array.from(uniqueTags).sort();
 };
 
 const findNewTags = (tags: string[]) => {
