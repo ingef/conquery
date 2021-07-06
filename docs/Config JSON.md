@@ -141,7 +141,7 @@ An `IdMappingConfig` is used to define how multi column entity IDs are printed a
 Different types of IdMappingConfig can be used by setting `type` to one of the following values:
 
 
-### NO_ID_MAPPING<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/NoIdMapping.java#L11)</sup></sub></sup>
+### NO_ID_MAPPING<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/NoIdMapping.java#L12)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -152,8 +152,8 @@ No fields can be set for this type.
 
 </p></details>
 
-### SIMPLE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/SimpleIdMapping.java#L12)</sup></sub></sup>
-
+### SIMPLE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/SimpleIdMapping.java#L11-L15)</sup></sub></sup>
+Identity mapping. TODO should this actually map to a separate column?
 
 <details><summary>Details</summary><p>
 
