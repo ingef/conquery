@@ -27,7 +27,7 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -94,7 +94,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
     }
 
     @Override
-    public SingletonStore<PersistentIdMap> createIdMappingStore(String pathName) {
+    public SingletonStore<EntityIdMap> createIdMappingStore(String pathName) {
         return ID_MAPPING.singleton(new NonPersistentStore());
     }
 

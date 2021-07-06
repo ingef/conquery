@@ -53,7 +53,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -292,11 +292,11 @@ public class XodusStoreFactory implements StoreFactory {
     }
 
 	@Override
-	public SingletonStore<PersistentIdMap> createIdMappingStore(String pathName) {
+	public SingletonStore<EntityIdMap> createIdMappingStore(String pathName) {
 		final Environment environment = findEnvironment(pathName);
 
 		synchronized (openStoresInEnv) {
-			final BigStore<Boolean, PersistentIdMap> bigStore =
+			final BigStore<Boolean, EntityIdMap> bigStore =
 					new BigStore<>(this, validator, environment, ID_MAPPING, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, objectMapper);
 
 			return new SingletonStore<>(new CachedStore<>(bigStore));

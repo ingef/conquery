@@ -514,7 +514,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.apiv1.query.concept.specific.CQExternal`
+Java Type: `com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal`
 
 Supported Fields:
 

@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
  * This class holds the csvId of an Entity.
  */
 @Data @RequiredArgsConstructor(onConstructor_=@JsonCreator)
-public class CsvEntityId implements EntityId {
+public class CsvEntityId {
 
 	/**
 	 * The csvId of an entity.

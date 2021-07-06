@@ -1,42 +1,33 @@
 package com.bakdata.conquery.models.config;
 
-import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.DefaultIdMappingAccessor;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.util.List;
 
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.univocity.parsers.common.record.Record;
+
+/**
+ * Identity mapping.
+ *
+ * TODO should this actually map to a separate column?
+ */
 @CPSType(base = IdMappingConfig.class, id = "SIMPLE")
 public class SimpleIdMapping extends IdMappingConfig {
 
 	@Override
-	public IdMappingAccessor[] getIdAccessors() {
-		return new IdMappingAccessor[]{
-				new DefaultIdMappingAccessor(new int[]{0}, new String[]{"result"}) {
-					@Override
-					public CsvEntityId getFallbackCsvId(String[] reorderedCsvLine) {
-						return new CsvEntityId(reorderedCsvLine[0]);
-					}
+	protected void processRecord(Record record, CsvEntityId id, EntityIdMap mapping) {
 
-					@Override
-					public int findIndexFromMappingHeader(String csvHeaderField) {
-						return ArrayUtils.indexOf(getHeader(), csvHeaderField);
-					}
-				}
-		};
+		mapping.addOutputMapping(id, id.getCsvId());
+
+		mapping.addInputMapping(id, id.getCsvId());
+
 	}
 
 	@Override
 	public List<String> getPrintIdFields() {
 		return List.of("result");
-	}
-
-	@Override
-	public String[] getHeader() {
-		return new String[]{"id", "result"};
 	}
 
 }

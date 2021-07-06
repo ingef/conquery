@@ -8,7 +8,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import lombok.Getter;
@@ -23,7 +23,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	@Setter
 	@NonNull
 	private MetaStorage metaStorage;
-	protected SingletonStore<PersistentIdMap> idMapping;
+	protected SingletonStore<EntityIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
@@ -37,6 +37,7 @@ public class NamespaceStorage extends NamespacedStorage {
 		structure = storageFactory.createStructureStore(pathName, new SingletonNamespaceCollection(getCentralRegistry()));
 		workerToBuckets = storageFactory.createWorkerToBucketsStore(pathName);
 	}
+
 
 	@Override
 	public void loadData() {
@@ -71,12 +72,12 @@ public class NamespaceStorage extends NamespacedStorage {
 		workerToBuckets.close();
 	}
 
-	public PersistentIdMap getIdMapping() {
+	public EntityIdMap getIdMapping() {
 		return idMapping.get();
 	}
 
 
-	public void updateIdMapping(PersistentIdMap idMapping) {
+	public void updateIdMapping(EntityIdMap idMapping) {
 		this.idMapping.update(idMapping);
 	}
 

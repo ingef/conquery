@@ -32,7 +32,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
@@ -52,7 +52,7 @@ import lombok.ToString;
 @ToString(of={"name", "keyType", "valueType" })
 public enum StoreInfo implements IStoreInfo {
     DATASET(Dataset.class, Boolean.class),
-    ID_MAPPING(PersistentIdMap.class, Boolean.class),
+    ID_MAPPING(EntityIdMap.class, Boolean.class),
     NAMESPACES(DatasetRegistry.class, Boolean.class),
     SLAVE(ShardNodeInformation.class, Boolean.class),
     DICTIONARIES(Dictionary.class, DictionaryId.class),

@@ -36,7 +36,7 @@ import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -193,7 +193,7 @@ public class SerializationTests {
 
 	@Test
 	public void persistentIdMap() throws JSONException, IOException {
-		SerializationTestUtil.forType(PersistentIdMap.class)
+		SerializationTestUtil.forType(EntityIdMap.class)
 			.test(IdMapSerialisationTest.createTestPersistentMap());
 
 	}

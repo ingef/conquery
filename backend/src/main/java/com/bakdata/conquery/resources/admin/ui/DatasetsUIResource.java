@@ -22,7 +22,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
@@ -113,7 +113,7 @@ public class DatasetsUIResource extends HAdmin {
 	@GET
 	@Path("mapping")
 	public View getIdMapping() {
-		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
+		EntityIdMap mapping = namespace.getStorage().getIdMapping();
 		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
 			return new UIView<>("idmapping.html.ftl", uiProcessor.getUIContext(), mapping.getCsvIdToExternalIdMap());
 		}

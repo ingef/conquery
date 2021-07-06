@@ -38,11 +38,11 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	}
 
 	@Override
-	protected CDateRange parseValue(@Nonnull String value) throws ParsingException {
+	protected CDateRange parseValue(@Nonnull String value) {
 		return DateRangeParser.parseISORange(value, dateFormats);
 	}
 
-	public static CDateRange parseISORange(String value, DateFormats dateFormats) throws ParsingException {
+	public static CDateRange parseISORange(String value, DateFormats dateFormats) {
 		if (value == null) {
 			return null;
 		}

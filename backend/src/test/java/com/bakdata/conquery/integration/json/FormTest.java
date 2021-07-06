@@ -87,7 +87,7 @@ public class FormTest extends ConqueryTestSpec {
 		importSecondaryIds(support, content.getSecondaryIds());
 		support.waitUntilWorkDone();
 
-		LoadingUtil.importTables(support, content);
+		LoadingUtil.importTables(support, content.getTables());
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLES", getLabel());
 

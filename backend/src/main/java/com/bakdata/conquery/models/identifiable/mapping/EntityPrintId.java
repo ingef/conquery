@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-public class ExternalEntityId implements EntityId, Comparable<ExternalEntityId> {
+public class EntityPrintId implements Comparable<EntityPrintId> {
 
 	/**
 	 * The external Entity Id.
@@ -25,12 +25,12 @@ public class ExternalEntityId implements EntityId, Comparable<ExternalEntityId> 
 	 * @param csvEntityId the given csvEntityId.
 	 * @return the casted ExternalEntityId.
 	 */
-	public static ExternalEntityId from(CsvEntityId csvEntityId) {
-		return new ExternalEntityId(new String[] { csvEntityId.getCsvId() });
+	public static EntityPrintId from(CsvEntityId csvEntityId) {
+		return new EntityPrintId(new String[] {csvEntityId.getCsvId() });
 	}
 
 	@Override
-	public int compareTo(ExternalEntityId o) {
-		return Arrays.compare(externalId, o.externalId);
+	public int compareTo(EntityPrintId o) {
+		return Arrays.compare(getExternalId(), o.getExternalId());
 	}
 }

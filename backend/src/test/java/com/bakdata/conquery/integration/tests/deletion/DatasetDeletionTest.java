@@ -50,7 +50,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTables(conquery, test.getContent());
+			LoadingUtil.importTables(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
@@ -184,9 +184,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			namespace = storage.getDatasetRegistry().get(dataset.getId());
 
 			// only import the deleted import/table
-			for (RequiredTable table : test.getContent().getTables()) {
-				conquery2.getDatasetsProcessor().addTable(table.toTable(conquery.getDataset(), conquery2.getNamespace().getStorage().getCentralRegistry()), conquery2.getNamespace());
-			}
+			LoadingUtil.importTables(conquery2,test.getContent().getTables());
 
 			assertThat(conquery2.getNamespace().getStorage().getTables()).isNotEmpty();
 

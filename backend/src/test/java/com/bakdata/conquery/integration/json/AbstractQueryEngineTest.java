@@ -9,13 +9,18 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.integration.common.IntegrationUtils;
+import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
+import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -54,30 +59,22 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		final User testUser = standaloneSupport.getTestUser();
-		ManagedQuery managed = (ManagedQuery) standaloneSupport.getNamespace().getExecutionManager().runQuery(namespaces, query, testUser, dataset, config);
 
-		managed.awaitDone(10, TimeUnit.SECONDS);
-		while (managed.getState() != ExecutionState.DONE && managed.getState() != ExecutionState.FAILED) {
-			log.warn("waiting for more than 10 seconds on " + getLabel());
-			managed.awaitDone(1, TimeUnit.DAYS);
-		}
+		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(standaloneSupport, query, -1, ExecutionState.DONE, testUser, 201);
 
-		if (managed.getState() == ExecutionState.FAILED) {
-			log.error("Failure in Query[{}]. The error was: {}", managed.getId(), managed.getError());
-			fail("Query failed (see above)");
-		}
+		final ManagedQuery execution = (ManagedQuery) standaloneSupport.getMetaStorage().getExecution(executionId);
 
 		//check result info size
-		List<ResultInfo> resultInfos = managed.getResultInfo();
+		List<ResultInfo> resultInfos = execution.getResultInfo();
 
 		assertThat(
-				managed.streamResults()
+				execution.streamResults()
 						.flatMap(EntityResult::streamValues)
 		)
 				.as("Should have same size as result infos")
 				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
 
-		IdMappingState mappingState = config.getIdMapping().initToExternal(testUser, managed);
+		IdMappingState mappingState = config.getIdMapping().initToExternal(testUser, execution);
 		PrintSettings
 				PRINT_SETTINGS =
 				new PrintSettings(
@@ -94,7 +91,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		List<String> actual = renderer.toStream(
 				config.getIdMapping().getPrintIdFields(),
 				resultInfos,
-				managed.streamResults()
+				execution.streamResults()
 		).collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();
@@ -103,8 +100,8 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		assertThat(actual).as("Results for %s are not as expected.", this).containsExactlyInAnyOrderElementsOf(expected);
 		// check that getLastResultCount returns the correct size
-		if (managed.streamResults().noneMatch(MultilineEntityResult.class::isInstance)) {
-			assertThat(managed.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
+		if (execution.streamResults().noneMatch(MultilineEntityResult.class::isInstance)) {
+			assertThat(execution.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
 		}
 
 		log.info("INTEGRATION TEST SUCCESSFUL {} {} on {} rows", getClass().getSimpleName(), this, expected.size());

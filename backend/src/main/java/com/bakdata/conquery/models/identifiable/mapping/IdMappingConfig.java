@@ -1,21 +1,17 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.util.*;
-import java.util.function.Function;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.NonNull;
+import com.univocity.parsers.common.record.Record;
+import com.univocity.parsers.csv.CsvParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 
 @Slf4j
@@ -24,41 +20,31 @@ import org.apache.commons.lang3.StringUtils;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class IdMappingConfig {
 
-	public PersistentIdMap generateIdMapping(Iterator<String[]> csvIterator) throws IllegalArgumentException {
+	public EntityIdMap generateIdMapping(CsvParser parser) throws IllegalArgumentException {
 
-		PersistentIdMap mapping = new PersistentIdMap();
+		EntityIdMap mapping = new EntityIdMap();
 
-		if (!Arrays.equals(this.getHeader(), csvIterator.next(), StringUtils::compareIgnoreCase)) {
-			throw new IllegalArgumentException("The uploaded CSVs Header does not match the expected");
+		//TODO Check headers match parser.getContext().headers();
+
+		Record record;
+
+		while((record = parser.parseNextRecord()) != null){
+			final String id = record.getString("id");
+
+			final CsvEntityId csvEntityId = new CsvEntityId(id);
+
+			processRecord(record, csvEntityId, mapping);
 		}
 
-		// first column is the external key, the rest is part of the csv id
-		csvIterator.forEachRemaining(
-			(s) -> mapping.addMapping(new CsvEntityId(s[0]), new ExternalEntityId(Arrays.copyOfRange(s, 1, s.length)), getIdAccessors()));
-
-		mapping.checkIntegrity(Arrays.asList(getIdAccessors()));
+		//TODO mapping.checkIntegrity(Arrays.asList(getIdAccessors()));
 
 		return mapping;
 	}
 
-	@JsonIgnore
-	public int getHeaderSize() {
-		return getHeader().length;
-	}
+	protected abstract void processRecord(Record record, CsvEntityId id,  EntityIdMap mapping);
 
 	@JsonIgnore
-	public abstract IdMappingAccessor[] getIdAccessors();
-
-	@JsonIgnore
-	public List<String> getPrintIdFields() {
-		return List.of(ArrayUtils.subarray(getHeader(), 1, getHeaderSize()));
-	}
-
-	/**
-	 * Header of the Mapping-CSV file.
-	 */
-	@JsonIgnore
-	public abstract String[] getHeader();
+	public abstract List<String> getPrintIdFields();
 
 	/**
 	 * Is called once before a mapping is used before a query result is created to
@@ -72,29 +58,20 @@ public abstract class IdMappingConfig {
 	/**
 	 * Converts the internal ID to the an external.
 	 */
-	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace, IdMappingState state) {
+	public EntityPrintId toExternal(CsvEntityId csvEntityId, Namespace namespace, IdMappingState state, EntityIdMap mapping) {
 		// The state may be uses by implementations of this class
-		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
-		if (mapping != null) {
-			ExternalEntityId externalEntityId = mapping.toExternal(csvEntityId);
-			if (externalEntityId != null) {
-				return externalEntityId;
-			}
-		}
-		return ExternalEntityId.from(csvEntityId);
-	}
 
-	@NonNull
-	public IdAccessor mappingFromCsvHeader(String[] csvHeader, PersistentIdMap idMapping) {
-		for (IdMappingAccessor accessor : getIdAccessors()) {
-			if (accessor.canBeApplied(Arrays.asList(csvHeader))) {
-				log.info("Using accessor (with required headers {}) to extract mapping from CSV with the header containing the ID columns: {}", accessor.getHeader(), csvHeader);
-				return accessor.getApplicationMapping(csvHeader, idMapping);
-			}
+		if (mapping == null) {
+			return EntityPrintId.from(csvEntityId);
 		}
-		log.info("Using the default accessor implementation.");
-		return DefaultIdAccessorImpl.INSTANCE;
-	}
 
+		EntityPrintId externalEntityId = mapping.toExternal(csvEntityId);
+
+		if (externalEntityId == null) {
+			return EntityPrintId.from(csvEntityId);
+		}
+
+		return externalEntityId;
+	}
 
 }
