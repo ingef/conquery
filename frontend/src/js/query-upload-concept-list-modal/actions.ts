@@ -1,43 +1,28 @@
-import {
-  initUploadConceptListModal,
-  resetUploadConceptListModal,
-} from "../upload-concept-list-modal/actions";
+import { ActionType, createAction } from "typesafe-actions";
 
-import { MODAL_OPEN, MODAL_CLOSE, MODAL_ACCEPT } from "./actionTypes";
+import { TreesT } from "../concept-trees/reducer";
 
-const openModal = (andIdx: number | null = null) => ({
-  type: MODAL_OPEN,
-  payload: { andIdx },
-});
+export type QueryUploadConceptListModalActions = ActionType<
+  | typeof openQueryUploadConceptListModal
+  | typeof closeQueryUploadConceptListModal
+  | typeof acceptQueryUploadConceptListModal
+>;
 
-export const openQueryUploadConceptListModal = (
-  andIdx: number | null,
-  file: File,
-) => async (dispatch) => {
-  // Need to wait until file is processed.
-  // Because if file is empty, modal would close automatically
-  await dispatch(initUploadConceptListModal(file));
+export const openQueryUploadConceptListModal = createAction(
+  "query-upload-concept-list-modal/OPEN",
+)<{
+  andIdx: number | null;
+}>();
 
-  return dispatch(openModal(andIdx));
-};
+export const closeQueryUploadConceptListModal = createAction(
+  "query-upload-concept-list-modal/CLOSE",
+)();
 
-const closeModal = () => ({
-  type: MODAL_CLOSE,
-});
-
-export const closeQueryUploadConceptListModal = () => (dispatch) => {
-  dispatch(closeModal());
-  dispatch(resetUploadConceptListModal());
-};
-
-export const acceptQueryUploadConceptListModal = (
-  andIdx,
-  label,
-  rootConcepts,
-  resolvedConcepts,
-) => {
-  return {
-    type: MODAL_ACCEPT,
-    payload: { andIdx, label, rootConcepts, resolvedConcepts },
-  };
-};
+export const acceptQueryUploadConceptListModal = createAction(
+  "query-upload-concept-list-modal/ACCEPT",
+)<{
+  andIdx: number | null;
+  label: string;
+  rootConcepts: TreesT;
+  resolvedConcepts: string[];
+}>();

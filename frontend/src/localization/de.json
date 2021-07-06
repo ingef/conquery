@@ -128,6 +128,7 @@
     "back": "Zurück",
     "any": "Beliebig",
     "save": "Speichern",
+    "saveAndCloseEsc": "Speichern und Schließen (ESC)",
     "edit": "Bearbeiten",
     "cancel": "Abbrechen",
     "delete": "Löschen",
@@ -152,7 +153,8 @@
     "min": "Min",
     "max": "Max",
     "std": "Std.",
-    "logout": "Ausloggen"
+    "logout": "Ausloggen",
+    "dateInvalid": "Ungültiges Datum"
   },
   "tooltip": {
     "headline": "Info",
@@ -360,7 +362,7 @@
     "previewHeadline": "Ergebnis-CSV",
     "previewSubline": "Auszug der ersten {{count}} Zeilen",
     "statisticsHeadline": "Spaltenstatistik",
-    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werten als 0 interpretiert.",
+    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werden als 0 interpretiert.",
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",

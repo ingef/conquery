@@ -1,41 +1,32 @@
 package com.bakdata.conquery.resources.api;
 
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import com.bakdata.conquery.apiv1.*;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import io.dropwizard.auth.Auth;
+import io.dropwizard.jersey.PATCH;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.*;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.FullExecutionStatus;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import io.dropwizard.auth.Auth;
-import io.dropwizard.jersey.PATCH;
-import lombok.extern.slf4j.Slf4j;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 @Path("datasets/{" + DATASET + "}/queries")
 @Consumes(AdditionalMediaTypes.JSON)
@@ -55,10 +46,10 @@ public class QueryResource {
     @GET
     public List<ExecutionStatus> getAllQueries(@Auth User user, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 
-        user.authorize(dataset, Ability.READ);
+		user.authorize(dataset, Ability.READ);
 
-        return processor.getAllQueries(dataset, servletRequest, user, allProviders.orElse(false))
-                .collect(Collectors.toList());
+		return processor.getAllQueries(dataset, servletRequest, user, allProviders.orElse(false))
+				.collect(Collectors.toList());
     }
 
     @POST

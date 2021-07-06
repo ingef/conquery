@@ -12,9 +12,9 @@ import java.util.UUID;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.query.concept.specific.CQAnd;
-import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class QueryCleanupTaskTest {
 		return managedQuery;
 	}
 
-	private MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null, null);
+	private MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
 
 	@AfterEach
 	public void teardownAfterEach() {

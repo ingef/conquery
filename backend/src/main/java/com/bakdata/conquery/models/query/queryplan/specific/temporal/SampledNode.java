@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;

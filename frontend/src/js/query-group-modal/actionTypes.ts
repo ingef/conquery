@@ -1,4 +1,0 @@
-export const QUERY_GROUP_MODAL_SET_DATE =
-  "query-group-modal/QUERY_GROUP_MODAL_SET_DATE";
-export const QUERY_GROUP_MODAL_RESET_ALL_DATES =
-  "query-group-modal/QUERY_GROUP_MODAL_RESET_ALL_DATES";

@@ -1,18 +1,25 @@
 package com.bakdata.conquery.models.config;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
-import com.bakdata.conquery.models.auth.AuthenticationConfig;
-import com.bakdata.conquery.models.auth.AuthorizationConfig;
+import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
-import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
+import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
 import com.bakdata.conquery.util.DateFormats;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -20,18 +27,15 @@ import com.google.common.collect.MoreCollectors;
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import lombok.With;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@With
 public class ConqueryConfig extends Configuration {
 
 	@Valid

@@ -7,8 +7,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.models.query.IQuery;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 

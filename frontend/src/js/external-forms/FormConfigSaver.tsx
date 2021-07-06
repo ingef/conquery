@@ -149,7 +149,7 @@ const FormConfigSaver: FC = () => {
         loadFormConfigs(datasetId);
       }
     } catch (e) {
-      dispatch(setMessage(t("externalForms.config.saveError")));
+      dispatch(setMessage({ message: t("externalForms.config.saveError") }));
     }
     setIsSaving(false);
   }
@@ -170,7 +170,7 @@ const FormConfigSaver: FC = () => {
       setConfigName(config.label);
       setIsDirty(false);
     } catch (e) {
-      dispatch(setMessage(t("formConfig.loadError")));
+      dispatch(setMessage({ message: t("formConfig.loadError") }));
     }
     setIsLoading(false);
   }

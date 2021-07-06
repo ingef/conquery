@@ -2,26 +2,20 @@ package com.bakdata.conquery.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URI;
 import java.net.URL;
-import java.util.Optional;
 import java.util.Set;
-
-import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;

@@ -23,6 +23,10 @@ interface PropsT {
 }
 
 const DateCell: FC<PropsT> = ({ cell, minDate, dateDiffInDays }) => {
+  if (cell.length === 0 || cell === "{}") {
+    return <Cell isDates></Cell>;
+  }
+
   return (
     <Cell isDates>
       {cell
@@ -30,6 +34,7 @@ const DateCell: FC<PropsT> = ({ cell, minDate, dateDiffInDays }) => {
         .split(",")
         .map((dateRange, k) => {
           const s = dateRange.split("/");
+
           const dateStr1 = s[0].trim();
           const date1 = parseStdDate(dateStr1);
 

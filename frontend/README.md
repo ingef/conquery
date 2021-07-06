@@ -13,6 +13,16 @@
 - react-dnd
 - i18next
 
+## Setup
+
+For all further steps, set up environment variables. Copy the `.env.example` file:
+
+```bash
+cp .env.example .env
+```
+
+and adjust the `.env` file if necessary. They're used at build time.
+
 ## Run (production)
 
 ### Using docker
@@ -27,16 +37,17 @@
 ./scripts/start_production.sh
 ```
 
+You can also adjust the docker run command, to pass env variables at runtime.
+
+Example:
+
+```bash
+docker run -d -e REACT_APP_API_URL=https://some-other-conquery-api.com -p 8000:8000 -name frontend frontend
+```
+
 **Windows**
 
 Commands analogoues to `start_production.sh` script.
-
-### Using node / express
-
-```bash
-docker build -t frontend .
-docker run -d -p 8000:8000 -name frontend frontend
-```
 
 ## Development
 
@@ -47,20 +58,12 @@ docker run -d -p 8000:8000 -name frontend frontend
 
 **Install and start**
 
-_Setup environment variables_
-
-```bash
-cp .env.example .env
-```
-
-adjust the `.env` file if necessary.
-
-_Start the server_
-
 ```bash
 yarn
 yarn start
 ```
+
+Adjust your local `.env` file as necessary to apply environment variables during development
 
 **Mock API**
 
@@ -82,13 +85,13 @@ This is documented in [the mock-API](https://github.com/bakdata/conquery/blob/de
 Depending on the use-case, we're still calling the same concepts differently sometimes. Here is an explanation.
 
 - **Concept Tree** – consists of concepts
-- **Concept Tree Node / Concept** – a concept node
+- **Concept Tree Node / Concept** – queries consist mainly of concepts
 - **Query**
   - consisting of multiple `and`-groups
   - which again consist of multiple `or`-ed concepts
   - which again are applied on different tables
   - which again may contain certain filters for table columns
-- **Query Editor** – on the right, used to construct a query interactively
+- **Query Editor** – on the right, used to construct a query interactively, using drag and drop
 - **Query And Group / Group** – column in the query editor
 - **Query Node / Element** – one node in the query editor, either a concept or a previous query
 - **Previous Query / Stored Query** – a previous query that has been saved in the backend database for future use (as itself or within other queries)

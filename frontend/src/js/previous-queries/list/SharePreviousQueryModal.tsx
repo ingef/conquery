@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import { usePatchStoredQuery } from "../../api/api";
+import { usePatchQuery } from "../../api/api";
 import type { DatasetIdT, UserGroupT } from "../../api/types";
 import PrimaryButton from "../../button/PrimaryButton";
 import TransparentButton from "../../button/TransparentButton";
@@ -14,7 +14,7 @@ import InputMultiSelect from "../../form-components/InputMultiSelect";
 import Modal from "../../modal/Modal";
 import { setMessage } from "../../snack-message/actions";
 
-import { useLoadPreviousQuery, sharePreviousQuerySuccess } from "./actions";
+import { useLoadQuery, shareQuerySuccess } from "./actions";
 import { PreviousQueryT } from "./reducer";
 
 const Buttons = styled("div")`
@@ -89,10 +89,10 @@ const SharePreviousQueryModal = ({
 
   const previousPreviousQueryId = usePrevious(previousQueryId);
 
-  const patchStoredQuery = usePatchStoredQuery();
+  const patchQuery = usePatchQuery();
 
   const dispatch = useDispatch();
-  const loadPreviousQuery = useLoadPreviousQuery();
+  const loadQuery = useLoadQuery();
 
   useEffect(() => {
     if (
@@ -100,7 +100,7 @@ const SharePreviousQueryModal = ({
       !exists(previousPreviousQueryId) &&
       exists(previousQueryId)
     ) {
-      loadPreviousQuery(datasetId, previousQueryId);
+      loadQuery(datasetId, previousQueryId);
     }
   }, [datasetId, previousPreviousQueryId, previousQueryId]);
 
@@ -127,15 +127,20 @@ const SharePreviousQueryModal = ({
     const userGroupsToShare = userGroupsValue.map((group) => group.value);
 
     try {
-      await patchStoredQuery(datasetId, previousQueryId, {
+      await patchQuery(datasetId, previousQueryId, {
         groups: userGroupsToShare,
       });
 
-      dispatch(sharePreviousQuerySuccess(previousQueryId, userGroupsToShare));
+      dispatch(
+        shareQuerySuccess({
+          queryId: previousQueryId,
+          groups: userGroupsToShare,
+        }),
+      );
 
       onShareSuccess();
     } catch (e) {
-      dispatch(setMessage(t("previousQuery.shareError")));
+      dispatch(setMessage({ message: t("previousQuery.shareError") }));
     }
   }
 

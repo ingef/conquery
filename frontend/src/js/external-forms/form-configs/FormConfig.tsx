@@ -163,7 +163,7 @@ const FormConfig: React.FC<PropsT> = ({
 
       dispatch(patchFormConfigSuccess(config.id, attributes));
     } catch (e) {
-      dispatch(setMessage(errorMessage));
+      dispatch(setMessage({ message: errorMessage }));
     }
     setIsLoading(false);
   };

@@ -1,10 +1,14 @@
-import { SET_SELECTED_SECONDARY_ID } from "./actionTypes";
+import { getType } from "typesafe-actions";
+
+import { Action } from "../app/actions";
+
+import { setSelectedSecondaryId } from "./actions";
 
 export type SelectedSecondaryIdStateT = string | null;
 
-const reducer = (state: SelectedSecondaryIdStateT = null, action: any) => {
+const reducer = (state: SelectedSecondaryIdStateT = null, action: Action) => {
   switch (action.type) {
-    case SET_SELECTED_SECONDARY_ID:
+    case getType(setSelectedSecondaryId):
       return action.payload.secondaryId;
     default:
       return state;

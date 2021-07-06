@@ -1,12 +1,9 @@
 package com.bakdata.conquery.models.query;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -16,10 +13,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriBuilderException;
 
 import c10n.C10N;
-import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -28,18 +25,18 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.ExecutionStatus;
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.concept.SecondaryIdQuery;
-import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.query.concept.specific.CQExternal;
-import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
+import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -47,8 +44,6 @@ import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
@@ -73,24 +68,22 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	protected transient Namespace namespace;
 	// Needs to be resolved externally before being executed
 	private IQuery query;
+
 	/**
 	 * The number of contained entities the last time this query was executed.
-	 *
-	 * @param lastResultCount the new count for JACKSON
-	 * @returns the number of contained entities
 	 */
 	private Long lastResultCount;
+
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private transient int involvedWorkers;
 	@JsonIgnore
-	private transient int executingThreads;
+	private transient AtomicInteger executingThreads = new AtomicInteger(0);
 	@JsonIgnore
 	private transient ConqueryConfig config;
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
-	@JsonIgnore @ToString.Exclude
-	private transient List<EntityResult> results = new ArrayList<>();
+
 
 	public ManagedQuery(IQuery query, User owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
@@ -100,12 +93,12 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@Override
 	protected void doInitExecutable(@NonNull DatasetRegistry namespaces, ConqueryConfig config) {
 		this.config = config;
-		this.namespace = namespaces.get(getDataset().getId());
-		this.involvedWorkers = namespace.getWorkers().size();
+
+		namespace = namespaces.get(getDataset().getId());
+
+		involvedWorkers = namespace.getWorkers().size();
+
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
-		if (label == null) {
-			label = makeAutoLabel(new PrintSettings(true, Locale.ROOT,namespaces, config, null));
-		}
 	}
 
 	@Override
@@ -114,20 +107,25 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		if (result.getError().isPresent()) {
 			fail(storage, result.getError().get());
+			return;
 		}
 
-		synchronized (this) {
-			executingThreads--;
-			results.addAll(result.getResults());
-			if (executingThreads == 0 && state == ExecutionState.RUNNING) {
-				finish(storage, ExecutionState.DONE);
-			}
+		final int remaining = executingThreads.decrementAndGet();
+
+		getExecutionManager().addQueryResult(this, result.getResults());
+
+		if (remaining == 0 && getState() == ExecutionState.RUNNING) {
+			finish(storage, ExecutionState.DONE);
 		}
+	}
+
+	public Stream<EntityResult> streamResults() {
+		return getExecutionManager().streamQueryResults(this);
 	}
 
 	@Override
 	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
-		lastResultCount = query.countResults(results);
+		lastResultCount = query.countResults(streamResults());
 
 		super.finish(storage, executionState);
 	}
@@ -135,17 +133,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@Override
 	public void start() {
 		super.start();
-		synchronized (this) {
-			executingThreads = involvedWorkers;
-		}
 
-
-		if (results != null) {
-			results.clear();
-		}
-		else {
-			results = new ArrayList<>();
-		}
+		executingThreads.set(involvedWorkers);
 	}
 
 	@Override
@@ -229,11 +218,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		return query;
 	}
 
-	@Override
-	public Stream<EntityResult> streamResults() {
-		return getResults().stream();
-	}
-
 	/**
 	 * Creates a default label based on the submitted {@link QueryDescription}.
 	 * The Label is customized by mentioning that a description contained a
@@ -248,13 +232,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		int sbStartSize = sb.length();
 
-		QueryVisitor visitor = new QueryVisitor() {
+		QueryVisitor visitor = t -> sortedContents.computeIfAbsent(t.getClass(), (clazz) -> new ArrayList<>()).add(t);
 
-			@Override
-			public void accept(Visitable t) {
-				sortedContents.computeIfAbsent(t.getClass(), (clazz) -> new ArrayList<>()).add(t);
-			}
-		};
 		query.visit(visitor);
 
 		// Check for CQExternal

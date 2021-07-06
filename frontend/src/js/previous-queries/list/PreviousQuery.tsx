@@ -9,16 +9,15 @@ import { useSelector } from "react-redux";
 import type { DatasetIdT, SecondaryId } from "../../api/types";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
-import { formatDate, useFormatDateDistance } from "../../common/helpers";
+import { formatDate } from "../../common/helpers";
 import { exists } from "../../common/helpers/exists";
 import ErrorMessage from "../../error-message/ErrorMessage";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import PreviousQueriesLabel from "./PreviousQueriesLabel";
-import { useRenamePreviousQuery } from "./actions";
+import { useRemoveQuery, useRenameQuery } from "./actions";
 import { PreviousQueryT } from "./reducer";
-import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
 
 const Root = styled("div")<{ own?: boolean; system?: boolean }>`
   margin: 0;
@@ -133,18 +132,13 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       (state) => state.conceptTrees.secondaryIds,
     );
 
-    const formatDateDistance = useFormatDateDistance();
-
-    const renamePreviousQuery = useRenamePreviousQuery();
-    const onDeletePreviousQuery = useDeletePreviousQuery(query.id);
-
-    const onRenamePreviousQuery = (label: string) =>
-      renamePreviousQuery(datasetId, query.id, label);
+    const renameQuery = useRenameQuery();
+    const removeQuery = useRemoveQuery(query.id);
 
     const mayDeleteQueryRightAway =
       query.tags.length === 0 && query.isPristineLabel;
     const onDeleteClick = mayDeleteQueryRightAway
-      ? onDeletePreviousQuery
+      ? removeQuery
       : onIndicateDeletion;
 
     const peopleFoundText = exists(query.numberOfResults)
@@ -154,11 +148,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     const dateFormat = `${t("inputDateRange.dateFormat")} HH:mm`;
     const executedAtDate = parseISO(query.createdAt);
     const executedAt = formatDate(executedAtDate, dateFormat);
-    const executedAtRelative = formatDateDistance(
-      executedAtDate,
-      new Date(),
-      true,
-    );
+
     const isShared = query.shared || (query.groups && query.groups.length > 0);
     const label = query.label || query.id.toString();
     const mayEditQuery = query.own || isShared;
@@ -199,7 +189,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             )}
           </TopLeft>
           <TopRight>
-            <WithTooltip text={executedAtRelative}>{executedAt}</WithTooltip>
+            {executedAt}
             {secondaryId && query.queryType === "SECONDARY_ID_QUERY" && (
               <StyledWithTooltip
                 text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
@@ -235,7 +225,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             loading={!!query.loading}
             label={label}
             selectTextOnMount={true}
-            onSubmit={onRenamePreviousQuery}
+            onSubmit={(label) => renameQuery(datasetId, query.id, label)}
             isEditing={isEditingLabel}
             setIsEditing={setIsEditingLabel}
           />

@@ -5,13 +5,15 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../api/types";
+import { getUniqueFileRows } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { TreesT } from "../concept-trees/reducer";
-import { useLoadPreviousQuery } from "../previous-queries/list/actions";
+import { useLoadQuery } from "../previous-queries/list/actions";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 import QueryGroupModal from "../query-group-modal/QueryGroupModal";
 import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
 import WithTooltip from "../tooltip/WithTooltip";
+import { initUploadConceptListModal } from "../upload-concept-list-modal/actions";
 
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
 import QueryEditorDropzone from "./QueryEditorDropzone";
@@ -25,7 +27,6 @@ import {
   deleteGroup,
   toggleExcludeGroup,
   useExpandPreviousQuery,
-  selectNodeForEditing,
   toggleTimestamps,
   toggleSecondaryIdExclude,
 } from "./actions";
@@ -68,7 +69,11 @@ const QueryGroupConnector = styled("p")`
   text-align: center;
 `;
 
-const Query = () => {
+const Query = ({
+  setEditedNode,
+}: {
+  setEditedNode: (node: { andIdx: number; orIdx: number } | null) => void;
+}) => {
   const { t } = useTranslation();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
     (state) => state.datasets.selectedDatasetId,
@@ -86,32 +91,37 @@ const Query = () => {
   );
 
   const dispatch = useDispatch();
-  const loadPreviousQuery = useLoadPreviousQuery();
+  const loadQuery = useLoadQuery();
   const expandPreviousQuery = useExpandPreviousQuery();
 
   const onDropAndNode = (
     item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
-  ) => dispatch(dropAndNode(item));
-  const onDropConceptListFile = (file: File, andIdx: number | null) =>
-    dispatch(openQueryUploadConceptListModal(andIdx, file));
+  ) => dispatch(dropAndNode({ item }));
+  const onDropConceptListFile = async (file: File, andIdx: number | null) => {
+    // Need to wait until file is processed.
+    // Because if file is empty, modal would close automatically
+    const rows = await getUniqueFileRows(file);
+
+    dispatch(initUploadConceptListModal({ rows, filename: file.name }));
+
+    return dispatch(openQueryUploadConceptListModal({ andIdx }));
+  };
   const onDropOrNode = (
     item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
     andIdx: number,
-  ) => dispatch(dropOrNode(item, andIdx));
+  ) => dispatch(dropOrNode({ item, andIdx }));
   const onDeleteNode = (andIdx: number, orIdx: number) =>
-    dispatch(deleteNode(andIdx, orIdx));
-  const onDeleteGroup = (andIdx: number) => dispatch(deleteGroup(andIdx));
+    dispatch(deleteNode({ andIdx, orIdx }));
+  const onDeleteGroup = (andIdx: number) => dispatch(deleteGroup({ andIdx }));
   const onToggleExcludeGroup = (andIdx: number) =>
-    dispatch(toggleExcludeGroup(andIdx));
+    dispatch(toggleExcludeGroup({ andIdx }));
   const onToggleTimestamps = (andIdx: number, orIdx: number) =>
-    dispatch(toggleTimestamps(andIdx, orIdx));
+    dispatch(toggleTimestamps({ andIdx, orIdx }));
   const onToggleSecondaryIdExclude = (andIdx: number, orIdx: number) =>
-    dispatch(toggleSecondaryIdExclude(andIdx, orIdx));
-  const onSelectNodeForEditing = (andIdx: number, orIdx: number) =>
-    dispatch(selectNodeForEditing(andIdx, orIdx));
-  const onLoadPreviousQuery = (queryId: PreviousQueryIdT) => {
+    dispatch(toggleSecondaryIdExclude({ andIdx, orIdx }));
+  const onLoadQuery = (queryId: PreviousQueryIdT) => {
     if (datasetId) {
-      loadPreviousQuery(datasetId, queryId);
+      loadQuery(datasetId, queryId);
     }
   };
 
@@ -160,7 +170,7 @@ const Query = () => {
           isInitial
           onDropNode={onDropAndNode}
           onDropFile={(file) => onDropConceptListFile(file, null)}
-          onLoadPreviousQuery={onLoadPreviousQuery}
+          onLoadPreviousQuery={onLoadQuery}
         />
       ) : (
         <>
@@ -176,12 +186,12 @@ const Query = () => {
                 onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
                 onDeleteGroup={() => onDeleteGroup(andIdx)}
                 onEditClick={(orIdx: number) =>
-                  onSelectNodeForEditing(andIdx, orIdx)
+                  setEditedNode({ andIdx, orIdx })
                 }
                 onExpandClick={onExpandPreviousQuery}
                 onExcludeClick={() => onToggleExcludeGroup(andIdx)}
                 onDateClick={() => setQueryGroupModalAndIdx(andIdx)}
-                onLoadPreviousQuery={onLoadPreviousQuery}
+                onLoadPreviousQuery={onLoadQuery}
                 onToggleTimestamps={(orIdx: number) =>
                   onToggleTimestamps(andIdx, orIdx)
                 }
@@ -199,7 +209,7 @@ const Query = () => {
                   isAnd
                   onDropNode={onDropAndNode}
                   onDropFile={(file) => onDropConceptListFile(file, null)}
-                  onLoadPreviousQuery={onLoadPreviousQuery}
+                  onLoadPreviousQuery={onLoadQuery}
                 />
               </SxWithTooltip>
             </PaddedTop>

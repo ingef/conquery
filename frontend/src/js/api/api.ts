@@ -15,8 +15,7 @@ import type {
   GetConceptResponseT,
   PostQueriesResponseT,
   GetQueryResponseT,
-  GetStoredQueriesResponseT,
-  GetStoredQueryResponseT,
+  GetQueriesResponseT,
   PostConceptResolveResponseT,
   PostFilterResolveResponseT,
   PostFilterSuggestionsResponseT,
@@ -33,7 +32,7 @@ import { useApi, useApiUnauthorized } from "./useApi";
 const PROTECTED_PREFIX = "/api";
 
 function getProtectedUrl(url: string) {
-  return apiUrl() + PROTECTED_PREFIX + url;
+  return apiUrl + PROTECTED_PREFIX + url;
 }
 
 export const useGetFrontendConfig = () => {
@@ -96,6 +95,15 @@ export const usePostFormQueries = () => {
     });
 };
 
+export const useGetQuery = () => {
+  const api = useApi<GetQueryResponseT>();
+
+  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+    });
+};
+
 export const useDeleteQuery = () => {
   const api = useApi<null>();
 
@@ -103,15 +111,6 @@ export const useDeleteQuery = () => {
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
       method: "DELETE",
-    });
-};
-
-export const useGetQuery = () => {
-  const api = useApi<GetQueryResponseT>();
-
-  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
     });
 };
 
@@ -124,40 +123,21 @@ export const useGetForms = () => {
     });
 };
 
-export const useGetStoredQueries = () => {
-  const api = useApi<GetStoredQueriesResponseT>();
+export const useGetQueries = () => {
+  const api = useApi<GetQueriesResponseT>();
 
   return (datasetId: DatasetIdT) =>
     api({
-      url: getProtectedUrl(`/datasets/${datasetId}/stored-queries`),
+      url: getProtectedUrl(`/datasets/${datasetId}/queries`),
     });
 };
 
-export const useGetStoredQuery = () => {
-  const api = useApi<GetStoredQueryResponseT>();
-
-  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
-    });
-};
-
-export const useDeleteStoredQuery = () => {
-  const api = useApi<null>();
-
-  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
-      method: "DELETE",
-    });
-};
-
-export const usePatchStoredQuery = () => {
+export const usePatchQuery = () => {
   const api = useApi<null>();
 
   return (datasetId: DatasetIdT, queryId: QueryIdT, attributes: Object) =>
     api({
-      url: getProtectedUrl(`/datasets/${datasetId}/stored-queries/${queryId}`),
+      url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
       method: "PATCH",
       data: attributes,
     });
@@ -227,7 +207,7 @@ export const useGetMe = () => {
 
 export const usePostLogin = () => {
   const api = useApiUnauthorized<PostLoginResponseT>({
-    url: apiUrl() + "/auth",
+    url: apiUrl + "/auth",
     method: "POST",
   });
 
