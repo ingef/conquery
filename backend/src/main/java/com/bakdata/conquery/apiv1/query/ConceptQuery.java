@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "CONCEPT_QUERY", base = QueryDescription.class)
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__(@JsonCreator))
-public class ConceptQuery extends IQuery {
+public class ConceptQuery extends Query {
 
 	@Valid
 	@NotNull
@@ -60,7 +60,7 @@ public class ConceptQuery extends IQuery {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
 		root.collectRequiredQueries(requiredQueries);
 	}
 

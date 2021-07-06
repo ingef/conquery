@@ -7,11 +7,11 @@ import javax.annotation.Nullable;
 import javax.validation.Valid;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -47,12 +47,12 @@ public class CQReusedQuery extends CQElement {
 	private ManagedQuery query;
 
 	@InternalOnly
-	private IQuery resolvedQuery;
+	private Query resolvedQuery;
 
 	private boolean excludeFromSecondaryId = false;
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
 		if(query != null) {
 			requiredQueries.add(query);
 			query.getQuery().collectRequiredQueries(requiredQueries);
