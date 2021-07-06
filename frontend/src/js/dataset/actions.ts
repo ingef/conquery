@@ -8,9 +8,9 @@ import type { DatasetIdT } from "../api/types";
 import { defaultError, defaultSuccess } from "../common/actions";
 import { exists } from "../common/helpers/exists";
 import { useLoadTrees } from "../concept-trees/actions";
-import { useLoadPreviousQueries } from "../previous-queries/list/actions";
+import { useLoadQueries } from "../previous-queries/list/actions";
 import { setMessage } from "../snack-message/actions";
-import { loadQuery, clearQuery } from "../standard-query-editor/actions";
+import { clearQuery, loadSavedQuery } from "../standard-query-editor/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
 import {
@@ -54,7 +54,7 @@ export const useLoadDatasets = () => {
 
       return loadTrees(defaultId);
     } catch (e) {
-      dispatch(setMessage(t("datasetSelector.error")));
+      dispatch(setMessage({ message: t("datasetSelector.error") }));
       dispatch(loadDatasetsError(e));
     }
   };
@@ -82,7 +82,7 @@ export const useSelectDataset = () => {
   const dispatch = useDispatch();
   const loadTrees = useLoadTrees();
   const activeForm = useSelector<StateT, string | null>(selectActiveForm);
-  const loadPreviousQueries = useLoadPreviousQueries();
+  const loadQueries = useLoadQueries();
 
   return (
     datasets: DatasetT[],
@@ -108,7 +108,7 @@ export const useSelectDataset = () => {
       if (!nextDataset || !nextDataset.query) {
         dispatch(clearQuery());
       } else {
-        dispatch(loadQuery({ query: nextDataset.query }));
+        dispatch(loadSavedQuery({ query: nextDataset.query }));
       }
 
       loadTrees(datasetId);
@@ -118,7 +118,7 @@ export const useSelectDataset = () => {
         dispatch(reset(activeForm));
       }
 
-      return loadPreviousQueries(datasetId);
+      return loadQueries(datasetId);
     }
   };
 };

@@ -153,7 +153,8 @@
     "min": "Min",
     "max": "Max",
     "std": "SD",
-    "logout": "Logout"
+    "logout": "Logout",
+    "dateInvalid": "Invalid date"
   },
   "tooltip": {
     "headline": "Info",

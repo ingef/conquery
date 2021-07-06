@@ -23,11 +23,11 @@ const WithAuthToken: FC<PropsT> = ({ location, children }) => {
 
   if (accessToken) storeAuthToken(accessToken);
 
-  if (isIDPEnabled() && (!initialized || !keycloak.token)) {
+  if (isIDPEnabled && (!initialized || !keycloak.token)) {
     return null;
   }
 
-  if (!isIDPEnabled() && !isLoginDisabled()) {
+  if (!isIDPEnabled && !isLoginDisabled) {
     const authToken = getStoredAuthToken();
 
     if (!authToken) {

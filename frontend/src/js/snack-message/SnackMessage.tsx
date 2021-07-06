@@ -45,7 +45,7 @@ const SnackMessage: FC = memo(function SnackMessageComponent() {
     (state) => state.snackMessage.message,
   );
   const dispatch = useDispatch();
-  const resetMessage = () => dispatch(setMessage(null));
+  const resetMessage = () => dispatch(setMessage({ message: null }));
 
   useClickOutside(ref, () => {
     if (message) {

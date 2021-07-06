@@ -9,9 +9,10 @@ import type { DragItemQuery } from "../standard-query-editor/types";
 
 import type { DragItemTimebasedNode } from "./TimebasedNode";
 import { removeTimebasedNode } from "./actions";
+import { TimebasedResultType } from "./reducer";
 
 interface PropsType {
-  onDropNode: () => void;
+  onDropNode: (node: TimebasedResultType, moved: boolean) => void;
 }
 
 const StyledDropzone = styled(Dropzone)`
@@ -26,7 +27,7 @@ const TimebasedQueryEditorDropzone = ({ onDropNode }: PropsType) => {
     conditionIdx: number,
     resultIdx: number,
     moved: boolean,
-  ) => dispatch(removeTimebasedNode(conditionIdx, resultIdx, moved));
+  ) => dispatch(removeTimebasedNode({ conditionIdx, resultIdx, moved }));
 
   const onDrop = (item) => {
     const { moved } = item;

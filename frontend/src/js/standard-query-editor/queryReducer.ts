@@ -23,12 +23,7 @@ import { isMultiSelectFilter } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { selectsWithDefaults } from "../model/select";
 import { resetAllFiltersInTables, tableWithDefaults } from "../model/table";
-import {
-  LOAD_PREVIOUS_QUERY_START,
-  LOAD_PREVIOUS_QUERY_SUCCESS,
-  LOAD_PREVIOUS_QUERY_ERROR,
-  RENAME_PREVIOUS_QUERY_SUCCESS,
-} from "../previous-queries/list/actionTypes";
+import { loadQuery, renameQuery } from "../previous-queries/list/actions";
 import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
@@ -46,7 +41,7 @@ import {
   updateNodeLabel,
   setFilterValue,
   toggleExcludeGroup,
-  loadQuery,
+  loadSavedQuery,
   toggleTimestamps,
   toggleSecondaryIdExclude,
   resetAllFilters,
@@ -116,7 +111,11 @@ const filterItem = (
   }
 };
 
-const setGroupProperties = (node, andIdx, properties) => {
+const setGroupProperties = (
+  node: StandardQueryStateT,
+  andIdx: number,
+  properties: Partial<QueryGroupType>,
+) => {
   return [
     ...node.slice(0, andIdx),
     {
@@ -376,10 +375,12 @@ const setNodeSelects = (
   state: StandardQueryStateT,
   { andIdx, orIdx, value }: ActionType<typeof setSelects>["payload"],
 ) => {
-  const { selects } = state[andIdx].elements[orIdx];
+  const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
 
   return setElementProperties(state, andIdx, orIdx, {
-    selects: selects.map((select) => ({
+    selects: node.selects.map((select) => ({
       ...select,
       selected:
         !!value &&
@@ -417,10 +418,12 @@ const resetNodeAllFilters = (
   const newState = setElementProperties(state, andIdx, orIdx, {
     excludeFromSecondaryIdQuery: false,
     excludeTimestamps: false,
-    selects: selectsWithDefaults(node.selects),
+    selects: nodeIsConceptQueryNode(node)
+      ? selectsWithDefaults(node.selects)
+      : [],
   });
 
-  if (!node.tables) return newState;
+  if (!nodeIsConceptQueryNode(node)) return newState;
 
   const tables = resetAllFiltersInTables(node.tables);
 
@@ -433,7 +436,7 @@ const resetNodeTable = (
 ) => {
   const node = state[andIdx].elements[orIdx];
 
-  if (!node.tables) return state;
+  if (!nodeIsConceptQueryNode(node)) return state;
 
   const table = node.tables[tableIdx];
 
@@ -752,30 +755,42 @@ const updatePreviousQueries = (
   }, state);
 };
 
-const loadPreviousQueryStart = (state: StandardQueryStateT, action: any) => {
+const loadPreviousQueryStart = (
+  state: StandardQueryStateT,
+  action: ActionType<typeof loadQuery.request>,
+) => {
   return updatePreviousQueries(state, action, { loading: true });
 };
-const loadPreviousQuerySuccess = (state: StandardQueryStateT, action: any) => {
-  const label = action.payload.data.label
-    ? { label: action.payload.data.label }
-    : {};
+const loadPreviousQuerySuccess = (
+  state: StandardQueryStateT,
+  action: ActionType<typeof loadQuery.success>,
+) => {
+  const { data } = action.payload;
+
+  const maybeLabel = data.label ? { label: data.label } : {};
 
   return updatePreviousQueries(state, action, {
-    ...label,
-    id: action.payload.data.id,
+    ...maybeLabel,
+    id: data.id,
     loading: false,
-    query: action.payload.data.query,
-    canExpand: action.payload.data.canExpand,
-    availableSecondaryIds: action.payload.data.availableSecondaryIds,
+    query: data.query,
+    canExpand: data.canExpand,
+    availableSecondaryIds: data.availableSecondaryIds,
   });
 };
-const loadPreviousQueryError = (state: StandardQueryStateT, action: any) => {
+const loadPreviousQueryError = (
+  state: StandardQueryStateT,
+  action: ActionType<typeof loadQuery.failure>,
+) => {
   return updatePreviousQueries(state, action, {
     loading: false,
     error: action.payload.message,
   });
 };
-const renamePreviousQuery = (state: StandardQueryStateT, action: any) => {
+const onRenamePreviousQuery = (
+  state: StandardQueryStateT,
+  action: ActionType<typeof renameQuery.success>,
+) => {
   return updatePreviousQueries(state, action, {
     loading: false,
     label: action.payload.label,
@@ -895,6 +910,8 @@ const onAddConceptToNode = (
 ) => {
   const node = state[andIdx].elements[orIdx];
 
+  if (!nodeIsConceptQueryNode(node)) return state;
+
   return setElementProperties(state, andIdx, orIdx, {
     ids: [...concept.ids, ...node.ids],
   });
@@ -909,6 +926,8 @@ const onRemoveConceptFromNode = (
   }: ActionType<typeof removeConceptFromNode>["payload"],
 ) => {
   const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
 
   return setElementProperties(state, andIdx, orIdx, {
     ids: node.ids.filter((id) => id !== conceptId),
@@ -1017,7 +1036,7 @@ const query = (
       return onDeleteGroup(state, action.payload);
     case getType(toggleExcludeGroup):
       return onToggleExcludeGroup(state, action.payload);
-    case getType(loadQuery):
+    case getType(loadSavedQuery):
       return action.payload.query;
     case getType(updateNodeLabel):
       return onUpdateNodeLabel(state, action.payload);
@@ -1049,14 +1068,14 @@ const query = (
       return resetGroupDates(state, action.payload);
     case getType(expandPreviousQuery):
       return onExpandPreviousQuery(action.payload);
-    case LOAD_PREVIOUS_QUERY_START:
+    case getType(loadQuery.request):
       return loadPreviousQueryStart(state, action);
-    case LOAD_PREVIOUS_QUERY_SUCCESS:
+    case getType(loadQuery.success):
       return loadPreviousQuerySuccess(state, action);
-    case LOAD_PREVIOUS_QUERY_ERROR:
+    case getType(loadQuery.failure):
       return loadPreviousQueryError(state, action);
-    case RENAME_PREVIOUS_QUERY_SUCCESS:
-      return renamePreviousQuery(state, action);
+    case getType(renameQuery.success):
+      return onRenamePreviousQuery(state, action);
     case getType(loadFilterSuggestions.request):
       return loadFilterSuggestionsStart(state, action.payload);
     case getType(loadFilterSuggestions.success):
