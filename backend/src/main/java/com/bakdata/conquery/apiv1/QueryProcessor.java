@@ -170,10 +170,10 @@ public class QueryProcessor {
 	}
 
 
-	public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user, boolean allProviders) {
+	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user, boolean allProviders) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
-		return getQueriesFiltered(namespace.getDataset(), RequestAwareUriBuilder.fromRequest(req), user, allQueries, allProviders);
+		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), user, allQueries, allProviders);
 	}
 
 	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, User user, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
