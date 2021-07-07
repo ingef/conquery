@@ -33,12 +33,14 @@ jobs:
           java-version: 11
       - name: Build Backend
         run: mvn install -T 1C -DskipTests -pl '!executable'
-      - name: Build AutoDoc
+      - name: Run AutoDoc
         run: mvn exec:java -f autodoc/pom.xml -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
       - name: Check for changes
         id: check-changes
         run: |
-          echo "::set-output name=changed::$(if [[ $(git diff-index HEAD) ]]; then echo true; else echo false; fi)"
+          changes=$(git diff-index HEAD)
+          echo $changes
+          echo "::set-output name=changed::$(if [[ ${changes} ]]; then echo true; else echo false; fi)"
       - name: Commit files
         id: commit-files
         if: ${{ steps.check-changes.outputs.changed }}
