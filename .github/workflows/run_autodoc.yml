@@ -38,9 +38,8 @@ jobs:
       - name: Check for changes
         id: check-changes
         run: |
-          changes=$(git diff-index HEAD)
-          echo $changes
-          echo "::set-output name=changed::$(if [[ ${changes} ]]; then echo true; else echo false; fi)"
+          echo $(git diff HEAD)
+          echo "::set-output name=changed::$(if git diff HEAD --quiet ; then echo false; else echo true; fi)"
       - name: Commit files
         id: commit-files
         if: ${{ steps.check-changes.outputs.changed }}
