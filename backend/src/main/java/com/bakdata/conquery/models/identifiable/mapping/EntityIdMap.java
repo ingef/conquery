@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.bakdata.conquery.io.jackson.serializer.PersistentIdMapDeserializer;
-import com.bakdata.conquery.io.jackson.serializer.PersistentIdMapSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.EqualsAndHashCode;
@@ -21,37 +19,35 @@ import lombok.extern.slf4j.Slf4j;
 @EqualsAndHashCode
 @RequiredArgsConstructor
 @Slf4j
-@JsonSerialize(using = PersistentIdMapSerializer.class)
-@JsonDeserialize(using = PersistentIdMapDeserializer.class)
 public class EntityIdMap {
 
 
 	/**
 	 * The map from csv entity ids to external entity ids.
 	 */
-	private final Map<CsvEntityId, EntityPrintId> csvIdToExternalIdMap = new HashMap<>();
+	private final Map<String, EntityPrintId> csvIdToExternalIdMap = new HashMap<>();
 
 	/**
 	 * The map from external entity ids to csv entity ids.
 	 */
-	private final Map<UnresolvedEntityId, CsvEntityId> externalIdPartCsvIdMap = new HashMap<>();
+	private final Map<String, String> externalIdPartCsvIdMap = new HashMap<>();
 
 	/**
 	 * Map an internal id to an external.
 	 */
-	public EntityPrintId toExternal(CsvEntityId internal) {
+	public EntityPrintId toExternal(String internal) {
 		return csvIdToExternalIdMap.get(internal);
 	}
 
 	/**
 	 * Map an external to an internal id.
+	 * @param external
 	 */
-	public Optional<CsvEntityId> toInternal(UnresolvedEntityId external) {
+	public Optional<String> toInternal(String external) {
 		return Optional.ofNullable(externalIdPartCsvIdMap.get(external));
 	}
 
-	public void addOutputMapping(CsvEntityId csvEntityId, String... parts) {
-		EntityPrintId externalEntityId = new EntityPrintId(parts);
+	public void addOutputMapping(String csvEntityId, EntityPrintId externalEntityId) {
 		final EntityPrintId prior = csvIdToExternalIdMap.put(csvEntityId, externalEntityId);
 
 		if (prior != null && prior.equals(externalEntityId)) {
@@ -59,10 +55,10 @@ public class EntityIdMap {
 		}
 	}
 
-	public void addInputMapping(CsvEntityId csvEntityId, String part) {
-		UnresolvedEntityId externalEntityId = new UnresolvedEntityId(part);
 
-		final CsvEntityId prior = externalIdPartCsvIdMap.put(externalEntityId, csvEntityId);
+	public void addInputMapping(String csvEntityId, String externalEntityId) {
+
+		final String prior = externalIdPartCsvIdMap.put(externalEntityId, csvEntityId);
 
 		if (prior != null && prior.equals(csvEntityId)) {
 			log.warn("Duplicate mapping  for {} to {} and {}", externalEntityId, csvEntityId, prior);

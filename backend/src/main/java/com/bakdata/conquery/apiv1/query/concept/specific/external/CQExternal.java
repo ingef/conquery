@@ -14,7 +14,6 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.UnresolvedEntityId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -82,10 +81,10 @@ public class CQExternal extends CQElement {
 		final DateFormat dateFormat = dateColumns.length > 0 ? dateColumns[0].getFormat() : DateFormat.ALL;
 
 
-		final IdColumn idColumn = this.format.stream()
-											 .filter(IdColumn.class::isInstance)
-											 .map(IdColumn.class::cast)
-											 .collect(MoreCollectors.onlyElement());
+		final IdColumn idColumn = format.stream()
+										.filter(IdColumn.class::isInstance)
+										.map(IdColumn.class::cast)
+										.collect(MoreCollectors.onlyElement());
 
 
 		final EncodedDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
@@ -99,7 +98,7 @@ public class CQExternal extends CQElement {
 		// ignore the first row, because this is the header
 		for (int i = 1; i < values.length; i++) {
 			final String[] row = values[i];
-			final UnresolvedEntityId externalId = idColumn.read(row);
+			final String externalId = idColumn.read(row);
 
 
 			//read the dates from the row
@@ -107,11 +106,11 @@ public class CQExternal extends CQElement {
 
 				CDateSet dates = dateFormat.readDates(dateColumns, row, dateFormats);
 
-				Optional<CsvEntityId> id = mapping.toInternal(externalId);
+				Optional<String> id = mapping.toInternal(externalId);
 
 				int resolvedId;
 
-				if (id.isPresent() && (resolvedId = primary.getId(id.get().getCsvId())) != -1) {
+				if (id.isPresent() && (resolvedId = primary.getId(id.get())) != -1) {
 					valuesResolved.put(resolvedId, dates);
 				}
 				else {
@@ -139,21 +138,6 @@ public class CQExternal extends CQElement {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 	}
-
-	//	@RequiredArgsConstructor
-	//	@Getter
-	//	public enum FormatColumn {
-	//		ID(true, null),
-	//		EVENT_DATE(false, DateFormat.EVENT_DATE),
-	//		START_DATE(false, DateFormat.START_END_DATE),
-	//		END_DATE(false, DateFormat.START_END_DATE),
-	//		DATE_RANGE(false, DateFormat.DATE_RANGE),
-	//		DATE_SET(false, DateFormat.DATE_SET),
-	//		IGNORE(true, null);
-	//
-	//		private final boolean duplicatesAllowed;
-	//		private final DateFormat dateFormat;
-	//	}
 
 
 	@JsonIgnore

@@ -2,8 +2,11 @@ package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.util.Arrays;
 
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -11,23 +14,19 @@ import lombok.RequiredArgsConstructor;
  * An external Id for a Entity.
  */
 @Data
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator, access = AccessLevel.PROTECTED)
 public class EntityPrintId implements Comparable<EntityPrintId> {
+
+	public static EntityPrintId from(String... parts) {
+		return new EntityPrintId(parts);
+	}
 
 	/**
 	 * The external Entity Id.
 	 */
+	@NotNull
 	private final String[] externalId;
 
-	/**
-	 * Casts a given csv Entity Id into an ExternalEntityId.
-	 *
-	 * @param csvEntityId the given csvEntityId.
-	 * @return the casted ExternalEntityId.
-	 */
-	public static EntityPrintId from(CsvEntityId csvEntityId) {
-		return new EntityPrintId(new String[] {csvEntityId.getCsvId() });
-	}
 
 	@Override
 	public int compareTo(EntityPrintId o) {

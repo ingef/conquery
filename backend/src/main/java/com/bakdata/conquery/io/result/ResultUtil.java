@@ -9,11 +9,10 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
-import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -24,24 +23,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResultUtil {
 
-	
+
 	public static EntityPrintId createId(Namespace namespace, EntityResult cer, IdMappingConfig idMappingConfig, IdMappingState mappingState) {
 		EncodedDictionary dict = namespace.getStorage().getPrimaryDictionary();
 		final EntityIdMap idMapping = namespace.getStorage().getIdMapping();
 
-
-
-		return idMappingConfig.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace,
-										  mappingState, idMapping
+		return idMappingConfig.toExternal(
+				dict.getElement(cer.getEntityId()), namespace,
+				mappingState, idMapping
 		);
 	}
 
 	public static Response makeResponseWithFileName(StreamingOutput out, String label, String fileExtension) {
 		Response.ResponseBuilder response = Response.ok(out);
-		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
+		if (!(Strings.isNullOrEmpty(label) || label.isBlank())) {
 			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
 			response.header("Content-Disposition", String.format(
-					"attachment; filename=\"%s\"",FileUtil.makeSafeFileName(label, fileExtension)));
+					"attachment; filename=\"%s\"", FileUtil.makeSafeFileName(label, fileExtension)));
 		}
 		return response.build();
 	}
@@ -51,14 +49,15 @@ public class ResultUtil {
 	 * Defaults to StandardCharsets.UTF_8.
 	 */
 	public static Charset determineCharset(String userAgent, String queryCharset) {
-		if(queryCharset != null) {
+		if (queryCharset != null) {
 			try {
 				return Charset.forName(queryCharset);
-			}catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.warn("Unable to map '{}' to a charset. Defaulting to UTF-8", queryCharset);
 			}
 		}
-		if(userAgent != null && userAgent.toLowerCase().contains("windows") ) {
+		if (userAgent != null && userAgent.toLowerCase().contains("windows")) {
 			return StandardCharsets.ISO_8859_1;
 		}
 		return StandardCharsets.UTF_8;
@@ -67,10 +66,11 @@ public class ResultUtil {
 
 	/**
 	 * Throws a "Bad Request" response if the execution result is not a single table.
+	 *
 	 * @param exec the execution to test
 	 */
 	public static void checkSingleTableResult(ManagedExecution<?> exec) {
-		if (!(exec instanceof SingleTableResult)){
+		if (!(exec instanceof SingleTableResult)) {
 			throw new BadRequestException("Execution cannot be rendered as the requested format");
 		}
 	}

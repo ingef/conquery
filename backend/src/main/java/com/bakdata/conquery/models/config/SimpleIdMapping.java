@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.config;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.univocity.parsers.common.record.Record;
 
 /**
@@ -17,11 +17,13 @@ import com.univocity.parsers.common.record.Record;
 public class SimpleIdMapping extends IdMappingConfig {
 
 	@Override
-	protected void processRecord(Record record, CsvEntityId id, EntityIdMap mapping) {
+	protected void processRecord(Record record, String id, EntityIdMap mapping) {
 
-		mapping.addOutputMapping(id, id.getCsvId());
+		final EntityPrintId entityPrintId = EntityPrintId.from(id);
 
-		mapping.addInputMapping(id, id.getCsvId());
+		mapping.addOutputMapping(id, entityPrintId);
+
+		mapping.addInputMapping(id, id);
 
 	}
 

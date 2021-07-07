@@ -31,7 +31,7 @@ public abstract class IdMappingConfig {
 		while((record = parser.parseNextRecord()) != null){
 			final String id = record.getString("id");
 
-			final CsvEntityId csvEntityId = new CsvEntityId(id);
+			final String csvEntityId = new String(id);
 
 			processRecord(record, csvEntityId, mapping);
 		}
@@ -41,7 +41,7 @@ public abstract class IdMappingConfig {
 		return mapping;
 	}
 
-	protected abstract void processRecord(Record record, CsvEntityId id,  EntityIdMap mapping);
+	protected abstract void processRecord(Record record, String id,  EntityIdMap mapping);
 
 	@JsonIgnore
 	public abstract List<String> getPrintIdFields();
@@ -58,7 +58,7 @@ public abstract class IdMappingConfig {
 	/**
 	 * Converts the internal ID to the an external.
 	 */
-	public EntityPrintId toExternal(CsvEntityId csvEntityId, Namespace namespace, IdMappingState state, EntityIdMap mapping) {
+	public EntityPrintId toExternal(String csvEntityId, Namespace namespace, IdMappingState state, EntityIdMap mapping) {
 		// The state may be uses by implementations of this class
 
 		if (mapping == null) {
