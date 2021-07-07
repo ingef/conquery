@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -73,7 +74,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	/**
 	 * Bloom filter per entity for the first 64 {@link ConceptTreeChild}.
 	 */
-	private final long[] includedConcepts;
+	private final long[] includedConceptElementsPerEntity;
 
 	/**
 	 * Statistic for fast lookup if entity is of interest.
@@ -99,8 +100,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		Arrays.fill(minDate, Integer.MIN_VALUE);
 		Arrays.fill(maxDate, Integer.MAX_VALUE);
 
-		final int[][] mostSpecificChildren = calculateCBlock(bucket, connector);
-		final long[] includedConcepts = calculateIncludedConcepts(bucketSize, bucket, mostSpecificChildren);
+		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector);
+		final long[] includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
 
 		return new CBlock(bucket, connector, root, includedConcepts, minDate, maxDate, mostSpecificChildren);
 	}
@@ -177,7 +178,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final int index = getEntityIndex(entity);
 
-		long bits = includedConcepts[index];
+		long bits = includedConceptElementsPerEntity[index];
 
 		return (bits & requiredBits) != 0L;
 	}
@@ -188,7 +189,14 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		return bucket.getDataset();
 	}
 
-	public static int[][] calculateCBlock(Bucket bucket, ConceptTreeConnector connector) {
+	/**
+	 * Calculates the path for each event from the root of the {@link TreeConcept} to the most specific {@link ConceptTreeChild}
+	 * denoted by the individual {@link ConceptTreeChild#getPrefix()}.
+	 * @param bucket
+	 * @param connector
+	 * @return
+	 */
+	private static int[][] calculateSpecificChildrenPaths(Bucket bucket, ConceptTreeConnector connector) {
 
 		final Column column = connector.getColumn();
 
@@ -281,21 +289,34 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		return mostSpecificChildren;
 	}
 
-	public static long[] calculateIncludedConcepts(int entities, Bucket bucket, int[][] mostSpecificChildren) {
-		long[] includedConcepts = new long[entities];
+	/**
+	 * Calculate for every event a 64 bit long bloom filter, that masks the concept element path within
+	 * the first 64 {@link com.bakdata.conquery.models.datasets.concepts.ConceptElement}s of the {@link TreeConcept}.
+	 * This is used in the evaluation of a query to quickly decide if an event is of interest by logically ANDing
+	 * the bitmask of the event with the bitmask calculated by {@link CQConcept#calculateBitMask(List)}
+	 */
+	private static long[] calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
+		long[] includedConcepts = new long[bucketSize];
 		for (BucketEntry entry : bucket.entries()) {
 			final int[] mostSpecificChild = mostSpecificChildren[entry.getEvent()];
 
 			for (int i = 0; i < mostSpecificChild.length; i++) {
 
 				final long mask = calculateBitMask(i, mostSpecificChild);
-				includedConcepts[entry.getEntity() - entities*bucket.getBucket()] |= mask;
+				includedConcepts[entry.getEntity() - bucketSize*bucket.getBucket()] |= mask;
 			}
 		}
 		return includedConcepts;
 	}
 
 
+	/**
+	 * Modified version of the {@link ConceptElement#calculateBitMask()} method that leverages the precomputed
+	 * path to the most specific {@link ConceptTreeChild} to calculate the bloom filter.
+	 * @param localId
+	 * @param mostSpecificChild
+	 * @return
+	 */
 	public static long calculateBitMask(int localId, int[] mostSpecificChild) {
 		if (localId < 0) {
 			return 0;
