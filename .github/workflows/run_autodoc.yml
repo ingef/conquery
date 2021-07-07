@@ -42,7 +42,7 @@ jobs:
           echo "::set-output name=changed::$(if git diff HEAD --quiet ; then echo false; else echo true; fi)"
       - name: Commit files
         id: commit-files
-        if: ${{ steps.check-changes.outputs.changed }}
+        if: ${{ steps.check-changes.outputs.changed == 'true' }}
         run: |
           echo ${{ env.GITHUB_REF }}
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
