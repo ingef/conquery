@@ -31,12 +31,8 @@ public abstract class IdMappingConfig {
 		while((record = parser.parseNextRecord()) != null){
 			final String id = record.getString("id");
 
-			final String csvEntityId = new String(id);
-
-			processRecord(record, csvEntityId, mapping);
+			processRecord(record, id, mapping);
 		}
-
-		//TODO mapping.checkIntegrity(Arrays.asList(getIdAccessors()));
 
 		return mapping;
 	}
