@@ -20,7 +20,7 @@ import {
 
 import DeletePreviousQueryFolderModal from "./DeletePreviousQueryFolderModal";
 import PreviousQueriesFolder from "./PreviousQueriesFolder";
-import { useRetagPreviousQuery } from "./actions";
+import { useRetagQuery } from "./actions";
 import type { PreviousQueryT } from "./reducer";
 
 const Folders = styled("div")`
@@ -116,13 +116,13 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
     }
   };
 
-  const retagPreviousQuery = useRetagPreviousQuery();
+  const retagQuery = useRetagQuery();
   const onDropIntoFolder = (query: DragItemQuery, folder: string) => {
     if (query.tags.includes(folder)) {
       return;
     }
 
-    retagPreviousQuery(query.id, Array.from(new Set([...query.tags, folder])));
+    retagQuery(query.id, Array.from(new Set([...query.tags, folder])));
   };
 
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);

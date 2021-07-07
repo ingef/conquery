@@ -1,10 +1,11 @@
-import { SET_MESSAGE, RESET_MESSAGE } from "./actionTypes";
+import { ActionType, createAction } from "typesafe-actions";
 
-export const setMessage = (message: string | null) => ({
-  type: SET_MESSAGE,
-  payload: { message },
-});
+export type SnackMessageActions = ActionType<
+  typeof setMessage | typeof resetMessage
+>;
 
-export const resetMessage = () => ({
-  type: RESET_MESSAGE,
-});
+export const setMessage = createAction("snack-message/SET")<{
+  message: string | null;
+}>();
+
+export const resetMessage = createAction("snack-message/RESET")();

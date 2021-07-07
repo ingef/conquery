@@ -10,7 +10,7 @@ import { isIDPEnabled } from "../environment";
 import WithTooltip from "../tooltip/WithTooltip";
 
 const SxIconButton = styled(IconButton)`
-  padding: 10px 6px;
+  padding: 6px 6px;
 `;
 
 interface PropsT {
@@ -26,7 +26,7 @@ const LogoutButton: FC<PropsT> = ({ className }) => {
   const onLogout = () => {
     deleteStoredAuthToken();
 
-    if (isIDPEnabled()) {
+    if (isIDPEnabled) {
       keycloak.logout();
     } else {
       goToLogin();

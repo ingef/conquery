@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "SECONDARY_ID_QUERY", base = QueryDescription.class)
-public class SecondaryIdQuery extends IQuery {
+public class SecondaryIdQuery extends Query {
 
 	@NotNull
 	private CQElement root;
@@ -76,7 +76,7 @@ public class SecondaryIdQuery extends IQuery {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
 		// Be aware, that this.query cannot be checked, as it does not exists at this point, however this.root exists
 		root.collectRequiredQueries(requiredQueries);
 	}

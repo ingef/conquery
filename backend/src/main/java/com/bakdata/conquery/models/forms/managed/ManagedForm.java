@@ -2,18 +2,17 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -21,26 +20,20 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.managed.ManagedForm.FormShardResult;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.query.results.FormShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -114,32 +107,19 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 		return collector.getIdentifiables();
 	}
 
-	// Executed on Worker
-	@Override
-	public Map<ManagedExecutionId, QueryPlan> createQueryPlans(QueryPlanContext context) {
-		synchronized (this) {
-			Map<ManagedExecutionId, QueryPlan> plans = new HashMap<>();
-			for (ManagedQuery subQuery : flatSubQueries.values()) {
-				plans.putAll(subQuery.createQueryPlans(context));
-			}
-			return plans;
-		}
-	}
 
 	/**
 	 * Distribute the result to a sub query.
 	 */
 	@Override
 	public void addResult(@NonNull MetaStorage storage, FormShardResult result) {
-
 		if (result.getError().isPresent()) {
 			fail(storage, result.getError().get());
 			return;
 		}
 
-		ManagedExecutionId subQueryId = result.getSubqueryId();
+		ManagedExecutionId subQueryId = result.getSubQueryId();
 
-		//TODO clean this up, moving this logic to FormShardResult
 		ManagedQuery subQuery = flatSubQueries.get(subQueryId);
 		subQuery.addResult(storage, result);
 
@@ -178,25 +158,8 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	}
 
 	@Override
-	public FormShardResult getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry) {
-		FormShardResult result = new FormShardResult();
-		result.setQueryId(getId());
-		if (entry != null) {
-			result.setSubqueryId(entry.getKey());
-		}
-		return result;
-	}
-
-	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		submittedForm.visit(visitor);
-	}
-
-	@Data
-	@CPSType(id = "FORM_SHARD_RESULT", base = ShardResult.class)
-	@EqualsAndHashCode(callSuper = true)
-	public static class FormShardResult extends ShardResult {
-		private ManagedExecutionId subqueryId;
 	}
 
 	@Override

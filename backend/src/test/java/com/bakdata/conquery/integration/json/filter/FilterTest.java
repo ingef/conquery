@@ -6,6 +6,12 @@ import java.util.Collections;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
@@ -14,18 +20,12 @@ import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.apiv1.query.IQuery;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -60,7 +60,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	private Range<LocalDate> dateRange;
 
 	@JsonIgnore
-	private IQuery query;
+	private Query query;
 
 	@JsonIgnore
 	private Connector connector;
@@ -111,7 +111,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		support.getDatasetsProcessor().addConcept(dataset, concept);
 	}
 
-	private IQuery parseQuery(StandaloneSupport support) throws JSONException, IOException {
+	private Query parseQuery(StandaloneSupport support) throws JSONException, IOException {
 		rawFilterValue.put("filter", support.getDataset().getName() + ".concept.connector.filter");
 
 
@@ -139,7 +139,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	}
 
 	@Override
-	public IQuery getQuery() {
+	public Query getQuery() {
 		return query;
 	}
 

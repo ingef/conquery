@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Objects;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -13,12 +14,11 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -73,7 +73,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			conquery.waitUntilWorkDone();
 		}
 
-		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
+		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 
 		// State before deletion.

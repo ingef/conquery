@@ -6,10 +6,9 @@ import { getStoredAuthToken } from "../authorization/helper";
 import { isIDPEnabled, isLoginDisabled } from "../environment";
 
 export const useAuthToken = () => {
-  const idpEnabled = isIDPEnabled();
   const { keycloak } = useKeycloak();
 
-  return idpEnabled ? keycloak.token || "" : getStoredAuthToken() || "";
+  return isIDPEnabled ? keycloak.token || "" : getStoredAuthToken() || "";
 };
 
 export const useApiUnauthorized = <T>(
@@ -24,9 +23,6 @@ export const useApiUnauthorized = <T>(
 
 export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
   const history = useHistory();
-  const loginDisabled = isLoginDisabled();
-
-  const idpEnabled = isIDPEnabled();
   const authToken = useAuthToken();
 
   return async (
@@ -41,8 +37,8 @@ export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
       return response;
     } catch (error) {
       if (
-        !idpEnabled &&
-        !loginDisabled &&
+        !isIDPEnabled &&
+        !isLoginDisabled &&
         error.status &&
         error.status === 401
       ) {

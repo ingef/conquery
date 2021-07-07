@@ -1,6 +1,25 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.apiv1.query.*;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
+
+import java.net.URL;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -32,16 +51,6 @@ import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.UriBuilder;
-import java.net.URL;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -112,7 +121,7 @@ public class QueryProcessor {
 		// Run the query on behalf of the user
 		ManagedExecution<?> mq = executionManager.runQuery(datasetRegistry, query, user, dataset, config);
 
-		if (query instanceof IQuery) {
+		if (query instanceof Query) {
 			translateToOtherDatasets(dataset, query, user, mq);
 		}
 
@@ -226,7 +235,7 @@ public class QueryProcessor {
 			return false;
 		}
 
-		final IQuery query = ((ManagedQuery) q).getQuery();
+		final Query query = ((ManagedQuery) q).getQuery();
 
 		if (query instanceof ConceptQuery) {
 			return isFrontendStructure(((ConceptQuery) query).getRoot());
@@ -249,7 +258,7 @@ public class QueryProcessor {
 	}
 
 	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {
-		IQuery translateable = (IQuery) query;
+		Query translateable = (Query) query;
 		// translate the query for all other datasets of user and submit it.
 		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
 
@@ -265,7 +274,7 @@ public class QueryProcessor {
 
 			try {
 				log.trace("Adding Query on Dataset[{}]", dataset.getId());
-				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
+				Query translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
 
 				targetNamespace.getExecutionManager()
 							   .createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);

@@ -26,6 +26,10 @@ import javax.ws.rs.core.Response;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateColumn;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.IdColumn;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal.FormatColumn;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -35,13 +39,14 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
@@ -88,7 +93,7 @@ public class LoadingUtil {
 		for (JsonNode queryNode : content.getPreviousQueries()) {
 			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectInto(Jackson.MAPPER);
 			mapper = support.getDataset().injectInto(mapper);
-			IQuery query = mapper.readerFor(IQuery.class).readValue(queryNode);
+			Query query = mapper.readerFor(Query.class).readValue(queryNode);
 			UUID queryId = new UUID(0L, id++);
 
 			ManagedExecution<?> managed = support.getNamespace().getExecutionManager().createQuery(support.getNamespace().getNamespaces(),query, queryId, user, support.getNamespace().getDataset());

@@ -100,13 +100,12 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 		workers = new Workers(
 				getConfig().getQueries().getExecutionPool(),
-				getConfig().getQueries().getExecutionPool().getMaxThreads(),
 				config.configureObjectMapper(Jackson.MAPPER),
 				config.configureObjectMapper(Jackson.BINARY_MAPPER)
 				, getConfig().getCluster().getEntityBucketSize()
 		);
 
-		final Collection<WorkerStorage> workerStorages =config.getStorage().loadWorkerStorages();
+		final Collection<WorkerStorage> workerStorages = config.getStorage().loadWorkerStorages();
 
 		for(WorkerStorage workerStorage : workerStorages) {
 			workers.createWorker(workerStorage, config.isFailOnError());

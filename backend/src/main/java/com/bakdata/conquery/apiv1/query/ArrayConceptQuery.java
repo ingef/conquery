@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = QueryDescription.class)
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__(@JsonCreator))
-public class ArrayConceptQuery extends IQuery {
+public class ArrayConceptQuery extends Query {
 
 	@NotEmpty @Valid
 	private List<ConceptQuery> childQueries = new ArrayList<>();
@@ -89,7 +89,7 @@ public class ArrayConceptQuery extends IQuery {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
 		childQueries.forEach(q -> q.collectRequiredQueries(requiredQueries));
 	}
 

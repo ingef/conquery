@@ -10,18 +10,18 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.DateAggregationMode;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -34,11 +34,11 @@ import lombok.RequiredArgsConstructor;
 @CPSType(id = "ENTITY_DATE_QUERY", base = QueryDescription.class)
 @Getter
 @RequiredArgsConstructor
-public class EntityDateQuery extends IQuery {
+public class EntityDateQuery extends Query {
 
     @NotNull
     @Valid
-    private final IQuery query;
+    private final Query query;
     @NotNull @Valid
     private final ArrayConceptQuery features;
 
@@ -71,7 +71,7 @@ public class EntityDateQuery extends IQuery {
     }
 
     @Override
-    public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
+    public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
         query.collectRequiredQueries(requiredQueries);
         features.collectRequiredQueries(requiredQueries);
     }

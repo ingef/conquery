@@ -64,7 +64,7 @@ public class ResultInfoDecorator extends CQElement {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
 		child.collectRequiredQueries(requiredQueries);
 	}
 

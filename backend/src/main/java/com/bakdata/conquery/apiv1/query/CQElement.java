@@ -5,6 +5,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -21,8 +23,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.constraints.NotNull;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
@@ -65,11 +65,11 @@ public abstract class CQElement implements Visitable {
 
 	public abstract QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
-	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {}
+	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {}
 	
 	
-	public Set<ManagedExecution> collectRequiredQueries() {
-		HashSet<ManagedExecution> set = new HashSet<>();
+	public Set<ManagedExecution<?>> collectRequiredQueries() {
+		Set<ManagedExecution<?>> set = new HashSet<>();
 		this.collectRequiredQueries(set);
 		return set;
 	}

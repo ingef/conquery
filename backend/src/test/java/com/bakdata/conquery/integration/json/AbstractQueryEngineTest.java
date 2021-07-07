@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.ResourceFile;
@@ -22,7 +23,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
-import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -48,7 +49,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
 		Dataset dataset = standaloneSupport.getDataset();
 
-		IQuery query = getQuery();
+		Query query = getQuery();
 
 		assertThat(standaloneSupport.getValidator().validate(query))
 				.describedAs("Query Validation Errors")
@@ -108,7 +109,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	}
 
 	@JsonIgnore
-	protected abstract IQuery getQuery();
+	protected abstract Query getQuery();
 
 	protected abstract ResourceFile getExpectedCsv();
 }

@@ -5,9 +5,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Validator;
@@ -21,7 +19,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -47,15 +44,11 @@ public class Workers extends IdResolveContext {
 	private final int entityBucketSize;
 
 	
-	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, int jobThreadPoolSize, ObjectMapper mapper, ObjectMapper binaryMapper, int entityBucketSize) {
+	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, ObjectMapper mapper, ObjectMapper binaryMapper, int entityBucketSize) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
-		
-		// TODO: 30.06.2020 build from configuration
-		jobsThreadPool = new ThreadPoolExecutor(jobThreadPoolSize / 2, jobThreadPoolSize,
-												60L, TimeUnit.SECONDS,
-												new LinkedBlockingQueue<>(),
-												new ThreadFactoryBuilder().setNameFormat("Workers Helper %d").build()
-		);
+
+		jobsThreadPool = queryThreadPoolDefinition.createService("Workers");
+
 		this.mapper = injectInto(mapper);
 		this.binaryMapper = injectInto(binaryMapper);
 		this.entityBucketSize = entityBucketSize;
