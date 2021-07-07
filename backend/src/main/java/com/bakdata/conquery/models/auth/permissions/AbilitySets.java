@@ -25,7 +25,11 @@ public class AbilitySets {
 			Ability.MODIFY
 	);
 
-	public static final EnumSet<Ability> SHAREHOLDER = EnumSet.of(Ability.READ);
+	public static final EnumSet<Ability> SHAREHOLDER = EnumSet.of(
+			Ability.READ,
+			Ability.TAG,
+			Ability.LABEL
+	);
 
 	public static final EnumSet<Ability> DATASET_CREATOR = EnumSet.of(Ability.READ, Ability.DOWNLOAD, Ability.PRESERVE_ID);
 }
