@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -12,9 +13,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import io.dropwizard.views.View;
@@ -28,6 +31,11 @@ import lombok.Setter;
 @Setter
 @Path("datasets/{" + DATASET + "}/concepts/{" + CONCEPT + "}")
 public class ConceptsUIResource extends HAdmin {
+
+	@Inject
+	protected AdminProcessor processor;
+	@Inject
+	protected UIProcessor uiProcessor;
 
 	@PathParam(CONCEPT)
 	protected Concept<?> concept;
@@ -46,7 +54,7 @@ public class ConceptsUIResource extends HAdmin {
 	public View getConceptView() {
 		return new UIView<>(
 				"concept.html.ftl",
-				processor.getUIContext(),
+				uiProcessor.getUIContext(),
 				concept
 		);
 	}

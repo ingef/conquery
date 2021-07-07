@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collections;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -22,7 +20,7 @@ public class CopyUserTest {
 		final DatasetRegistry registry = new DatasetRegistry(0);
 
 
-		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), registry);
+		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(),  registry);
 
 		registry.setMetaStorage(storage);
 

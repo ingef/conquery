@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -17,15 +18,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -50,6 +53,11 @@ public class TablesUIResource extends HAdmin {
 	@PathParam(TABLE)
 	protected Table table;
 
+	@Inject
+	protected AdminProcessor processor;
+	@Inject
+	protected UIProcessor uiProcessor;
+
 	@SneakyThrows({NotFoundException.class})
 	@PostConstruct
 	@Override
@@ -66,7 +74,7 @@ public class TablesUIResource extends HAdmin {
 
 		return new UIView<>(
 				"table.html.ftl",
-				processor.getUIContext(),
+				uiProcessor.getUIContext(),
 				new TableStatistics(
 						table,
 						entries,
@@ -118,7 +126,7 @@ public class TablesUIResource extends HAdmin {
 
 		return new UIView<>(
 				"import.html.ftl",
-				processor.getUIContext(),
+				uiProcessor.getUIContext(),
 				new ImportStatistics(imp, cBlockSize)
 		);
 	}

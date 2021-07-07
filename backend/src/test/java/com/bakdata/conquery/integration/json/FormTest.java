@@ -23,7 +23,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -32,7 +32,6 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -53,15 +52,15 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @CPSType(id = "FORM_TEST", base = ConqueryTestSpec.class)
 public class FormTest extends ConqueryTestSpec {
-	
+
 	/*
 	 * parse form as json first, because it may contain namespaced ids, that can only be resolved after
 	 * concepts and tables have been imported.
-	 */		
+	 */
 	@JsonProperty("form")
 	@NotNull
 	private JsonNode rawForm;
-	
+
 	@NotEmpty @Valid
 	private Map<String, ResourceFile> expectedCsv;
 
@@ -116,8 +115,10 @@ public class FormTest extends ConqueryTestSpec {
 		assertThat(support.getValidator().validate(form))
 				.describedAs("Form Validation Errors")
 				.isEmpty();
-		
-		ManagedExecution<?> managedForm = ExecutionManager.runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig());
+
+
+
+		ManagedExecution<?> managedForm = support.getNamespace().getExecutionManager().runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig());
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {
@@ -153,12 +154,14 @@ public class FormTest extends ConqueryTestSpec {
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
 			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfo();
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
-			List<String> actual = renderer.toStream(
-					config.getIdMapping().getPrintIdFields(),
-					resultInfos,
-					managed.getValue().stream().flatMap(ManagedQuery::streamResults)
-			).collect(Collectors.toList());
-			
+			List<String> actual =
+					renderer.toStream(
+							config.getIdMapping().getPrintIdFields(),
+							resultInfos,
+							managed.getValue().stream().flatMap(ManagedQuery::streamResults)
+					)
+							.collect(Collectors.toList());
+
 			assertThat(actual)
 				.as("Checking result "+managed.getKey())
 				.containsExactlyInAnyOrderElementsOf(
@@ -183,7 +186,7 @@ public class FormTest extends ConqueryTestSpec {
 			support.getDatasetsProcessor().addConcept(dataset, concept);
 		}
 	}
-	
+
 
 	private Form parseForm(StandaloneSupport support) throws JSONException, IOException {
 		return parseSubTree(support, rawForm, Form.class);

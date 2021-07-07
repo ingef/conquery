@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
@@ -30,6 +30,7 @@ public class ModificationShieldedWorkerStorage {
 	public Validator getValidator() {
 		return delegate.getValidator();
 	}
+
 
 	public CentralRegistry getCentralRegistry() {
 		return delegate.getCentralRegistry();

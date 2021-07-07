@@ -1,4 +1,11 @@
-import { MODAL_OPEN, MODAL_CLOSE } from "./actionTypes";
+import { getType } from "typesafe-actions";
+
+import { Action } from "../app/actions";
+
+import {
+  closeQueryUploadConceptListModal,
+  openQueryUploadConceptListModal,
+} from "./actions";
 
 export interface QueryUploadConceptListModalStateT {
   isOpen: boolean;
@@ -12,14 +19,14 @@ const initialState: QueryUploadConceptListModalStateT = {
 
 const reducer = (
   state = initialState,
-  action: any,
+  action: Action,
 ): QueryUploadConceptListModalStateT => {
   switch (action.type) {
-    case MODAL_OPEN:
+    case getType(openQueryUploadConceptListModal):
       const { andIdx } = action.payload;
 
       return { andIdx, isOpen: true };
-    case MODAL_CLOSE:
+    case getType(closeQueryUploadConceptListModal):
       return initialState;
     default:
       return state;

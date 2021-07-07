@@ -133,8 +133,6 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
       (state) => state.conceptTrees.secondaryIds,
     );
 
-    const formatDateDistance = useFormatDateDistance();
-
     const renamePreviousQuery = useRenamePreviousQuery();
     const onDeletePreviousQuery = useDeletePreviousQuery(query.id);
 
@@ -154,11 +152,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
     const dateFormat = `${t("inputDateRange.dateFormat")} HH:mm`;
     const executedAtDate = parseISO(query.createdAt);
     const executedAt = formatDate(executedAtDate, dateFormat);
-    const executedAtRelative = formatDateDistance(
-      executedAtDate,
-      new Date(),
-      true,
-    );
+
     const isShared = query.shared || (query.groups && query.groups.length > 0);
     const label = query.label || query.id.toString();
     const mayEditQuery = query.own || isShared;
@@ -199,7 +193,7 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
             )}
           </TopLeft>
           <TopRight>
-            <WithTooltip text={executedAtRelative}>{executedAt}</WithTooltip>
+            {executedAt}
             {secondaryId && query.queryType === "SECONDARY_ID_QUERY" && (
               <StyledWithTooltip
                 text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}

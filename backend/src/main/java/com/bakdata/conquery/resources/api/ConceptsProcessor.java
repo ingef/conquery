@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -18,17 +19,17 @@ import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.api.description.FEList;
-import com.bakdata.conquery.models.api.description.FERoot;
-import com.bakdata.conquery.models.api.description.FEValue;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.apiv1.frontend.FEList;
+import com.bakdata.conquery.apiv1.frontend.FERoot;
+import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
-import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -43,6 +44,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -56,29 +58,32 @@ import org.apache.commons.lang3.tuple.Pair;
 public class ConceptsProcessor {
 	
 	private final DatasetRegistry namespaces;
-	private final LoadingCache<Concept<?>, FEList> nodeCache = CacheBuilder.newBuilder()
-		.softValues()
-		.expireAfterWrite(10, TimeUnit.MINUTES)
-		.build(new CacheLoader<Concept<?>, FEList>() {
-			@Override
-			public FEList load(Concept<?> concept) throws Exception {
-				return FrontEndConceptBuilder.createTreeMap(concept);
-			}
-		});
-	
-	private final LoadingCache<Pair<AbstractSelectFilter<?>, String>,List<FEValue>> searchCache = CacheBuilder.newBuilder()
-		.expireAfterAccess(Duration.ofMinutes(2))
-		.build( new CacheLoader<>() {
 
-			@Override
-			public List<FEValue> load(Pair<AbstractSelectFilter<?>, String> filterAndSearch) throws Exception {
-				String searchTerm = filterAndSearch.getValue();
-				AbstractSelectFilter<?> filter = filterAndSearch.getKey();
-				log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
-				return autocompleteTextFilter(filter, searchTerm);
-			}
-			
-		});
+	private final LoadingCache<Concept<?>, FEList> nodeCache =
+			CacheBuilder.newBuilder()
+						.softValues()
+						.expireAfterWrite(10, TimeUnit.MINUTES)
+						.build(new CacheLoader<Concept<?>, FEList>() {
+							@Override
+							public FEList load(Concept<?> concept) throws Exception {
+								return FrontEndConceptBuilder.createTreeMap(concept);
+							}
+						});
+
+	private final LoadingCache<Pair<AbstractSelectFilter<?>, String>, List<FEValue>> searchCache =
+			CacheBuilder.newBuilder()
+						.expireAfterAccess(Duration.ofMinutes(2))
+						.build(new CacheLoader<>() {
+
+							@Override
+							public List<FEValue> load(Pair<AbstractSelectFilter<?>, String> filterAndSearch) throws Exception {
+								String searchTerm = filterAndSearch.getValue();
+								AbstractSelectFilter<?> filter = filterAndSearch.getKey();
+								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
+								return autocompleteTextFilter(filter, searchTerm);
+							}
+
+						});
 		
 	public FERoot getRoot(NamespaceStorage storage, User user) {
 
@@ -98,8 +103,9 @@ public class ConceptsProcessor {
 		return namespaces.getAllDatasets()
 						 .stream()
 						 .filter(d -> user.isPermitted(d, Ability.READ))
+						 .sorted(Comparator.comparing(Dataset::getWeight)
+										   .thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
-						 .sorted()
 						 .collect(Collectors.toList());
 	}
 

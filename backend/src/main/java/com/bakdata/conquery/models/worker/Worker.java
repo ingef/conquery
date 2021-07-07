@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import javax.validation.Validator;
@@ -12,7 +11,7 @@ import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
-import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -26,14 +25,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
-import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -85,17 +81,16 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public static Worker newWorker(
-		@NonNull Dataset dataset,
-		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-		@NonNull ExecutorService executorService,
-		@NonNull StoreFactory config,
-		@NonNull String storagePrefix,
-		@NonNull String directory,
-		@NonNull Validator validator,
-		boolean failOnError,
-		int entityBucketSize) {
+			@NonNull Dataset dataset,
+			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+			@NonNull ExecutorService executorService,
+			@NonNull StoreFactory config,
+			@NonNull String directory,
+			@NonNull Validator validator,
+			boolean failOnError,
+			int entityBucketSize) {
 
-		WorkerStorage workerStorage = new WorkerStorage(validator, config, List.of(storagePrefix,directory));
+		WorkerStorage workerStorage = new WorkerStorage(validator, config, "worker_" + directory);
 
 		// On the worker side we don't have to set the object writer vor ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();

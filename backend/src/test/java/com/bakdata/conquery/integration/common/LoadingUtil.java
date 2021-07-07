@@ -26,7 +26,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
-import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -35,11 +35,10 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.query.concept.specific.CQExternal;
-import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
+import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal.FormatColumn;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
@@ -73,7 +72,7 @@ public class LoadingUtil {
 
 			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 
-			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
+			ManagedExecution<?> managed = support.getNamespace().getExecutionManager().createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
 			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
@@ -87,7 +86,7 @@ public class LoadingUtil {
 			IQuery query = mapper.readerFor(IQuery.class).readValue(queryNode);
 			UUID queryId = new UUID(0L, id++);
 
-			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),query, queryId, user, support.getNamespace().getDataset());
+			ManagedExecution<?> managed = support.getNamespace().getExecutionManager().createQuery(support.getNamespace().getNamespaces(),query, queryId, user, support.getNamespace().getDataset());
 			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
@@ -162,7 +161,7 @@ public class LoadingUtil {
 		for (File file : preprocessedFiles) {
 			assertThat(file).exists();
 
-			final URI addImport = HierarchyHelper.fromHierachicalPathResourceMethod(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
+			final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
 												 .queryParam("file", file)
 												 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
 

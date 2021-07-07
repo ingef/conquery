@@ -17,6 +17,8 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Strings;

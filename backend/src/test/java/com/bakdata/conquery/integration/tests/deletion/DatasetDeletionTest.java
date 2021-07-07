@@ -4,6 +4,8 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import javax.ws.rs.WebApplicationException;
+
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -16,7 +18,7 @@ import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -99,8 +101,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			// Delete the import.
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
 			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteDataset(dataset))
-					.isInstanceOf(IllegalArgumentException.class);
-
+					.isInstanceOf(WebApplicationException.class);
 
 			//TODO use api
 			conquery.getNamespace().getStorage().getTables()
@@ -174,6 +175,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 							newDataset,
 							conquery.getTmpDir(),
 							conquery.getConfig(),
+							conquery.getMetaProcessor(),
 							conquery.getDatasetsProcessor(),
 							conquery.getTestUser()
 					);

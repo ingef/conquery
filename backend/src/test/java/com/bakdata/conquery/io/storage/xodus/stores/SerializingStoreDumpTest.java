@@ -9,7 +9,7 @@ import java.util.Optional;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.apiv1.QueryDescription;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.IStoreInfo;
 import com.bakdata.conquery.io.storage.StoreInfo;
@@ -20,8 +20,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.google.common.io.Files;
 import io.dropwizard.jersey.validation.Validators;
 import jetbrains.exodus.env.Environment;

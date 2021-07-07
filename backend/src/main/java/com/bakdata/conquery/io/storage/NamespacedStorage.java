@@ -9,9 +9,9 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -47,7 +47,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	@Getter
 	private final Validator validator;
 	@Getter @ToString.Include
-	private final List<String> pathName;
+	private final String pathName;
 
 	protected SingletonStore<Dataset> dataset;
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
@@ -56,7 +56,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorage(Validator validator, StoreFactory storageFactory, List<String> pathName) {
+	public NamespacedStorage(Validator validator, StoreFactory storageFactory, String pathName) {
 		this.validator = validator;
 		this.pathName = pathName;
 

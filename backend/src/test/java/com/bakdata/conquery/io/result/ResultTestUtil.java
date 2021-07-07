@@ -1,6 +1,6 @@
 package com.bakdata.conquery.io.result;
 
-import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.forms.util.DateContext;

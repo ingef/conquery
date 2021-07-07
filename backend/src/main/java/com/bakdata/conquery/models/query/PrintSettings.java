@@ -7,7 +7,7 @@ import java.util.function.Function;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
-import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class PrintSettings {
 
-	private static final Function<Locale, NumberFormat> NUMBER_FORMAT = (locale) -> NumberFormat.getNumberInstance(locale);
+	private static final Function<Locale, NumberFormat> NUMBER_FORMAT = NumberFormat::getNumberInstance;
 	private static final Function<Locale, NumberFormat> DECIMAL_FORMAT = (locale) -> {
 		NumberFormat fmt = NumberFormat.getNumberInstance(locale);
 		fmt.setMaximumFractionDigits(Integer.MAX_VALUE);

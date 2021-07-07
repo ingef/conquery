@@ -12,7 +12,6 @@ import {
   SelectOptionT,
 } from "../api/types";
 import TransparentButton from "../button/TransparentButton";
-import { exists } from "../common/helpers/exists";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import EditableText from "../form-components/EditableText";
 import type { ModeT } from "../form-components/InputRange";
@@ -139,9 +138,9 @@ const RIGHT_SIDE_WIDTH_COMPACT = 150;
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const [editingLabel, setEditingLabel] = useState<boolean>(false);
 
   const {
-    toggleEditLabel,
     setInputTableViewActive,
     setFocusedInput,
     reset,
@@ -150,9 +149,15 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const onSelectInputTableView = (tableIdx: number) =>
     dispatch(setInputTableViewActive(tableIdx));
   const onReset = () => dispatch(reset());
-  const onToggleEditLabel = () => dispatch(toggleEditLabel());
   const onShowDescription = (filterIdx: number) =>
     dispatch(setFocusedInput(filterIdx));
+
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const onCommonSettingsClick = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   function close() {
     if (!node) return;
@@ -179,7 +184,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
 
   if (!node) return null;
 
-  const hasActiveFilters = exists(node) && nodeHasActiveFilters(node);
+  const hasActiveFilters = nodeHasActiveFilters(node);
 
   return (
     <Root
@@ -209,12 +214,12 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
                 text={node.label}
                 tooltip={t("help.editConceptName")}
                 selectTextOnMount={true}
-                editing={props.editorState.editingLabel}
+                editing={editingLabel}
                 onSubmit={(value) => {
                   props.onUpdateLabel(value);
-                  onToggleEditLabel();
+                  setEditingLabel(false);
                 }}
-                onToggleEdit={onToggleEditLabel}
+                onToggleEdit={() => setEditingLabel(!editingLabel)}
               />
             )}
             {node.isPreviousQuery && (node.label || node.id || node.ids)}
@@ -226,21 +231,22 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
                 compact={isCompact}
               />
             )}
-            <WithTooltip text={t("common.closeEsc")}>
+            <WithTooltip text={t("common.saveAndCloseEsc")}>
               <CloseButton small onClick={close}>
-                {t("common.close")}
+                {t("common.save")}
               </CloseButton>
             </WithTooltip>
           </Row>
         </Header>
         <Wrapper>
-          <ScrollContainer>
+          <ScrollContainer ref={scrollContainerRef}>
             <SxMenuColumn
               node={node}
               editorState={props.editorState}
               showTables={props.showTables}
               blocklistedTables={props.blocklistedTables}
               allowlistedTables={props.allowlistedTables}
+              onCommonSettingsClick={onCommonSettingsClick}
               onDropConcept={props.onDropConcept}
               onRemoveConcept={props.onRemoveConcept}
               onToggleTable={props.onToggleTable}

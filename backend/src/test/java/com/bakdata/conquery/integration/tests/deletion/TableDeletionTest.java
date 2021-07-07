@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourceConstants;
@@ -113,7 +113,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			// But, we do not allow deletion of tables with associated connectors, so this should throw!
 
 			final URI deleteTable =
-					HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "remove")
+					HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "remove")
 					.buildFromMap(Map.of(
 							ResourceConstants.DATASET, conquery.getDataset().getName(),
 							ResourceConstants.TABLE, tableId.toString()

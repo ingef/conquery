@@ -5,15 +5,15 @@ import java.util.Optional;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +24,10 @@ import lombok.With;
 @Getter @AllArgsConstructor @RequiredArgsConstructor
 @With
 public class QueryExecutionContext {
+
+	private final ManagedExecutionId executionId;
+
+	private final QueryExecutor executor;
 
 	private Column validityDateColumn;
 	@NonNull
@@ -42,5 +46,9 @@ public class QueryExecutionContext {
 
 	public List<Bucket> getEntityBucketsForTable(Entity entity, Table table) {
 		return bucketManager.getEntityBucketsForTable(entity, table);
+	}
+
+	boolean isQueryCancelled() {
+		return executor.isCancelled(executionId);
 	}
 }

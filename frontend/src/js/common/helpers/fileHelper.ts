@@ -31,9 +31,9 @@ export async function getFileRows(file: File) {
   return rows;
 }
 
-export async function getUniqueFileRows(file: File) {
+export async function getUniqueFileRows(file: File): Promise<string[]> {
   const rows = await getFileRows(file);
 
   // Take care of duplicate rows
-  return [...new Set(rows)];
+  return Array.from(new Set(rows));
 }

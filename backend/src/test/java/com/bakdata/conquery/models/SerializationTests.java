@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,9 +19,9 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
-import com.bakdata.conquery.models.concepts.ValidityDate;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -39,8 +38,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.concept.filter.CQTable;
-import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -60,31 +59,31 @@ public class SerializationTests {
 			.forType(Dataset.class)
 			.test(dataset);
 	}
-	
+
 	@Test
 	public void passwordCredential() throws IOException, JSONException{
 		PasswordCredential credential = new PasswordCredential(new String("testPassword").toCharArray());
-		
+
 		SerializationTestUtil
 			.forType(PasswordCredential.class)
 			.test(credential);
 	}
-	
+
 	@Test
 	public void role() throws IOException, JSONException{
 		Role mandator = new Role("company", "company");
-		
+
 		SerializationTestUtil
 			.forType(Role.class)
 			.test(mandator);
 	}
-	
+
 	/*
 	 * Only way to add permission without a storage.
 	 */
 	@Test
 	public void user() throws IOException, JSONException{
-		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), null);
+		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(),  null);
 		User user = new User("user", "user");
 		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user
@@ -96,16 +95,16 @@ public class SerializationTests {
 
 		CentralRegistry registry = new CentralRegistry();
 		registry.register(role);
-		
+
 		SerializationTestUtil
 			.forType(User.class)
 			.registry(registry)
 			.test(user);
 	}
-	
+
 	@Test
 	public void group() throws IOException, JSONException {
-		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), Collections.emptyList(), null);
+		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
 		Group group = new Group("group", "group");
 		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group
@@ -130,7 +129,7 @@ public class SerializationTests {
 	public void treeConcept() throws IOException, JSONException{
 		Dataset dataset = new Dataset();
 		dataset.setName("datasetName");
-		
+
 		TreeConcept concept = new TreeConcept();
 		concept.setDataset(dataset);
 		concept.setLabel("conceptLabel");
@@ -160,7 +159,7 @@ public class SerializationTests {
 		table.setName("tableName");
 
 		column.setTable(table);
-		
+
 		ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(concept);
 		connector.setLabel("connLabel");
@@ -168,16 +167,16 @@ public class SerializationTests {
 		connector.setColumn(column);
 
 		concept.setConnectors(List.of(connector));
-		
+
 		ValidityDate valDate = new ValidityDate();
 		valDate.setColumn(dateColumn);
 		valDate.setConnector(connector);
 		valDate.setLabel("valLabel");
 		valDate.setName("valName");
 		connector.setValidityDates(List.of(valDate));
-		
+
 		CentralRegistry registry = new CentralRegistry();
-		
+
 		registry.register(dataset);
 		registry.register(concept);
 		registry.register(column);
@@ -185,7 +184,7 @@ public class SerializationTests {
 		registry.register(table);
 		registry.register(connector);
 		registry.register(valDate);
-		
+
 		SerializationTestUtil
 			.forType(TreeConcept.class)
 			.registry(registry)
@@ -198,7 +197,7 @@ public class SerializationTests {
 			.test(IdMapSerialisationTest.createTestPersistentMap());
 
 	}
-	
+
 	@Test
 	public void formConfig() throws JSONException, IOException {
 		final CentralRegistry registry = new CentralRegistry();
@@ -217,7 +216,7 @@ public class SerializationTests {
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		formConfig.setDataset(dataset);
-		
+
 		SerializationTestUtil
 			.forType(FormConfig.class)
 			.registry(registry)
@@ -283,16 +282,16 @@ public class SerializationTests {
 	@Test
 	public void executionCreationPlanError() throws JSONException, IOException {
 		ConqueryError error = new ConqueryError.ExecutionCreationPlanError();
-		
+
 		SerializationTestUtil
 			.forType(ConqueryError.class)
 			.test(error);
 	}
-	
+
 	@Test
 	public void executionCreationResolveError() throws JSONException, IOException {
 		ConqueryError error = new ConqueryError.ExecutionCreationResolveError(new DatasetId("test"));
-		
+
 		SerializationTestUtil
 			.forType(ConqueryError.class)
 			.test(error);

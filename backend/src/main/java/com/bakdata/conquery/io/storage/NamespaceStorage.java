@@ -1,13 +1,12 @@
 package com.bakdata.conquery.io.storage;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
-import com.bakdata.conquery.models.concepts.StructureNode;
+import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
@@ -31,7 +30,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	@Getter
 	private final boolean registerImports = true;
 
-	public NamespaceStorage(Validator validator, StoreFactory storageFactory, List<String> pathName) {
+	public NamespaceStorage(Validator validator, StoreFactory storageFactory, String pathName) {
 		super(validator, storageFactory, pathName);
 
 		idMapping = storageFactory.createIdMappingStore(pathName);

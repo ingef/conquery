@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFDataFormat;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -43,6 +44,12 @@ public class ExcelConfig {
 	 * with "currency_".
 	 */
 	private Map<String, CellStyler> styles = Collections.emptyMap();
+
+	/**
+	 * The column width in characters. See {@link SXSSFSheet#getDefaultColumnWidth()}.
+	 */
+	@Min(1)
+	private int defaultColumnWidth = 30;
 
 
 	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook){

@@ -5,6 +5,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -22,6 +23,9 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.resources.hierarchies.HUsers;
 
 public class UserResource extends HUsers {
+
+	@Inject
+	protected AdminProcessor processor;
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)

@@ -52,7 +52,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			user.addRole(storage, mandator);
 
 
-			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(conquery.defaultAdminURIBuilder(), RoleUIResource.class, "getRole")
+			URI classBase = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), RoleUIResource.class, "getRole")
 				.buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
 	
 			Response response = conquery

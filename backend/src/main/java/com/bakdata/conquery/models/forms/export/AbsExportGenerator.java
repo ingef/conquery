@@ -7,9 +7,9 @@ import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
-import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
+import com.bakdata.conquery.apiv1.query.CQElement;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
