@@ -114,8 +114,8 @@ public class DatasetsUIResource extends HAdmin {
 	@Path("mapping")
 	public View getIdMapping() {
 		EntityIdMap mapping = namespace.getStorage().getIdMapping();
-		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
-			return new UIView<>("idmapping.html.ftl", uiProcessor.getUIContext(), mapping.getCsvIdToExternalIdMap());
+		if (mapping != null && mapping.getInternalToPrint() != null) {
+			return new UIView<>("idmapping.html.ftl", uiProcessor.getUIContext(), mapping.getInternalToPrint());
 		}
 		return new UIView<>("add_idmapping.html.ftl", uiProcessor.getUIContext(), namespace.getDataset().getId());
 	}

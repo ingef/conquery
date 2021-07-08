@@ -5,7 +5,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 @CPSType(id = "ID", base = FormatColumn.class)
 public class IdColumn extends FormatColumn {
 
-	public String read(String[] row) {
-		return row[getPosition()];
+	public String[] read(String[] row) {
+		return new String[]{row[getPosition()]};
 	}
 }

@@ -102,40 +102,43 @@ public class CQExternal extends CQElement {
 		final DateFormats dateFormats = context.getConfig().getPreprocessor().getParsers().getDateFormats();
 
 
-		List<String[]> nonResolved = new ArrayList<>();
-
+		List<String[]> unresolved = new ArrayList<>();
 
 		// ignore the first row, because this is the header
 		for (int i = 1; i < values.length; i++) {
 			final String[] row = values[i];
-			final String externalId = idColumn.read(row);
+			final String[] externalId = idColumn.read(row);
+
+			final Optional<String> id = mapping.toInternal(externalId);
+
+			if (id.isEmpty()){
+				continue;
+			}
+
+			final int resolvedId;
+
+			if ((resolvedId = primary.getId(id.get())) == -1) {
+				unresolved.add(row);
+				continue;
+			}
 
 			//read the dates from the row
 			try {
-
 				CDateSet dates = dateFormat.readDates(dateColumns, row, dateFormats);
 
-				Optional<String> id = mapping.toInternal(externalId);
-
-				int resolvedId;
-
-				if (id.isPresent() && (resolvedId = primary.getId(id.get())) != -1) {
-					valuesResolved.put(resolvedId, dates);
-				}
-				else {
-					nonResolved.add(row);
-				}
+				valuesResolved.put(resolvedId, dates);
 			}
 			catch (Exception e) {
-				log.warn("Failed to parse id from {}", row, e);
+				log.warn("Failed to parse Date from {}", row, e);
+				unresolved.add(row);
 			}
 		}
-		if (!nonResolved.isEmpty()) {
+		if (!unresolved.isEmpty()) {
 			log.warn(
 					"Could not resolve {} of the {} rows. Not resolved: {}",
-					nonResolved.size(),
+					unresolved.size(),
 					values.length - 1,
-					nonResolved.subList(0, Math.min(nonResolved.size(), 10))
+					unresolved.subList(0, Math.min(unresolved.size(), 10))
 			);
 		}
 

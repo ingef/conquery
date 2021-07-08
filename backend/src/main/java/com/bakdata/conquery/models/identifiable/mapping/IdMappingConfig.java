@@ -24,8 +24,6 @@ public abstract class IdMappingConfig {
 
 		EntityIdMap mapping = new EntityIdMap();
 
-		//TODO Check headers match parser.getContext().headers();
-
 		Record record;
 
 		while((record = parser.parseNextRecord()) != null){
@@ -37,6 +35,9 @@ public abstract class IdMappingConfig {
 		return mapping;
 	}
 
+	/**
+	 * Process a single record and generate all found ids.
+	 */
 	protected abstract void processRecord(Record record, String id,  EntityIdMap mapping);
 
 	@JsonIgnore
