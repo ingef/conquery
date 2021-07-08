@@ -104,7 +104,9 @@ public class ArrowRenderer {
                     writer.writeBatch();
                     batchLineCount = 0;
 
-                    // reset value counts for ListVectors
+                    // Reset value counts for ListVector, otherwise the file size explodes
+                    // probably because the valueCount is multiplicated with an OFFSET_WIDTH to allocate huge voids.
+                    // See listVectorFiller()
                     root.getFieldVectors().forEach(fv -> {if (fv instanceof BaseListVector) { fv.setValueCount(0); }} );
                 }
             }
@@ -221,12 +223,11 @@ public class ArrowRenderer {
                 nestedConsumer.accept(Math.addExact(start, i), new Object[] {values.get(i)});
             }
 
-            // Workaround for https://issues.apache.org/jira/browse/ARROW-8842
-//            final FieldVector innerVector = vector.getDataVector();
-//            int valueCount = innerVector.getValueCount();
-//            innerVector.setValueCount(valueCount + values.size());
-
             vector.endValue(rowNumber, values.size());
+
+            // Workaround for https://issues.apache.org/jira/browse/ARROW-8842
+            // Set the value count after the value is written.
+            // Notice that the value count for ListVectors must be reseted after the batch ist written out (see write()).
             vector.setValueCount(vector.getValueCount() + values.size());
        };
     }
