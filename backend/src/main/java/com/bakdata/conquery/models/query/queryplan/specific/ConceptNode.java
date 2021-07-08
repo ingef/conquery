@@ -1,22 +1,22 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 @Getter
 public class ConceptNode extends QPChainNode {
@@ -29,14 +29,30 @@ public class ConceptNode extends QPChainNode {
 	private Map<Bucket, CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
 
+	public ConceptNode(QPNode child, List<ConceptElement<?>> concepts, CQTable table, SecondaryIdDescription selectedSecondaryId) {
+		this(child, concepts, calculateBitMask(concepts), table, selectedSecondaryId);
+	}
 
-	public ConceptNode(List<ConceptElement<?>> concepts, long requiredBits, CQTable table, QPNode child, SecondaryIdDescription selectedSecondaryId) {
+	// For cloning
+	private ConceptNode(QPNode child, List<ConceptElement<?>> concepts, long requiredBits, CQTable table, SecondaryIdDescription selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
-		this.requiredBits = requiredBits;
+		this.requiredBits =	requiredBits;
 		this.table = table;
 
 		this.selectedSecondaryId = selectedSecondaryId;
+	}
+
+	/**
+	 * Calculate the bitmask for the supplied {@link ConceptElement}s which is eventually compared with the
+	 * the bitmasks of each entity. (See {@link CBlock#getIncludedConceptElementsPerEntity()})
+	 */
+	public static long calculateBitMask(List<ConceptElement<?>> concepts) {
+		long mask = 0;
+		for (ConceptElement<?> concept : concepts) {
+			mask |= concept.calculateBitMask();
+		}
+		return mask;
 	}
 
 	@Override
@@ -91,7 +107,7 @@ public class ConceptNode extends QPChainNode {
 		//check concepts
 		int[] mostSpecificChildren = currentRow.getEventMostSpecificChild(event);
 		if (mostSpecificChildren == null) {
-			for (ConceptElement ce : concepts) {
+			for (ConceptElement<?> ce : concepts) {
 				// having no specific child set maps directly to root.
 				// This means we likely have a VirtualConcept
 				if (ce.getConcept() == ce) {
@@ -116,7 +132,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(concepts, requiredBits, table, ctx.clone(getChild()), selectedSecondaryId);
+		return new ConceptNode(ctx.clone(getChild()), concepts, requiredBits, table, selectedSecondaryId);
 	}
 
 	@Override

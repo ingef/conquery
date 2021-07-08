@@ -189,11 +189,10 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			final Column validityDateColumn = selectValidityDateColumn(table);
 
 			final ConceptNode node = new ConceptNode(
-					elements,
-					calculateBitMask(elements),
-					table,
 					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
 					new ValidityDateNode(validityDateColumn, filtersNode),
+					elements,
+					table,
 					// if the node is excluded, don't pass it into the Node.
 					!excludeFromSecondaryIdQuery && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
 			);
@@ -210,20 +209,6 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 						  .forEach(aggregator -> ((ExistsAggregator) aggregator).setReference(outNode));
 
 		return outNode;
-	}
-
-	/**
-	 * Calculate the bitmask for the supplied {@link ConceptElement}s which is eventually compared with the
-	 * the bitmasks of each entity. (See {@link CBlock#getIncludedConceptElementsPerEntity()})
-	 * @param concepts
-	 * @return
-	 */
-	public static long calculateBitMask(List<ConceptElement<?>> concepts) {
-		long mask = 0;
-		for (ConceptElement<?> concept : concepts) {
-			mask |= concept.calculateBitMask();
-		}
-		return mask;
 	}
 
 	/**

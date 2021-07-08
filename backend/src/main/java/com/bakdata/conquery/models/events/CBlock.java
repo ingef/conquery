@@ -1,26 +1,20 @@
 package com.bakdata.conquery.models.events;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.*;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
+import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,6 +24,11 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.constraints.NotNull;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Metadata for connection of {@link Bucket} and {@link Concept}
@@ -293,7 +292,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Calculate for every event a 64 bit long bloom filter, that masks the concept element path within
 	 * the first 64 {@link com.bakdata.conquery.models.datasets.concepts.ConceptElement}s of the {@link TreeConcept}.
 	 * This is used in the evaluation of a query to quickly decide if an event is of interest by logically ANDing
-	 * the bitmask of the event with the bitmask calculated by {@link CQConcept#calculateBitMask(List)}
+	 * the bitmask of the event with the bitmask calculated by {@link ConceptNode#calculateBitMask(List)}
 	 */
 	private static long[] calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
 		long[] includedConcepts = new long[bucketSize];
