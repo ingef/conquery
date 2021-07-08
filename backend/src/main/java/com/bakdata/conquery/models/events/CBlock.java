@@ -59,6 +59,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	@NsIdRef
 	private final Bucket bucket;
+
 	@NotNull
 	@NsIdRef
 	private final ConceptTreeConnector connector;
@@ -92,6 +93,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		int root = bucket.getBucket() * bucketSize;
 
 		CDateRange[] spans = new CDateRange[bucketSize];
+		Arrays.fill(spans, CDateRange.all());
 
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector);
 		final long[] includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
