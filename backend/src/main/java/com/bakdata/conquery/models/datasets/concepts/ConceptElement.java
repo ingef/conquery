@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -10,9 +13,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.Collections;
-import java.util.List;
 
 @ToString(callSuper = true)
 public abstract class ConceptElement<ID extends ConceptElementId<? extends ConceptElement<? extends ID>>> extends Labeled<ID> implements NamespacedIdentifiable<ID> {
@@ -36,9 +36,9 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	@JsonIgnore
 	public abstract Concept<?> getConcept();
 
-	public abstract boolean matchesPrefix(int[] conceptPrefix);
+	public abstract int[] getPrefix();
 
-	public abstract long calculateBitMask();
+	public abstract boolean matchesPrefix(int[] conceptPrefix);
 
 	@Override
 	public abstract ID createId();

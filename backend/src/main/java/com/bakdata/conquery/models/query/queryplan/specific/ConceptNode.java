@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
@@ -12,11 +17,6 @@ import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 @Getter
 public class ConceptNode extends QPChainNode {
@@ -50,7 +50,8 @@ public class ConceptNode extends QPChainNode {
 	public static long calculateBitMask(List<ConceptElement<?>> concepts) {
 		long mask = 0;
 		for (ConceptElement<?> concept : concepts) {
-			mask |= concept.calculateBitMask();
+			final int[] prefix = concept.getPrefix();
+			mask |= CBlock.calculateBitMask(prefix.length - 1, prefix);
 		}
 		return mask;
 	}
