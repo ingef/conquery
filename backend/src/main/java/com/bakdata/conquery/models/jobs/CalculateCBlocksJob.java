@@ -106,7 +106,6 @@ public class CalculateCBlocksJob extends Job {
 
 					CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize());
 
-					calculateEntityDateIndices(cBlock, info.getBucket());
 					bucketManager.addCalculatedCBlock(cBlock);
 					storage.addCBlock(cBlock);
 				}
