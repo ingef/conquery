@@ -211,17 +211,19 @@ public class ArrowRenderer {
             }
 
             int start = vector.startNewValue(rowNumber);
+
             for (int i = 0; i < values.size(); i++) {
                 // These short lived one value arrays are a workaround at the moment
                 nestedConsumer.accept(Math.addExact(start, i), new Object[] {values.get(i)});
             }
 
             // Workaround for https://issues.apache.org/jira/browse/ARROW-8842
-            final FieldVector innerVector = vector.getDataVector();
-            int valueCount = innerVector.getValueCount();
-            innerVector.setValueCount(valueCount + values.size());
+//            final FieldVector innerVector = vector.getDataVector();
+//            int valueCount = innerVector.getValueCount();
+//            innerVector.setValueCount(valueCount + values.size());
 
-            vector.endValue(rowNumber,values.size());
+            vector.endValue(rowNumber, values.size());
+            vector.setValueCount(vector.getValueCount() + values.size());
        };
     }
 
