@@ -19,6 +19,15 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.mina.core.buffer.IoBuffer;
 
+/**
+ * Implementation of a succinct trie that maps stored strings (byte arrays) to an id (https://en.wikipedia.org/wiki/Succinct_data_structure). The id is the node index of the
+ * starting byte in the trie. To get all bytes of a string, all bytes towards the root must be collected. This means
+ * that every node in the trie can be the beginning of a string, and that the nodes closest to the root are the endings
+ * of the string.
+ *
+ * Inserting the strings this way (reversed) into the trie allows lookups in either direction with little computational
+ * overhead.
+ */
 @CPSType(id="SUCCINCT_TRIE", base=Dictionary.class)
 @Getter
 public class SuccinctTrie extends Dictionary {
@@ -107,18 +116,18 @@ public class SuccinctTrie extends Dictionary {
 		}
 	}
 
-	private int put(byte[] key, int value, boolean failOnDuplicate) {
+	private int put(byte[] key, int entryCount, boolean failOnDuplicate) {
 		checkUncompressed("No put allowed after compression");
 
-		// insert help nodes
-		int nodeIndex = key.length-1;
+		// start at the end of the byte sequence and inset it reversed
+		int keyIndex = key.length-1;
 		HelpNode current = root;
-		while (nodeIndex >= 0) {
+		while (keyIndex >= 0) {
 			// check if a prefix node exists
-			HelpNode next = current.children.get(key[nodeIndex]);
+			HelpNode next = current.children.get(key[keyIndex]);
 			if (next == null) {
 				// no prefix node could be found, we add a new one
-				next = new HelpNode(current, key[nodeIndex]);
+				next = new HelpNode(current, key[keyIndex]);
 				next.setParent(current);
 				current.addChild(next);
 				nodeCount++;
@@ -132,14 +141,15 @@ public class SuccinctTrie extends Dictionary {
 				}
 			}
 			current = next;
-			nodeIndex--;
+			keyIndex--;
 		}
 
 		// end of key, write the value into current
 		if (current.getValue() == -1) {
-			current.setValue(value);
+			current.setValue(entryCount);
 			totalBytesStored += key.length;
-			return entryCount++;
+			this.entryCount++;
+			return entryCount;
 		}
 		else if (failOnDuplicate){
 			throw new IllegalStateException(String.format("the key `%s` was already part of this trie", new String(key, StandardCharsets.UTF_8)));
@@ -277,14 +287,6 @@ public class SuccinctTrie extends Dictionary {
 			buf.add(keyPartArray[nodeIndex]);
 			nodeIndex = parentIndex;
 		};
-	}
-
-	private void getReverseInternal(ByteArrayList buf, int nodeIndex) {
-		final int parentIndex = this.parentIndex[nodeIndex];
-		if (parentIndex != -1) {
-			getReverseInternal(buf, parentIndex);
-			buf.add(keyPartArray[nodeIndex]);
-		}
 	}
 
 	@Override
