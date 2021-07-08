@@ -20,14 +20,14 @@
     "clazz": "QueryResource"
   },
   {
-    "method": "DELETE",
-    "path": "/datasets/{dataset}/queries/{query}",
+    "method": "POST",
+    "path": "/datasets/{dataset}/queries/{query}/cancel",
     "clazz": "QueryResource"
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/stored-queries/{query}/reexecute",
-    "clazz": "StoredQueriesResource"
+    "path": "/datasets/{dataset}/queries/{query}/reexecute",
+    "clazz": "QueryResource"
   },
   {
     "method": "GET",
@@ -51,23 +51,18 @@
   },
   {
     "method": "GET",
-    "path": "/datasets/{dataset}/stored-queries",
-    "clazz": "StoredQueriesResource"
+    "path": "/datasets/{dataset}/queries",
+    "clazz": "QueryResource"
   },
   {
     "method": "PATCH",
-    "path": "/datasets/{dataset}/stored-queries/{query}",
-    "clazz": "StoredQueriesResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/stored-queries/{query}",
-    "clazz": "StoredQueriesResource"
+    "path": "/datasets/{dataset}/queries/{query}",
+    "clazz": "QueryResource"
   },
   {
     "method": "DELETE",
-    "path": "/datasets/{dataset}/stored-queries/{query}",
-    "clazz": "StoredQueriesResource"
+    "path": "/datasets/{dataset}/queries/{query}",
+    "clazz": "QueryResource"
   },
   {
     "method": "GET",

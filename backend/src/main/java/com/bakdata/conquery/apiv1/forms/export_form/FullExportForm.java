@@ -97,7 +97,7 @@ public class FullExportForm extends Form {
 	}
 
 	@Override
-	public Set<ManagedExecution> collectRequiredQueries() {
+	public Set<ManagedExecution<?>> collectRequiredQueries() {
 		if (queryGroup == null) {
 			return Collections.emptySet();
 		}

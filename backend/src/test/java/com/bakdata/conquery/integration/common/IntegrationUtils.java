@@ -10,19 +10,19 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.bakdata.conquery.apiv1.ExecutionStatus;
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.apiv1.ExecutionStatus;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -67,8 +67,8 @@ public class IntegrationUtils {
 		}
 	}
 
-	public static IQuery parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
-		return ConqueryTestSpec.parseSubTree(support, rawQuery, IQuery.class);
+	public static Query parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
+		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class);
 	}
 
 
@@ -122,7 +122,7 @@ public class IntegrationUtils {
 	 *
 	 * @return
 	 */
-	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, IQuery query, long expectedSize, ExecutionState expectedState, User user, int expectedResponseCode) {
+	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Query query, long expectedSize, ExecutionState expectedState, User user, int expectedResponseCode) {
 		final URI postQueryURI = getPostQueryURI(conquery);
 
 		final String userToken = conquery.getAuthorizationController()
