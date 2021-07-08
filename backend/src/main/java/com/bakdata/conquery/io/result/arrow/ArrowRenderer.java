@@ -28,6 +28,7 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.ValueVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.complex.BaseListVector;
 import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.complex.StructVector;
 import org.apache.arrow.vector.ipc.ArrowWriter;
@@ -102,6 +103,9 @@ public class ArrowRenderer {
                 if (batchLineCount >= batchSize) {
                     writer.writeBatch();
                     batchLineCount = 0;
+
+                    // reset value counts for ListVectors
+                    root.getFieldVectors().forEach(fv -> {if (fv instanceof BaseListVector) { fv.setValueCount(0); }} );
                 }
             }
         }
