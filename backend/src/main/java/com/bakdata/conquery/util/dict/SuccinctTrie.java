@@ -7,17 +7,13 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
-import com.bakdata.conquery.util.BufferUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableList;
 import it.unimi.dsi.fastutil.bytes.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.mina.core.buffer.IoBuffer;
 
 /**
  * Implementation of a succinct trie that maps stored strings (byte arrays) to an id (https://en.wikipedia.org/wiki/Succinct_data_structure). The id is the node index of the
@@ -119,7 +115,7 @@ public class SuccinctTrie extends Dictionary {
 	private int put(byte[] key, int entryCount, boolean failOnDuplicate) {
 		checkUncompressed("No put allowed after compression");
 
-		// start at the end of the byte sequence and inset it reversed
+		// start at the end of the byte sequence and insert it reversed
 		int keyIndex = key.length-1;
 		HelpNode current = root;
 		while (keyIndex >= 0) {
@@ -153,7 +149,7 @@ public class SuccinctTrie extends Dictionary {
 		else if (failOnDuplicate){
 			throw new IllegalStateException(String.format("the key `%s` was already part of this trie", new String(key, StandardCharsets.UTF_8)));
 		}
-		
+
 		return current.getValue();
 	}
 
@@ -272,14 +268,20 @@ public class SuccinctTrie extends Dictionary {
 	}
 
 
-	public void getReverse(int intValue, ByteArrayList buf) {
+	/**
+	 * The provided id for the string is the index of the trie node that holds the first byte of the sequence.
+	 * From there on, the bytes of the parents until the root are collected to build byte sequence in forward order.
+	 * @param id the id that references the search byte sequence
+	 * @param buf the buffer into which the bytes are inserted
+	 */
+	public void get(int id, ByteArrayList buf) {
 		checkCompressed("use compress before performing getReverse on the trie");
 
-		if (intValue >= reverseLookup.length) {
-			throw new IllegalArgumentException(String.format("intValue %d too high, no such key in the trie (Have only %d values)", intValue, reverseLookup.length));
+		if (id >= reverseLookup.length) {
+			throw new IllegalArgumentException(String.format("intValue %d too high, no such key in the trie (Have only %d values)", id, reverseLookup.length));
 		}
 
-		int nodeIndex = reverseLookup[intValue];
+		int nodeIndex = reverseLookup[id];
 		int parentIndex = -1;
 		while ((parentIndex = this.parentIndex[nodeIndex]) != -1) {
 			buf.add(keyPartArray[nodeIndex]);
@@ -318,7 +320,7 @@ public class SuccinctTrie extends Dictionary {
 					return endOfData();
 				}
 				buf.clear();
-				getReverse(index++, buf);
+				get(index++, buf);
 				return new DictionaryEntry(index, buf.toByteArray());
 			}
 		};
@@ -349,7 +351,7 @@ public class SuccinctTrie extends Dictionary {
 	@Override
 	public byte[] getElement(int id) {
 		ByteArrayList buf = new ByteArrayList(depth);
-		getReverse(id, buf);
+		get(id, buf);
 		return buf.toByteArray();
 	}
 
