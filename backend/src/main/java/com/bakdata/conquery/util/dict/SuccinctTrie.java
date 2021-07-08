@@ -149,14 +149,12 @@ public class SuccinctTrie extends Dictionary {
 			current.setValue(entryCount);
 			totalBytesStored += key.length;
 			this.entryCount++;
-			return entryCount;
 		}
 		else if (failOnDuplicate){
 			throw new IllegalStateException(String.format("the key `%s` was already part of this trie", new String(key, StandardCharsets.UTF_8)));
 		}
-		else {
-			return current.getValue();
-		}
+		
+		return current.getValue();
 	}
 
 	public void compress() {
