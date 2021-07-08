@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Map;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import it.unimi.dsi.fastutil.ints.Int2IntMaps;
 import lombok.Getter;
 
 /**
@@ -19,7 +19,7 @@ public class EmptyBucket extends Bucket {
 	private static final EmptyBucket Instance = new EmptyBucket();
 
 	public EmptyBucket() {
-		super(0, 0, new ColumnStore[0], Int2IntMaps.EMPTY_MAP, Int2IntMaps.EMPTY_MAP,  null);
+		super(0, 0, 0, new ColumnStore[0], Collections.emptySet(), new int[0], new int[0], null);
 	}
 
 
