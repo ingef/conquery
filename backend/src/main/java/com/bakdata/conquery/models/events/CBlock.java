@@ -5,6 +5,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -92,13 +93,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize) {
 		int root = bucket.getBucket() * bucketSize;
 
-		CDateRange[] spans = new CDateRange[bucketSize];
-		Arrays.fill(spans, CDateRange.all());
-
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector);
 		final long[] includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
+		final CDateRange[] entitySpans = calculateEntityDateIndices(bucket, bucketSize);
 
-		return new CBlock(bucket, connector, root, includedConcepts, spans, mostSpecificChildren);
+		return new CBlock(bucket, connector, root, includedConcepts, entitySpans, mostSpecificChildren);
 	}
 
 
@@ -118,13 +117,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	@JsonIgnore
 	public CBlockId createId() {
 		return new CBlockId(bucket.getId(), connector.getId());
-	}
-
-
-	public void addEntityDateRange(int entity, CDateRange range) {
-		final int index = bucket.getEntityIndex(entity);
-
-		entitySpan[index] = entitySpan[index].spanClosed(range);
 	}
 
 	public boolean isConceptIncluded(int entity, long requiredBits) {
@@ -148,9 +140,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	/**
 	 * Calculates the path for each event from the root of the {@link TreeConcept} to the most specific {@link ConceptTreeChild}
 	 * denoted by the individual {@link ConceptTreeChild#getPrefix()}.
-	 * @param bucket
-	 * @param connector
-	 * @return
 	 */
 	private static int[][] calculateSpecificChildrenPaths(Bucket bucket, ConceptTreeConnector connector) {
 
@@ -281,5 +270,36 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			return 1L << mostSpecificChild[localId];
 		}
 		return calculateBitMask(localId-1, mostSpecificChild);
+	}
+
+
+
+	/**
+	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
+	 */
+	private static CDateRange[] calculateEntityDateIndices(Bucket bucket, int bucketSize) {
+		CDateRange[] spans = new CDateRange[bucketSize];
+		Arrays.fill(spans, CDateRange.all());
+
+		Table table = bucket.getTable();
+		for (Column column : table.getColumns()) {
+			if (!column.getType().isDateCompatible()) {
+				continue;
+			}
+
+			for (BucketEntry entry : bucket.entries()) {
+				if (!bucket.has(entry.getEvent(), column)) {
+					continue;
+				}
+
+				CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
+
+				final int index = bucket.getEntityIndex(entry.getEntity());
+
+				spans[index] = spans[index].spanClosed(range);
+			}
+		}
+
+		return spans;
 	}
 }

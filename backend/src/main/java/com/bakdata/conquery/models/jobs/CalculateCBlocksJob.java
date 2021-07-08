@@ -123,27 +123,5 @@ public class CalculateCBlocksJob extends Job {
 			}
 		}
 
-
-		/**
-		 * For every included entity, calculate min and max and store them as statistics in the CBlock.
-		 */
-		private void calculateEntityDateIndices(CBlock cBlock, Bucket bucket) {
-			Table table = bucket.getTable();
-			for (Column column : table.getColumns()) {
-				if (!column.getType().isDateCompatible()) {
-					continue;
-				}
-
-				for (BucketEntry entry : bucket.entries()) {
-					if (!bucket.has(entry.getEvent(), column)) {
-						continue;
-					}
-
-					CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
-
-					cBlock.addEntityDateRange(entry.getEntity(), range);
-				}
-			}
-		}
 	}
 }
