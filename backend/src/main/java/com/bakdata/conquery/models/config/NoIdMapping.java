@@ -8,6 +8,9 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.univocity.parsers.common.record.Record;
 
+/**
+ * Disables Id-Mapping completely.
+ */
 @CPSType(base = IdMappingConfig.class, id = "NO_ID_MAPPING")
 public class NoIdMapping extends IdMappingConfig {
 	private static final String[] HEADER = new String[]{"result"};

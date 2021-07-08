@@ -2,6 +2,9 @@ package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.util.*;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.external.DateColumn;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.FormatColumn;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.IgnoreColumn;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -20,7 +23,23 @@ import lombok.extern.slf4j.Slf4j;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class IdMappingConfig {
 
-	public EntityIdMap generateIdMapping(CsvParser parser) throws IllegalArgumentException {
+	@JsonIgnore
+	public Map<String, FormatColumn> getFormatColumns() {
+		return Map.of(
+				DateColumn.DateSet.HANDLE, new DateColumn.DateSet(),
+				DateColumn.DateRange.HANDLE, new DateColumn.DateRange(),
+				DateColumn.EventDate.HANDLE, new DateColumn.EventDate(),
+				DateColumn.StartDate.HANDLE, new DateColumn.StartDate(),
+				DateColumn.EndDate.HANDLE, new DateColumn.EndDate(),
+				IgnoreColumn.HANDLE, new IgnoreColumn()
+		);
+	}
+
+
+	/**
+	 * Read incoming CSV-file extracting Id-Mappings for in and Output.
+	 */
+	public EntityIdMap generateIdMapping(CsvParser parser) {
 
 		EntityIdMap mapping = new EntityIdMap();
 
@@ -40,6 +59,9 @@ public abstract class IdMappingConfig {
 	 */
 	protected abstract void processRecord(Record record, String id,  EntityIdMap mapping);
 
+	/**
+	 * Headers for Output CSV.
+	 */
 	@JsonIgnore
 	public abstract List<String> getPrintIdFields();
 

@@ -1,7 +1,10 @@
 package com.bakdata.conquery.models.config;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.external.FormatColumn;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.IdColumn;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
@@ -9,12 +12,19 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.univocity.parsers.common.record.Record;
 
 /**
- * Identity mapping.
- *
- * TODO should this actually map to a separate column?
+ * Maps input to itself for upload.
  */
 @CPSType(base = IdMappingConfig.class, id = "SIMPLE")
-public class SimpleIdMapping extends IdMappingConfig {
+public class SimpleIdMapping extends NoIdMapping {
+
+	@Override
+	public Map<String, FormatColumn> getFormatColumns() {
+		final HashMap<String, FormatColumn> out = new HashMap<>(super.getFormatColumns());
+
+		out.put(IdColumn.HANDLE, new IdColumn());
+
+		return out;
+	}
 
 	@Override
 	protected void processRecord(Record record, String id, EntityIdMap mapping) {
@@ -26,10 +36,4 @@ public class SimpleIdMapping extends IdMappingConfig {
 		mapping.addInputMapping(id, id);
 
 	}
-
-	@Override
-	public List<String> getPrintIdFields() {
-		return List.of("result");
-	}
-
 }

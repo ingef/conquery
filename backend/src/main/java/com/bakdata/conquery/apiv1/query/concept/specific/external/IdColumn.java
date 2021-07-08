@@ -1,11 +1,14 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.external;
 
-import com.bakdata.conquery.io.cps.CPSType;
+import lombok.AllArgsConstructor;
+import lombok.Value;
+import lombok.With;
 
-@CPSType(id = "ID", base = FormatColumn.class)
 public class IdColumn extends FormatColumn {
 
-	public String[] read(String[] row) {
-		return new String[]{row[getPosition()]};
+	public static String HANDLE = "ID";
+
+	public String[] read(String[] row, int position) {
+		return new String[]{row[position]};
 	}
 }

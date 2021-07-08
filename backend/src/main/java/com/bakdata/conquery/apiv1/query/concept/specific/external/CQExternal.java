@@ -2,17 +2,14 @@ package com.bakdata.conquery.apiv1.query.concept.specific.external;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
@@ -26,12 +23,11 @@ import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.util.DateFormats;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.MoreCollectors;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Allows uploading lists of entities.
@@ -71,47 +67,34 @@ public class CQExternal extends CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-
-		List<FormatColumn> resolvedFormats = instantiateFormatIds(format);
-
-
-		for (int index = 0; index < resolvedFormats.size(); index++) {
-			resolvedFormats.get(index).setPosition(index);
-		}
-
 		valuesResolved = new Int2ObjectOpenHashMap<>();
 
-		final DateColumn[] dateColumns = resolvedFormats.stream()
-														.filter(DateColumn.class::isInstance)
-														.map(DateColumn.class::cast)
-														.toArray(DateColumn[]::new);
 
-		//TODO verify dateColumns match
+		final EntityIdMap mapping = context.getNamespace().getStorage().getIdMapping();
 
-		final DateFormat dateFormat = dateColumns.length > 0 ? dateColumns[0].getFormat() : DateFormat.ALL;
+		final Map<String, FormatColumn> stringFormatColumnMap = context.getConfig().getIdMapping().getFormatColumns();
 
+		final FormatColumn[] resolvedFormats = resolveFormats(stringFormatColumnMap);
 
-		final IdColumn idColumn = resolvedFormats.stream()
-												 .filter(IdColumn.class::isInstance)
-												 .map(IdColumn.class::cast)
-												 .collect(MoreCollectors.onlyElement());
+		final DateFormat dateFormat = getDateFormat(resolvedFormats);
+
+		final int idIndex = getIdIndex(resolvedFormats);
+		final IdColumn idColumn = (IdColumn) resolvedFormats[idIndex];
 
 
 		final EncodedDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
-		final EntityIdMap mapping = context.getNamespace().getStorage().getIdMapping();
 		final DateFormats dateFormats = context.getConfig().getPreprocessor().getParsers().getDateFormats();
-
 
 		List<String[]> unresolved = new ArrayList<>();
 
 		// ignore the first row, because this is the header
 		for (int i = 1; i < values.length; i++) {
 			final String[] row = values[i];
-			final String[] externalId = idColumn.read(row);
+			final String[] externalId = idColumn.read(row, idIndex);
 
 			final Optional<String> id = mapping.toInternal(externalId);
 
-			if (id.isEmpty()){
+			if (id.isEmpty()) {
 				continue;
 			}
 
@@ -124,7 +107,7 @@ public class CQExternal extends CQElement {
 
 			//read the dates from the row
 			try {
-				CDateSet dates = dateFormat.readDates(dateColumns, row, dateFormats);
+				CDateSet dates = dateFormat.readDates(resolvedFormats, row, dateFormats);
 
 				valuesResolved.put(resolvedId, dates);
 			}
@@ -133,6 +116,7 @@ public class CQExternal extends CQElement {
 				unresolved.add(row);
 			}
 		}
+
 		if (!unresolved.isEmpty()) {
 			log.warn(
 					"Could not resolve {} of the {} rows. Not resolved: {}",
@@ -147,41 +131,53 @@ public class CQExternal extends CQElement {
 		}
 	}
 
-	/**
-	 * Helper method to flatten API surface, allowing plain passing of type-ids instead of using objects of only type.
-	 */
-	@SneakyThrows
-	private static List<FormatColumn> instantiateFormatIds(@NotEmpty List<String> formats) {
-		List<FormatColumn> resolvedFormats = new ArrayList<>();
-		for (String s : formats) {
+	@NotNull
+	private DateFormat getDateFormat(FormatColumn[] resolvedFormats) {
+		DateFormat dateFormat = null;
 
-			Class<? extends FormatColumn> clazz = CPSTypeIdResolver.getImplementation(FormatColumn.class, s);
-			// We've already established at startup, that this should not fail.
-			FormatColumn newInstance = clazz.getConstructor().newInstance();
-			resolvedFormats.add(newInstance);
+		for (FormatColumn col : resolvedFormats) {
+			if (!(col instanceof DateColumn)) {
+				continue;
+			}
+
+			if (dateFormat != null && !dateFormat.equals(((DateColumn) col).getFormat())) {
+				throw new IllegalStateException("Use of multiple Date Formats.");
+			}
+
+			dateFormat = ((DateColumn) col).getFormat();
 		}
 
-		return resolvedFormats;
+		return dateFormat == null ? DateFormat.ALL : dateFormat;
+	}
+
+	private int getIdIndex(FormatColumn[] resolvedFormats) {
+		for (int index = 0; index < resolvedFormats.length; index++) {
+			if (resolvedFormats[index] instanceof IdColumn) {
+				return index;
+			}
+		}
+
+		throw new IllegalStateException("No IdColumn provided");
+	}
+
+	@NotNull
+	private FormatColumn[] resolveFormats(Map<String, FormatColumn> stringFormatColumnMap) {
+		final List<FormatColumn> resolvedFormats = new ArrayList<>();
+
+		for (String columnType : format) {
+			FormatColumn formatColumn = stringFormatColumnMap.get(columnType);
+
+			if (formatColumn == null) {
+				throw new IllegalStateException(String.format("Don't know of format %s", columnType));
+			}
+
+			resolvedFormats.add(formatColumn);
+		}
+		return resolvedFormats.toArray(FormatColumn[]::new);
 	}
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-	}
-
-
-	@JsonIgnore
-	@ValidationMethod(message = "Must contain only valid FormatColumn Ids.")
-	public boolean isValidFormatIds() {
-		return format.stream().map(id -> CPSTypeIdResolver.<FormatColumn>getImplementation(FormatColumn.class, id)).noneMatch(Objects::isNull);
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Must use one IdColumn.")
-	public boolean isOnlyOneIdColumn() {
-		return format.stream()
-					 .map(id -> CPSTypeIdResolver.<FormatColumn>getImplementation(FormatColumn.class, id))
-					 .filter(IdColumn.class::isAssignableFrom)
-					 .count() == 1;
 	}
 
 
