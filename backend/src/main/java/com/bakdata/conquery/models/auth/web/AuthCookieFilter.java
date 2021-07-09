@@ -32,10 +32,10 @@ import org.eclipse.jetty.http.HttpHeader;
 @Priority(Priorities.AUTHENTICATION-100)
 public class AuthCookieFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
-	private static final String ACCESS_TOKEN = "access_token";
+	public static final String ACCESS_TOKEN = "access_token";
 	private static final String PREFIX = "bearer";
 	// Define a maximum age since most browsers use session restoring making session cookies virtual permanent (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies)
-	private static final int COOKIE_MAX_AGE_HOURS = (int) TimeUnit.HOURS.toSeconds(12);
+	public static final int COOKIE_MAX_AGE_HOURS = (int) TimeUnit.HOURS.toSeconds(12);
 
 	/**
 	 * The filter tries to extract a token from a cookie and puts it into the
@@ -45,12 +45,13 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		Cookie cookie = requestContext.getCookies().get(ACCESS_TOKEN);
-		String queryToken = requestContext.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
 		if (cookie == null) {
 			return;
 		}
-		
-		if(cookie != null && !cookie.getValue().isEmpty() && queryToken != null && !cookie.getValue().equals(queryToken)) {
+
+		String queryToken = requestContext.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
+
+		if(!cookie.getValue().isEmpty() && queryToken != null && !cookie.getValue().equals(queryToken)) {
 			throw new IllegalStateException("Different tokens have been provided in cookie and query string");			
 		}
 		
@@ -59,7 +60,7 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 		// Remove the cookie for the rest of this processing
 		requestContext.getCookies().remove(ACCESS_TOKEN);
 		// Remove the query parameter
-		UriBuilder uriBuilder = requestContext.getUriInfo().getRequestUriBuilder().replaceQueryParam(ACCESS_TOKEN, new Object[] {});
+		UriBuilder uriBuilder = requestContext.getUriInfo().getRequestUriBuilder().replaceQueryParam(ACCESS_TOKEN);
 		requestContext.setRequestUri(uriBuilder.build());
 
 	}
