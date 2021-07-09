@@ -83,7 +83,6 @@ public class ArrowRenderer {
         writer.start();
         int batchCount = 0;
         int batchLineCount = 0;
-        root.setRowCount(batchSize);
         Iterator<EntityResult> resultIterator = results.iterator();
         while (resultIterator.hasNext()) {
             EntityResult cer = resultIterator.next();
@@ -102,7 +101,9 @@ public class ArrowRenderer {
                 batchLineCount++;
 
                 if (batchLineCount >= batchSize) {
+                    root.setRowCount(batchLineCount);
                     writer.writeBatch();
+                    root.clear();
                     batchLineCount = 0;
 
                     // Reset value counts for ListVector, otherwise the file size explodes
@@ -115,6 +116,7 @@ public class ArrowRenderer {
         if (batchLineCount > 0) {
             root.setRowCount(batchLineCount);
             writer.writeBatch();
+            root.clear();
             batchCount++;
         }
         log.trace("Wrote {} batches of size {} (last batch might be smaller)", batchCount, batchSize);
@@ -213,7 +215,6 @@ public class ArrowRenderer {
             List<?> values = resultExtractor.apply(line);
             if (values == null) {
                 vector.setNull(rowNumber);
-                vector.setValueCount(vector.getValueCount() + 1);
                 return;
             }
 
@@ -229,7 +230,7 @@ public class ArrowRenderer {
             // Workaround for https://issues.apache.org/jira/browse/ARROW-8842
             // Set the value count after the value is written.
             // Notice that the valueCount for ListVectors must be reset after the batch is written out (see write()).
-            vector.setValueCount(vector.getValueCount() + 1);
+//            vector.setValueCount(vector.getValueCount() + 1);
        };
     }
 
