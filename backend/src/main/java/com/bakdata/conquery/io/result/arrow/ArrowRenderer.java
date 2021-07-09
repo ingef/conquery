@@ -31,6 +31,7 @@ import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.complex.BaseListVector;
 import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.complex.StructVector;
+import org.apache.arrow.vector.complex.impl.UnionListWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
@@ -107,7 +108,7 @@ public class ArrowRenderer {
                     // Reset value counts for ListVector, otherwise the file size explodes
                     // probably because the valueCount is multiplied with an OFFSET_WIDTH to allocate huge voids.
                     // See listVectorFiller()
-                    root.getFieldVectors().forEach(fv -> {if (fv instanceof BaseListVector) { fv.setValueCount(0); }} );
+                    //root.getFieldVectors().forEach(fv -> {if (fv instanceof BaseListVector) { fv.setValueCount(0); }} );
                 }
             }
         }
@@ -212,6 +213,7 @@ public class ArrowRenderer {
             List<?> values = resultExtractor.apply(line);
             if (values == null) {
                 vector.setNull(rowNumber);
+                vector.setValueCount(vector.getValueCount() + 1);
                 return;
             }
 
@@ -227,7 +229,7 @@ public class ArrowRenderer {
             // Workaround for https://issues.apache.org/jira/browse/ARROW-8842
             // Set the value count after the value is written.
             // Notice that the valueCount for ListVectors must be reset after the batch is written out (see write()).
-            vector.setValueCount(vector.getValueCount() + values.size());
+            vector.setValueCount(vector.getValueCount() + 1);
        };
     }
 
