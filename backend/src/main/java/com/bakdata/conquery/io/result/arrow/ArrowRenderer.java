@@ -28,8 +28,10 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.ValueVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
+import org.apache.arrow.vector.complex.BaseListVector;
 import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.complex.StructVector;
+import org.apache.arrow.vector.complex.impl.UnionListWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
@@ -81,7 +83,6 @@ public class ArrowRenderer {
         writer.start();
         int batchCount = 0;
         int batchLineCount = 0;
-        root.setRowCount(batchSize);
         Iterator<EntityResult> resultIterator = results.iterator();
         while (resultIterator.hasNext()) {
             EntityResult cer = resultIterator.next();
@@ -100,7 +101,9 @@ public class ArrowRenderer {
                 batchLineCount++;
 
                 if (batchLineCount >= batchSize) {
+                    root.setRowCount(batchLineCount);
                     writer.writeBatch();
+                    root.clear();
                     batchLineCount = 0;
                 }
             }
@@ -108,6 +111,7 @@ public class ArrowRenderer {
         if (batchLineCount > 0) {
             root.setRowCount(batchLineCount);
             writer.writeBatch();
+            root.clear();
             batchCount++;
         }
         log.trace("Wrote {} batches of size {} (last batch might be smaller)", batchCount, batchSize);
@@ -199,8 +203,8 @@ public class ArrowRenderer {
             vector.setIndexDefined(rowNumber);
         };
     }
+
     private static RowConsumer listVectorFiller(ListVector vector, RowConsumer nestedConsumer, Function<Object[], List<?>> resultExtractor){
-        // This is not used at the moment see ResultType.ListT::getArrowFieldType
         return (rowNumber, line) -> {
             // Values is a vertical list
             List<?> values = resultExtractor.apply(line);
@@ -210,17 +214,13 @@ public class ArrowRenderer {
             }
 
             int start = vector.startNewValue(rowNumber);
+
             for (int i = 0; i < values.size(); i++) {
                 // These short lived one value arrays are a workaround at the moment
-                nestedConsumer.accept(start + i, new Object[] {values.get(i)});
+                nestedConsumer.accept(Math.addExact(start, i), new Object[] {values.get(i)});
             }
 
-            // Workaround for https://issues.apache.org/jira/browse/ARROW-8842
-            final FieldVector innerVector = vector.getDataVector();
-            int valueCount = innerVector.getValueCount();
-            innerVector.setValueCount(valueCount + values.size());
-
-            vector.endValue(rowNumber,values.size());
+            vector.endValue(rowNumber, values.size());
        };
     }
 
