@@ -10,7 +10,9 @@ import { queryHasFilterType, queryMatchesSearch } from "../list/selector";
 
 import type { QueriesSearchStateT } from "./reducer";
 
-export type QueriesSearchActions = ActionType<typeof setQueriesSearch>;
+export type QueriesSearchActions = ActionType<
+  typeof setQueriesSearch | typeof clearQueriesSearch
+>;
 
 export const setQueriesSearch = createAction(
   "previous-queries/SET_QUERIES_SEARCH",

@@ -7,7 +7,6 @@ import { useSelector, useDispatch } from "react-redux";
 import IconButton from "../button/IconButton";
 import TransparentButton from "../button/TransparentButton";
 import AnimatedDots from "../common/components/AnimatedDots";
-import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
 import BaseInput from "../form-components/BaseInput";
@@ -129,7 +128,7 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className }) => {
             placeholder={t("conceptTreeList.searchPlaceholder")}
             value={localQuery || ""}
             onChange={(value) => {
-              if (isEmpty(value)) onClearQuery();
+              if (!exists(value)) onClearQuery();
 
               setLocalQuery(value as string | null);
             }}

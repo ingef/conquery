@@ -9,7 +9,7 @@ import { exists } from "../../common/helpers/exists";
 import BaseInput from "../../form-components/BaseInput";
 
 import { clearQueriesSearch, useSearchQueries } from "./actions";
-import { QueriesSearchStateT } from "./reducer";
+import type { QueriesSearchStateT } from "./reducer";
 
 const Root = styled("div")`
   position: relative;

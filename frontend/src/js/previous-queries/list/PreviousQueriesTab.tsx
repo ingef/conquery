@@ -79,7 +79,7 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   const allQueries = useSelector<StateT, PreviousQueryT[]>(
     (state) => state.previousQueries.queries,
   );
-  const searchQuery = useSelector<StateT, string | null>(
+  const searchTerm = useSelector<StateT, string | null>(
     (state) => state.previousQueriesSearch.searchTerm,
   );
   const filter = useSelector<StateT, PreviousQueriesFilterStateT>(
@@ -93,7 +93,7 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   );
   const queries = selectPreviousQueries(
     allQueries,
-    searchQuery,
+    searchTerm,
     filter,
     folders,
     noFoldersActive,
@@ -166,7 +166,7 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
             display: areFoldersOpen ? "inherit" : "none",
           }}
         >
-          <SxPreviousQueriesFolders resultCountAll={queries.length} />
+          <SxPreviousQueriesFolders />
           <Expand areFoldersOpen={areFoldersOpen}>
             <SxPreviousQueriesFilter />
             <ScrollContainer>

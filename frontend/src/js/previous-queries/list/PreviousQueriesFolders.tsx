@@ -122,7 +122,7 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
       return;
     }
 
-    retagQuery(query.id, Array.from(new Set([...query.tags, folder])));
+    retagQuery(query.id, [...query.tags, folder]);
   };
 
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);

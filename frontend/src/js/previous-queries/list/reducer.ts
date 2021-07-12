@@ -35,14 +35,12 @@ export interface PreviousQueryT {
 export interface PreviousQueriesStateT {
   queries: PreviousQueryT[];
   loading: boolean;
-  tags: string[];
   error: string | null;
 }
 
 const initialState: PreviousQueriesStateT = {
   queries: [],
   loading: false,
-  tags: [],
   error: null,
 };
 
@@ -98,26 +96,6 @@ const deletePreviousQuery = (
   };
 };
 
-const findUniqueTags = (queries: PreviousQueryT[]) => {
-  const uniqueTags = new Set<string>();
-
-  queries.forEach((query) => {
-    if (query.tags) query.tags.forEach((tag) => uniqueTags.add(tag));
-  });
-
-  return Array.from(uniqueTags).sort();
-};
-
-const findNewTags = (tags: string[]) => {
-  if (!tags) return [];
-
-  let uniqueTags = new Set<string>();
-
-  tags.forEach((tag) => uniqueTags.add(tag));
-
-  return Array.from(uniqueTags);
-};
-
 const previousQueriesReducer = (
   state: PreviousQueriesStateT = initialState,
   action: Action,
@@ -130,7 +108,6 @@ const previousQueriesReducer = (
         ...state,
         loading: false,
         queries: sortQueries(action.payload.data),
-        tags: findUniqueTags(action.payload.data),
       };
     case getType(loadQueries.failure):
       return {
@@ -149,23 +126,18 @@ const previousQueriesReducer = (
         ...action.payload.data,
       });
     case getType(renameQuery.success):
-      return {
-        ...updatePreviousQuery(state, action, {
-          loading: false,
-          error: null,
-          label: action.payload.label,
-          isPristineLabel: false,
-        }),
-      };
+      return updatePreviousQuery(state, action, {
+        loading: false,
+        error: null,
+        label: action.payload.label,
+        isPristineLabel: false,
+      });
     case getType(retagQuery.success):
-      return {
-        ...updatePreviousQuery(state, action, {
-          loading: false,
-          error: null,
-          tags: action.payload.tags,
-        }),
-        tags: findNewTags([...state.tags, ...action.payload.tags]),
-      };
+      return updatePreviousQuery(state, action, {
+        loading: false,
+        error: null,
+        tags: action.payload.tags,
+      });
     case getType(shareQuerySuccess):
       return updatePreviousQuery(state, action, {
         loading: false,

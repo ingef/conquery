@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { exists } from "../../common/helpers/exists";
-import { PreviousQueriesFilterStateT } from "../filter/reducer";
+import type { PreviousQueriesFilterStateT } from "../filter/reducer";
 
 import type { PreviousQueryT } from "./reducer";
 
@@ -61,13 +61,13 @@ export const queryMatchesSearch = (
 
 export const selectPreviousQueries = (
   queries: PreviousQueryT[],
-  search: string | null,
+  searchTerm: string | null,
   filter: PreviousQueriesFilterStateT,
   folderFilter: string[],
   noFoldersActive: boolean,
 ) => {
   if (
-    !exists(search) &&
+    !exists(searchTerm) &&
     filter === "all" &&
     folderFilter.length === 0 &&
     !noFoldersActive
@@ -79,7 +79,7 @@ export const selectPreviousQueries = (
     const matchesFolderFilter = noFoldersActive
       ? query.tags.length === 0
       : folderFilter.every((folder) => queryHasFolder(query, folder));
-    const matchesSearch = queryMatchesSearch(query, search);
+    const matchesSearch = queryMatchesSearch(query, searchTerm);
 
     return matchesFilter && matchesFolderFilter && matchesSearch;
   });
