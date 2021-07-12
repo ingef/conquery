@@ -62,8 +62,9 @@ export const useSearchQueries = () => {
 
   return (searchTerm: string) => {
     const result = searchQueries(searchTerm, filteredQueries);
-    console.log(result);
 
-    dispatch(setQueriesSearch({ searchTerm, result }));
+    dispatch(
+      setQueriesSearch({ searchTerm, result, words: searchTerm.split(" ") }),
+    );
   };
 };

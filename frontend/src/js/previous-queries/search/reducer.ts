@@ -7,11 +7,13 @@ import { clearQueriesSearch, setQueriesSearch } from "./actions";
 export interface QueriesSearchStateT {
   searchTerm: string | null;
   result: Record<string, number> | null;
+  words: string[];
 }
 
 const initialState: QueriesSearchStateT = {
   searchTerm: null,
   result: null,
+  words: [],
 };
 
 const previousQueriesSearch = (

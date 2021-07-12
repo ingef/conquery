@@ -99,6 +99,9 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
   const searchResult = useSelector<StateT, Record<string, number> | null>(
     (state) => state.previousQueriesSearch.result,
   );
+  const searchResultWords = useSelector<StateT, string[]>(
+    (state) => state.previousQueriesSearch.words,
+  );
 
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -144,14 +147,16 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
           active={folderFilter.length === 0 && !noFoldersActive}
           onClick={onResetFolderFilter}
           resultCount={searchResult ? searchResult["__all__"] : null}
+          resultWords={[]}
         />
         <SxPreviousQueriesFolder
           key="no-folder"
-          empty
+          special
           folder={t("folders.noFolders")}
           active={noFoldersActive}
           onClick={onToggleNoFoldersActive}
           resultCount={searchResult ? searchResult["__without_folder__"] : null}
+          resultWords={[]}
         />
         {folders.map((folder, i) => (
           <SxDropzone<FC<DropzoneProps<DragItemQuery>>>
@@ -174,6 +179,7 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
                   active={folderFilter.includes(folder)}
                   onClick={() => onClickFolder(folder)}
                   resultCount={searchResult ? searchResult[folder] : null}
+                  resultWords={searchResultWords}
                 />
                 <SxWithTooltip text={t("common.delete")}>
                   <SxIconButton

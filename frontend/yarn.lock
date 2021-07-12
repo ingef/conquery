@@ -2806,6 +2806,13 @@
   dependencies:
     "@types/react" "^16"
 
+"@types/react-highlight-words@^0.16.3":
+  version "0.16.3"
+  resolved "https://registry.yarnpkg.com/@types/react-highlight-words/-/react-highlight-words-0.16.3.tgz#a62e8d31197a33559c38fcbe4c7c1e10d3f78cd8"
+  integrity sha512-ZarU4+/R593xctDXy/SkyWeS/dg5sG8TxZ2DATd2EdDKHlfqCPnOYzHEo/7XaYpCoSCgk5Sp1sVNhnOzC/ezJg==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-list@^0.8.5":
   version "0.8.5"
   resolved "https://registry.yarnpkg.com/@types/react-list/-/react-list-0.8.5.tgz#813257a341788917541d0e4f631388aa1aa55190"
@@ -11245,10 +11252,10 @@ react-fast-compare@^3.2.0:
   resolved "https://registry.yarnpkg.com/react-fast-compare/-/react-fast-compare-3.2.0.tgz#641a9da81b6a6320f270e89724fb45a0b39e43bb"
   integrity sha512-rtGImPZ0YyLrscKI9xTpV8psd6I8VAtjKCzQDlzyDvqJA8XOW78TXYQwNRNd8g8JZnDu8q9Fu/1v4HPAVwVdHA==
 
-react-highlight-words@^0.16.0:
-  version "0.16.0"
-  resolved "https://registry.yarnpkg.com/react-highlight-words/-/react-highlight-words-0.16.0.tgz#4b4b9824e3d2b98789d3e3b3aedb5e961ae1b7cf"
-  integrity sha512-q34TwCSJOL+5pVDv6LUj3amaoyXdNDwd7zRqVAvceOrO9g1haWLAglK6WkGLMNUa3PFN8EgGedLg/k8Gpndxqg==
+react-highlight-words@^0.17.0:
+  version "0.17.0"
+  resolved "https://registry.yarnpkg.com/react-highlight-words/-/react-highlight-words-0.17.0.tgz#e79a559a2de301548339d7216264d6cd0f1eed6f"
+  integrity sha512-uX1Qh5IGjnLuJT0Zok234QDwRC8h4hcVMnB99Cb7aquB1NlPPDiWKm0XpSZOTdSactvnClCk8LOmVlP+75dgHA==
   dependencies:
     highlight-words-core "^1.2.0"
     memoize-one "^4.0.0"
