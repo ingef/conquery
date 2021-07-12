@@ -18,10 +18,11 @@ export interface PreviousQueryT {
   label: string;
   loading?: boolean;
   error?: string | null;
-  numberOfResults: number;
+  numberOfResults: number | null;
   createdAt: string;
   tags: string[];
   own: boolean;
+  ownerName: string;
   system?: boolean;
   resultUrls: string[];
   shared: boolean;
