@@ -6,7 +6,7 @@ import { exists } from "../../common/helpers/exists";
 import FaIcon from "../../icon/FaIcon";
 
 const SxFaIcon = styled(FaIcon)`
-  margin-right: 10px;
+  margin-right: 8px;
 `;
 
 const Folder = styled("div")<{ active?: boolean; special?: boolean }>`
@@ -36,7 +36,7 @@ const ResultCount = styled("span")`
   align-items: center;
   justify-content: center;
   line-height: 1;
-  padding: 2px 4px;
+  padding: 2px 0;
   margin-right: 5px;
   font-size: ${({ theme }) => theme.font.xs};
   border-radius: ${({ theme }) => theme.borderRadius};
