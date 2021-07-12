@@ -8,8 +8,8 @@ import IconButton from "../../button/IconButton";
 import { exists } from "../../common/helpers/exists";
 import BaseInput from "../../form-components/BaseInput";
 
-import { setPreviousQueriesSearch } from "./actions";
-import type { PreviousQueriesSearchStateT } from "./reducer";
+import { clearQueriesSearch, useSearchQueries } from "./actions";
+import { QueriesSearchStateT } from "./reducer";
 
 const Root = styled("div")`
   position: relative;
@@ -53,20 +53,20 @@ interface Props {
 
 const PreviousQueriesSearchBox: FC<Props> = ({ className }) => {
   const { t } = useTranslation();
-  const search = useSelector<StateT, PreviousQueriesSearchStateT>(
+  const search = useSelector<StateT, QueriesSearchStateT>(
     (state) => state.previousQueriesSearch,
   );
 
   useEffect(() => {
-    setLocalQuery(search.query);
-  }, [search.query]);
+    setLocalSearchTerm(search.searchTerm);
+  }, [search.searchTerm]);
 
   const dispatch = useDispatch();
+  const searchQueries = useSearchQueries();
 
-  const onClearQuery = () => dispatch(setPreviousQueriesSearch(null));
-  const onSearch = (value: string) => dispatch(setPreviousQueriesSearch(value));
+  const onClearQuery = () => dispatch(clearQueriesSearch());
 
-  const [localQuery, setLocalQuery] = useState<string | null>(null);
+  const [localSearchTerm, setLocalSearchTerm] = useState<string | null>(null);
 
   return (
     <Root className={className}>
@@ -74,26 +74,26 @@ const PreviousQueriesSearchBox: FC<Props> = ({ className }) => {
         <SxBaseInput
           inputType="text"
           placeholder={t("previousQueries.searchPlaceholder")}
-          value={localQuery || ""}
+          value={localSearchTerm || ""}
           onChange={(value) => {
             if (!exists(value)) onClearQuery();
 
-            setLocalQuery(value as string | null);
+            setLocalSearchTerm(value as string | null);
           }}
           inputProps={{
             onKeyPress: (e) => {
-              return e.key === "Enter" && exists(localQuery)
-                ? onSearch(localQuery)
+              return e.key === "Enter" && exists(localSearchTerm)
+                ? searchQueries(localSearchTerm)
                 : null;
             },
           }}
         />
-        {exists(localQuery) && (
+        {exists(localSearchTerm) && (
           <Right>
             <StyledIconButton
               icon="search"
               aria-hidden="true"
-              onClick={() => onSearch(localQuery)}
+              onClick={() => searchQueries(localSearchTerm)}
             />
           </Right>
         )}

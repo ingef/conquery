@@ -96,7 +96,7 @@ const setSearchTreesStart = (
     search: {
       ...state.search,
       loading: query && query.length > 0,
-      query: query,
+      query,
       words: query ? query.split(" ") : [],
       result: {},
       resultCount: 0,

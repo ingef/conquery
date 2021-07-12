@@ -2,25 +2,27 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../../app/actions";
 
-import { setPreviousQueriesSearch } from "./actions";
+import { clearQueriesSearch, setQueriesSearch } from "./actions";
 
-export interface PreviousQueriesSearchStateT {
-  query: string | null;
+export interface QueriesSearchStateT {
+  searchTerm: string | null;
   result: Record<string, number> | null;
 }
 
-const initialState: PreviousQueriesSearchStateT = {
-  query: null,
+const initialState: QueriesSearchStateT = {
+  searchTerm: null,
   result: null,
 };
 
 const previousQueriesSearch = (
-  state: PreviousQueriesSearchStateT = initialState,
+  state: QueriesSearchStateT = initialState,
   action: Action,
-): PreviousQueriesSearchStateT => {
+): QueriesSearchStateT => {
   switch (action.type) {
-    case getType(setPreviousQueriesSearch):
-      return { ...state, query: action.payload };
+    case getType(setQueriesSearch):
+      return { ...state, ...action.payload };
+    case getType(clearQueriesSearch):
+      return initialState;
     default:
       return state;
   }

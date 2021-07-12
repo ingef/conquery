@@ -11,6 +11,7 @@ import { usePrevious } from "../../common/helpers/usePrevious";
 import EmptyList from "../../list/EmptyList";
 import { canUploadResult } from "../../user/selectors";
 import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
+import type { PreviousQueriesFilterStateT } from "../filter/reducer";
 import { toggleFoldersOpen } from "../folderFilter/actions";
 import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
 import UploadQueryResults from "../upload/UploadQueryResults";
@@ -19,7 +20,7 @@ import PreviousQueries from "./PreviousQueries";
 import PreviousQueriesFolderButton from "./PreviousQueriesFolderButton";
 import PreviousQueriesFolders from "./PreviousQueriesFolders";
 import { useLoadQueries } from "./actions";
-import { PreviousQueryT } from "./reducer";
+import type { PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
 
 const ScrollContainer = styled("div")`
@@ -79,9 +80,9 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
     (state) => state.previousQueries.queries,
   );
   const searchQuery = useSelector<StateT, string | null>(
-    (state) => state.previousQueriesSearch.query,
+    (state) => state.previousQueriesSearch.searchTerm,
   );
-  const filter = useSelector<StateT, string>(
+  const filter = useSelector<StateT, PreviousQueriesFilterStateT>(
     (state) => state.previousQueriesFilter,
   );
   const folders = useSelector<StateT, string[]>(
@@ -165,7 +166,7 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
             display: areFoldersOpen ? "inherit" : "none",
           }}
         >
-          <SxPreviousQueriesFolders />
+          <SxPreviousQueriesFolders resultCountAll={queries.length} />
           <Expand areFoldersOpen={areFoldersOpen}>
             <SxPreviousQueriesFilter />
             <ScrollContainer>

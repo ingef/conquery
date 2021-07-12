@@ -26,7 +26,7 @@ const labelContainsSearch = (label: string, searchQuery: string) =>
 
 const useIsHighlightedLabel = (label: string) => {
   const searchQuery = useSelector<StateT, string | null>(
-    (state) => state.previousQueriesSearch.query,
+    (state) => state.previousQueriesSearch.searchTerm,
   );
 
   return !!searchQuery && labelContainsSearch(label, searchQuery);

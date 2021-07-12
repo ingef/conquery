@@ -1,6 +1,11 @@
-import { exists } from "../../common/helpers/exists";
+import { StateT } from "app-types";
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
 
-import { PreviousQueryT } from "./reducer";
+import { exists } from "../../common/helpers/exists";
+import { PreviousQueriesFilterStateT } from "../filter/reducer";
+
+import type { PreviousQueryT } from "./reducer";
 
 const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
   return (
@@ -26,7 +31,10 @@ const queryHasId = (query: PreviousQueryT, searchTerm: string) => {
   return query.id.toString() === searchTerm;
 };
 
-const queryHasFilterType = (query: PreviousQueryT, filter: string) => {
+export const queryHasFilterType = (
+  query: PreviousQueryT,
+  filter: PreviousQueriesFilterStateT,
+) => {
   if (filter === "all") return true;
 
   // Checks query.own, query.shared or query.system
@@ -39,10 +47,22 @@ const queryHasFilterType = (query: PreviousQueryT, filter: string) => {
   return false;
 };
 
+export const queryMatchesSearch = (
+  query: PreviousQueryT,
+  searchTerm: string | null,
+) => {
+  return (
+    !exists(searchTerm) ||
+    queryHasId(query, searchTerm) ||
+    queryHasLabel(query, searchTerm) ||
+    queryHasTag(query, searchTerm)
+  );
+};
+
 export const selectPreviousQueries = (
   queries: PreviousQueryT[],
   search: string | null,
-  filter: string,
+  filter: PreviousQueriesFilterStateT,
   folderFilter: string[],
   noFoldersActive: boolean,
 ) => {
@@ -59,12 +79,19 @@ export const selectPreviousQueries = (
     const matchesFolderFilter = noFoldersActive
       ? query.tags.length === 0
       : folderFilter.every((folder) => queryHasFolder(query, folder));
-    const matchesSearch =
-      !exists(search) ||
-      queryHasId(query, search) ||
-      queryHasLabel(query, search) ||
-      queryHasTag(query, search);
+    const matchesSearch = queryMatchesSearch(query, search);
 
     return matchesFilter && matchesFolderFilter && matchesSearch;
   });
+};
+
+export const usePreviousQueriesTags = () => {
+  const queries = useSelector<StateT, PreviousQueryT[]>(
+    (state) => state.previousQueries.queries,
+  );
+
+  return useMemo(
+    () => Array.from(new Set(queries.flatMap((query) => query.tags))).sort(),
+    [queries],
+  );
 };

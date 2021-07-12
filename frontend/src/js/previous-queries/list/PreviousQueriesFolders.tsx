@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC, useMemo, useState } from "react";
+import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -21,7 +21,7 @@ import {
 import DeletePreviousQueryFolderModal from "./DeletePreviousQueryFolderModal";
 import PreviousQueriesFolder from "./PreviousQueriesFolder";
 import { useRetagQuery } from "./actions";
-import type { PreviousQueryT } from "./reducer";
+import { usePreviousQueriesTags } from "./selector";
 
 const Folders = styled("div")`
   flex-shrink: 0;
@@ -89,18 +89,15 @@ interface Props {
 }
 
 const PreviousQueriesFolders: FC<Props> = ({ className }) => {
-  const queries = useSelector<StateT, PreviousQueryT[]>(
-    (state) => state.previousQueries.queries,
-  );
-  const folders = useMemo(
-    () => Array.from(new Set(queries.flatMap((query) => query.tags))).sort(),
-    [queries],
-  );
+  const folders = usePreviousQueriesTags();
   const folderFilter = useSelector<StateT, string[]>(
     (state) => state.previousQueriesFolderFilter.folders,
   );
   const noFoldersActive = useSelector<StateT, boolean>(
     (state) => state.previousQueriesFolderFilter.noFoldersActive,
+  );
+  const searchResult = useSelector<StateT, Record<string, number> | null>(
+    (state) => state.previousQueriesSearch.result,
   );
 
   const { t } = useTranslation();
@@ -146,6 +143,7 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
           folder={t("folders.allQueries")}
           active={folderFilter.length === 0 && !noFoldersActive}
           onClick={onResetFolderFilter}
+          resultCount={searchResult ? searchResult["__all__"] : null}
         />
         <SxPreviousQueriesFolder
           key="no-folder"
@@ -153,6 +151,7 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
           folder={t("folders.noFolders")}
           active={noFoldersActive}
           onClick={onToggleNoFoldersActive}
+          resultCount={searchResult ? searchResult["__without_folder__"] : null}
         />
         {folders.map((folder, i) => (
           <SxDropzone<FC<DropzoneProps<DragItemQuery>>>
@@ -174,6 +173,7 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
                   folder={folder}
                   active={folderFilter.includes(folder)}
                   onClick={() => onClickFolder(folder)}
+                  resultCount={searchResult ? searchResult[folder] : null}
                 />
                 <SxWithTooltip text={t("common.delete")}>
                   <SxIconButton
