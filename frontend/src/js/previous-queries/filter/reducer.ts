@@ -4,7 +4,7 @@ import { Action } from "../../app/actions";
 
 import { setPreviousQueriesFilter } from "./actions";
 
-export type PreviousQueriesFilterStateT = string;
+export type PreviousQueriesFilterStateT = "all" | "own" | "shared" | "system";
 
 const initialState: PreviousQueriesFilterStateT = "all";
 
