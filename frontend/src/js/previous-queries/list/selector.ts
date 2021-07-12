@@ -1,3 +1,5 @@
+import { exists } from "../../common/helpers/exists";
+
 import { PreviousQueryT } from "./reducer";
 
 const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
@@ -39,13 +41,13 @@ const queryHasFilterType = (query: PreviousQueryT, filter: string) => {
 
 export const selectPreviousQueries = (
   queries: PreviousQueryT[],
-  search: string[],
+  search: string | null,
   filter: string,
   folderFilter: string[],
   noFoldersActive: boolean,
 ) => {
   if (
-    search.length === 0 &&
+    !exists(search) &&
     filter === "all" &&
     folderFilter.length === 0 &&
     !noFoldersActive
@@ -53,18 +55,16 @@ export const selectPreviousQueries = (
     return queries;
 
   return queries.filter((query) => {
-    return (
-      queryHasFilterType(query, filter) &&
-      (noFoldersActive
-        ? query.tags.length === 0
-        : folderFilter.every((folder) => queryHasFolder(query, folder))) &&
-      search.every((searchTerm) => {
-        return (
-          queryHasId(query, searchTerm) ||
-          queryHasLabel(query, searchTerm) ||
-          queryHasTag(query, searchTerm)
-        );
-      })
-    );
+    const matchesFilter = queryHasFilterType(query, filter);
+    const matchesFolderFilter = noFoldersActive
+      ? query.tags.length === 0
+      : folderFilter.every((folder) => queryHasFolder(query, folder));
+    const matchesSearch =
+      !exists(search) ||
+      queryHasId(query, search) ||
+      queryHasLabel(query, search) ||
+      queryHasTag(query, search);
+
+    return matchesFilter && matchesFolderFilter && matchesSearch;
   });
 };

@@ -21,17 +21,15 @@ const SxEditableText = styled(EditableText)`
   text-overflow: ellipsis;
 `;
 
-const labelContainsAnySearch = (label: string, searches: string[]) =>
-  searches.some(
-    (search) => label.toLowerCase().indexOf(search.toLowerCase()) !== -1,
-  );
+const labelContainsSearch = (label: string, searchQuery: string) =>
+  label.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1;
 
 const useIsHighlightedLabel = (label: string) => {
-  const previousQueriesSearch = useSelector<StateT, string[]>(
-    (state) => state.previousQueriesSearch,
+  const searchQuery = useSelector<StateT, string | null>(
+    (state) => state.previousQueriesSearch.query,
   );
 
-  return labelContainsAnySearch(label, previousQueriesSearch);
+  return !!searchQuery && labelContainsSearch(label, searchQuery);
 };
 
 interface PropsT {

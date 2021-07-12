@@ -1,9 +1,9 @@
 import { ActionType, createAction } from "typesafe-actions";
 
 export type PreviousQueriesSearchActions = ActionType<
-  typeof updatePreviousQueriesSearch
+  typeof setPreviousQueriesSearch
 >;
 
-export const updatePreviousQueriesSearch = createAction(
-  "previous-queries/UPDATE_PREVIOUS_QUERIES_SEARCH",
-)<string[]>();
+export const setPreviousQueriesSearch = createAction(
+  "previous-queries/SET_PREVIOUS_QUERIES_SEARCH",
+)<string | null>();

@@ -36,7 +36,6 @@ export interface PreviousQueriesStateT {
   queries: PreviousQueryT[];
   loading: boolean;
   tags: string[];
-  names: string[];
   error: string | null;
 }
 
@@ -44,7 +43,6 @@ const initialState: PreviousQueriesStateT = {
   queries: [],
   loading: false,
   tags: [],
-  names: [],
   error: null,
 };
 
@@ -120,20 +118,6 @@ const findNewTags = (tags: string[]) => {
   return Array.from(uniqueTags);
 };
 
-const findUniqueNames = (queries: PreviousQueryT[]) => {
-  const uniqueNames = new Set<string>();
-
-  queries.filter((q) => !!q.label).forEach((q) => uniqueNames.add(q.label));
-
-  return Array.from(uniqueNames);
-};
-
-const updateUniqueNames = (existingNames: string[], newName: string) => {
-  return existingNames.includes(newName)
-    ? existingNames
-    : [newName, ...existingNames];
-};
-
 const previousQueriesReducer = (
   state: PreviousQueriesStateT = initialState,
   action: Action,
@@ -147,7 +131,6 @@ const previousQueriesReducer = (
         loading: false,
         queries: sortQueries(action.payload.data),
         tags: findUniqueTags(action.payload.data),
-        names: findUniqueNames(action.payload.data),
       };
     case getType(loadQueries.failure):
       return {
@@ -173,7 +156,6 @@ const previousQueriesReducer = (
           label: action.payload.label,
           isPristineLabel: false,
         }),
-        names: updateUniqueNames(state.names, action.payload.label),
       };
     case getType(retagQuery.success):
       return {

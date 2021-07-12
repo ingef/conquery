@@ -4,11 +4,11 @@ import React, { FC, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import type { DatasetIdT } from "../api/types";
 import IconButton from "../button/IconButton";
 import TransparentButton from "../button/TransparentButton";
 import AnimatedDots from "../common/components/AnimatedDots";
 import { isEmpty } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
 import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
 import BaseInput from "../form-components/BaseInput";
 
@@ -87,12 +87,11 @@ const SxConceptTreeOpenButtons = styled(ConceptTreesOpenButtons)`
 `;
 
 interface PropsT {
-  datasetId: DatasetIdT;
   className?: string;
 }
 
-const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
-  const [localQuery, setLocalQuery] = useState("");
+const ConceptTreeSearchBox: FC<PropsT> = ({ className }) => {
+  const [localQuery, setLocalQuery] = useState<string | null>(null);
 
   const showMismatches = useSelector<StateT, boolean>(
     (state) => state.conceptTrees.search.showMismatches,
@@ -132,17 +131,17 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
             onChange={(value) => {
               if (isEmpty(value)) onClearQuery();
 
-              setLocalQuery(value);
+              setLocalQuery(value as string | null);
             }}
             inputProps={{
               onKeyPress: (e) => {
-                return e.key === "Enter" && !isEmpty(e.target.value)
-                  ? onSearch(trees, e.target.value)
+                return e.key === "Enter" && exists(localQuery)
+                  ? onSearch(trees, localQuery)
                   : null;
               },
             }}
           />
-          {!isEmpty(localQuery) && (
+          {exists(localQuery) && (
             <Right>
               <StyledIconButton
                 icon="search"

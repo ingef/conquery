@@ -24,7 +24,7 @@ export interface SearchT {
   allOpen: boolean;
   showMismatches: boolean;
   loading: boolean;
-  query: string;
+  query: string | null;
   words: string[] | null;
   result: null | Record<ConceptIdT, number>;
   resultCount: number;
@@ -43,7 +43,7 @@ const initialSearch = {
   allOpen: false,
   showMismatches: true,
   loading: false,
-  query: "",
+  query: null,
   words: null,
   result: null,
   resultCount: 0,

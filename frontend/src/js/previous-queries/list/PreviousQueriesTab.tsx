@@ -78,8 +78,8 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   const allQueries = useSelector<StateT, PreviousQueryT[]>(
     (state) => state.previousQueries.queries,
   );
-  const search = useSelector<StateT, string[]>(
-    (state) => state.previousQueriesSearch,
+  const searchQuery = useSelector<StateT, string | null>(
+    (state) => state.previousQueriesSearch.query,
   );
   const filter = useSelector<StateT, string>(
     (state) => state.previousQueriesFilter,
@@ -92,7 +92,7 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   );
   const queries = selectPreviousQueries(
     allQueries,
-    search,
+    searchQuery,
     filter,
     folders,
     noFoldersActive,
