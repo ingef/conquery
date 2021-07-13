@@ -9,7 +9,6 @@ on:
       - "backend/src/main/java/com/bakdata/conquery/preproc/**"
       - "backend/src/main/java/com/bakdata/conquery/resources/**"
       - "backend/src/main/java/com/bakdata/conquery/apiv1/**"
-      - ".github/workflows/run_autodoc.yml" # self reference
 
 jobs:
   generate_auto_doc:
