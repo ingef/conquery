@@ -1,15 +1,17 @@
 package com.bakdata.conquery.models;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.time.LocalDate;
+import java.util.*;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -19,6 +21,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -31,6 +34,8 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
+import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -323,4 +328,49 @@ public class SerializationTests {
 				.forType(MeProcessor.FEMeInformation.class)
 				.test(info);
 	}
+
+	@Test
+	public void testFormQuery() throws IOException, JSONException {
+		CQConcept concept = new CQConcept();
+		final TreeConcept testConcept = new TreeConcept();
+		Dataset dataset = new Dataset();
+		dataset.setName("testDataset");
+		testConcept.setDataset(dataset);
+		testConcept.setName("concept");
+		final ConceptTreeConnector connector = new ConceptTreeConnector();
+		connector.setConcept(testConcept);
+		connector.setName("connector1");
+
+		testConcept.setConnectors(List.of(connector));
+
+		concept.setElements(Collections.singletonList(testConcept));
+		CQTable[] tables = {new CQTable() };
+		connector.setTable(new Table());
+		tables[0].setConnector(connector);
+		tables[0].setConcept(concept);
+		concept.setTables(Arrays.asList(tables));
+		ConceptQuery subQuery = new ConceptQuery(concept);
+
+
+		CQOr features = new CQOr();
+		features.setChildren(Collections.singletonList(concept));
+
+
+		AbsoluteFormQuery query = new AbsoluteFormQuery(
+				subQuery,
+				CDateRange.exactly(LocalDate.now()).toSimpleRange(),
+				ArrayConceptQuery.createFromFeatures(Collections.singletonList(features)),
+				List.of(
+						ExportForm.ResolutionAndAlignment.of(DateContext.Resolution.COMPLETE, DateContext.Alignment.NO_ALIGN),
+						ExportForm.ResolutionAndAlignment.of(DateContext.Resolution.QUARTERS, DateContext.Alignment.QUARTER))
+		);
+
+		CentralRegistry centralRegistry = new CentralRegistry();
+		centralRegistry.register(dataset);
+		centralRegistry.register(testConcept);
+		centralRegistry.register(connector);
+
+		SerializationTestUtil.forType(AbsoluteFormQuery.class).registry(centralRegistry).test(query);
+	}
+
 }
