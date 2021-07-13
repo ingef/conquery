@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.*;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -78,7 +77,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	/**
 	 * Statistic for fast lookup if entity is of interest.
-	 * Int array for memory performance.
 	 */
 	private final CDateRange[] entitySpan;
 
@@ -87,7 +85,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Per event: represents the path in a {@link TreeConcept} to optimize lookup.
 	 * Nodes in the tree are simply enumerated.
 	 */
-	// todo, can this be implemented using a store or at least with bytes only?
 	private final int[][] mostSpecificChildren;
 
 	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize) {
@@ -256,20 +253,16 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 
 	/**
-	 * Modified version of the {@link ConceptElement#calculateBitMask()} method that leverages the precomputed
-	 * path to the most specific {@link ConceptTreeChild} to calculate the bloom filter.
-	 * @param localId
-	 * @param mostSpecificChild
-	 * @return
+	 * Calculates the bloom filter from the precomputed path to the most specific {@link ConceptTreeChild}.
 	 */
-	public static long calculateBitMask(int localId, int[] mostSpecificChild) {
-		if (localId < 0) {
+	public static long calculateBitMask(int pathIndex, int[] mostSpecificChild) {
+		if (pathIndex < 0) {
 			return 0;
 		}
-		if (mostSpecificChild[localId] < 64) {
-			return 1L << mostSpecificChild[localId];
+		if (mostSpecificChild[pathIndex] < 64) {
+			return 1L << mostSpecificChild[pathIndex];
 		}
-		return calculateBitMask(localId-1, mostSpecificChild);
+		return calculateBitMask(pathIndex-1, mostSpecificChild);
 	}
 
 

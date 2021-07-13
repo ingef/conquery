@@ -6,18 +6,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.WorkerStorage;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.BucketEntry;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
-import com.google.common.base.Throwables;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -62,14 +56,22 @@ public class CalculateCBlocksJob extends Job {
 		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(this.executorService);
 
 		final List<? extends ListenableFuture<?>> futures = infos.stream()
-				.map(info -> new CalculationInformationProcessor(info, bucketManager, storage))
+				.map(this::createInformationProcessor)
 				.map(executorService::submit)
-				.peek(f -> f.addListener(() -> getProgressReporter().report(1), MoreExecutors.directExecutor()))
+				.peek(f -> f.addListener(this::incrementProgressReporter, MoreExecutors.directExecutor()))
 				.collect(Collectors.toList());
 
 		Futures.allAsList(futures).get();
 
 		getProgressReporter().done();
+	}
+
+	private CalculationInformationProcessor createInformationProcessor(CalculationInformation info) {
+		return new CalculationInformationProcessor(info, bucketManager, storage);
+	}
+
+	private void incrementProgressReporter() {
+		getProgressReporter().report(1);
 	}
 
 	public boolean isEmpty() {
@@ -98,7 +100,7 @@ public class CalculateCBlocksJob extends Job {
 		@Override
 		public void run() {
 			try {
-				try(IdMutex.Locked lock = bucketManager.acquireLock(info.connector)) {
+				try(IdMutex.Locked ignored = bucketManager.acquireLock(info.connector)) {
 					if (bucketManager.hasCBlock(info.getCBlockId())) {
 						log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", info.getCBlockId());
 						return;
