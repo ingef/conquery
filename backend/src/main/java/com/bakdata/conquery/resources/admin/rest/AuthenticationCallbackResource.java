@@ -29,7 +29,7 @@ import java.util.List;
 
 @Path("/authenticate")
 @Slf4j
-public class AthenticationCallbackResource {
+public class AuthenticationCallbackResource {
 
     @Context
     ContainerRequestContext context;
