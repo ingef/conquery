@@ -155,7 +155,6 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 											   .collect(Collectors.toList());
 
 			//add filter to children
-
 			List<Aggregator<?>> aggregators = new ArrayList<>();
 
 			aggregators.addAll(conceptAggregators);
