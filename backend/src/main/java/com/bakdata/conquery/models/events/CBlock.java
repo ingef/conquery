@@ -71,7 +71,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	private final int root;
 
 	/**
-	 * Bloom filter per entity for the first 64 {@link ConceptTreeChild}.
+	 * Crude Bloomfilter for Concept inclusion per Entity: Each set bit denotes that the concept (with localId <= 64) or a descendant of that concept (with localId > 64) is present for the entity in this Bucket. 
 	 */
 	private final long[] includedConceptElementsPerEntity;
 
