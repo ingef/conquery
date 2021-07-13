@@ -32,7 +32,7 @@ jobs:
           java-version: 11
       - name: Build Backend
         run: mvn install -T 1C -DskipTests -pl '!executable'
-      - name: Build AutoDoc
+      - name: Run AutoDoc
         run: mvn exec:java -f autodoc/pom.xml -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
       - name: Check for changes
         id: check-changes
