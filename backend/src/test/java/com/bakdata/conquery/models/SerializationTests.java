@@ -320,7 +320,7 @@ public class SerializationTests {
 		MeProcessor.FEMeInformation info = MeProcessor.FEMeInformation.builder()
 				.userName(user.getLabel())
 				.hideLogoutButton(false)
-				.groups(List.of(new IdLabel(new GroupId("test_group"), "test_group_label")))
+				.groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
 				.datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FEDatasetAbility(true)))
 				.build();
 
