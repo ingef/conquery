@@ -1,4 +1,4 @@
-name: "AutoDoc"
+name: "Generate Documentation"
 
 on:
   pull_request:
