@@ -6,9 +6,9 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -85,14 +85,6 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Override
 	public boolean matchesPrefix(int[] conceptPrefix) {
 		return conceptPrefix.length > depth && conceptPrefix[depth] == localId;
-	}
-
-	@Override
-	public long calculateBitMask() {
-		if (getLocalId() < 64) {
-			return 1L << getLocalId();
-		}
-		return getParent().calculateBitMask();
 	}
 
 	@JsonIgnore

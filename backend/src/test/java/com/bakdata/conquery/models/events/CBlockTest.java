@@ -42,6 +42,7 @@ class CBlockTest {
 
 		final Bucket bucket = new Bucket(0, 0, 10, new ColumnStore[0], Collections.emptySet(),new int[10], new int[10], imp);
 
+
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
 
 		registry.register(dataset)
