@@ -95,7 +95,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		involvedWorkers = namespace.getWorkers().size();
 
-		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
+		query.resolve(new QueryResolveContext(getDataset(), namespaces, config, null));
 	}
 
 	@Override
@@ -234,24 +234,36 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 			sb.append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).reused());
 		}
 
+
 		// Check for CQConcept
-		final AtomicInteger length = new AtomicInteger();
-		sortedContents.getOrDefault(CQConcept.class, Collections.emptyList())
-					  .stream()
-					  .map(CQConcept.class::cast)
+		if (sortedContents.containsKey(CQConcept.class)) {
+			if (sb.length() > 0) {
+				sb.append(" ");
+			}
+			// Track length of text we are appending for concepts.
+			final AtomicInteger length = new AtomicInteger();
 
-					  .map(c -> makeLabelWithRootAndChild(c, cfg))
-					  .filter(Predicate.not(Strings::isNullOrEmpty))
-					  .distinct()
+			sortedContents.get(CQConcept.class)
+						  .stream()
+						  .map(CQConcept.class::cast)
 
-					  .takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
-					  .forEach(label -> sb.append(label).append(" "));
+						  .map(c -> makeLabelWithRootAndChild(c, cfg))
+						  .filter(Predicate.not(Strings::isNullOrEmpty))
+						  .distinct()
 
+						  .takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
+						  .forEach(label -> sb.append(label).append(" "));
 
-		// If not all Concept could be included in the name, point that out
-		if (length.get() > MAX_CONCEPT_LABEL_CONCAT_LENGTH) {
-			sb.append(" ").append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).furtherConcepts());
+			// Last entry will output one Space that we don't want
+			sb.deleteCharAt(sb.length() - 1);
+
+			// If not all Concept could be included in the name, point that out
+			if (length.get() > MAX_CONCEPT_LABEL_CONCAT_LENGTH) {
+				sb.append(" ").append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).furtherConcepts());
+			}
 		}
+
+
 
 		// Fallback to id if nothing could be extracted from the query description
 		if (sbStartSize == sb.length()) {

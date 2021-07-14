@@ -325,7 +325,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
 
-		final Set<Concept<?>> concepts = namespacesIdCollector.getIdentifiables()
+		final Set<Concept> concepts = namespacesIdCollector.getIdentifiables()
 														   .stream()
 														   .filter(ConceptElement.class::isInstance)
 														   .map(ConceptElement.class::cast)
