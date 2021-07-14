@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import React from "react";
+import Highlighter from "react-highlight-words";
 
 import IconButton from "../button/IconButton";
 import HighlightableLabel from "../highlightable-label/HighlightableLabel";
@@ -16,6 +17,7 @@ interface PropsT {
   large?: boolean;
   saveOnClickoutside?: boolean;
   isHighlighted?: boolean;
+  highlightedWords?: string[];
   selectTextOnMount?: boolean;
   onSubmit: (text: string) => void;
   onToggleEdit: () => void;
@@ -59,10 +61,17 @@ const EditableText: React.FC<PropsT> = (props) => {
           onClick={props.onToggleEdit}
         />
       </WithTooltip>
-      <SxHighlightableLabel
-        label={props.text}
-        isHighlighted={props.isHighlighted}
-      />
+      <SxHighlightableLabel isHighlighted={props.isHighlighted}>
+        {props.highlightedWords && props.highlightedWords.length > 0 ? (
+          <Highlighter
+            searchWords={props.highlightedWords}
+            autoEscape
+            textToHighlight={props.text}
+          />
+        ) : (
+          props.text
+        )}
+      </SxHighlightableLabel>
     </Text>
   );
 };

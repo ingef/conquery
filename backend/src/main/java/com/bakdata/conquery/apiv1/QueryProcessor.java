@@ -1,6 +1,25 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.apiv1.query.*;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
+
+import java.net.URL;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -32,16 +51,6 @@ import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.UriBuilder;
-import java.net.URL;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -93,22 +102,26 @@ public class QueryProcessor {
 
 		ExecutionMetrics.reportQueryClassUsage(query.getClass(), primaryGroupName);
 
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
+		final ExecutionManager executionManager = namespace.getExecutionManager();
+
 
 		// If this is only a re-executing query, try to execute the underlying query instead.
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config));
+			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager));
 
 			if (execution.isPresent()) {
 				return execution.get();
 			}
 		}
 
-		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(datasetRegistry, query, user, dataset, config);
 
-		if (query instanceof IQuery) {
+		// Run the query on behalf of the user
+		ManagedExecution<?> mq = executionManager.runQuery(datasetRegistry, query, user, dataset, config);
+
+		if (query instanceof Query) {
 			translateToOtherDatasets(dataset, query, user, mq);
 		}
 
@@ -119,7 +132,7 @@ public class QueryProcessor {
 	/**
 	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
 	 */
-	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager) {
 
 		final ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
 
@@ -150,17 +163,17 @@ public class QueryProcessor {
 
 		log.trace("Re-executing Query {}", execution);
 
-		ExecutionManager.execute(datasetRegistry, execution, config);
+		executionManager.execute(datasetRegistry, execution, config);
 
 		return execution;
 
 	}
 
 
-	public Stream<ExecutionStatus> getAllQueries(Namespace namespace, HttpServletRequest req, User user, boolean allProviders) {
+	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user, boolean allProviders) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
-		return getQueriesFiltered(namespace.getDataset(), RequestAwareUriBuilder.fromRequest(req), user, allQueries, allProviders);
+		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), user, allQueries, allProviders);
 	}
 
 	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, User user, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
@@ -214,12 +227,15 @@ public class QueryProcessor {
 	}
 
 
+	/**
+	 * Test if the query is structured in a way the Frontend can render it.
+	 */
 	private static boolean canFrontendRender(ManagedExecution<?> q) {
 		if (!(q instanceof ManagedQuery)) {
 			return false;
 		}
 
-		final IQuery query = ((ManagedQuery) q).getQuery();
+		final Query query = ((ManagedQuery) q).getQuery();
 
 		if (query instanceof ConceptQuery) {
 			return isFrontendStructure(((ConceptQuery) query).getRoot());
@@ -242,10 +258,12 @@ public class QueryProcessor {
 	}
 
 	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {
-		IQuery translateable = (IQuery) query;
+		Query translateable = (Query) query;
 		// translate the query for all other datasets of user and submit it.
 		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
+
 			final Dataset targetDataset = targetNamespace.getDataset();
+
 			if (targetDataset.equals(dataset)) {
 				continue;
 			}
@@ -256,8 +274,10 @@ public class QueryProcessor {
 
 			try {
 				log.trace("Adding Query on Dataset[{}]", dataset.getId());
-				IQuery translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
-				ExecutionManager.createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
+				Query translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
+
+				targetNamespace.getExecutionManager()
+							   .createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
 			}
 			catch (Exception e) {
 				log.trace("Could not translate Query[{}] to Dataset[{}]", mq.getId(), targetDataset.getId(), e);
@@ -279,7 +299,7 @@ public class QueryProcessor {
 
 		final Namespace namespace = getDatasetRegistry().get(dataset.getId());
 
-		query.setState(ExecutionState.NEW);
+		query.reset();
 
 		namespace.sendToAll(new CancelQuery(query.getId()));
 	}
@@ -311,13 +331,18 @@ public class QueryProcessor {
 		log.info("User[{}] reexecuted Query[{}]", user, query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
-			ExecutionManager.execute(getDatasetRegistry(), query, config);
+			datasetRegistry.get(query.getDataset().getId())
+						   .getExecutionManager()
+						   .execute(getDatasetRegistry(), query, config);
 		}
 	}
 
 
 	public void deleteQuery(User user, ManagedExecution<?> execution) {
 		log.info("User[{}] deleted Query[{}]", user.getId(), execution.getId());
+
+		execution.getExecutionManager().clearQueryResults(execution);
+
 		storage.removeExecution(execution.getId());
 	}
 

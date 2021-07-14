@@ -23,7 +23,6 @@ import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
-import com.bakdata.conquery.resources.api.StoredQueriesResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
@@ -66,7 +65,6 @@ public class ApiV1 implements ResourcesProvider {
 		 */
 		environment.register(manager.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
-		environment.register(StoredQueriesResource.class);
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(new ConfigResource(manager.getConfig()));
 		environment.register(FormConfigResource.class);

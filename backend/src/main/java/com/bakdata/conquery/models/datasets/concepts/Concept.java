@@ -1,5 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -24,13 +32,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-
-import javax.validation.Valid;
-import javax.validation.Validator;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * This is a single node or concept in a concept tree.
@@ -79,11 +80,6 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	public int countElements() {
 		return 1;
-	}
-
-	@Override
-	public long calculateBitMask() {
-		return 0L;
 	}
 
 	/**

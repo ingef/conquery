@@ -2,11 +2,11 @@ import { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import { usePatchStoredQuery } from "../../api/api";
+import { usePatchQuery } from "../../api/api";
 import type { DatasetIdT } from "../../api/types";
 import { setMessage } from "../../snack-message/actions";
 
-import { useLoadPreviousQueries } from "./actions";
+import { useLoadQueries } from "./actions";
 import type { PreviousQueryT } from "./reducer";
 
 export const useDeletePreviousQueryFolder = (
@@ -18,8 +18,8 @@ export const useDeletePreviousQueryFolder = (
     (state) => state.datasets.selectedDatasetId,
   );
   const dispatch = useDispatch();
-  const patchStoredQuery = usePatchStoredQuery();
-  const loadPreviousQueries = useLoadPreviousQueries();
+  const patchQuery = usePatchQuery();
+  const loadQueries = useLoadQueries();
 
   const queries = useSelector<StateT, PreviousQueryT[]>(
     (state) => state.previousQueries.queries,
@@ -35,17 +35,17 @@ export const useDeletePreviousQueryFolder = (
           .map((query) => {
             const nextTags = query.tags.filter((tag) => tag !== folder);
 
-            return patchStoredQuery(datasetId, query.id, { tags: nextTags });
+            return patchQuery(datasetId, query.id, { tags: nextTags });
           }),
       );
 
-      await loadPreviousQueries(datasetId);
+      await loadQueries(datasetId);
 
       if (onSuccess) {
         onSuccess();
       }
     } catch (e) {
-      dispatch(setMessage(t("previousQuery.retagError")));
+      dispatch(setMessage({ message: t("previousQuery.retagError") }));
     }
   };
 };

@@ -65,56 +65,62 @@ module.exports = function (app, port) {
     "/api/datasets/:datasetId/queries/:id",
     mockAuthMiddleware,
     function response(req, res) {
-      setTimeout(() => {
-        res.setHeader("Content-Type", "application/json");
+      if (req.params.id !== 1) {
+        setTimeout(() => {
+          res.sendFile(path.join(__dirname, "./stored-queries/25.json"));
+        }, LONG_DELAY);
+      } else {
+        setTimeout(() => {
+          res.setHeader("Content-Type", "application/json");
 
-        const dice = Math.random();
+          const dice = Math.random();
 
-        if (dice <= 0.1) {
-          res.status(422);
-          res.send(ERROR);
-        } else if (dice > 0.1 && dice <= 0.7) {
-          res.send(
-            JSON.stringify({
-              id: 1,
-              status: "RUNNING",
-              progress: Math.floor(Math.random() * 10) / 10,
-            }),
-          );
-        } else if (dice > 0.7 && dice <= 0.75) {
-          res.send(
-            JSON.stringify({
-              id: 1,
-              status: "FAILED",
-              error: {
-                code: "EXAMPLE_ERROR_INTERPOLATED",
-                context: {
-                  adjective: "easy",
+          if (dice <= 0.1) {
+            res.status(422);
+            res.send(ERROR);
+          } else if (dice > 0.1 && dice <= 0.7) {
+            res.send(
+              JSON.stringify({
+                id: 1,
+                status: "RUNNING",
+                progress: Math.floor(Math.random() * 10) / 10,
+              }),
+            );
+          } else if (dice > 0.7 && dice <= 0.75) {
+            res.send(
+              JSON.stringify({
+                id: 1,
+                status: "FAILED",
+                error: {
+                  code: "EXAMPLE_ERROR_INTERPOLATED",
+                  context: {
+                    adjective: "easy",
+                  },
                 },
-              },
-            }),
-          );
-        } else {
-          res.send(
-            JSON.stringify({
-              id: 1,
-              status: "DONE",
-              numberOfResults: 5,
-              resultUrls: [
-                `/api/results/results.xlsx`,
-                `/api/results/results.csv`,
-              ],
-              columnDescriptions: [
-                {
-                  label: "Money Range",
-                  selectId: null,
-                  type: "MONEY",
-                },
-              ],
-            }),
-          );
-        }
-      }, LONG_DELAY);
+              }),
+            );
+          } else {
+            res.send(
+              JSON.stringify({
+                id: 1,
+                status: "DONE",
+                numberOfResults: 5,
+                resultUrls: [
+                  `/api/results/results.xlsx`,
+                  `/api/results/results.csv`,
+                ],
+                columnDescriptions: [
+                  {
+                    label: "Money Range",
+                    selectId: null,
+                    type: "MONEY",
+                  },
+                ],
+              }),
+            );
+          }
+        }, LONG_DELAY);
+      }
     },
   );
 
@@ -170,7 +176,7 @@ module.exports = function (app, port) {
     STORED QUERIES
   */
   app.get(
-    "/api/datasets/:datasetId/stored-queries",
+    "/api/datasets/:datasetId/queries",
     mockAuthMiddleware,
     function response(req, res) {
       res.setHeader("Content-Type", "application/json");
@@ -228,18 +234,8 @@ module.exports = function (app, port) {
     },
   );
 
-  app.get(
-    "/api/datasets/:datasetId/stored-queries/:id",
-    mockAuthMiddleware,
-    function response(req, res) {
-      setTimeout(() => {
-        res.sendFile(path.join(__dirname, "./stored-queries/25.json"));
-      }, LONG_DELAY);
-    },
-  );
-
   app.patch(
-    "/api/datasets/:datasetId/stored-queries/:id",
+    "/api/datasets/:datasetId/queries/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -249,7 +245,7 @@ module.exports = function (app, port) {
   );
 
   app.delete(
-    "/api/datasets/:datasetId/stored-queries/:id",
+    "/api/datasets/:datasetId/queries/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {

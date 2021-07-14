@@ -3,9 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -18,7 +16,7 @@ import javax.ws.rs.core.UriBuilder;
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.ExecutionStatus;
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
-import com.bakdata.conquery.apiv1.query.IQuery;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -37,8 +35,8 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
@@ -67,27 +65,24 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@JsonIgnore
 	protected transient Namespace namespace;
 	// Needs to be resolved externally before being executed
-	private IQuery query;
+	private Query query;
 	/**
 	 * The number of contained entities the last time this query was executed.
-	 *
-	 * @param lastResultCount the new count for JACKSON
-	 * @returns the number of contained entities
 	 */
 	private Long lastResultCount;
+
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private transient int involvedWorkers;
 	@JsonIgnore
-	private transient int executingThreads;
+	private transient AtomicInteger executingThreads = new AtomicInteger(0);
 	@JsonIgnore
 	private transient ConqueryConfig config;
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
-	@JsonIgnore @ToString.Exclude
-	private transient List<EntityResult> results = new ArrayList<>();
 
-	public ManagedQuery(IQuery query, User owner, Dataset submittedDataset) {
+
+	public ManagedQuery(Query query, User owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
 		this.query = query;
 	}
@@ -95,12 +90,12 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@Override
 	protected void doInitExecutable(@NonNull DatasetRegistry namespaces, ConqueryConfig config) {
 		this.config = config;
-		this.namespace = namespaces.get(getDataset().getId());
-		this.involvedWorkers = namespace.getWorkers().size();
+
+		namespace = namespaces.get(getDataset().getId());
+
+		involvedWorkers = namespace.getWorkers().size();
+
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
-		if (label == null) {
-			label = makeAutoLabel(new PrintSettings(true, Locale.ROOT,namespaces, config, null));
-		}
 	}
 
 	@Override
@@ -109,20 +104,25 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		if (result.getError().isPresent()) {
 			fail(storage, result.getError().get());
+			return;
 		}
 
-		synchronized (this) {
-			executingThreads--;
-			results.addAll(result.getResults());
-			if (executingThreads == 0 && state == ExecutionState.RUNNING) {
-				finish(storage, ExecutionState.DONE);
-			}
+		final int remaining = executingThreads.decrementAndGet();
+
+		getExecutionManager().addQueryResult(this, result.getResults());
+
+		if (remaining == 0 && getState() == ExecutionState.RUNNING) {
+			finish(storage, ExecutionState.DONE);
 		}
+	}
+
+	public Stream<EntityResult> streamResults() {
+		return getExecutionManager().streamQueryResults(this);
 	}
 
 	@Override
 	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
-		lastResultCount = query.countResults(results);
+		lastResultCount = query.countResults(streamResults());
 
 		super.finish(storage, executionState);
 	}
@@ -130,17 +130,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@Override
 	public void start() {
 		super.start();
-		synchronized (this) {
-			executingThreads = involvedWorkers;
-		}
 
-
-		if (results != null) {
-			results.clear();
-		}
-		else {
-			results = new ArrayList<>();
-		}
+		executingThreads.set(involvedWorkers);
 	}
 
 	@Override
@@ -198,22 +189,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	public Map<ManagedExecutionId, QueryPlan> createQueryPlans(QueryPlanContext context) {
-		if (context.getDataset().equals(getDataset())) {
-			return Map.of(this.getId(), query.createQueryPlan(context));
-		}
-		log.trace("Did not create a QueryPlan for the query {} because the plan corresponds to dataset {} but the execution worker belongs to {}.", getId(), getDataset(), context.getDataset());
-		return Collections.emptyMap();
-	}
-
-	@Override
-	public ShardResult getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry) {
-		ShardResult result = new ShardResult();
-		result.setQueryId(getId());
-		return result;
-	}
-
-	@Override
 	public Set<Namespace> getRequiredDatasets() {
 		return Set.of(namespace);
 	}
@@ -222,11 +197,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@JsonIgnore
 	public QueryDescription getSubmitted() {
 		return query;
-	}
-
-	@Override
-	public Stream<EntityResult> streamResults() {
-		return getResults().stream();
 	}
 
 	/**
@@ -289,6 +259,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		}
 
 		return sb.toString();
+	}
+
+	@Override
+	public WorkerMessage createExecutionMessage() {
+		return new ExecuteQuery(getId(), getQuery());
 	}
 
 	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {

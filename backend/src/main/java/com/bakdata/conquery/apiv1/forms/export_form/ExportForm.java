@@ -14,8 +14,10 @@ import javax.validation.constraints.NotNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -26,11 +28,9 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -61,7 +61,7 @@ public class ExportForm extends Form {
 	private boolean alsoCreateCoarserSubdivisions = true;
 
 	@JsonIgnore
-	private IQuery prerequisite;
+	private Query prerequisite;
 	@JsonIgnore
 	private List<DateContext.Resolution> resolvedResolutions;
 
@@ -82,7 +82,7 @@ public class ExportForm extends Form {
 	}
 
 	@Override
-	public Set<ManagedExecution> collectRequiredQueries() {
+	public Set<ManagedExecution<?>> collectRequiredQueries() {
 		if(queryGroup == null){
 			return Collections.emptySet();
 		}

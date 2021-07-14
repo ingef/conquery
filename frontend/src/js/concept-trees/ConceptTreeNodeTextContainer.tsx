@@ -25,7 +25,7 @@ interface PropsT {
   active?: boolean;
   onTextClick?: Function;
   createQueryElement: () => ConceptQueryNodeType;
-  search?: SearchT;
+  search: SearchT;
   isStructFolder?: boolean;
 }
 

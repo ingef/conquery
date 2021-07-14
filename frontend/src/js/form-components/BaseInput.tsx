@@ -6,6 +6,8 @@ import type { CurrencyConfigT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
+import FaIcon from "../icon/FaIcon";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import CurrencyInput from "./CurrencyInput";
 
@@ -20,13 +22,7 @@ const Input = styled("input")<{
   invalid?: boolean;
 }>`
   outline: 0;
-  border: 1px solid
-    ${({ theme, valid, invalid }) =>
-      invalid
-        ? theme.col.red
-        : valid
-        ? theme.col.green
-        : theme.col.grayMediumLight};
+  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
   font-size: ${({ theme }) => theme.font.md};
   min-width: 170px;
 
@@ -34,6 +30,27 @@ const Input = styled("input")<{
     large ? "10px 30px 10px 14px" : "8px 30px 8px 10px"};
   font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
   border-radius: ${({ theme }) => theme.borderRadius};
+`;
+
+const SignalIcon = styled(FaIcon)`
+  position: absolute;
+  top: ${({ large }) => (large ? "14px" : "10px")};
+  right: 35px;
+  opacity: 0.8;
+`;
+
+const GreenIcon = styled(SignalIcon)`
+  color: ${({ theme }) => theme.col.green};
+`;
+const RedIcon = styled(FaIcon)`
+  color: ${({ theme }) => theme.col.red};
+  opacity: 0.8;
+`;
+
+const SxWithTooltip = styled(WithTooltip)`
+  position: absolute;
+  top: 7px;
+  right: 35px;
 `;
 
 const ClearZoneIconButton = styled(IconButton)`
@@ -135,15 +152,25 @@ const BaseInput = (props: Props) => {
         />
       )}
       {exists(props.value) && !isEmpty(props.value) && (
-        <ClearZoneIconButton
-          tiny
-          icon="times"
-          tabIndex={-1}
-          large={props.large}
-          title={t("common.clearValue")}
-          aria-label={t("common.clearValue")}
-          onClick={() => props.onChange(null)}
-        />
+        <>
+          {props.valid && !props.invalid && (
+            <GreenIcon icon="check" large={props.large} />
+          )}
+          {props.invalid && (
+            <SxWithTooltip text={t("common.dateInvalid")}>
+              <RedIcon icon="exclamation-triangle" large={props.large} />
+            </SxWithTooltip>
+          )}
+          <ClearZoneIconButton
+            tiny
+            icon="times"
+            tabIndex={-1}
+            large={props.large}
+            title={t("common.clearValue")}
+            aria-label={t("common.clearValue")}
+            onClick={() => props.onChange(null)}
+          />
+        </>
       )}
     </Root>
   );

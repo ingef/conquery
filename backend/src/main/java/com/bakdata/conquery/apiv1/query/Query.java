@@ -1,8 +1,8 @@
 package com.bakdata.conquery.apiv1.query;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -19,18 +19,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
-public abstract class IQuery implements QueryDescription {
+public abstract class Query implements QueryDescription {
 
-	public abstract QueryPlan createQueryPlan(QueryPlanContext context);
+	public abstract QueryPlan<?> createQueryPlan(QueryPlanContext context);
 	
-	public abstract void collectRequiredQueries(Set<ManagedExecution> requiredQueries);
+	public abstract void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries);
 	
 	@Override
 	public abstract void resolve(QueryResolveContext context);
 	
-	public Set<ManagedExecution> collectRequiredQueries() {
-		Set<ManagedExecution> set = new HashSet<>();
-		this.collectRequiredQueries(set);
+	public Set<ManagedExecution<?>> collectRequiredQueries() {
+		Set<ManagedExecution<?>> set = new HashSet<>();
+		collectRequiredQueries(set);
 		return set;
 	}
 
@@ -48,7 +48,7 @@ public abstract class IQuery implements QueryDescription {
 	}
 
 	/**
-	 * Method that returns only the parts of the query to reusable by others. This allows switching between different implementations of {@link IQuery} between reuse.
+	 * Method that returns only the parts of the query to reusable by others. This allows switching between different implementations of {@link Query} between reuse.
 	 */
 	@JsonIgnore
 	public CQElement getReusableComponents() {
@@ -60,8 +60,9 @@ public abstract class IQuery implements QueryDescription {
 	 *
 	 * @see ManagedQuery#finish(MetaStorage, ExecutionState) for how it's used.
 	 * @return the number of results in the result List.
+	 * @param results
 	 */
-	public long countResults(List<EntityResult> results) {
-		return results.size();
+	public long countResults(Stream<EntityResult> results) {
+		return results.count();
 	}
 }

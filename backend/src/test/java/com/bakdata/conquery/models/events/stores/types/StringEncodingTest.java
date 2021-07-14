@@ -26,8 +26,8 @@ public class StringEncodingTest {
 
 		return Stream.generate(() -> UUID.randomUUID().toString().replace("-", ""))
 					 .map(uuid -> DynamicTest.dynamicTest(uuid, () -> {
-						 byte[] decoded = encoding.decode(uuid);
-						 String encoded = encoding.encode(decoded);
+						 byte[] decoded = encoding.encode(uuid);
+						 String encoded = encoding.decode(decoded);
 
 						 assertThat(encoded).isEqualTo(uuid);
 						 assertThat(decoded.length).isLessThan(uuid.length());

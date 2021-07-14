@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
 import com.bakdata.conquery.io.result.ResultUtil;
@@ -18,7 +19,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -44,7 +44,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
 		Dataset dataset = standaloneSupport.getDataset();
 
-		IQuery query = getQuery();
+		Query query = getQuery();
 
 		assertThat(standaloneSupport.getValidator().validate(query))
 				.describedAs("Query Validation Errors")
@@ -55,7 +55,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		final User testUser = standaloneSupport.getTestUser();
-		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, testUser, dataset, config);
+		ManagedQuery managed = (ManagedQuery) standaloneSupport.getNamespace().getExecutionManager().runQuery(namespaces, query, testUser, dataset, config);
 
 		managed.awaitDone(10, TimeUnit.SECONDS);
 		while (managed.getState() != ExecutionState.DONE && managed.getState() != ExecutionState.FAILED) {
@@ -72,7 +72,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		List<ResultInfo> resultInfos = managed.getResultInfo();
 
 		assertThat(
-				managed.getResults().stream()
+				managed.streamResults()
 						.flatMap(EntityResult::streamValues)
 		)
 				.as("Should have same size as result infos")
@@ -104,7 +104,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		assertThat(actual).as("Results for %s are not as expected.", this).containsExactlyInAnyOrderElementsOf(expected);
 		// check that getLastResultCount returns the correct size
-		if (managed.getResults().stream().noneMatch(MultilineEntityResult.class::isInstance)) {
+		if (managed.streamResults().noneMatch(MultilineEntityResult.class::isInstance)) {
 			assertThat(managed.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
 		}
 
@@ -112,7 +112,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	}
 
 	@JsonIgnore
-	protected abstract IQuery getQuery();
+	protected abstract Query getQuery();
 
 	protected abstract ResourceFile getExpectedCsv();
 }

@@ -35,7 +35,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -43,11 +42,10 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -74,49 +72,53 @@ import org.apache.shiro.authz.Permission;
 @NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
-	
+
 	/**
-	 * Some unusual suffix. Its not too bad if someone actually uses this. 
+	 * Some unusual suffix. Its not too bad if someone actually uses this.
 	 */
 	public static final String AUTO_LABEL_SUFFIX = "\t@§$";
 
 	@NsIdRef
-	protected Dataset dataset;
-	protected UUID queryId;
-	protected String label;
+	private Dataset dataset;
+	private UUID queryId;
+	private String label;
 
-	protected LocalDateTime creationTime = LocalDateTime.now();
+	private LocalDateTime creationTime = LocalDateTime.now();
 
 	@Nullable
 	@MetaIdRef
-	protected User owner;
+	private User owner;
 
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
 
-	protected boolean machineGenerated;
+	private boolean machineGenerated;
 
 
 	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
-	protected transient ExecutionState state = ExecutionState.NEW;
+	private transient ExecutionState state = ExecutionState.NEW;
 	@JsonIgnore
 	private transient CountDownLatch execution;
 	@JsonIgnore
 	private transient LocalDateTime startTime;
 	@JsonIgnore
-	protected transient LocalDateTime finishTime;
+	private transient LocalDateTime finishTime;
 	@JsonIgnore
 	private transient ConqueryErrorInfo error;
 	@JsonIgnore
 	private transient Float progress;
 	@JsonIgnore
-	private boolean initialized = false;
+	private transient boolean initialized = false;
 
-	public ManagedExecution(User owner, Dataset submittedDataset) {
+	@JsonIgnore
+	private transient ExecutionManager executionManager;
+
+
+	public ManagedExecution(User owner, Dataset dataset) {
 		this.owner = owner;
-		this.dataset = submittedDataset;
+		this.dataset = dataset;
 	}
 
 	/**
@@ -124,14 +126,17 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	public void initExecutable(DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		synchronized (this) {
-			if(initialized) {
+			if (initialized) {
 				log.trace("Execution {} was already initialized", getId());
 				return;
 			}
-			if(label == null) {
+			if (label == null) {
 				// IdMapper is not necessary here
 				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null));
 			}
+
+			executionManager = datasetRegistry.get(getDataset().getId()).getExecutionManager();
+
 			doInitExecutable(datasetRegistry, config);
 			initialized = true;
 		}
@@ -149,7 +154,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	@Override
 	public ManagedExecutionId createId() {
-		if(queryId == null) {
+		if (queryId == null) {
 			queryId = UUID.randomUUID();
 		}
 		return new ManagedExecutionId(dataset.getId(), queryId);
@@ -159,30 +164,35 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Fails the execution and log the occurred error.
 	 */
 	protected void fail(MetaStorage storage, ConqueryErrorInfo error) {
-		if(this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
+		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
-		} else {
+		}
+		else {
 			this.error = error;
 			// Log the error, so its id is atleast once in the logs
 			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error);
 		}
-		
+
 		finish(storage, ExecutionState.FAILED);
 	}
 
 	public void start() {
 		synchronized (this) {
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
+
 			startTime = LocalDateTime.now();
-			state = ExecutionState.RUNNING;
+
+			setState(ExecutionState.RUNNING);
+			getExecutionManager().clearQueryResults(this);
+
 			execution = new CountDownLatch(1);
 		}
 	}
 
 	protected void finish(MetaStorage storage, ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW) {
-			log.error("Query[{}] was never run.", getId());			
+			log.error("Query[{}] was never run.", getId());
 		}
 
 		synchronized (this) {
@@ -194,8 +204,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			execution.countDown();
 
 			// No need to persist failed queries. (As they are most likely invalid)
-			if(getState() == ExecutionState.DONE) {
-				if(storage == null) {
+			if (getState() == ExecutionState.DONE) {
+				if (storage == null) {
 					log.warn("Not saving successful execution {} because no storage was provided", getId());
 					return;
 				}
@@ -205,11 +215,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 
 		log.info(
-			"{} {} {} within {}",
-			state,
-			queryId,
-			this.getClass().getSimpleName(),
-			getExecutionTime()
+				"{} {} {} within {}",
+				getState(),
+				queryId,
+				this.getClass().getSimpleName(),
+				getExecutionTime()
 		);
 	}
 
@@ -222,7 +232,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Blocks until a execution finished of the specified timeout is reached. Return immediately if the execution is not running
 	 */
 	public void awaitDone(int time, TimeUnit unit) {
-		if (state != ExecutionState.RUNNING){
+		if (getState() != ExecutionState.RUNNING) {
 			return;
 		}
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
@@ -237,8 +247,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setOwn(user.isOwner(this));
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
-		status.setStatus(state);
-		if(owner != null){
+		status.setStatus(getState());
+		if (owner != null) {
 			status.setOwner(owner.getId());
 			status.setOwnerName(owner.getLabel());
 		}
@@ -263,14 +273,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		FullExecutionStatus status = new FullExecutionStatus();
 		setStatusBase(user, status, url, datasetAbilities);
 
-		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status,  datasetRegistry);
+		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
 		setAdditionalFieldsForStatusWithSource(user, status);
 		setAdditionalFieldsForStatusWithGroups(storage, status);
 		setAvailableSecondaryIds(status);
 		status.setProgress(progress);
 
 
-		if (state.equals(ExecutionState.FAILED) && error != null) {
+		if (getState().equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
@@ -291,15 +301,15 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
 		List<GroupId> permittedGroups = new ArrayList<>();
-		for(Group group : storage.getAllGroups()) {
-			for(Permission perm : group.getPermissions()) {
-				if(perm.implies(createPermission(Ability.READ.asSet()))) {
+		for (Group group : storage.getAllGroups()) {
+			for (Permission perm : group.getPermissions()) {
+				if (perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
 					continue;
 				}
 			}
 		}
-		
+
 		status.setGroups(permittedGroups);
 	}
 
@@ -316,11 +326,11 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		query.visit(namespacesIdCollector);
 
 		final Set<Concept<?>> concepts = namespacesIdCollector.getIdentifiables()
-														  .stream()
-														  .filter(ConceptElement.class::isInstance)
-														  .map(ConceptElement.class::cast)
-														  .map(ConceptElement::getConcept)
-														  .collect(Collectors.toSet());
+														   .stream()
+														   .filter(ConceptElement.class::isInstance)
+														   .map(ConceptElement.class::cast)
+														   .map(ConceptElement::getConcept)
+														   .collect(Collectors.toSet());
 
 		boolean canExpand = user.isPermittedAll(concepts, Ability.READ);
 
@@ -329,44 +339,33 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	public boolean isReadyToDownload(Map<DatasetId, Set<Ability>> datasetAbilities) {
-		if (state != ExecutionState.DONE) {
+		if (getState() != ExecutionState.DONE) {
 			// No url for unfinished executions, quick return
 			return false;
 		}
 
 		//TODO this is no longer the case.
+
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
 		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
 
 		return getUsedNamespacedIds().stream()
-				.map(NamespacedIdentifiable::getDataset)
-				.distinct()
-				.allMatch((id) -> datasetAbilities.get(id.getId()).contains(Ability.DOWNLOAD));
+									 .map(NamespacedIdentifiable::getDataset)
+									 .distinct()
+									 .allMatch((id) -> datasetAbilities.get(id.getId()).contains(Ability.DOWNLOAD));
 	}
 
 	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.
+	 *
 	 * @return A List of all {@link NamespacedId}s needed for the execution.
 	 */
 	@JsonIgnore
 	public abstract Set<NamespacedIdentifiable<?>> getUsedNamespacedIds();
 
 
-	/**
-	 * Creates a mapping from subexecutions. Their id is mapped to their {@link QueryPlan}.
-	 */
-	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
-
 	public abstract void addResult(@NonNull MetaStorage storage, R result);
-
-	/**
-	 * Initializes the result that is send from a worker to the ManagerNode.
-	 * E.g. this function enables the {@link ManagedForm} to prepare the result in order to be
-	 * matched to its subqueries.
-	 */
-	@JsonIgnore
-	public abstract R getInitializedShardResult(Map.Entry<ManagedExecutionId, QueryPlan> entry);
 
 	/**
 	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
@@ -377,27 +376,35 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@JsonIgnore
 	public String getLabelWithoutAutoLabelSuffix() {
 		int idx;
-		if(label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1){
-		
+		if (label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1) {
+
 			return label.substring(0, idx);
 		}
 		return label;
 	}
-	
+
 	@JsonIgnore
 	public boolean isAutoLabeled() {
 		return label != null && label.endsWith(AUTO_LABEL_SUFFIX);
 	}
-	
+
 	@JsonIgnore
 	protected abstract String makeDefaultLabel(PrintSettings cfg);
-	
+
 	protected String makeAutoLabel(PrintSettings cfg) {
 		return makeDefaultLabel(cfg) +  AUTO_LABEL_SUFFIX;
 	}
 
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
-		return ExecutionPermission.onInstance(abilities,getId());
+		return ExecutionPermission.onInstance(abilities, getId());
+	}
+
+	public abstract WorkerMessage createExecutionMessage();
+
+	public void reset() {
+		setState(ExecutionState.NEW);
+
+		executionManager.clearQueryResults(this);
 	}
 }

@@ -6,7 +6,7 @@ import { Store } from "redux";
 
 import AppRoot from "./AppRoot";
 import "./browserShimsAndPolyfills";
-import { initializeEnvironment, Environment } from "./environment";
+import { initializeEnvironment, CustomEnvironment } from "./environment";
 import { TabT } from "./pane/types";
 import { makeStore } from "./store";
 
@@ -31,14 +31,14 @@ const renderRoot = (tabs: TabT[], theme: Theme) => {
 };
 
 export default function conquery({
-  environment,
-  tabs,
   theme,
+  tabs,
+  customEnvironment,
 }: {
-  environment: Environment;
-  tabs: TabT[];
   theme: Theme; // React-Emotion theme, will at some point completely replace sass
+  tabs: TabT[];
+  customEnvironment: CustomEnvironment;
 }) {
-  initializeEnvironment(environment);
+  initializeEnvironment(customEnvironment);
   renderRoot(tabs, theme);
 }

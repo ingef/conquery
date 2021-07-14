@@ -4,10 +4,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.annotation.CheckForNull;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -18,9 +21,10 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.*;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
@@ -34,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "SECONDARY_ID_QUERY", base = QueryDescription.class)
-public class SecondaryIdQuery extends IQuery {
+public class SecondaryIdQuery extends Query {
 
 	@NotNull
 	private CQElement root;
@@ -72,7 +76,7 @@ public class SecondaryIdQuery extends IQuery {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
 		// Be aware, that this.query cannot be checked, as it does not exists at this point, however this.root exists
 		root.collectRequiredQueries(requiredQueries);
 	}
@@ -80,7 +84,7 @@ public class SecondaryIdQuery extends IQuery {
 	@Override
 	public void resolve(QueryResolveContext context) {
 
-		@NotNull DateAggregationMode resolvedDateAggregationMode = dateAggregationMode;
+		DateAggregationMode resolvedDateAggregationMode = dateAggregationMode;
 		if(context.getDateAggregationMode() != null) {
 			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
@@ -154,9 +158,8 @@ public class SecondaryIdQuery extends IQuery {
 	}
 
 	@Override
-	public long countResults(List<EntityResult> results) {
-		return results.stream()
-					  .map(EntityResult::listResultLines)
+	public long countResults(Stream<EntityResult> results) {
+		return results.map(EntityResult::listResultLines)
 					  .mapToLong(List::size)
 					  .sum();
 	}

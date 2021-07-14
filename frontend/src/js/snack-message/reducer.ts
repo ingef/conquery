@@ -1,4 +1,8 @@
-import { SET_MESSAGE, RESET_MESSAGE } from "./actionTypes";
+import { getType } from "typesafe-actions";
+
+import { Action } from "../app/actions";
+
+import { resetMessage, setMessage } from "./actions";
 
 export interface SnackMessageStateT {
   message: string | null;
@@ -8,16 +12,18 @@ const initialState: SnackMessageStateT = {
   message: null,
 };
 
-export default (
+function reducer(
   state: SnackMessageStateT = initialState,
-  action: Object,
-): SnackMessageStateT => {
+  action: Action,
+): SnackMessageStateT {
   switch (action.type) {
-    case SET_MESSAGE:
+    case getType(setMessage):
       return { ...state, message: action.payload.message };
-    case RESET_MESSAGE:
+    case getType(resetMessage):
       return initialState;
     default:
       return state;
   }
-};
+}
+
+export default reducer;

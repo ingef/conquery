@@ -12,6 +12,7 @@ import type {
   SelectedSelectorT,
   SelectedDateColumnT,
 } from "../standard-query-editor/types";
+import type { ValidatedTimebasedConditionT } from "../timebased-query-editor/reducer";
 
 export const transformFilterValueToApi = (filter: any) => {
   const { value, mode } = filter;
@@ -144,7 +145,7 @@ const createQueryConcepts = (query: any) => {
 };
 
 // TODO: Use, once feature is complete
-const getDays = (condition: ConditionT) => {
+const getDays = (condition: ValidatedTimebasedConditionT) => {
   switch (condition.operator) {
     case "DAYS_BEFORE":
       return {
@@ -165,7 +166,7 @@ const getDays = (condition: ConditionT) => {
 const transformTimebasedQueryToApi = (query: any) =>
   createConceptQuery(
     createAnd(
-      query.conditions.map((condition: any) => {
+      query.conditions.map((condition: ValidatedTimebasedConditionT) => {
         const days = getDays(condition);
 
         return {

@@ -7,8 +7,9 @@ import { useSelector } from "react-redux";
 import EditableTagsForm from "../../form-components/EditableTagsForm";
 import Modal from "../../modal/Modal";
 
-import { useRetagPreviousQuery } from "./actions";
+import { useRetagQuery } from "./actions";
 import type { PreviousQueryT } from "./reducer";
+import { usePreviousQueriesTags } from "./selector";
 
 const SxEditableTagsForm = styled(EditableTagsForm)`
   min-width: 300px;
@@ -27,10 +28,8 @@ const EditPreviousQueryFoldersModal: FC<PropsT> = ({
   onEditSuccess,
 }) => {
   const { t } = useTranslation();
-  const retagPreviousQuery = useRetagPreviousQuery();
-  const availableTags = useSelector<StateT, string[]>(
-    (state) => state.previousQueries.tags,
-  );
+  const retagQuery = useRetagQuery();
+  const folders = usePreviousQueriesTags();
 
   return (
     <Modal
@@ -42,12 +41,12 @@ const EditPreviousQueryFoldersModal: FC<PropsT> = ({
         loading={previousQuery.loading}
         onSubmit={async (tags) => {
           try {
-            await retagPreviousQuery(previousQuery.id, tags);
+            await retagQuery(previousQuery.id, tags);
             onEditSuccess();
           } catch (e) {}
         }}
         onCancel={onClose}
-        availableTags={availableTags}
+        availableTags={folders}
       />
     </Modal>
   );

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import DeleteModal from "../../modal/DeleteModal";
 
-import { useDeletePreviousQuery } from "./useDeletePreviousQuery";
+import { useRemoveQuery } from "./actions";
 
 interface PropsT {
   previousQueryId: string;
@@ -17,16 +17,13 @@ const DeletePreviousQueryModal: FC<PropsT> = ({
   onDeleteSuccess,
 }) => {
   const { t } = useTranslation();
-  const onDeletePreviousQuery = useDeletePreviousQuery(
-    previousQueryId,
-    onDeleteSuccess,
-  );
+  const removeQuery = useRemoveQuery(previousQueryId, onDeleteSuccess);
 
   return (
     <DeleteModal
       onClose={onClose}
       headline={t("deletePreviousQueryModal.areYouSure")}
-      onDelete={onDeletePreviousQuery}
+      onDelete={removeQuery}
     />
   );
 };

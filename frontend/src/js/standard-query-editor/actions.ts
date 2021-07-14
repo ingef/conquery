@@ -14,16 +14,10 @@ import type {
   QueryNodeT,
   PostFilterSuggestionsResponseT,
 } from "../api/types";
-import {
-  defaultSuccess,
-  defaultError,
-  ErrorObject,
-  errorPayload,
-  successPayload,
-} from "../common/actions";
+import { ErrorObject, errorPayload, successPayload } from "../common/actions";
 import type { TreesT } from "../concept-trees/reducer";
 import type { ModeT } from "../form-components/InputRange";
-import { useLoadPreviousQuery } from "../previous-queries/list/actions";
+import { useLoadQuery } from "../previous-queries/list/actions";
 
 import { StandardQueryStateT } from "./queryReducer";
 import type {
@@ -36,7 +30,7 @@ export type StandardQueryEditorActions = ActionType<
   | typeof resetTable
   | typeof dropAndNode
   | typeof dropOrNode
-  | typeof loadQuery
+  | typeof loadSavedQuery
   | typeof clearQuery
   | typeof deleteNode
   | typeof deleteGroup
@@ -80,7 +74,7 @@ export const toggleExcludeGroup = createAction(
   "query-editor/TOGGLE_EXCLUDE_GROUP",
 )<{ andIdx: number }>();
 
-export const loadQuery = createAction("query-editor/LOAD_QUERY")<{
+export const loadSavedQuery = createAction("query-editor/LOAD_SAVED_QUERY")<{
   query: StandardQueryStateT;
 }>();
 
@@ -123,7 +117,7 @@ const isAndQuery = (query: QueryT): query is AndQueryT => {
 */
 export const useExpandPreviousQuery = () => {
   const dispatch = useDispatch();
-  const loadPreviousQuery = useLoadPreviousQuery();
+  const loadQuery = useLoadQuery();
   const { t } = useTranslation();
 
   return async (datasetId: DatasetIdT, rootConcepts: TreesT, query: QueryT) => {
@@ -142,9 +136,7 @@ export const useExpandPreviousQuery = () => {
     );
 
     await Promise.all(
-      nestedPreviousQueryIds.map((queryId) =>
-        loadPreviousQuery(datasetId, queryId),
-      ),
+      nestedPreviousQueryIds.map((queryId) => loadQuery(datasetId, queryId)),
     );
 
     dispatch(

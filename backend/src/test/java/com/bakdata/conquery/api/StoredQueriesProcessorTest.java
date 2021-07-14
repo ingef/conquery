@@ -12,34 +12,35 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.apiv1.ExecutionStatus;
+import com.bakdata.conquery.apiv1.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationController;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
-import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.AbilitySets;
-import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.apiv1.ExecutionStatus;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.apiv1.OverviewExecutionStatus;
-import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.apiv1.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationController;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.AbilitySets;
+import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.api.ResultArrowFileResource;
 import com.bakdata.conquery.resources.api.ResultArrowStreamResource;
@@ -129,11 +130,11 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedForm mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
-		return new ManagedForm(new ExportForm(), user, dataset) {
+		return new ManagedInternalForm(new ExportForm(), user, dataset) {
 			{
-				state = execState;
-				creationTime = LocalDateTime.MIN;
-				queryId =id.getExecution();
+				setState(execState);
+				setCreationTime(LocalDateTime.MIN);
+				setQueryId(id.getExecution());
 			}
 		};
 	}
@@ -163,12 +164,12 @@ public class StoredQueriesProcessorTest {
 	}
 
 
-	private static ManagedQuery mockManagedQuery(IQuery queryDescription, User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
+	private static ManagedQuery mockManagedQuery(Query queryDescription, User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
 		return new ManagedQuery(queryDescription, user, dataset) {
 			{
-				state = execState;
-				creationTime = LocalDateTime.MIN;
-				queryId = id.getExecution();
+				setState(execState);
+				setCreationTime(LocalDateTime.MIN);
+				setQueryId(id.getExecution());
 			}
 		};
 	}

@@ -1,53 +1,36 @@
-import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import * as React from "react";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import ReactSelect from "../../form-components/ReactSelect";
+import SearchBar from "../../search-bar/SearchBar";
 
-import { updatePreviousQueriesSearch } from "./actions";
-
-const Root = styled("div")`
-  position: relative;
-`;
+import { clearQueriesSearch, useSearchQueries } from "./actions";
+import type { QueriesSearchStateT } from "./reducer";
 
 interface Props {
   className?: string;
 }
 
-const PreviousQueriesSearchBox: React.FC<Props> = ({ className }) => {
+const PreviousQueriesSearchBox: FC<Props> = ({ className }) => {
   const { t } = useTranslation();
-  const search = useSelector<StateT, string[]>(
+  const search = useSelector<StateT, QueriesSearchStateT>(
     (state) => state.previousQueriesSearch,
-  );
-  const options = useSelector<StateT, string[]>(
-    (state) => state.previousQueries.names,
   );
 
   const dispatch = useDispatch();
+  const searchQueries = useSearchQueries();
 
-  const onSearch = (values: string[]) =>
-    dispatch(updatePreviousQueriesSearch(values));
+  const onClear = () => dispatch(clearQueriesSearch());
 
   return (
-    <Root className={className}>
-      <ReactSelect
-        creatable
-        isMulti
-        name="input"
-        value={search.map((t) => ({ label: t, value: t }))}
-        options={options ? options.map((t) => ({ label: t, value: t })) : []}
-        onChange={(values) =>
-          onSearch(values ? values.map((v) => v.value) : [])
-        }
-        placeholder={t("reactSelect.searchPlaceholder")}
-        noOptionsMessage={() => t("reactSelect.noResults")}
-        formatCreateLabel={(inputValue) =>
-          t("common.create") + `: "${inputValue}"`
-        }
-      />
-    </Root>
+    <SearchBar
+      className={className}
+      searchTerm={search.searchTerm}
+      placeholder={t("previousQueries.searchPlaceholder")}
+      onClear={onClear}
+      onSearch={searchQueries}
+    />
   );
 };
 

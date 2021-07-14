@@ -11,7 +11,7 @@ import ReactSelect from "./ReactSelect";
 interface PropsT {
   className?: string;
   tags?: string[];
-  loading: boolean;
+  loading?: boolean;
   onSubmit: (tags: string[]) => void;
   onCancel: () => void;
   availableTags: string[];
@@ -82,7 +82,7 @@ const EditableTagsForm: FC<PropsT> = ({
         <SxIconButton
           type="submit"
           frame
-          disabled={loading}
+          disabled={!!loading}
           icon={loading ? "spinner" : "check"}
         />
       </WithTooltip>
