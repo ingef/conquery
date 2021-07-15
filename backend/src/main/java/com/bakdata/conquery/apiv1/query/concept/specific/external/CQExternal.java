@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.validation.constraints.NotEmpty;
 
@@ -12,18 +11,19 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -69,52 +69,40 @@ public class CQExternal extends CQElement {
 	public void resolve(QueryResolveContext context) {
 		valuesResolved = new Int2ObjectOpenHashMap<>();
 
-
 		final EntityIdMap mapping = context.getNamespace().getStorage().getIdMapping();
 
-		final Map<String, FormatColumn> stringFormatColumnMap = context.getConfig().getIdMapping().getFormatColumns();
+		final DateReader dateReader = context.getConfig().getPreprocessor().getParsers().getDateReader();
 
-		final FormatColumn[] resolvedFormats = resolveFormats(stringFormatColumnMap);
+		final IdMappingConfig mappingConfig = context.getConfig().getIdMapping();
 
-		final DateFormat dateFormat = getDateFormat(resolvedFormats);
+		// extract dates from rows
+		final Int2ObjectMap<CDateSet> rowDates = mappingConfig.readDates(values, format, dateReader);
 
-		final int idIndex = getIdIndex(resolvedFormats);
-		final IdColumn idColumn = (IdColumn) resolvedFormats[idIndex];
+		final int idIndex = mappingConfig.getIdIndex(format);
 
+		final IdMappingConfig.InputMapper reader = mappingConfig.getIdMapper(format.get(idIndex));
 
-		final EncodedDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
-		final DateFormats dateFormats = context.getConfig().getPreprocessor().getParsers().getDateFormats();
-
-		List<String[]> unresolved = new ArrayList<>();
+		final List<String[]> unresolved = new ArrayList<>();
 
 		// ignore the first row, because this is the header
-		for (int i = 1; i < values.length; i++) {
-			final String[] row = values[i];
-			final String[] externalId = idColumn.read(row, idIndex);
+		for (int rowNum = 1; rowNum < values.length; rowNum++) {
+			final String[] row = values[rowNum];
+			final String externalId = reader.read(row[idIndex]);
 
-			final Optional<String> id = mapping.toInternal(externalId);
+			final int resolvedId = mapping.resolve(reader.getName(), externalId);
 
-			if (id.isEmpty()) {
+			if (resolvedId == -1) {
+				unresolved.add(row);
 				continue;
 			}
 
-			final int resolvedId;
-
-			if ((resolvedId = primary.getId(id.get())) == -1) {
+			if (!rowDates.containsKey(rowNum)) {
 				unresolved.add(row);
 				continue;
 			}
 
 			//read the dates from the row
-			try {
-				CDateSet dates = dateFormat.readDates(resolvedFormats, row, dateFormats);
-
-				valuesResolved.put(resolvedId, dates);
-			}
-			catch (Exception e) {
-				log.warn("Failed to parse Date from {}", row, e);
-				unresolved.add(row);
-			}
+			valuesResolved.put(resolvedId, rowDates.get(rowNum));
 		}
 
 		if (!unresolved.isEmpty()) {
@@ -131,50 +119,6 @@ public class CQExternal extends CQElement {
 		}
 	}
 
-	@NotNull
-	private DateFormat getDateFormat(FormatColumn[] resolvedFormats) {
-		DateFormat dateFormat = null;
-
-		for (FormatColumn col : resolvedFormats) {
-			if (!(col instanceof DateColumn)) {
-				continue;
-			}
-
-			if (dateFormat != null && !dateFormat.equals(((DateColumn) col).getFormat())) {
-				throw new IllegalStateException("Use of multiple Date Formats.");
-			}
-
-			dateFormat = ((DateColumn) col).getFormat();
-		}
-
-		return dateFormat == null ? DateFormat.ALL : dateFormat;
-	}
-
-	private int getIdIndex(FormatColumn[] resolvedFormats) {
-		for (int index = 0; index < resolvedFormats.length; index++) {
-			if (resolvedFormats[index] instanceof IdColumn) {
-				return index;
-			}
-		}
-
-		throw new IllegalStateException("No IdColumn provided");
-	}
-
-	@NotNull
-	private FormatColumn[] resolveFormats(Map<String, FormatColumn> stringFormatColumnMap) {
-		final List<FormatColumn> resolvedFormats = new ArrayList<>();
-
-		for (String columnType : format) {
-			FormatColumn formatColumn = stringFormatColumnMap.get(columnType);
-
-			if (formatColumn == null) {
-				throw new IllegalStateException(String.format("Don't know of format %s", columnType));
-			}
-
-			resolvedFormats.add(formatColumn);
-		}
-		return resolvedFormats.toArray(FormatColumn[]::new);
-	}
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {

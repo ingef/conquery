@@ -1,37 +1,31 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.external;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 
-import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
-import com.bakdata.conquery.util.DateFormats;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.MoreCollectors;
-import org.apache.commons.collections.EnumerationUtils;
+import com.bakdata.conquery.util.DateReader;
 
 public enum DateFormat {
 	EVENT_DATE {
 		@Override
-		public CDateSet readDates(FormatColumn[] formats, String[] row, DateFormats dateFormats) {
-			final int index = findIndex(formats, DateColumn.EventDate.class);
+		public CDateSet readDates(int[] formats, String[] row, DateReader dateReader) {
+			final int index = formats[0];
 
-			return CDateSet.create(Collections.singleton(CDateRange.exactly(dateFormats.parseToLocalDate(row[index]))));
+			return CDateSet.create(Collections.singleton(CDateRange.exactly(dateReader.parseToLocalDate(row[index]))));
 		}
 	},
 	START_END_DATE {
 		@Override
-		public CDateSet readDates(FormatColumn[] formats, String[] row, DateFormats dateFormats) {
+		public CDateSet readDates(int[] formats, String[] row, DateReader dateReader) {
 
-			final int startIndex = findIndex(formats, DateColumn.StartDate.class);
-			final int endIndex = findIndex(formats, DateColumn.EndDate.class);
+			final int startIndex = formats[0];
+			final int endIndex = formats[1];
 
-			LocalDate start = dateFormats.parseToLocalDate(row[startIndex]);
-			LocalDate end = dateFormats.parseToLocalDate(row[endIndex]);
+			LocalDate start = dateReader.parseToLocalDate(row[startIndex]);
+			LocalDate end = dateReader.parseToLocalDate(row[endIndex]);
 
 			if (start == null && end == null) {
 				return null;
@@ -42,36 +36,27 @@ public enum DateFormat {
 	},
 	DATE_RANGE {
 		@Override
-		public CDateSet readDates(FormatColumn[] formats, String[] row, DateFormats dateFormats) {
-			final int index = findIndex(formats, DateColumn.DateRange.class);
+		public CDateSet readDates(int[] formats, String[] row, DateReader dateReader) {
+			final int index = formats[0];
 
-			return CDateSet.create(Collections.singleton(DateRangeParser.parseISORange(row[index], dateFormats)));
+			return CDateSet.create(Collections.singleton(DateRangeParser.parseISORange(row[index], dateReader)));
 		}
 	},
 	DATE_SET {
 		@Override
-		public CDateSet readDates(FormatColumn[] formats, String[] row, DateFormats dateFormats) {
-			final int index = findIndex(formats, DateColumn.DateSet.class);
+		public CDateSet readDates(int[] formats, String[] row, DateReader dateReader) {
+			final int index = formats[0];
 
-			return CDateSet.parse(row[index], dateFormats);
+			return CDateSet.parse(row[index], dateReader);
 		}
 	},
 	ALL {
 		@Override
-		public CDateSet readDates(FormatColumn[] formats, String[] row, DateFormats dateFormats) {
+		public CDateSet readDates(int[] formats, String[] row, DateReader dateReader) {
 			return CDateSet.createFull();
 		}
 	};
 
-	public abstract CDateSet readDates(FormatColumn[] formats, String[] row, DateFormats dateFormats);
+	public abstract CDateSet readDates(int[] formats, String[] row, DateReader dateReader);
 
-	protected static int findIndex(FormatColumn[] formats, Class<? extends DateColumn> clazz){
-		for (int index = 0; index < formats.length; index++) {
-			if (clazz.isInstance(formats[index])) {
-				return index;
-			}
-		}
-
-		return -1;
-	}
 }

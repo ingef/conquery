@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
@@ -43,7 +43,7 @@ public class DateRangeOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateFormats dateFormats) {
+	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
 		assertRequiredHeaders(headers, startColumn, endColumn);
 
 		final int startIndex = headers.getInt(startColumn);
@@ -61,8 +61,8 @@ public class DateRangeOutput extends OutputDescription {
 					throw new IllegalArgumentException("Open Ranges are not allowed.");
 				}
 
-				LocalDate start = dateFormats.parseToLocalDate(row[startIndex]);
-				LocalDate end = dateFormats.parseToLocalDate(row[endIndex]);
+				LocalDate start = dateReader.parseToLocalDate(row[startIndex]);
+				LocalDate end = dateReader.parseToLocalDate(row[endIndex]);
 
 				return CDateRange.of(start, end);
 			}

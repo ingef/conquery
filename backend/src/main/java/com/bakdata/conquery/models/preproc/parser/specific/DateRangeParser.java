@@ -10,12 +10,10 @@ import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Date;
 
 @Slf4j
 @ToString(callSuper = true)
@@ -23,7 +21,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 	private final DateParser minParser;
 	private final DateParser maxParser;
-	private final DateFormats dateFormats;
+	private final DateReader dateReader;
 
 	private boolean onlyQuarters = true;
 	private int maxValue = Integer.MIN_VALUE;
@@ -34,15 +32,15 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 		super(config);
 		minParser = new DateParser(config);
 		maxParser = new DateParser(config);
-		dateFormats = config.getDateFormats();
+		dateReader = config.getDateReader();
 	}
 
 	@Override
 	protected CDateRange parseValue(@Nonnull String value) {
-		return DateRangeParser.parseISORange(value, dateFormats);
+		return DateRangeParser.parseISORange(value, dateReader);
 	}
 
-	public static CDateRange parseISORange(String value, DateFormats dateFormats) {
+	public static CDateRange parseISORange(String value, DateReader dateReader) {
 		if (value == null) {
 			return null;
 		}
@@ -52,8 +50,8 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 		}
 
 		return CDateRange.of(
-				dateFormats.parseToLocalDate(parts[0]),
-				dateFormats.parseToLocalDate(parts[1])
+				dateReader.parseToLocalDate(parts[0]),
+				dateReader.parseToLocalDate(parts[1])
 		);
 	}
 

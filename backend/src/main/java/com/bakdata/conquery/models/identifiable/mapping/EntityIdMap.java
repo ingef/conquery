@@ -5,12 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -23,7 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 public class EntityIdMap {
 
-
+	@Setter
+	private EncodedDictionary dictionary;
 
 	/**
 	 * The map from csv entity ids to external entity ids.
@@ -73,6 +76,16 @@ public class EntityIdMap {
 	 */
 	public Optional<String> toInternal(String... external) {
 		return Optional.ofNullable(external2Internal.get(new ExternalId(external)));
+	}
+
+	public int resolve(String... external) {
+		String value = external2Internal.get(new ExternalId(external));
+
+		if (value != null) {
+			return dictionary.getId(value);
+		}
+
+		return -1;
 	}
 
 	public void addOutputMapping(String csvEntityId, EntityPrintId externalEntityId) {

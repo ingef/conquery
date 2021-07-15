@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import lombok.SneakyThrows;
 import lombok.ToString;
 
@@ -18,12 +18,12 @@ import lombok.ToString;
 public class DateParser extends Parser<Integer, DateStore> {
 
 	private IntegerParser subType;
-	private DateFormats dateFormats;
+	private DateReader dateReader;
 
 	public DateParser(ParserConfig config) {
 		super(config);
 		subType = new IntegerParser(config);
-		dateFormats = config.getDateFormats();
+		dateReader = config.getDateReader();
 
 	}
 
@@ -35,7 +35,7 @@ public class DateParser extends Parser<Integer, DateStore> {
 
 	@Override
 	protected Integer parseValue(@Nonnull String value) throws ParsingException {
-		return CDate.ofLocalDate(dateFormats.parseToLocalDate(value));
+		return CDate.ofLocalDate(dateReader.parseToLocalDate(value));
 	}
 
 	@Override

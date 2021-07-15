@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
@@ -24,7 +24,7 @@ import com.google.common.math.IntMath;
 import lombok.EqualsAndHashCode;
 
 /**
- * (De-)Serializers are are registered programmatically because they depend on {@link com.bakdata.conquery.util.DateFormats}
+ * (De-)Serializers are are registered programmatically because they depend on {@link DateReader}
  */
 @EqualsAndHashCode
 public class CDateSet {
@@ -445,13 +445,13 @@ public class CDateSet {
 		return rangesByLowerBound.lastEntry().getValue().getMaxValue();
 	}
 	
-	public static CDateSet parse(String value, DateFormats dateFormats) {
+	public static CDateSet parse(String value, DateReader dateReader) {
 		List<CDateRange> ranges = PARSE_PATTERN
 			.matcher(value)
 			.results()
 			.map(mr -> {
 				try {
-					return DateRangeParser.parseISORange(mr.group(2), dateFormats);
+					return DateRangeParser.parseISORange(mr.group(2), dateReader);
 				}
 				catch(Exception e) {
 					throw new RuntimeException(e);

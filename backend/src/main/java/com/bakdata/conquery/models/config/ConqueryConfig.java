@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.MoreCollectors;
@@ -137,10 +137,10 @@ public class ConqueryConfig extends Configuration {
 
 	public static class ConfiguredModule extends SimpleModule {
 		public ConfiguredModule(ConqueryConfig config){
-			DateFormats dateFormats = config.getPreprocessor().getParsers().getDateFormats();
-			addDeserializer(LocalDate.class, new FormatedDateDeserializer(dateFormats));
+			DateReader dateReader = config.getPreprocessor().getParsers().getDateReader();
+			addDeserializer(LocalDate.class, new FormatedDateDeserializer(dateReader));
 			
-			addDeserializer(CDateSet.class, new CDateSetDeserializer(dateFormats));
+			addDeserializer(CDateSet.class, new CDateSetDeserializer(dateReader));
 			addSerializer(CDateSet.class, new CDateSetSerializer());
 		}
 	}
