@@ -11,6 +11,7 @@ import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourcesProvider;
@@ -38,6 +39,8 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
+				bind(manager.getConfig()).to(ConqueryConfig.class);
+
 				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 				bind(manager.getStorage()).to(MetaStorage.class);
 
