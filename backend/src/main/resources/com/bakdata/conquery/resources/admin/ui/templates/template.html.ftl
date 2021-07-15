@@ -29,15 +29,49 @@
 	</style>
 
 	<title>Conquery Admin UI</title>
-  </head>
-  <body>
+    <script>
+        keycloak = new Keycloak({
+        });
+
+        function initKeycloak(resolve, reject) {
+            return keycloak.init({
+                onLoad: 'login-required',
+                checkLoginIframe: false
+                }).then(function(authenticated) {
+                    console.log(`Authenticated: ${r"${authenticated}"}`);
+                    resolve();
+            }).catch(function() {
+                alert('failed to initialize');
+                reject();
+            });
+        }
+
+        function getHeader(){
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + keycloak.token
+            };
+        }
+
+        onloadListeners = []
+        onloadListeners.push(initKeycloak)
+
+        function onloadExecutor() {
+            var currentProm = new Promise(onloadListeners[0])
+            for(let i = 1; i < onloadListeners.length; i++) {
+                currentProm = currentProm.then(onloadListeners[i])
+            }
+        }
+    </script>
   	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <body onload="onloadExecutor()">
 	
 	<nav class="navbar navbar-expand-lg navbar-light bg-light" style="margin-bottom:30px">
-	  <a class="navbar-brand" href="/admin">Conquery Admin</a>
+	  <a class="navbar-brand" href="/admin-ui">Conquery Admin</a>
 	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 		<span class="navbar-toggler-icon"></span>
 	  </button>
@@ -45,22 +79,22 @@
 	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
 		<ul class="navbar-nav mr-auto">
 		  <li class="nav-item">
-			<a class="nav-link" href="/admin/datasets">Datasets</a>
+			<a class="nav-link" href="/admin-ui/datasets">Datasets</a>
 		  </li>
 		  <li class="nav-item">
-			<a class="nav-link" href="/admin/jobs">Jobs</a>
+			<a class="nav-link" href="/admin-ui/jobs">Jobs</a>
 		  </li>
 		  <li class="nav-item">
-			<a class="nav-link" href="/admin/script">Script</a>
+			<a class="nav-link" href="/admin-ui/script">Script</a>
 		  <li class="nav-item dropdown">
 			<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 			  Auth
 			</a>
 			<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-			  <a class="dropdown-item" href="/admin/auth-overview">Overview</a>
-			  <a class="dropdown-item" href="/admin/groups">Groups</a>
-			  <a class="dropdown-item" href="/admin/users">Users</a>
-			  <a class="dropdown-item" href="/admin/roles">Roles</a>
+			  <a class="dropdown-item" href="/admin-ui/auth-overview">Overview</a>
+			  <a class="dropdown-item" href="/admin-ui/groups">Groups</a>
+			  <a class="dropdown-item" href="/admin-ui/users">Users</a>
+			  <a class="dropdown-item" href="/admin-ui/roles">Roles</a>
 			</div>
 		  </li>
 		  <li class="nav-item dropdown">

@@ -49,6 +49,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -79,15 +80,19 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryI
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
+import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -96,6 +101,11 @@ import org.jetbrains.annotations.NotNull;
 @Getter
 public class AdminDatasetProcessor {
 
+
+
+	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
+	private static final String ABBREVIATION_MARKER = "\u2026";
+
 	private final MetaStorage storage; // TODO Remove
 	private final ConqueryConfig config;
 	private final Validator validator;
@@ -103,18 +113,58 @@ public class AdminDatasetProcessor {
 	private final JobManager jobManager;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
+	public DatasetsUIResource.DatasetInfos getDatasetInfos(Dataset dataset) {
+		Namespace namespace = datasetRegistry.get(dataset.getId());
+		return new DatasetsUIResource.DatasetInfos(
+				namespace.getDataset(),
+				namespace.getStorage().getSecondaryIds(),
+				namespace.getStorage().getTables().stream()
+						.map(table -> new DatasetsUIResource.TableInfos(
+								table.getId(),
+								table.getName(),
+								table.getLabel(),
+								StringUtils.abbreviate(table.findImports(namespace.getStorage())
+										.map(Import::getName)
+										.collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
+								table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
+						))
+						.collect(Collectors.toList()),
+				namespace.getStorage().getAllConcepts(),
+				// total size of dictionaries
+				namespace
+						.getStorage()
+						.getAllImports()
+						.stream()
+						.flatMap(i -> i.getDictionaries().stream())
+						.filter(Objects::nonNull)
+						.map(namespace.getStorage()::getDictionary)
+						.distinct()
+						.mapToLong(Dictionary::estimateMemoryConsumption)
+						.sum(),
+				// Total size of CBlocks
+				namespace
+						.getStorage().getTables()
+						.stream()
+						.flatMap(table -> table.findImports(namespace.getStorage()))
+						.mapToLong(imp -> TablesUIResource.calculateCBlocksSizeBytes(
+								imp, namespace.getStorage().getAllConcepts()
+						))
+						.sum(),
+				// total size of entries
+				namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()
+		);
+	}
+
+
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
 	 */
-	public synchronized Dataset addDataset(String name) {
+	public synchronized Dataset addDataset(Dataset dataset) {
 
+		final String name = dataset.getName();
 		if (datasetRegistry.get(new DatasetId(name)) != null) {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
-
-		// create dataset
-		Dataset dataset = new Dataset();
-		dataset.setName(name);
 
 		NamespaceStorage datasetStorage = new NamespaceStorage(validator, config.getStorage(), "dataset_" + name);
 

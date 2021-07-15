@@ -30,10 +30,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @Path("datasets/{" + DATASET + "}/concepts/{" + CONCEPT + "}")
-public class ConceptsUIResource extends HAdmin {
+public class ConceptsUIResource {
 
-	@Inject
-	protected AdminProcessor processor;
 	@Inject
 	protected UIProcessor uiProcessor;
 
@@ -41,14 +39,6 @@ public class ConceptsUIResource extends HAdmin {
 	protected Concept<?> concept;
 	@PathParam(DATASET)
 	protected Dataset dataset;
-	protected Namespace namespace;
-
-	@PostConstruct
-	@Override
-	public void init() {
-		super.init();
-		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
-	}
 
 	@GET
 	public View getConceptView() {

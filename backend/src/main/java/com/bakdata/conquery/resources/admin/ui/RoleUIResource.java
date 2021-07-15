@@ -17,18 +17,18 @@ import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import io.dropwizard.views.View;
 
+import java.util.Collections;
+
 @Produces(MediaType.TEXT_HTML)
 @Path(ROLES_PATH_ELEMENT)
-public class RoleUIResource extends HAdmin {
+public class RoleUIResource {
 
-	@Inject
-	protected AdminProcessor processor;
 	@Inject
 	protected UIProcessor uiProcessor;
 
 	@GET
 	public View getRoles() {
-		return new UIView<>("roles.html.ftl", uiProcessor.getUIContext(), processor.getAllRoles());
+		return new UIView<>("roles.html.ftl", uiProcessor.getUIContext(), Collections.emptyMap());
 	}
 
 	/**
@@ -41,6 +41,6 @@ public class RoleUIResource extends HAdmin {
 	@Path("{" + ROLE_ID + "}")
 	@GET
 	public View getRole(@PathParam(ROLE_ID) Role role) {
-		return new UIView<>("role.html.ftl", uiProcessor.getUIContext(), processor.getRoleContent(role));
+		return new UIView<>("role.html.ftl", uiProcessor.getUIContext(), Collections.emptyMap());
 	}
 }

@@ -56,7 +56,6 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 		if (tokens.isEmpty()) {
 			log.warn("No tokens could be parsed from the request");
-			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 		}
 
 		int failedTokens = 0; 

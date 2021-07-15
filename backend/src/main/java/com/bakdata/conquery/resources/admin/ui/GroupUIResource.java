@@ -17,7 +17,7 @@ import com.bakdata.conquery.resources.hierarchies.HGroups;
 import io.dropwizard.views.View;
 
 @Produces(MediaType.TEXT_HTML)
-public class GroupUIResource extends HGroups {
+public class GroupUIResource {
 
 
 	@Inject

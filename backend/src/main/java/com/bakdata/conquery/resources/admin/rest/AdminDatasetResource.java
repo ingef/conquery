@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import io.dropwizard.auth.Auth;
 import lombok.Getter;
@@ -149,6 +150,11 @@ public class AdminDatasetResource extends HAdmin {
 	@Path("secondaryId/{" + SECONDARY_ID + "}")
 	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
 		processor.deleteSecondaryId(secondaryId);
+	}
+
+	@GET
+	public DatasetsUIResource.DatasetInfos getDatasetInfos() {
+		return processor.getDatasetInfos(dataset);
 	}
 
 	@POST

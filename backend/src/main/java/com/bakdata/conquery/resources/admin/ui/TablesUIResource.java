@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.ui;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -40,60 +41,35 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
 @Getter
 @Setter
 @Slf4j
-public class TablesUIResource extends HAdmin {
+public class TablesUIResource {
 
 	@PathParam(DATASET)
 	protected Dataset dataset;
-	protected Namespace namespace;
 	@PathParam(TABLE)
 	protected Table table;
 
 	@Inject
-	protected AdminProcessor processor;
-	@Inject
 	protected UIProcessor uiProcessor;
-
-	@SneakyThrows({NotFoundException.class})
-	@PostConstruct
-	@Override
-	public void init() {
-		super.init();
-		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
-	}
 
 	@GET
 	public View getTableView() {
-		List<Import> imports = table.findImports(namespace.getStorage()).collect(Collectors.toList());
-
-		final long entries = imports.stream().mapToLong(Import::getNumberOfEntries).sum();
-
 		return new UIView<>(
 				"table.html.ftl",
 				uiProcessor.getUIContext(),
 				new TableStatistics(
 						table,
-						entries,
+						0,
 						//total size of dictionaries
-						imports.stream()
-							   .flatMap(imp -> imp.getDictionaries().stream())
-							   .filter(Objects::nonNull)
-							   .map(namespace.getStorage()::getDictionary)
-							   .mapToLong(Dictionary::estimateMemoryConsumption)
-							   .sum(),
+						0,
 						//total size of entries
-						imports.stream()
-							   .mapToLong(Import::estimateMemoryConsumption)
-							   .sum(),
+						0,
 						// Total size of CBlocks
-						imports.stream()
-							   .mapToLong(imp -> calculateCBlocksSizeBytes(imp, namespace.getStorage().getAllConcepts()))
-							   .sum(),
-						imports
+						0,
+						Collections.emptyList()
 				)
 		);
 	}
@@ -122,12 +98,11 @@ public class TablesUIResource extends HAdmin {
 	@GET
 	@Path("import/{" + IMPORT_ID + "}")
 	public View getImportView(@PathParam(IMPORT_ID) Import imp) {
-		final long cBlockSize = calculateCBlocksSizeBytes(imp, namespace.getStorage().getAllConcepts());
 
 		return new UIView<>(
 				"import.html.ftl",
 				uiProcessor.getUIContext(),
-				new ImportStatistics(imp, cBlockSize)
+				new ImportStatistics(imp, 0)
 		);
 	}
 }

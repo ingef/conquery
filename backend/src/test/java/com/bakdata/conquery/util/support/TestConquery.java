@@ -22,6 +22,7 @@ import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -170,9 +171,9 @@ public class TestConquery {
 			if (count > 0) {
 				name += "[" + count + "]";
 			}
-			DatasetId datasetId = new DatasetId(name);
-			standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor().addDataset(name);
-			return createSupport(datasetId, name);
+			Dataset dataset = new Dataset(name);
+			standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor().addDataset(dataset);
+			return createSupport(dataset.getId(), name);
 		}
 		catch (Exception e) {
 			return fail("Failed to create a support for " + name, e);

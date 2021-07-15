@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.ui;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -37,87 +38,39 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter
 @Setter
-@Path("datasets/{" + DATASET + "}")
+@Path("datasets")
 @Slf4j
-public class DatasetsUIResource extends HAdmin {
+public class DatasetsUIResource {
 
-	@Inject
-	private AdminDatasetProcessor processor;
 	@Inject
 	private UIProcessor uiProcessor;
 
-	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
-	private static final String ABBREVIATION_MARKER = "\u2026";
-
-
-	@PathParam(DATASET)
-	protected Dataset dataset;
-	protected Namespace namespace;
-
-	@PostConstruct
-	@Override
-	public void init() {
-		super.init();
-		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
-	}
 
 	@GET
-	public View getDataset() {
+	@Produces(MediaType.TEXT_HTML)
+	public View listDatasetsUI() {
+		return new UIView<>("datasets.html.ftl", uiProcessor.getUIContext(), null);
+	}
+
+
+	@GET
+	@Path("{" + DATASET + "}")
+	public View getDataset(@PathParam(DATASET) Dataset dataset) {
 		return new UIView<>(
 				"dataset.html.ftl",
 				uiProcessor.getUIContext(),
-				new DatasetInfos(
-						namespace.getDataset(),
-						namespace.getStorage().getSecondaryIds(),
-						namespace.getStorage().getTables().stream()
-								 .map(table -> new TableInfos(
-										 table.getId(),
-										 table.getName(),
-										 table.getLabel(),
-										 StringUtils.abbreviate(table.findImports(namespace.getStorage())
-																	 .map(Import::getName)
-																	 .collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
-										 table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
-								 ))
-								 .collect(Collectors.toList()),
-						namespace.getStorage().getAllConcepts(),
-						// total size of dictionaries
-						namespace
-								.getStorage()
-								.getAllImports()
-								.stream()
-								.flatMap(i -> i.getDictionaries().stream())
-								.filter(Objects::nonNull)
-								.map(namespace.getStorage()::getDictionary)
-								.distinct()
-								.mapToLong(Dictionary::estimateMemoryConsumption)
-								.sum(),
-						// Total size of CBlocks
-						namespace
-								.getStorage().getTables()
-								.stream()
-								.flatMap(table -> table.findImports(namespace.getStorage()))
-								.mapToLong(imp -> TablesUIResource.calculateCBlocksSizeBytes(
-										imp, getNamespace().getStorage().getAllConcepts()
-								))
-								.sum(),
-						// total size of entries
-						namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()
-				)
+				null
 		);
 	}
 
+
+
 	@GET
-	@Path("mapping")
-	public View getIdMapping() {
-		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
-		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
-			return new UIView<>("idmapping.html.ftl", uiProcessor.getUIContext(), mapping.getCsvIdToExternalIdMap());
-		}
-		return new UIView<>("add_idmapping.html.ftl", uiProcessor.getUIContext(), namespace.getDataset().getId());
+	@Path("{" + DATASET + "}/mapping")
+	public View getIdMapping(@PathParam(DATASET) Dataset dataset) {
+		return new UIView<>("add_idmapping.html.ftl", uiProcessor.getUIContext(), Collections.emptyMap());
 	}
 
 	@Data

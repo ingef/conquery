@@ -16,17 +16,17 @@ import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HUsers;
 import io.dropwizard.views.View;
 
-@Produces(MediaType.TEXT_HTML)
-public class UserUIResource extends HUsers {
+import java.util.Collections;
 
-	@Inject
-	protected AdminProcessor processor;
+@Produces(MediaType.TEXT_HTML)
+public class UserUIResource {
+
 	@Inject
 	protected UIProcessor uiProcessor;
 
 	@GET
 	public View getUsers() {
-		return new UIView<>("users.html.ftl", uiProcessor.getUIContext(), processor.getAllUsers());
+		return new UIView<>("users.html.ftl", uiProcessor.getUIContext(), Collections.emptyList());
 	}
 
 	/**
@@ -40,6 +40,6 @@ public class UserUIResource extends HUsers {
 	@Path("{" + USER_ID + "}")
 	@GET
 	public View getUser(@PathParam(USER_ID) User user) {
-		return new UIView<>("user.html.ftl", uiProcessor.getUIContext(), processor.getUserContent(user));
+		return new UIView<>("user.html.ftl", uiProcessor.getUIContext(), Collections.emptyMap());
 	}
 }
