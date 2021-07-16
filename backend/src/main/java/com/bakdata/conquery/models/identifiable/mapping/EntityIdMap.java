@@ -1,17 +1,20 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,41 +29,61 @@ import lombok.extern.slf4j.Slf4j;
 public class EntityIdMap {
 
 	@Setter
+	@JsonIgnore
 	private EncodedDictionary dictionary;
 
 	/**
 	 * The map from csv entity ids to external entity ids.
 	 */
+	@JsonIgnore
 	private final Map<String, EntityPrintId> internalToPrint = new HashMap<>();
 
 	/**
 	 * The map from external entity ids to csv entity ids.
 	 */
+	@JsonIgnore
 	private final Map<ExternalId, String> external2Internal = new HashMap<>();
 
 
+	/**
+	 * Helper class for serialization.
+	 */
 	@Data
-	protected static class Container {
-		private final Collection<Map.Entry<ExternalId,String>> external2Internal;
+	@Getter
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	private static class Container {
+		private final List<ExternalId> keys;
+		private final List<String> values;
 		private final Map<String, EntityPrintId> internalToPrint;
 	}
 
+	/**
+	 * Constructor to deserialize from {@link Container}.
+	 */
 	@JsonCreator
-	protected EntityIdMap fromContainer(Container container) {
-		final EntityIdMap out = new EntityIdMap();
+	private EntityIdMap(Container container) {
 
-		for (Map.Entry<ExternalId, String> entry : container.getExternal2Internal()) {
-			out.getExternal2Internal().put(entry.getKey(), entry.getValue());
+		for (int index = 0; index < container.keys.size(); index++) {
+			getExternal2Internal().put(container.keys.get(index), container.values.get(index));
 		}
 
-		out.getInternalToPrint().putAll(container.getInternalToPrint());
-
-		return out;
+		getInternalToPrint().putAll(container.internalToPrint);
 	}
 
+	/**
+	 * JsonValue to Serialize as {@link Container}, as Jackson cannot handle complex classes as Map-keys (ie {@link ExternalId}.
+	 */
 	@JsonValue
-	protected Container getContainer() {
-		return new Container(external2Internal.entrySet(), internalToPrint);
+	private Container getContainer() {
+		final List<ExternalId> keys = new ArrayList<>(external2Internal.size());
+		final List<String> values = new ArrayList<>(external2Internal.size());
+
+		external2Internal.forEach((key, value) -> {
+			keys.add(key);
+			values.add(value);
+		});
+
+		return new Container(keys, values, internalToPrint);
 	}
 
 	/**
@@ -68,14 +91,6 @@ public class EntityIdMap {
 	 */
 	public EntityPrintId toExternal(String internal) {
 		return internalToPrint.get(internal);
-	}
-
-	/**
-	 * Resolve an external to an internal id.
-	 * @param external
-	 */
-	public Optional<String> toInternal(String... external) {
-		return Optional.ofNullable(external2Internal.get(new ExternalId(external)));
 	}
 
 	public int resolve(String... external) {
@@ -107,7 +122,9 @@ public class EntityIdMap {
 	}
 
 	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	private static class ExternalId {
+		@Getter
 		private final String[] parts;
 	}
 
