@@ -104,6 +104,16 @@ export const useGetQuery = () => {
     });
 };
 
+export const usePostQueryCancel = () => {
+  const api = useApi<null>();
+
+  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}/cancel`),
+      method: "POST",
+    });
+};
+
 export const useDeleteQuery = () => {
   const api = useApi<null>();
 

@@ -50,6 +50,17 @@ module.exports = function (app, port) {
     },
   );
 
+  app.post(
+    "/api/datasets/:datasetId/queries/:id/cancel",
+    mockAuthMiddleware,
+    function response(req, res) {
+      setTimeout(() => {
+        res.setHeader("Content-Type", "application/json");
+        res.send(JSON.stringify({ id: 1 }));
+      }, SHORT_DELAY);
+    },
+  );
+
   app.delete(
     "/api/datasets/:datasetId/queries/:id",
     mockAuthMiddleware,

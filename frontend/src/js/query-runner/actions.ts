@@ -3,9 +3,9 @@ import { useDispatch } from "react-redux";
 
 import {
   useGetQuery,
-  useDeleteQuery,
   usePostFormQueries,
   usePostQueries,
+  usePostQueryCancel,
 } from "../api/api";
 import type {
   DatasetIdT,
@@ -116,12 +116,12 @@ const stopQuerySuccess = (queryType: QueryTypeT, res: any) =>
 
 export const useStopQuery = (queryType: QueryTypeT) => {
   const dispatch = useDispatch();
-  const deleteQuery = useDeleteQuery();
+  const cancelQuery = usePostQueryCancel();
 
   return (datasetId: DatasetIdT, queryId: QueryIdT) => {
     dispatch(stopQueryStart(queryType));
 
-    return deleteQuery(datasetId, queryId).then(
+    return cancelQuery(datasetId, queryId).then(
       (r) => dispatch(stopQuerySuccess(queryType, r)),
       (e) => dispatch(stopQueryError(queryType, e)),
     );
