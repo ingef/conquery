@@ -202,28 +202,32 @@ const useQueryResult = (queryType: QueryTypeT) => {
         // but not necessarily succeeded
         dispatch(queryResultReset(queryType));
 
-        if (r.status === "DONE") {
-          dispatch(queryResultSuccess(queryType, r, datasetId));
+        switch (r.status) {
+          case "DONE":
+            dispatch(queryResultSuccess(queryType, r, datasetId));
 
-          // Now there should be a new result that can be queried
-          loadQueries(datasetId);
-        } else if (r.status === "CANCELED") {
-        } else if (r.status === "FAILED") {
-          dispatch(queryResultError(t, queryType, r));
-        } else {
-          if (r.status === "RUNNING") {
+            // Now there should be a new result that can be queried
+            loadQueries(datasetId);
+            break;
+          case "FAILED":
+            dispatch(queryResultError(t, queryType, r));
+            break;
+          case "RUNNING":
             dispatch(queryResultRunning(queryType, r.progress));
-          }
-          // Try again after a short time:
-          //   Use the "long polling" strategy, where we assume that the
-          //   backend blocks the request for a couple of seconds and waits
-          //   for the query comes back.
-          //   If it doesn't come back the request resolves and
-          //   we - the frontend - try again almost instantly.
-          setTimeout(
-            () => queryResult(datasetId, queryId),
-            QUERY_AGAIN_TIMEOUT,
-          );
+            // Try again after a short time:
+            //   Use the "long polling" strategy, where we assume that the
+            //   backend blocks the request for a couple of seconds and waits
+            //   for the query comes back.
+            //   If it doesn't come back the request resolves and
+            //   we - the frontend - try again almost instantly.
+            setTimeout(
+              () => queryResult(datasetId, queryId),
+              QUERY_AGAIN_TIMEOUT,
+            );
+            break;
+          case "NEW":
+          default:
+            break;
         }
       },
       (e: Error) => dispatch(queryResultError(t, queryType, e)),
