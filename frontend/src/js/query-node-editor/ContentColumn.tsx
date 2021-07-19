@@ -162,7 +162,7 @@ const ContentColumn: FC<PropsT> = ({
               }
               datasetId={datasetId}
               currencyConfig={currencyConfig}
-              selectedInputTableIdx={idx}
+              tableIdx={idx}
               onShowDescription={onShowDescription}
               onSelectTableSelects={onSelectTableSelects}
               onSetDateColumn={onSetDateColumn}
