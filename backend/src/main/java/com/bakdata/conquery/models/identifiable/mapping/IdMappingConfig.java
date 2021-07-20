@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -8,25 +7,17 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.DateColumn;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.base.Strings;
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
-import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 
 @Slf4j
@@ -44,7 +35,14 @@ public class IdMappingConfig {
 			DateColumn.EndDate.HANDLE, DateFormat.START_END_DATE
 	);
 
-	private List<InputMapper> mappers = List.of(new InputMapper("ID", "id", "0", -1, Collections.emptyMap(), Collections.emptyMap()));
+	private List<ColumnConfig> mappers = List.of(
+			ColumnConfig.builder()
+						.name("ID")
+						.mapping(ColumnConfig.Mapping.builder()
+													 .field("id")
+													 .resolvable(true)
+													 .build())
+						.build());
 
 	private OutputMapper outputMapper = new OutputMapper();
 
@@ -60,11 +58,12 @@ public class IdMappingConfig {
 		while ((record = parser.parseNextRecord()) != null) {
 			final String id = record.getString("id");
 
-			for (InputMapper mapper : mappers) {
-				final String otherId = record.getString(mapper.getField());
-				final String transformed = mapper.read(otherId);
+			for (ColumnConfig columnConfig : mappers) {
 
-				mapping.addInputMapping(id, mapper.getName(), transformed);
+				final String otherId = record.getString(columnConfig.getMapping().getField());
+				final EntityIdMap.ExternalId transformed = columnConfig.read(otherId);
+
+				mapping.addInputMapping(id, transformed);
 			}
 
 			mapping.addOutputMapping(id, outputMapper.extractOutputId(record));
@@ -109,15 +108,18 @@ public class IdMappingConfig {
 		return externalEntityId;
 	}
 
-	public InputMapper getIdMapper(String name) {
-		return mappers.stream().filter(mapper -> mapper.getName().equals(name)).findFirst().orElse(null);
+	public ColumnConfig getIdMapper(String name) {
+		return mappers.stream()
+					  .filter(mapper -> mapper.getName().equals(name)) //TODO use map
+					  .findFirst()
+					  .orElse(null);
 	}
 
 	public int getIdIndex(List<String> format) {
 		for (int index = 0; index < format.size(); index++) {
 			final String current = format.get(index);
 
-			if (mappers.stream().map(InputMapper::getName).anyMatch(current::equals)) {
+			if (mappers.stream().map(ColumnConfig::getName).anyMatch(current::equals)) {
 				return index;
 			}
 		}
@@ -126,75 +128,7 @@ public class IdMappingConfig {
 	}
 
 
-	public Int2ObjectMap<CDateSet> readDates(String[][] values, List<String> format, DateReader dateReader) {
-		Int2ObjectMap<CDateSet> out = new Int2ObjectAVLTreeMap<>();
 
-		DateFormat dateFormat = null;
-
-
-		IntList dateColumns = new IntArrayList(format.size());
-
-		for (int col = 0; col < format.size(); col++) {
-			String desc = format.get(col);
-
-			dateFormat = resolveDateFormat(desc);
-
-			if (dateFormat == null) {
-				continue;
-			}
-
-			dateColumns.add(col);
-		}
-
-		dateFormat = dateFormat == null ? DateFormat.ALL : dateFormat;
-		final int[] datePositions = dateColumns.toIntArray();
-
-		for (int row = 1; row < values.length; row++) {
-			try {
-				final CDateSet dates = dateFormat.readDates(datePositions, values[row], dateReader);
-
-				if (dates == null) {
-					continue;
-				}
-
-				out.put(row, dates);
-			}
-			catch (Exception e) {
-				log.warn("Failed to parse Date from {}", row, e);
-			}
-		}
-
-		return out;
-	}
-
-	public DateFormat resolveDateFormat(String desc) {
-		return dateFormats.get(desc);
-	}
-
-	@Data
-	public static class InputMapper {
-		private final String name;
-
-		private final String field;
-
-		private final String pad;
-		private final int length;
-
-		private final Map<String, String> label;
-		private final Map<String, String> description;
-
-		public String read(String value) {
-			if (Strings.isNullOrEmpty(value)) {
-				return null;
-			}
-
-			if (length == -1) {
-				return value;
-			}
-
-			return StringUtils.leftPad(value, length, pad);
-		}
-	}
 
 	@CPSBase
 	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")

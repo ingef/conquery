@@ -11,6 +11,8 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.config.ColumnConfig;
+import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
@@ -23,11 +25,13 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Allows uploading lists of entities.
@@ -65,6 +69,47 @@ public class CQExternal extends CQElement {
 	}
 
 
+	private Int2ObjectMap<CDateSet> readDates(String[][] values, List<String> format, DateReader dateReader, FrontendConfig.UploadConfig queryUpload) {
+		Int2ObjectMap<CDateSet> out = new Int2ObjectAVLTreeMap<>();
+
+		DateFormat dateFormat = null;
+
+
+		IntList dateColumns = new IntArrayList(format.size());
+
+		for (int col = 0; col < format.size(); col++) {
+			String desc = format.get(col);
+
+			dateFormat = queryUpload.resolveDateFormat(desc);
+
+			if (dateFormat == null) {
+				continue;
+			}
+
+			dateColumns.add(col);
+		}
+
+		dateFormat = dateFormat == null ? DateFormat.ALL : dateFormat;
+		final int[] datePositions = dateColumns.toIntArray();
+
+		for (int row = 1; row < values.length; row++) {
+			try {
+				final CDateSet dates = dateFormat.readDates(datePositions, values[row], dateReader);
+
+				if (dates == null) {
+					continue;
+				}
+
+				out.put(row, dates);
+			}
+			catch (Exception e) {
+				log.warn("Failed to parse Date from {}", row, e);
+			}
+		}
+
+		return out;
+	}
+
 	@Override
 	public void resolve(QueryResolveContext context) {
 		valuesResolved = new Int2ObjectOpenHashMap<>();
@@ -76,20 +121,20 @@ public class CQExternal extends CQElement {
 		final IdMappingConfig mappingConfig = context.getConfig().getIdMapping();
 
 		// extract dates from rows
-		final Int2ObjectMap<CDateSet> rowDates = mappingConfig.readDates(values, format, dateReader);
+		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, context.getConfig().getFrontend().getQueryUpload());
 
 		final int idIndex = mappingConfig.getIdIndex(format);
 
-		final IdMappingConfig.InputMapper reader = mappingConfig.getIdMapper(format.get(idIndex));
+		final ColumnConfig reader = mappingConfig.getIdMapper(format.get(idIndex));
 
 		final List<String[]> unresolved = new ArrayList<>();
 
 		// ignore the first row, because this is the header
 		for (int rowNum = 1; rowNum < values.length; rowNum++) {
 			final String[] row = values[rowNum];
-			final String externalId = reader.read(row[idIndex]);
+			final EntityIdMap.ExternalId externalId = reader.read(row[idIndex]);
 
-			final int resolvedId = mapping.resolve(reader.getName(), externalId);
+			final int resolvedId = mapping.resolve(externalId);
 
 			if (resolvedId == -1) {
 				unresolved.add(row);

@@ -20,6 +20,9 @@ public class ConfigResource {
 	@GET
 	@Path("frontend")
 	public FrontendConfig getFrontendConfig() {
-		return config.getFrontend();
+
+
+		return config.getFrontend()
+					   .withQueryUpload(config.getFrontend().getQueryUpload().withIds(config.getIdMapping().getMappers()));
 	}
 }

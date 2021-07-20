@@ -1,32 +1,29 @@
 package com.bakdata.conquery.models.config;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateColumn;
-import com.bakdata.conquery.apiv1.query.concept.specific.external.FormatColumn;
-import com.bakdata.conquery.apiv1.query.concept.specific.external.IdColumn;
-import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.util.VersionInfo;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import groovy.transform.ToString;
-import io.dropwizard.validation.ValidationMethod;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.With;
 
 @ToString
 @Getter
 @Setter
+@With
+@AllArgsConstructor
+@NoArgsConstructor
 public class FrontendConfig {
 
 	private String version = VersionInfo.INSTANCE.getProjectVersion();
@@ -36,57 +33,59 @@ public class FrontendConfig {
 
 	private UploadConfig queryUpload = new UploadConfig();
 
-	@Getter @Setter
+	@Getter
+	@Setter
+	@With
+	@AllArgsConstructor
+	@NoArgsConstructor
 	public static class UploadConfig {
 
 		@NotEmpty
-		private List<ColumnConfig> ids = List.of(new ColumnConfig(IdColumn.HANDLE, Map.of("en", "Id"), Map.of("en", "Id of the Entity.")));
+		private List<ColumnConfig> ids;
 
 		@NotNull
-		private ColumnConfig dateStart =
-				new ColumnConfig(DateColumn.StartDate.HANDLE, Map.of("en", "Begin"), Map.of("en", "Begin of Date-range"));
+		private ColumnConfig dateStart = ColumnConfig.builder()
+													 .name(DateColumn.StartDate.HANDLE)
+													 .label(Map.of("en", "Begin"))
+													 .description(Map.of("en", "Begin of Date-range"))
+													 .build();
 
 		@NotNull
-		private ColumnConfig dateEnd =
-				new ColumnConfig(DateColumn.EndDate.HANDLE, Map.of("en", "Begin"), Map.of("en", "End of Date-range"));
+		private ColumnConfig dateEnd = ColumnConfig.builder()
+												   .name(DateColumn.EndDate.HANDLE)
+												   .label(Map.of("en", "End"))
+												   .description(Map.of("en", "End of Date-range"))
+												   .build();
+
 
 		@NotNull
-		private ColumnConfig dateRange =
-				new ColumnConfig(DateColumn.DateRange.HANDLE, Map.of("en", "Date Range"), Map.of("en", "Full Date Range"));
+		private ColumnConfig dateRange = ColumnConfig.builder()
+													 .name(DateColumn.DateRange.HANDLE)
+													 .label(Map.of("en", "Date Range"))
+													 .description(Map.of("en", "Full Date Range"))
+													 .build();
+
 
 		@NotNull
-		private ColumnConfig dateSet =
-				new ColumnConfig(DateColumn.DateSet.HANDLE, Map.of("en", "Dateset"), Map.of("en", "Set of Date-Ranges"));
+		private ColumnConfig dateSet = ColumnConfig.builder()
+												   .name(DateColumn.DateSet.HANDLE)
+												   .label(Map.of("en", "Dateset"))
+												   .description(Map.of("en", "Set of Date-Ranges"))
+												   .build();
+
 
 		@NotNull
-		private ColumnConfig eventDate =
-				new ColumnConfig(DateColumn.EventDate.HANDLE, Map.of("en", "Event Date"), Map.of("en", "Single event"));
+		private ColumnConfig eventDate = ColumnConfig.builder()
+													 .name(DateColumn.EventDate.HANDLE)
+													 .label(Map.of("en", "Event Date"))
+													 .description(Map.of("en", "Single event"))
+													 .build();
 
-		@Data
-		public static class ColumnConfig {
-
-			/**
-			 * Name of the Column, used to resolve the specific entry at {@link IdMappingConfig#getFormatColumns()}
-			 */
-			@NotEmpty
-			private final String name;
-
-			/**
-			 * Map of Localized labels.
-			 */
-			private final Map<String, String> label;
-
-			/**
-			 * Map of Localized description.
-			 */
-			private final Map<String, String> description;
-
-			@JsonIgnore
-			@ValidationMethod
-			public boolean isExistingColumnFormat() {
-				return CPSTypeIdResolver.getImplementation(FormatColumn.class, name) != null;
-			}
+		public DateFormat resolveDateFormat(String handle) {
+			return DateFormat.ALL; //TODO
 		}
+
+
 	}
 
 	@Data

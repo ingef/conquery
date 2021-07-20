@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -93,8 +92,13 @@ public class EntityIdMap {
 		return internalToPrint.get(internal);
 	}
 
-	public int resolve(String... external) {
-		String value = external2Internal.get(new ExternalId(external));
+	/**
+	 * Resolve external ID to Entity Id.
+	 *
+	 * Return -1 when not resolved.
+	 */
+	public int resolve(ExternalId key) {
+		String value = external2Internal.get(key);
 
 		if (value != null) {
 			return dictionary.getId(value);
@@ -112,9 +116,9 @@ public class EntityIdMap {
 	}
 
 
-	public void addInputMapping(String csvEntityId, String... externalEntityId) {
+	public void addInputMapping(String csvEntityId, ExternalId externalEntityId) {
 
-		final String prior = external2Internal.put(new ExternalId(externalEntityId), csvEntityId);
+		final String prior = external2Internal.put(externalEntityId, csvEntityId);
 
 		if (prior != null && prior.equals(csvEntityId)) {
 			log.warn("Duplicate mapping  for {} to {} and {}", externalEntityId, csvEntityId, prior);
@@ -123,7 +127,7 @@ public class EntityIdMap {
 
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	private static class ExternalId {
+	public static class ExternalId {
 		@Getter
 		private final String[] parts;
 	}
