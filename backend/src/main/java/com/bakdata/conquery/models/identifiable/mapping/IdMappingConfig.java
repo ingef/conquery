@@ -1,17 +1,18 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateColumn;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
-import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
@@ -42,9 +43,9 @@ public class IdMappingConfig {
 													 .field("id")
 													 .resolvable(true)
 													 .build())
-						.build());
-
-	private OutputMapper outputMapper = new OutputMapper();
+						.build()
+	);
+	private List<String> idFieldsCached;
 
 	/**
 	 * Read incoming CSV-file extracting Id-Mappings for in and Output.
@@ -55,29 +56,53 @@ public class IdMappingConfig {
 
 		Record record;
 
+
 		while ((record = parser.parseNextRecord()) != null) {
+			List<String> idParts = new ArrayList<>(mappers.size());
+
 			final String id = record.getString("id");
 
 			for (ColumnConfig columnConfig : mappers) {
 
 				final String otherId = record.getString(columnConfig.getMapping().getField());
+
+				idParts.add(otherId);
+
+				if (otherId == null) {
+					continue;
+				}
+
+				if (!columnConfig.getMapping().isResolvable()) {
+					continue;
+				}
+
 				final EntityIdMap.ExternalId transformed = columnConfig.read(otherId);
 
 				mapping.addInputMapping(id, transformed);
 			}
 
-			mapping.addOutputMapping(id, outputMapper.extractOutputId(record));
+			mapping.addOutputMapping(id, new EntityPrintId(idParts.toArray(new String[0])));
 		}
 
 		return mapping;
 	}
+
+
 
 	/**
 	 * Headers for Output CSV.
 	 */
 	@JsonIgnore
 	public List<String> getPrintIdFields() {
-		return List.of(outputMapper.getHeaders());
+		if(idFieldsCached == null) {
+			idFieldsCached = mappers.stream()
+									.map(ColumnConfig::getMapping)
+									.filter(Objects::nonNull)
+									.map(ColumnConfig.Mapping::getField)
+									.collect(Collectors.toList());
+		}
+
+		return idFieldsCached;
 	}
 
 	/**
@@ -125,22 +150,5 @@ public class IdMappingConfig {
 		}
 
 		return -1;
-	}
-
-
-
-
-	@CPSBase
-	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-	@NoArgsConstructor
-	public static class OutputMapper {
-		@JsonIgnore
-		public String[] getHeaders() {
-			return new String[]{"result"};
-		}
-
-		public EntityPrintId extractOutputId(Record record) {
-			return new EntityPrintId(new String[]{record.getString("id")});
-		}
 	}
 }
