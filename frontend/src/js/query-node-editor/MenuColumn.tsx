@@ -13,7 +13,6 @@ import type {
 import ConceptDropzone from "./ConceptDropzone";
 import ConceptEntry from "./ConceptEntry";
 import MenuColumnItem from "./MenuColumnItem";
-import { QueryNodeEditorStateT } from "./reducer";
 
 const FixedColumn = styled("div")<{ isEmpty?: boolean }>`
   display: flex;
@@ -62,7 +61,7 @@ interface PropsT {
   className?: string;
 
   node: StandardQueryNodeT;
-  editorState: QueryNodeEditorStateT;
+  selectedTableIdx: number | null;
   showTables: boolean;
   allowlistedTables?: string[];
   blocklistedTables?: string[];
@@ -71,14 +70,14 @@ interface PropsT {
   onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
-  onSelectInputTableView: (tableIdx: number) => void;
+  onSelectTable: (tableIdx: number) => void;
   onResetTable: (tableIdx: number) => void;
 }
 
 const MenuColumn: FC<PropsT> = ({
   className,
   node,
-  editorState,
+  selectedTableIdx,
   showTables,
   blocklistedTables,
   allowlistedTables,
@@ -86,7 +85,7 @@ const MenuColumn: FC<PropsT> = ({
   onDropConcept,
   onRemoveConcept,
   onToggleTable,
-  onSelectInputTableView,
+  onSelectTable,
   onResetTable,
 }) => {
   const { t } = useTranslation();
@@ -120,11 +119,15 @@ const MenuColumn: FC<PropsT> = ({
             <MenuColumnItem
               key={tableIdx}
               table={table}
-              isActive={editorState.selectedInputTableIdx === tableIdx}
+              isActive={selectedTableIdx === tableIdx}
               isOnlyOneTableIncluded={isOnlyOneTableIncluded}
               blocklistedTables={blocklistedTables}
               allowlistedTables={allowlistedTables}
-              onClick={() => onSelectInputTableView(tableIdx)}
+              onClick={() => {
+                if (!table.exclude) {
+                  onSelectTable(tableIdx);
+                }
+              }}
               onToggleTable={(value) => onToggleTable(tableIdx, value)}
               onResetTable={() => onResetTable(tableIdx)}
             />

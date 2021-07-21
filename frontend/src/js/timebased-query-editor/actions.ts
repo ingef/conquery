@@ -1,66 +1,70 @@
-import {
-  DROP_TIMEBASED_NODE,
-  REMOVE_TIMEBASED_NODE,
-  SET_TIMEBASED_NODE_TIMESTAMP,
-  SET_TIMEBASED_CONDITION_OPERATOR,
-  SET_TIMEBASED_CONDITION_MIN_DAYS,
-  SET_TIMEBASED_CONDITION_MAX_DAYS,
-  SET_TIMEBASED_INDEX_RESULT,
-  ADD_TIMEBASED_CONDITION,
-  REMOVE_TIMEBASED_CONDITION,
-  CLEAR_TIMEBASED_QUERY,
-  SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT,
-} from "./actionTypes";
+import { ActionType, createAction } from "typesafe-actions";
 
-export const dropTimebasedNode = (conditionIdx, resultIdx, node, moved) => ({
-  type: DROP_TIMEBASED_NODE,
-  payload: { conditionIdx, resultIdx, node, moved },
-});
+import { TimebasedOperatorType, TimebasedResultType } from "./reducer";
 
-export const removeTimebasedNode = (conditionIdx, resultIdx, moved) => ({
-  type: REMOVE_TIMEBASED_NODE,
-  payload: { conditionIdx, resultIdx, moved },
-});
+export type TimebasedActions = ActionType<
+  | typeof dropTimebasedNode
+  | typeof removeTimebasedNode
+  | typeof setTimebasedNodeTimestamp
+  | typeof setTimebasedConditionOperator
+  | typeof setTimebasedConditionMaxDays
+  | typeof setTimebasedConditionMinDays
+  | typeof setTimebasedConditionMinDaysOrNoEvent
+  | typeof setTimebasedIndexResult
+  | typeof addTimebasedCondition
+  | typeof removeTimebasedCondition
+  | typeof clearTimebasedQuery
+>;
 
-export const setTimebasedNodeTimestamp = (
-  conditionIdx,
-  resultIdx,
-  timestamp,
-) => ({
-  type: SET_TIMEBASED_NODE_TIMESTAMP,
-  payload: { conditionIdx, resultIdx, timestamp },
-});
+export const dropTimebasedNode = createAction(
+  "timebased-query-editor/DROP_TIMEBASED_NODE",
+)<{
+  conditionIdx: number;
+  resultIdx: number;
+  node: TimebasedResultType;
+  moved: boolean;
+}>();
 
-export const setTimebasedConditionOperator = (conditionIdx, operator) => ({
-  type: SET_TIMEBASED_CONDITION_OPERATOR,
-  payload: { conditionIdx, operator },
-});
+export const removeTimebasedNode = createAction(
+  "timebased-query-editor/REMOVE_TIMEBASED_NODE",
+)<{ conditionIdx: number; resultIdx: number; moved: boolean }>();
 
-export const setTimebasedConditionMaxDays = (conditionIdx, days) => ({
-  type: SET_TIMEBASED_CONDITION_MAX_DAYS,
-  payload: { conditionIdx, days },
-});
+export const setTimebasedNodeTimestamp = createAction(
+  "timebased-query-editor/SET_TIMEBASED_NODE_TIMESTAMP",
+)<{
+  conditionIdx: number;
+  resultIdx: number;
+  timestamp: string;
+}>();
 
-export const setTimebasedConditionMinDays = (conditionIdx, days) => ({
-  type: SET_TIMEBASED_CONDITION_MIN_DAYS,
-  payload: { conditionIdx, days },
-});
+export const setTimebasedConditionOperator = createAction(
+  "timebased-query-editor/SET_TIMEBASED_CONDITION_OPERATOR",
+)<{ conditionIdx: number; operator: TimebasedOperatorType }>();
 
-export const setTimebasedConditionMinDaysOrNoEvent = (conditionIdx, days) => ({
-  type: SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT,
-  payload: { conditionIdx, days },
-});
+export const setTimebasedConditionMaxDays = createAction(
+  "timebased-query-editor/SET_TIMEBASED_CONDITION_MAX_DAYS",
+)<{ conditionIdx: number; days: number | null }>();
 
-export const setTimebasedIndexResult = (indexResult) => ({
-  type: SET_TIMEBASED_INDEX_RESULT,
-  payload: { indexResult },
-});
+export const setTimebasedConditionMinDays = createAction(
+  "timebased-query-editor/SET_TIMEBASED_CONDITION_MIN_DAYS",
+)<{ conditionIdx: number; days: number | null }>();
 
-export const addTimebasedCondition = () => ({ type: ADD_TIMEBASED_CONDITION });
+export const setTimebasedConditionMinDaysOrNoEvent = createAction(
+  "timebased-query-editor/SET_TIME_BASED_CONDITION_MIN_DAYS_OR_NO_EVENT",
+)<{ conditionIdx: number; days: number | null }>();
 
-export const removeTimebasedCondition = (conditionIdx) => ({
-  type: REMOVE_TIMEBASED_CONDITION,
-  payload: { conditionIdx },
-});
+export const setTimebasedIndexResult = createAction(
+  "timebased-query-editor/SET_TIMEBASED_INDEX_RESULT",
+)<{ indexResult: string }>();
 
-export const clearTimebasedQuery = () => ({ type: CLEAR_TIMEBASED_QUERY });
+export const addTimebasedCondition = createAction(
+  "timebased-query-editor/ADD_TIMEBASED_CONDITION",
+)();
+
+export const removeTimebasedCondition = createAction(
+  "timebased-query-editor/REMOVE_TIMEBASED_CONDITION",
+)<{ conditionIdx: number }>();
+
+export const clearTimebasedQuery = createAction(
+  "timebased-query-editor/CLEAR_TIMEBASED_QUERY",
+)();

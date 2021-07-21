@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 
 import com.bakdata.conquery.apiv1.QueryProcessor;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -14,11 +15,10 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +56,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		}
 
 		// Query cannot be deserialized without Namespace set up
-		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
+		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 
 		// Id of the lone concept that is used in the test.

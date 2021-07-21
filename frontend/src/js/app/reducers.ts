@@ -27,7 +27,7 @@ import previousQueries, {
   PreviousQueriesStateT,
 } from "../previous-queries/list/reducer";
 import previousQueriesSearch, {
-  PreviousQueriesSearchStateT,
+  QueriesSearchStateT,
 } from "../previous-queries/search/reducer";
 import uploadQueryResults, {
   UploadQueryResultsStateT,
@@ -63,7 +63,7 @@ export type StateT = {
   queryNodeEditor: QueryNodeEditorStateT;
   startup: StartupStateT;
   previousQueries: PreviousQueriesStateT;
-  previousQueriesSearch: PreviousQueriesSearchStateT;
+  previousQueriesSearch: QueriesSearchStateT;
   previousQueriesFilter: PreviousQueriesFilterStateT;
   previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
   formConfigs: FormConfigsStateT;

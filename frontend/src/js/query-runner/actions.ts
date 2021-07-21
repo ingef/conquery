@@ -3,9 +3,9 @@ import { useDispatch } from "react-redux";
 
 import {
   useGetQuery,
-  useDeleteQuery,
   usePostFormQueries,
   usePostQueries,
+  usePostQueryCancel,
 } from "../api/api";
 import type {
   DatasetIdT,
@@ -16,7 +16,7 @@ import type {
 } from "../api/types";
 import { defaultError, defaultSuccess, ErrorObject } from "../common/actions";
 import { getExternalSupportedErrorMessage } from "../environment";
-import { useLoadPreviousQueries } from "../previous-queries/list/actions";
+import { useLoadQueries } from "../previous-queries/list/actions";
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { TimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
@@ -116,12 +116,12 @@ const stopQuerySuccess = (queryType: QueryTypeT, res: any) =>
 
 export const useStopQuery = (queryType: QueryTypeT) => {
   const dispatch = useDispatch();
-  const deleteQuery = useDeleteQuery();
+  const cancelQuery = usePostQueryCancel();
 
   return (datasetId: DatasetIdT, queryId: QueryIdT) => {
     dispatch(stopQueryStart(queryType));
 
-    return deleteQuery(datasetId, queryId).then(
+    return cancelQuery(datasetId, queryId).then(
       (r) => dispatch(stopQuerySuccess(queryType, r)),
       (e) => dispatch(stopQueryError(queryType, e)),
     );
@@ -191,7 +191,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const getQuery = useGetQuery();
-  const loadPreviousQueries = useLoadPreviousQueries();
+  const loadQueries = useLoadQueries();
 
   const queryResult = (datasetId: DatasetIdT, queryId: QueryIdT) => {
     dispatch(queryResultStart(queryType));
@@ -202,28 +202,32 @@ const useQueryResult = (queryType: QueryTypeT) => {
         // but not necessarily succeeded
         dispatch(queryResultReset(queryType));
 
-        if (r.status === "DONE") {
-          dispatch(queryResultSuccess(queryType, r, datasetId));
+        switch (r.status) {
+          case "DONE":
+            dispatch(queryResultSuccess(queryType, r, datasetId));
 
-          // Now there should be a new result that can be queried
-          loadPreviousQueries(datasetId);
-        } else if (r.status === "CANCELED") {
-        } else if (r.status === "FAILED") {
-          dispatch(queryResultError(t, queryType, r));
-        } else {
-          if (r.status === "RUNNING") {
+            // Now there should be a new result that can be queried
+            loadQueries(datasetId);
+            break;
+          case "FAILED":
+            dispatch(queryResultError(t, queryType, r));
+            break;
+          case "RUNNING":
             dispatch(queryResultRunning(queryType, r.progress));
-          }
-          // Try again after a short time:
-          //   Use the "long polling" strategy, where we assume that the
-          //   backend blocks the request for a couple of seconds and waits
-          //   for the query comes back.
-          //   If it doesn't come back the request resolves and
-          //   we - the frontend - try again almost instantly.
-          setTimeout(
-            () => queryResult(datasetId, queryId),
-            QUERY_AGAIN_TIMEOUT,
-          );
+            // Try again after a short time:
+            //   Use the "long polling" strategy, where we assume that the
+            //   backend blocks the request for a couple of seconds and waits
+            //   for the query comes back.
+            //   If it doesn't come back the request resolves and
+            //   we - the frontend - try again almost instantly.
+            setTimeout(
+              () => queryResult(datasetId, queryId),
+              QUERY_AGAIN_TIMEOUT,
+            );
+            break;
+          case "NEW":
+          default:
+            break;
         }
       },
       (e: Error) => dispatch(queryResultError(t, queryType, e)),

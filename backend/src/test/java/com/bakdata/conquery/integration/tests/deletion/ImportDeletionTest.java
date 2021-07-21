@@ -1,6 +1,20 @@
 package com.bakdata.conquery.integration.tests.deletion;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.net.URI;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
@@ -18,7 +32,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.apiv1.query.IQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourceConstants;
@@ -29,18 +42,6 @@ import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileInputStream;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.GZIPInputStream;
-
-import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test if Imports can be deleted and safely queried.
@@ -82,7 +83,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			conquery.waitUntilWorkDone();
 		}
 
-		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
+		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 
 		final int nImports = namespace.getStorage().getAllImports().size();

@@ -153,7 +153,8 @@
     "min": "Min",
     "max": "Max",
     "std": "SD",
-    "logout": "Logout"
+    "logout": "Logout",
+    "dateInvalid": "Invalid date"
   },
   "tooltip": {
     "headline": "Info",
@@ -204,7 +205,8 @@
     "loading": "Loading queries",
     "error": "Could not load queries",
     "results": "results",
-    "noQueriesFound": "No queries found"
+    "noQueriesFound": "No queries found",
+    "searchPlaceholder": "Search queries ..."
   },
   "previousQuery": {
     "notExecuted": "Not executed yet",

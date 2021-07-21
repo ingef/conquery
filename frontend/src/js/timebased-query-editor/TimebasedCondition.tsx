@@ -9,7 +9,11 @@ import VerticalToggleButton from "../form-components/VerticalToggleButton";
 import TimebasedConditionDayRange from "./TimebasedConditionDayRange";
 import TimebasedNode from "./TimebasedNode";
 import TimebasedQueryEditorDropzone from "./TimebasedQueryEditorDropzone";
-import type { TimebasedConditionT } from "./reducer";
+import type {
+  TimebasedConditionT,
+  TimebasedOperatorType,
+  TimebasedResultType,
+} from "./reducer";
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
@@ -66,56 +70,68 @@ const Operator = styled("div")`
 type PropsType = {
   condition: TimebasedConditionT;
   conditionIdx: number;
-  indexResult: number | string | null;
+  // indexResult: number | string | null;
   removable: boolean;
-  onRemove: Function;
-  onSetOperator: Function;
-  onDropTimebasedNode: Function;
-  onSetTimebasedNodeTimestamp: Function;
-  onRemoveTimebasedNode: Function;
-  onSetTimebasedIndexResult: Function;
-  onSetTimebasedConditionMinDays: Function;
-  onSetTimebasedConditionMaxDays: Function;
-  onSetTimebasedConditionMinDaysOrNoEvent: Function;
-  onSetTimebasedConditionMaxDaysOrNoEvent: Function;
+  onRemove: () => void;
+  onSetOperator: (value: TimebasedOperatorType) => void;
+  onRemoveTimebasedNode: (idx: number, moved: boolean) => void;
+  onDropTimebasedNode: (
+    resultIdx: number,
+    node: TimebasedResultType,
+    moved: boolean,
+  ) => void;
+  onSetTimebasedNodeTimestamp: (idx: number, timestamp: string) => void;
+  onSetTimebasedConditionMinDays: (value: number | null) => void;
+  onSetTimebasedConditionMaxDays: (value: number | null) => void;
+  onSetTimebasedConditionMinDaysOrNoEvent: (value: number | null) => void;
 };
 
-const TimebasedCondition = (props: PropsType) => {
+const TimebasedCondition = ({
+  condition,
+  conditionIdx,
+  // indexResult,
+  removable,
+  onRemove,
+  onSetOperator,
+  onRemoveTimebasedNode,
+  onDropTimebasedNode,
+  onSetTimebasedNodeTimestamp,
+  onSetTimebasedConditionMinDays,
+  onSetTimebasedConditionMaxDays,
+  onSetTimebasedConditionMinDaysOrNoEvent,
+}: PropsType) => {
   const { t } = useTranslation();
 
-  const minDays = !isEmpty(props.condition.minDays)
-    ? props.condition.minDays
-    : "";
-  const maxDays = !isEmpty(props.condition.maxDays)
-    ? props.condition.maxDays
-    : "";
-  const minDaysOrNoEvent = !isEmpty(props.condition.minDaysOrNoEvent)
-    ? props.condition.minDaysOrNoEvent
+  const minDays = !isEmpty(condition.minDays) ? condition.minDays : "";
+  const maxDays = !isEmpty(condition.maxDays) ? condition.maxDays : "";
+  const minDaysOrNoEvent = !isEmpty(condition.minDaysOrNoEvent)
+    ? condition.minDaysOrNoEvent
     : "";
 
-  const createTimebasedResult = (idx) => {
-    return props.condition[`result${idx}`] ? (
+  const createTimebasedResult = (idx: 0 | 1) => {
+    const node = idx === 0 ? condition.result0 : condition.result1;
+    return node ? (
       <TimebasedNode
-        node={props.condition[`result${idx}`]}
-        conditionIdx={props.conditionIdx}
+        node={node}
+        conditionIdx={conditionIdx}
         resultIdx={idx}
-        isIndexResult={props.condition[`result${idx}`].id === props.indexResult}
+        // isIndexResult={condition[`result${idx}`].id === indexResult}
         position={idx === 0 ? "left" : "right"}
-        onRemove={() => props.onRemoveTimebasedNode(idx, false)}
+        onRemove={() => onRemoveTimebasedNode(idx, false)}
         onSetTimebasedNodeTimestamp={(timestamp) => {
-          props.onSetTimebasedNodeTimestamp(idx, timestamp);
+          onSetTimebasedNodeTimestamp(idx, timestamp);
         }}
-        onSetTimebasedIndexResult={() => {
-          props.onSetTimebasedIndexResult(props.condition[`result${idx}`].id);
-        }}
-        isIndexResultDisabled={
-          idx === 0 && props.condition.operator === "DAYS_OR_NO_EVENT_BEFORE"
-        }
+        // onSetTimebasedIndexResult={() => {
+        //   onSetTimebasedIndexResult(condition[`result${idx}`].id);
+        // }}
+        // isIndexResultDisabled={
+        //   idx === 0 && condition.operator === "DAYS_OR_NO_EVENT_BEFORE"
+        // }
       />
     ) : (
       <TimebasedQueryEditorDropzone
-        onDropNode={(node, moved) =>
-          props.onDropTimebasedNode(idx, node, moved)
+        onDropNode={(node: TimebasedResultType, moved: boolean) =>
+          onDropTimebasedNode(idx, node, moved)
         }
       />
     );
@@ -126,17 +142,17 @@ const TimebasedCondition = (props: PropsType) => {
 
   return (
     <Root>
-      {props.removable && (
-        <StyledIconButton icon="times" onClick={props.onRemove} />
-      )}
+      {removable && <StyledIconButton icon="times" onClick={onRemove} />}
       <NodesContainer>
         <HorizontalLine />
         <Nodes>
           {result0}
           <Operator>
             <StyledVerticalToggleButton
-              onToggle={props.onSetOperator}
-              activeValue={props.condition.operator}
+              onToggle={(value) =>
+                onSetOperator(value as TimebasedOperatorType)
+              }
+              activeValue={condition.operator}
               options={[
                 {
                   label: t("timebasedQueryEditor.opBefore"),
@@ -164,19 +180,19 @@ const TimebasedCondition = (props: PropsType) => {
           {result1}
         </Nodes>
       </NodesContainer>
-      {props.condition.operator === "DAYS_BEFORE" && (
+      {condition.operator === "DAYS_BEFORE" && (
         <TimebasedConditionDayRange
           minDays={minDays}
           maxDays={maxDays}
-          onSetTimebasedConditionMinDays={props.onSetTimebasedConditionMinDays}
-          onSetTimebasedConditionMaxDays={props.onSetTimebasedConditionMaxDays}
+          onSetTimebasedConditionMinDays={onSetTimebasedConditionMinDays}
+          onSetTimebasedConditionMaxDays={onSetTimebasedConditionMaxDays}
         />
       )}
-      {props.condition.operator === "DAYS_OR_NO_EVENT_BEFORE" && (
+      {condition.operator === "DAYS_OR_NO_EVENT_BEFORE" && (
         <TimebasedConditionDayRange
           minDays={minDaysOrNoEvent}
           onSetTimebasedConditionMinDays={
-            props.onSetTimebasedConditionMinDaysOrNoEvent
+            onSetTimebasedConditionMinDaysOrNoEvent
           }
         />
       )}

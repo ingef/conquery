@@ -30,12 +30,11 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -43,11 +42,10 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -65,18 +63,6 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.UriBuilder;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -359,6 +345,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 
 		//TODO this is no longer the case.
+
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
 		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
@@ -378,20 +365,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	public abstract Set<NamespacedIdentifiable<?>> getUsedNamespacedIds();
 
 
-	/**
-	 * Creates a mapping from subexecutions. Their id is mapped to their {@link QueryPlan}.
-	 */
-	public abstract Map<ManagedExecutionId, QueryPlan> createQueryPlans(QueryPlanContext context);
-
 	public abstract void addResult(@NonNull MetaStorage storage, R result);
-
-	/**
-	 * Initializes the result that is send from a worker to the ManagerNode.
-	 * E.g. this function enables the {@link ManagedForm} to prepare the result in order to be
-	 * matched to its subqueries.
-	 */
-	@JsonIgnore
-	public abstract R getInitializedShardResult(Map.Entry<ManagedExecutionId, QueryPlan> entry);
 
 	/**
 	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
@@ -415,18 +389,18 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	@JsonIgnore
-	abstract protected void makeDefaultLabel(StringBuilder sb, PrintSettings cfg);
+	protected abstract String makeDefaultLabel(PrintSettings cfg);
 
 	protected String makeAutoLabel(PrintSettings cfg) {
-		StringBuilder sb = new StringBuilder();
-		makeDefaultLabel(sb, cfg);
-		return sb.append(AUTO_LABEL_SUFFIX).toString();
+		return makeDefaultLabel(cfg) +  AUTO_LABEL_SUFFIX;
 	}
 
 	@Override
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
+
+	public abstract WorkerMessage createExecutionMessage();
 
 	public void reset() {
 		setState(ExecutionState.NEW);

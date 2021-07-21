@@ -163,7 +163,7 @@ const FormConfig: React.FC<PropsT> = ({
 
       dispatch(patchFormConfigSuccess(config.id, attributes));
     } catch (e) {
-      dispatch(setMessage(errorMessage));
+      dispatch(setMessage({ message: errorMessage }));
     }
     setIsLoading(false);
   };
@@ -258,7 +258,7 @@ const FormConfig: React.FC<PropsT> = ({
             onToggleEdit={() => setIsEditingLabel(!isEditingLabel)}
           />
         ) : (
-          <StyledSelectableLabel label={label} />
+          <StyledSelectableLabel>{label}</StyledSelectableLabel>
         )}
         <MiddleRight>{config.ownerName}</MiddleRight>
       </MiddleRow>

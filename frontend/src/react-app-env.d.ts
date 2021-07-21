@@ -23,11 +23,11 @@ declare module "@emotion/react" {
       grayMediumLight: string;
       grayLight: string;
       grayVeryLight: string;
-      red: string;
       blueGrayDark: string;
       blueGray: string;
       blueGrayLight: string;
       blueGrayVeryLight: string;
+      red: string;
       green: string;
       orange: string;
     };
@@ -55,5 +55,6 @@ declare global {
   interface Window {
     datasetId: string | null;
     conceptTrees: Record<ConceptIdT, Record<ConceptIdT, ConceptT>>;
+    env: Record<string, string>; // To inject env variables at container runtime
   }
 }

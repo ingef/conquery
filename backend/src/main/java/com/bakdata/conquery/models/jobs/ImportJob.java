@@ -55,7 +55,10 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,8 +81,9 @@ public class ImportJob extends Job {
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static ImportJob create(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks) throws IOException {
-		try(PreprocessedReader parser = new PreprocessedReader(inputStream)){
+	public static ImportJob create(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks)
+			throws IOException {
+		try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
 
 			final Dataset ds = namespace.getDataset();
 
@@ -94,7 +98,7 @@ public class ImportJob extends Job {
 			final TableId tableId = new TableId(ds.getId(), header.getTable());
 			Table table = namespace.getStorage().getTable(tableId);
 
-			if(table == null){
+			if (table == null) {
 				throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
 			}
 
@@ -107,7 +111,9 @@ public class ImportJob extends Job {
 			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
 			PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
-			Map<DictionaryId, Dictionary> dictReplacements = createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage(), sharedDictionaryLocks);
+			Map<DictionaryId, Dictionary>
+					dictReplacements =
+					createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage(), sharedDictionaryLocks);
 
 			// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
 			parser.addAllReplacements(dictReplacements);
@@ -263,7 +269,8 @@ public class ImportJob extends Job {
 
 		log.info("Importing Dictionaries");
 
-		Map<String, DictionaryMapping> sharedDictionaryMappings = importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
+		Map<String, DictionaryMapping> sharedDictionaryMappings =
+				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
 		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
 
@@ -345,33 +352,68 @@ public class ImportJob extends Job {
 	 * - calculate per-Entity regions of Bucklet (start/end)
 	 * - split stores
 	 */
-	private Bucket selectBucket(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, ColumnStore[] stores, DictionaryMapping primaryMapping, Import imp, int bucketId, List<Integer> bucketEntities) {
+	private Bucket selectBucket(Map<Integer, Integer> localStarts, Map<Integer, Integer> localLengths, ColumnStore[] stores, DictionaryMapping primaryMapping, Import imp, int bucketId, List<Integer> localEntities) {
 
-		int[] globalIds = bucketEntities.stream().mapToInt(primaryMapping::source2Target).toArray();
+		final int root = bucketSize * bucketId;
 
-		int[] selectionStart = bucketEntities.stream().mapToInt(starts::get).toArray();
-		int[] entityLengths = bucketEntities.stream().mapToInt(lengths::get).toArray();
+
+		IntList selectionStart = new IntArrayList();
+		IntList selectionLength = new IntArrayList();
+		IntSet entities = new IntOpenHashSet();
+
 
 		// First entity of Bucket starts at 0, the following are appended.
-		int[] entityStarts = Arrays.copyOf(entityLengths, entityLengths.length);
-		entityStarts[0] = 0;
-		for (int index = 1; index < entityLengths.length; index++) {
-			entityStarts[index] = entityStarts[index - 1] + entityLengths[index - 1];
+		int[] entityStarts = new int[bucketSize];
+		int[] entityEnds = new int[bucketSize];
+
+		Arrays.fill(entityEnds,-1);
+		Arrays.fill(entityStarts,-1);
+
+		int currentStart = 0;
+
+		for (int position = 0; position < bucketSize; position++) {
+			int globalId = root + position;
+
+			int localId = primaryMapping.target2Source(globalId);
+
+			if(localId == -1){
+				continue;
+			}
+
+			if(!localStarts.containsKey(localId)){
+				continue;
+			}
+
+			entities.add(globalId);
+
+			final int length = localLengths.get(localId);
+
+			selectionStart.add(localStarts.get(localId));
+
+			selectionLength.add(length);
+
+			entityStarts[position] = currentStart;
+			entityEnds[position] = currentStart + length;
+
+			currentStart += length;
 		}
+
 
 		// copy only the parts of the bucket we need
 		final ColumnStore[] bucketStores =
 				Arrays.stream(stores)
-					  .map(store -> store.select(selectionStart, entityLengths))
+					  .map(store -> store.select(selectionStart.toIntArray(), selectionLength.toIntArray()))
 					  .toArray(ColumnStore[]::new);
 
 
 		return new Bucket(
 				bucketId,
-				Arrays.stream(entityLengths).sum(),
+				root,
+				selectionLength.intStream().sum(),
 				bucketStores,
-				new Int2IntArrayMap(globalIds, entityStarts),
-				new Int2IntArrayMap(globalIds, entityLengths),
+				entities,
+				entityStarts,
+				entityEnds,
 				imp
 		);
 	}
@@ -391,6 +433,7 @@ public class ImportJob extends Job {
 		Dictionary primaryDict = Dictionary.copyUncompressed(orig);
 
 		DictionaryMapping primaryMapping = DictionaryMapping.createAndImport(primaryDictionary, primaryDict);
+
 		log.debug("Mapped {} new ids", primaryMapping.getNumberOfNewIds());
 
 		//if no new ids we shouldn't recompress and store
@@ -409,7 +452,7 @@ public class ImportJob extends Job {
 		log.debug("Updating bucket assignments.");
 
 		synchronized (namespace) {
-			for (int entity : primaryMapping.getSource2TargetMap()) {
+			for (int entity : primaryMapping.target()) {
 				int bucket = Entity.getBucket(entity, bucketSize);
 
 				if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
@@ -425,9 +468,6 @@ public class ImportJob extends Job {
 			}
 		}
 	}
-
-
-
 
 
 	/**
@@ -447,9 +487,10 @@ public class ImportJob extends Job {
 			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
 			final IntegerParser indexParser = new IntegerParser(new ParserConfig());
 
-			final IntSummaryStatistics statistics = Arrays.stream(mapping.getSource2TargetMap()).summaryStatistics();
+			final IntSummaryStatistics statistics = mapping.target().intStream().summaryStatistics();
 
 			indexParser.setLines(stringStore.getLines());
+
 			indexParser.setMinValue(statistics.getMin());
 			indexParser.setMaxValue(statistics.getMax());
 

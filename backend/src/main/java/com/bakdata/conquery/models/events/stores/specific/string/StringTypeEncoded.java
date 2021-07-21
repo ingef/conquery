@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -11,14 +12,17 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.io.BaseEncoding;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 /**
- *
+ * Compacted String store, that uses two methods to reduce memory footprint:
+ *  1. Use a byte efficient encoding string for the actual string. See {@link Encoding}
+ *  2. Store the byte string in an appropriate data structure. See {{@link Dictionary and sub classes}}
  */
 @Getter
 @Setter
@@ -30,16 +34,32 @@ public class StringTypeEncoded implements StringStore {
 	@NonNull
 	private Encoding encoding;
 
+	/**
+	 * Cache element lookups and as they might be time consuming, when a trie traversal is necessary (See {@link com.bakdata.conquery.util.dict.SuccinctTrie}).
+	 */
+	@JsonIgnore
+	private final LoadingCache<Integer,String> elementCache;
+
 	@JsonCreator
 	public StringTypeEncoded(StringTypeDictionary subType, Encoding encoding) {
 		super();
 		this.subType = subType;
 		this.encoding = encoding;
+		elementCache = CacheBuilder.newBuilder()
+				.softValues()
+				.build(new CacheLoader<Integer, String>() {
+					@Override
+					@ParametersAreNonnullByDefault
+					public String load(Integer key) throws Exception {
+						return encoding.decode(subType.getElement(key));
+					}
+				});
 	}
 
 	@Override
+	@SneakyThrows
 	public String getElement(int value) {
-		return encoding.encode(subType.getElement(value));
+		return elementCache.get(value);
 	}
 
 	@Override
@@ -60,7 +80,7 @@ public class StringTypeEncoded implements StringStore {
 
 	@Override
 	public int getId(String value) {
-		return subType.getId(encoding.decode(value));
+		return subType.getId(encoding.encode(value));
 	}
 
 	@Override
@@ -74,7 +94,7 @@ public class StringTypeEncoded implements StringStore {
 
 			@Override
 			public String next() {
-				return encoding.encode(subIt.next());
+				return encoding.decode(subIt.next());
 			}
 		};
 	}
@@ -140,6 +160,14 @@ public class StringTypeEncoded implements StringStore {
 		return subType.has(event);
 	}
 
+	/**
+	 * We use common Encodings in the reversed way. What the encoding sees as "encoded" data,
+	 * is actually our raw data. On this raw data the decoding of the chosen encoding applied, which
+	 * yield a smaller representation for storage in the memory.
+	 *
+	 * To use this technique all string in the dictionary must only use the dictionary that is inherent
+	 * to the chosen encoding.
+	 */
 	@RequiredArgsConstructor
 	public static enum Encoding {
 		// Order is for precedence, least specific encodings go last.
@@ -152,17 +180,17 @@ public class StringTypeEncoded implements StringStore {
 		Base64(4, BaseEncoding.base64().omitPadding()),
 		UTF8(1, null) {
 			@Override
-			public String encode(byte[] bytes) {
+			public String decode(byte[] bytes) {
 				return new String(bytes, StandardCharsets.UTF_8);
 			}
 
 			@Override
-			public byte[] decode(String chars) {
+			public byte[] encode(String chars) {
 				return chars.getBytes(StandardCharsets.UTF_8);
 			}
 
 			@Override
-			public boolean canDecode(String chars) {
+			public boolean canEncode(String chars) {
 				return true;
 			}
 		};
@@ -170,16 +198,19 @@ public class StringTypeEncoded implements StringStore {
 		private final int requiredLengthBase;
 		private final BaseEncoding encoding;
 
-		public String encode(byte[] bytes) {
+		public String decode(byte[] bytes) {
+			// Using encode here is valid see comment on this enum
 			return encoding.encode(bytes);
 		}
 
-		public boolean canDecode(String chars) {
+		public boolean canEncode(String chars) {
+			// Using canDecode here is valid see comment on this enum
 			return encoding.canDecode(chars)
 				   && chars.length() % requiredLengthBase == 0;
 		}
 
-		public byte[] decode(String chars) {
+		public byte[] encode(String chars) {
+			// Using decode here is valid see comment on this enum
 			return encoding.decode(chars);
 		}
 

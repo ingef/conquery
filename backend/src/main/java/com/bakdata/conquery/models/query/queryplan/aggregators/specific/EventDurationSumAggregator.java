@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.Optional;
+
+import javax.annotation.CheckForNull;
+
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -8,10 +12,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
-import java.util.Optional;
 
 /**
  * Aggregator, counting the number of days present.
@@ -19,8 +20,11 @@ import java.util.Optional;
 public class EventDurationSumAggregator implements Aggregator<Long> {
 
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
-	private CDateSet set = CDateSet.create();
+	private final CDateSet set = CDateSet.create();
+
+	@CheckForNull
 	private CDateSet dateRestriction;
+	@CheckForNull
 	private Column validityDateColumn;
 
 	@Override
@@ -32,6 +36,10 @@ public class EventDurationSumAggregator implements Aggregator<Long> {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
+		if (validityDateColumn == null) {
+			return;
+		}
+
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}

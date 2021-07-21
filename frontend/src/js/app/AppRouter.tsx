@@ -28,12 +28,12 @@ const AppRouter = (props: PropsT) => {
       }}
       initOptions={{
         pkceMethod: "S256",
-        onLoad: isIDPEnabled() ? "login-required" : "check-sso",
+        onLoad: isIDPEnabled ? "login-required" : "check-sso",
         // silentCheckSsoRedirectUri:
         //   window.location.origin + "/silent-check-sso.html",
       }}
     >
-      <Router basename={basename()}>
+      <Router basename={basename}>
         <Switch>
           <Route path="/login" component={LoginPage} />
           <Route

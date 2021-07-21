@@ -30,7 +30,7 @@ export interface FormContextStateT {
 function buildFormReducer(form: Form) {
   const conceptListFieldNames = collectConceptListFieldNames(form);
 
-  if (conceptListFieldNames.length === 0) return (state: any) => state;
+  if (conceptListFieldNames.length === 0) return () => null;
 
   return combineReducers(
     conceptListFieldNames.reduce((combined, name) => {
