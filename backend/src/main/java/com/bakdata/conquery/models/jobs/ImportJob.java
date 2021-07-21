@@ -447,7 +447,7 @@ public class ImportJob extends Job {
 		log.debug("Updating bucket assignments.");
 
 		synchronized (namespace) {
-			for (int entity : primaryMapping.getSource2TargetMap()) {
+			for (int entity : primaryMapping.getSource2Target().values()) {
 				int bucket = Entity.getBucket(entity, bucketSize);
 
 				if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
@@ -482,7 +482,7 @@ public class ImportJob extends Job {
 			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
 			final IntegerParser indexParser = new IntegerParser(new ParserConfig());
 
-			final IntSummaryStatistics statistics = Arrays.stream(mapping.getSource2TargetMap()).summaryStatistics();
+			final IntSummaryStatistics statistics = mapping.getSource2Target().values().intStream().summaryStatistics();
 
 			indexParser.setLines(stringStore.getLines());
 			indexParser.setMinValue(statistics.getMin());
