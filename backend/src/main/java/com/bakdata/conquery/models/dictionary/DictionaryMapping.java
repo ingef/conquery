@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntCollection;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +34,12 @@ public class DictionaryMapping {
 		int newIds = 0;
 
 		Int2IntMap source2Target = new Int2IntOpenHashMap(from.size());
+
+		source2Target.defaultReturnValue(-1);
+
 		Int2IntMap target2Source = new Int2IntOpenHashMap(from.size());
+
+		target2Source.defaultReturnValue(-1);
 
 		for (int id = 0; id < from.size(); id++) {
 
@@ -46,8 +52,13 @@ public class DictionaryMapping {
 				newIds++;
 			}
 
-			source2Target.put(id, targetId);
-			target2Source.put(targetId, id);
+			if (source2Target.put(id, targetId) != -1) {
+				log.error("Multiple ids map to same target");
+			}
+
+			if (target2Source.put(targetId, id) != -1) {
+				log.error("Multiple ids map to same target");
+			}
 
 		}
 
@@ -60,6 +71,14 @@ public class DictionaryMapping {
 
 	public int target2Source(int targetId) {
 		return target2Source.get(targetId);
+	}
+
+	public IntCollection source() {
+		return source2Target.keySet();
+	}
+
+	public IntCollection target() {
+		return source2Target.values();
 	}
 
 	/**
