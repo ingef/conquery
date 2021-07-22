@@ -18,15 +18,19 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Slf4j
-@ToString
+@ToString(onlyExplicitlyIncluded = true)
 public class DictionaryMapping {
 
+	@ToString.Include
 	private final Dictionary sourceDictionary;
+
+	@ToString.Include
 	private final Dictionary targetDictionary;
 
 	private final Int2IntMap source2Target;
 	private final Int2IntMap target2Source;
 
+	@ToString.Include
 	private final int numberOfNewIds;
 
 	public static DictionaryMapping createAndImport(Dictionary from, Dictionary to) {
