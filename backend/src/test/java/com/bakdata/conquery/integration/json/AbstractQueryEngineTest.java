@@ -1,7 +1,6 @@
 package com.bakdata.conquery.integration.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,13 +11,11 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
-import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -64,12 +61,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		assertThat(
 				execution.streamResults()
-						.flatMap(EntityResult::streamValues)
+						 .flatMap(EntityResult::streamValues)
 		)
 				.as("Should have same size as result infos")
 				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
 
-		IdMappingState mappingState = IdMappingConfig.initToExternal(testUser, execution);
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(testUser, execution, execution.getNamespace());
+
 		PrintSettings
 				PRINT_SETTINGS =
 				new PrintSettings(
@@ -77,7 +75,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 						Locale.ENGLISH,
 						namespaces,
 						config,
-						cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer,mappingState),
+						idPrinter::createId,
 						(columnInfo) -> columnInfo.getSelect().getId().toStringWithoutDataset()
 				);
 

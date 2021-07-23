@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.result.excel;
 
-import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -8,8 +7,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+
+import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -39,13 +38,15 @@ public class ResultExcelProcessor {
 		user.authorize(dataset, Ability.DOWNLOAD);
 		user.authorize(exec, Ability.READ);
 
-		IdMappingState mappingState = IdMappingConfig.initToExternal(user, exec);
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user,exec,namespace);
+
 		PrintSettings settings = new PrintSettings(
 				pretty,
 				I18n.LOCALE.get(),
 				datasetRegistry,
 				config,
-				(EntityResult cer) -> ResultUtil.createId(namespace, cer, mappingState));
+				idPrinter::createId
+		);
 
 		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel());
 

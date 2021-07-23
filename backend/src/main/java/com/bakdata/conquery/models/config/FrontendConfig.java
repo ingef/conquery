@@ -6,12 +6,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer;
+import com.bakdata.conquery.models.identifiable.mapping.FullIdPrinter;
+import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.VersionInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import groovy.transform.ToString;
@@ -54,6 +62,7 @@ public class FrontendConfig {
 							.mapping(ColumnConfig.Mapping.builder()
 														 .field("id")
 														 .resolvable(true)
+														 .fillAnon(true)
 														 .build())
 							.build()
 		);
@@ -79,9 +88,9 @@ public class FrontendConfig {
 
 		public ColumnConfig getIdMapper(String name) {
 			return ids.stream()
-						  .filter(mapper -> mapper.getName().equals(name)) //TODO use map
-						  .findFirst()
-						  .orElse(null);
+					  .filter(mapper -> mapper.getName().equals(name)) //TODO use map
+					  .findFirst()
+					  .orElse(null);
 		}
 
 		public int getIdIndex(List<String> format) {
@@ -162,6 +171,17 @@ public class FrontendConfig {
 			return ids.stream().map(ColumnConfig::getMapping).allMatch(Objects::nonNull);
 		}
 
+		@ValidationMethod(message = "Must have exactly one Column for Pseudomization.")
+		@JsonIgnore
+		public boolean isExactlyOnePseudo() {
+			return ids.stream()
+					  .map(ColumnConfig::getMapping)
+					  .filter(Objects::nonNull)
+					  .filter(ColumnConfig.Mapping::isFillAnon)
+					  .count() == 1;
+		}
+
+
 		public DateFormat resolveDateFormat(String handle) {
 			try {
 				return DateFormat.valueOf(handle);
@@ -172,6 +192,21 @@ public class FrontendConfig {
 		}
 
 
+		public IdPrinter getIdPrinter(User owner, ManagedExecution<?> execution, Namespace namespace) {
+
+			if (owner.isPermitted(execution.getDataset(), Ability.PRESERVE_ID)) {
+				return new FullIdPrinter(namespace.getStorage().getPrimaryDictionary(), namespace.getStorage().getIdMapping());
+			}
+
+			final int size = getPrintIdFields().size();
+			final int pos = IntStream.range(0, getIds().size())
+									 .filter(idx -> getIds().get(idx).getMapping() != null)
+									 .filter(idx -> getIds().get(idx).getMapping().isFillAnon())
+									 .findFirst()
+									 .orElseThrow();
+
+			return new AutoIncrementingPseudomizer(size,pos);
+		}
 	}
 
 	@Data

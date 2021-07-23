@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
+
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;

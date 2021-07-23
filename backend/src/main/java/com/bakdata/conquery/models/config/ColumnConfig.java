@@ -5,13 +5,9 @@ import java.util.Map;
 
 import javax.validation.constraints.NotEmpty;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.external.FormatColumn;
-import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import io.dropwizard.logback.shaded.checkerframework.checker.nullness.qual.Nullable;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.Builder;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
@@ -33,6 +29,7 @@ public class ColumnConfig {
 		@Builder.Default
 		private final boolean resolvable = true;
 
+		@Builder.Default
 		private final boolean fillAnon = false;
 
 	}
@@ -75,9 +72,4 @@ public class ColumnConfig {
 	@Nullable
 	private final Mapping mapping;
 
-	@JsonIgnore
-	@ValidationMethod
-	public boolean isExistingColumnFormat() {
-		return CPSTypeIdResolver.getImplementation(FormatColumn.class, name) != null;
-	}
 }

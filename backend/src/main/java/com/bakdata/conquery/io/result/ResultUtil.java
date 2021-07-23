@@ -7,15 +7,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
@@ -23,16 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResultUtil {
 
-
-	public static EntityPrintId createId(Namespace namespace, EntityResult cer, IdMappingState mappingState) {
-		EncodedDictionary dict = namespace.getStorage().getPrimaryDictionary();
-		final EntityIdMap idMapping = namespace.getStorage().getIdMapping();
-
-		return IdMappingConfig.toExternal(
-				dict.getElement(cer.getEntityId()), namespace,
-				mappingState, idMapping
-		);
-	}
 
 	public static Response makeResponseWithFileName(StreamingOutput out, String label, String fileExtension) {
 		Response.ResponseBuilder response = Response.ok(out);

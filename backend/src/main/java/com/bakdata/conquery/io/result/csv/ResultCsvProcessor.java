@@ -12,15 +12,14 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+
+import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -50,7 +49,8 @@ public class ResultCsvProcessor {
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
 
-		IdMappingState mappingState = IdMappingConfig.initToExternal(user, exec);
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user,exec,namespace);
+
 
 		// Get the locale extracted by the LocaleFilter
 		PrintSettings settings = new PrintSettings(
@@ -58,7 +58,7 @@ public class ResultCsvProcessor {
 				I18n.LOCALE.get(),
 				datasetRegistry,
 				config,
-				cer -> ResultUtil.createId(namespace, cer, mappingState)
+				idPrinter::createId
 		);
 		Charset charset = determineCharset(userAgent, queryCharset);
 
