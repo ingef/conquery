@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -49,7 +50,7 @@ public class ResultCsvProcessor {
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
 
-		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
+		IdMappingState mappingState = IdMappingConfig.initToExternal(user, exec);
 
 		// Get the locale extracted by the LocaleFilter
 		PrintSettings settings = new PrintSettings(
@@ -57,7 +58,7 @@ public class ResultCsvProcessor {
 				I18n.LOCALE.get(),
 				datasetRegistry,
 				config,
-				cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState)
+				cer -> ResultUtil.createId(namespace, cer, mappingState)
 		);
 		Charset charset = determineCharset(userAgent, queryCharset);
 
@@ -65,7 +66,7 @@ public class ResultCsvProcessor {
 		StreamingOutput out =  os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getIdMapping().getPrintIdFields(), exec.getResultInfo(), exec.streamResults());
+				renderer.toCSV(config.getFrontend().getQueryUpload().getPrintIdFields(), exec.getResultInfo(), exec.streamResults());
 			}
 			catch (EofException e) {
 				log.info("User canceled download");

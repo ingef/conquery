@@ -105,7 +105,6 @@ public class FormTest extends ConqueryTestSpec {
 		log.info("{} PARSE JSON FORM DESCRIPTION", getLabel());
 		form = parseForm(support);
 
-		idMappingConfig = support.getConfig().getIdMapping();
 	}
 
 	@Override
@@ -137,7 +136,7 @@ public class FormTest extends ConqueryTestSpec {
 
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedForm managedForm, User user) throws IOException {
 		Map<String, List<ManagedQuery>> managedMapping = managedForm.getSubQueries();
-		IdMappingState mappingState = idMappingConfig.initToExternal(user, managedForm);
+		IdMappingState mappingState = IdMappingConfig.initToExternal(user, managedForm);
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		PrintSettings
 				PRINT_SETTINGS =
@@ -146,7 +145,7 @@ public class FormTest extends ConqueryTestSpec {
 						Locale.ENGLISH,
 						standaloneSupport.getDatasetsProcessor().getDatasetRegistry(),
 						config,
-						cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, config.getIdMapping(), mappingState)
+						cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, mappingState)
 				);
 
 		CsvLineStreamRenderer renderer = new CsvLineStreamRenderer(config.getCsv().createWriter(), PRINT_SETTINGS);
@@ -156,7 +155,7 @@ public class FormTest extends ConqueryTestSpec {
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
 			List<String> actual =
 					renderer.toStream(
-							config.getIdMapping().getPrintIdFields(),
+							config.getFrontend().getQueryUpload().getPrintIdFields(),
 							resultInfos,
 							managed.getValue().stream().flatMap(ManagedQuery::streamResults)
 					)

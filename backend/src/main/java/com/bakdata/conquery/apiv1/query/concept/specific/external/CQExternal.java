@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
 
@@ -72,25 +74,14 @@ public class CQExternal extends CQElement {
 	private Int2ObjectMap<CDateSet> readDates(String[][] values, List<String> format, DateReader dateReader, FrontendConfig.UploadConfig queryUpload) {
 		Int2ObjectMap<CDateSet> out = new Int2ObjectAVLTreeMap<>();
 
-		DateFormat dateFormat = null;
 
+		List<DateFormat> dateFormats = format.stream().map(queryUpload::resolveDateFormat).collect(Collectors.toList());
 
-		IntList dateColumns = new IntArrayList(format.size());
+		//validate structures
 
-		for (int col = 0; col < format.size(); col++) {
-			String desc = format.get(col);
+		final int[] datePositions = DateFormat.select(dateFormats);
 
-			dateFormat = queryUpload.resolveDateFormat(desc);
-
-			if (dateFormat == null) {
-				continue;
-			}
-
-			dateColumns.add(col);
-		}
-
-		dateFormat = dateFormat == null ? DateFormat.ALL : dateFormat;
-		final int[] datePositions = dateColumns.toIntArray();
+		DateFormat dateFormat = datePositions.length > 0 ? dateFormats.get(datePositions[0]) : DateFormat.ALL;
 
 		for (int row = 1; row < values.length; row++) {
 			try {
@@ -118,14 +109,14 @@ public class CQExternal extends CQElement {
 
 		final DateReader dateReader = context.getConfig().getPreprocessor().getParsers().getDateReader();
 
-		final IdMappingConfig mappingConfig = context.getConfig().getIdMapping();
-
 		// extract dates from rows
-		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, context.getConfig().getFrontend().getQueryUpload());
+		final FrontendConfig.UploadConfig uploadConfig = context.getConfig().getFrontend().getQueryUpload();
 
-		final int idIndex = mappingConfig.getIdIndex(format);
+		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, uploadConfig);
 
-		final ColumnConfig reader = mappingConfig.getIdMapper(format.get(idIndex));
+		final int idIndex = uploadConfig.getIdIndex(format);
+
+		final ColumnConfig reader = uploadConfig.getIdMapper(format.get(idIndex));
 
 		final List<String[]> unresolved = new ArrayList<>();
 

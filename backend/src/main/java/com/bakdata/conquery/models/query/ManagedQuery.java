@@ -95,7 +95,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		involvedWorkers = namespace.getWorkers().size();
 
-		query.resolve(new QueryResolveContext(getDataset(), namespaces, config,null));
+		query.resolve(new QueryResolveContext(getDataset(), namespaces, config, null));
 	}
 
 	@Override
@@ -161,13 +161,15 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
+
 		// First add the id columns to the descriptor list. The are the first columns
-		for (String header : config.getIdMapping().getPrintIdFields()) {
+		for (String header : config.getFrontend().getQueryUpload().getPrintIdFields()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(header)
 												   .type(ResultType.IdT.INSTANCE.typeInfo())
 												   .build());
 		}
+
 		// Then all columns that originate from selects and static aggregators
 		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null);
 

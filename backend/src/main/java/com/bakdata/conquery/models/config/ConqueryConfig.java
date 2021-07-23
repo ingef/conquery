@@ -80,9 +80,6 @@ public class ConqueryConfig extends Configuration {
 
 	private ConqueryMetricsConfig metricsConfig = new ConqueryMetricsConfig();
 
-	@NotNull
-	@Valid
-	private IdMappingConfig idMapping = new NoIdMapping();
 	@Valid
 	@NotNull
 	private List<AuthenticationConfig> authentication = List.of(new DevAuthConfig());

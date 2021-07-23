@@ -5,10 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.univocity.parsers.common.record.Record;
+import com.univocity.parsers.csv.CsvParser;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -42,6 +45,46 @@ public class EntityIdMap {
 	 */
 	@JsonIgnore
 	private final Map<ExternalId, String> external2Internal = new HashMap<>();
+
+	/**
+	 * Read incoming CSV-file extracting Id-Mappings for in and Output.
+	 */
+	public static EntityIdMap generateIdMapping(CsvParser parser, List<ColumnConfig> mappers) {
+
+		EntityIdMap mapping = new EntityIdMap();
+
+		Record record;
+
+
+		while ((record = parser.parseNextRecord()) != null) {
+			List<String> idParts = new ArrayList<>(mappers.size());
+
+			final String id = record.getString("id");
+
+			for (ColumnConfig columnConfig : mappers) {
+
+				final String otherId = record.getString(columnConfig.getMapping().getField());
+
+				idParts.add(otherId);
+
+				if (otherId == null) {
+					continue;
+				}
+
+				if (!columnConfig.getMapping().isResolvable()) {
+					continue;
+				}
+
+				final ExternalId transformed = columnConfig.read(otherId);
+
+				mapping.addInputMapping(id, transformed);
+			}
+
+			mapping.addOutputMapping(id, new EntityPrintId(idParts.toArray(new String[0])));
+		}
+
+		return mapping;
+	}
 
 
 	/**

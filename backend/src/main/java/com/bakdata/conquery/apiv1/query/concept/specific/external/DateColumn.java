@@ -45,7 +45,7 @@ public abstract class DateColumn extends FormatColumn {
 		public static String HANDLE = "START_DATE";
 
 		public StartDate() {
-			super(DateFormat.START_END_DATE);
+			super(DateFormat.START_DATE);
 		}
 	}
 
@@ -53,7 +53,7 @@ public abstract class DateColumn extends FormatColumn {
 		public static String HANDLE = "END_DATE";
 
 		public EndDate() {
-			super(DateFormat.START_END_DATE);
+			super(DateFormat.END_DATE);
 		}
 	}
 }

@@ -22,7 +22,6 @@ public class ConfigResource {
 	public FrontendConfig getFrontendConfig() {
 
 
-		return config.getFrontend()
-					   .withQueryUpload(config.getFrontend().getQueryUpload().withIds(config.getIdMapping().getMappers()));
+		return config.getFrontend();
 	}
 }

@@ -6,24 +6,19 @@ import static org.assertj.core.api.Assertions.fail;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
-import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
-import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -74,7 +69,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 				.as("Should have same size as result infos")
 				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
 
-		IdMappingState mappingState = config.getIdMapping().initToExternal(testUser, execution);
+		IdMappingState mappingState = IdMappingConfig.initToExternal(testUser, execution);
 		PrintSettings
 				PRINT_SETTINGS =
 				new PrintSettings(
@@ -82,14 +77,14 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 						Locale.ENGLISH,
 						namespaces,
 						config,
-						cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, config.getIdMapping(), mappingState),
+						cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer,mappingState),
 						(columnInfo) -> columnInfo.getSelect().getId().toStringWithoutDataset()
 				);
 
 		CsvLineStreamRenderer renderer = new CsvLineStreamRenderer(config.getCsv().createWriter(), PRINT_SETTINGS);
 
 		List<String> actual = renderer.toStream(
-				config.getIdMapping().getPrintIdFields(),
+				config.getFrontend().getQueryUpload().getPrintIdFields(),
 				resultInfos,
 				execution.streamResults()
 		).collect(Collectors.toList());

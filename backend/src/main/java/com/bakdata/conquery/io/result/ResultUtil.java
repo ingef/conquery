@@ -24,11 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultUtil {
 
 
-	public static EntityPrintId createId(Namespace namespace, EntityResult cer, IdMappingConfig idMappingConfig, IdMappingState mappingState) {
+	public static EntityPrintId createId(Namespace namespace, EntityResult cer, IdMappingState mappingState) {
 		EncodedDictionary dict = namespace.getStorage().getPrimaryDictionary();
 		final EntityIdMap idMapping = namespace.getStorage().getIdMapping();
 
-		return idMappingConfig.toExternal(
+		return IdMappingConfig.toExternal(
 				dict.getElement(cer.getEntityId()), namespace,
 				mappingState, idMapping
 		);
