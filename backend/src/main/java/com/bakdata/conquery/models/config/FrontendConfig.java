@@ -59,11 +59,9 @@ public class FrontendConfig {
 		private List<ColumnConfig> ids = List.of(
 				ColumnConfig.builder()
 							.name("ID")
-							.mapping(ColumnConfig.Mapping.builder()
-														 .field("id")
-														 .resolvable(true)
-														 .fillAnon(true)
-														 .build())
+							.field("id")
+							.resolvable(true)
+							.fillAnon(true)
 							.build()
 		);
 
@@ -77,9 +75,8 @@ public class FrontendConfig {
 		public List<String> getPrintIdFields() {
 			if (idFieldsCached == null) {
 				idFieldsCached = ids.stream()
-									.map(ColumnConfig::getMapping)
+									.map(ColumnConfig::getField)
 									.filter(Objects::nonNull)
-									.map(ColumnConfig.Mapping::getField)
 									.collect(Collectors.toList());
 			}
 
@@ -168,16 +165,15 @@ public class FrontendConfig {
 		@ValidationMethod(message = "Not all Id-Columns have mappings.")
 		@JsonIgnore
 		public boolean isIdColsHaveMapping() {
-			return ids.stream().map(ColumnConfig::getMapping).allMatch(Objects::nonNull);
+			return ids.stream().map(ColumnConfig::getField).allMatch(Objects::nonNull);
 		}
 
 		@ValidationMethod(message = "Must have exactly one Column for Pseudomization.")
 		@JsonIgnore
 		public boolean isExactlyOnePseudo() {
 			return ids.stream()
-					  .map(ColumnConfig::getMapping)
-					  .filter(Objects::nonNull)
-					  .filter(ColumnConfig.Mapping::isFillAnon)
+					  .filter(conf -> conf.getField() != null)
+					  .filter(ColumnConfig::isFillAnon)
 					  .count() == 1;
 		}
 
@@ -200,12 +196,11 @@ public class FrontendConfig {
 
 			final int size = getPrintIdFields().size();
 			final int pos = IntStream.range(0, getIds().size())
-									 .filter(idx -> getIds().get(idx).getMapping() != null)
-									 .filter(idx -> getIds().get(idx).getMapping().isFillAnon())
+									 .filter(idx -> getIds().get(idx).isFillAnon())
 									 .findFirst()
 									 .orElseThrow();
 
-			return new AutoIncrementingPseudomizer(size,pos);
+			return new AutoIncrementingPseudomizer(size, pos);
 		}
 	}
 

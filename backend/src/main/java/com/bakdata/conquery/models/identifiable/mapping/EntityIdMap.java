@@ -63,7 +63,7 @@ public class EntityIdMap {
 
 			for (ColumnConfig columnConfig : mappers) {
 
-				final String otherId = record.getString(columnConfig.getMapping().getField());
+				final String otherId = record.getString(columnConfig.getField());
 
 				idParts.add(otherId);
 
@@ -71,7 +71,7 @@ public class EntityIdMap {
 					continue;
 				}
 
-				if (!columnConfig.getMapping().isResolvable()) {
+				if (!columnConfig.isResolvable()) {
 					continue;
 				}
 
