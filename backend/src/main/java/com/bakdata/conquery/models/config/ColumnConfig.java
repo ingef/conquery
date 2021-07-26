@@ -9,33 +9,36 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import io.dropwizard.logback.shaded.checkerframework.checker.nullness.qual.Nullable;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 
 @Data
 @Builder
 public class ColumnConfig {
 
-	@Data
 	@Builder
+	@NoArgsConstructor
+	@Getter
+	@Setter
 	public static class Mapping {
-		private final String field;
+		private String field;
 
 		@Builder.Default
-		private final String pad = null;
+		private String pad = null;
 
 		@Builder.Default
-		@JsonProperty(defaultValue = "-1")
-		private final int length = -1;
+		private int length = -1;
 
 		@Builder.Default
-		@JsonProperty(defaultValue = "true")
-		private final boolean resolvable = true;
+		private boolean resolvable = true;
 
 		@Builder.Default
-		@JsonProperty(defaultValue = "false")
-		private final boolean fillAnon = false;
+		private boolean fillAnon = false;
 
 	}
 
