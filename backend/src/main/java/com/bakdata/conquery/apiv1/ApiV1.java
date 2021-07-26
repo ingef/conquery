@@ -11,6 +11,7 @@ import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourcesProvider;
@@ -23,7 +24,6 @@ import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
-import com.bakdata.conquery.resources.api.StoredQueriesResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
@@ -39,6 +39,8 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
+				bind(manager.getConfig()).to(ConqueryConfig.class);
+
 				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 				bind(manager.getStorage()).to(MetaStorage.class);
 
@@ -66,7 +68,6 @@ public class ApiV1 implements ResourcesProvider {
 		 */
 		environment.register(manager.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
-		environment.register(StoredQueriesResource.class);
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(new ConfigResource(manager.getConfig()));
 		environment.register(FormConfigResource.class);

@@ -77,7 +77,6 @@ import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
-import com.bakdata.conquery.resources.api.StoredQueriesResource;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -145,7 +144,6 @@ public class Constants {
 				 .resource(FilterResource.class)
 				 .resource(QueryResource.class)
 				 .resource(ResultCsvResource.class)
-				 .resource(StoredQueriesResource.class)
 				 .base(new Base(QueryDescription.class, ""))
 				 .base(new Base(CQElement.class, ""))
 				 .base(new Base(FilterValue.class, ""))

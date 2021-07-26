@@ -291,7 +291,7 @@ export interface ColumnDescription {
 
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
-  status: "DONE" | "NEW";
+  status: "DONE" | "NEW"; // NEW might mean canceled (query not (yet) executed)
   numberOfResults: number | null;
   resultUrls: string[];
   columnDescriptions: ColumnDescription[] | null;
@@ -301,7 +301,7 @@ export interface GetQueryResponseDoneT {
 
 export interface GetQueryRunningResponseT {
   status: "RUNNING";
-  progress?: number;
+  progress: number | null;
 }
 
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
@@ -321,28 +321,32 @@ export type GetQueryResponseStatusT =
   | GetQueryResponseDoneT
   | GetQueryErrorResponseT;
 
-export type GetQueryResponseT = GetQueryResponseStatusT & {
+interface GetQueryResponseCommon {
   id: QueryIdT;
   label: string;
   createdAt: string; // ISO timestamp: 2019-06-18T11:11:50.528626+02:00
   own: boolean;
   shared: boolean;
   system: boolean;
-  ownerName: string;
   tags: string[];
   query: QueryT;
   secondaryId: string | null;
   owner: string; // TODO: Remove. Not used. And it's actually an ID
+  ownerName: string;
   groups?: UserGroupIdT[];
   canExpand?: boolean;
   availableSecondaryIds?: string[];
-};
+}
+
+export type GetQueryResponseT = GetQueryResponseCommon &
+  GetQueryResponseStatusT;
 
 // TODO: This actually returns a lot of unused fields, see above
 // TODO: But actually, it's not correct, because some fields are not
 //       returned on the LIST response, which ARE returned in the
 //       single result response
-export type GetQueriesResponseT = GetQueryResponseT[];
+export type GetQueriesResponseT = (GetQueryResponseCommon &
+  GetQueryResponseDoneT)[];
 
 export interface PostConceptResolveResponseT {
   resolvedConcepts?: ConceptIdT[];

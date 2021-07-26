@@ -21,7 +21,6 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 	@JsonBackReference
 	ConceptTreeNode getParent();
 	void setLocalId(int size);
-	long calculateBitMask();
 
 	TreeChildPrefixIndex getChildIndex();
 	void setChildIndex(TreeChildPrefixIndex childIndex);

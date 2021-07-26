@@ -24,7 +24,7 @@ const MaximizedCell = styled(ContentCell)`
 
 interface PropsT {
   node: ConceptQueryNodeType;
-  selectedInputTableIdx: number;
+  tableIdx: number;
   datasetId: DatasetIdT;
   currencyConfig: CurrencyConfigT;
 
@@ -46,7 +46,7 @@ interface PropsT {
 
 const TableView: FC<PropsT> = ({
   node,
-  selectedInputTableIdx,
+  tableIdx,
   onShowDescription,
   datasetId,
   currencyConfig,
@@ -60,7 +60,7 @@ const TableView: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
 
-  const table = node.tables[selectedInputTableIdx];
+  const table = node.tables[tableIdx];
 
   const displaySelects = !!table.selects && table.selects.length > 0;
   const displayDateColumnOptions =
@@ -75,7 +75,7 @@ const TableView: FC<PropsT> = ({
             <TableSelects
               selects={table.selects}
               onSelectTableSelects={(value) =>
-                onSelectTableSelects(selectedInputTableIdx, value)
+                onSelectTableSelects(tableIdx, value)
               }
               excludeTable={table.exclude}
             />
@@ -86,16 +86,14 @@ const TableView: FC<PropsT> = ({
         <ContentCell headline={t("queryNodeEditor.selectValidityDate")}>
           <DateColumnSelect
             dateColumn={table.dateColumn!}
-            onSelectDateColumn={(value) =>
-              onSetDateColumn(selectedInputTableIdx, value)
-            }
+            onSelectDateColumn={(value) => onSetDateColumn(tableIdx, value)}
           />
         </ContentCell>
       )}
       {displayFilters && (
         <MaximizedCell headline={t("queryNodeEditor.filters")}>
           <TableFilters
-            key={selectedInputTableIdx}
+            key={tableIdx}
             filters={table.filters}
             excludeTable={table.exclude}
             context={{
@@ -104,10 +102,10 @@ const TableView: FC<PropsT> = ({
               tableId: table.id,
             }}
             onSetFilterValue={(filterIdx: number, value: unknown) =>
-              onSetFilterValue(selectedInputTableIdx, filterIdx, value)
+              onSetFilterValue(tableIdx, filterIdx, value)
             }
             onSwitchFilterMode={(filterIdx, mode) =>
-              onSwitchFilterMode(selectedInputTableIdx, filterIdx, mode)
+              onSwitchFilterMode(tableIdx, filterIdx, mode)
             }
             onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
               onLoadFilterSuggestions(
@@ -118,7 +116,7 @@ const TableView: FC<PropsT> = ({
                   filterId,
                   prefix,
                 },
-                selectedInputTableIdx,
+                tableIdx,
                 filterIdx,
               )
             }

@@ -395,12 +395,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	@JsonIgnore
-	abstract protected void makeDefaultLabel(StringBuilder sb, PrintSettings cfg);
+	protected abstract String makeDefaultLabel(PrintSettings cfg);
 
 	protected String makeAutoLabel(PrintSettings cfg) {
-		StringBuilder sb = new StringBuilder();
-		makeDefaultLabel(sb, cfg);
-		return sb.append(AUTO_LABEL_SUFFIX).toString();
+		return makeDefaultLabel(cfg) +  AUTO_LABEL_SUFFIX;
 	}
 
 	@Override

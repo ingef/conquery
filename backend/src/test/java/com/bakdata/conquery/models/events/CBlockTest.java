@@ -1,18 +1,18 @@
 package com.bakdata.conquery.models.events;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import it.unimi.dsi.fastutil.ints.Int2IntMaps;
 import org.junit.jupiter.api.Test;
 
 class CBlockTest {
@@ -40,7 +40,8 @@ class CBlockTest {
 		final Import imp = new Import(table);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 10, new ColumnStore[0], Int2IntMaps.EMPTY_MAP, Int2IntMaps.EMPTY_MAP, imp);
+		final Bucket bucket = new Bucket(0, 0, 10, new ColumnStore[0], Collections.emptySet(),new int[10], new int[10], imp);
+
 
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
 

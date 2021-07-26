@@ -3,11 +3,11 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.validation.Validator;
@@ -216,7 +216,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 		}
 
-		addAutomaticSelect(concept, () -> EventDurationSumSelect.create("event_duration_sum"));
+		addAutomaticSelect(concept);
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
@@ -226,20 +226,34 @@ public class AdminDatasetProcessor {
 	/**
 	 * Adds some selects to the concept on all levels for convenience.
 	 */
-	private static void addAutomaticSelect(@NotNull Concept<?> concept, Supplier<UniversalSelect> selectCreator) {
+	private static void addAutomaticSelect(@NotNull Concept<?> concept) {
 		if (!(concept instanceof TreeConcept)) {
 			return;
 		}
 
 		// Add to concept
 		TreeConcept treeConcept = (TreeConcept) concept;
-		final UniversalSelect select = selectCreator.get();
+
+		// Don't add event_duration_sum if Concept has no date-columns
+		if (treeConcept.getConnectors().stream()
+					   .map(Connector::getValidityDates)
+					   .allMatch(Collection::isEmpty)) {
+			return;
+		}
+
+		final UniversalSelect select = EventDurationSumSelect.create("event_duration_sum");
 		select.setHolder(treeConcept);
 		treeConcept.getSelects().add(select);
 
-		// Add to connectors
+
+		// Add to connectors if they have dates
 		for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
-			final UniversalSelect connectorSelect = selectCreator.get();
+
+			if(connector.getValidityDates().isEmpty()){
+				continue;
+			}
+
+			final UniversalSelect connectorSelect = EventDurationSumSelect.create("event_duration_sum");
 			connectorSelect.setHolder(connector);
 			connector.getSelects().add(connectorSelect);
 		}

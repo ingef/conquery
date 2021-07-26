@@ -139,15 +139,10 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [editingLabel, setEditingLabel] = useState<boolean>(false);
+  const [selectedTableIdx, setSelectedTableIdx] = useState<number | null>(null);
 
-  const {
-    setInputTableViewActive,
-    setFocusedInput,
-    reset,
-  } = createQueryNodeEditorActions(props.name);
+  const { setFocusedInput, reset } = createQueryNodeEditorActions(props.name);
 
-  const onSelectInputTableView = (tableIdx: number) =>
-    dispatch(setInputTableViewActive(tableIdx));
   const onReset = () => dispatch(reset());
   const onShowDescription = (filterIdx: number) =>
     dispatch(setFocusedInput(filterIdx));
@@ -242,22 +237,28 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
           <ScrollContainer ref={scrollContainerRef}>
             <SxMenuColumn
               node={node}
-              editorState={props.editorState}
+              selectedTableIdx={selectedTableIdx}
               showTables={props.showTables}
               blocklistedTables={props.blocklistedTables}
               allowlistedTables={props.allowlistedTables}
               onCommonSettingsClick={onCommonSettingsClick}
               onDropConcept={props.onDropConcept}
               onRemoveConcept={props.onRemoveConcept}
-              onToggleTable={props.onToggleTable}
-              onSelectInputTableView={onSelectInputTableView}
+              onToggleTable={(tableIdx, isExcluded) => {
+                if (isExcluded && selectedTableIdx === tableIdx) {
+                  setSelectedTableIdx(null);
+                }
+
+                props.onToggleTable(tableIdx, isExcluded);
+              }}
+              onSelectTable={setSelectedTableIdx}
               onResetTable={props.onResetTable}
             />
             <ContentColumn
               node={node}
               datasetId={props.datasetId}
               currencyConfig={props.currencyConfig}
-              selectedTableIdx={props.editorState.selectedInputTableIdx}
+              selectedTableIdx={selectedTableIdx}
               onShowDescription={onShowDescription}
               onToggleTimestamps={props.onToggleTimestamps}
               onToggleSecondaryIdExclude={props.onToggleSecondaryIdExclude}

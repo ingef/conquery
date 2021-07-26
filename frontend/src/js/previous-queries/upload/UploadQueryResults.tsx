@@ -13,7 +13,7 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
 
 const SxIconButton = styled(IconButton)`
-  padding: 10px 6px;
+  padding: 8px 6px;
 `;
 
 interface PropsT {

@@ -38,7 +38,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.api.StoredQueriesResource;
+import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -98,7 +98,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		// Reuse by API
 		{
 			final URI reexecuteUri =
-					HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), StoredQueriesResource.class, "reexecute")
+					HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "reexecute")
 								   .buildFromMap(Map.of(
 										   ResourceConstants.DATASET, conquery.getDataset().getName(),
 										   ResourceConstants.QUERY, execution.getId().toString()

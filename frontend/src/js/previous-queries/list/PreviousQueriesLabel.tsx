@@ -1,13 +1,13 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
 import React, { FC } from "react";
+import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import EditableText from "../../form-components/EditableText";
-import HighlightableLabel from "../../highlightable-label/HighlightableLabel";
 
-const SxSelectableLabel = styled(HighlightableLabel)`
+const Text = styled("div")`
   display: block;
   font-weight: 400;
   white-space: nowrap;
@@ -21,17 +21,10 @@ const SxEditableText = styled(EditableText)`
   text-overflow: ellipsis;
 `;
 
-const labelContainsAnySearch = (label: string, searches: string[]) =>
-  searches.some(
-    (search) => label.toLowerCase().indexOf(search.toLowerCase()) !== -1,
+const useHighlightedWords = () => {
+  return useSelector<StateT, string[]>(
+    (state) => state.previousQueriesSearch.words,
   );
-
-const useIsHighlightedLabel = (label: string) => {
-  const previousQueriesSearch = useSelector<StateT, string[]>(
-    (state) => state.previousQueriesSearch,
-  );
-
-  return labelContainsAnySearch(label, previousQueriesSearch);
 };
 
 interface PropsT {
@@ -53,7 +46,7 @@ const PreviousQueriesLabel: FC<PropsT> = ({
   isEditing,
   setIsEditing,
 }) => {
-  const isHighlightedLabel = useIsHighlightedLabel(label);
+  const highlightedWords = useHighlightedWords();
   const { t } = useTranslation();
 
   return mayEditQuery ? (
@@ -64,11 +57,21 @@ const PreviousQueriesLabel: FC<PropsT> = ({
       editing={isEditing}
       onSubmit={onSubmit}
       onToggleEdit={() => setIsEditing(!isEditing)}
-      isHighlighted={isHighlightedLabel}
+      highlightedWords={highlightedWords}
       tooltip={t("common.edit")}
     />
   ) : (
-    <SxSelectableLabel label={label} isHighlighted={isHighlightedLabel} />
+    <Text>
+      {highlightedWords.length > 0 ? (
+        <Highlighter
+          searchWords={highlightedWords}
+          autoEscape
+          textToHighlight={label}
+        />
+      ) : (
+        label
+      )}
+    </Text>
   );
 };
 

@@ -103,7 +103,21 @@ Returns: [ResolvedConceptsResult](#Type-ResolvedConceptsResult)
 
 </p></details>
 
-### POST datasets/{dataset}/queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L50)</sup></sub></sup>
+### GET datasets/{dataset}/queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L46)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.resources.api.QueryResource`
+
+Method: `getAllQueries`
+
+Expects: `Optional<Boolean>`
+Returns: list of [ExecutionStatus](#Type-ExecutionStatus)
+
+</p></details>
+
+### POST datasets/{dataset}/queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L55)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -118,7 +132,49 @@ Returns: `Response`
 
 </p></details>
 
-### DELETE datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L63)</sup></sub></sup>
+### GET datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L67)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.resources.api.QueryResource`
+
+Method: `getStatus`
+
+Expects: `Optional<Boolean>`
+Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
+
+</p></details>
+
+### PATCH datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L80)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.resources.api.QueryResource`
+
+Method: `patchQuery`
+
+Expects: `Optional<Boolean>`
+Expects: [MetaDataPatch](#Type-MetaDataPatch)
+Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
+
+</p></details>
+
+### DELETE datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L91)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.resources.api.QueryResource`
+
+Method: `deleteQuery`
+
+Returns: `void`
+
+</p></details>
+
+### POST datasets/{dataset}/queries/{query}/cancel<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L110)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -131,14 +187,14 @@ Returns: `void`
 
 </p></details>
 
-### GET datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L77)</sup></sub></sup>
+### POST datasets/{dataset}/queries/{query}/reexecute<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L100)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
 
 Java Type: `com.bakdata.conquery.resources.api.QueryResource`
 
-Method: `getStatus`
+Method: `reexecute`
 
 Expects: `Optional<Boolean>`
 Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
@@ -158,76 +214,6 @@ Expects: `String`
 Expects: `String`
 Expects: `Optional<Boolean>`
 Returns: `Response`
-
-</p></details>
-
-### GET datasets/{dataset}/stored-queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/StoredQueriesResource.java#L44)</sup></sub></sup>
-
-
-<details><summary>Details</summary><p>
-
-Java Type: `com.bakdata.conquery.resources.api.StoredQueriesResource`
-
-Method: `getAllQueries`
-
-Expects: `Optional<Boolean>`
-Returns: list of [ExecutionStatus](#Type-ExecutionStatus)
-
-</p></details>
-
-### GET datasets/{dataset}/stored-queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/StoredQueriesResource.java#L50)</sup></sub></sup>
-
-
-<details><summary>Details</summary><p>
-
-Java Type: `com.bakdata.conquery.resources.api.StoredQueriesResource`
-
-Method: `getSingleQueryInfo`
-
-Expects: `Optional<Boolean>`
-Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
-
-</p></details>
-
-### PATCH datasets/{dataset}/stored-queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/StoredQueriesResource.java#L60)</sup></sub></sup>
-
-
-<details><summary>Details</summary><p>
-
-Java Type: `com.bakdata.conquery.resources.api.StoredQueriesResource`
-
-Method: `patchQuery`
-
-Expects: `Optional<Boolean>`
-Expects: [MetaDataPatch](#Type-MetaDataPatch)
-Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
-
-</p></details>
-
-### DELETE datasets/{dataset}/stored-queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/StoredQueriesResource.java#L71)</sup></sub></sup>
-
-
-<details><summary>Details</summary><p>
-
-Java Type: `com.bakdata.conquery.resources.api.StoredQueriesResource`
-
-Method: `deleteQuery`
-
-Returns: `void`
-
-</p></details>
-
-### POST datasets/{dataset}/stored-queries/{query}/reexecute<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/StoredQueriesResource.java#L81)</sup></sub></sup>
-
-
-<details><summary>Details</summary><p>
-
-Java Type: `com.bakdata.conquery.resources.api.StoredQueriesResource`
-
-Method: `reexecute`
-
-Expects: `Optional<Boolean>`
-Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
 
 </p></details>
 
@@ -445,7 +431,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/CQElement.java#L31-L33) | label | `String` | ? |  | Allows the user to define labels. | 
 </p></details>
 
-### CONCEPT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L55)</sup></sub></sup>
+### CONCEPT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L48)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -457,12 +443,12 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/CQElement.java#L31-L33) | label | `String` | `null` |  | Allows the user to define labels. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L83) | aggregateEventDates | `@javax.validation.constraints.NotNull boolean` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L62-L64) | elements | list of ID of `ConceptElement<?>` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L81) | excludeFromSecondaryIdQuery | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L80) | excludeFromTimeAggregation | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L76) | selects | list of ID of `Select` | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L70) | tables | list of [CQTable](#Type-CQTable) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L76) | aggregateEventDates | `@javax.validation.constraints.NotNull boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L55-L57) | elements | list of ID of `ConceptElement<?>` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L74) | excludeFromSecondaryIdQuery | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L73) | excludeFromTimeAggregation | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L69) | selects | list of ID of `Select` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L63) | tables | list of [CQTable](#Type-CQTable) | `[]` |  |  | 
 </p></details>
 
 ### DATE_RESTRICTION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQDateRestriction.java#L30)</sup></sub></sup>

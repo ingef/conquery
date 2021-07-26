@@ -29,7 +29,7 @@ const Wrap = styled("div")`
 
 const Logo = styled("div")`
   width: ${({ theme }) => theme.img.logoWidth};
-  height: ${({ theme }) => theme.img.logoHeight || "35px"};
+  height: 35px;
   background-image: url(${({ theme }) => theme.img.logo});
   background-repeat: no-repeat;
   background-position-y: 50%;

@@ -122,10 +122,4 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	public Dataset getDataset() {
 		return getConcept().getDataset();
 	}
-
-	/**
-	 * @param cBlock
-	 * @param bucket
-	 */
-	public abstract void calculateCBlock(CBlock cBlock, Bucket bucket);
 }

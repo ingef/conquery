@@ -26,7 +26,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void add(KEY key, VALUE value) {
 		if(cache.putIfAbsent(key, value)!=null) {
-			throw new IllegalStateException("The id "+key+" is alread part of this store");
+			throw new IllegalStateException("The id "+key+" is already part of this store");
 		}
 		store.add(key, value);
 	}

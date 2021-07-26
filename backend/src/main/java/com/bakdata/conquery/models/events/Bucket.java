@@ -4,13 +4,12 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.serializer.Int2IntArrayMapDeserializer;
-import com.bakdata.conquery.io.jackson.serializer.Int2IntMapSerializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -32,9 +31,6 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -55,25 +51,24 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	@Min(0)
 	private final int bucket;
+
+	private final int root;
+
 	@Min(0)
 	private final int numberOfEvents;
 	private final ColumnStore[] stores;
 
-	//TODO migrate these back to arrays again, like CBlock#getEntityIndex (and unify those)
+	private final Set<Integer> entities;
+
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
-	@JsonSerialize(using = Int2IntMapSerializer.class)
-	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
-	private final Int2IntMap start;
+	private final int[] start;
+
 	/**
 	 * Number of events per Entity in {@code stores}.
 	 */
-	@JsonSerialize(using = Int2IntMapSerializer.class)
-	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
-	private final Int2IntMap length;
-
-
+	private final int[] ends;
 
 	@NsIdRef
 	private final Import imp;
@@ -92,15 +87,15 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	 * Iterate entities
 	 */
 	public Collection<Integer> entities() {
-		return start.keySet();
+		return entities;
 	}
 
 	public boolean containsEntity(int entity) {
-		return start.containsKey(entity);
+		return getEntityStart(entity) != -1;
 	}
 
 	public Iterable<BucketEntry> entries() {
-		return () -> start.keySet()
+		return () -> entities()
 						  .stream()
 						  .flatMap(entity -> IntStream.range(getEntityStart(entity), getEntityEnd(entity))
 													  .mapToObj(e -> new BucketEntry(entity, e))
@@ -109,11 +104,15 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public int getEntityStart(int entityId) {
-		return start.get(entityId);
+		return start[getEntityIndex(entityId)];
+	}
+
+	public int getEntityIndex(int entityId) {
+		return entityId - root;
 	}
 
 	public int getEntityEnd(int entityId) {
-		return start.get(entityId) + length.get(entityId);
+		return ends[getEntityIndex(entityId)];
 	}
 
 	public final boolean has(int event, Column column) {

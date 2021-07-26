@@ -209,11 +209,10 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 
 
 	@Override
-	protected void makeDefaultLabel(StringBuilder sb, PrintSettings cfg) {
-		sb
-				.append(getSubmittedForm().getLocalizedTypeLabel())
-				.append(" ")
-				.append(getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", I18n.LOCALE.get())));
+	protected String makeDefaultLabel(PrintSettings cfg) {
+		return getSubmittedForm().getLocalizedTypeLabel()
+			   + " "
+			   + getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", I18n.LOCALE.get()));
 	}
 
 }

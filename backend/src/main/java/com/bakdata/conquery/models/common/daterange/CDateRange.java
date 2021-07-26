@@ -199,41 +199,56 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 			return this;
 		}
 
-		int min = Integer.MAX_VALUE;
+		int min;
 		{
-			if (getMinValue() != Integer.MIN_VALUE) {
-				min = Math.min(min, getMinValue());
+			// Initialize with the lowest know min from this
+			if (hasLowerBound()) {
+				min = getMinValue();
+			}
+			else if(hasUpperBound()){
+				min = getMaxValue();
+			}
+			else {
+				min = Integer.MAX_VALUE;
 			}
 
-			if (other.getMinValue() != Integer.MIN_VALUE) {
+			// then compare with others known min - if all fails, set it to Integer.MIN_VALUE
+			if (other.hasLowerBound()) {
 				min = Math.min(min, other.getMinValue());
 			}
-
-			min = Math.min(min, getMaxValue());
-			min = Math.min(min, other.getMaxValue());
+			else if (other.hasUpperBound()){
+				min = Math.min(min, other.getMaxValue());
+			}
 
 			if (min == Integer.MAX_VALUE) {
 				min = Integer.MIN_VALUE;
 			}
 		}
 
-		int max = Integer.MIN_VALUE;
+		int max;
 		{
-			if (getMaxValue() != Integer.MAX_VALUE) {
-				max = Math.max(max, getMaxValue());
+			if (hasUpperBound()) {
+				max =  getMaxValue();
+			}
+			else if (hasLowerBound()) {
+				max = getMinValue();
+			}
+			else {
+				max = Integer.MIN_VALUE;
 			}
 
-			if (other.getMaxValue() != Integer.MAX_VALUE) {
-				max = Math.max(max, other.getMaxValue());
+			if(other.hasUpperBound()){
+				max = Math.max(max,other.getMaxValue());
 			}
-
-			max = Math.max(max, getMinValue());
-			max = Math.max(max, other.getMinValue());
+			else if(other.hasLowerBound()){
+				max = Math.max(max, other.getMinValue());
+			}
 
 			if (max == Integer.MIN_VALUE) {
 				max = Integer.MAX_VALUE;
 			}
 		}
+
 
 		if(min == Integer.MIN_VALUE && max != Integer.MAX_VALUE){
 			min = max;
