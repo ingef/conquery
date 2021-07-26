@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 public class ColumnConfig {
 
 	@Builder
+	@AllArgsConstructor
 	@NoArgsConstructor
 	@Getter
 	@Setter
