@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -30,8 +30,7 @@ import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
+import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -71,7 +70,7 @@ public class CQExternal extends CQElement {
 	}
 
 
-	private Int2ObjectMap<CDateSet> readDates(String[][] values, List<String> format, DateReader dateReader, FrontendConfig.UploadConfig queryUpload) {
+	private static Int2ObjectMap<CDateSet> readDates(String[][] values, List<String> format, DateReader dateReader, FrontendConfig.UploadConfig queryUpload) {
 		Int2ObjectMap<CDateSet> out = new Int2ObjectAVLTreeMap<>();
 
 
@@ -103,14 +102,52 @@ public class CQExternal extends CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		valuesResolved = new Int2ObjectOpenHashMap<>();
+		final ResolveStatistic resolved = resolveEntities(values, format, context.getNamespace().getStorage().getIdMapping(), context.getConfig().getFrontend().getQueryUpload(), context.getConfig().getPreprocessor().getParsers().getDateReader());
 
-		final EntityIdMap mapping = context.getNamespace().getStorage().getIdMapping();
+		if (resolved.getResolved().isEmpty()) {
+			throw new ConqueryError.ExternalResolveEmptyError();
+		}
 
-		final DateReader dateReader = context.getConfig().getPreprocessor().getParsers().getDateReader();
+		if (!resolved.getUnreadableDate().isEmpty()) {
+			log.warn(
+					"Could not read dates {} of the {} rows. Not resolved: {}",
+					resolved.getUnreadableDate().size(),
+					values.length - 1,
+					resolved.getUnreadableDate().subList(0, Math.min(resolved.getUnreadableDate().size(), 10))
+			);
+		}
+
+		if (!resolved.getUnresolvedId().isEmpty()) {
+			log.warn(
+					"Could not read dates {} of the {} rows. Not resolved: {}",
+					resolved.getUnresolvedId().size(),
+					values.length - 1,
+					resolved.getUnresolvedId().subList(0, Math.min(resolved.getUnresolvedId().size(), 10))
+			);
+		}
+
+		valuesResolved = resolved.getResolved();
+	}
+
+	@Data
+	public static class ResolveStatistic {
+
+		@JsonIgnore
+		private final Map<Integer, CDateSet> resolved;
+
+		private final List<String[]> unreadableDate;
+		private final List<String[]> unresolvedId;
+
+	}
+
+	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, FrontendConfig.UploadConfig queryUpload, @NotNull DateReader dateReader) {
+		Map<Integer, CDateSet> resolved = new Int2ObjectOpenHashMap<>();
+
+		List<String[]> unresolvedDate = new ArrayList<>();
+		List<String[]> unresolvedId = new ArrayList<>();
 
 		// extract dates from rows
-		final FrontendConfig.UploadConfig uploadConfig = context.getConfig().getFrontend().getQueryUpload();
+		final FrontendConfig.UploadConfig uploadConfig = queryUpload;
 
 		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, uploadConfig);
 
@@ -118,7 +155,6 @@ public class CQExternal extends CQElement {
 
 		final ColumnConfig reader = uploadConfig.getIdMapper(format.get(idIndex));
 
-		final List<String[]> unresolved = new ArrayList<>();
 
 		// ignore the first row, because this is the header
 		for (int rowNum = 1; rowNum < values.length; rowNum++) {
@@ -128,31 +164,20 @@ public class CQExternal extends CQElement {
 			final int resolvedId = mapping.resolve(externalId);
 
 			if (resolvedId == -1) {
-				unresolved.add(row);
+				unresolvedId.add(row);
 				continue;
 			}
 
 			if (!rowDates.containsKey(rowNum)) {
-				unresolved.add(row);
+				unresolvedDate.add(row);
 				continue;
 			}
 
 			//read the dates from the row
-			valuesResolved.put(resolvedId, rowDates.get(rowNum));
+			resolved.put(resolvedId, rowDates.get(rowNum));
 		}
 
-		if (!unresolved.isEmpty()) {
-			log.warn(
-					"Could not resolve {} of the {} rows. Not resolved: {}",
-					unresolved.size(),
-					values.length - 1,
-					unresolved.subList(0, Math.min(unresolved.size(), 10))
-			);
-		}
-
-		if (valuesResolved.isEmpty()) {
-			throw new ConqueryError.ExternalResolveEmptyError();
-		}
+		return new ResolveStatistic(resolved,unresolvedDate,unresolvedId);
 	}
 
 

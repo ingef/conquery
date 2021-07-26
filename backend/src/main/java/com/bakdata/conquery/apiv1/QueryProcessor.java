@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
@@ -44,10 +45,12 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -359,5 +362,40 @@ public class QueryProcessor {
 		return status;
 	}
 
+	@Data
+	public static class UploadResponse {
+		private final ManagedExecutionId execution;
 
+		private final int resolved;
+
+		private final List<String[]> unresolvedId;
+		private final List<String[]> unreadableDate;
+	}
+
+	public Response uploadEntities(User user, Dataset dataset, QueryResource.ExternalUpload upload) {
+		final CQExternal.ResolveStatistic statistic = CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
+																				 datasetRegistry.get(dataset.getId()).getStorage().getIdMapping(),
+																				 config.getFrontend().getQueryUpload(),
+																				 config.getPreprocessor().getParsers().getDateReader()
+		);
+
+		// Resolving nothing is a problem and we fail.
+		if (statistic.getResolved().isEmpty()) {
+			return Response.status(Response.Status.BAD_REQUEST)
+						   .entity(new UploadResponse(null, 0, statistic.getUnresolvedId(), statistic.getUnreadableDate()))
+						   .build();
+		}
+
+		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues()));
+		final ManagedExecution<?> execution = postQuery(dataset, query, user);
+
+		return Response.ok()
+					   .entity(new UploadResponse(
+							   execution.getId(),
+							   statistic.getResolved().size(),
+							   statistic.getUnresolvedId(),
+							   statistic.getUnreadableDate()
+					   ))
+					   .build();
+	}
 }

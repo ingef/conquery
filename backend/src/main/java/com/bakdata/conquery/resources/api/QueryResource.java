@@ -3,13 +3,17 @@ package com.bakdata.conquery.resources.api;
 
 import com.bakdata.conquery.apiv1.*;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
@@ -120,4 +124,19 @@ public class QueryResource {
                 query
         );
     }
+
+    @RequiredArgsConstructor
+	@Getter
+    public static class ExternalUpload {
+    	private final List<String> format;
+    	private final String[][] values;
+
+    	private final ManagedExecutionId executionId;
+	}
+
+	@POST
+	@Path("/upload/")
+	public Response upload(@Auth User user, ExternalUpload upload) {
+    	return processor.uploadEntities(user, dataset, upload);
+	}
 }
