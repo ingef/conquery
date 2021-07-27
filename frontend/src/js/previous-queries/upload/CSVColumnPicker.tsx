@@ -2,12 +2,16 @@ import styled from "@emotion/styled";
 import React, { useState, useEffect, FC } from "react";
 import { useTranslation } from "react-i18next";
 
+import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
 import { parseCSV } from "../../file/csv";
 import InputSelect from "../../form-components/InputSelect";
 import ReactSelect from "../../form-components/ReactSelect";
 import FaIcon from "../../icon/FaIcon";
+import { useActiveLang } from "../../localization/useActiveLang";
+import ScrollableList from "../../scrollable-list/ScrollableList";
+import WithTooltip from "../../tooltip/WithTooltip";
 
 const Row = styled("div")`
   display: flex;
@@ -35,15 +39,11 @@ const Td = styled("td")`
 `;
 const Th = styled("th")`
   font-size: ${({ theme }) => theme.font.xs};
-  min-width: 125px;
-`;
-
-const SxIconButton = styled(IconButton)`
-  margin-left: 10px;
+  min-width: 150px;
 `;
 
 const FileName = styled("code")`
-  margin: 0;
+  margin: 0 15px 0 0;
 `;
 
 const Padded = styled("span")`
@@ -61,7 +61,15 @@ const SxInputSelect = styled(InputSelect)`
   margin-left: 15px;
 `;
 
-export interface ExternalQueryT {
+const SxPrimaryButton = styled(PrimaryButton)`
+  margin-top: 12px;
+`;
+
+const Msg = styled("p")`
+  margin: 0 0 10px;
+`;
+
+export interface QueryToUploadT {
   format: string[];
   values: string[][];
 }
@@ -69,12 +77,14 @@ export interface ExternalQueryT {
 interface PropsT {
   file: File;
   loading: boolean;
+  config: QueryUploadConfigT;
+  uploadResult: UploadQueryResponseT | null;
   onReset: () => void;
-  onUpload: (query: ExternalQueryT) => void;
+  onUpload: (query: QueryToUploadT) => void;
 }
 
 type UploadColumnType =
-  | "ID" // (some string)
+  | string // some ID column format that will be determined by the backend through the "frontend config"
   | "EVENT_DATE" // (a single day)
   | "START_DATE" //(a starting day)
   | "END_DATE" // (and end day
@@ -82,18 +92,36 @@ type UploadColumnType =
   | "DATE_SET" // (a set of date ranges)
   | "IGNORE"; // (ignore this column)
 
-const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
+const CSVColumnPicker: FC<PropsT> = ({
+  file,
+  loading,
+  config,
+  uploadResult,
+  onUpload,
+  onReset,
+}) => {
   const { t } = useTranslation();
+  const locale = useActiveLang();
   const [csv, setCSV] = useState<string[][]>([]);
   const [delimiter, setDelimiter] = useState<string>(";");
   const [csvHeader, setCSVHeader] = useState<UploadColumnType[]>([]);
   const [csvLoading, setCSVLoading] = useState(false);
 
-  const SELECT_OPTIONS: { label: string; value: UploadColumnType }[] = [
-    { label: t("csvColumnPicker.id"), value: "ID" },
+  const SELECT_OPTIONS: { label: string; value: string }[] = [
+    ...config.ids.map(({ name, label }) => {
+      const labelWithFallback: string =
+        label[locale] || t("common.missingLabel");
+
+      return {
+        label: labelWithFallback,
+        value: name,
+      };
+    }),
+    { label: t("csvColumnPicker.dateRange"), value: "DATE_RANGE" },
     { label: t("csvColumnPicker.dateSet"), value: "DATE_SET" },
     { label: t("csvColumnPicker.startDate"), value: "START_DATE" },
     { label: t("csvColumnPicker.endDate"), value: "END_DATE" },
+    { label: t("csvColumnPicker.eventDate"), value: "EVENT_DATE" },
     { label: t("csvColumnPicker.ignore"), value: "IGNORE" },
   ];
 
@@ -118,22 +146,24 @@ const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
 
           const firstRow = result.data[0];
 
+          const initialIdName =
+            config.ids.length > 0 ? config.ids[0].name : "IGNORE";
           let initialCSVHeader = new Array(firstRow.length).fill("IGNORE");
 
           // External queries (uploaded lists) usually contain three or four columns.
           // The first two columns are IDs, which will be concatenated
           // The other two columns are date ranges
           if (firstRow.length >= 4) {
-            initialCSVHeader[0] = "ID";
-            initialCSVHeader[1] = "ID";
+            initialCSVHeader[0] = initialIdName;
+            initialCSVHeader[1] = initialIdName;
             initialCSVHeader[2] = "START_DATE";
             initialCSVHeader[3] = "END_DATE";
           } else if (firstRow.length === 3) {
-            initialCSVHeader = ["ID", "ID", "DATE_SET"];
+            initialCSVHeader = [initialIdName, initialIdName, "DATE_SET"];
           } else if (firstRow.length === 2) {
-            initialCSVHeader = ["ID", "DATE_SET"];
+            initialCSVHeader = [initialIdName, "DATE_SET"];
           } else {
-            initialCSVHeader = ["ID"];
+            initialCSVHeader = [initialIdName];
           }
 
           setCSVHeader(initialCSVHeader);
@@ -146,7 +176,7 @@ const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
     if (file) {
       parse();
     }
-  }, [file, delimiter]);
+  }, [file, delimiter, config.ids]);
 
   function uploadQuery() {
     onUpload({
@@ -160,7 +190,9 @@ const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
       <Row>
         <Grow>
           <FileName>{file.name}</FileName>
-          <SxIconButton frame regular icon="trash-alt" onClick={onReset} />
+          <WithTooltip text={t("common.clear")}>
+            <IconButton frame regular icon="trash-alt" onClick={onReset} />
+          </WithTooltip>
         </Grow>
         {csv.length > 0 && (
           <SxInputSelect
@@ -232,13 +264,47 @@ const CSVColumnPicker: FC<PropsT> = ({ file, loading, onUpload, onReset }) => {
           )}
         </tbody>
       </Table>
-      <PrimaryButton
+      {uploadResult && (
+        <div>
+          <Msg>
+            {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
+          </Msg>
+          {uploadResult.unreadableDate.length > 0 && (
+            <>
+              <Msg>{t("csvColumnPicker.unreadableDate")}</Msg>
+              <ScrollableList
+                maxVisibleItems={3}
+                fullWidth
+                items={
+                  uploadResult.unreadableDate.map((row) =>
+                    row.join(delimiter),
+                  ) || []
+                }
+              />
+            </>
+          )}
+          {uploadResult.unresolvedId.length > 0 && (
+            <>
+              <Msg>{t("csvColumnPicker.unresolvedId")}</Msg>
+              <ScrollableList
+                maxVisibleItems={3}
+                fullWidth
+                items={
+                  uploadResult.unresolvedId.map((row) => row.join(delimiter)) ||
+                  []
+                }
+              />
+            </>
+          )}
+        </div>
+      )}
+      <SxPrimaryButton
         disabled={loading || csv.length === 0}
         onClick={uploadQuery}
       >
         {loading && <FaIcon white icon="spinner" />}{" "}
         {t("uploadQueryResultsModal.upload")}
-      </PrimaryButton>
+      </SxPrimaryButton>
     </div>
   );
 };

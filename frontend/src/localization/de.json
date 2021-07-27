@@ -154,7 +154,8 @@
     "max": "Max",
     "std": "Std.",
     "logout": "Ausloggen",
-    "dateInvalid": "Ungültiges Datum"
+    "dateInvalid": "Ungültiges Datum",
+    "missingLabel": "Unbenannt"
   },
   "tooltip": {
     "headline": "Info",
@@ -305,8 +306,7 @@
     "headline": "Ergebnisliste hochladen",
     "dropzone": "Lege eine CSV-Datei hier ab",
     "upload": "Hochladen",
-    "uploadFailed": "Konnte Datei nicht hochladen",
-    "uploadFailedSub": "Bitte überprüfen Sie das Format und die Netzwerkverbindung",
+    "uploadFailed": "Datei konnte nicht hochgeladen werden. Bitte überprüfe das Dateiformat und die Netzwerkverbindung.",
     "uploadSucceeded": "Ergebnisliste hochladen erfolgreich",
     "formatInfo": {
       "text": "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
@@ -319,10 +319,16 @@
     "colon": "Doppelpunkt",
     "comma": "Komma",
     "id": "ID",
-    "dateSet": "Datumsbereich",
+    "dateSet": "Datumsmenge",
+    "dateRange": "Datumsbereich",
+    "eventDate": "Einzeldatum",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
-    "ignore": "Ignorieren"
+    "ignore": "Ignorieren",
+    "resolved": "1 Zeilen aufgelöst.",
+    "resolved_plural": "{{count}} Zeilen aufgelöst.",
+    "unreadableDate": "Datum nicht lesbar in den folgenden Zeilen",
+    "unresolvedId": "ID nicht auflösbar in den folgenden Zeilen"
   },
   "uploadConceptListModal": {
     "headline": "Konzepte aus Liste einfügen",

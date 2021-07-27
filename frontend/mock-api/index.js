@@ -61,6 +61,32 @@ module.exports = function (app, port) {
     },
   );
 
+  app.post(
+    "/api/datasets/:datasetId/queries/upload",
+    mockAuthMiddleware,
+    function response(req, res) {
+      const unresolvedId = [];
+      for (let i = 0; i < 3000; i++) {
+        unresolvedId.push(chance.sentence({ words: 3 }).split(" "));
+      }
+
+      setTimeout(() => {
+        res.setHeader("Content-Type", "application/json");
+        res.send(
+          JSON.stringify({
+            id: 234,
+            unresolvedId,
+            unreadableDate: [
+              ["xyz", "yes", "hello"],
+              ["abc", "no", "good day"],
+              ["def", "yes", "tomorrow"],
+            ],
+          }),
+        );
+      }, SHORT_DELAY);
+    },
+  );
+
   app.delete(
     "/api/datasets/:datasetId/queries/:id",
     mockAuthMiddleware,

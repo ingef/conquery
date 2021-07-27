@@ -154,7 +154,8 @@
     "max": "Max",
     "std": "SD",
     "logout": "Logout",
-    "dateInvalid": "Invalid date"
+    "dateInvalid": "Invalid date",
+    "missingLabel": "Unknown"
   },
   "tooltip": {
     "headline": "Info",
@@ -305,8 +306,7 @@
     "headline": "Upload result list",
     "dropzone": "Drop a CSV file here",
     "upload": "Upload",
-    "uploadFailed": "Could not upload file",
-    "uploadFailedSub": "Please check the file format and your network connection",
+    "uploadFailed": "Could not upload file. Please check the file format and the network connection.",
     "uploadSucceeded": "Result list was successfully uploaded",
     "formatInfo": {
       "text": "File should contain one result per row, separated by ; (semicolon)"
@@ -319,10 +319,16 @@
     "colon": "Colon",
     "comma": "Comma",
     "id": "ID",
-    "dateSet": "DATE_SET",
-    "startDate": "START_DATE",
-    "endDate": "END_DATE",
-    "ignore": "IGNORE"
+    "dateSet": "Date set",
+    "dateRange": "Date range",
+    "eventDate": "Single date",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "ignore": "IGNORE",
+    "resolved": "1 line resolved.",
+    "resolved_plural": "{{count}} lines resolved.",
+    "unreadableDate": "Couldn't read the date for the following lines",
+    "unresolvedId": "Couldn't resolve ID for the following lines"
   },
   "uploadConceptListModal": {
     "headline": "Upload concepts",

@@ -3,6 +3,7 @@ import type {
   FormConfigT,
   BaseFormConfigT,
 } from "../external-forms/form-configs/reducer";
+import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker";
 
 import { transformFormQueryToApi } from "./apiExternalFormsHelper";
 import { transformQueryToApi } from "./apiHelper";
@@ -26,6 +27,7 @@ import type {
   GetFormConfigsResponseT,
   GetFormConfigResponseT,
   GetDatasetsResponseT,
+  UploadQueryResponseT,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -111,6 +113,17 @@ export const usePostQueryCancel = () => {
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}/cancel`),
       method: "POST",
+    });
+};
+
+export const usePostQueryUpload = () => {
+  const api = useApi<UploadQueryResponseT>();
+
+  return (datasetId: DatasetIdT, data: QueryToUploadT) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/queries/upload`),
+      method: "POST",
+      data,
     });
 };
 

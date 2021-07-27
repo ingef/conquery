@@ -2,26 +2,15 @@ import styled from "@emotion/styled";
 import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import ErrorMessage from "../../error-message/ErrorMessage";
+import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
 import FaIcon from "../../icon/FaIcon";
 import Modal from "../../modal/Modal";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 
-import CSVColumnPicker, { ExternalQueryT } from "./CSVColumnPicker";
+import CSVColumnPicker, { QueryToUploadT } from "./CSVColumnPicker";
 
-const Root = styled("div")`
-  text-align: center;
-`;
-
-const Error = styled("div")`
-  margin: 20px 0;
-`;
-
-const ErrorMessageSub = styled(ErrorMessage)`
-  font-size: ${({ theme }) => theme.font.sm};
-  margin: 0;
-`;
+const Root = styled("div")``;
 
 const Success = styled("div")`
   margin: 25px 0;
@@ -46,21 +35,27 @@ const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
 
 interface PropsT {
   loading: boolean;
-  success: boolean;
-  error: boolean;
+  config: QueryUploadConfigT;
+  uploadResult: UploadQueryResponseT | null;
   onClose: () => void;
-  onUpload: (query: ExternalQueryT) => void;
+  onUpload: (query: QueryToUploadT) => void;
 }
 
 const UploadQueryResultsModal: FC<PropsT> = ({
   loading,
-  success,
-  error,
+  config,
+  uploadResult,
   onClose,
   onUpload,
 }) => {
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
+
+  const fullUploadSuccess =
+    uploadResult &&
+    uploadResult.resolved > 0 &&
+    uploadResult.unreadableDate.length === 0 &&
+    uploadResult.unresolvedId.length === 0;
 
   return (
     <Modal
@@ -74,7 +69,7 @@ const UploadQueryResultsModal: FC<PropsT> = ({
       }
     >
       <Root>
-        {success ? (
+        {fullUploadSuccess ? (
           <Success>
             <StyledFaIcon icon="check-circle" />
             <SuccessMsg>
@@ -86,6 +81,8 @@ const UploadQueryResultsModal: FC<PropsT> = ({
             {file && (
               <CSVColumnPicker
                 file={file}
+                uploadResult={uploadResult}
+                config={config}
                 loading={loading}
                 onUpload={onUpload}
                 onReset={() => setFile(null)}
@@ -102,16 +99,6 @@ const UploadQueryResultsModal: FC<PropsT> = ({
               >
                 {() => t("uploadQueryResultsModal.dropzone")}
               </SxDropzoneWithFileInput>
-            )}
-            {error && (
-              <Error>
-                <ErrorMessage
-                  message={t("uploadQueryResultsModal.uploadFailed")}
-                />
-                <ErrorMessageSub
-                  message={t("uploadQueryResultsModal.uploadFailedSub")}
-                />
-              </Error>
             )}
           </div>
         )}

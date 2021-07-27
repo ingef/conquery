@@ -29,9 +29,6 @@ import previousQueries, {
 import previousQueriesSearch, {
   QueriesSearchStateT,
 } from "../previous-queries/search/reducer";
-import uploadQueryResults, {
-  UploadQueryResultsStateT,
-} from "../previous-queries/upload/reducer";
 import {
   createQueryNodeEditorReducer,
   QueryNodeEditorStateT,
@@ -57,7 +54,6 @@ export type StateT = {
   panes: PanesStateT;
   uploadConceptListModal: UploadConceptListModalStateT;
   queryUploadConceptListModal: QueryUploadConceptListModalStateT;
-  uploadQueryResults: UploadQueryResultsStateT;
   user: UserStateT;
   queryEditor: StandardQueryEditorStateT;
   queryNodeEditor: QueryNodeEditorStateT;
@@ -88,7 +84,6 @@ const buildAppReducer = (tabs: TabT[]) => {
     previousQueriesSearch,
     previousQueriesFilter,
     previousQueriesFolderFilter,
-    uploadQueryResults,
     snackMessage,
     preview,
     user,
