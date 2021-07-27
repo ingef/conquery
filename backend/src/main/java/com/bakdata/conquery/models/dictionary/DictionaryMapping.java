@@ -22,9 +22,12 @@ import lombok.extern.slf4j.Slf4j;
 public class DictionaryMapping {
 
 	private final Dictionary sourceDictionary;
+
 	private final Dictionary targetDictionary;
 
+	@ToString.Exclude
 	private final Int2IntMap source2Target;
+	@ToString.Exclude
 	private final Int2IntMap target2Source;
 
 	private final int numberOfNewIds;
