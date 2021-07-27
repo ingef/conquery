@@ -195,9 +195,12 @@ public class AdminDatasetProcessor {
 			throw new IllegalArgumentException();
 		}
 
+
 		if (namespace.getStorage().getTable(table.getId()) != null) {
 			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
 		}
+
+		table.init();
 
 		ValidatorHelper.failOnError(log, validator.validate(table));
 
