@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.config;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.VersionInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Functions;
 import groovy.transform.ToString;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AccessLevel;
@@ -88,11 +88,16 @@ public class FrontendConfig {
 			return idFieldsCached;
 		}
 
+		@JsonIgnore
+		private Map<String, ColumnConfig> idMappers;
+
 		public ColumnConfig getIdMapper(String name) {
-			return ids.stream()
-					  .filter(mapper -> mapper.getName().equals(name)) //TODO use map
-					  .findFirst()
-					  .orElse(null);
+			if (idMappers == null) {
+				idMappers = ids.stream().filter(ColumnConfig::isResolvable)
+							   .collect(Collectors.toMap(ColumnConfig::getName, Functions.identity()));
+			}
+
+			return idMappers.get(name);
 		}
 
 		public int getIdIndex(List<String> format) {
@@ -198,6 +203,9 @@ public class FrontendConfig {
 		}
 
 
+		/**
+		 * Try to create a {@link FullIdPrinter} for user if they are allowed. If not allowed to read ids, they will receive ab pseudomized result instead.
+		 */
 		public IdPrinter getIdPrinter(User owner, ManagedExecution<?> execution, Namespace namespace) {
 
 			if (owner.isPermitted(execution.getDataset(), Ability.PRESERVE_ID)) {

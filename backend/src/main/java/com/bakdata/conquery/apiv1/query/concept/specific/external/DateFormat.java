@@ -47,6 +47,9 @@ public enum DateFormat {
 		}
 	};
 
+	/**
+	 * Try and parse value using dateReader, adding result into out set.
+	 */
 	public abstract void readDates(String value, DateReader dateReader, CDateSet out);
 
 }

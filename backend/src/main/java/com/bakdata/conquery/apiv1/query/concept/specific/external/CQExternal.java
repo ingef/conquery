@@ -70,37 +70,43 @@ public class CQExternal extends CQElement {
 	}
 
 
+	/**
+	 * For each row try and collect all dates.
+	 *
+	 * @return Row -> Dates
+	 */
 	private static Int2ObjectMap<CDateSet> readDates(String[][] values, List<String> format, DateReader dateReader, FrontendConfig.UploadConfig queryUpload) {
 		Int2ObjectMap<CDateSet> out = new Int2ObjectAVLTreeMap<>();
 
 		List<DateFormat> dateFormats = format.stream().map(queryUpload::resolveDateFormat).collect(Collectors.toList());
 
-		final boolean isAll = dateFormats.stream().allMatch(Objects::isNull);
+		// If no format provided, put all dates into output.
+		if (dateFormats.stream().allMatch(Objects::isNull)) {
+			for (int row = 0; row < values.length; row++) {
+				out.put(row, CDateSet.createFull());
+			}
+			return out;
+		}
 
 		for (int row = 1; row < values.length; row++) {
 			try {
-				if (isAll) {
-					out.put(row, CDateSet.createFull());
-					continue;
-				}
+				final CDateSet dates = CDateSet.create();
 
+				// Collect all specified dates into a single set.
 				for (int col = 0; col < dateFormats.size(); col++) {
 					final DateFormat dateFormat = dateFormats.get(col);
 
 					if (dateFormat == null) {
 						continue;
 					}
-
-					CDateSet dates = CDateSet.create();
-
 					dateFormat.readDates(values[row][col], dateReader, dates);
-
-					if (dates.isEmpty()) {
-						continue;
-					}
-
-					out.put(row, dates);
 				}
+
+				if (dates.isEmpty()) {
+					continue;
+				}
+
+				out.put(row, dates);
 			}
 			catch (Exception e) {
 				log.warn("Failed to parse Date from {}", row, e);
@@ -112,14 +118,12 @@ public class CQExternal extends CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		final ResolveStatistic
-				resolved =
-				resolveEntities(values, format, context.getNamespace().getStorage().getIdMapping(), context.getConfig()
-																										   .getFrontend()
-																										   .getQueryUpload(), context.getConfig()
-																																	 .getPreprocessor()
-																																	 .getParsers()
-																																	 .getDateReader());
+		final ResolveStatistic resolved =
+				resolveEntities(values, format,
+								context.getNamespace().getStorage().getIdMapping(),
+								context.getConfig().getFrontend().getQueryUpload(),
+								context.getConfig().getPreprocessor().getParsers().getDateReader()
+				);
 
 		if (resolved.getResolved().isEmpty()) {
 			throw new ConqueryError.ExternalResolveEmptyError();
@@ -127,18 +131,16 @@ public class CQExternal extends CQElement {
 
 		if (!resolved.getUnreadableDate().isEmpty()) {
 			log.warn(
-					"Could not read dates {} of the {} rows. Not resolved: {}",
+					"Could not read {} dates. Not resolved: {}",
 					resolved.getUnreadableDate().size(),
-					values.length - 1,
 					resolved.getUnreadableDate().subList(0, Math.min(resolved.getUnreadableDate().size(), 10))
 			);
 		}
 
 		if (!resolved.getUnresolvedId().isEmpty()) {
 			log.warn(
-					"Could not read dates {} of the {} rows. Not resolved: {}",
+					"Could not resolve {} ids. Not resolved: {}",
 					resolved.getUnresolvedId().size(),
-					values.length - 1,
 					resolved.getUnresolvedId().subList(0, Math.min(resolved.getUnresolvedId().size(), 10))
 			);
 		}
@@ -157,6 +159,9 @@ public class CQExternal extends CQElement {
 
 	}
 
+	/**
+	 * Helper method to try and resolve entities in values using the specified format.
+	 */
 	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, FrontendConfig.UploadConfig queryUpload, @NotNull DateReader dateReader) {
 		Map<Integer, CDateSet> resolved = new Int2ObjectOpenHashMap<>();
 
@@ -164,13 +169,12 @@ public class CQExternal extends CQElement {
 		List<String[]> unresolvedId = new ArrayList<>();
 
 		// extract dates from rows
-
 		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, queryUpload);
 
+		// TODO allow multiple ids
 		final int idIndex = queryUpload.getIdIndex(format);
 
 		final ColumnConfig reader = queryUpload.getIdMapper(format.get(idIndex));
-
 
 		// ignore the first row, because this is the header
 		for (int rowNum = 1; rowNum < values.length; rowNum++) {

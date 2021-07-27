@@ -372,14 +372,19 @@ public class QueryProcessor {
 		private final List<String[]> unreadableDate;
 	}
 
+	/**
+	 * Try to resolve the upload, if successful, create query for the user and return id and statistics for that.
+	 */
 	public Response uploadEntities(User user, Dataset dataset, QueryResource.ExternalUpload upload) {
-		final CQExternal.ResolveStatistic statistic = CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
-																				 datasetRegistry.get(dataset.getId()).getStorage().getIdMapping(),
-																				 config.getFrontend().getQueryUpload(),
-																				 config.getPreprocessor().getParsers().getDateReader()
-		);
 
-		// Resolving nothing is a problem and we fail.
+		final CQExternal.ResolveStatistic statistic =
+				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
+										   datasetRegistry.get(dataset.getId()).getStorage().getIdMapping(),
+										   config.getFrontend().getQueryUpload(),
+										   config.getPreprocessor().getParsers().getDateReader()
+				);
+
+		// Resolving nothing is a problem thus we fail.
 		if (statistic.getResolved().isEmpty()) {
 			return Response.status(Response.Status.BAD_REQUEST)
 						   .entity(new UploadResponse(null, 0, statistic.getUnresolvedId(), statistic.getUnreadableDate()))
@@ -390,7 +395,8 @@ public class QueryProcessor {
 
 		// We only create the Query, really no need to execute it as it's only useful for composition.
 		final ManagedExecution<?> execution =
-				datasetRegistry.get(dataset.getId()).getExecutionManager().createExecution(datasetRegistry, query, user, dataset);
+				datasetRegistry.get(dataset.getId()).getExecutionManager()
+							   .createExecution(datasetRegistry, query, user, dataset);
 
 		return Response.ok()
 					   .entity(new UploadResponse(
