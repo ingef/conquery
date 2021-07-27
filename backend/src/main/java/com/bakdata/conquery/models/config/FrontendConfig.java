@@ -35,10 +35,10 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Getter
 @Setter
-@With
 @AllArgsConstructor
 @NoArgsConstructor
 @Slf4j
+@With
 public class FrontendConfig {
 
 	private String version = VersionInfo.INSTANCE.getProjectVersion();

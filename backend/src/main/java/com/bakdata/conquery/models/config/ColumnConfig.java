@@ -66,12 +66,15 @@ public class ColumnConfig {
 
 	private String field;
 
+	@InternalOnly
 	private String pad = null;
 
+	@InternalOnly
 	private int length = -1;
 
 	private boolean resolvable = false;
 
+	@InternalOnly
 	private boolean fillAnon = false;
 
 	@JsonIgnore
