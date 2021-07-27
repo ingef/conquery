@@ -59,18 +59,14 @@ public class ColumnConfig {
 	 */
 	private Map<String, String> description = Collections.emptyMap();
 
-	@InternalOnly
 	private String field;
 
-	@InternalOnly
 	private String pad = null;
 
-	@InternalOnly
 	private int length = -1;
 
 	private boolean resolvable = false;
 
-	@InternalOnly
 	private boolean fillAnon = false;
 
 }
