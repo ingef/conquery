@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
-
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -63,7 +62,7 @@ public class ResultCsvProcessor {
 		Charset charset = determineCharset(userAgent, queryCharset);
 
 
-		StreamingOutput out =  os -> {
+		StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
 				renderer.toCSV(config.getFrontend().getQueryUpload().getPrintIdFields(), exec.getResultInfo(), exec.streamResults());

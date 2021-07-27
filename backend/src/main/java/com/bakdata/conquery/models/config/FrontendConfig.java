@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +25,7 @@ import com.bakdata.conquery.util.VersionInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import groovy.transform.ToString;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -67,6 +69,8 @@ public class FrontendConfig {
 		);
 
 		@JsonIgnore
+		@Setter(AccessLevel.NONE)
+		@Getter(AccessLevel.NONE)
 		private List<String> idFieldsCached;
 
 		/**
@@ -78,7 +82,7 @@ public class FrontendConfig {
 				idFieldsCached = ids.stream()
 									.map(ColumnConfig::getField)
 									.filter(Objects::nonNull)
-									.collect(Collectors.toList());
+									.collect(Collectors.toUnmodifiableList());
 			}
 
 			return idFieldsCached;

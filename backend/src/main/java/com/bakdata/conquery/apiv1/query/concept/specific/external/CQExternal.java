@@ -78,19 +78,25 @@ public class CQExternal extends CQElement {
 
 		//validate structures
 
-		final int[] datePositions = DateFormat.select(dateFormats);
-
-		DateFormat dateFormat = datePositions.length > 0 ? dateFormats.get(datePositions[0]) : DateFormat.ALL;
-
 		for (int row = 1; row < values.length; row++) {
 			try {
-				final CDateSet dates = dateFormat.readDates(datePositions, values[row], dateReader);
+				for (int col = 0; col < dateFormats.size(); col++) {
+					final DateFormat dateFormat = dateFormats.get(col);
 
-				if (dates == null) {
-					continue;
+					if(dateFormat == null){
+						continue;
+					}
+
+					CDateSet dates = CDateSet.create();
+
+					dateFormat.readDates(values[row][col], dateReader, dates);
+
+					if (dates.isEmpty()) {
+						continue;
+					}
+
+					out.put(row, dates);
 				}
-
-				out.put(row, dates);
 			}
 			catch (Exception e) {
 				log.warn("Failed to parse Date from {}", row, e);

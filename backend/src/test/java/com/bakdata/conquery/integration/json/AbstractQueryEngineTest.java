@@ -1,27 +1,32 @@
 package com.bakdata.conquery.integration.json;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
+import java.util.Map;
 
+import javax.ws.rs.core.Response;
+
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.resources.api.ResultCsvResource;
+import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -66,32 +71,28 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 				.as("Should have same size as result infos")
 				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(testUser, execution, execution.getNamespace());
+		// Get the actual response and compare with expected result.
+		final Response csvResponse =
+				standaloneSupport.getClient()
+								 .target(HierarchyHelper.hierarchicalPath(standaloneSupport.defaultApiURIBuilder(), ResultCsvResource.class, "getAsCsv")
+														.buildFromMap(
+																Map.of(DATASET, standaloneSupport.getDataset().getName(),
+																	   QUERY, execution.getId().toString()
+																)
+														))
+								 .request(AdditionalMediaTypes.CSV)
+								 .acceptLanguage(Locale.ENGLISH)
+								 .get();
 
-		PrintSettings
-				PRINT_SETTINGS =
-				new PrintSettings(
-						false,
-						Locale.ENGLISH,
-						namespaces,
-						config,
-						idPrinter::createId,
-						(columnInfo) -> columnInfo.getSelect().getId().toStringWithoutDataset()
-				);
-
-		CsvLineStreamRenderer renderer = new CsvLineStreamRenderer(config.getCsv().createWriter(), PRINT_SETTINGS);
-
-		List<String> actual = renderer.toStream(
-				config.getFrontend().getQueryUpload().getPrintIdFields(),
-				resultInfos,
-				execution.streamResults()
-		).collect(Collectors.toList());
+		List<String> actual = In.stream(((InputStream) csvResponse.getEntity())).readLines();
 
 		ResourceFile expectedCsv = getExpectedCsv();
 
 		List<String> expected = In.stream(expectedCsv.stream()).readLines();
 
-		assertThat(actual).as("Results for %s are not as expected.", this).containsExactlyInAnyOrderElementsOf(expected);
+		assertThat(actual).as("Results for %s are not as expected.", this)
+						  .containsExactlyInAnyOrderElementsOf(expected);
+
 		// check that getLastResultCount returns the correct size
 		if (execution.streamResults().noneMatch(MultilineEntityResult.class::isInstance)) {
 			assertThat(execution.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
