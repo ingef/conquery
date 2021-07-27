@@ -73,7 +73,6 @@ public class CQExternal extends CQElement {
 	private static Int2ObjectMap<CDateSet> readDates(String[][] values, List<String> format, DateReader dateReader, FrontendConfig.UploadConfig queryUpload) {
 		Int2ObjectMap<CDateSet> out = new Int2ObjectAVLTreeMap<>();
 
-
 		List<DateFormat> dateFormats = format.stream().map(queryUpload::resolveDateFormat).collect(Collectors.toList());
 
 		//validate structures
@@ -153,13 +152,12 @@ public class CQExternal extends CQElement {
 		List<String[]> unresolvedId = new ArrayList<>();
 
 		// extract dates from rows
-		final FrontendConfig.UploadConfig uploadConfig = queryUpload;
 
-		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, uploadConfig);
+		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, queryUpload);
 
-		final int idIndex = uploadConfig.getIdIndex(format);
+		final int idIndex = queryUpload.getIdIndex(format);
 
-		final ColumnConfig reader = uploadConfig.getIdMapper(format.get(idIndex));
+		final ColumnConfig reader = queryUpload.getIdMapper(format.get(idIndex));
 
 
 		// ignore the first row, because this is the header

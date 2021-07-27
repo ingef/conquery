@@ -10,8 +10,10 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -132,11 +136,18 @@ public class QueryResource {
     	private final String[][] values;
 
     	private final ManagedExecutionId executionId;
+
+    	@JsonIgnore
+		@ValidationMethod(message = "Values and Format are not of same width.")
+		public boolean isAllSameLength() {
+			final int expected = format.size();
+			return Arrays.stream(values).mapToInt(a -> a.length).allMatch(v -> expected == v);
+		}
 	}
 
 	@POST
 	@Path("/upload")
-	public Response upload(@Auth User user, ExternalUpload upload) {
+	public Response upload(@Auth User user, @Valid ExternalUpload upload) {
     	return processor.uploadEntities(user, dataset, upload);
 	}
 }
