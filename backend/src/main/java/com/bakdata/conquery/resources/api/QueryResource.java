@@ -135,7 +135,7 @@ public class QueryResource {
 	}
 
 	@POST
-	@Path("/upload/")
+	@Path("/upload")
 	public Response upload(@Auth User user, ExternalUpload upload) {
     	return processor.uploadEntities(user, dataset, upload);
 	}

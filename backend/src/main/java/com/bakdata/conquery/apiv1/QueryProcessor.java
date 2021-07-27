@@ -387,7 +387,10 @@ public class QueryProcessor {
 		}
 
 		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues()));
-		final ManagedExecution<?> execution = postQuery(dataset, query, user);
+
+		// We only create the Query, really no need to execute it as it's only useful for composition.
+		final ManagedExecution<?> execution =
+				datasetRegistry.get(dataset.getId()).getExecutionManager().createExecution(datasetRegistry, query, user, dataset);
 
 		return Response.ok()
 					   .entity(new UploadResponse(
