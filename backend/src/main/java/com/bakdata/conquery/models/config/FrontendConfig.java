@@ -56,6 +56,7 @@ public class FrontendConfig {
 	public static class UploadConfig {
 
 		@NotEmpty
+		@Valid
 		private List<ColumnConfig> ids = List.of(
 				ColumnConfig.builder()
 							.name("ID")
@@ -94,7 +95,7 @@ public class FrontendConfig {
 			for (int index = 0; index < format.size(); index++) {
 				final String current = format.get(index);
 
-				if (ids.stream().map(ColumnConfig::getName).anyMatch(current::equals)) {
+				if (getIdMapper(current) != null) {
 					return index;
 				}
 			}
@@ -103,6 +104,7 @@ public class FrontendConfig {
 		}
 
 		@NotNull
+		@Valid
 		private ColumnConfig dateStart = ColumnConfig.builder()
 													 .name(DateFormat.START_DATE.name())
 													 .label(Map.of("en", "Begin"))
@@ -110,6 +112,7 @@ public class FrontendConfig {
 													 .build();
 
 		@NotNull
+		@Valid
 		private ColumnConfig dateEnd = ColumnConfig.builder()
 												   .name(DateFormat.END_DATE.name())
 												   .label(Map.of("en", "End"))
@@ -118,6 +121,7 @@ public class FrontendConfig {
 
 
 		@NotNull
+		@Valid
 		private ColumnConfig dateRange = ColumnConfig.builder()
 													 .name(DateFormat.DATE_RANGE.name())
 													 .label(Map.of("en", "Date Range"))
@@ -126,6 +130,7 @@ public class FrontendConfig {
 
 
 		@NotNull
+		@Valid
 		private ColumnConfig dateSet = ColumnConfig.builder()
 												   .name(DateFormat.DATE_SET.name())
 												   .label(Map.of("en", "Dateset"))
@@ -134,6 +139,7 @@ public class FrontendConfig {
 
 
 		@NotNull
+		@Valid
 		private ColumnConfig eventDate = ColumnConfig.builder()
 													 .name(DateFormat.EVENT_DATE.name())
 													 .label(Map.of("en", "Event Date"))
