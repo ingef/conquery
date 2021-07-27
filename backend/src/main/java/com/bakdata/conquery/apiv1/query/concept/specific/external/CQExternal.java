@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
@@ -17,7 +18,6 @@ import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -75,14 +75,19 @@ public class CQExternal extends CQElement {
 
 		List<DateFormat> dateFormats = format.stream().map(queryUpload::resolveDateFormat).collect(Collectors.toList());
 
-		//validate structures
+		final boolean isAll = dateFormats.stream().allMatch(Objects::isNull);
 
 		for (int row = 1; row < values.length; row++) {
 			try {
+				if (isAll) {
+					out.put(row, CDateSet.createFull());
+					continue;
+				}
+
 				for (int col = 0; col < dateFormats.size(); col++) {
 					final DateFormat dateFormat = dateFormats.get(col);
 
-					if(dateFormat == null){
+					if (dateFormat == null) {
 						continue;
 					}
 
@@ -107,7 +112,14 @@ public class CQExternal extends CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		final ResolveStatistic resolved = resolveEntities(values, format, context.getNamespace().getStorage().getIdMapping(), context.getConfig().getFrontend().getQueryUpload(), context.getConfig().getPreprocessor().getParsers().getDateReader());
+		final ResolveStatistic
+				resolved =
+				resolveEntities(values, format, context.getNamespace().getStorage().getIdMapping(), context.getConfig()
+																										   .getFrontend()
+																										   .getQueryUpload(), context.getConfig()
+																																	 .getPreprocessor()
+																																	 .getParsers()
+																																	 .getDateReader());
 
 		if (resolved.getResolved().isEmpty()) {
 			throw new ConqueryError.ExternalResolveEmptyError();
@@ -181,7 +193,7 @@ public class CQExternal extends CQElement {
 			resolved.put(resolvedId, rowDates.get(rowNum));
 		}
 
-		return new ResolveStatistic(resolved,unresolvedDate,unresolvedId);
+		return new ResolveStatistic(resolved, unresolvedDate, unresolvedId);
 	}
 
 
