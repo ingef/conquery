@@ -64,6 +64,7 @@ public class ColumnConfig {
 	 */
 	private Map<String, String> description = Collections.emptyMap();
 
+	@InternalOnly
 	private String field;
 
 	@InternalOnly
@@ -72,6 +73,7 @@ public class ColumnConfig {
 	@InternalOnly
 	private int length = -1;
 
+	@InternalOnly
 	private boolean resolvable = false;
 
 	@InternalOnly
