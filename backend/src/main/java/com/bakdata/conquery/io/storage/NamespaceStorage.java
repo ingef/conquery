@@ -5,9 +5,14 @@ import java.util.Objects;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StoreFactory;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -27,6 +32,8 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected SingletonStore<StructureNode[]> structure;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
+	protected SingletonStore<Dictionary> primaryDictionary;
+
 	@Getter
 	private final boolean registerImports = true;
 
@@ -36,13 +43,34 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping = storageFactory.createIdMappingStore(pathName);
 		structure = storageFactory.createStructureStore(pathName, new SingletonNamespaceCollection(getCentralRegistry()));
 		workerToBuckets = storageFactory.createWorkerToBucketsStore(pathName);
-
+		primaryDictionary = storageFactory.createPrimaryDictionaryStore(pathName);
 
 		decorateIdMapping(idMapping);
 	}
 
+	public EncodedDictionary getPrimaryDictionary() {
+		return new EncodedDictionary(getPrimaryDictionaryRaw(), StringTypeEncoded.Encoding.UTF8);
+	}
+
+	@NonNull
+	public Dictionary getPrimaryDictionaryRaw() {
+		final Dictionary dictionary = primaryDictionary.get();
+
+		if(dictionary == null){
+			log.trace("No prior PrimaryDictionary, creating one");
+			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY);
+
+			primaryDictionary.update(newPrimary);
+
+			return newPrimary;
+		}
+
+		return dictionary;
+	}
+
+
 	private void decorateIdMapping(SingletonStore<EntityIdMap> idMapping) {
-		idMapping.onAdd(mapping -> mapping.setDictionary(getPrimaryDictionary()));
+		idMapping.onAdd(mapping -> mapping.setStorage(this));
 	}
 
 
@@ -83,6 +111,10 @@ public class NamespaceStorage extends NamespacedStorage {
 		return idMapping.get();
 	}
 
+
+	public void updatePrimaryDictionary(Dictionary dictionary){
+		primaryDictionary.update(dictionary);
+	}
 
 	public void updateIdMapping(EntityIdMap idMapping) {
 		this.idMapping.update(idMapping);

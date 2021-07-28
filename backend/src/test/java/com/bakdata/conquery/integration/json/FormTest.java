@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.json;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importIdMapping;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -93,6 +94,10 @@ public class FormTest extends ConqueryTestSpec {
 
 		LoadingUtil.importTableContents(support, content.getTables());
 		support.waitUntilWorkDone();
+
+		importIdMapping(support, content);
+		support.waitUntilWorkDone();
+
 		log.info("{} IMPORT TABLE CONTENTS", getLabel());
 		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());
 
@@ -110,7 +115,6 @@ public class FormTest extends ConqueryTestSpec {
 		assertThat(support.getValidator().validate(form))
 				.describedAs("Form Validation Errors")
 				.isEmpty();
-
 
 
 		ManagedExecution<?> managedForm = support.getNamespace().getExecutionManager().runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig());

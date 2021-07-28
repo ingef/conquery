@@ -57,10 +57,6 @@ import org.apache.commons.io.FileUtils;
 @UtilityClass
 public class LoadingUtil {
 
-	public static void importPreviousQueries(StandaloneSupport support, RequiredData content) throws IOException {
-		importPreviousQueries(support, content, support.getTestUser());
-	}
-
 	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException {
 		// Load previous query results if available
 		int id = 1;
@@ -72,7 +68,9 @@ public class LoadingUtil {
 
 			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data));
 
-			ManagedExecution<?> managed = support.getNamespace().getExecutionManager().createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
+			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
+												 .createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
+
 			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {

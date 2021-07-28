@@ -45,7 +45,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Slf4j
 public class IntegrationTests {
-	private static final ObjectMapper MAPPER;
+	public static final ObjectMapper MAPPER;
 	private static final ObjectWriter CONFIG_WRITER;
 
 	static {
@@ -213,11 +213,10 @@ public class IntegrationTests {
 		@Override
 		public void beforeAll(ExtensionContext context) throws Exception {
 
-			context
-					.getTestInstance()
-					.filter(ConfigOverride.class::isInstance)
-					.map(ConfigOverride.class::cast)
-					.ifPresent(co -> co.override(this));
+			context.getTestInstance()
+				   .filter(ConfigOverride.class::isInstance)
+				   .map(ConfigOverride.class::cast)
+				   .ifPresent(co -> co.override(this));
 		}
 	}
 }

@@ -29,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 public class ColumnConfig {
 
-
 	public EntityIdMap.ExternalId read(String value) {
 		if (!isResolvable()) {
 			return null;
@@ -39,13 +38,13 @@ public class ColumnConfig {
 			return null;
 		}
 
-		if (getLength() == -1) {
-			return new EntityIdMap.ExternalId(new String[]{getName(), value});
+		if (getLength() == -1 || getPad() == null) {
+			return new EntityIdMap.ExternalId(getName(), value);
 		}
 
 		String padded = StringUtils.leftPad(value, getLength(), getPad());
 
-		return new EntityIdMap.ExternalId(new String[]{getName(), padded});
+		return new EntityIdMap.ExternalId(getName(), padded);
 
 	}
 
@@ -57,11 +56,13 @@ public class ColumnConfig {
 	 * Map of Localized labels.
 	 */
 	@NotEmpty
+	@Builder.Default
 	private Map<String, String> label = Collections.emptyMap();
 
 	/**
 	 * Map of Localized description.
 	 */
+	@Builder.Default
 	private Map<String, String> description = Collections.emptyMap();
 
 	@InternalOnly
@@ -71,12 +72,19 @@ public class ColumnConfig {
 	private String pad = null;
 
 	@InternalOnly
+	@Builder.Default
 	private int length = -1;
 
 	@InternalOnly
+	@Builder.Default
 	private boolean resolvable = false;
 
 	@InternalOnly
+	@Builder.Default
+	private boolean print = true;
+
+	@InternalOnly
+	@Builder.Default
 	private boolean fillAnon = false;
 
 	@JsonIgnore

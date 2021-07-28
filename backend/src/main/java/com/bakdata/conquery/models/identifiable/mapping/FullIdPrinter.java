@@ -13,6 +13,9 @@ public class FullIdPrinter implements IdPrinter {
 	private final EncodedDictionary dictionary;
 	private final EntityIdMap idMapping;
 
+	private final int size;
+	private final int idPos;
+
 	@Override
 	public EntityPrintId createId(EntityResult entityResult){
 
@@ -26,7 +29,10 @@ public class FullIdPrinter implements IdPrinter {
 		EntityPrintId externalEntityId = idMapping.toExternal(csvEntityId);
 
 		if (externalEntityId == null) {
-			return EntityPrintId.from(csvEntityId);
+			final String[] parts = new String[size];
+			parts[idPos] = csvEntityId;
+
+			return EntityPrintId.from(parts);
 		}
 
 		return externalEntityId;

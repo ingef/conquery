@@ -5,8 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -32,7 +34,7 @@ public class EntityIdMap {
 
 	@Setter
 	@JsonIgnore
-	private EncodedDictionary dictionary;
+	private NamespaceStorage storage;
 
 	/**
 	 * The map from csv entity ids to external entity ids.
@@ -65,10 +67,12 @@ public class EntityIdMap {
 
 				final String otherId = record.getString(columnConfig.getField());
 
-				idParts.add(otherId);
-
 				if (otherId == null) {
 					continue;
+				}
+
+				if(columnConfig.isPrint()) {
+					idParts.add(otherId);
 				}
 
 				if (!columnConfig.isResolvable()) {
@@ -144,10 +148,13 @@ public class EntityIdMap {
 		String value = external2Internal.get(key);
 
 		if (value != null) {
-			return dictionary.getId(value);
+			return getStorage().getPrimaryDictionary().getId(value);
 		}
 
-		return -1;
+		// Maybe we can find them directly in the dictionary?
+		final int id = getStorage().getPrimaryDictionary().getId(key.getId());
+
+		return id;
 	}
 
 	public void addOutputMapping(String csvEntityId, EntityPrintId externalEntityId) {
@@ -171,8 +178,8 @@ public class EntityIdMap {
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class ExternalId {
-		@Getter
-		private final String[] parts;
+		private final String type;
+		private final String id;
 	}
 
 }

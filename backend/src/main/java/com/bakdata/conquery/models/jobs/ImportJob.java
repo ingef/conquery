@@ -420,15 +420,8 @@ public class ImportJob extends Job {
 
 	private DictionaryMapping importPrimaryDictionary(Dictionary primaryDictionary) {
 
-		final DictionaryId dictionaryId = ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset());
 
-		Dictionary orig = namespace.getStorage().getDictionary(dictionaryId);
-
-		// Start with an empty Dictionary and merge into it
-		if (orig == null) {
-			log.trace("No prior Dictionary[{}], creating one", dictionaryId);
-			orig = new MapDictionary(getDataset(), dictionaryId.getName());
-		}
+		Dictionary orig = namespace.getStorage().getPrimaryDictionaryRaw();
 
 		Dictionary primaryDict = Dictionary.copyUncompressed(orig);
 
@@ -443,7 +436,7 @@ public class ImportJob extends Job {
 		}
 
 		namespace.getStorage()
-				 .updateDictionary(primaryDict);
+				 .updatePrimaryDictionary(primaryDict);
 
 		return primaryMapping;
 	}

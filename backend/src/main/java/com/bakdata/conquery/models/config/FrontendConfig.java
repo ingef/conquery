@@ -80,8 +80,8 @@ public class FrontendConfig {
 		public List<String> getPrintIdFields() {
 			if (idFieldsCached == null) {
 				idFieldsCached = ids.stream()
+									.filter(ColumnConfig::isPrint)
 									.map(ColumnConfig::getField)
-									.filter(Objects::nonNull)
 									.collect(Collectors.toUnmodifiableList());
 			}
 
@@ -89,6 +89,7 @@ public class FrontendConfig {
 		}
 
 		@JsonIgnore
+		@Setter(AccessLevel.NONE)
 		private Map<String, ColumnConfig> idMappers;
 
 		public ColumnConfig getIdMapper(String name) {
@@ -207,16 +208,17 @@ public class FrontendConfig {
 		 * Try to create a {@link FullIdPrinter} for user if they are allowed. If not allowed to read ids, they will receive ab pseudomized result instead.
 		 */
 		public IdPrinter getIdPrinter(User owner, ManagedExecution<?> execution, Namespace namespace) {
-
-			if (owner.isPermitted(execution.getDataset(), Ability.PRESERVE_ID)) {
-				return new FullIdPrinter(namespace.getStorage().getPrimaryDictionary(), namespace.getStorage().getIdMapping());
-			}
-
 			final int size = getPrintIdFields().size();
 			final int pos = IntStream.range(0, getIds().size())
 									 .filter(idx -> getIds().get(idx).isFillAnon())
 									 .findFirst()
 									 .orElseThrow();
+
+			if (owner.isPermitted(execution.getDataset(), Ability.PRESERVE_ID)) {
+				return new FullIdPrinter(namespace.getStorage().getPrimaryDictionary(), namespace.getStorage().getIdMapping(), size, pos);
+			}
+
+
 
 			return new AutoIncrementingPseudomizer(size, pos);
 		}

@@ -19,6 +19,8 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.integration.IntegrationTests;
+import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -137,7 +139,7 @@ public class TestConquery {
 			log.info("Reusing existing folder {} for Support", localTmpDir.getPath());
 		}
 
-		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()), Jackson.BINARY_MAPPER.copy());
+		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()), IntegrationTests.MAPPER);
 
 
 		StandaloneSupport support = new StandaloneSupport(
