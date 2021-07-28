@@ -1,4 +1,4 @@
-result,dates,select.connector.select
+result,dates,concept - select
 1,{2012-01-01/2012-01-02},m
 2,{2010-07-15/2010-07-15},
 3,{2012-01-01/2012-01-02},f
