@@ -41,9 +41,10 @@ public class NamespaceStorage extends NamespacedStorage {
 		super(validator, storageFactory, pathName);
 
 		idMapping = storageFactory.createIdMappingStore(pathName);
-		structure = storageFactory.createStructureStore(pathName, new SingletonNamespaceCollection(getCentralRegistry()));
+		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(getCentralRegistry());
+		structure = storageFactory.createStructureStore(pathName, namespaceCollection);
 		workerToBuckets = storageFactory.createWorkerToBucketsStore(pathName);
-		primaryDictionary = storageFactory.createPrimaryDictionaryStore(pathName);
+		primaryDictionary = storageFactory.createPrimaryDictionaryStore(pathName, namespaceCollection);
 
 		decorateIdMapping(idMapping);
 	}
@@ -81,6 +82,7 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping.loadData();
 		structure.loadData();
 		workerToBuckets.loadData();
+		primaryDictionary.loadData();
 	}
 
 	@Override
@@ -89,6 +91,8 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping.clear();
 		structure.clear();
 		workerToBuckets.clear();
+		primaryDictionary.clear();
+
 	}
 
 	@Override
@@ -97,6 +101,8 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping.removeStore();
 		structure.removeStore();
 		workerToBuckets.removeStore();
+		primaryDictionary.removeStore();
+
 	}
 
 	@Override
@@ -105,6 +111,8 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping.close();
 		structure.close();
 		workerToBuckets.close();
+		primaryDictionary.close();
+
 	}
 
 	public EntityIdMap getIdMapping() {

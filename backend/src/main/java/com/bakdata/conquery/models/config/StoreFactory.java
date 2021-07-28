@@ -67,5 +67,5 @@ public interface StoreFactory {
 	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName);
 	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName);
 
-	SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName);
+	SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, SingletonNamespaceCollection namespaceCollection);
 }

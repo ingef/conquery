@@ -34,6 +34,7 @@ public class EntityIdMap {
 
 	@Setter
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private NamespaceStorage storage;
 
 	/**

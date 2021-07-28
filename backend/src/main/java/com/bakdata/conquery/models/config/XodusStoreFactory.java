@@ -347,8 +347,8 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName) {
-		return PRIMARY_DICTIONARY.singleton(createStore(findEnvironment(pathName), validator, PRIMARY_DICTIONARY));
+	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, SingletonNamespaceCollection namespaceCollection) {
+		return PRIMARY_DICTIONARY.singleton(createStore(findEnvironment(pathName), validator, PRIMARY_DICTIONARY), namespaceCollection);
 	}
 
 	private File resolveSubDir(String... subdirs) {

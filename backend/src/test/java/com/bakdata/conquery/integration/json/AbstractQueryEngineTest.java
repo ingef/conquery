@@ -54,7 +54,6 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		log.info("{} QUERY INIT", getLabel());
 
-		final ConqueryConfig config = standaloneSupport.getConfig();
 		final User testUser = standaloneSupport.getTestUser();
 
 		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(standaloneSupport, query, -1, ExecutionState.DONE, testUser, 201);

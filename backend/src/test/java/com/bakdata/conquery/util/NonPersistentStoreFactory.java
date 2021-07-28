@@ -132,7 +132,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName) {
+	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, SingletonNamespaceCollection namespaceCollection) {
 		return DICTIONARIES.singleton(new NonPersistentStore<>());
 	}
 
