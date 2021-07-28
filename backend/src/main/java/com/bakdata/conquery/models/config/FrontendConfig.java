@@ -62,7 +62,7 @@ public class FrontendConfig {
 		private List<ColumnConfig> ids = List.of(
 				ColumnConfig.builder()
 							.name("ID")
-							.field("id")
+							.field("result")
 							.resolvable(true)
 							.fillAnon(true)
 							.build()

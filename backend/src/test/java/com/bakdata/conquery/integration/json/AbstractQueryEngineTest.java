@@ -76,10 +76,12 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 				standaloneSupport.getClient()
 								 .target(HierarchyHelper.hierarchicalPath(standaloneSupport.defaultApiURIBuilder(), ResultCsvResource.class, "getAsCsv")
 														.buildFromMap(
-																Map.of(DATASET, standaloneSupport.getDataset().getName(),
+																Map.of(
+																		DATASET, standaloneSupport.getDataset().getName(),
 																	   QUERY, execution.getId().toString()
 																)
 														))
+								 .queryParam("pretty", false)
 								 .request(AdditionalMediaTypes.CSV)
 								 .acceptLanguage(Locale.ENGLISH)
 								 .get();
