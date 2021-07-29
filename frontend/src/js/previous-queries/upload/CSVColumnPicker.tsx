@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
+import TransparentButton from "../../button/TransparentButton";
 import { parseCSV } from "../../file/csv";
 import InputSelect from "../../form-components/InputSelect";
 import ReactSelect from "../../form-components/ReactSelect";
@@ -61,12 +62,41 @@ const SxInputSelect = styled(InputSelect)`
   margin-left: 15px;
 `;
 
-const SxPrimaryButton = styled(PrimaryButton)`
+const Msg = styled("p")`
+  margin: 10px 0 8px;
+  &:first-of-type {
+    margin-top: 0;
+  }
+  font-size: ${({ theme }) => theme.font.sm};
+  display: flex;
+  align-items: center;
+`;
+
+const PartialUploadResults = styled("div")`
+  box-shadow: 0 0 5px 0 rgb(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-top: 15px;
+`;
+
+const BigIcon = styled(FaIcon)`
+  font-size: ${({ theme }) => theme.font.lg};
+  margin-right: 7px;
+`;
+const ErrorIcon = styled(BigIcon)`
+  color: ${({ theme }) => theme.col.red};
+`;
+const SuccessIcon = styled(BigIcon)`
+  color: ${({ theme }) => theme.col.green};
+`;
+const Buttons = styled("div")`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   margin-top: 12px;
 `;
 
-const Msg = styled("p")`
-  margin: 0 0 10px;
+const SxPrimaryButton = styled(PrimaryButton)`
+  margin-left: 10px;
 `;
 
 export interface QueryToUploadT {
@@ -80,6 +110,7 @@ interface PropsT {
   config: QueryUploadConfigT;
   uploadResult: UploadQueryResponseT | null;
   onReset: () => void;
+  onCancel: () => void;
   onUpload: (query: QueryToUploadT) => void;
 }
 
@@ -99,6 +130,7 @@ const CSVColumnPicker: FC<PropsT> = ({
   uploadResult,
   onUpload,
   onReset,
+  onCancel,
 }) => {
   const { t } = useTranslation();
   const locale = useActiveLang();
@@ -265,13 +297,17 @@ const CSVColumnPicker: FC<PropsT> = ({
         </tbody>
       </Table>
       {uploadResult && (
-        <div>
+        <PartialUploadResults>
           <Msg>
+            <SuccessIcon icon="check-circle" />
             {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
           </Msg>
           {uploadResult.unreadableDate.length > 0 && (
             <>
-              <Msg>{t("csvColumnPicker.unreadableDate")}</Msg>
+              <Msg>
+                <ErrorIcon icon="exclamation-circle" />
+                {t("csvColumnPicker.unreadableDate")}
+              </Msg>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth
@@ -285,7 +321,10 @@ const CSVColumnPicker: FC<PropsT> = ({
           )}
           {uploadResult.unresolvedId.length > 0 && (
             <>
-              <Msg>{t("csvColumnPicker.unresolvedId")}</Msg>
+              <Msg>
+                <ErrorIcon icon="exclamation-circle" />
+                {t("csvColumnPicker.unresolvedId")}
+              </Msg>
               <ScrollableList
                 maxVisibleItems={3}
                 fullWidth
@@ -296,15 +335,36 @@ const CSVColumnPicker: FC<PropsT> = ({
               />
             </>
           )}
-        </div>
+        </PartialUploadResults>
       )}
-      <SxPrimaryButton
-        disabled={loading || csv.length === 0}
-        onClick={uploadQuery}
-      >
-        {loading && <FaIcon white icon="spinner" />}{" "}
-        {t("uploadQueryResultsModal.upload")}
-      </SxPrimaryButton>
+      <Buttons>
+        {uploadResult && (
+          <TransparentButton
+            disabled={loading || csv.length === 0}
+            onClick={uploadQuery}
+          >
+            {loading ? (
+              <FaIcon icon="spinner" />
+            ) : (
+              <FaIcon left icon="upload" />
+            )}{" "}
+            {t("uploadQueryResultsModal.uploadAgain")}
+          </TransparentButton>
+        )}
+        <SxPrimaryButton
+          disabled={loading || csv.length === 0}
+          onClick={uploadResult ? onCancel : uploadQuery}
+        >
+          {loading ? (
+            <FaIcon white icon="spinner" />
+          ) : !uploadResult ? (
+            <FaIcon left white icon="upload" />
+          ) : null}{" "}
+          {uploadResult
+            ? t("common.done")
+            : t("uploadQueryResultsModal.upload")}
+        </SxPrimaryButton>
+      </Buttons>
     </div>
   );
 };

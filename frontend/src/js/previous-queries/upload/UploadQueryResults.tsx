@@ -85,6 +85,7 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
           loading={loading}
           uploadResult={uploadResult}
           config={queryUploadConfig}
+          onClearUploadResult={() => setUploadResult(null)}
           onClose={onCloseModal}
           onUpload={onUpload}
         />

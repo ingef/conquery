@@ -306,6 +306,7 @@
     "headline": "Ergebnisliste hochladen",
     "dropzone": "Lege eine CSV-Datei hier ab",
     "upload": "Hochladen",
+    "uploadAgain": "Erneut hochladen",
     "uploadFailed": "Datei konnte nicht hochgeladen werden. Bitte überprüfe das Dateiformat und die Netzwerkverbindung.",
     "uploadSucceeded": "Ergebnisliste hochladen erfolgreich",
     "formatInfo": {
@@ -325,7 +326,8 @@
     "startDate": "Startdatum",
     "endDate": "Enddatum",
     "ignore": "Ignorieren",
-    "resolved": "1 Zeilen aufgelöst.",
+    "partialSuccess": "Hochladen teilweise erfolgreich.",
+    "resolved": "1 Zeile aufgelöst.",
     "resolved_plural": "{{count}} Zeilen aufgelöst.",
     "unreadableDate": "Datum nicht lesbar in den folgenden Zeilen",
     "unresolvedId": "ID nicht auflösbar in den folgenden Zeilen"

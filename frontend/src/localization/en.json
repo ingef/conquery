@@ -306,6 +306,7 @@
     "headline": "Upload result list",
     "dropzone": "Drop a CSV file here",
     "upload": "Upload",
+    "uploadAgain": "Upload again",
     "uploadFailed": "Could not upload file. Please check the file format and the network connection.",
     "uploadSucceeded": "Result list was successfully uploaded",
     "formatInfo": {
@@ -325,6 +326,7 @@
     "startDate": "Start date",
     "endDate": "End date",
     "ignore": "IGNORE",
+    "partialSuccess": "Upload partially successful.",
     "resolved": "1 line resolved.",
     "resolved_plural": "{{count}} lines resolved.",
     "unreadableDate": "Couldn't read the date for the following lines",

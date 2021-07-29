@@ -37,6 +37,7 @@ interface PropsT {
   loading: boolean;
   config: QueryUploadConfigT;
   uploadResult: UploadQueryResponseT | null;
+  onClearUploadResult: () => void;
   onClose: () => void;
   onUpload: (query: QueryToUploadT) => void;
 }
@@ -45,6 +46,7 @@ const UploadQueryResultsModal: FC<PropsT> = ({
   loading,
   config,
   uploadResult,
+  onClearUploadResult,
   onClose,
   onUpload,
 }) => {
@@ -85,7 +87,11 @@ const UploadQueryResultsModal: FC<PropsT> = ({
                 config={config}
                 loading={loading}
                 onUpload={onUpload}
-                onReset={() => setFile(null)}
+                onCancel={onClose}
+                onReset={() => {
+                  setFile(null);
+                  onClearUploadResult();
+                }}
               />
             )}
             {!file && (

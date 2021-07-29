@@ -32,9 +32,10 @@ const Root = styled("div")<{ maxVisibleItems: number; fullWidth?: boolean }>`
 `;
 
 const Item = styled("div")`
-  line-height: 34px;
+  line-height: 24px;
   padding-left: 10px;
   padding-right: 10px;
+  border-bottom: 1px solid ${({ theme }) => theme.col.grayVeryLight};
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;

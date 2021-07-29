@@ -24,7 +24,6 @@ const Root = styled("div")`
 `;
 
 const Content = styled("div")`
-  display: inline-block;
   text-align: left;
   cursor: initial;
   background-color: white;
@@ -33,6 +32,8 @@ const Content = styled("div")`
   padding: 30px;
   margin: 0 20px;
   position: relative;
+  max-height: 95%;
+  overflow-y: auto;
 `;
 
 const TopRow = styled("div")`

@@ -5,11 +5,8 @@ import BasicButton from "./BasicButton";
 export default styled(BasicButton)`
   color: white;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
-  border-width: 1px;
-  border-style: solid;
-  border-color: ${({ theme }) => theme.col.blueGrayDark};
   background-clip: padding-box;
-  border: none;
+  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
 
   &:hover {
     opacity: 0.9;
