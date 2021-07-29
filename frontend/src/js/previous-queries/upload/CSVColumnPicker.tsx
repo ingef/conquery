@@ -299,7 +299,7 @@ const CSVColumnPicker: FC<PropsT> = ({
       {uploadResult && (
         <PartialUploadResults>
           <Msg>
-            <SuccessIcon icon="check-circle" />
+            {uploadResult.resolved > 0 && <SuccessIcon icon="check-circle" />}
             {t("csvColumnPicker.resolved", { count: uploadResult.resolved })}
           </Msg>
           {uploadResult.unreadableDate.length > 0 && (
