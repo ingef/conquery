@@ -3,14 +3,12 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -28,10 +26,8 @@ import org.apache.arrow.vector.IntVector;
 import org.apache.arrow.vector.ValueVector;
 import org.apache.arrow.vector.VarCharVector;
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.arrow.vector.complex.BaseListVector;
 import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.complex.StructVector;
-import org.apache.arrow.vector.complex.impl.UnionListWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
@@ -57,8 +53,8 @@ public class ArrowRenderer {
         VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 
         // Build separate pipelines for id and value, as they have different sources but the same target
-        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size());
-        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size());
+        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), cfg.getLocale());
+        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), cfg.getLocale());
 
         // Write the data
         try (ArrowWriter writer = writerProducer.apply(root)) {
@@ -225,7 +221,7 @@ public class ArrowRenderer {
     }
 
 
-    public static RowConsumer[] generateWriterPipeline(VectorSchemaRoot root, int vectorOffset, int numVectors) {
+    public static RowConsumer[] generateWriterPipeline(VectorSchemaRoot root, int vectorOffset, int numVectors, Locale locale) {
         Preconditions.checkArgument(vectorOffset >= 0, "Offset was negative: %s", vectorOffset);
         Preconditions.checkArgument(numVectors >= 0, "Number of vectors was negative: %s", numVectors);
 
@@ -239,21 +235,41 @@ public class ArrowRenderer {
             final int pos = vecI - vectorOffset;
             final FieldVector vector = root.getVector(vecI);
 
-            builder[pos] = generateVectorFiller(pos, vector);
+            builder[pos] = generateVectorFiller(pos, vector, locale);
 
         }
         return builder;
 
     }
 
-    private static RowConsumer generateVectorFiller(int pos, ValueVector vector) {
+    private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final Locale locale) {
         //TODO When Pattern-matching lands, clean this up. (Think Java 12?)
         if (vector instanceof IntVector) {
             return intVectorFiller((IntVector) vector, (line) -> (Integer) line[pos]);
         }
 
         if (vector instanceof VarCharVector) {
-            return varCharVectorFiller((VarCharVector) vector, (line) -> (line[pos] instanceof String) ? (String) line[pos] : (line[pos] != null ? Objects.toString(line[pos]) : null));
+            return varCharVectorFiller(
+                    (VarCharVector) vector,
+                    (line) -> {
+                        // This is a bit clunky at the moment, since this lambda is executed for each textual value
+                        // in the result, but it should be okay for now. This code moves as soon shards deliver themselves
+                        // arrow as an result.
+
+                        if (line[pos] == null) {
+                            return null;
+                        }
+                        if (line[pos] instanceof Localized) {
+                            // The encountered object supports internationalization
+                            Localized localized = (Localized) line[pos];
+                            return localized.toString(locale);
+                        }
+                        if (line[pos] instanceof String) {
+                            return (String) line[pos];
+                        }
+                        return line[pos].toString();
+
+                    });
         }
 
         if (vector instanceof BitVector) {
@@ -278,7 +294,7 @@ public class ArrowRenderer {
             List<ValueVector> nestedVectors = structVector.getPrimitiveVectors();
             RowConsumer [] nestedConsumers = new RowConsumer[nestedVectors.size()];
             for (int i = 0; i < nestedVectors.size(); i++) {
-                nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i));
+                nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i), locale);
             }
             return structVectorFiller(structVector, nestedConsumers, (line) -> (List<?>) line[pos]);
         }
@@ -289,7 +305,7 @@ public class ArrowRenderer {
             ValueVector nestedVector = listVector.getDataVector();
 
             // pos = 0 is a workaround for now
-            return listVectorFiller(listVector, generateVectorFiller(0, nestedVector), (line) -> (List<?>) line[pos]);
+            return listVectorFiller(listVector, generateVectorFiller(0, nestedVector, locale), (line) -> (List<?>) line[pos]);
         }
 
         throw new IllegalArgumentException("Unsupported vector type " + vector);
