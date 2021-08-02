@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
 import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.*;
-import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,6 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.StringJoiner;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -86,8 +86,8 @@ public class ArrowResultGenerationTest {
                         new Field("DATE_RANGE",
                                 FieldType.nullable(ArrowType.Struct.INSTANCE),
                                 List.of(
-                                        NAMED_FIELD_DATE_DAY.apply("min"),
-                                        NAMED_FIELD_DATE_DAY.apply("max")
+                                        ((Function<String, Field>) (name) -> new Field(name, FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null)).apply("min"),
+                                        ((Function<String, Field>) (name1) -> new Field(name1, FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null)).apply("max")
                                 )),
                         new Field("STRING", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("MONEY", FieldType.nullable(new ArrowType.Int(32, true)), null),
@@ -95,8 +95,8 @@ public class ArrowResultGenerationTest {
                         new Field("LIST[DATE_RANGE]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("LIST[DATE_RANGE]",
                                 FieldType.nullable(ArrowType.Struct.INSTANCE),
                                 List.of(
-                                        NAMED_FIELD_DATE_DAY.apply("min"),
-                                        NAMED_FIELD_DATE_DAY.apply("max")
+                                        ((Function<String, Field>) (name11) -> new Field(name11, FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null)).apply("min"),
+                                        ((Function<String, Field>) (name111) -> new Field(name111, FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null)).apply("max")
                                 ))))
                 )
         );
