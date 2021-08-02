@@ -325,7 +325,7 @@ public class ArrowRenderer {
 
     public static List<Field> generateFieldsFromResultType(@NonNull List<ResultInfo> info, PrintSettings settings) {
         return info.stream()
-                .map(i -> i.getType().getArrowFieldType(i, settings))
+                .map(i -> ArrowUtil.createField(i, settings))
                 .collect(Collectors.toUnmodifiableList());
 
     }

@@ -44,9 +44,6 @@ public abstract class ResultType {
         return f.toString();
     }
 
-    public abstract Field getArrowFieldType(ResultInfo info, PrintSettings settings);
-
-
     public abstract String typeInfo();
 
     public static ResultType resolveResultType(MajorTypeId majorTypeId) {
@@ -100,12 +97,6 @@ public abstract class ResultType {
 
 			return (Boolean) f ? "1" : "0";
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.Bool.INSTANCE), null);
-        }
-
     }
 
 
@@ -122,12 +113,6 @@ public abstract class ResultType {
             }
             return f.toString();
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
-        }
-
     }
 
     @CPSType(id = "NUMERIC", base = ResultType.class)
@@ -143,12 +128,6 @@ public abstract class ResultType {
             }
             return f.toString();
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null);
-        }
-
     }
 
     @CPSType(id = "CATEGORICAL", base = ResultType.class)
@@ -156,11 +135,6 @@ public abstract class ResultType {
     public static class CategoricalT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final CategoricalT INSTANCE = new CategoricalT();
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-        }
     }
 
     @CPSType(id = "RESOLUTION", base = ResultType.class)
@@ -182,11 +156,6 @@ public abstract class ResultType {
                 throw new IllegalArgumentException(f + " is not a valid resolution.", e);
             }
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-        }
     }
 
     @CPSType(id = "DATE", base = ResultType.class)
@@ -202,13 +171,6 @@ public abstract class ResultType {
             }
             return CDate.toLocalDate(((Number)f).intValue()).toString();
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings));
-        }
-
-
     }
 
     /**
@@ -232,17 +194,6 @@ public abstract class ResultType {
             }
             return CDateRange.of((Integer) list.get(0), (Integer) list.get(1)).toString();
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(
-                    info.getUniqueName(settings),
-                    FieldType.nullable(ArrowType.Struct.INSTANCE),
-                    List.of(
-                            NAMED_FIELD_DATE_DAY.apply("min"),
-                            NAMED_FIELD_DATE_DAY.apply("max")
-                    ));
-        }
     }
 
     @CPSType(id = "STRING", base = ResultType.class)
@@ -250,11 +201,6 @@ public abstract class ResultType {
     public static class StringT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final StringT INSTANCE = new StringT();
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-        }
     }
 
     @CPSType(id = "ID", base = ResultType.class)
@@ -262,11 +208,6 @@ public abstract class ResultType {
     public static class IdT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final IdT INSTANCE = new IdT();
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-        }
     }
 
     @CPSType(id = "MONEY", base = ResultType.class)
@@ -283,13 +224,6 @@ public abstract class ResultType {
             }
             return IntegerT.INSTANCE.print(cfg, f);
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
-        }
-
-
     }
 
     @CPSType(id = "LIST", base = ResultType.class)
@@ -316,16 +250,6 @@ public abstract class ResultType {
                 joiner.add(elementType.print(cfg,obj).replace(cfg.getListElementDelimiter(), listDelimEscape));
             }
             return joiner.toString();
-        }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            final Field nestedField = elementType.getArrowFieldType(info, settings);
-            return new Field(
-                    info.getUniqueName(settings),
-                    FieldType.nullable(ArrowType.List.INSTANCE),
-                    List.of(nestedField)
-            );
         }
 
         @Override
