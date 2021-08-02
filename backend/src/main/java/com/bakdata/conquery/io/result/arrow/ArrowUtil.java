@@ -22,7 +22,7 @@ public class ArrowUtil {
 
 	public final static RootAllocator ROOT_ALLOCATOR = new RootAllocator();
 
-	private final static Map<Class<? extends ResultType>, FieldCreator> FIELD_MAP = Map.of(
+	private final static Map<Class<? extends ResultType>, BiFunction<ResultInfo, String, Field>> FIELD_MAP = Map.of(
 			ResultType.BooleanT.class, ArrowUtil::boolField,
 			ResultType.IntegerT.class, ArrowUtil::integerField,
 			ResultType.NumericT.class, ArrowUtil::floatField,
@@ -31,9 +31,6 @@ public class ArrowUtil {
 			ResultType.MoneyT.class, ArrowUtil::integerField,
 			ResultType.ListT.class, ArrowUtil::listField
 	);
-
-	private interface FieldCreator extends BiFunction<ResultInfo, String, Field> {
-	}
 
 	private static Field stringField(ResultInfo info, @NonNull String uniqueName) {
 		return new Field(uniqueName, FieldType.nullable(new ArrowType.Utf8()), null);
@@ -71,7 +68,7 @@ public class ArrowUtil {
 		}
 
 		final ResultType elementType = ((ResultType.ListT) info.getType()).getElementType();
-		FieldCreator nestedFieldCreator = FIELD_MAP.getOrDefault(elementType.getClass(), ArrowUtil::stringField);
+		BiFunction<ResultInfo, String, Field> nestedFieldCreator = FIELD_MAP.getOrDefault(elementType.getClass(), ArrowUtil::stringField);
 		final Field nestedField = nestedFieldCreator.apply(info, uniqueName);
 		return new Field(
 				uniqueName,
@@ -89,7 +86,7 @@ public class ArrowUtil {
 	 */
 	public Field createField(ResultInfo info, PrintSettings settings) {
 		// Fallback to string field if type is not explicitly registered
-		FieldCreator fieldCreator = FIELD_MAP.getOrDefault(info.getType().getClass(), ArrowUtil::stringField);
+		BiFunction<ResultInfo, String, Field> fieldCreator = FIELD_MAP.getOrDefault(info.getType().getClass(), ArrowUtil::stringField);
 		return fieldCreator.apply(info, info.getUniqueName(settings));
 	}
 }
