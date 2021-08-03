@@ -19,13 +19,35 @@ public enum DateFormat {
 	END_DATE {
 		@Override
 		public void readDates(String value, DateReader dateReader, CDateSet out) {
-			out.add(CDateRange.atMost(dateReader.parseToLocalDate(value)));
+			final CDateRange parsed = CDateRange.atMost(dateReader.parseToLocalDate(value));
+
+			if(out.isEmpty()){
+				out.add(parsed);
+				return;
+			}
+
+			final CDateRange span = out.span();
+
+			out.clear();
+
+			out.add(span.spanClosed(parsed));
 		}
 	},
 	START_DATE {
 		@Override
 		public void readDates(String value, DateReader dateReader, CDateSet out) {
-			out.add(CDateRange.atLeast(dateReader.parseToLocalDate(value)));
+			final CDateRange parsed = CDateRange.atLeast(dateReader.parseToLocalDate(value));
+
+			if(out.isEmpty()){
+				out.add(parsed);
+				return;
+			}
+
+			final CDateRange span = out.span();
+
+			out.clear();
+
+			out.add(span.spanClosed(parsed));
 		}
 	},
 	DATE_RANGE {

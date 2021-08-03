@@ -106,7 +106,7 @@ public class CQExternal extends CQElement {
 					continue;
 				}
 
-				out.put(row, dates);
+				out.computeIfAbsent(row, (ignored) -> CDateSet.create()).addAll(dates);
 			}
 			catch (Exception e) {
 				log.warn("Failed to parse Date from {}", row, e);
