@@ -43,8 +43,6 @@ public class RequiredTable {
 		table.setColumns(Arrays.stream(columns)
 							   .map(col -> col.toColumn(table, centralRegistry)).toArray(Column[]::new));
 
-		table.init();
-
 		return table;
 	}
 	

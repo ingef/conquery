@@ -201,8 +201,6 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
 		}
 
-		table.init();
-
 		ValidatorHelper.failOnError(log, validator.validate(table));
 
 		namespace.getStorage().addTable(table);
