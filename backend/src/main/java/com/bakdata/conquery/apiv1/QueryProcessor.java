@@ -13,14 +13,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.ExternalUpload;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -45,12 +48,10 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -362,20 +363,10 @@ public class QueryProcessor {
 		return status;
 	}
 
-	@Data
-	public static class UploadResponse {
-		private final ManagedExecutionId execution;
-
-		private final int resolved;
-
-		private final List<String[]> unresolvedId;
-		private final List<String[]> unreadableDate;
-	}
-
 	/**
-	 * Try to resolve the upload, if successful, create query for the user and return id and statistics for that.
+	 * Try to resolve the external upload, if successful, create query for the user and return id and statistics for that.
 	 */
-	public Response uploadEntities(User user, Dataset dataset, QueryResource.ExternalUpload upload) {
+	public ExternalUploadResult uploadEntities(User user, Dataset dataset, ExternalUpload upload) {
 
 		final CQExternal.ResolveStatistic statistic =
 				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
@@ -386,9 +377,9 @@ public class QueryProcessor {
 
 		// Resolving nothing is a problem thus we fail.
 		if (statistic.getResolved().isEmpty()) {
-			return Response.status(Response.Status.BAD_REQUEST)
-						   .entity(new UploadResponse(null, 0, statistic.getUnresolvedId(), statistic.getUnreadableDate()))
-						   .build();
+			throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
+						   .entity(new ExternalUploadResult(null, 0, statistic.getUnresolvedId(), statistic.getUnreadableDate()))
+						   .build());
 		}
 
 		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues()));
@@ -398,13 +389,11 @@ public class QueryProcessor {
 				datasetRegistry.get(dataset.getId()).getExecutionManager()
 							   .createExecution(datasetRegistry, query, user, dataset);
 
-		return Response.ok()
-					   .entity(new UploadResponse(
+		return new ExternalUploadResult(
 							   execution.getId(),
 							   statistic.getResolved().size(),
 							   statistic.getUnresolvedId(),
 							   statistic.getUnreadableDate()
-					   ))
-					   .build();
+					   );
 	}
 }
