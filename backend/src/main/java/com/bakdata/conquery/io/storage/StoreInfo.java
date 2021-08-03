@@ -54,7 +54,6 @@ public enum StoreInfo implements IStoreInfo {
 	DATASET(Dataset.class, Boolean.class),
 	ID_MAPPING(EntityIdMap.class, Boolean.class),
 	NAMESPACES(DatasetRegistry.class, Boolean.class),
-	SLAVE(ShardNodeInformation.class, Boolean.class),
 	DICTIONARIES(Dictionary.class, DictionaryId.class),
 	IMPORTS(Import.class, ImportId.class),
 	SECONDARY_IDS(SecondaryIdDescription.class, SecondaryIdDescriptionId.class),
