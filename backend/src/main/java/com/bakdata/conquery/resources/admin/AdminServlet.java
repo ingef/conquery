@@ -88,7 +88,7 @@ public class AdminServlet {
 
             @Override
             protected void configure() {
-                bind(new UIProcessor(manager.getDatasetRegistry())).to(UIProcessor.class);
+                bind(new UIProcessor(adminProcessor)).to(UIProcessor.class);
             }
         });
 

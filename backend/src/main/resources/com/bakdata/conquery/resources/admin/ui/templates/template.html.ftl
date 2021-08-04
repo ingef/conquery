@@ -29,46 +29,12 @@
 	</style>
 
 	<title>Conquery Admin UI</title>
-    <script>
-        keycloak = new Keycloak({
-        });
-
-        function initKeycloak(resolve, reject) {
-            return keycloak.init({
-                onLoad: 'login-required',
-                checkLoginIframe: false
-                }).then(function(authenticated) {
-                    console.log(`Authenticated: ${r"${authenticated}"}`);
-                    resolve();
-            }).catch(function() {
-                alert('failed to initialize');
-                reject();
-            });
-        }
-
-        function getHeader(){
-            return {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + keycloak.token
-            };
-        }
-
-        onloadListeners = []
-        onloadListeners.push(initKeycloak)
-
-        function onloadExecutor() {
-            var currentProm = new Promise(onloadListeners[0])
-            for(let i = 1; i < onloadListeners.length; i++) {
-                currentProm = currentProm.then(onloadListeners[i])
-            }
-        }
-    </script>
+  </head>
+  <body>
   	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
 	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  </head>
-  <body onload="onloadExecutor()">
 	
 	<nav class="navbar navbar-expand-lg navbar-light bg-light" style="margin-bottom:30px">
 	  <a class="navbar-brand" href="/admin-ui">Conquery Admin</a>
