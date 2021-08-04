@@ -53,8 +53,8 @@ public class ArrowRenderer {
         VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 
         // Build separate pipelines for id and value, as they have different sources but the same target
-        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), cfg.getLocale());
-        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), cfg.getLocale());
+        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), cfg, null);
+        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), cfg, resultInfo);
 
         // Write the data
         try (ArrowWriter writer = writerProducer.apply(root)) {
@@ -221,7 +221,7 @@ public class ArrowRenderer {
     }
 
 
-    public static RowConsumer[] generateWriterPipeline(VectorSchemaRoot root, int vectorOffset, int numVectors, Locale locale) {
+    public static RowConsumer[] generateWriterPipeline(VectorSchemaRoot root, int vectorOffset, int numVectors, final PrintSettings settings, List<ResultInfo> resultInfos) {
         Preconditions.checkArgument(vectorOffset >= 0, "Offset was negative: %s", vectorOffset);
         Preconditions.checkArgument(numVectors >= 0, "Number of vectors was negative: %s", numVectors);
 
@@ -235,14 +235,14 @@ public class ArrowRenderer {
             final int pos = vecI - vectorOffset;
             final FieldVector vector = root.getVector(vecI);
 
-            builder[pos] = generateVectorFiller(pos, vector, locale);
+            builder[pos] = generateVectorFiller(pos, vector, settings, resultInfos != null ? resultInfos.get(pos) : null);
 
         }
         return builder;
 
     }
 
-    private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final Locale locale) {
+    private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final PrintSettings settings, ResultInfo info) {
         //TODO When Pattern-matching lands, clean this up. (Think Java 12?)
         if (vector instanceof IntVector) {
             return intVectorFiller((IntVector) vector, (line) -> (Integer) line[pos]);
@@ -257,15 +257,11 @@ public class ArrowRenderer {
                         // arrow as an result.
 
                         if (line[pos] == null) {
+                            // If there is no value, we don't want to have it displayed as an empty string (see next if)
                             return null;
                         }
-                        if (line[pos] instanceof Localized) {
-                            // The encountered object supports internationalization
-                            Localized localized = (Localized) line[pos];
-                            return localized.toString(locale);
-                        }
-                        if (line[pos] instanceof String) {
-                            return (String) line[pos];
+                        if (info != null) {
+                            return info.getType().printNullable(settings, line[pos]);
                         }
                         return line[pos].toString();
 
@@ -294,7 +290,7 @@ public class ArrowRenderer {
             List<ValueVector> nestedVectors = structVector.getPrimitiveVectors();
             RowConsumer [] nestedConsumers = new RowConsumer[nestedVectors.size()];
             for (int i = 0; i < nestedVectors.size(); i++) {
-                nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i), locale);
+                nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i), settings, info);
             }
             return structVectorFiller(structVector, nestedConsumers, (line) -> (List<?>) line[pos]);
         }
@@ -305,7 +301,7 @@ public class ArrowRenderer {
             ValueVector nestedVector = listVector.getDataVector();
 
             // pos = 0 is a workaround for now
-            return listVectorFiller(listVector, generateVectorFiller(0, nestedVector, locale), (line) -> (List<?>) line[pos]);
+            return listVectorFiller(listVector, generateVectorFiller(0, nestedVector, settings, info), (line) -> (List<?>) line[pos]);
         }
 
         throw new IllegalArgumentException("Unsupported vector type " + vector);
