@@ -1,10 +1,13 @@
 package com.bakdata.conquery.models.config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -113,65 +116,23 @@ public class FrontendConfig {
 			return -1;
 		}
 
-		@NotNull
-		@Valid
-		private ColumnConfig dateStart = ColumnConfig.builder()
-													 .name(DateFormat.START_DATE.name())
-													 .label(Map.of("en", "Begin"))
-													 .description(Map.of("en", "Begin of Date-range"))
-													 .build();
-
-		@NotNull
-		@Valid
-		private ColumnConfig dateEnd = ColumnConfig.builder()
-												   .name(DateFormat.END_DATE.name())
-												   .label(Map.of("en", "End"))
-												   .description(Map.of("en", "End of Date-range"))
-												   .build();
-
-
-		@NotNull
-		@Valid
-		private ColumnConfig dateRange = ColumnConfig.builder()
-													 .name(DateFormat.DATE_RANGE.name())
-													 .label(Map.of("en", "Date Range"))
-													 .description(Map.of("en", "Full Date Range"))
-													 .build();
-
-
-		@NotNull
-		@Valid
-		private ColumnConfig dateSet = ColumnConfig.builder()
-												   .name(DateFormat.DATE_SET.name())
-												   .label(Map.of("en", "Dateset"))
-												   .description(Map.of("en", "Set of Date-Ranges"))
-												   .build();
-
-
-		@NotNull
-		@Valid
-		private ColumnConfig eventDate = ColumnConfig.builder()
-													 .name(DateFormat.EVENT_DATE.name())
-													 .label(Map.of("en", "Event Date"))
-													 .description(Map.of("en", "Single event"))
-													 .build();
 
 		@ValidationMethod(message = "Duplicate Claims for Mapping Columns.")
 		@JsonIgnore
 		public boolean isAllColsUnique() {
-			Map<String, ColumnConfig> dupes = new HashMap<>();
+			Set<String> dupes = new HashSet<>();
 
-			final ArrayList<ColumnConfig> candidates = new ArrayList<>(ids);
-			candidates.addAll(List.of(dateStart, dateEnd, dateSet, dateRange, eventDate));
+			final List<String> candidates = new ArrayList<>();
 
-			for (ColumnConfig config : candidates) {
-				final ColumnConfig prior = dupes.put(config.getName(), config);
+			ids.stream().map(ColumnConfig::getName).forEach(candidates::add);
+			Arrays.stream(DateFormat.values()).map(DateFormat::name).forEach(candidates::add);
 
-				if (prior == null) {
+			for (String name : candidates) {
+				if (dupes.add(name)) {
 					continue;
 				}
 
-				log.error("Duplicate claims for Name = `{}` ({} / {})", config.getName(), config, prior);
+				log.error("Duplicate claims for Name = `{}`", name);
 				return false;
 			}
 
