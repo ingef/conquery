@@ -137,14 +137,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 			executionManager = datasetRegistry.get(getDataset().getId()).getExecutionManager();
 
-			try {
-				doInitExecutable(datasetRegistry, config);
-				initialized = true;
-			}
-			catch (Exception e) {
-				log.error("Failed to initialize", e);
-				//TODO what do?
-			}
+			doInitExecutable(datasetRegistry, config);
+			initialized = true;
 		}
 	}
 

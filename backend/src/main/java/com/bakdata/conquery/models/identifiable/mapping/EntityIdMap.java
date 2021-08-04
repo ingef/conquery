@@ -23,8 +23,8 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Mapping from Csv Entity Id to External Entity Id and back from the
- * combinations of Accessor + IDs to the Entity Id.
+ * Mapping from uploaded {@link ExternalId} for resolving in {@link com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal}, and also for printing with {@link EntityPrintId}.
+ *
  */
 @Getter
 @EqualsAndHashCode
@@ -50,7 +50,7 @@ public class EntityIdMap {
 	private final Map<ExternalId, String> external2Internal = new HashMap<>();
 
 	/**
-	 * Read incoming CSV-file extracting Id-Mappings for in and Output.
+	 * Read incoming CSV-file extracting Id-Mappings for {@link ExternalId} and {@link EntityPrintId}.
 	 */
 	public static EntityIdMap generateIdMapping(CsvParser parser, List<ColumnConfig> mappers) {
 
@@ -68,12 +68,13 @@ public class EntityIdMap {
 
 				final String otherId = record.getString(columnConfig.getField());
 
-				if (otherId == null) {
-					continue;
-				}
-
+				// Collect printable parts into id
 				if(columnConfig.isPrint()) {
 					idParts.add(otherId);
+				}
+
+				if (otherId == null) {
+					continue;
 				}
 
 				if (!columnConfig.isResolvable()) {

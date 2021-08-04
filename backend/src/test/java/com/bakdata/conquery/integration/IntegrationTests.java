@@ -99,22 +99,22 @@ public class IntegrationTests {
 
 	@SneakyThrows
 	public Stream<DynamicNode> programmaticTests() {
-		List<Class<?>> programmatic = CPSTypeIdResolver.SCAN_RESULT
-											  .getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
-											  .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
-											  .loadClasses();
+		List<Class<?>> programmatic =
+				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
+											 .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
+											 .loadClasses();
 
 		return programmatic
-					   .stream()
-					   .<ProgrammaticIntegrationTest>map(c -> {
-						   try {
-							   return c.asSubclass(ProgrammaticIntegrationTest.class).getDeclaredConstructor().newInstance();
-						   }
-						   catch (Exception e) {
-							   throw new RuntimeException(e);
-						   }
-					   })
-					   .map(this::createDynamicProgrammaticTestNode);
+				.stream()
+				.<ProgrammaticIntegrationTest>map(c -> {
+					try {
+						return c.asSubclass(ProgrammaticIntegrationTest.class).getDeclaredConstructor().newInstance();
+					}
+					catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				})
+				.map(this::createDynamicProgrammaticTestNode);
 	}
 
 	private DynamicTest createDynamicProgrammaticTestNode(ProgrammaticIntegrationTest test) {
