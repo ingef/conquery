@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
@@ -30,6 +31,7 @@ import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -171,17 +173,35 @@ public class CQExternal extends CQElement {
 		// extract dates from rows
 		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, queryUpload);
 
-		// TODO allow multiple ids
-		final int idIndex = queryUpload.getIdIndex(format);
+		final List<Function<String[], EntityIdMap.ExternalId>> readers = queryUpload.getIdReaders(format);
 
-		final ColumnConfig reader = queryUpload.getIdMapper(format.get(idIndex));
+		if(readers.isEmpty()){
+			throw new IllegalArgumentException("No readers configured.");
+		}
 
 		// ignore the first row, because this is the header
 		for (int rowNum = 1; rowNum < values.length; rowNum++) {
 			final String[] row = values[rowNum];
-			final EntityIdMap.ExternalId externalId = reader.read(row[idIndex]);
 
-			final int resolvedId = mapping.resolve(externalId);
+			int resolvedId = -1;
+
+			for (Function<String[], EntityIdMap.ExternalId> reader : readers) {
+				final EntityIdMap.ExternalId externalId = reader.apply(row);
+
+				int innerResolved = mapping.resolve(externalId);
+
+				if(innerResolved == -1){
+					continue;
+				}
+
+				if(resolvedId != -1 && innerResolved != resolvedId){
+					log.error("`{}` maps to different Entities", (Object) row);
+					continue;
+				}
+
+				resolvedId = innerResolved;
+			}
+
 
 			if (resolvedId == -1) {
 				unresolvedId.add(row);
