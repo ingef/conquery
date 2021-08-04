@@ -80,10 +80,7 @@ public class IntegrationTests {
 		final String testRoot = Objects.requireNonNullElse(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE), defaultTestRoot);
 
 		ResourceTree tree = new ResourceTree(null, null);
-		tree.addAll(
-				CPSTypeIdResolver.SCAN_RESULT
-						.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + ".*\\.test\\.json$"))
-		);
+		tree.addAll(CPSTypeIdResolver.SCAN_RESULT.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + ".*\\.test\\.json$")));
 
 		// collect tests from directory
 		if (tree.getChildren().isEmpty()) {
@@ -102,8 +99,7 @@ public class IntegrationTests {
 
 	@SneakyThrows
 	public Stream<DynamicNode> programmaticTests() {
-		List<Class<?>> programmatic = CPSTypeIdResolver
-											  .SCAN_RESULT
+		List<Class<?>> programmatic = CPSTypeIdResolver.SCAN_RESULT
 											  .getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 											  .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
 											  .loadClasses();

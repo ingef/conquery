@@ -4,8 +4,9 @@ import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.RequiredArgsConstructor;
 
+
 /**
- * Maker interface for implementation specific state object during query result to csv rendering.
+ * IdPrinter using {@link EncodedDictionary} and {@link EntityIdMap} to generate full ids.
  */
 @RequiredArgsConstructor
 public class FullIdPrinter implements IdPrinter {
@@ -17,7 +18,7 @@ public class FullIdPrinter implements IdPrinter {
 	private final int idPos;
 
 	@Override
-	public EntityPrintId createId(EntityResult entityResult){
+	public EntityPrintId createId(EntityResult entityResult) {
 
 		String csvEntityId = dictionary.getElement(entityResult.getEntityId());
 		// The state may be uses by implementations of this class
@@ -28,6 +29,7 @@ public class FullIdPrinter implements IdPrinter {
 
 		EntityPrintId externalEntityId = idMapping.toExternal(csvEntityId);
 
+		// Fallback, when we have no mapping.
 		if (externalEntityId == null) {
 			final String[] parts = new String[size];
 			parts[idPos] = csvEntityId;
