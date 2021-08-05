@@ -34,7 +34,6 @@
   	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
-	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	
 	<nav class="navbar navbar-expand-lg navbar-light bg-light" style="margin-bottom:30px">
 	  <a class="navbar-brand" href="/admin-ui">Conquery Admin</a>
@@ -89,13 +88,20 @@
 	</div>
 	
 	<script type="application/javascript">
-		const rest = axios.create({
-			baseURL: '/admin/',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			}
-		});
+
+		function rest (url, options) {
+			return fetch(
+				url,
+				{
+					method: 'get',
+					credentials: 'same-origin',
+					headers: {
+      					'Content-Type': 'application/json'
+					},
+					...options
+				}
+			)
+		}
 	
 		function postFile(event, url) {
 			event.preventDefault();

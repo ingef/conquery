@@ -6,7 +6,7 @@
 	<@layout.kc k="Label">
 		<form method="post" enctype="multipart/form-data">
 			<input id="newDatasetLabel" type="text" name="label" title="Label of the dataset" value="${c.ds.label}">
-			<input type="submit" onclick="event.preventDefault(); rest.post('/datasets/${c.ds.id}/label', document.getElementById('newDatasetLabel').value).then(function(){location.reload();});"/>
+			<input type="submit" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: document.getElementById('newDatasetLabel').value}).then(function(){location.reload();});"/>
 		</form>
 	</@layout.kc>
 	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
@@ -24,7 +24,7 @@
 			<#list c.tables?sort_by("label") as table>
 				<li>
 					<a href="./${c.ds.id}/tables/${table.id}">${table.label} <span>[${table.imports}] (${table.entries})</span></a>
-					<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.ds.id}/tables/${table.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+					<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/tables/${table.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 				</li>
 			</#list>
 		</ul>
@@ -34,7 +34,7 @@
 		<#list c.concepts?sort_by("label") as concept>
 			<li>
 				<a href="./${c.ds.id}/concepts/${concept.id}">${concept.label}</a>
-				<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.ds.id}/concepts/${concept.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+				<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/concepts/${concept.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 			</li>
 		</#list>
 		</ul>
