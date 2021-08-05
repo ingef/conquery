@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui;
 
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.views.View;
@@ -13,14 +12,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import static com.bakdata.conquery.resources.ResourceConstants.GROUPS_PATH_ELEMENT;
 import static com.bakdata.conquery.resources.ResourceConstants.GROUP_ID;
 
 @Produces(MediaType.TEXT_HTML)
+@Path(GROUPS_PATH_ELEMENT)
 public class GroupUIResource {
 
-
-	@Inject
-	protected AdminProcessor processor;
 	@Inject
 	protected UIProcessor uiProcessor;
 

@@ -19,13 +19,10 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
 
 @Path("/authenticate")
 @Slf4j
@@ -79,7 +76,7 @@ public class AuthenticationCallbackResource {
                             null,
                             0,
                             null,
-                            AuthCookieFilter.COOKIE_MAX_AGE_HOURS,
+                            AuthCookieFilter.COOKIE_MAX_AGE_SECONDS,
                             null,
                             false,
                             false)

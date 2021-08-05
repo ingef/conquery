@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
+import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
@@ -58,6 +59,8 @@ public final class AuthorizationController implements Managed{
 	@Getter
 	private final DefaultAuthFilter authenticationFilter;
 	@Getter
+	private final RedirectingAuthFilter redirectingAuthFilter;
+	@Getter
 	private final List<Realm> realms = new ArrayList<>();
 
 	private final DefaultSecurityManager securityManager;
@@ -68,6 +71,7 @@ public final class AuthorizationController implements Managed{
 		// Create Jersey filter for authentication. The filter is registered here for the api and the but can be used by
 		// any servlet. In the following configured realms can register TokenExtractors in the filter.
 		authenticationFilter = DefaultAuthFilter.asDropwizardFeature(storage);
+		redirectingAuthFilter = new RedirectingAuthFilter(authenticationFilter);
 
 
 		// Add the central authentication realm

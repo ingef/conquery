@@ -11,7 +11,7 @@
 	</@layout.kc>
 	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
 	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
-	<@layout.kc k="IdMapping"><a href="/admin/datasets/${c.ds.id}/mapping">Here</a></@layout.kc>
+	<@layout.kc k="IdMapping"><a href="./${c.ds.id}/mapping">Here</a></@layout.kc>
 	<@layout.kc k="SecondaryIds">
 	    <ul>
         <#list c.secondaryIds as secondaryId>
@@ -23,7 +23,7 @@
 		<ul>
 			<#list c.tables?sort_by("label") as table>
 				<li>
-					<a href="/admin/datasets/${c.ds.id}/tables/${table.id}">${table.label} <span>[${table.imports}] (${table.entries})</span></a>
+					<a href="./${c.ds.id}/tables/${table.id}">${table.label} <span>[${table.imports}] (${table.entries})</span></a>
 					<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.ds.id}/tables/${table.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 				</li>
 			</#list>
@@ -33,7 +33,7 @@
 		<ul>
 		<#list c.concepts?sort_by("label") as concept>
 			<li>
-				<a href="/admin/datasets/${c.ds.id}/concepts/${concept.id}">${concept.label}</a>
+				<a href="./${c.ds.id}/concepts/${concept.id}">${concept.label}</a>
 				<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.ds.id}/concepts/${concept.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 			</li>
 		</#list>

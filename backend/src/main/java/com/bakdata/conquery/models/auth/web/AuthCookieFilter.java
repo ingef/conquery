@@ -15,7 +15,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.UriBuilder;
 
+import io.dropwizard.util.Strings;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.util.StringUtil;
 import org.eclipse.jetty.http.HttpHeader;
 
 /**
@@ -35,7 +37,7 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 	public static final String ACCESS_TOKEN = "access_token";
 	private static final String PREFIX = "bearer";
 	// Define a maximum age since most browsers use session restoring making session cookies virtual permanent (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies)
-	public static final int COOKIE_MAX_AGE_HOURS = (int) TimeUnit.HOURS.toSeconds(12);
+	public static final int COOKIE_MAX_AGE_SECONDS = (int) TimeUnit.HOURS.toSeconds(12);
 
 	/**
 	 * The filter tries to extract a token from a cookie and puts it into the
@@ -51,8 +53,8 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 
 		String queryToken = requestContext.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
 
-		if(!cookie.getValue().isEmpty() && queryToken != null && !cookie.getValue().equals(queryToken)) {
-			throw new IllegalStateException("Different tokens have been provided in cookie and query string");			
+		if(!cookie.getValue().isEmpty() && queryToken != null) {
+			log.trace("Ignoring cookie");
 		}
 		
 		// Get the token from the cookie and put it into the header
@@ -74,14 +76,20 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 		String token = request.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
 
 		// Set cookie only if a token is present
-		if (token != null && !token.isEmpty()) {
+		if (!Strings.isNullOrEmpty(token)) {
 			if (cookie != null) {
 				log.debug("Overwriting {} cookie", ACCESS_TOKEN);
 			}
 			response.getHeaders().add(
-				HttpHeader.SET_COOKIE.toString(),
-				new NewCookie(ACCESS_TOKEN, token, null, null, 0, null, COOKIE_MAX_AGE_HOURS, null, false, false));
+					HttpHeader.SET_COOKIE.toString(),
+					createAuthCookie(request,token)
+			);
+
 		}
+	}
+
+	public static Cookie createAuthCookie(ContainerRequestContext request, String token) {
+		return new NewCookie(ACCESS_TOKEN, token, "/", null, 0, null, COOKIE_MAX_AGE_SECONDS, null, request.getSecurityContext().isSecure(), true);
 	}
 
 }

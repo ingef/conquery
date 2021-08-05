@@ -12,9 +12,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import static com.bakdata.conquery.resources.ResourceConstants.USER_ID;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 @Produces(MediaType.TEXT_HTML)
+@Path(USERS_PATH_ELEMENT)
 public class UserUIResource {
 
 	@Inject

@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.resources.admin.rest.*;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.AuthOverviewUIResource;
@@ -127,5 +128,10 @@ public class AdminServlet {
                 .register(IdParamConverter.Provider.INSTANCE)
                 .register(AuthCookieFilter.class)
                 .register(manager.getAuthController().getAuthenticationFilter());
+
+
+        jerseyConfigUI
+                .register(AuthCookieFilter.class)
+                .register(manager.getAuthController().getRedirectingAuthFilter());
     }
 }

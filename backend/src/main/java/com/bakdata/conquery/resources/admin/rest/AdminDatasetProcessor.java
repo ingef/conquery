@@ -95,6 +95,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
+import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBlocksSizeBytes;
+
 
 @Slf4j
 @RequiredArgsConstructor
@@ -146,7 +148,7 @@ public class AdminDatasetProcessor {
 						.getStorage().getTables()
 						.stream()
 						.flatMap(table -> table.findImports(namespace.getStorage()))
-						.mapToLong(imp -> TablesUIResource.calculateCBlocksSizeBytes(
+						.mapToLong(imp -> calculateCBlocksSizeBytes(
 								imp, namespace.getStorage().getAllConcepts()
 						))
 						.sum(),

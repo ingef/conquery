@@ -112,7 +112,7 @@
 				let reader = new FileReader();
 				reader.onload = function(){
 					let json = reader.result;
-					fetch(url, {method: 'post', body: json, headers: {
+					fetch(url, {method: 'post', credentials: 'same-origin', body: json, headers: {
 						"Content-Type": "application/json"
 					}})
 						.then(function(response){

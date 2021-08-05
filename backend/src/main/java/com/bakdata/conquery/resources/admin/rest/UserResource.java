@@ -53,14 +53,14 @@ public class UserResource extends HUsers {
 		return Response.ok().build();
 	}
 
-	@Path("{" + USER_ID + "}/" + ROLE_PATH_ELEMENT + "/{" + ROLE_ID + "}")
+	@Path("{" + USER_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
 	public Response deleteRoleFromUser(@PathParam(USER_ID) User user, @PathParam(ROLE_ID) Role role) {
 		processor.deleteRoleFrom(user, role);
 		return Response.ok().build();
 	}
 
-	@Path("{" + USER_ID + "}/" + ROLE_PATH_ELEMENT + "/{" + ROLE_ID + "}")
+	@Path("{" + USER_ID + "}/" + ROLES_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@POST
 	public Response addRoleToUser(@PathParam(USER_ID) User user, @PathParam(ROLE_ID) Role role) {
 		processor.addRoleTo(user, role);

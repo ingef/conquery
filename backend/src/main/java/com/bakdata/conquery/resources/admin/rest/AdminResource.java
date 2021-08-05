@@ -29,7 +29,6 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
@@ -59,7 +58,7 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public String executeScript(@Auth User user, String script) throws JSONException {
+    public String executeScript(@Auth User user, String script) {
         return Objects.toString(executeScript(script));
     }
 
@@ -71,7 +70,7 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public String executeScriptJson(@Auth User user, String script) throws JSONException, JsonProcessingException {
+    public String executeScriptJson(@Auth User user, String script) throws JsonProcessingException {
         return Jackson.MAPPER.writeValueAsString(executeScript(script));
     }
 
@@ -111,57 +110,37 @@ public class AdminResource {
     @GET
     @Path("/jobs/")
     public ImmutableMap<String, JobManagerStatus> getJobs() {
-        return  ImmutableMap.<String, JobManagerStatus>builder()
-                        .put("ManagerNode", processor.getJobManager().reportStatus())
-                        // Namespace JobManagers on ManagerNode
-                        .putAll(
-                                processor.getDatasetRegistry().getDatasets().stream()
-                                        .collect(Collectors.toMap(
-                                                ns -> String.format("ManagerNode::%s", ns.getDataset().getId()),
-                                                ns -> ns.getJobManager().reportStatus()
-                                        )))
-                        // Remote Worker JobManagers
-                        .putAll(
-                                processor
-                                        .getDatasetRegistry()
-                                        .getShardNodes()
-                                        .values()
-                                        .stream()
-                                        .collect(Collectors.toMap(
-                                                si -> Objects.toString(si.getRemoteAddress()),
-                                                ShardNodeInformation::getJobManagerStatus
-                                        ))
-                        )
-                        .build();
+        return  processor.getJobs();
     }
 
-    @POST @Path("/jobs") @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response addDemoJob() {
-        processor.getJobManager().addSlowJob(new Job() {
+    @POST
+    @Path("/jobs")
+    public UUID addDemoJob() {
+        final Job job = new Job() {
             private final UUID id = UUID.randomUUID();
+
             @Override
             public void execute() {
                 getProgressReporter().setMax(100);
 
-                while(!getProgressReporter().isDone() && !isCancelled()) {
+                while (!getProgressReporter().isDone() && !isCancelled()) {
                     getProgressReporter().report(1);
 
-                    if(getProgressReporter().getProgress() >= 100) {
+                    if (getProgressReporter().getProgress() >= 100) {
                         getProgressReporter().done();
                     }
 
-                    Uninterruptibles.sleepUninterruptibly((int)(Math.random()*200), TimeUnit.MILLISECONDS);
+                    Uninterruptibles.sleepUninterruptibly((int) (Math.random() * 200), TimeUnit.MILLISECONDS);
                 }
             }
 
             @Override
             public String getLabel() {
-                return "Demo "+id;
+                return "Demo " + id;
             }
-        });
+        };
+        processor.getJobManager().addSlowJob(job);
 
-        return Response
-                .seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
-                .build();
+        return job.getJobId();
     }
 }

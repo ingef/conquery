@@ -9,9 +9,12 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.Getter;
@@ -242,6 +245,28 @@ public class AdminProcessor {
 		}
 		writer.writeValuesToRow();
 	}
-
+	public ImmutableMap<String, JobManagerStatus> getJobs() {
+		return ImmutableMap.<String, JobManagerStatus>builder()
+				.put("ManagerNode", getJobManager().reportStatus())
+				// Namespace JobManagers on ManagerNode
+				.putAll(
+						getDatasetRegistry().getDatasets().stream()
+								.collect(Collectors.toMap(
+										ns -> String.format("ManagerNode::%s", ns.getDataset().getId()),
+										ns -> ns.getJobManager().reportStatus()
+								)))
+				// Remote Worker JobManagers
+				.putAll(
+						getDatasetRegistry()
+								.getShardNodes()
+								.values()
+								.stream()
+								.collect(Collectors.toMap(
+										si -> Objects.toString(si.getRemoteAddress()),
+										ShardNodeInformation::getJobManagerStatus
+								))
+				)
+				.build();
+	}
 
 }
