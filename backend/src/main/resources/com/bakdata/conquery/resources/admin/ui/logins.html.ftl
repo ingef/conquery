@@ -7,5 +7,6 @@
     <ol>
         <#list c as login_schema>
         <li><a href="${login_schema}">${login_schema}</a></li>
+        </#list>
     </ol>
 </html>

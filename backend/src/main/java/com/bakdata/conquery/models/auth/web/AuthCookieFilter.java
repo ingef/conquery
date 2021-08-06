@@ -55,6 +55,7 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 
 		if(!cookie.getValue().isEmpty() && queryToken != null) {
 			log.trace("Ignoring cookie");
+			return;
 		}
 		
 		// Get the token from the cookie and put it into the header
