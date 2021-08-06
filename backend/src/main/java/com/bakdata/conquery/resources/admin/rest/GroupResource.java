@@ -3,7 +3,7 @@ package com.bakdata.conquery.resources.admin.rest;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.resources.hierarchies.HGroups;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 
 import javax.inject.Inject;
 import javax.validation.constraints.NotEmpty;
@@ -15,15 +15,24 @@ import java.util.List;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
-public class GroupResource extends HGroups {
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+@Path(GROUPS_PATH_ELEMENT)
+public class GroupResource extends HAdmin {
 
 	@Inject
 	protected AdminProcessor processor;
 
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
 	public Collection<Group> getGroups() {
 		return processor.getAllGroups();
+	}
+
+
+	@Path("{" + GROUP_ID + "}")
+	@GET
+	public Response getGroup(@PathParam(GROUP_ID) Group group) {
+		return Response.ok(group).build();
 	}
 
 	@Path("{" + GROUP_ID + "}")
@@ -34,7 +43,6 @@ public class GroupResource extends HGroups {
 	}
 
 	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
 	public Response postGroups(@NotEmpty List<Group> groups) {
 		processor.addGroups(groups);
 		return Response.ok().build();

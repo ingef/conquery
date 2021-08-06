@@ -111,22 +111,22 @@
   },
   {
     "method": "DELETE",
-    "path": "/groups/{groupId}/user/{userId}",
+    "path": "/groups/{groupId}/users/{userId}",
     "clazz": "GroupResource"
   },
   {
     "method": "POST",
-    "path": "/groups/{groupId}/user/{userId}",
+    "path": "/groups/{groupId}/users/{userId}",
     "clazz": "GroupResource"
   },
   {
     "method": "DELETE",
-    "path": "/groups/{groupId}/role/{roleId}",
+    "path": "/groups/{groupId}/roles/{roleId}",
     "clazz": "GroupResource"
   },
   {
     "method": "POST",
-    "path": "/groups/{groupId}/role/{roleId}",
+    "path": "/groups/{groupId}/roles/{roleId}",
     "clazz": "GroupResource"
   },
   {
@@ -181,12 +181,12 @@
   },
   {
     "method": "POST",
-    "path": "/users/{userId}/role/{roleId}",
+    "path": "/users/{userId}/roles/{roleId}",
     "clazz": "UserResource"
   },
   {
     "method": "DELETE",
-    "path": "/users/{userId}/role/{roleId}",
+    "path": "/users/{userId}/roles/{roleId}",
     "clazz": "UserResource"
   },
   {
@@ -197,12 +197,12 @@
   {
     "method": "GET",
     "path": "/",
-    "clazz": "AdminUIResource"
+    "clazz": "AdminResource"
   },
   {
     "method": "POST",
     "path": "/jobs/{jobId}/cancel",
-    "clazz": "AdminUIResource"
+    "clazz": "AdminResource"
   },
   {
     "method": "POST",
@@ -212,87 +212,82 @@
   {
     "method": "GET",
     "path": "/jobs/",
-    "clazz": "AdminUIResource"
+    "clazz": "AdminResource"
   },
   {
     "method": "POST",
     "path": "/script",
-    "clazz": "AdminUIResource"
+    "clazz": "AdminResource"
   },
   {
     "method": "POST",
     "path": "/script",
-    "clazz": "AdminUIResource"
+    "clazz": "AdminResource"
   },
   {
     "method": "POST",
     "path": "/jobs",
-    "clazz": "AdminUIResource"
-  },
-  {
-    "method": "GET",
-    "path": "/script",
-    "clazz": "AdminUIResource"
+    "clazz": "AdminResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}/concepts/{concept}",
-    "clazz": "ConceptsUIResource"
+    "clazz": "ConceptsResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}",
-    "clazz": "DatasetsUIResource"
+    "clazz": "DatasetsResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}/mapping",
-    "clazz": "DatasetsUIResource"
+    "clazz": "DatasetsResource"
   },
   {
     "method": "GET",
     "path": "/groups",
-    "clazz": "GroupUIResource"
+    "clazz": "GroupResource"
   },
   {
     "method": "GET",
     "path": "/groups/{groupId}",
-    "clazz": "GroupUIResource"
+    "clazz": "GroupResource"
   },
   {
     "method": "GET",
     "path": "/roles",
-    "clazz": "RoleUIResource"
+    "clazz": "RoleResource"
   },
   {
     "method": "GET",
     "path": "/roles/{roleId}",
-    "clazz": "RoleUIResource"
+    "clazz": "RoleResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}/tables/{table}",
-    "clazz": "TablesUIResource"
+    "clazz": "TablesResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}/tables/{table}/import/{importId}",
-    "clazz": "TablesUIResource"
+    "clazz": "TablesResource"
   },
   {
     "method": "GET",
     "path": "/users",
-    "clazz": "UserUIResource"
+    "clazz": "UserResource"
   },
   {
     "method": "GET",
     "path": "/users/{userId}",
-    "clazz": "UserUIResource"
+    "clazz": "UserResource"
   },
   {
     "method": "GET",
     "path": "/auth-overview",
-    "clazz": "AuthOverviewUIResource"
+    "clazz": "AuthOverviewResource"
   },
   {
     "method": "GET",

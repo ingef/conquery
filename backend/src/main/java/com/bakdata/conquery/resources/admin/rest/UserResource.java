@@ -20,9 +20,10 @@ import javax.ws.rs.core.Response;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.resources.hierarchies.HUsers;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 
-public class UserResource extends HUsers {
+@Path(USERS_PATH_ELEMENT)
+public class UserResource extends HAdmin {
 
 	@Inject
 	protected AdminProcessor processor;
@@ -44,6 +45,12 @@ public class UserResource extends HUsers {
 	public Response postUsers(@NotEmpty List<User> users) {
 		processor.addUsers(users);
 		return Response.ok().build();
+	}
+
+	@Path("{" + USER_ID + "}")
+	@GET
+	public Response getUser(@PathParam(USER_ID) User user) {
+		return Response.ok(user).build();
 	}
 
 	@Path("{" + USER_ID + "}")
