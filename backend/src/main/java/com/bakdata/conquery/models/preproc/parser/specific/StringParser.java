@@ -157,7 +157,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 	private Encoding findEncoding() {
 		EnumSet<Encoding> bases = EnumSet.allOf(Encoding.class);
 		for (String value : strings.keySet()) {
-			bases.removeIf(encoding -> !encoding.canDecode(value));
+			bases.removeIf(encoding -> !encoding.canEncode(value));
 			if (bases.size() == 1) {
 				return bases.iterator().next();
 			}
@@ -177,7 +177,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 		this.encoding = encoding;
 		decoded = strings.object2IntEntrySet().stream()
 						 .sorted(Comparator.comparing(Object2IntMap.Entry::getIntValue))
-						 .map(entry -> encoding.decode(entry.getKey()))
+						 .map(entry -> encoding.encode(entry.getKey()))
 						 .collect(Collectors.toList());
 	}
 

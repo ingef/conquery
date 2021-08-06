@@ -54,11 +54,9 @@ const LeftPane = () => {
         },
       ]}
     >
-      {activeTab === "conceptTrees" &&
-        areTreesAvailable &&
-        selectedDatasetId && (
-          <SxConceptTreeSearchBox datasetId={selectedDatasetId} />
-        )}
+      {activeTab === "conceptTrees" && areTreesAvailable && (
+        <SxConceptTreeSearchBox />
+      )}
       <ConceptTreeList datasetId={selectedDatasetId} />
       {activeTab === "previousQueries" && (
         <PreviousQueriesTab datasetId={selectedDatasetId} />

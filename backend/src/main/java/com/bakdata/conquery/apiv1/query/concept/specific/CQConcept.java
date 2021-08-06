@@ -1,36 +1,23 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -51,6 +38,12 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -155,7 +148,6 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 											   .collect(Collectors.toList());
 
 			//add filter to children
-
 			List<Aggregator<?>> aggregators = new ArrayList<>();
 
 			aggregators.addAll(conceptAggregators);
@@ -196,18 +188,16 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			final Column validityDateColumn = selectValidityDateColumn(table);
 
 			final ConceptNode node = new ConceptNode(
-					elements,
-					CBlock.calculateBitMask(elements),
-					table,
 					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
 					new ValidityDateNode(validityDateColumn, filtersNode),
+					elements,
+					table,
 					// if the node is excluded, don't pass it into the Node.
 					!excludeFromSecondaryIdQuery && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
 			);
 
 			tableNodes.add(node);
 		}
-
 
 		// We always merge on concept level
 		final QPNode outNode = OrNode.of(tableNodes, aggregateEventDates ? DateAggregationAction.MERGE : DateAggregationAction.BLOCK);

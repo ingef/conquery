@@ -1,41 +1,12 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import javax.validation.Validator;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.validation.Validator;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
@@ -43,25 +14,9 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSel
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -70,32 +25,28 @@ import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveSecondaryId;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveTable;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryId;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
+import com.bakdata.conquery.models.messages.namespaces.specific.*;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
-import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
-import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
-import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBlocksSizeBytes;
+import javax.validation.Validator;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -114,49 +65,6 @@ public class AdminDatasetProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
-
-	public DatasetsUIResource.DatasetInfos getDatasetInfos(Dataset dataset) {
-		Namespace namespace = datasetRegistry.get(dataset.getId());
-		return new DatasetsUIResource.DatasetInfos(
-				namespace.getDataset(),
-				namespace.getStorage().getSecondaryIds(),
-				namespace.getStorage().getTables().stream()
-						.map(table -> new DatasetsUIResource.TableInfos(
-								table.getId(),
-								table.getName(),
-								table.getLabel(),
-								StringUtils.abbreviate(table.findImports(namespace.getStorage())
-										.map(Import::getName)
-										.collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
-								table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
-						))
-						.collect(Collectors.toList()),
-				namespace.getStorage().getAllConcepts(),
-				// total size of dictionaries
-				namespace
-						.getStorage()
-						.getAllImports()
-						.stream()
-						.flatMap(i -> i.getDictionaries().stream())
-						.filter(Objects::nonNull)
-						.map(namespace.getStorage()::getDictionary)
-						.distinct()
-						.mapToLong(Dictionary::estimateMemoryConsumption)
-						.sum(),
-				// Total size of CBlocks
-				namespace
-						.getStorage().getTables()
-						.stream()
-						.flatMap(table -> table.findImports(namespace.getStorage()))
-						.mapToLong(imp -> calculateCBlocksSizeBytes(
-								imp, namespace.getStorage().getAllConcepts()
-						))
-						.sum(),
-				// total size of entries
-				namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()
-		);
-	}
-
 
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
@@ -297,7 +205,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 		}
 
-		addAutomaticSelect(concept, () -> EventDurationSumSelect.create("event_duration_sum"));
+		addAutomaticSelect(concept);
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
@@ -307,20 +215,34 @@ public class AdminDatasetProcessor {
 	/**
 	 * Adds some selects to the concept on all levels for convenience.
 	 */
-	private static void addAutomaticSelect(@NotNull Concept<?> concept, Supplier<UniversalSelect> selectCreator) {
+	private static void addAutomaticSelect(@NotNull Concept<?> concept) {
 		if (!(concept instanceof TreeConcept)) {
 			return;
 		}
 
 		// Add to concept
 		TreeConcept treeConcept = (TreeConcept) concept;
-		final UniversalSelect select = selectCreator.get();
+
+		// Don't add event_duration_sum if Concept has no date-columns
+		if (treeConcept.getConnectors().stream()
+					   .map(Connector::getValidityDates)
+					   .allMatch(Collection::isEmpty)) {
+			return;
+		}
+
+		final UniversalSelect select = EventDurationSumSelect.create("event_duration_sum");
 		select.setHolder(treeConcept);
 		treeConcept.getSelects().add(select);
 
-		// Add to connectors
+
+		// Add to connectors if they have dates
 		for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
-			final UniversalSelect connectorSelect = selectCreator.get();
+
+			if(connector.getValidityDates().isEmpty()){
+				continue;
+			}
+
+			final UniversalSelect connectorSelect = EventDurationSumSelect.create("event_duration_sum");
 			connectorSelect.setHolder(connector);
 			connector.getSelects().add(connectorSelect);
 		}

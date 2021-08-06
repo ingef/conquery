@@ -269,8 +269,7 @@ public class ImportJob extends Job {
 
 		log.info("Importing Dictionaries");
 
-		Map<String, DictionaryMapping>
-				sharedDictionaryMappings =
+		Map<String, DictionaryMapping> sharedDictionaryMappings =
 				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
 		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
@@ -374,7 +373,12 @@ public class ImportJob extends Job {
 
 		for (int position = 0; position < bucketSize; position++) {
 			int globalId = root + position;
+
 			int localId = primaryMapping.target2Source(globalId);
+
+			if(localId == -1){
+				continue;
+			}
 
 			if(!localStarts.containsKey(localId)){
 				continue;
@@ -429,6 +433,7 @@ public class ImportJob extends Job {
 		Dictionary primaryDict = Dictionary.copyUncompressed(orig);
 
 		DictionaryMapping primaryMapping = DictionaryMapping.createAndImport(primaryDictionary, primaryDict);
+
 		log.debug("Mapped {} new ids", primaryMapping.getNumberOfNewIds());
 
 		//if no new ids we shouldn't recompress and store
@@ -447,7 +452,7 @@ public class ImportJob extends Job {
 		log.debug("Updating bucket assignments.");
 
 		synchronized (namespace) {
-			for (int entity : primaryMapping.getSource2TargetMap()) {
+			for (int entity : primaryMapping.target()) {
 				int bucket = Entity.getBucket(entity, bucketSize);
 
 				if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
@@ -482,9 +487,10 @@ public class ImportJob extends Job {
 			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
 			final IntegerParser indexParser = new IntegerParser(new ParserConfig());
 
-			final IntSummaryStatistics statistics = Arrays.stream(mapping.getSource2TargetMap()).summaryStatistics();
+			final IntSummaryStatistics statistics = mapping.target().intStream().summaryStatistics();
 
 			indexParser.setLines(stringStore.getLines());
+
 			indexParser.setMinValue(statistics.getMin());
 			indexParser.setMaxValue(statistics.getMax());
 

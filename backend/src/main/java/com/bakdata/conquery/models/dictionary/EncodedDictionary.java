@@ -18,11 +18,11 @@ public class EncodedDictionary {
 	}
 
 	public String getElement(int id) {
-		return encoding.encode(dict.getElement(id));
+		return encoding.decode(dict.getElement(id));
 	}
 
 	public int getId(String value) {
-		return dict.getId(encoding.decode(value));
+		return dict.getId(encoding.encode(value));
 	}
 
 	public int getSize() {

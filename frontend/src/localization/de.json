@@ -205,7 +205,8 @@
     "loading": "Lade Anfragen",
     "error": "Konnte Anfragen nicht laden",
     "results": "Ergebnisse",
-    "noQueriesFound": "Keine Anfragen gefunden"
+    "noQueriesFound": "Keine Anfragen gefunden",
+    "searchPlaceholder": "Anfragen durchsuchen ..."
   },
   "previousQuery": {
     "notExecuted": "Noch nicht ausgeführt",

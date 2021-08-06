@@ -1,16 +1,13 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC, useState, useEffect } from "react";
+import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import type { DatasetIdT } from "../api/types";
-import IconButton from "../button/IconButton";
 import TransparentButton from "../button/TransparentButton";
 import AnimatedDots from "../common/components/AnimatedDots";
-import { isEmpty } from "../common/helpers";
 import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";
-import BaseInput from "../form-components/BaseInput";
+import SearchBar from "../search-bar/SearchBar";
 
 import {
   clearSearchQuery,
@@ -21,38 +18,6 @@ import type { SearchT, TreesT } from "./reducer";
 
 const Root = styled("div")`
   position: relative;
-`;
-
-const InputContainer = styled("div")`
-  flex-grow: 1;
-  position: relative;
-`;
-
-const StyledBaseInput = styled(BaseInput)`
-  width: 100%;
-  input {
-    padding-right: 60px;
-    width: 100%;
-    &::placeholder {
-      color: ${({ theme }) => theme.col.grayMediumLight};
-      opacity: 1;
-    }
-  }
-`;
-
-const Right = styled("div")`
-  position: absolute;
-  top: 0px;
-  right: 30px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 34px;
-`;
-
-const StyledIconButton = styled(IconButton)`
-  padding: 8px 10px;
-  color: ${({ theme }) => theme.col.gray};
 `;
 
 const TinyText = styled("p")`
@@ -87,13 +52,10 @@ const SxConceptTreeOpenButtons = styled(ConceptTreesOpenButtons)`
 `;
 
 interface PropsT {
-  datasetId: DatasetIdT;
   className?: string;
 }
 
-const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
-  const [localQuery, setLocalQuery] = useState("");
-
+const ConceptTreeSearchBox: FC<PropsT> = ({ className }) => {
   const showMismatches = useSelector<StateT, boolean>(
     (state) => state.conceptTrees.search.showMismatches,
   );
@@ -116,42 +78,16 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className, datasetId }) => {
   const onClearQuery = () => dispatch(clearSearchQuery());
   const onToggleShowMismatches = () => dispatch(toggleShowMismatches());
 
-  useEffect(() => {
-    setLocalQuery(search.query);
-  }, [search.query]);
-
   return (
     <Root className={className}>
       <TopRow>
         <SxConceptTreeOpenButtons />
-        <InputContainer>
-          <StyledBaseInput
-            inputType="text"
-            placeholder={t("conceptTreeList.searchPlaceholder")}
-            value={localQuery || ""}
-            onChange={(value) => {
-              if (isEmpty(value)) onClearQuery();
-
-              setLocalQuery(value);
-            }}
-            inputProps={{
-              onKeyPress: (e) => {
-                return e.key === "Enter" && !isEmpty(e.target.value)
-                  ? onSearch(trees, e.target.value)
-                  : null;
-              },
-            }}
-          />
-          {!isEmpty(localQuery) && (
-            <Right>
-              <StyledIconButton
-                icon="search"
-                aria-hidden="true"
-                onClick={() => onSearch(trees, localQuery)}
-              />
-            </Right>
-          )}
-        </InputContainer>
+        <SearchBar
+          searchTerm={search.query}
+          placeholder={t("conceptTreeList.searchPlaceholder")}
+          onClear={onClearQuery}
+          onSearch={(value) => onSearch(trees, value)}
+        />
       </TopRow>
       {search.loading ? (
         <AnimatedDots />

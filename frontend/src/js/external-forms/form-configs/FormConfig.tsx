@@ -258,7 +258,7 @@ const FormConfig: React.FC<PropsT> = ({
             onToggleEdit={() => setIsEditingLabel(!isEditingLabel)}
           />
         ) : (
-          <StyledSelectableLabel label={label} />
+          <StyledSelectableLabel>{label}</StyledSelectableLabel>
         )}
         <MiddleRight>{config.ownerName}</MiddleRight>
       </MiddleRow>

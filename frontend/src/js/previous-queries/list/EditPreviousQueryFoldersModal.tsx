@@ -9,6 +9,7 @@ import Modal from "../../modal/Modal";
 
 import { useRetagQuery } from "./actions";
 import type { PreviousQueryT } from "./reducer";
+import { usePreviousQueriesTags } from "./selector";
 
 const SxEditableTagsForm = styled(EditableTagsForm)`
   min-width: 300px;
@@ -28,9 +29,7 @@ const EditPreviousQueryFoldersModal: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
   const retagQuery = useRetagQuery();
-  const availableTags = useSelector<StateT, string[]>(
-    (state) => state.previousQueries.tags,
-  );
+  const folders = usePreviousQueriesTags();
 
   return (
     <Modal
@@ -47,7 +46,7 @@ const EditPreviousQueryFoldersModal: FC<PropsT> = ({
           } catch (e) {}
         }}
         onCancel={onClose}
-        availableTags={availableTags}
+        availableTags={folders}
       />
     </Modal>
   );

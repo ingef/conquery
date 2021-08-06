@@ -82,7 +82,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private ScheduledExecutorService maintenanceService;
 	private DatasetRegistry datasetRegistry;
 	private Environment environment;
-	private List<ResourcesProvider> providers = new ArrayList<>();
+	private final List<ResourcesProvider> providers = new ArrayList<>();
 	private Client client;
 
 	// Resources without authentication
@@ -111,11 +111,12 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				.add(IdResolveContext.class, datasetRegistry);
 
 
-		this.jobManager = new JobManager("ManagerNode", config.isFailOnError());
+		jobManager = new JobManager("ManagerNode", config.isFailOnError());
 		this.environment = environment;
-		this.validator = environment.getValidator();
-		this.formScanner = new FormScanner();
+		validator = environment.getValidator();
+		formScanner = new FormScanner();
 		this.config = config;
+
 		config.initialize(this);
 
 		// Initialization of internationalization
@@ -123,10 +124,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
 
-		this.maintenanceService = environment
-				.lifecycle()
-				.scheduledExecutorService("Maintenance Service")
-				.build();
+		maintenanceService = environment.lifecycle()
+										.scheduledExecutorService("Maintenance Service")
+										.build();
 
 		environment.lifecycle().manage(this);
 
@@ -184,11 +184,11 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	private void loadMetaStorage() {
 		log.info("Started meta storage");
-		this.storage = new MetaStorage(validator, config.getStorage(), datasetRegistry);
-		this.storage.loadData();
-		log.info("MetaStorage loaded {}", this.storage);
+		storage = new MetaStorage(validator, config.getStorage(), datasetRegistry);
+		storage.loadData();
+		log.info("MetaStorage loaded {}", storage);
 
-		datasetRegistry.setMetaStorage(this.storage);
+		datasetRegistry.setMetaStorage(storage);
 		for (Namespace sn : datasetRegistry.getDatasets()) {
 			sn.getStorage().setMetaStorage(storage);
 		}

@@ -4,7 +4,6 @@ import React, { FC } from "react";
 
 interface PropsT {
   className?: string;
-  label: string;
   isHighlighted?: boolean;
 }
 
@@ -21,11 +20,11 @@ const Label = styled("span")<{ isHighlighted?: boolean }>`
 const HighlightableLabel: FC<PropsT> = ({
   isHighlighted,
   className,
-  label,
+  children,
 }) => {
   return (
     <Label className={className} isHighlighted={isHighlighted}>
-      {label}
+      {children}
     </Label>
   );
 };

@@ -1,26 +1,19 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.BeanProperty;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 @AllArgsConstructor @NoArgsConstructor
@@ -29,13 +22,12 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 	private JsonDeserializer<CBlock> beanDeserializer;
 	
 	@Override
-	public CBlock deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public CBlock deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		CBlock block = beanDeserializer.deserialize(p, ctxt);
 
-		Concept<?> concept = block.getConnector().getConcept();
+		TreeConcept concept = block.getConnector().getConcept();
 
-		if(concept instanceof TreeConcept && block.getMostSpecificChildren() != null) {
-			TreeConcept tree = (TreeConcept) concept;
+		if(concept != null && block.getMostSpecificChildren() != null) {
 
 			// deduplicate concrete paths after loading from disk.
 			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
@@ -47,7 +39,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 				}
 
 				log.trace("Getting Elements for local ids: {}", mostSpecificChildren);
-				block.getMostSpecificChildren()[event] = tree.getElementByLocalId(mostSpecificChildren).getPrefix();
+				block.getMostSpecificChildren()[event] = concept.getElementByLocalId(mostSpecificChildren).getPrefix();
 			}
 		}
 		return block;

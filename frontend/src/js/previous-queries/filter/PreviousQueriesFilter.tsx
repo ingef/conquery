@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
 
 import { setPreviousQueriesFilter } from "./actions";
+import { PreviousQueriesFilterStateT } from "./reducer";
 
 interface Props {
   className?: string;
@@ -13,7 +14,7 @@ interface Props {
 
 const PreviousQueriesFilter: FC<Props> = ({ className }) => {
   const { t } = useTranslation();
-  const OPTIONS = [
+  const OPTIONS: { value: PreviousQueriesFilterStateT; label: string }[] = [
     {
       value: "all",
       label: t("previousQueriesFilter.all") as string,
@@ -23,12 +24,12 @@ const PreviousQueriesFilter: FC<Props> = ({ className }) => {
       label: t("previousQueriesFilter.own") as string,
     },
     {
-      value: "system",
-      label: t("previousQueriesFilter.system") as string,
-    },
-    {
       value: "shared",
       label: t("previousQueriesFilter.shared") as string,
+    },
+    {
+      value: "system",
+      label: t("previousQueriesFilter.system") as string,
     },
   ];
 
@@ -36,7 +37,7 @@ const PreviousQueriesFilter: FC<Props> = ({ className }) => {
     (state) => state.previousQueriesFilter,
   );
   const dispatch = useDispatch();
-  const setFilter = (filter: string) =>
+  const setFilter = (filter: PreviousQueriesFilterStateT) =>
     dispatch(setPreviousQueriesFilter(filter));
 
   return (
@@ -44,7 +45,7 @@ const PreviousQueriesFilter: FC<Props> = ({ className }) => {
       className={className}
       options={OPTIONS}
       selectedTab={selectedFilter}
-      onSelectTab={(tab) => setFilter(tab)}
+      onSelectTab={(tab) => setFilter(tab as PreviousQueriesFilterStateT)}
     />
   );
 };

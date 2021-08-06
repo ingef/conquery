@@ -1,16 +1,16 @@
 package com.bakdata.conquery.models.dictionary;
 
 
-import java.util.Arrays;
-
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntCollection;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Create a mapping from one {@link Dictionary} to the other (Map source to target). Adding all ids in target, not in source, to source.
@@ -24,15 +24,22 @@ public class DictionaryMapping {
 	private final Dictionary sourceDictionary;
 	private final Dictionary targetDictionary;
 
-	@ToString.Exclude
-	private final int[] source2TargetMap;
+	private final Int2IntMap source2Target;
+	private final Int2IntMap target2Source;
 
 	private final int numberOfNewIds;
 
 	public static DictionaryMapping createAndImport(Dictionary from, Dictionary to) {
 
-		int[] source2TargetMap = new int[from.size()];
 		int newIds = 0;
+
+		Int2IntMap source2Target = new Int2IntOpenHashMap(from.size());
+
+		source2Target.defaultReturnValue(-1);
+
+		Int2IntMap target2Source = new Int2IntOpenHashMap(from.size());
+
+		target2Source.defaultReturnValue(-1);
 
 		for (int id = 0; id < from.size(); id++) {
 
@@ -44,22 +51,34 @@ public class DictionaryMapping {
 				targetId = to.add(value);
 				newIds++;
 			}
-			source2TargetMap[id] = targetId;
+
+			if (source2Target.put(id, targetId) != -1) {
+				log.error("Multiple ids map to same target");
+			}
+
+			if (target2Source.put(targetId, id) != -1) {
+				log.error("Multiple ids map to same target");
+			}
 
 		}
-		if (Arrays.stream(source2TargetMap).distinct().count() < source2TargetMap.length) {
-			throw new IllegalStateException("Multiple source ids map to the same target");
-		}
 
-		return new DictionaryMapping(from, to, source2TargetMap, newIds);
+		return new DictionaryMapping(from, to, source2Target, target2Source, newIds);
 	}
 
 	public int source2Target(int sourceId) {
-		return source2TargetMap[sourceId];
+		return source2Target.get(sourceId);
 	}
 
 	public int target2Source(int targetId) {
-		return ArrayUtils.indexOf(source2TargetMap, targetId);
+		return target2Source.get(targetId);
+	}
+
+	public IntCollection source() {
+		return source2Target.keySet();
+	}
+
+	public IntCollection target() {
+		return source2Target.values();
 	}
 
 	/**

@@ -1,4 +1,11 @@
-import { PreviousQueryT } from "./reducer";
+import { StateT } from "app-types";
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
+
+import { exists } from "../../common/helpers/exists";
+import type { PreviousQueriesFilterStateT } from "../filter/reducer";
+
+import type { PreviousQueryT } from "./reducer";
 
 const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
   return (
@@ -24,7 +31,10 @@ const queryHasId = (query: PreviousQueryT, searchTerm: string) => {
   return query.id.toString() === searchTerm;
 };
 
-const queryHasFilterType = (query: PreviousQueryT, filter: string) => {
+export const queryHasFilterType = (
+  query: PreviousQueryT,
+  filter: PreviousQueriesFilterStateT,
+) => {
   if (filter === "all") return true;
 
   // Checks query.own, query.shared or query.system
@@ -37,15 +47,27 @@ const queryHasFilterType = (query: PreviousQueryT, filter: string) => {
   return false;
 };
 
+export const queryMatchesSearch = (
+  query: PreviousQueryT,
+  searchTerm: string | null,
+) => {
+  return (
+    !exists(searchTerm) ||
+    queryHasId(query, searchTerm) ||
+    queryHasLabel(query, searchTerm) ||
+    queryHasTag(query, searchTerm)
+  );
+};
+
 export const selectPreviousQueries = (
   queries: PreviousQueryT[],
-  search: string[],
-  filter: string,
+  searchTerm: string | null,
+  filter: PreviousQueriesFilterStateT,
   folderFilter: string[],
   noFoldersActive: boolean,
 ) => {
   if (
-    search.length === 0 &&
+    !exists(searchTerm) &&
     filter === "all" &&
     folderFilter.length === 0 &&
     !noFoldersActive
@@ -53,18 +75,23 @@ export const selectPreviousQueries = (
     return queries;
 
   return queries.filter((query) => {
-    return (
-      queryHasFilterType(query, filter) &&
-      (noFoldersActive
-        ? query.tags.length === 0
-        : folderFilter.every((folder) => queryHasFolder(query, folder))) &&
-      search.every((searchTerm) => {
-        return (
-          queryHasId(query, searchTerm) ||
-          queryHasLabel(query, searchTerm) ||
-          queryHasTag(query, searchTerm)
-        );
-      })
-    );
+    const matchesFilter = queryHasFilterType(query, filter);
+    const matchesFolderFilter = noFoldersActive
+      ? query.tags.length === 0
+      : folderFilter.every((folder) => queryHasFolder(query, folder));
+    const matchesSearch = queryMatchesSearch(query, searchTerm);
+
+    return matchesFilter && matchesFolderFilter && matchesSearch;
   });
+};
+
+export const usePreviousQueriesTags = () => {
+  const queries = useSelector<StateT, PreviousQueryT[]>(
+    (state) => state.previousQueries.queries,
+  );
+
+  return useMemo(
+    () => Array.from(new Set(queries.flatMap((query) => query.tags))).sort(),
+    [queries],
+  );
 };
