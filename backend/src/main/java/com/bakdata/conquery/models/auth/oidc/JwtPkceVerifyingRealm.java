@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.auth.oidc;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
+import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
@@ -21,6 +22,8 @@ import java.lang.reflect.Array;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * This realm uses the configured public key to verify the signature of a provided JWT and extracts informations about
@@ -31,16 +34,14 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
     private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 
-    private final PublicKey publicKey;
-    private final String[] allowedAudiences;
+    Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier;
+    private final String[] allowedAudience;
     private final TokenVerifier.Predicate<JsonWebToken>[] tokenChecks;
     private final List<String> alternativeIdClaims;
-    private final String issuer;
 
-    public JwtPkceVerifyingRealm(@NonNull PublicKey publicKey, @NonNull String[] allowedAudiences, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, @NonNull String issuer, List<String> alternativeIdClaims) {
-        this.publicKey = publicKey;
-        this.allowedAudiences = allowedAudiences;
-        this.issuer = issuer;
+    public JwtPkceVerifyingRealm(@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier, @NonNull String allowedAudience, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, List<String> alternativeIdClaims) {
+        this.idpConfigurationSupplier = idpConfigurationSupplier;
+        this.allowedAudience = new String[] {allowedAudience};
         this.tokenChecks = additionalTokenChecks.toArray((TokenVerifier.Predicate<JsonWebToken>[])Array.newInstance(TokenVerifier.Predicate.class,0));
         this.alternativeIdClaims = alternativeIdClaims;
         this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
@@ -50,12 +51,19 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
     @Override
     protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
+        if (idpConfigurationOpt.isEmpty()) {
+            log.warn("Unable to start authentication, because idp configuration is not available.");
+            return null;
+        }
+        JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
+
         log.trace("Creating token verifier");
         TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class)
-                .withChecks(new TokenVerifier.RealmUrlCheck(issuer), TokenVerifier.SUBJECT_EXISTS_CHECK, TokenVerifier.IS_ACTIVE)
+                .withChecks(new TokenVerifier.RealmUrlCheck(idpConfiguration.getIssuer()), TokenVerifier.SUBJECT_EXISTS_CHECK, TokenVerifier.IS_ACTIVE)
                 .withChecks(tokenChecks)
-                .publicKey(publicKey)
-                .audience(allowedAudiences);
+                .publicKey(idpConfiguration.getPublicKey())
+                .audience(allowedAudience);
 
         String subject;
         log.trace("Verifying token");

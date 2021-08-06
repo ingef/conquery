@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.Configuration;
+import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import lombok.AllArgsConstructor;
@@ -93,6 +94,10 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private ExcelConfig excel = new ExcelConfig();
+
+	@Valid
+	@NotNull
+	private JerseyClientConfiguration jerseyClient = new JerseyClientConfiguration();
 
 	@Valid
 	private List<PluginConfig> plugins = new ArrayList<>();
