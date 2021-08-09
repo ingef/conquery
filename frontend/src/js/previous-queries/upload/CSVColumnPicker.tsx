@@ -35,14 +35,18 @@ const Table = styled("table")`
   width: 100%;
   padding: 10px;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
+  table-layout: fixed;
+  max-width: 1000px;
 `;
 
 const Td = styled("td")`
   font-size: ${({ theme }) => theme.font.xs};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `;
 const Th = styled("th")`
   font-size: ${({ theme }) => theme.font.xs};
-  min-width: 150px;
 `;
 
 const FileName = styled("code")`
@@ -92,7 +96,7 @@ const SuccessIcon = styled(BigIcon)`
 `;
 const Buttons = styled("div")`
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-end;
   margin-top: 12px;
 `;
@@ -245,6 +249,8 @@ const CSVColumnPicker: FC<PropsT> = ({
     saveAs(blob, filename);
   }
 
+  const ignoringAllColumns = csvHeader.every((h) => h === "IGNORE");
+
   return (
     <div>
       <Row>
@@ -281,6 +287,7 @@ const CSVColumnPicker: FC<PropsT> = ({
                   <Th key={cell + i}>
                     <ReactSelect<false>
                       small
+                      maxMenuHeight={200}
                       options={SELECT_OPTIONS}
                       value={
                         SELECT_OPTIONS.find((o) => o.value === csvHeader[i]) ||
@@ -376,7 +383,7 @@ const CSVColumnPicker: FC<PropsT> = ({
           )}
         {uploadResult && (
           <SxPrimaryButton
-            disabled={loading || csv.length === 0}
+            disabled={ignoringAllColumns || loading || csv.length === 0}
             onClick={uploadQuery}
           >
             {loading ? (
@@ -393,7 +400,7 @@ const CSVColumnPicker: FC<PropsT> = ({
           </SxTransparentButton>
         ) : (
           <SxPrimaryButton
-            disabled={loading || csv.length === 0}
+            disabled={ignoringAllColumns || loading || csv.length === 0}
             onClick={uploadQuery}
           >
             {loading ? (
