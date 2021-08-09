@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.internationalization.Localized;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -235,14 +236,14 @@ public class ArrowRenderer {
             final int pos = vecI - vectorOffset;
             final FieldVector vector = root.getVector(vecI);
 
-            builder[pos] = generateVectorFiller(pos, vector, settings, resultInfos != null ? resultInfos.get(pos) : null);
+            builder[pos] = generateVectorFiller(pos, vector, settings, resultInfos != null ? resultInfos.get(pos).getType() : null);
 
         }
         return builder;
 
     }
 
-    private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final PrintSettings settings, ResultInfo info) {
+    private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final PrintSettings settings, ResultType resultType) {
         //TODO When Pattern-matching lands, clean this up. (Think Java 12?)
         if (vector instanceof IntVector) {
             return intVectorFiller((IntVector) vector, (line) -> (Integer) line[pos]);
@@ -260,8 +261,8 @@ public class ArrowRenderer {
                             // If there is no value, we don't want to have it displayed as an empty string (see next if)
                             return null;
                         }
-                        if (info != null) {
-                            return info.getType().printNullable(settings, line[pos]);
+                        if (resultType != null) {
+                            return resultType.printNullable(settings, line[pos]);
                         }
                         return line[pos].toString();
 
@@ -290,7 +291,7 @@ public class ArrowRenderer {
             List<ValueVector> nestedVectors = structVector.getPrimitiveVectors();
             RowConsumer [] nestedConsumers = new RowConsumer[nestedVectors.size()];
             for (int i = 0; i < nestedVectors.size(); i++) {
-                nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i), settings, info);
+                nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i), settings, resultType);
             }
             return structVectorFiller(structVector, nestedConsumers, (line) -> (List<?>) line[pos]);
         }
@@ -301,7 +302,7 @@ public class ArrowRenderer {
             ValueVector nestedVector = listVector.getDataVector();
 
             // pos = 0 is a workaround for now
-            return listVectorFiller(listVector, generateVectorFiller(0, nestedVector, settings, info), (line) -> (List<?>) line[pos]);
+            return listVectorFiller(listVector, generateVectorFiller(0, nestedVector, settings, ((ResultType.ListT) resultType).getElementType()), (line) -> (List<?>) line[pos]);
         }
 
         throw new IllegalArgumentException("Unsupported vector type " + vector);
