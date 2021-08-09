@@ -187,25 +187,29 @@ const CSVColumnPicker: FC<PropsT> = ({
 
           const firstRow = result.data[0];
 
-          const initialIdName =
-            config.ids.length > 0 ? config.ids[0].name : "IGNORE";
           let initialCSVHeader = new Array(firstRow.length).fill("IGNORE");
 
+          // NOTE: IT WAS A PREVIOUS REQUIREMENT TO INITIALIZE THE HEADER WITH CERTAIN
+          //       DEFAULT VALUES DEPENDING ON THE NUMBER OF COLUMNS IN THE CSV.
+          //       SINCE WE'LL WANT TO IMPROVE THE INITIALIZATION MECHANISM SOON,
+          //       I'M LEAVING THE CODE HERE FOR THE MOMENT:
           // External queries (uploaded lists) usually contain three or four columns.
           // The first two columns are IDs, which will be concatenated
           // The other two columns are date ranges
-          if (firstRow.length >= 4) {
-            initialCSVHeader[0] = initialIdName;
-            initialCSVHeader[1] = initialIdName;
-            initialCSVHeader[2] = "START_DATE";
-            initialCSVHeader[3] = "END_DATE";
-          } else if (firstRow.length === 3) {
-            initialCSVHeader = [initialIdName, initialIdName, "DATE_SET"];
-          } else if (firstRow.length === 2) {
-            initialCSVHeader = [initialIdName, "DATE_SET"];
-          } else {
-            initialCSVHeader = [initialIdName];
-          }
+          // const initialIdName =
+          //   config.ids.length > 0 ? config.ids[0].name : "IGNORE";
+          // if (firstRow.length >= 4) {
+          //   initialCSVHeader[0] = initialIdName;
+          //   initialCSVHeader[1] = initialIdName;
+          //   initialCSVHeader[2] = "START_DATE";
+          //   initialCSVHeader[3] = "END_DATE";
+          // } else if (firstRow.length === 3) {
+          //   initialCSVHeader = [initialIdName, initialIdName, "DATE_SET"];
+          // } else if (firstRow.length === 2) {
+          //   initialCSVHeader = [initialIdName, "DATE_SET"];
+          // } else {
+          //   initialCSVHeader = [initialIdName];
+          // }
 
           setCSVHeader(initialCSVHeader);
         }
