@@ -311,7 +311,8 @@
     "uploadSucceeded": "Ergebnisliste hochladen erfolgreich",
     "formatInfo": {
       "text": "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
-    }
+    },
+    "downloadUnresolved": "Unauflösbare Zeilen herunterladen (CSV)"
   },
   "csvColumnPicker": {
     "loading": "Lese Daten ...",

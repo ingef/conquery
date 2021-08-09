@@ -1,4 +1,6 @@
 import styled from "@emotion/styled";
+import format from "date-fns/format";
+import { saveAs } from "file-saver";
 import React, { useState, useEffect, FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -6,7 +8,7 @@ import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
 import TransparentButton from "../../button/TransparentButton";
-import { parseCSV } from "../../file/csv";
+import { parseCSV, toCSV } from "../../file/csv";
 import InputSelect from "../../form-components/InputSelect";
 import ReactSelect from "../../form-components/ReactSelect";
 import FaIcon from "../../icon/FaIcon";
@@ -97,6 +99,13 @@ const Buttons = styled("div")`
 
 const SxPrimaryButton = styled(PrimaryButton)`
   margin-left: 10px;
+`;
+const SxTransparentButton = styled(TransparentButton)`
+  margin-left: 10px;
+`;
+
+const DownloadUnresolvedButton = styled(TransparentButton)`
+  margin-right: auto;
 `;
 
 export interface QueryToUploadT {
@@ -215,6 +224,21 @@ const CSVColumnPicker: FC<PropsT> = ({
       format: csvHeader,
       values: csv,
     });
+  }
+
+  function downloadUnresolved() {
+    if (!uploadResult) return;
+
+    const unresolved = toCSV(
+      [...uploadResult.unresolvedId, ...uploadResult.unreadableDate],
+      delimiter,
+    );
+
+    const blob = new Blob([unresolved], { type: "text/csv;charset=utf-8" });
+    const today = format(new Date(), "yyyy-MM-dd-HH-mm-ss");
+    const filename = `unresolved-${today}.csv`;
+
+    saveAs(blob, filename);
   }
 
   return (
@@ -338,32 +362,44 @@ const CSVColumnPicker: FC<PropsT> = ({
         </PartialUploadResults>
       )}
       <Buttons>
+        {uploadResult &&
+          uploadResult.unreadableDate.length > 0 &&
+          uploadResult.unresolvedId.length > 0 && (
+            <DownloadUnresolvedButton onClick={downloadUnresolved}>
+              <FaIcon icon="download" />{" "}
+              {t("uploadQueryResultsModal.downloadUnresolved")}
+            </DownloadUnresolvedButton>
+          )}
         {uploadResult && (
-          <TransparentButton
+          <SxPrimaryButton
             disabled={loading || csv.length === 0}
             onClick={uploadQuery}
           >
             {loading ? (
-              <FaIcon icon="spinner" />
+              <FaIcon white icon="spinner" />
             ) : (
-              <FaIcon left icon="upload" />
+              <FaIcon white left icon="upload" />
             )}{" "}
             {t("uploadQueryResultsModal.uploadAgain")}
-          </TransparentButton>
+          </SxPrimaryButton>
         )}
-        <SxPrimaryButton
-          disabled={loading || csv.length === 0}
-          onClick={uploadResult ? onCancel : uploadQuery}
-        >
-          {loading ? (
-            <FaIcon white icon="spinner" />
-          ) : !uploadResult ? (
-            <FaIcon left white icon="upload" />
-          ) : null}{" "}
-          {uploadResult
-            ? t("common.done")
-            : t("uploadQueryResultsModal.upload")}
-        </SxPrimaryButton>
+        {uploadResult ? (
+          <SxTransparentButton disabled={loading} onClick={onCancel}>
+            {t("common.done")}
+          </SxTransparentButton>
+        ) : (
+          <SxPrimaryButton
+            disabled={loading || csv.length === 0}
+            onClick={uploadQuery}
+          >
+            {loading ? (
+              <FaIcon white icon="spinner" />
+            ) : (
+              <FaIcon left white icon="upload" />
+            )}{" "}
+            {t("uploadQueryResultsModal.upload")}
+          </SxPrimaryButton>
+        )}
       </Buttons>
     </div>
   );

@@ -311,7 +311,8 @@
     "uploadSucceeded": "Result list was successfully uploaded",
     "formatInfo": {
       "text": "File should contain one result per row, separated by ; (semicolon)"
-    }
+    },
+    "downloadUnresolved": "Download unresolved (CSV)"
   },
   "csvColumnPicker": {
     "loading": "Reading data ...",

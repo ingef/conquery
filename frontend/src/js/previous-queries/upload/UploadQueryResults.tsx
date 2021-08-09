@@ -13,6 +13,7 @@ import type {
 import IconButton from "../../button/IconButton";
 import { setMessage } from "../../snack-message/actions";
 import WithTooltip from "../../tooltip/WithTooltip";
+import { useLoadQueries } from "../list/actions";
 
 import { QueryToUploadT } from "./CSVColumnPicker";
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
@@ -37,6 +38,7 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
 
   const dispatch = useDispatch();
   const postQueryUpload = usePostQueryUpload();
+  const loadQueries = useLoadQueries();
 
   const queryUploadConfig = useSelector<StateT, QueryUploadConfigT>(
     (state) => state.startup.config.queryUpload,
@@ -56,6 +58,8 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
       const result = await postQueryUpload(datasetId, query);
 
       setUploadResult(result);
+
+      loadQueries(datasetId);
     } catch (e) {
       if (e.status === 400) {
         setUploadResult(e);
