@@ -8,10 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationToken;
 
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.RedirectionException;
-import javax.ws.rs.ServiceUnavailableException;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -20,13 +17,36 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * The {@link RedirectingAuthFilter} first delegates a request to the actual authentication filter.
+ * If that filter is unable to map a user to the request, this filter checks if this request is in
+ * the phase of a multi-step authentication, such as the OAuth-Code-Flow, or if a new login procedure
+ * must be initiated.
+ *
+ * Depending on the configuration, none, one or multiple login schemas are available. If none is configured,
+ * The filter responds with an {@link ServiceUnavailableException}. When one schema is configured, the user
+ * is directly forwarded to that schema. If multiple schemas are possible the user is presented a webpage, where
+ * the login schema can be chosen.
+ */
 @RequiredArgsConstructor
 @Slf4j
 public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
+	/**
+	 * The Filter that checks if a request was authenticated
+	 */
 	private final DefaultAuthFilter delegate;
+
+	/**
+	 * Request processors that check if an request belongs to a multi-step authentication.
+	 * E.g. the request contains an authorization code, that must be redeemed for an access token.
+	 */
 	@Getter
 	private final List<Function<ContainerRequestContext,Response>> authAttemptCheckers = new ArrayList<>();
+
+	/**
+	 * Request processors that produce a link to initiate a login procedure.
+	 */
 	@Getter
 	private final List<Function<ContainerRequestContext,URI>> loginInitiators = new ArrayList<>();
 
@@ -35,6 +55,8 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 		try{
 			delegate.filter(request);
 		} catch (NotAuthorizedException e) {
+			// The request could not be authenticated
+			// First check if the request belongs to a multi-step authentication
 			List<Response> authenticatedRedirects = new ArrayList<>();
 			for ( Function<ContainerRequestContext,Response> authAttemptChecker : authAttemptCheckers) {
 				Response response = authAttemptChecker.apply(request);
@@ -44,11 +66,15 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 			}
 
 			if (authenticatedRedirects.size() == 1) {
+				// The request qualified as a multi-step authentication, so the user is redirected to proceed the authentication.
 				throw new RedirectionException(authenticatedRedirects.get(0));
 			}
 			else if (authenticatedRedirects.size() > 1) {
 				log.error("Multiple authenticated redirects generated. Only one should be possible");
+				throw new BadRequestException("The request triggered more than multi-step authentication schemas, which is not allowed.");
 			}
+
+			// The request was not authenticated, nor was it a step towards an authentication, so we redirect the user to a login.
 
 			log.info("Redirecting unauthenticated user to login schema");
 
@@ -63,11 +89,13 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 
 
 			if (loginRedirects.size() == 0) {
-				throw new ServiceUnavailableException("No Login schema configured");
+				throw new ServiceUnavailableException("No login schema configured");
 			}
 			else if (loginRedirects.size() == 1) {
+				// There is only one login schema, redirect the user there
 				throw new WebApplicationException(Response.seeOther(loginRedirects.get(0)).build());
 			}
+			// There are multiple login schemas, give the user a choice to choose between them
 			throw new WebApplicationException(Response.ok(new UIView<>("logins.html.ftl", null, loginRedirects)).build());
 		}
 	}
