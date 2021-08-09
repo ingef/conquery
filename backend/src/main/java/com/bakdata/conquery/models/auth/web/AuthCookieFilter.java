@@ -59,7 +59,7 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 		}
 		
 		// Get the token from the cookie and put it into the header
-		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, String.join(" ", PREFIX, cookie.getValue()));
+		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION,PREFIX + " " + cookie.getValue());
 		// Remove the cookie for the rest of this processing
 		requestContext.getCookies().remove(ACCESS_TOKEN);
 		// Remove the query parameter
