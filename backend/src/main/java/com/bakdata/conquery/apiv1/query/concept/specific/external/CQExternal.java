@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query.concept.specific.external;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,7 +16,6 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -31,7 +31,6 @@ import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -175,8 +174,9 @@ public class CQExternal extends CQElement {
 
 		final List<Function<String[], EntityIdMap.ExternalId>> readers = queryUpload.getIdReaders(format);
 
-		if(readers.isEmpty()){
-			throw new IllegalArgumentException("No readers configured.");
+		// We will not be able to resolve anything...
+		if (readers.isEmpty()) {
+			return new ResolveStatistic(Collections.emptyMap(), Collections.emptyList(), List.of(values));
 		}
 
 		// ignore the first row, because this is the header
@@ -188,13 +188,17 @@ public class CQExternal extends CQElement {
 			for (Function<String[], EntityIdMap.ExternalId> reader : readers) {
 				final EntityIdMap.ExternalId externalId = reader.apply(row);
 
-				int innerResolved = mapping.resolve(externalId);
-
-				if(innerResolved == -1){
+				if (externalId == null) {
 					continue;
 				}
 
-				if(resolvedId != -1 && innerResolved != resolvedId){
+				int innerResolved = mapping.resolve(externalId);
+
+				if (innerResolved == -1) {
+					continue;
+				}
+
+				if (resolvedId != -1 && innerResolved != resolvedId) {
 					log.error("`{}` maps to different Entities", (Object) row);
 					continue;
 				}
