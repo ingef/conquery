@@ -350,4 +350,8 @@ public class AdminDatasetProcessor {
 				}
 		));
 	}
+
+	public PersistentIdMap getIdMapping(Namespace namespace) {
+		return namespace.getStorage().getIdMapping();
+	}
 }

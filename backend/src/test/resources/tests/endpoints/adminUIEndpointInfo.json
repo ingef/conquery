@@ -1,37 +1,17 @@
 [
   {
     "method": "GET",
-    "path": "/datasets/{dataset}/tables/{table}/imports",
-    "clazz": "TablesUIResource"
-  },
-  {
-    "method": "GET",
     "path": "/datasets",
     "clazz": "DatasetsUIResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}",
-    "clazz": "DatasetsResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/concepts",
-    "clazz": "DatasetsUIResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/tables",
     "clazz": "DatasetsUIResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}/mapping",
-    "clazz": "DatasetsUIResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/tables",
     "clazz": "DatasetsUIResource"
   },
   {
@@ -46,17 +26,12 @@
   },
   {
     "method": "GET",
-    "path": "/users",
-    "clazz": "UserUIResource"
-  },
-  {
-    "method": "GET",
     "path": "/",
     "clazz": "AdminUIResource"
   },
   {
     "method": "GET",
-    "path": "/jobs/",
+    "path": "/jobs",
     "clazz": "AdminUIResource"
   },
   {
@@ -68,11 +43,6 @@
     "method": "GET",
     "path": "/datasets/{dataset}/concepts/{concept}",
     "clazz": "ConceptsUIResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/mapping",
-    "clazz": "DatasetsResource"
   },
   {
     "method": "GET",
@@ -107,6 +77,6 @@
   {
     "method": "GET",
     "path": "/auth-overview",
-    "clazz": "AuthOverviewResource"
+    "clazz": "AuthOverviewUIResource"
   }
 ]

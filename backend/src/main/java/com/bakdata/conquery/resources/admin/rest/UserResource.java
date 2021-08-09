@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -35,13 +36,13 @@ public class UserResource extends HAdmin {
 	}
 
 	@POST
-	public Response postUser(User user) throws JSONException {
+	public Response postUser(@Valid User user) {
 		processor.addUser(user);
 		return Response.ok().build();
 	}
 
 	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("upload")
 	public Response postUsers(@NotEmpty List<User> users) {
 		processor.addUsers(users);
 		return Response.ok().build();

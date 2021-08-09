@@ -1,56 +1,21 @@
 [
   {
     "method": "GET",
-    "path": "/datasets/{dataset}/concepts/{concept}",
-    "clazz": "ConceptsResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}",
-    "clazz": "DatasetsResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/mapping",
-    "clazz": "DatasetsResource"
-  },
-  {
-    "method": "DELETE",
-    "path": "/datasets/{dataset}/tables/{table}",
-    "clazz": "AdminTablesResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/tables/{table}/imports",
-    "clazz": "AdminTablesResource"
-  },
-  {
-    "method": "DELETE",
-    "path": "/datasets/{dataset}/tables/{table}/imports/{importId}",
-    "clazz": "AdminTablesResource"
+    "path": "/datasets",
+    "clazz": "AdminDatasetsResource"
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/update-matching-stats",
+    "path": "/datasets",
+    "clazz": "AdminDatasetsResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/datasets/{dataset}",
     "clazz": "AdminDatasetResource"
   },
   {
     "method": "GET",
-    "path": "/datasets",
-    "clazz": "AdminDatasetsResource"
-  },
-  {
-    "method": "POST",
-    "path": "/datasets",
-    "clazz": "AdminDatasetsResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets",
-    "clazz": "AdminDatasetsResource"
-  },
-  {
-    "method": "DELETE",
     "path": "/datasets/{dataset}",
     "clazz": "AdminDatasetResource"
   },
@@ -60,8 +25,8 @@
     "clazz": "AdminDatasetResource"
   },
   {
-    "method": "GET",
-    "path": "/datasets/{dataset}/tables",
+    "method": "POST",
+    "path": "/datasets/{dataset}/concepts",
     "clazz": "AdminDatasetResource"
   },
   {
@@ -70,13 +35,13 @@
     "clazz": "AdminConceptsResource"
   },
   {
-    "method": "POST",
-    "path": "/datasets/{dataset}/concepts",
-    "clazz": "AdminDatasetResource"
+    "method": "GET",
+    "path": "/datasets/{dataset}/concepts/{concept}",
+    "clazz": "AdminConceptsResource"
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/mapping",
+    "path": "/datasets/{dataset}/cqpp",
     "clazz": "AdminDatasetResource"
   },
   {
@@ -86,12 +51,17 @@
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/cqpp",
+    "path": "/datasets/{dataset}/label",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/mapping",
     "clazz": "AdminDatasetResource"
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/tables",
+    "path": "/datasets/{dataset}/mapping",
     "clazz": "AdminDatasetResource"
   },
   {
@@ -110,8 +80,43 @@
     "clazz": "AdminDatasetResource"
   },
   {
+    "method": "GET",
+    "path": "/datasets/{dataset}/tables",
+    "clazz": "AdminDatasetResource"
+  },
+  {
     "method": "POST",
-    "path": "/datasets/{dataset}/label",
+    "path": "/datasets/{dataset}/tables",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/datasets/{dataset}/tables/{table}",
+    "clazz": "AdminTablesResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/tables/{table}",
+    "clazz": "AdminTablesResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/tables/{table}/imports",
+    "clazz": "AdminTablesResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/datasets/{dataset}/tables/{table}/imports/{importId}",
+    "clazz": "AdminTablesResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/tables/{table}/imports/{importId}",
+    "clazz": "AdminTablesResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/update-matching-stats",
     "clazz": "AdminDatasetResource"
   },
   {
@@ -131,27 +136,32 @@
   },
   {
     "method": "DELETE",
-    "path": "/groups/{groupId}/users/{userId}",
-    "clazz": "GroupResource"
-  },
-  {
-    "method": "POST",
-    "path": "/groups/{groupId}/users/{userId}",
-    "clazz": "GroupResource"
-  },
-  {
-    "method": "DELETE",
-    "path": "/groups/{groupId}/roles/{roleId}",
-    "clazz": "GroupResource"
-  },
-  {
-    "method": "POST",
-    "path": "/groups/{groupId}/roles/{roleId}",
-    "clazz": "GroupResource"
-  },
-  {
-    "method": "DELETE",
     "path": "/groups/{groupId}",
+    "clazz": "GroupResource"
+  },
+  {
+    "method": "GET",
+    "path": "/groups/{groupId}",
+    "clazz": "GroupResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/groups/{groupId}/users/{userId}",
+    "clazz": "GroupResource"
+  },
+  {
+    "method": "POST",
+    "path": "/groups/{groupId}/users/{userId}",
+    "clazz": "GroupResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/groups/{groupId}/roles/{roleId}",
+    "clazz": "GroupResource"
+  },
+  {
+    "method": "POST",
+    "path": "/groups/{groupId}/roles/{roleId}",
     "clazz": "GroupResource"
   },
   {
@@ -166,11 +176,6 @@
   },
   {
     "method": "GET",
-    "path": "/roles",
-    "clazz": "RoleResource"
-  },
-  {
-    "method": "POST",
     "path": "/roles",
     "clazz": "RoleResource"
   },
@@ -186,6 +191,11 @@
   },
   {
     "method": "GET",
+    "path": "/roles/{roleId}",
+    "clazz": "RoleResource"
+  },
+  {
+    "method": "GET",
     "path": "/users",
     "clazz": "UserResource"
   },
@@ -196,17 +206,7 @@
   },
   {
     "method": "POST",
-    "path": "/users",
-    "clazz": "UserResource"
-  },
-  {
-    "method": "POST",
-    "path": "/users/{userId}/roles/{roleId}",
-    "clazz": "UserResource"
-  },
-  {
-    "method": "DELETE",
-    "path": "/users/{userId}/roles/{roleId}",
+    "path": "/users/upload",
     "clazz": "UserResource"
   },
   {
@@ -216,13 +216,18 @@
   },
   {
     "method": "GET",
-    "path": "/",
-    "clazz": "AdminResource"
+    "path": "/users/{userId}",
+    "clazz": "UserResource"
   },
   {
     "method": "POST",
-    "path": "/jobs/{jobId}/cancel",
-    "clazz": "AdminResource"
+    "path": "/users/{userId}/roles/{roleId}",
+    "clazz": "UserResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/users/{userId}/roles/{roleId}",
+    "clazz": "UserResource"
   },
   {
     "method": "GET",
@@ -231,63 +236,23 @@
   },
   {
     "method": "POST",
-    "path": "/script",
-    "clazz": "AdminResource"
-  },
-  {
-    "method": "POST",
-    "path": "/script",
-    "clazz": "AdminResource"
-  },
-  {
-    "method": "POST",
     "path": "/jobs",
     "clazz": "AdminResource"
   },
   {
-    "method": "GET",
-    "path": "/groups",
-    "clazz": "GroupResource"
+    "method": "POST",
+    "path": "/jobs/{jobId}/cancel",
+    "clazz": "AdminResource"
   },
   {
-    "method": "GET",
-    "path": "/groups/{groupId}",
-    "clazz": "GroupResource"
+    "method": "POST",
+    "path": "/script",
+    "clazz": "AdminResource"
   },
   {
-    "method": "GET",
-    "path": "/roles",
-    "clazz": "RoleResource"
-  },
-  {
-    "method": "GET",
-    "path": "/roles/{roleId}",
-    "clazz": "RoleResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/tables/{table}",
-    "clazz": "TablesResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/tables/{table}/import/{importId}",
-    "clazz": "TablesResource"
-  },
-  {
-    "method": "GET",
-    "path": "/users",
-    "clazz": "UserResource"
-  },
-  {
-    "method": "GET",
-    "path": "/users/{userId}",
-    "clazz": "UserResource"
-  },
-  {
-    "method": "GET",
-    "path": "/auth-overview",
-    "clazz": "AuthOverviewResource"
+    "method": "POST",
+    "path": "/script",
+    "clazz": "AdminResource"
   },
   {
     "method": "GET",

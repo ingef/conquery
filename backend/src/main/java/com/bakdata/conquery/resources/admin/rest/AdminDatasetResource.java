@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import io.dropwizard.auth.Auth;
@@ -61,6 +62,13 @@ public class AdminDatasetResource extends HAdmin {
 	public void init() {
 		super.init();
 		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
+	}
+
+	@GET
+	@Consumes(MediaType.WILDCARD)
+	@Path("mapping")
+	public PersistentIdMap getIdMapping() {
+		return processor.getIdMapping(namespace);
 	}
 
 	@POST

@@ -114,8 +114,7 @@ public class AdminProcessor {
 		log.trace("Removed user {} from the storage.", user.getId());
 	}
 
-	public void addUser(User user) throws JSONException {
-		ValidatorHelper.failOnError(log, validator.validate(user));
+	public void addUser(User user) {
 		storage.addUser(user);
 		log.trace("New user:\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
 	}
