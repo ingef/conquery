@@ -63,6 +63,7 @@ const UploadQueryResultsModal: FC<PropsT> = ({
     <Modal
       onClose={onClose}
       closeIcon
+      scrollable
       headline={
         <>
           {t("uploadQueryResultsModal.headline")}

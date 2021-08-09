@@ -23,7 +23,7 @@ const Root = styled("div")`
   cursor: pointer;
 `;
 
-const Content = styled("div")`
+const Content = styled("div")<{ scrollable?: boolean }>`
   text-align: left;
   cursor: initial;
   background-color: white;
@@ -33,7 +33,7 @@ const Content = styled("div")`
   margin: 0 20px;
   position: relative;
   max-height: 95%;
-  overflow-y: auto;
+  overflow-y: ${({ scrollable }) => (scrollable ? "auto" : "visible")};
 `;
 
 const TopRow = styled("div")`
@@ -48,21 +48,30 @@ const Headline = styled("h3")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-const ModalContent: FC<{ onClose: () => void }> = ({ children, onClose }) => {
+const ModalContent: FC<{ onClose: () => void; scrollable?: boolean }> = ({
+  children,
+  scrollable,
+  onClose,
+}) => {
   const ref = useRef(null);
 
   useClickOutside(ref, onClose);
 
-  return <Content ref={ref}>{children}</Content>;
+  return (
+    <Content scrollable={scrollable} ref={ref}>
+      {children}
+    </Content>
+  );
 };
 
-type PropsT = {
+interface PropsT {
   className?: string;
   headline?: ReactNode;
   doneButton?: boolean;
   closeIcon?: boolean;
+  scrollable?: boolean;
   onClose: () => void;
-};
+}
 
 // A modal with three ways to close it
 // - a button
@@ -74,6 +83,7 @@ const Modal: FC<PropsT> = ({
   headline,
   doneButton,
   closeIcon,
+  scrollable,
   onClose,
 }) => {
   const { t } = useTranslation();
@@ -81,7 +91,7 @@ const Modal: FC<PropsT> = ({
   return (
     <Root className={className}>
       <Hotkeys keyName="escape" onKeyDown={onClose} />
-      <ModalContent onClose={onClose}>
+      <ModalContent onClose={onClose} scrollable={scrollable}>
         <TopRow>
           <Headline>{headline}</Headline>
           {closeIcon && (
