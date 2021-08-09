@@ -4,7 +4,6 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -14,11 +13,7 @@ import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
-import groovy.lang.GroovyShell;
 import io.dropwizard.auth.Auth;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -59,7 +54,7 @@ public class AdminResource {
     @POST
     @Path("/script")
     public String executeScript(@Auth User user, String script) {
-        return Objects.toString(executeScript(script));
+        return Objects.toString(processor.executeScript(script));
     }
 
     /**
@@ -71,24 +66,7 @@ public class AdminResource {
     @POST
     @Path("/script")
     public String executeScriptJson(@Auth User user, String script) throws JsonProcessingException {
-        return Jackson.MAPPER.writeValueAsString(executeScript(script));
-    }
-
-    private Object executeScript(String script) {
-        CompilerConfiguration config = new CompilerConfiguration();
-        config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
-        GroovyShell groovy = new GroovyShell(config);
-        groovy.setProperty("datasetRegistry", processor.getDatasetRegistry());
-        groovy.setProperty("jobManager", processor.getJobManager());
-        groovy.setProperty("config", processor.getConfig());
-        groovy.setProperty("storage", processor.getStorage());
-
-        try {
-            return groovy.evaluate(script);
-        }
-        catch(Exception e) {
-            return ExceptionUtils.getStackTrace(e);
-        }
+        return Jackson.MAPPER.writeValueAsString(processor.executeScript(script));
     }
 
 

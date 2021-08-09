@@ -17,9 +17,13 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvWriter;
+import groovy.lang.GroovyShell;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import javax.validation.Validator;
 import java.io.StringWriter;
@@ -268,4 +272,20 @@ public class AdminProcessor {
 				.build();
 	}
 
+	Object executeScript(String script) {
+		CompilerConfiguration config = new CompilerConfiguration();
+		config.addCompilationCustomizers(new ImportCustomizer().addImports(AdminResource.AUTO_IMPORTS));
+		GroovyShell groovy = new GroovyShell(config);
+		groovy.setProperty("datasetRegistry", getDatasetRegistry());
+		groovy.setProperty("jobManager", getJobManager());
+		groovy.setProperty("config", getConfig());
+		groovy.setProperty("storage", getStorage());
+
+		try {
+			return groovy.evaluate(script);
+		}
+		catch(Exception e) {
+			return ExceptionUtils.getStackTrace(e);
+		}
+	}
 }
