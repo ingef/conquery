@@ -87,7 +87,7 @@ public class UIProcessor {
 				// is left empty for now.
 				permissionTemplateMap.put(instance.getDomain(), Pair.of(instance.getAllowedAbilities(), List.of()));
 			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-				log.error("Could not access allowed abilities for permission type: {}\n\tCause: {}", permissionType, e);
+				log.error("Could not access allowed abilities for permission type: {}", permissionType, e);
 			}
 
 		}
