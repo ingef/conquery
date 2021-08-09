@@ -33,6 +33,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            executable/target/conquery*.jar
+            executable/target/executable*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
