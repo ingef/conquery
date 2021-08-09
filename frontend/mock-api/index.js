@@ -75,6 +75,7 @@ module.exports = function (app, port) {
         res.send(
           JSON.stringify({
             id: 234,
+            resolved: Math.floor(Math.random() * 2),
             unresolvedId,
             unreadableDate: [
               ["xyz", "yes", "hello"],
