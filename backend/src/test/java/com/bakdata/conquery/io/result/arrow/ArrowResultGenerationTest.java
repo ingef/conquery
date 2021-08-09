@@ -98,7 +98,8 @@ public class ArrowResultGenerationTest {
                                 List.of(
                                         new Field("min", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
                                         new Field("max", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null)
-                                ))))
+                                )))),
+                        new Field("LIST[STRING]", FieldType.nullable(ArrowType.List.INSTANCE), List.of(new Field("LIST[STRING]", FieldType.nullable(new ArrowType.Utf8()), null)))
                 )
         );
 
