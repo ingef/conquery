@@ -1,5 +1,20 @@
 [
   {
+    "method": "GET",
+    "path": "/datasets/{dataset}/concepts/{concept}",
+    "clazz": "ConceptsResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}",
+    "clazz": "DatasetsResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/mapping",
+    "clazz": "DatasetsResource"
+  },
+  {
     "method": "DELETE",
     "path": "/datasets/{dataset}/tables/{table}",
     "clazz": "AdminTablesResource"
@@ -13,6 +28,11 @@
     "method": "DELETE",
     "path": "/datasets/{dataset}/tables/{table}/imports/{importId}",
     "clazz": "AdminTablesResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/update-matching-stats",
+    "clazz": "AdminDatasetResource"
   },
   {
     "method": "GET",
@@ -205,11 +225,6 @@
     "clazz": "AdminResource"
   },
   {
-    "method": "POST",
-    "path": "/datasets/{dataset}/update-matching-stats",
-    "clazz": "AdminDatasetResource"
-  },
-  {
     "method": "GET",
     "path": "/jobs/",
     "clazz": "AdminResource"
@@ -228,21 +243,6 @@
     "method": "POST",
     "path": "/jobs",
     "clazz": "AdminResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/concepts/{concept}",
-    "clazz": "ConceptsResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}",
-    "clazz": "DatasetsResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/mapping",
-    "clazz": "DatasetsResource"
   },
   {
     "method": "GET",
