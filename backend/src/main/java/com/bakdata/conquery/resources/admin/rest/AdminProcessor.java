@@ -274,7 +274,6 @@ public class AdminProcessor {
 
 	Object executeScript(String script) {
 		CompilerConfiguration config = new CompilerConfiguration();
-		config.addCompilationCustomizers(new ImportCustomizer().addImports(AdminResource.AUTO_IMPORTS));
 		GroovyShell groovy = new GroovyShell(config);
 		groovy.setProperty("datasetRegistry", getDatasetRegistry());
 		groovy.setProperty("jobManager", getJobManager());

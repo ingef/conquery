@@ -93,7 +93,7 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 			}
 			else if (loginRedirects.size() == 1) {
 				// There is only one login schema, redirect the user there
-				throw new WebApplicationException(Response.seeOther(loginRedirects.get(0)).build());
+				throw new RedirectionException(Response.seeOther(loginRedirects.get(0)).build());
 			}
 			// There are multiple login schemas, give the user a choice to choose between them
 			throw new WebApplicationException(Response.ok(new UIView<>("logins.html.ftl", null, loginRedirects)).build());

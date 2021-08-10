@@ -74,7 +74,7 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Consumes(MediaType.WILDCARD)
 	@Path("mapping")
-	public void setIdMapping(@FormDataParam("data_csv") InputStream data) {
+	public void setIdMapping(InputStream data) {
 		processor.setIdMapping(data, namespace);
 	}
 
@@ -190,7 +190,7 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("/update-matching-stats")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Consumes(MediaType.WILDCARD)
 	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)Dataset dataset) {
 		processor.updateMatchingStats(dataset);
 	}

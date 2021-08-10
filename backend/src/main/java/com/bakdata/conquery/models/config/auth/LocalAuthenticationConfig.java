@@ -97,8 +97,7 @@ public class LocalAuthenticationConfig implements AuthenticationConfig {
 
 	private Function<ContainerRequestContext,URI> loginProvider(DropwizardResourceConfig unprotectedAuthAdmin) {
 		return (ContainerRequestContext request) -> {
-			URI uri = UriBuilder.fromPath("")
-					.path(unprotectedAuthAdmin.getUrlPattern())
+			URI uri = UriBuilder.fromPath(unprotectedAuthAdmin.getUrlPattern())
 					.path(LoginResource.class)
 					.queryParam(REDIRECT_URI, request.getUriInfo().getRequestUriBuilder().replaceQuery("").build())
 					.build();

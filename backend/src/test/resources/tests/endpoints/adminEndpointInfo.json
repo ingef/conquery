@@ -236,11 +236,6 @@
   },
   {
     "method": "POST",
-    "path": "/jobs",
-    "clazz": "AdminResource"
-  },
-  {
-    "method": "POST",
     "path": "/jobs/{jobId}/cancel",
     "clazz": "AdminResource"
   },

@@ -38,14 +38,8 @@ public class AdminDatasetsResource extends HAdmin {
 
 	@POST
 	@Consumes(ExtraMimeTypes.JSON_STRING)
-	public Response addDataset(@Valid @NotNull Dataset dataset) {
+	public void addDataset(@Valid @NotNull Dataset dataset) {
 		processor.addDataset(dataset);
-
-		return Response.seeOther(UriBuilder.fromPath("/admin/")
-										   .path(DatasetsUIResource.class)
-										   .resolveTemplate(ResourceConstants.DATASET, dataset.getName())
-										   .build())
-					   .build();
 	}
 
 	@GET

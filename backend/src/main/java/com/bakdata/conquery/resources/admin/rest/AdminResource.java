@@ -33,15 +33,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 @Path("/")
 public class AdminResource {
 
-    public static final String[] AUTO_IMPORTS = Stream
-            .of(
-                    LocalDate.class,
-                    Range.class,
-                    DatasetId.class
-            )
-            .map(Class::getName)
-            .toArray(String[]::new);
-
     @Inject
     private AdminProcessor processor;
 
@@ -65,8 +56,8 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public String executeScriptJson(@Auth User user, String script) throws JsonProcessingException {
-        return Jackson.MAPPER.writeValueAsString(processor.executeScript(script));
+    public Object executeScriptJson(@Auth User user, String script) {
+        return processor.executeScript(script);
     }
 
 
@@ -89,36 +80,5 @@ public class AdminResource {
     @Path("/jobs/")
     public ImmutableMap<String, JobManagerStatus> getJobs() {
         return  processor.getJobs();
-    }
-
-    @POST
-    @Path("/jobs")
-    public UUID addDemoJob() {
-        final Job job = new Job() {
-            private final UUID id = UUID.randomUUID();
-
-            @Override
-            public void execute() {
-                getProgressReporter().setMax(100);
-
-                while (!getProgressReporter().isDone() && !isCancelled()) {
-                    getProgressReporter().report(1);
-
-                    if (getProgressReporter().getProgress() >= 100) {
-                        getProgressReporter().done();
-                    }
-
-                    Uninterruptibles.sleepUninterruptibly((int) (Math.random() * 200), TimeUnit.MILLISECONDS);
-                }
-            }
-
-            @Override
-            public String getLabel() {
-                return "Demo " + id;
-            }
-        };
-        processor.getJobManager().addSlowJob(job);
-
-        return job.getJobId();
     }
 }

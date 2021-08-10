@@ -160,7 +160,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
                     .get(JsonNode.class);
         }
         catch (Exception e) {
-            log.error("Unable to retrieve configuration from {}", wellKnownEndpoint, e);
+            log.warn("Unable to retrieve configuration from {}", wellKnownEndpoint, e);
             return null;
         }
 
@@ -181,7 +181,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
                     .get(JWKs.class);
 
         } catch (Exception e) {
-            log.error("Unable to retrieve jwks from {}", wellKnownEndpoint, e);
+            log.warn("Unable to retrieve jwks from {}", wellKnownEndpoint, e);
             return null;
         }
 
@@ -246,7 +246,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
     private URI initiateLogin(ContainerRequestContext request) {
         final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
         if (idpConfigurationOpt.isEmpty()) {
-            log.error("Unable to initiate authentication, because idp configuration is not available.");
+            log.warn("Unable to initiate authentication, because idp configuration is not available.");
             return null;
         }
         JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
@@ -267,7 +267,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
     private Response checkForAuthCallback(ContainerRequestContext request) {
         final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
         if (idpConfigurationOpt.isEmpty()) {
-            log.error("Unable to start authentication, because idp configuration is not available.");
+            log.warn("Unable to start authentication, because idp configuration is not available.");
             return null;
         }
         JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
@@ -293,7 +293,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
             return null;
         }
         else if (!(response instanceof AccessTokenResponse)) {
-            log.error("Unknown token response {}.", response.getClass().getName());
+            log.warn("Unknown token response {}.", response.getClass().getName());
             return null;
         }
 
@@ -302,10 +302,10 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
         // Get the access token, the server may also return a refresh token
         com.nimbusds.oauth2.sdk.token.AccessToken accessToken = successResponse.getTokens().getAccessToken();
 
-        UriBuilder uriBuilder = request.getUriInfo().getRequestUriBuilder().replaceQuery("");
+        URI uri = request.getUriInfo().getRequestUriBuilder().replaceQuery("").build();
 
         return Response
-                .seeOther(uriBuilder.build())
+                .seeOther(uri)
                 .header(HttpHeaders.SET_COOKIE, AuthCookieFilter.createAuthCookie(request,accessToken.getValue()))
                 .build();
     }
