@@ -1,8 +1,12 @@
 package com.bakdata.conquery.models.query;
 
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Currency;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.function.Function;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -12,6 +16,8 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.Getter;
 import lombok.ToString;
+
+import javax.validation.constraints.NotNull;
 
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
@@ -28,6 +34,7 @@ public class PrintSettings {
 	private final boolean prettyPrint;
 	@ToString.Include
 	private final Locale locale;
+	private DateTimeFormatter dateFormat;
 	private final NumberFormat decimalFormat;
 	private final NumberFormat integerFormat;
 	private final Currency currency;
@@ -56,6 +63,11 @@ public class PrintSettings {
 
 		this.integerFormat = NUMBER_FORMAT.apply(locale);
 		this.decimalFormat = DECIMAL_FORMAT.apply(locale);
+
+		@NotNull Map<Locale, DateTimeFormatter> dfMapping = config.getLocale().getDateFormatMapping();
+		Locale closestLocale = Locale.lookup(Locale.LanguageRange.parse(locale.toString()), dfMapping.keySet());
+		// fallback to iso date if no specific formater is available
+		this.dateFormat = closestLocale != null ? dfMapping.get(closestLocale) : DateTimeFormatter.ISO_DATE;
 	}
 
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper) {

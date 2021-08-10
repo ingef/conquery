@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.externalservice;
 
 import c10n.C10N;
+import c10n.share.LocaleMapping;
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -23,6 +24,8 @@ import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.StringJoiner;
@@ -198,9 +201,12 @@ public abstract class ResultType {
         @Override
         public String print(PrintSettings cfg, @NonNull Object f) {
             if(!(f instanceof Number)) {
-                throw new IllegalStateException("Expected an Number but got an '" + (f != null ? f.getClass().getName() : "no type") + "' with the value: " + f );
+                throw new IllegalStateException("Expected an Number but got an '" + f.getClass().getName() + "' with the value: " + f);
             }
-            return CDate.toLocalDate(((Number)f).intValue()).toString();
+            if (cfg.isPrettyPrint()) {
+                return cfg.getDateFormat().format(CDate.toLocalDate(((Number) f).intValue()));
+            }
+            return CDate.toLocalDate(((Number) f).intValue()).toString();
         }
 
         @Override
@@ -224,9 +230,9 @@ public abstract class ResultType {
         @Override
         public String print(PrintSettings cfg, @NonNull Object f) {
             if(!(f instanceof List)) {
-                throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f != null ? f.getClass().getName() : "no type", f));
+                throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
             }
-            List list = (List) f;
+            List<?> list = (List<?>) f;
             if(list.size() != 2) {
                 throw new IllegalStateException("Expected a list with 2 elements, one min, one max. The list was: " + list);
             }
