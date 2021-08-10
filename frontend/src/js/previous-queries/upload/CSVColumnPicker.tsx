@@ -153,6 +153,7 @@ const CSVColumnPicker: FC<PropsT> = ({
   const [csvLoading, setCSVLoading] = useState(false);
 
   const SELECT_OPTIONS: { label: string; value: string }[] = [
+    { label: t("csvColumnPicker.ignore"), value: "IGNORE" },
     ...config.ids.map(({ name, label }) => {
       const labelWithFallback: string =
         label[locale] || t("common.missingLabel");
@@ -167,7 +168,6 @@ const CSVColumnPicker: FC<PropsT> = ({
     { label: t("csvColumnPicker.startDate"), value: "START_DATE" },
     { label: t("csvColumnPicker.endDate"), value: "END_DATE" },
     { label: t("csvColumnPicker.eventDate"), value: "EVENT_DATE" },
-    { label: t("csvColumnPicker.ignore"), value: "IGNORE" },
   ];
 
   const DELIMITER_OPTIONS = [
@@ -250,6 +250,12 @@ const CSVColumnPicker: FC<PropsT> = ({
   }
 
   const ignoringAllColumns = csvHeader.every((h) => h === "IGNORE");
+  const hasAtLeastOneIdColumn = config.ids
+    .map(({ name }) => name)
+    .some((id) => csvHeader.includes(id));
+
+  const uploadDisabled =
+    !hasAtLeastOneIdColumn || ignoringAllColumns || loading || csv.length === 0;
 
   return (
     <div>
@@ -382,10 +388,7 @@ const CSVColumnPicker: FC<PropsT> = ({
             </DownloadUnresolvedButton>
           )}
         {uploadResult && (
-          <SxPrimaryButton
-            disabled={ignoringAllColumns || loading || csv.length === 0}
-            onClick={uploadQuery}
-          >
+          <SxPrimaryButton disabled={uploadDisabled} onClick={uploadQuery}>
             {loading ? (
               <FaIcon white icon="spinner" />
             ) : (
@@ -399,10 +402,7 @@ const CSVColumnPicker: FC<PropsT> = ({
             {t("common.done")}
           </SxTransparentButton>
         ) : (
-          <SxPrimaryButton
-            disabled={ignoringAllColumns || loading || csv.length === 0}
-            onClick={uploadQuery}
-          >
+          <SxPrimaryButton disabled={uploadDisabled} onClick={uploadQuery}>
             {loading ? (
               <FaIcon white icon="spinner" />
             ) : (
