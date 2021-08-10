@@ -35,7 +35,7 @@ public class ResultTypeTest {
 	}
 
 	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH, null, CONFIG, null);
-	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMAN, null, CONFIG, null);
+	private static final PrintSettings PRETTY_DE = new PrintSettings(true, Locale.GERMANY, null, CONFIG, null);
 	private static final PrintSettings PLAIN = new PrintSettings(false, Locale.ENGLISH, null, CONFIG, null);
 
 	@SuppressWarnings("unused")

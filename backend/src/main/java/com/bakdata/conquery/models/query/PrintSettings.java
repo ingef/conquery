@@ -64,10 +64,7 @@ public class PrintSettings {
 		this.integerFormat = NUMBER_FORMAT.apply(locale);
 		this.decimalFormat = DECIMAL_FORMAT.apply(locale);
 
-		@NotNull Map<Locale, DateTimeFormatter> dfMapping = config.getLocale().getDateFormatMapping();
-		Locale closestLocale = Locale.lookup(Locale.LanguageRange.parse(locale.toString()), dfMapping.keySet());
-		// fallback to iso date if no specific formater is available
-		this.dateFormat = closestLocale != null ? dfMapping.get(closestLocale) : DateTimeFormatter.ISO_DATE;
+		this.dateFormat = config.getLocale().findDateTimeFormater(locale);
 	}
 
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper) {

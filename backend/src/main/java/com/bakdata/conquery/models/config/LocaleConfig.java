@@ -33,4 +33,42 @@ public class LocaleConfig {
 			return DateTimeFormatter.ofPattern(p.getText());
 		}
 	}
+
+	/**
+	 * Finds the best formatter according to the locale and mapped date formatters.
+	 * If there is no perfect match, the locale is abstracted, see findClosestMatch.
+	 * @param locale
+	 * @return
+	 */
+	public DateTimeFormatter findDateTimeFormater(Locale locale) {
+		final Locale closestMatch = findClosestMatch(locale);
+		return closestMatch != null ? dateFormatMapping.get(closestMatch) : DateTimeFormatter.ISO_DATE;
+	}
+
+	/**
+	 * Adapted from {@link c10n.share.DefaultLocaleMapping}
+	 */
+	public Locale findClosestMatch(Locale forLocale) {
+		Set<Locale> fromSet = dateFormatMapping.keySet();
+		String variant = forLocale.getDisplayVariant();
+		String country = forLocale.getCountry();
+		String language = forLocale.getLanguage();
+		List<Locale> c = new ArrayList<>(4);
+		if (null != variant && !variant.isEmpty()) {
+			c.add(forLocale);
+		}
+		if (null != country && !country.isEmpty()) {
+			c.add(new Locale(language, country));
+		}
+		if (null != language && !language.isEmpty()) {
+			c.add(new Locale(language));
+		}
+		c.add(Locale.ROOT);
+		for (Locale candidateLocale : c) {
+			if (fromSet.contains(candidateLocale)) {
+				return candidateLocale;
+			}
+		}
+		return null;
+	}
 }
