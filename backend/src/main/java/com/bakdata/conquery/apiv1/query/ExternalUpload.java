@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class ExternalUpload {
 
+	private final String label;
 	private final List<String> format;
 	private final String[][] values;
 

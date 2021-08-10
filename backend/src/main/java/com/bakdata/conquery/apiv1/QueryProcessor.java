@@ -20,10 +20,10 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
+import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
-import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -378,22 +378,30 @@ public class QueryProcessor {
 		// Resolving nothing is a problem thus we fail.
 		if (statistic.getResolved().isEmpty()) {
 			throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
-						   .entity(new ExternalUploadResult(null, 0, statistic.getUnresolvedId(), statistic.getUnreadableDate()))
-						   .build());
+												  .entity(new ExternalUploadResult(null, 0, statistic.getUnresolvedId(), statistic.getUnreadableDate()))
+												  .build());
 		}
 
 		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues()));
 
 		// We only create the Query, really no need to execute it as it's only useful for composition.
-		final ManagedExecution<?> execution =
-				datasetRegistry.get(dataset.getId()).getExecutionManager()
-							   .createExecution(datasetRegistry, query, user, dataset);
+		final ManagedQuery execution =
+				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
+											   .createExecution(datasetRegistry, query, user, dataset));
+
+		execution.setLastResultCount((long) statistic.getResolved().size());
+
+		if (upload.getLabel() != null) {
+			execution.setLabel(upload.getLabel());
+		}
+
+		execution.initExecutable(datasetRegistry, config);
 
 		return new ExternalUploadResult(
-							   execution.getId(),
-							   statistic.getResolved().size(),
-							   statistic.getUnresolvedId(),
-							   statistic.getUnreadableDate()
-					   );
+				execution.getId(),
+				statistic.getResolved().size(),
+				statistic.getUnresolvedId(),
+				statistic.getUnreadableDate()
+		);
 	}
 }
