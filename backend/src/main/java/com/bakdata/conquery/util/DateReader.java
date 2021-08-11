@@ -10,20 +10,16 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotEmpty;
-
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +40,7 @@ public class DateReader {
 	private List<String> rangeStartEndSeperators;
 
 	@JsonIgnore
-	private List<LocaleConfig.DateSetLayout> dateSetLayouts;
+	private List<LocaleConfig.ListFormat> dateSetLayouts;
 
 	/**
 	 * Last successfully parsed date format.
@@ -76,7 +72,7 @@ public class DateReader {
 																		   .build(CacheLoader.from(this::tryParse));
 
 	@JsonCreator
-	public DateReader(Set<String> dateParsingFormats, List<String> rangeStartEndSeperators, List<LocaleConfig.DateSetLayout> dateSetLayouts) {
+	public DateReader(Set<String> dateParsingFormats, List<String> rangeStartEndSeperators, List<LocaleConfig.ListFormat> dateSetLayouts) {
 		this.dateFormats = dateParsingFormats.stream().map(DateTimeFormatter::ofPattern).collect(Collectors.toSet());
 		this.rangeStartEndSeperators = rangeStartEndSeperators;
 		this.dateSetLayouts = dateSetLayouts;
@@ -159,8 +155,8 @@ public class DateReader {
 			}
 		}
 
-		for(LocaleConfig.DateSetLayout sep : dateSetLayouts) {
-			Pattern regexPattern = generateDateSetPattern(sep.getSetBegin(), sep.getRangeSep(), sep.getSetEnd());
+		for(LocaleConfig.ListFormat sep : dateSetLayouts) {
+			Pattern regexPattern = generateDateSetPattern(sep.getStart(), sep.getSeparator(), sep.getEnd());
 			try {
 				result = parseToCDateSet(value,regexPattern);
 			} catch (ParsingException e) {
@@ -188,7 +184,7 @@ public class DateReader {
 
 	private static Pattern generateDateSetPattern(@NonNull String setBegin, @NonNull String rangeSep, @NonNull String setEnd) {
 		assert(setBegin.length() < 2);
-		assert(rangeSep.length() == 1);
+		assert(rangeSep.length() >= 1);
 		assert(setEnd.length() < 2);
 
 		return Pattern.compile(String.format("(?:(?:%1$s)|(?:%2$s\\s*))([^%1$s%2$s%3$s]+)(?:%3$s)?",

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.config;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -12,12 +10,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import lombok.*;
 
@@ -38,23 +30,23 @@ public class LocaleConfig {
 	);
 
 	@NotEmpty
-	private List<String> rangeStartEndSeperators = List.of("-","/");
+	private Map<Locale, String> rangeStartEndSeperators = Map.of(Locale.GERMAN, "-");
 
 	@NotNull
 	@NotEmpty
-	private List<DateSetLayout> dateSetLayouts = List.of(
-			new DateSetLayout("", ",", ""),
-			new DateSetLayout("{", ",", "}"));
+	private List<ListFormat> listFormats = List.of(
+			new ListFormat("", ", ", ""),
+			new ListFormat("{", ", ", "}"));
 
 	@Data
 	@AllArgsConstructor
-	public static class DateSetLayout {
+	public static class ListFormat {
 		@NonNull @Max(1)
-		String setBegin;
-		@NonNull @Min(1) @Max(1)
-		String rangeSep;
+		String start;
+		@NonNull @Min(1)
+		String separator;
 		@NonNull @Max(1)
-		String setEnd;
+		String end;
 	}
 
 
@@ -65,27 +57,34 @@ public class LocaleConfig {
 	public DateReader getDateReader() {
 		return new DateReader(
 				Sets.union(dateParsingFormats, Set.copyOf(dateFormatMapping.values())),
-				rangeStartEndSeperators,
-				dateSetLayouts
+				new ArrayList<>(rangeStartEndSeperators.values()),
+				listFormats
 		);
 	}
 
 	/**
 	 * Finds the best formatter according to the locale and mapped date formatters.
 	 * If there is no perfect match, the locale is abstracted, see findClosestMatch.
-	 * @param locale
-	 * @return
+	 */
+	public String findDateRangeSeparator(Locale locale) {
+		final String closestMatch = findClosestMatch(locale, rangeStartEndSeperators);
+		return closestMatch != null ? closestMatch : "/";
+	}
+
+	/**
+	 * Finds the best formatter according to the locale and mapped date formatters.
+	 * If there is no perfect match, the locale is abstracted, see findClosestMatch.
 	 */
 	public DateTimeFormatter findDateTimeFormater(Locale locale) {
-		final Locale closestMatch = findClosestMatch(locale);
-		return closestMatch != null ? DateTimeFormatter.ofPattern(dateFormatMapping.get(closestMatch)) : DateTimeFormatter.ISO_DATE;
+		final String closestMatch = findClosestMatch(locale, dateFormatMapping);
+		return closestMatch != null ? DateTimeFormatter.ofPattern(closestMatch) : DateTimeFormatter.ISO_DATE;
 	}
 
 	/**
 	 * Adapted from {@link c10n.share.DefaultLocaleMapping}
 	 */
-	public Locale findClosestMatch(Locale forLocale) {
-		Set<Locale> fromSet = dateFormatMapping.keySet();
+	private static <T> T findClosestMatch(Locale forLocale, Map<Locale,T> options) {
+		Set<Locale> fromSet = options.keySet();
 		String variant = forLocale.getDisplayVariant();
 		String country = forLocale.getCountry();
 		String language = forLocale.getLanguage();
@@ -99,10 +98,9 @@ public class LocaleConfig {
 		if (null != language && !language.isEmpty()) {
 			c.add(new Locale(language));
 		}
-		c.add(Locale.ROOT);
 		for (Locale candidateLocale : c) {
 			if (fromSet.contains(candidateLocale)) {
-				return candidateLocale;
+				return options.get(candidateLocale);
 			}
 		}
 		return null;

@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -206,12 +207,16 @@ public abstract class ResultType {
             if (cfg.isPrettyPrint()) {
                 return cfg.getDateFormat().format(CDate.toLocalDate(((Number) f).intValue()));
             }
-            return CDate.toLocalDate(((Number) f).intValue()).toString();
+            return print((Number) f, cfg.getDateFormat());
         }
 
         @Override
         public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
             return NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings));
+        }
+
+        public static String print(Number num, DateTimeFormatter formatter) {
+            return formatter.format(LocalDate.ofEpochDay(num.intValue()));
         }
 
 
@@ -236,7 +241,12 @@ public abstract class ResultType {
             if(list.size() != 2) {
                 throw new IllegalStateException("Expected a list with 2 elements, one min, one max. The list was: " + list);
             }
-            return CDateRange.of((Integer) list.get(0), (Integer) list.get(1)).toString();
+            final DateTimeFormatter dateFormat = cfg.getDateFormat();
+            final Integer min = (Integer) list.get(0);
+            final Integer max = (Integer) list.get(1);
+            String minString = min == Integer.MIN_VALUE ? "-∞" : ResultType.DateT.print(min, dateFormat);
+            String maxString = max == Integer.MAX_VALUE ? "+∞" : ResultType.DateT.print(max, dateFormat);
+            return minString + cfg.getDateRangeSeparator() + maxString;
         }
 
         @Override
@@ -316,10 +326,10 @@ public abstract class ResultType {
                 throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
             }
             // Not sure if this escaping is enough
-            String listDelimEscape = cfg.getListElementEscaper() + cfg.getListElementDelimiter();
-            StringJoiner joiner = new StringJoiner(cfg.getListElementDelimiter(), cfg.getListPrefix(), cfg.getListPostfix());
+            String listDelimEscape = cfg.getListElementEscaper() + cfg.getListFormat().getSeparator();
+            StringJoiner joiner = new StringJoiner(cfg.getListFormat().getSeparator(), cfg.getListFormat().getStart(),cfg.getListFormat().getEnd());
             for(Object obj : (List<?>) f) {
-                joiner.add(elementType.print(cfg,obj).replace(cfg.getListElementDelimiter(), listDelimEscape));
+                joiner.add(elementType.print(cfg,obj).replace(cfg.getListFormat().getSeparator(), listDelimEscape));
             }
             return joiner.toString();
         }
