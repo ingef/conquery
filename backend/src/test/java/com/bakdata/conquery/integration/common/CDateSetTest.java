@@ -3,11 +3,13 @@ package com.bakdata.conquery.integration.common;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -193,6 +195,14 @@ public class CDateSetTest {
 		set.maskedAdd(CDateRange.atLeast(5), mask);
 
 		assertThat(set.asRanges()).containsExactly(CDateRange.of(5, 10), CDateRange.atLeast(30));
+	}
+
+	@ParameterizedTest(name="{0}")
+	@MethodSource("arguments")
+	public void parse(String input, CDateRange[] expected) {
+		ConqueryConfig config = new ConqueryConfig();
+		CDateSet set = config.getLocale().getDateReader().parseToCDateSet(input);
+		assertThat(set).isEqualTo(CDateSet.create(Arrays.asList(expected)));
 	}
 
 }

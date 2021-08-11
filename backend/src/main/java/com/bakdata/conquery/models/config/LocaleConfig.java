@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -17,8 +19,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter @Setter
 public class LocaleConfig {
@@ -36,13 +37,37 @@ public class LocaleConfig {
 			"dd.MM.yyyy"
 	);
 
+	@NotEmpty
+	private List<String> rangeStartEndSeperators = List.of("-","/");
+
+	@NotNull
+	@NotEmpty
+	private List<DateSetLayout> dateSetLayouts = List.of(
+			new DateSetLayout("", ",", ""),
+			new DateSetLayout("{", ",", "}"));
+
+	@Data
+	@AllArgsConstructor
+	public static class DateSetLayout {
+		@NonNull @Max(1)
+		String setBegin;
+		@NonNull @Min(1) @Max(1)
+		String rangeSep;
+		@NonNull @Max(1)
+		String setEnd;
+	}
+
 
 	/**
 	 * Date formats that are available for parsing.
 	 */
 	@JsonIgnore
 	public DateReader getDateReader() {
-		return new DateReader(Sets.union(dateParsingFormats, Set.copyOf(dateFormatMapping.values())));
+		return new DateReader(
+				Sets.union(dateParsingFormats, Set.copyOf(dateFormatMapping.values())),
+				rangeStartEndSeperators,
+				dateSetLayouts
+		);
 	}
 
 	/**
@@ -82,4 +107,6 @@ public class LocaleConfig {
 		}
 		return null;
 	}
+
+
 }
