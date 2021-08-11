@@ -31,7 +31,7 @@ public class ResultTypeTest {
 		I18n.init();
 		//init global default config
 		CONFIG.getPreprocessor().getParsers().setCurrency(Currency.getInstance("EUR"));
-		CONFIG.getLocale().setDateFormatMapping(Map.of(Locale.GERMAN, DateTimeFormatter.ofPattern("dd.MM.yyyy")));
+		CONFIG.getLocale().setDateFormatMapping(Map.of(Locale.GERMAN, "dd.MM.yyyy"));
 	}
 
 	private static final PrintSettings PRETTY = new PrintSettings(true, Locale.ENGLISH, null, CONFIG, null);

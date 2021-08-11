@@ -8,12 +8,15 @@ import java.util.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.util.DateReader;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,15 +26,23 @@ public class LocaleConfig {
 	private Locale frontend = Locale.ROOT;
 
 	@NotNull
-	@JsonDeserialize(contentUsing = DateTimeFormatterDeserializer.class)
-	private Map<Locale, DateTimeFormatter> dateFormatMapping = Collections.emptyMap();
+	private Map<Locale, String> dateFormatMapping = Map.of(Locale.GERMAN, "dd.MM.yyyy");
 
-	public static class DateTimeFormatterDeserializer extends JsonDeserializer<DateTimeFormatter> {
 
-		@Override
-		public DateTimeFormatter deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-			return DateTimeFormatter.ofPattern(p.getText());
-		}
+	@NotNull
+	private Set<String> dateParsingFormats = Set.of(
+			"yyyy-MM-dd",
+			"yyyyMMdd",
+			"dd.MM.yyyy"
+	);
+
+
+	/**
+	 * Date formats that are available for parsing.
+	 */
+	@JsonIgnore
+	public DateReader getDateReader() {
+		return new DateReader(Sets.union(dateParsingFormats, Set.copyOf(dateFormatMapping.values())));
 	}
 
 	/**
@@ -42,7 +53,7 @@ public class LocaleConfig {
 	 */
 	public DateTimeFormatter findDateTimeFormater(Locale locale) {
 		final Locale closestMatch = findClosestMatch(locale);
-		return closestMatch != null ? dateFormatMapping.get(closestMatch) : DateTimeFormatter.ISO_DATE;
+		return closestMatch != null ? DateTimeFormatter.ofPattern(dateFormatMapping.get(closestMatch)) : DateTimeFormatter.ISO_DATE;
 	}
 
 	/**

@@ -372,7 +372,7 @@ public class QueryProcessor {
 				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
 										   datasetRegistry.get(dataset.getId()).getStorage().getIdMapping(),
 										   config.getFrontend().getQueryUpload(),
-										   config.getPreprocessor().getParsers().getDateReader()
+										   config.getLocale().getDateReader()
 				);
 
 		// Resolving nothing is a problem thus we fail.

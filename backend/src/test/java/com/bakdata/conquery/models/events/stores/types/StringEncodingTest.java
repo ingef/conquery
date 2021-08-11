@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -37,7 +38,7 @@ public class StringEncodingTest {
 
 	@Test
 	public void testHexStreamStringType() {
-		StringParser parser = new StringParser(new ParserConfig());
+		StringParser parser = new StringParser(new ConqueryConfig());
 
 		Stream.generate(() -> UUID.randomUUID().toString().replace("-", ""))
 			  .map(String::toUpperCase)

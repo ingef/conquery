@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
@@ -20,10 +21,10 @@ public class DateParser extends Parser<Integer, DateStore> {
 	private IntegerParser subType;
 	private DateReader dateReader;
 
-	public DateParser(ParserConfig config) {
+	public DateParser(ConqueryConfig config) {
 		super(config);
 		subType = new IntegerParser(config);
-		dateReader = config.getDateReader();
+		dateReader = config.getLocale().getDateReader();
 
 	}
 

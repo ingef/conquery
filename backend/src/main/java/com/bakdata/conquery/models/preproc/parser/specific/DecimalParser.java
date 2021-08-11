@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
 import com.bakdata.conquery.models.events.stores.root.DecimalStore;
@@ -22,7 +23,7 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 	private transient int maxScale = Integer.MIN_VALUE;
 	private transient BigDecimal maxAbs;
 
-	public DecimalParser(ParserConfig config) {
+	public DecimalParser(ConqueryConfig config) {
 		super(config);
 	}
 

@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class NumberTypeGuesser extends StringTypeGuesser {
 
 	private final StringParser p;
-	private final ParserConfig config;
+	private final ConqueryConfig config;
 
 	@Override
 	public Guess createGuess() {

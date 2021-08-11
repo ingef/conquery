@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -64,7 +65,7 @@ public class Preprocessed {
 
 	private long rows = 0;
 
-	public Preprocessed(ParserConfig parserConfig, PreprocessingJob preprocessingJob) throws IOException {
+	public Preprocessed(ConqueryConfig config, PreprocessingJob preprocessingJob) throws IOException {
 		this.job = preprocessingJob;
 		this.descriptor = preprocessingJob.getDescriptor();
 		this.name = this.descriptor.getName();
@@ -72,14 +73,14 @@ public class Preprocessed {
 		TableInputDescriptor input = this.descriptor.getInputs()[0];
 		columns = new PPColumn[input.getWidth()];
 
-		primaryColumn = (StringParser) MajorTypeId.STRING.createParser(parserConfig);
+		primaryColumn = (StringParser) MajorTypeId.STRING.createParser(config);
 
 		values = new ColumnValues[columns.length];
 
 		for (int index = 0; index < input.getWidth(); index++) {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
 			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
-			columns[index].setParser(columnDescription.getType().createParser(parserConfig));
+			columns[index].setParser(columnDescription.getType().createParser(config));
 
 			final Parser parser = columns[index].getParser();
 			values[index] = parser.createColumnValues();

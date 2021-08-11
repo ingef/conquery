@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -31,14 +32,6 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 public class DateReader {
 
-	@NotNull
-	@NotEmpty
-	@Getter
-	private List<String> formats = List.of(
-			"yyyy-MM-dd", "yyyyMMdd", "dd.MM.yyyy"
-	);
-
-
 	/**
 	 * All available formats for parsing.
 	 */
@@ -49,7 +42,7 @@ public class DateReader {
 	 * Last successfully parsed dateformat.
 	 */
 	@JsonIgnore
-	private ThreadLocal<DateTimeFormatter> lastFormat = new ThreadLocal<>();
+	private final ThreadLocal<DateTimeFormatter> lastFormat = new ThreadLocal<>();
 
 	@JsonIgnore
 	private final LocalDate ERROR_DATE = LocalDate.MIN;
@@ -64,15 +57,8 @@ public class DateReader {
 																		   .build(CacheLoader.from(this::tryParse));
 
 	@JsonCreator
-	public DateReader(@NotEmpty List<String> formats) {
-		final Set<DateTimeFormatter> formatters = new HashSet<>();
-
-
-		for (String p : formats) {
-			formatters.add(createFormatter(p));
-		}
-
-		this.dateFormats = Collections.unmodifiableSet(formatters);
+	public DateReader(@NotEmpty Set<String> dateParsingFormats) {
+		this.dateFormats = dateParsingFormats.stream().map(DateTimeFormatter::ofPattern).collect(Collectors.toSet());
 	}
 
 	/**
