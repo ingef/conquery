@@ -123,6 +123,7 @@ public class DateReader {
 				continue;
 			}
 			lastRangeFormat.set(sep);
+			break;
 		}
 		if (result != null) {
 			return result;
@@ -167,6 +168,7 @@ public class DateReader {
 				continue;
 			}
 			lastDateSetLayout.set(regexPattern);
+			break;
 		}
 		if (result != null) {
 			return result;
