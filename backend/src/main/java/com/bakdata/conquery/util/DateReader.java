@@ -163,7 +163,7 @@ public class DateReader {
 			try {
 				result = parseToCDateSet(value,regexPattern);
 			} catch (ParsingException e) {
-				log.trace("Parsing failed for date set: " + value, e);
+				log.trace("Parsing failed for date set '" + value + "' with pattern '" + regexPattern + "'", e);
 				continue;
 			}
 			lastDateSetLayout.set(regexPattern);
@@ -178,7 +178,7 @@ public class DateReader {
 	public CDateSet parseToCDateSet(String value, Pattern pattern) {
 		List<CDateRange> ranges = pattern.matcher(value)
 				.results()
-				.map(mr -> parseToCDateRange(mr.group(2)))
+				.map(mr -> parseToCDateRange(mr.group(1)))
 				.collect(Collectors.toList());
 		return CDateSet.create(ranges);
 
@@ -189,7 +189,10 @@ public class DateReader {
 		assert(rangeSep.length() == 1);
 		assert(setEnd.length() < 2);
 
-		return Pattern.compile(String.format("(%1$s|%2$s\\s*)([^%1$s%2$s%3$s]*)", Pattern.quote(setBegin), Pattern.quote(rangeSep), Pattern.quote(setEnd)));
+		return Pattern.compile(String.format("(?:(?:%1$s)|(?:%2$s\\s*))([^%1$s%2$s%3$s]+)(?:%3$s)?",
+				setBegin.isEmpty() ? "" : Pattern.quote(setBegin),
+				Pattern.quote(rangeSep),
+				setEnd.isEmpty() ? "" : Pattern.quote(setEnd)));
 	}
 
 	/**

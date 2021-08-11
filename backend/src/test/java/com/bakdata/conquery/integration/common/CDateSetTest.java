@@ -10,12 +10,15 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import net.bytebuddy.asm.Advice;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class CDateSetTest {
+
+	private static ConqueryConfig config = new ConqueryConfig();
 
 	public static Stream<Arguments> arguments() {
 		return Stream
@@ -197,12 +200,25 @@ public class CDateSetTest {
 		assertThat(set.asRanges()).containsExactly(CDateRange.of(5, 10), CDateRange.atLeast(30));
 	}
 
+	public static Stream<Arguments> argumentsParsing() {
+		return Stream
+				.of(
+						Arguments.of(
+								"{2000-01-01/2000-01-01}",
+								CDateSet.create(CDateRange.of(LocalDate.of(2000,01,01), LocalDate.of(2000,01,01)))
+						),
+						Arguments.of(
+								"01.01.2000-01.01.2000",
+								CDateSet.create(CDateRange.of(LocalDate.of(2000,01,01), LocalDate.of(2000,01,01)))
+						)
+				);
+	}
+
 	@ParameterizedTest(name="{0}")
-	@MethodSource("arguments")
-	public void parse(String input, CDateRange[] expected) {
-		ConqueryConfig config = new ConqueryConfig();
+	@MethodSource("argumentsParsing")
+	public void parse(String input, CDateSet expected) {
 		CDateSet set = config.getLocale().getDateReader().parseToCDateSet(input);
-		assertThat(set).isEqualTo(CDateSet.create(Arrays.asList(expected)));
+		assertThat(set).isEqualTo(expected);
 	}
 
 }
