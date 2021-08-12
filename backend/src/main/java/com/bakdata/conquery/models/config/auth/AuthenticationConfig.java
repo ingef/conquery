@@ -3,18 +3,24 @@ package com.bakdata.conquery.models.config.auth;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.util.Duration;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 
+@NoArgsConstructor
+@Getter
 public class AuthenticationConfig {
 
 	// Define a maximum age since most browsers use session restoring making session cookies virtual permanent (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies)
+	@NotNull
 	private Duration adminEndCookieDuration = Duration.hours(1);
 
 	@JsonIgnore
-	private AuthCookieFilter authCookieFilterInstance = null;
+	private AuthCookieFilter authCookieFilter = null;
 
 
 
@@ -36,13 +42,13 @@ public class AuthenticationConfig {
 
 	@JsonIgnore
 	public AuthCookieFilter getAuthCookieFilter() {
-		if (authCookieFilterInstance == null) {
+		if (authCookieFilter == null) {
 			synchronized (this) {
-				if (authCookieFilterInstance == null) {
-					authCookieFilterInstance = new AuthCookieFilter(this::createAuthCookie);
+				if (authCookieFilter == null) {
+					authCookieFilter = new AuthCookieFilter(this::createAuthCookie);
 				}
 			}
 		}
-		return authCookieFilterInstance;
+		return authCookieFilter;
 	}
 }
