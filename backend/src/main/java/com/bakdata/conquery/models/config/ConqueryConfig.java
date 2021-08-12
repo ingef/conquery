@@ -15,6 +15,7 @@ import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
@@ -84,13 +85,18 @@ public class ConqueryConfig extends Configuration {
 	@NotNull
 	@Valid
 	private IdMappingConfig idMapping = new NoIdMapping();
-	@Valid
-	@NotNull
-	private List<AuthenticationConfig> authentication = List.of(new DevAuthConfig());
 
 	@Valid
 	@NotNull
-	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
+	private AuthenticationConfig authentication = new AuthenticationConfig();
+
+	@Valid
+	@NotNull
+	private List<AuthenticationRealmFactory> authenticationRealms = List.of(new DevAuthConfig());
+
+	@Valid
+	@NotNull
+	private AuthorizationConfig authorizationRealms = new DevelopmentAuthorizationConfig();
 	@Valid
 	@NotNull
 	private ExcelConfig excel = new ExcelConfig();

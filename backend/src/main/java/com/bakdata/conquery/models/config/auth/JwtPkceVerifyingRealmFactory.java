@@ -5,7 +5,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.oidc.JwtPkceVerifyingRealm;
-import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,16 +35,17 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.security.PublicKey;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
  * A realm that verifies oauth tokens using PKCE.
  */
-@CPSType(id = "JWT_PKCE_REALM", base = AuthenticationConfig.class)
+@CPSType(id = "JWT_PKCE_REALM", base = AuthenticationRealmFactory.class)
 @NoArgsConstructor
 @Data
 @Slf4j
-public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
+public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory {
 
     /**
      * The client id is also used as the expected audience in the validated token.
@@ -77,6 +77,14 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
 
     @JsonIgnore
     private Supplier<Optional<IdpConfiguration>> idpConfigurationSupplier;
+
+    /**
+     * Authentication cookie creator for using the Admin API
+     */
+    @JsonIgnore
+    public BiFunction<ContainerRequestContext, String, Cookie> authCookieCreator;
+
+
 
     @ValidationMethod(message = "Neither wellKnownEndpoint nor idpConfiguration was given")
     public boolean isConfigurationAvailable() {
@@ -112,6 +120,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
         }
 
         idpConfigurationSupplier = getIdpOptionsSupplier(manager.getClient());
+        authCookieCreator = manager.getConfig().getAuthentication()::createAuthCookie;
 
         // Add login schema for admin end
         final RedirectingAuthFilter redirectingAuthFilter = manager.getAuthController().getRedirectingAuthFilter();
@@ -306,7 +315,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationConfig {
 
         return Response
                 .seeOther(uri)
-                .header(HttpHeaders.SET_COOKIE, AuthCookieFilter.createAuthCookie(request,accessToken.getValue()))
+                .header(HttpHeaders.SET_COOKIE, authCookieCreator.apply(request,accessToken.getValue()))
                 .build();
     }
 }

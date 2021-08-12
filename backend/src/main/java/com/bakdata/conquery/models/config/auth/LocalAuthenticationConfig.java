@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.config.auth;
 
 import java.io.File;
 import java.net.URI;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -30,10 +29,10 @@ import lombok.Getter;
 import lombok.Setter;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
-@CPSType(base = AuthenticationConfig.class, id = "LOCAL_AUTHENTICATION")
+@CPSType(base = AuthenticationRealmFactory.class, id = "LOCAL_AUTHENTICATION")
 @Getter
 @Setter
-public class LocalAuthenticationConfig implements AuthenticationConfig {
+public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 
 	public static final String REDIRECT_URI = "redirect_uri";
 	/**

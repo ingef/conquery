@@ -123,15 +123,16 @@ public class AdminServlet {
                 .register(AuthOverviewUIResource.class);
 
         // register features
+        final AuthCookieFilter authCookieFilter = manager.getConfig().getAuthentication().getAuthCookieFilter();
         jerseyConfig
                 .register(new MultiPartFeature())
                 .register(IdParamConverter.Provider.INSTANCE)
-                .register(AuthCookieFilter.class)
+                .register(authCookieFilter)
                 .register(manager.getAuthController().getAuthenticationFilter());
 
 
         jerseyConfigUI
-                .register(AuthCookieFilter.class)
+                .register(authCookieFilter)
                 .register(manager.getAuthController().getRedirectingAuthFilter());
     }
 }

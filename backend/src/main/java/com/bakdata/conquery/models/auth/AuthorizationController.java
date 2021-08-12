@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import io.dropwizard.lifecycle.Managed;
@@ -90,13 +90,13 @@ public final class AuthorizationController implements Managed{
 		registerStaticSecurityManager();
 	}
 	
-	public void externalInit(ManagerNode manager, List<AuthenticationConfig> authenticationConfigs) {
+	public void externalInit(ManagerNode manager, List<AuthenticationRealmFactory> authenticationRealmFactories) {
 		manager.getAdmin().getJerseyConfig().register(authenticationFilter);
 		manager.getEnvironment().jersey().register(authenticationFilter);
 
 
 		// Init authentication realms provided by the config.
-		for (AuthenticationConfig authenticationConf : authenticationConfigs) {
+		for (AuthenticationRealmFactory authenticationConf : authenticationRealmFactories) {
 			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(manager);
 			authenticationRealms.add(realm);
 			realms.add(realm);

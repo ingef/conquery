@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth.web;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.UriBuilder;
 
 import io.dropwizard.util.Strings;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.util.StringUtil;
 import org.eclipse.jetty.http.HttpHeader;
@@ -32,12 +34,12 @@ import org.eclipse.jetty.http.HttpHeader;
 @PreMatching
 // Chain this filter before the Authentication filter
 @Priority(Priorities.AUTHENTICATION-100)
+@RequiredArgsConstructor
 public class AuthCookieFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
 	public static final String ACCESS_TOKEN = "access_token";
 	private static final String PREFIX = "bearer";
-	// Define a maximum age since most browsers use session restoring making session cookies virtual permanent (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies)
-	public static final int COOKIE_MAX_AGE_SECONDS = (int) TimeUnit.HOURS.toSeconds(12);
+	public final BiFunction<ContainerRequestContext, String, Cookie> cookieCreator;
 
 	/**
 	 * The filter tries to extract a token from a cookie and puts it into the
@@ -83,14 +85,10 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 			}
 			response.getHeaders().add(
 					HttpHeader.SET_COOKIE.toString(),
-					createAuthCookie(request,token)
+					cookieCreator.apply(request,token)
 			);
 
 		}
-	}
-
-	public static Cookie createAuthCookie(ContainerRequestContext request, String token) {
-		return new NewCookie(ACCESS_TOKEN, token, "/", null, 0, null, COOKIE_MAX_AGE_SECONDS, null, request.getSecurityContext().isSecure(), true);
 	}
 
 }

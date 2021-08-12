@@ -26,7 +26,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.Wait;
@@ -285,7 +284,7 @@ public class TestConquery {
 	}
 
 	public void beforeEach() {
-		testUser = standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser();
+		testUser = standaloneCommand.getManager().getConfig().getAuthorizationRealms().getInitialUsers().get(0).getUser();
 		standaloneCommand.getManager().getStorage().updateUser(testUser);
 	}
 }

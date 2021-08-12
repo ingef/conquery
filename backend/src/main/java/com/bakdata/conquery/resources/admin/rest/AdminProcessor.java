@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import javax.validation.Validator;
 import java.io.StringWriter;
@@ -211,7 +210,7 @@ public class AdminProcessor {
 		StringWriter sWriter = new StringWriter();
 		CsvWriter writer = config.getCsv().createWriter(sWriter);
 		List<String> scope = config
-									 .getAuthorization()
+									 .getAuthorizationRealms()
 									 .getOverviewScope();
 		// Header
 		writeAuthOverviewHeader(writer, scope);

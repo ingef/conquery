@@ -134,7 +134,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		loadMetaStorage();
 
-		authController = new AuthorizationController(storage, config.getAuthorization());
+		authController = new AuthorizationController(storage, config.getAuthorizationRealms());
 		environment.lifecycle().manage(authController);
 
 		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
@@ -143,7 +143,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
 
-		authController.externalInit(this, config.getAuthentication());
+		authController.externalInit(this, config.getAuthenticationRealms());
 
 
 		// Register default components for the admin interface
