@@ -18,6 +18,11 @@ public class LocaleConfig {
 	@NotNull
 	private Locale frontend = Locale.ROOT;
 
+	/**
+	 * Mappings from user provided locale to date format which is used in the generation of result tables.
+	 * The formats are also available for parsing dates using the {@link DateReader}. However, the locale is
+	 * neglected there and the formats are tried until one that fits is found.
+	 */
 	@NotNull
 	private Map<Locale, String> dateFormatMapping = Map.of(
 			Locale.GERMAN, "dd.MM.yyyy",
@@ -25,27 +30,43 @@ public class LocaleConfig {
 	);
 
 
+	/**
+	 * Additional date formats that are available only for parsing.
+	 */
 	@NotNull
 	private Set<String> parsingDateFormats = Set.of(
-			"yyyy-MM-dd",
-			"yyyyMMdd",
-			"dd.MM.yyyy"
+			"yyyyMMdd"
 	);
 
+	/**
+	 * Mappings from user provided locale to date range format which is used in the generation of result tables.
+	 * The formats are also available for parsing dates ranges using the {@link DateReader}. However, the locale is
+	 * neglected there and the formats are tried until one that fits is found.
+	 */
 	@NotEmpty
-	private Map<Locale, String> localeRangeStartEndSeperators = Map.of(
+	private Map<Locale, String> localeRangeStartEndSeparators = Map.of(
 			Locale.GERMAN, "-",
 			Locale.ROOT, "/"
 	);
 
-	private Set<String> parsingRangeStartEndSeperators = Set.of("/");
+	/**
+	 * Additional date range formats that are available only for parsing.
+	 */
+	private Set<String> parsingRangeStartEndSeparators = Set.of("/");
 
+	/**
+	 * List formats that are available for parsing inputs and (the first one) for rendering result tables.
+	 */
 	@NotNull
 	@NotEmpty
 	private List<ListFormat> listFormats = List.of(
 			new ListFormat("", ", ", ""),
-			new ListFormat("{", ", ", "}"));
+			new ListFormat("{", ", ", "}"),
+			new ListFormat("[", ", ", "]"));
 
+	/**
+	 * Container to describe the format of a list
+	 */
 	@Data
 	@AllArgsConstructor
 	public static class ListFormat {
@@ -63,8 +84,8 @@ public class LocaleConfig {
 	 */
 	@JsonIgnore
 	public DateReader getDateReader() {
-		final ArrayList<String> rangeStartEndSeperators = new ArrayList<>(localeRangeStartEndSeperators.values());
-		rangeStartEndSeperators.addAll(parsingRangeStartEndSeperators);
+		final ArrayList<String> rangeStartEndSeperators = new ArrayList<>(localeRangeStartEndSeparators.values());
+		rangeStartEndSeperators.addAll(parsingRangeStartEndSeparators);
 		return new DateReader(
 				Sets.union(parsingDateFormats, Set.copyOf(dateFormatMapping.values())),
 				rangeStartEndSeperators,
@@ -77,8 +98,7 @@ public class LocaleConfig {
 	 * If there is no perfect match, the locale is abstracted, see findClosestMatch.
 	 */
 	public String findDateRangeSeparator(Locale locale) {
-		final String closestMatch = findClosestMatch(locale, localeRangeStartEndSeperators);
-		return closestMatch != null ? closestMatch : "/";
+		return findClosestMatch(locale, localeRangeStartEndSeparators, "/");
 	}
 
 	/**
@@ -86,34 +106,43 @@ public class LocaleConfig {
 	 * If there is no perfect match, the locale is abstracted, see findClosestMatch.
 	 */
 	public DateTimeFormatter findDateTimeFormater(Locale locale) {
-		final String closestMatch = findClosestMatch(locale, dateFormatMapping);
-		return closestMatch != null ? DateTimeFormatter.ofPattern(closestMatch) : DateTimeFormatter.ISO_DATE;
+		return DateTimeFormatter.ofPattern(findClosestMatch(locale, dateFormatMapping, "yyyy-MM-dd"));
 	}
 
 	/**
-	 * Adapted from {@link c10n.share.DefaultLocaleMapping}
+	 * Helper method to find the best match for a given locale using its abstractions.
+	 * First the vanilla locale is checked, then abstractions to country and language.
+	 * The last resort is the {@link Locale#ROOT}. If no match is found, the alternative is returned.
+	 *
+	 * @param forLocale
+	 * @param options
+	 * @param <T>
+	 * @return
 	 */
-	private static <T> T findClosestMatch(Locale forLocale, Map<Locale,T> options) {
-		Set<Locale> fromSet = options.keySet();
-		String variant = forLocale.getDisplayVariant();
+	private static <T> T findClosestMatch(Locale forLocale, Map<Locale,T> options, T alternative) {
 		String country = forLocale.getCountry();
 		String language = forLocale.getLanguage();
-		List<Locale> c = new ArrayList<>(4);
-		if (null != variant && !variant.isEmpty()) {
-			c.add(forLocale);
+
+		if (options.containsKey(forLocale)){
+			return options.get(forLocale);
 		}
-		if (null != country && !country.isEmpty()) {
-			c.add(new Locale(language, country));
+
+		Locale abstraction = new Locale(language, country);
+		if (!country.isEmpty() && options.containsKey(abstraction)) {
+			return options.get(abstraction);
 		}
-		if (null != language && !language.isEmpty()) {
-			c.add(new Locale(language));
+
+		abstraction = new Locale(language);
+		if (!language.isEmpty() && options.containsKey(abstraction)) {
+			return options.get(abstraction);
 		}
-		for (Locale candidateLocale : c) {
-			if (fromSet.contains(candidateLocale)) {
-				return options.get(candidateLocale);
-			}
+
+		abstraction = Locale.ROOT;
+		if (options.containsKey(abstraction)) {
+			return options.get(abstraction);
 		}
-		return null;
+
+		return alternative;
 	}
 
 
