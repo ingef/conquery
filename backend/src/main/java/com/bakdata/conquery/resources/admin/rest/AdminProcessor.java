@@ -271,7 +271,7 @@ public class AdminProcessor {
 				.build();
 	}
 
-	Object executeScript(String script) {
+	public Object executeScript(String script) {
 		CompilerConfiguration config = new CompilerConfiguration();
 		GroovyShell groovy = new GroovyShell(config);
 		groovy.setProperty("datasetRegistry", getDatasetRegistry());

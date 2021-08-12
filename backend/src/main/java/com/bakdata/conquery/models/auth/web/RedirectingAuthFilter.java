@@ -88,13 +88,15 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 			}
 
 
-			if (loginRedirects.size() == 0) {
+			if (loginRedirects.isEmpty()) {
 				throw new ServiceUnavailableException("No login schema configured");
 			}
-			else if (loginRedirects.size() == 1) {
+
+			if (loginRedirects.size() == 1) {
 				// There is only one login schema, redirect the user there
 				throw new RedirectionException(Response.seeOther(loginRedirects.get(0)).build());
 			}
+
 			// There are multiple login schemas, give the user a choice to choose between them
 			throw new WebApplicationException(Response.ok(new UIView<>("logins.html.ftl", null, loginRedirects)).build());
 		}
