@@ -218,8 +218,8 @@ public class QueryProcessor {
 	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		List<URL> resultUrls = renderer.stream()
-									   .map(r -> r.generateResultURL(exec, uriBuilder.clone(), allProviders))
-									   .flatMap(Optional::stream).collect(Collectors.toList());
+									   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
+									   .flatMap(Collection::stream).collect(Collectors.toList());
 
 		status.setResultUrls(resultUrls);
 
