@@ -19,18 +19,26 @@ public class LocaleConfig {
 	private Locale frontend = Locale.ROOT;
 
 	@NotNull
-	private Map<Locale, String> dateFormatMapping = Map.of(Locale.GERMAN, "dd.MM.yyyy");
+	private Map<Locale, String> dateFormatMapping = Map.of(
+			Locale.GERMAN, "dd.MM.yyyy",
+			Locale.ROOT, "yyyy-MM-dd"
+	);
 
 
 	@NotNull
-	private Set<String> dateParsingFormats = Set.of(
+	private Set<String> parsingDateFormats = Set.of(
 			"yyyy-MM-dd",
 			"yyyyMMdd",
 			"dd.MM.yyyy"
 	);
 
 	@NotEmpty
-	private Map<Locale, String> rangeStartEndSeperators = Map.of(Locale.GERMAN, "-");
+	private Map<Locale, String> localeRangeStartEndSeperators = Map.of(
+			Locale.GERMAN, "-",
+			Locale.ROOT, "/"
+	);
+
+	private Set<String> parsingRangeStartEndSeperators = Set.of("/");
 
 	@NotNull
 	@NotEmpty
@@ -55,9 +63,11 @@ public class LocaleConfig {
 	 */
 	@JsonIgnore
 	public DateReader getDateReader() {
+		final ArrayList<String> rangeStartEndSeperators = new ArrayList<>(localeRangeStartEndSeperators.values());
+		rangeStartEndSeperators.addAll(parsingRangeStartEndSeperators);
 		return new DateReader(
-				Sets.union(dateParsingFormats, Set.copyOf(dateFormatMapping.values())),
-				new ArrayList<>(rangeStartEndSeperators.values()),
+				Sets.union(parsingDateFormats, Set.copyOf(dateFormatMapping.values())),
+				rangeStartEndSeperators,
 				listFormats
 		);
 	}
@@ -67,7 +77,7 @@ public class LocaleConfig {
 	 * If there is no perfect match, the locale is abstracted, see findClosestMatch.
 	 */
 	public String findDateRangeSeparator(Locale locale) {
-		final String closestMatch = findClosestMatch(locale, rangeStartEndSeperators);
+		final String closestMatch = findClosestMatch(locale, localeRangeStartEndSeperators);
 		return closestMatch != null ? closestMatch : "/";
 	}
 
