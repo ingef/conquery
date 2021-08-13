@@ -94,7 +94,7 @@ public class ResultArrowProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType);
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.attachment);
 	}
 
 }

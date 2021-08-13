@@ -75,7 +75,7 @@ public class ResultCsvProcessor {
 				throw new WebApplicationException("Failed to load result", e);
 			}
 		};
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv", new MediaType("text", "csv", charset.toString()));
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv", new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.attachment);
 	}
 
 }

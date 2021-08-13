@@ -24,6 +24,11 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class ResultUtil {
 
+	public static enum ContentDispositionOption {
+		inline,
+		attachment
+	}
+
 	
 	public static ExternalEntityId createId(Namespace namespace, EntityResult cer, IdMappingConfig idMappingConfig, IdMappingState mappingState) {
 		EncodedDictionary dict = namespace.getStorage().getPrimaryDictionary();
@@ -34,13 +39,13 @@ public class ResultUtil {
 				mappingState);
 	}
 
-	public static Response makeResponseWithFileName(StreamingOutput out, String label, String fileExtension, MediaType mediaType) {
+	public static Response makeResponseWithFileName(StreamingOutput out, String label, String fileExtension, MediaType mediaType, ContentDispositionOption disposition) {
 		Response.ResponseBuilder response = Response.ok(out);
 		response.header(HttpHeaders.CONTENT_TYPE, mediaType);
 		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
 			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
 			response.header("Content-Disposition", String.format(
-					"attachment; filename=\"%s\"",FileUtil.makeSafeFileName(label, fileExtension)));
+					"%s; filename=\"%s\"", disposition, FileUtil.makeSafeFileName(label, fileExtension)));
 		}
 		return response.build();
 	}
