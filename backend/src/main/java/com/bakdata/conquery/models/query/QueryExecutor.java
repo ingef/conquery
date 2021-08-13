@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -73,7 +74,7 @@ public class QueryExecutor implements Closeable {
 												  .map(CompletableFuture::join)
 												  .flatMap(Optional::stream)
 												  .collect(Collectors.toList()))
-				   .whenComplete((results, exc) -> result.finish(results, Optional.ofNullable(exc), worker));
+				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc), worker));
 
 
 			return true;

@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.CheckForNull;
-
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -17,6 +15,7 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +37,6 @@ public class ShardResult {
 	@ToString.Include
 	private WorkerId workerId;
 
-	@CheckForNull
 	private List<EntityResult> results = null;
 
 	@ToString.Include
@@ -55,7 +53,7 @@ public class ShardResult {
 		this.workerId = workerId;
 	}
 
-	public synchronized void finish(List<EntityResult> results, Optional<Throwable> exc, Worker worker) {
+	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> exc, Worker worker) {
 		if (worker.getQueryExecutor().isCancelled(getQueryId())) {
 			// Query is done so we no longer need the cancellation entry.
 			worker.getQueryExecutor().unsetQueryCancelled(getQueryId());
