@@ -2,9 +2,10 @@ package com.bakdata.conquery.models.query.results;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -37,7 +38,8 @@ public class ShardResult {
 	@ToString.Include
 	private WorkerId workerId;
 
-	private List<EntityResult> results = new ArrayList<>();
+	@CheckForNull
+	private List<EntityResult> results = null;
 
 	@ToString.Include
 	private LocalDateTime startTime = LocalDateTime.now();
@@ -63,7 +65,7 @@ public class ShardResult {
 		finishTime = LocalDateTime.now();
 
 		if (exc.isPresent()) {
-			log.info("FAILED Query[{}] with {} results within {}", queryId, this.results.size(), Duration.between(startTime, finishTime));
+			log.info("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime));
 
 			setError(exc.map(ConqueryError::asConqueryError));
 		}

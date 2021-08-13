@@ -50,7 +50,6 @@ public class QueryExecutor implements Closeable {
 	}
 
 	public void sendFailureToManagerNode(ShardResult result, ConqueryError error) {
-		result.setError(Optional.of(error));
 		result.finish(Collections.emptyList(), Optional.of(error), worker);
 	}
 
