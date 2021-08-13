@@ -87,6 +87,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 
 
     @ValidationMethod(message = "Neither wellKnownEndpoint nor idpConfiguration was given")
+    @JsonIgnore
     public boolean isConfigurationAvailable() {
         return wellKnownEndpoint != null || idpConfiguration != null;
     }
