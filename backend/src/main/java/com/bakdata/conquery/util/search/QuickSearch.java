@@ -34,6 +34,7 @@ import com.bakdata.conquery.util.search.graph.QSGraph;
 import com.bakdata.conquery.util.search.model.QuickSearchStats;
 import com.bakdata.conquery.util.search.model.Result;
 import com.bakdata.conquery.util.search.model.ResultItem;
+import com.google.common.base.Preconditions;
 import com.zigurs.karlis.utils.sort.MagicSort;
 
 
@@ -314,6 +315,13 @@ public class QuickSearch<T extends Comparable<T>> {
 	 */
 	public List<T> findItems(final String searchString, final int numberOfTopItems) {
 		return findItems(searchString, numberOfTopItems, keywordMatchScorer);
+	}
+
+	public List<T> listItems(int offset, int limit) {
+		Preconditions.checkArgument(offset > 0, "Offset must be positive value.");
+		Preconditions.checkArgument(limit > 0, "Limit must be positive value.");
+
+		return graph.listItems(offset, limit);
 	}
 
 	/**
