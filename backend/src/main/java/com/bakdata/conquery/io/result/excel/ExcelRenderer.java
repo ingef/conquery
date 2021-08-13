@@ -14,6 +14,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -100,8 +101,8 @@ public class ExcelRenderer {
         AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         table.setArea(newArea);
 
-        // TODO Add auto filters. This won't work with excel yet
-        //sheet.setAutoFilter(new CellRangeAddress(1, 1, 1, bottomRight.getCol()));
+        // Add auto filters
+        sheet.setAutoFilter(new CellRangeAddress(1, bottomRight.getRow(), 1, bottomRight.getCol()));
 
         // Freeze Header and id columns
         sheet.createFreezePane(idHeaders.size(), 1);
