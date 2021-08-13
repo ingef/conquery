@@ -101,7 +101,7 @@ public class ExcelRenderer {
         AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         table.setArea(newArea);
 
-        // Add auto filters
+        // Add auto filters. This must be done on the lower level CTTable. Using SXSSFSheet::setAutoFilter will corrupt the table
         table.getCTTable().addNewAutoFilter();
 
         // Freeze Header and id columns
