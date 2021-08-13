@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.result.excel;
 
 import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.io.result.excel.ExcelRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -9,7 +8,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -17,20 +15,20 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.RequiredArgsConstructor;
 
-import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
 @RequiredArgsConstructor
 public class ResultExcelProcessor {
 
+	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 
@@ -62,7 +60,7 @@ public class ResultExcelProcessor {
 				output
 		);
 
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx");
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx", MEDIA_TYPE);
 	}
 
 }

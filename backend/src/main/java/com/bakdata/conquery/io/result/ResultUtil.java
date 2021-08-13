@@ -14,6 +14,8 @@ import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.nio.charset.Charset;
@@ -32,8 +34,9 @@ public class ResultUtil {
 				mappingState);
 	}
 
-	public static Response makeResponseWithFileName(StreamingOutput out, String label, String fileExtension) {
+	public static Response makeResponseWithFileName(StreamingOutput out, String label, String fileExtension, MediaType mediaType) {
 		Response.ResponseBuilder response = Response.ok(out);
+		response.header(HttpHeaders.CONTENT_TYPE, mediaType);
 		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
 			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
 			response.header("Content-Disposition", String.format(

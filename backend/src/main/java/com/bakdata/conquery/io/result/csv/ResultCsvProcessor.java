@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -74,7 +75,7 @@ public class ResultCsvProcessor {
 				throw new WebApplicationException("Failed to load result", e);
 			}
 		};
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv");
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv", new MediaType("text", "csv", charset.toString()));
 	}
 
 }

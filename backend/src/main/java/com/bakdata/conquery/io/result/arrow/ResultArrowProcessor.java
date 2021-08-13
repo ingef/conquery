@@ -3,15 +3,13 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.channels.Channels;
 import java.util.function.Function;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -32,13 +30,9 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.arrow.vector.dictionary.DictionaryProvider;
-import org.apache.arrow.vector.ipc.ArrowFileWriter;
-import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.http.HttpStatus;
 
@@ -55,6 +49,7 @@ public class ResultArrowProcessor {
 			DatasetRegistry datasetRegistry,
 			boolean pretty,
 			String fileExtension,
+			MediaType mediaType,
 			ConqueryConfig config) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
@@ -99,7 +94,7 @@ public class ResultArrowProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension);
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType);
 	}
 
 }
