@@ -102,7 +102,7 @@ public class ExcelRenderer {
         table.setArea(newArea);
 
         // Add auto filters
-        sheet.setAutoFilter(new CellRangeAddress(1, bottomRight.getRow(), 1, bottomRight.getCol()));
+        table.getCTTable().addNewAutoFilter();
 
         // Freeze Header and id columns
         sheet.createFreezePane(idHeaders.size(), 1);
