@@ -74,6 +74,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             inputType: "text",
             label: field.label[locale],
             placeholder: (field.placeholder && field.placeholder[locale]) || "",
+            fullWidth: field.style ? field.style.fullWidth : false,
           }}
         />
       );
