@@ -16,16 +16,12 @@ const Root = styled("div")`
   display: inline-block;
 `;
 
-const Input = styled("input")<{
-  large?: boolean;
-  valid?: boolean;
-  invalid?: boolean;
-}>`
+const Input = styled("input")<{ large?: boolean }>`
   outline: 0;
-  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-  font-size: ${({ theme }) => theme.font.md};
   min-width: 170px;
 
+  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
+  font-size: ${({ theme }) => theme.font.md};
   padding: ${({ large }) =>
     large ? "10px 30px 10px 14px" : "8px 30px 8px 10px"};
   font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
@@ -126,6 +122,7 @@ const BaseInput = (props: Props) => {
         <CurrencyInput
           currencyConfig={props.currencyConfig}
           placeholder={props.placeholder}
+          large={props.large}
           value={props.value}
           onChange={safeOnChange}
         />
