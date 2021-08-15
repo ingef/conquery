@@ -1,7 +1,6 @@
 import React from "react";
 
 import type { CurrencyConfigT } from "../api/types";
-import { isEmpty } from "../common/helpers";
 
 import BaseInput from "./BaseInput";
 import Labeled from "./Labeled";
@@ -26,10 +25,6 @@ const InputPlain = <T extends string | number | null = string | null>(
   return (
     <Labeled
       className={props.className}
-      valueChanged={
-        !isEmpty(props.input.value) &&
-        props.input.value !== props.input.defaultValue
-      }
       fullWidth={props.fullWidth}
       label={props.label}
       tinyLabel={props.tinyLabel}
