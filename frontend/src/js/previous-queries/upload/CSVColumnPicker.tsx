@@ -50,7 +50,13 @@ const Th = styled("th")`
 `;
 
 const FileName = styled("code")`
+  display: block;
   margin: 0 15px 0 0;
+`;
+
+const BoldFileName = styled(FileName)`
+  margin-bottom: 3px;
+  font-weight: 700;
 `;
 
 const Padded = styled("span")`
@@ -261,7 +267,10 @@ const CSVColumnPicker: FC<PropsT> = ({
     <div>
       <Row>
         <Grow>
-          <FileName>{file.name}</FileName>
+          <div>
+            <BoldFileName>{file.name}</BoldFileName>
+            <FileName>{csv.length} Zeilen</FileName>
+          </div>
           <WithTooltip text={t("common.clear")}>
             <IconButton frame regular icon="trash-alt" onClick={onReset} />
           </WithTooltip>
@@ -347,7 +356,9 @@ const CSVColumnPicker: FC<PropsT> = ({
             <>
               <Msg>
                 <ErrorIcon icon="exclamation-circle" />
-                {t("csvColumnPicker.unreadableDate")}
+                {t("csvColumnPicker.unreadableDate", {
+                  count: uploadResult.unreadableDate.length,
+                })}
               </Msg>
               <ScrollableList
                 maxVisibleItems={3}
@@ -364,7 +375,9 @@ const CSVColumnPicker: FC<PropsT> = ({
             <>
               <Msg>
                 <ErrorIcon icon="exclamation-circle" />
-                {t("csvColumnPicker.unresolvedId")}
+                {t("csvColumnPicker.unresolvedId", {
+                  count: uploadResult.unresolvedId.length,
+                })}
               </Msg>
               <ScrollableList
                 maxVisibleItems={3}
@@ -380,11 +393,15 @@ const CSVColumnPicker: FC<PropsT> = ({
       )}
       <Buttons>
         {uploadResult &&
-          uploadResult.unreadableDate.length > 0 &&
-          uploadResult.unresolvedId.length > 0 && (
+          (uploadResult.unreadableDate.length > 0 ||
+            uploadResult.unresolvedId.length > 0) && (
             <DownloadUnresolvedButton onClick={downloadUnresolved}>
               <FaIcon icon="download" />{" "}
-              {t("uploadQueryResultsModal.downloadUnresolved")}
+              {t("uploadQueryResultsModal.downloadUnresolved", {
+                count:
+                  uploadResult.unreadableDate.length +
+                  uploadResult.unresolvedId.length,
+              })}
             </DownloadUnresolvedButton>
           )}
         {uploadResult && (

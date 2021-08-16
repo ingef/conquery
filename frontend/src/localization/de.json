@@ -308,11 +308,13 @@
     "upload": "Hochladen",
     "uploadAgain": "Erneut hochladen",
     "uploadFailed": "Datei konnte nicht hochgeladen werden. Bitte überprüfe das Dateiformat und die Netzwerkverbindung.",
-    "uploadSucceeded": "Ergebnisliste hochladen erfolgreich",
+    "uploadSucceeded": "Ergebnisliste hochladen erfolgreich (1 Zeile)",
+    "uploadSucceeded_plural": "Ergebnisliste hochladen erfolgreich ({{count}} Zeilen)",
     "formatInfo": {
       "text": "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
     },
-    "downloadUnresolved": "Unauflösbare Zeilen herunterladen (CSV)"
+    "downloadUnresolved": "Eine Unauflösbare Zeile herunterladen (CSV)",
+    "downloadUnresolved_plural": "{{ count }} Unauflösbare Zeilen herunterladen (CSV)"
   },
   "csvColumnPicker": {
     "loading": "Lese Daten ...",
@@ -330,8 +332,10 @@
     "partialSuccess": "Hochladen teilweise erfolgreich.",
     "resolved": "1 Zeile aufgelöst.",
     "resolved_plural": "{{count}} Zeilen aufgelöst.",
-    "unreadableDate": "Datum nicht lesbar in den folgenden Zeilen",
-    "unresolvedId": "ID nicht auflösbar in den folgenden Zeilen"
+    "unreadableDate": "Datum nicht lesbar in der folgenden Zeile",
+    "unreadableDate_plural": "Datum nicht lesbar in den folgenden {{count}} Zeilen",
+    "unresolvedId": "ID nicht auflösbar in der folgenden Zeile",
+    "unresolvedId_plural": "ID nicht auflösbar in den folgenden {{count}} Zeilen"
   },
   "uploadConceptListModal": {
     "headline": "Konzepte aus Liste einfügen",

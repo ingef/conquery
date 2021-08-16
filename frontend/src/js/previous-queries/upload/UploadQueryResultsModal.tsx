@@ -76,7 +76,9 @@ const UploadQueryResultsModal: FC<PropsT> = ({
           <Success>
             <StyledFaIcon icon="check-circle" />
             <SuccessMsg>
-              {t("uploadQueryResultsModal.uploadSucceeded")}
+              {t("uploadQueryResultsModal.uploadSucceeded", {
+                count: uploadResult?.resolved || 0,
+              })}
             </SuccessMsg>
           </Success>
         ) : (

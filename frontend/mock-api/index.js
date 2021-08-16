@@ -70,20 +70,30 @@ module.exports = function (app, port) {
         unresolvedId.push(chance.sentence({ words: 3 }).split(" "));
       }
 
+      const successResponse = JSON.stringify({
+        id: 234,
+        resolved: Math.floor(Math.random() * 2000),
+        unresolvedId: [],
+        unreadableDate: [],
+      });
+      const errorResponse = JSON.stringify({
+        id: 234,
+        resolved: Math.floor(Math.random() * 2),
+        unresolvedId,
+        unreadableDate: [
+          ["xyz", "yes", "hello"],
+          ["abc", "no", "good day"],
+          ["def", "yes", "tomorrow"],
+        ],
+      });
+
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
-        res.send(
-          JSON.stringify({
-            id: 234,
-            resolved: Math.floor(Math.random() * 2),
-            unresolvedId,
-            unreadableDate: [
-              ["xyz", "yes", "hello"],
-              ["abc", "no", "good day"],
-              ["def", "yes", "tomorrow"],
-            ],
-          }),
-        );
+        if (Math.random() < 0.2) {
+          res.send(successResponse);
+        } else {
+          res.send(errorResponse);
+        }
       }, SHORT_DELAY);
     },
   );

@@ -308,11 +308,13 @@
     "upload": "Upload",
     "uploadAgain": "Upload again",
     "uploadFailed": "Could not upload file. Please check the file format and the network connection.",
-    "uploadSucceeded": "Result list was successfully uploaded",
+    "uploadSucceeded": "Result list was successfully uploaded (1 line)",
+    "uploadSucceeded_plural": "Result list was successfully uploaded ({{count}} lines)",
     "formatInfo": {
       "text": "File should contain one result per row, separated by ; (semicolon)"
     },
-    "downloadUnresolved": "Download unresolved (CSV)"
+    "downloadUnresolved": "Download unresolved line (CSV)",
+    "downloadUnresolved_plural": "Download {{count}} unresolved lines (CSV)"
   },
   "csvColumnPicker": {
     "loading": "Reading data ...",
@@ -330,8 +332,10 @@
     "partialSuccess": "Upload partially successful.",
     "resolved": "1 line resolved.",
     "resolved_plural": "{{count}} lines resolved.",
-    "unreadableDate": "Couldn't read the date for the following lines",
-    "unresolvedId": "Couldn't resolve ID for the following lines"
+    "unreadableDate": "Couldn't read the date for the following line",
+    "unreadableDate_plural": "Couldn't read the date for the following {{count}} lines",
+    "unresolvedId": "Couldn't resolve ID for the following line",
+    "unresolvedId_plural": "Couldn't resolve ID for the following {{count}} lines"
   },
   "uploadConceptListModal": {
     "headline": "Upload concepts",
