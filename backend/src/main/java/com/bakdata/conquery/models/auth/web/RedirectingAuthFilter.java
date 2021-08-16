@@ -38,8 +38,11 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 	private final DefaultAuthFilter delegate;
 
 	/**
-	 * Request processors that check if an request belongs to a multi-step authentication.
-	 * E.g. the request contains an authorization code, that must be redeemed for an access token.
+	 * Request processors that check if an request belongs to its multi-step authentication schema.
+	 * E.g. the request contains an authorization code, then this checker tries to redeemed the code for an access token.
+	 * If that succeeds, it produces a response that sets a cookie with the required authentication data for that schema.
+	 *
+	 * If the request does not fit the schema, the processor returns null.
 	 */
 	@Getter
 	private final List<Function<ContainerRequestContext,Response>> authAttemptCheckers = new ArrayList<>();
