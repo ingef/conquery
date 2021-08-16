@@ -115,6 +115,7 @@ const DownloadUnresolvedButton = styled(TransparentButton)`
 export interface QueryToUploadT {
   format: string[];
   values: string[][];
+  label: string;
 }
 
 interface PropsT {
@@ -222,15 +223,14 @@ const CSVColumnPicker: FC<PropsT> = ({
       }
     }
 
-    if (file) {
-      parse();
-    }
+    parse();
   }, [file, delimiter, config.ids]);
 
   function uploadQuery() {
     onUpload({
       format: csvHeader,
       values: csv,
+      label: file.name,
     });
   }
 
