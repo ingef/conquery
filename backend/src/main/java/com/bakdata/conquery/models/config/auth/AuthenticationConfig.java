@@ -21,7 +21,7 @@ public class AuthenticationConfig {
 	private Duration adminEndCookieDuration = Duration.hours(1);
 
 	@JsonIgnore
-	private AtomicReference<AuthCookieFilter> authCookieFilter = null;
+	private AtomicReference<AuthCookieFilter> authCookieFilter = new AtomicReference<>();
 
 
 
