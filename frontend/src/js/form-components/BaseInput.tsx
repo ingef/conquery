@@ -23,7 +23,7 @@ const Input = styled("input")<{ large?: boolean }>`
   border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
   font-size: ${({ theme }) => theme.font.md};
   padding: ${({ large }) =>
-    large ? "10px 30px 10px 14px" : "8px 30px 8px 10px"};
+    large ? "10px 30px 10px 14px" : "6px 30px 6px 10px"};
   font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
