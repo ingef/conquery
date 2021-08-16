@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
+import java.util.concurrent.atomic.AtomicReference;
 
 @NoArgsConstructor
 @Getter
@@ -20,7 +21,7 @@ public class AuthenticationConfig {
 	private Duration adminEndCookieDuration = Duration.hours(1);
 
 	@JsonIgnore
-	private AuthCookieFilter authCookieFilter = null;
+	private AtomicReference<AuthCookieFilter> authCookieFilter = null;
 
 
 
@@ -42,13 +43,8 @@ public class AuthenticationConfig {
 
 	@JsonIgnore
 	public AuthCookieFilter getAuthCookieFilter() {
-		if (authCookieFilter == null) {
-			synchronized (this) {
-				if (authCookieFilter == null) {
-					authCookieFilter = new AuthCookieFilter(this::createAuthCookie);
-				}
-			}
-		}
-		return authCookieFilter;
+		return authCookieFilter.updateAndGet(
+				(f) -> f != null ? f : new AuthCookieFilter(this::createAuthCookie)
+		);
 	}
 }
