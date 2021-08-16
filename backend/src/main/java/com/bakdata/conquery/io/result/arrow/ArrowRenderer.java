@@ -177,7 +177,14 @@ public class ArrowRenderer {
                 vector.setNull(rowNumber);
                 return;
             }
-            vector.setSafe(rowNumber, value.intValue());
+
+            // Treat our internal infinity dates (Interger.MIN and Integer.MAX) also as null
+            final int epochDay = value.intValue();
+            if (epochDay == Integer.MIN_VALUE || epochDay == Integer.MAX_VALUE) {
+                vector.setNull(rowNumber);
+            }
+
+            vector.setSafe(rowNumber, epochDay);
         };
     }
 
