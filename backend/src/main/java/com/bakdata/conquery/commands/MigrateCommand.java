@@ -16,7 +16,7 @@ import groovy.lang.Script;
 import groovy.lang.Tuple;
 import io.dropwizard.cli.Command;
 import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.util.DataSize;
+import io.dropwizard.util.Size;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Cursor;
@@ -73,7 +73,7 @@ public class MigrateCommand extends Command {
 		final File inStoreDirectory = namespace.get("in");
 		final File outStoreDirectory = namespace.get("out");
 
-		final long logsize = DataSize.parse(namespace.get("logsize")).toKilobytes();
+		final long logsize = Size.parse(namespace.get("logsize")).toKilobytes();
 
 
 		final File[] environments = inStoreDirectory.listFiles(File::isDirectory);
