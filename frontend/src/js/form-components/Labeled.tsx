@@ -2,6 +2,9 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import React, { ReactNode } from "react";
 
+import { IndexPrefix } from "../common/components/IndexPrefix";
+import { exists } from "../common/helpers/exists";
+
 import Label from "./Label";
 
 const Root = styled("label")<{ fullWidth?: boolean }>`
@@ -17,6 +20,7 @@ const Root = styled("label")<{ fullWidth?: boolean }>`
 
 interface Props {
   label: ReactNode;
+  indexPrefix?: number;
   className?: string;
   tinyLabel?: boolean;
   largeLabel?: boolean;
@@ -25,6 +29,7 @@ interface Props {
 }
 
 const Labeled = ({
+  indexPrefix,
   className,
   fullWidth,
   label,
@@ -35,6 +40,7 @@ const Labeled = ({
   return (
     <Root className={className} fullWidth={fullWidth}>
       <Label fullWidth={fullWidth} tiny={tinyLabel} large={largeLabel}>
+        {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
         {label}
       </Label>
       {children}

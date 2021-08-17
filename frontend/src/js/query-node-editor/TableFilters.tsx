@@ -52,6 +52,7 @@ const TableFilters = (props: PropsT) => {
             case "SELECT":
               return (
                 <InputSelect
+                  indexPrefix={filterIdx + 1}
                   input={{
                     clearable: filter.value !== filter.defaultValue,
                     defaultValue: filter.defaultValue,
@@ -68,6 +69,7 @@ const TableFilters = (props: PropsT) => {
               return (
                 <ResolvableMultiSelect
                   context={{ ...props.context, filterId: filter.id }}
+                  indexPrefix={filterIdx + 1}
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
@@ -83,6 +85,7 @@ const TableFilters = (props: PropsT) => {
             case "BIG_MULTI_SELECT":
               return (
                 <ResolvableMultiSelect
+                  indexPrefix={filterIdx + 1}
                   context={{ ...props.context, filterId: filter.id }}
                   input={{
                     value: filter.value || [],
@@ -104,6 +107,7 @@ const TableFilters = (props: PropsT) => {
             case "INTEGER_RANGE":
               return (
                 <InputRange
+                  indexPrefix={filterIdx + 1}
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
@@ -125,6 +129,7 @@ const TableFilters = (props: PropsT) => {
             case "REAL_RANGE":
               return (
                 <InputRange
+                  indexPrefix={filterIdx + 1}
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
@@ -147,6 +152,7 @@ const TableFilters = (props: PropsT) => {
             case "MONEY_RANGE":
               return (
                 <InputRange
+                  indexPrefix={filterIdx + 1}
                   moneyRange
                   input={{
                     value: filter.value,
@@ -168,6 +174,7 @@ const TableFilters = (props: PropsT) => {
             case "STRING":
               return (
                 <InputPlain
+                  indexPrefix={filterIdx + 1}
                   input={{
                     value: filter.value || "",
                     defaultValue: filter.defaultValue,

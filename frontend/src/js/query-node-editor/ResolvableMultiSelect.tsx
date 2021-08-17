@@ -24,6 +24,7 @@ interface PropsT {
   context: FilterContextT;
 
   label: string;
+  indexPrefix?: number;
   options: SelectOptionT[];
   disabled?: boolean;
   tooltip?: string;
@@ -40,6 +41,7 @@ const ResolvableMultiSelect: FC<PropsT> = ({
   context,
   input,
   label,
+  indexPrefix,
   options,
   disabled,
   allowDropFile,
@@ -146,6 +148,7 @@ const ResolvableMultiSelect: FC<PropsT> = ({
         isLoading={isLoading || loading}
         startLoadingThreshold={startLoadingThreshold}
         disabled={disabled}
+        indexPrefix={indexPrefix}
         onLoad={onLoad}
         onDropFile={onDropFile}
         allowDropFile={allowDropFile}
