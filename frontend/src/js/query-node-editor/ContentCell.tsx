@@ -12,11 +12,11 @@ const Root = styled("div")`
 
 const Content = styled("div")`
   flex-grow: 1;
-  padding: 6px 10px;
+  padding: 3px 10px;
 `;
 
 const Headline = styled(Heading4)`
-  margin: 12px 10px 0;
+  margin: 14px 10px 0;
 `;
 
 interface PropsT {
