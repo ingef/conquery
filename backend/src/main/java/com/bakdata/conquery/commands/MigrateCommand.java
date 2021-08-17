@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
-import groovy.lang.Tuple2;
+import groovy.lang.Tuple;
 import io.dropwizard.cli.Command;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.util.DataSize;
@@ -88,7 +88,7 @@ public class MigrateCommand extends Command {
 
 		MigrationScriptFactory factory = (MigrationScriptFactory) groovy.parse(In.file((File) namespace.get("script")).readAll());
 
-		final Function4<String, String, String, ObjectNode, Tuple2<String, ObjectNode>> migrator = factory.run();
+		final Function4<String, String, String, ObjectNode, Tuple> migrator = factory.run();
 
 		final ObjectMapper mapper = Jackson.BINARY_MAPPER;
 
@@ -104,16 +104,16 @@ public class MigrateCommand extends Command {
 	}
 
 
-	private static abstract class MigrationScriptFactory extends Script {
+	public static abstract class MigrationScriptFactory extends Script {
 
 		/**
 		 * Environment -> Store -> Key -> Value -> (Key, Value)
 		 */
 		@Override
-		public abstract Function4<String, String, String, ObjectNode, Tuple2<String, ObjectNode>> run();
+		public abstract Function4<String, String, String, ObjectNode, Tuple> run();
 	}
 
-	private void processEnvironment(File inStoreDirectory, long logSize, File outStoreDirectory, Function4<String, String, String, ObjectNode, Tuple2<String, ObjectNode>> migrator, ObjectMapper mapper) {
+	private void processEnvironment(File inStoreDirectory, long logSize, File outStoreDirectory, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectMapper mapper) {
 		final jetbrains.exodus.env.Environment inEnvironment = Environments.newInstance(
 				inStoreDirectory,
 				new EnvironmentConfig().setLogFileSize(logSize)
@@ -170,7 +170,7 @@ public class MigrateCommand extends Command {
 		inEnvironment.close();
 	}
 
-	private void doMigrate(Environment inEnvironment, Store inStore, Environment outEnvironment, Store outStore, Function4<String, String, String, ObjectNode, Tuple2<String, ObjectNode>> migrator, ObjectMapper mapper) {
+	private void doMigrate(Environment inEnvironment, Store inStore, Environment outEnvironment, Store outStore, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectMapper mapper) {
 
 
 		final Transaction readTx = inEnvironment.beginReadonlyTransaction();
@@ -189,7 +189,7 @@ public class MigrateCommand extends Command {
 
 				final ObjectNode node = mapper.readValue(cursor.getValue().getBytesUnsafe(), ObjectNode.class);
 
-				final Tuple2<String, ObjectNode>
+				final Tuple
 						migrated =
 						migrator.invoke(inEnvironment.getLocation(), inStore.getName(), key, node);
 
@@ -198,8 +198,8 @@ public class MigrateCommand extends Command {
 					continue;
 				}
 
-				ByteIterable keyIter = new ArrayByteIterable(migrated.getV1().getBytes(StandardCharsets.UTF_8));
-				final ByteIterable valueIter = new ArrayByteIterable(mapper.writeValueAsBytes(migrated.getV2()));
+				ByteIterable keyIter = new ArrayByteIterable(((String) migrated.get(0)).getBytes(StandardCharsets.UTF_8));
+				final ByteIterable valueIter = new ArrayByteIterable(mapper.writeValueAsBytes(migrated.get(1)));
 
 				if (log.isTraceEnabled()) {
 					log.trace("Mapped `{}` to \n{}", new String(keyIter.getBytesUnsafe()), new String(valueIter.getBytesUnsafe()));
@@ -207,7 +207,6 @@ public class MigrateCommand extends Command {
 				else {
 					log.debug("Mapped `{}`", new String(keyIter.getBytesUnsafe()));
 				}
-
 
 				outStore.putRight(writeTx, keyIter, valueIter);
 

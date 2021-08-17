@@ -8,6 +8,7 @@ import javax.validation.Validator;
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
 import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.commands.MigrateCommand;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.RecodeStoreCommand;
 import com.bakdata.conquery.commands.ShardNode;
@@ -15,11 +16,9 @@ import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.util.DateFormats;
 import com.bakdata.conquery.util.UrlRewriteBundle;
 import io.dropwizard.Application;
 import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.JsonConfigurationFactory;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.servlets.assets.AssetServlet;
@@ -60,6 +59,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addCommand(new CollectEntitiesCommand());
 		bootstrap.addCommand(new StandaloneCommand(this));
 		bootstrap.addCommand(new RecodeStoreCommand());
+		bootstrap.addCommand(new MigrateCommand());
 
 		((MutableInjectableValues)bootstrap.getObjectMapper().getInjectableValues()).add(Validator.class, bootstrap.getValidatorFactory().getValidator());
 
