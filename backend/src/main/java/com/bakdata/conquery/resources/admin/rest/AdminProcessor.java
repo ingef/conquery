@@ -1,51 +1,34 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
-
-import javax.validation.Validator;
-
-import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
-import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
-import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.RoleOwner;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.entities.*;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
-import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
-import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
-import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
-import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
-import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
+import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvWriter;
+import groovy.lang.GroovyShell;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.codehaus.groovy.control.CompilerConfiguration;
+
+import javax.validation.Validator;
+import java.io.StringWriter;
+import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * This class holds the logic for several admin http endpoints.
@@ -89,9 +72,8 @@ public class AdminProcessor {
 	 * removed from the users, the groups, and from the storage.
 	 *
 	 * @param role the role to delete
-	 * @throws JSONException is thrown on JSON validation form the storage.
 	 */
-	public void deleteRole(Role role) throws JSONException {
+	public void deleteRole(Role role) {
 		AuthorizationHelper.deleteRole(storage, role);
 	}
 
@@ -99,61 +81,11 @@ public class AdminProcessor {
 		return new TreeSet<>(storage.getAllRoles());
 	}
 
-	public List<User> getUsers(Role role) {
-		Collection<User> user = storage.getAllUsers();
-		return user.stream().filter(u -> u.getRoles().contains(role)).collect(Collectors.toList());
-	}
-
-	private List<Group> getGroups(Role role) {
-		Collection<Group> groups = storage.getAllGroups();
-		return groups.stream().filter(g -> g.getRoles().contains(role)).collect(Collectors.toList());
-	}
-
-	public FERoleContent getRoleContent(Role role) {
-		return FERoleContent.builder()
-							.permissions(wrapInFEPermission(role.getPermissions()))
-							.permissionTemplateMap(preparePermissionTemplate())
-							.users(getUsers(role))
-							.groups(getGroups(role))
-							.owner(role)
-							.build();
-	}
-
-	private SortedSet<FEPermission> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
-		TreeSet<FEPermission> fePermissions = new TreeSet<>();
-
-		for (ConqueryPermission permission : permissions) {
-			fePermissions.add(FEPermission.from(permission));
-		}
-		return fePermissions;
-	}
-
-	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() {
-		Map<String, Pair<Set<Ability>, List<Object>>> permissionTemplateMap = new HashMap<>();
-
-		// Grab all possible permission types for the "Create Permission" section
-		Set<Class<? extends StringPermissionBuilder>> permissionTypes = CPSTypeIdResolver
-																				.listImplementations(StringPermissionBuilder.class);
-		for (Class<? extends StringPermissionBuilder> permissionType : permissionTypes) {
-			try {
-				StringPermissionBuilder instance = (StringPermissionBuilder) permissionType.getField("INSTANCE").get(null);
-				// Right argument is for possible targets of a specific permission type, but it
-				// is left empty for now.
-				permissionTemplateMap.put(instance.getDomain(), Pair.of(instance.getAllowedAbilities(), List.of()));
-			}
-			catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
-				log.error("Could not access allowed abilities for permission type: {}\n\tCause: {}", permissionType, e);
-			}
-
-		}
-		return permissionTemplateMap;
-	}
 
 	/**
 	 * Handles creation of permissions.
 	 *
-	 *
-	 * @param owner
+	 * @param owner to which the permission is assigned
 	 * @param permission The permission to create.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
@@ -167,26 +99,14 @@ public class AdminProcessor {
 	 *
 	 * @param owner the owner of the permission
 	 * @param permission The permission to delete.
-	 * @throws JSONException is thrown upon processing JSONs.
 	 */
-	public void deletePermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
+	public void deletePermission(PermissionOwner<?> owner, ConqueryPermission permission) {
 		AuthorizationHelper.removePermission(owner, permission, storage);
 	}
 
 
 	public TreeSet<User> getAllUsers() {
 		return new TreeSet<>(storage.getAllUsers());
-	}
-
-	public FEUserContent getUserContent(User user) {
-		return FEUserContent
-					   .builder()
-					   .owner(user)
-					   .roles(user.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
-					   .availableRoles(storage.getAllRoles())
-					   .permissions(wrapInFEPermission(user.getPermissions()))
-					   .permissionTemplateMap(preparePermissionTemplate())
-					   .build();
 	}
 
 	public synchronized void deleteUser(User user) {
@@ -197,8 +117,7 @@ public class AdminProcessor {
 		log.trace("Removed user {} from the storage.", user.getId());
 	}
 
-	public void addUser(User user) throws JSONException {
-		ValidatorHelper.failOnError(log, validator.validate(user));
+	public void addUser(User user) {
 		storage.addUser(user);
 		log.trace("New user:\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
 	}
@@ -217,23 +136,6 @@ public class AdminProcessor {
 
 	public TreeSet<Group> getAllGroups() {
 		return new TreeSet<>(storage.getAllGroups());
-	}
-
-	public FEGroupContent getGroupContent(Group group) {
-
-		Set<UserId> membersIds = group.getMembers();
-		ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
-		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
-		return FEGroupContent
-					   .builder()
-					   .owner(group)
-					   .members(membersIds.stream().map(storage::getUser).collect(Collectors.toList()))
-					   .availableMembers(availableMembers)
-					   .roles(group.getRoles().stream().map(storage::getRole).collect(Collectors.toList()))
-					   .availableRoles(storage.getAllRoles())
-					   .permissions(wrapInFEPermission(group.getPermissions()))
-					   .permissionTemplateMap(preparePermissionTemplate())
-					   .build();
 	}
 
 	public synchronized void addGroup(Group group) throws JSONException {
@@ -286,20 +188,6 @@ public class AdminProcessor {
 		AuthorizationHelper.addRoleTo(getStorage(), role, owner);
 	}
 
-	public FEAuthOverview getAuthOverview() {
-		Collection<OverviewRow> overview = new TreeSet<>();
-		for (User user : storage.getAllUsers()) {
-			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, storage);
-			List<Role> effectiveRoles = user.getRoles().stream().map(storage::getRole).collect(Collectors.toList());
-			userGroups.forEach(g -> {
-				effectiveRoles.addAll(g.getRoles().stream().map(storage::getRole).collect(Collectors.toList()));
-			});
-			overview.add(OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
-		}
-
-		return FEAuthOverview.builder().overview(overview).build();
-	}
-
 	/**
 	 * Renders the permission overview for all users in form of a CSV.
 	 */
@@ -316,13 +204,13 @@ public class AdminProcessor {
 	}
 
 	/**
-	 * Renders the permission overview for certian {@link User} in form of a CSV.
+	 * Renders the permission overview for certain {@link User} in form of a CSV.
 	 */
 	public String getPermissionOverviewAsCSV(Collection<User> users) {
 		StringWriter sWriter = new StringWriter();
 		CsvWriter writer = config.getCsv().createWriter(sWriter);
 		List<String> scope = config
-									 .getAuthorization()
+									 .getAuthorizationRealms()
 									 .getOverviewScope();
 		// Header
 		writeAuthOverviewHeader(writer, scope);
@@ -344,7 +232,7 @@ public class AdminProcessor {
 	}
 
 	/**
-	 * Writes the given {@link User}s (one perline) with their effective permission to the specified CSV writer.
+	 * Writes the given {@link User}s (one per line) with their effective permission to the specified CSV writer.
 	 */
 	private static void writeAuthOverviewUser(CsvWriter writer, List<String> scope, User user, MetaStorage storage, ConqueryConfig config) {
 		// Print the user in the first column
@@ -359,6 +247,43 @@ public class AdminProcessor {
 		}
 		writer.writeValuesToRow();
 	}
+	public ImmutableMap<String, JobManagerStatus> getJobs() {
+		return ImmutableMap.<String, JobManagerStatus>builder()
+				.put("ManagerNode", getJobManager().reportStatus())
+				// Namespace JobManagers on ManagerNode
+				.putAll(
+						getDatasetRegistry().getDatasets().stream()
+								.collect(Collectors.toMap(
+										ns -> String.format("ManagerNode::%s", ns.getDataset().getId()),
+										ns -> ns.getJobManager().reportStatus()
+								)))
+				// Remote Worker JobManagers
+				.putAll(
+						getDatasetRegistry()
+								.getShardNodes()
+								.values()
+								.stream()
+								.collect(Collectors.toMap(
+										si -> Objects.toString(si.getRemoteAddress()),
+										ShardNodeInformation::getJobManagerStatus
+								))
+				)
+				.build();
+	}
 
+	public Object executeScript(String script) {
+		CompilerConfiguration config = new CompilerConfiguration();
+		GroovyShell groovy = new GroovyShell(config);
+		groovy.setProperty("datasetRegistry", getDatasetRegistry());
+		groovy.setProperty("jobManager", getJobManager());
+		groovy.setProperty("config", getConfig());
+		groovy.setProperty("storage", getStorage());
 
+		try {
+			return groovy.evaluate(script);
+		}
+		catch(Exception e) {
+			return ExceptionUtils.getStackTrace(e);
+		}
+	}
 }

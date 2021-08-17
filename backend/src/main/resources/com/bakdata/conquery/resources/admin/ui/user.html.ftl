@@ -27,7 +27,7 @@
 				<@permissionCreator.permissionCreator ownerId=c.owner.getId() permissionTemplateMap=c.permissionTemplateMap />
 			</div>
 			<div class="tab-pane fade" id="roles" role="tabpanel" aria-labelledby="roles-tab">
-				<@roleHandler.roleHandler c=c />
+				<@roleHandler.roleHandler c=c adminPathBase="/admin/${ctx.staticUriElem.USERS_PATH_ELEMENT}" />
 			</div>
 		</div>
 

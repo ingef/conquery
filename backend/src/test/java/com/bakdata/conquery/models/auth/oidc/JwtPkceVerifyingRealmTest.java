@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.keycloak.common.VerificationException;
 
+import java.net.URI;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -18,6 +19,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,10 +46,10 @@ class JwtPkceVerifyingRealmTest {
 
         // Create the realm
         REALM = new JwtPkceVerifyingRealm(
-                PUBLIC_KEY,
-                new String[] {AUDIENCE},
+                () -> Optional.of(new JwtPkceVerifyingRealmFactory.IdpConfiguration( PUBLIC_KEY, URI.create("auth"), URI.create("token"), HTTP_REALM_URL)),
+                AUDIENCE,
                 List.of(JwtPkceVerifyingRealmFactory.ScriptedTokenChecker.create("t.getOtherClaims().get(\"groups\").equals(\"conquery\")")),
-                HTTP_REALM_URL, List.of(ALTERNATIVE_ID_CLAIM));
+                List.of(ALTERNATIVE_ID_CLAIM));
     }
 
 
