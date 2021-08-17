@@ -30,7 +30,7 @@ const Input = styled("input")<{ large?: boolean }>`
 
 const SignalIcon = styled(FaIcon)`
   position: absolute;
-  top: ${({ large }) => (large ? "14px" : "10px")};
+  top: 8px;
   right: 35px;
   opacity: 0.8;
 `;
@@ -45,7 +45,7 @@ const RedIcon = styled(FaIcon)`
 
 const SxWithTooltip = styled(WithTooltip)`
   position: absolute;
-  top: 7px;
+  top: 5px;
   right: 35px;
 `;
 
@@ -54,7 +54,7 @@ const ClearZoneIconButton = styled(IconButton)`
   top: ${({ large }) => (large ? "5px" : "0")};
   right: 10px;
   cursor: pointer;
-  height: 34px;
+  height: 100%;
   display: flex;
   align-items: center;
 
@@ -78,6 +78,7 @@ interface Props {
   money?: boolean;
   valid?: boolean;
   invalid?: boolean;
+  invalidText?: string;
   placeholder?: string;
   value: number | string | null;
   large?: boolean;
@@ -154,7 +155,7 @@ const BaseInput = (props: Props) => {
             <GreenIcon icon="check" large={props.large} />
           )}
           {props.invalid && (
-            <SxWithTooltip text={t("common.dateInvalid")}>
+            <SxWithTooltip text={props.invalidText}>
               <RedIcon icon="exclamation-triangle" large={props.large} />
             </SxWithTooltip>
           )}

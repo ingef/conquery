@@ -10,7 +10,7 @@ const stylesFromTheme = (theme: Theme, changed?: boolean) => ({
   control: (provided: any, state: any) => {
     return {
       ...provided,
-      minHeight: "0", // makes it a little bit smaller in height than usual
+      minHeight: "30px", // makes it a little bit smaller in height than usual
       fontSize: theme.font.sm,
       borderRadius: "3px",
       boxShadow: "none",
