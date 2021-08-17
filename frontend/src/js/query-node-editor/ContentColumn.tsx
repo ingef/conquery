@@ -38,8 +38,8 @@ const CommonSettingsContainer = styled("div")`
 `;
 
 const ContentCellGroup = styled(ContentCell)`
-  padding-bottom: 20px;
-  margin-bottom: 20px;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
   border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
 
   &:last-of-type {
