@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.Currency;
+import java.util.Date;
 import java.util.Locale;
 import java.util.function.Function;
 
@@ -30,7 +31,8 @@ public class PrintSettings {
 	private final boolean prettyPrint;
 	@ToString.Include
 	private final Locale locale;
-	private DateTimeFormatter dateFormat;
+	private final String dateFormat;
+	private final DateTimeFormatter dateFormatter;
 	private final NumberFormat decimalFormat;
 	private final NumberFormat integerFormat;
 	private final Currency currency;
@@ -64,7 +66,8 @@ public class PrintSettings {
 		this.listFormat = config.getLocale().getListFormats().get(0);
 		this.dateRangeSeparator = config.getLocale().findDateRangeSeparator(locale);
 
-		this.dateFormat = config.getLocale().findDateTimeFormater(locale);
+		this.dateFormat = config.getLocale().findDateFormat(locale);
+		this.dateFormatter = DateTimeFormatter.ofPattern(dateFormat);
 	}
 
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper) {

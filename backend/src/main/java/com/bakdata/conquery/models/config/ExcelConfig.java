@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.config;
 
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.google.common.collect.ImmutableMap;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,8 +35,7 @@ public class ExcelConfig {
 			BASIC_STYLE, new CellStyler(),
 			CURRENCY_STYLE_PREFIX+"EUR", new CellStyler().withDataFormatString("#,##0.00 €"),
 			NUMERIC_STYLE, new CellStyler().withDataFormatString("#,##0.00"),
-			INTEGER_STYLE, new CellStyler().withDataFormatString("#,###"),
-			DATE_STYLE, new CellStyler().withDataFormatString("yyyy-mm-dd")
+			INTEGER_STYLE, new CellStyler().withDataFormatString("#,###")
 	);
 
 	/**
@@ -52,13 +52,17 @@ public class ExcelConfig {
 	private int defaultColumnWidth = 30;
 
 
-	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook){
+	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook, PrintSettings settings){
 		ImmutableMap.Builder<String, CellStyle> styles = ImmutableMap.builder();
+
+		// Add localized DateCell style
+		styles.put(DATE_STYLE, new CellStyler().withDataFormatString(settings.getDateFormat()).generateStyle(workbook));
 
 		// Build configured styles
 		for (Map.Entry<String, CellStyler> entry : this.styles.entrySet()) {
 			styles.put(entry.getKey(), entry.getValue().generateStyle(workbook));
 		}
+
 
 		// Add missing basic styles
 		for (String s : FALLBACK_STYLES.keySet()) {

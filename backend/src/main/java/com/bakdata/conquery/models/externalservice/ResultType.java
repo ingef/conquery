@@ -1,12 +1,10 @@
 package com.bakdata.conquery.models.externalservice;
 
 import c10n.C10N;
-import c10n.share.LocaleMapping;
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -24,8 +22,6 @@ import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -204,10 +200,11 @@ public abstract class ResultType {
             if(!(f instanceof Number)) {
                 throw new IllegalStateException("Expected an Number but got an '" + f.getClass().getName() + "' with the value: " + f);
             }
+            final Number number = (Number) f;
             if (cfg.isPrettyPrint()) {
-                return cfg.getDateFormat().format(CDate.toLocalDate(((Number) f).intValue()));
+                return print(number, cfg.getDateFormatter());
             }
-            return print((Number) f, cfg.getDateFormat());
+            return CDate.toLocalDate(number.intValue()).toString();
         }
 
         @Override
@@ -241,7 +238,7 @@ public abstract class ResultType {
             if(list.size() != 2) {
                 throw new IllegalStateException("Expected a list with 2 elements, one min, one max. The list was: " + list);
             }
-            final DateTimeFormatter dateFormat = cfg.getDateFormat();
+            final DateTimeFormatter dateFormat = cfg.getDateFormatter();
             final Integer min = (Integer) list.get(0);
             final Integer max = (Integer) list.get(1);
             String minString = min == Integer.MIN_VALUE ? "-∞" : ResultType.DateT.print(min, dateFormat);
@@ -315,7 +312,7 @@ public abstract class ResultType {
         private final ResultType elementType;
 
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-		public ListT(ResultType elementType) {
+		public ListT(@NonNull ResultType elementType) {
 			this.elementType = elementType;
 		}
 

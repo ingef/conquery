@@ -101,23 +101,20 @@ public class LocaleConfig {
 		return findClosestMatch(locale, localeRangeStartEndSeparators, "/");
 	}
 
+
+
 	/**
-	 * Finds the best formatter according to the locale and mapped date formatters.
+	 * Finds the best date format according to the locale and mapped date formatters.
 	 * If there is no perfect match, the locale is abstracted, see findClosestMatch.
 	 */
-	public DateTimeFormatter findDateTimeFormater(Locale locale) {
-		return DateTimeFormatter.ofPattern(findClosestMatch(locale, dateFormatMapping, "yyyy-MM-dd"));
+	public String findDateFormat(Locale locale) {
+		return findClosestMatch(locale, dateFormatMapping, "yyyy-MM-dd");
 	}
 
 	/**
 	 * Helper method to find the best match for a given locale using its abstractions.
 	 * First the vanilla locale is checked, then abstractions to country and language.
 	 * The last resort is the {@link Locale#ROOT}. If no match is found, the alternative is returned.
-	 *
-	 * @param forLocale
-	 * @param options
-	 * @param <T>
-	 * @return
 	 */
 	private static <T> T findClosestMatch(Locale forLocale, Map<Locale,T> options, T alternative) {
 		String country = forLocale.getCountry();
