@@ -149,6 +149,7 @@ const InputDateRange: FC<PropsT> = ({
             value={min}
             valid={isMinValid}
             invalid={min.length !== 0 && !isMinValid}
+            invalidText={t("common.dateInvalid")}
             placeholder={displayDateFormat.toUpperCase()}
             onChange={(val) =>
               onChangeRaw("min", val as string, displayDateFormat)
@@ -165,6 +166,7 @@ const InputDateRange: FC<PropsT> = ({
             value={max}
             valid={isMaxValid}
             invalid={max.length !== 0 && !isMaxValid}
+            invalidText={t("common.dateInvalid")}
             placeholder={displayDateFormat.toUpperCase()}
             onChange={(val) =>
               onChangeRaw("max", val as string, displayDateFormat)
