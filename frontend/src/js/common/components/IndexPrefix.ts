@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 
 export const IndexPrefix = styled("span")`
+  flex-shrink: 0;
   display: inline-block;
   margin-right: 7px;
   border-radius: ${({ theme }) => theme.borderRadius};
