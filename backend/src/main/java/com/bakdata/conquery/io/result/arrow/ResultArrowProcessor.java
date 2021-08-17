@@ -80,21 +80,14 @@ public class ResultArrowProcessor {
 				(EntityResult cer) -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState));
 
 
-		StreamingOutput out = new StreamingOutput() {
+		StreamingOutput out = output -> renderToStream(writerProducer.apply(output),
+				settings,
+				config.getArrow().getBatchSize(),
+				idMappingConf.getPrintIdFields(),
+				exec.getResultInfo(),
+				exec.streamResults());
 
-			@Override
-			public void write(OutputStream output) throws IOException, WebApplicationException {
-				renderToStream(writerProducer.apply(output),
-						settings,
-						config.getArrow().getBatchSize(),
-						idMappingConf.getPrintIdFields(),
-						exec.getResultInfo(),
-						exec.streamResults());
-
-			}
-		};
-
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.attachment);
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 }
