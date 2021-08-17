@@ -2,11 +2,12 @@ package com.bakdata.conquery.commands;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
@@ -172,6 +173,7 @@ public class MigrateCommand extends Command {
 
 	private void doMigrate(Environment inEnvironment, Store inStore, Environment outEnvironment, Store outStore, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectMapper mapper) {
 
+		ConqueryMDC.setLocation(inEnvironment.getLocation() + "\t" + inStore.getName());
 
 		final Transaction readTx = inEnvironment.beginReadonlyTransaction();
 		final Transaction writeTx = outEnvironment.beginExclusiveTransaction();
@@ -185,20 +187,24 @@ public class MigrateCommand extends Command {
 
 			while (cursor.getNext()) {
 
+				// Everything is mapped with Smile so even the keys.
 				final String key = mapper.readValue(cursor.getKey().getBytesUnsafe(), String.class);
 
 				final ObjectNode node = mapper.readValue(cursor.getValue().getBytesUnsafe(), ObjectNode.class);
 
-				final Tuple
-						migrated =
+				// Apply the migrator, it will return new key and value
+				final Tuple<?> migrated =
 						migrator.invoke(inEnvironment.getLocation(), inStore.getName(), key, node);
 
+				// => Effectively delete the object
 				if (migrated == null) {
 					log.debug("Deleting key `{}`", key);
 					continue;
 				}
 
-				ByteIterable keyIter = new ArrayByteIterable(((String) migrated.get(0)).getBytes(StandardCharsets.UTF_8));
+				// Serialize the values and write them into new Store.
+				final ByteIterable keyIter = new ArrayByteIterable(mapper.writeValueAsBytes(migrated.get(0)));
+
 				final ByteIterable valueIter = new ArrayByteIterable(mapper.writeValueAsBytes(migrated.get(1)));
 
 				if (log.isTraceEnabled()) {
@@ -215,8 +221,11 @@ public class MigrateCommand extends Command {
 				}
 			}
 		}
+		catch (JsonMappingException e) {
+			log.error("Failed to Map", e);
+		}
 		catch (IOException e) {
-			//TODO handle for mapper
+			log.error("Failed in IO", e);
 		}
 		finally {
 			readTx.abort();
