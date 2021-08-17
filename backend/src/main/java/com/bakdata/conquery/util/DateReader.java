@@ -107,24 +107,24 @@ public class DateReader {
 			try{
 				return parseToCDateRange(value,lastSep);
 			} catch (ParsingException e) {
-				log.trace("Parsing with last used config failed for date range: " + value, e);
+				log.trace("Parsing with last used config failed for date range: {}", value, e);
 			}
 		}
 
 		for(String sep : rangeStartEndSeperators) {
 			try {
 				result = parseToCDateRange(value,sep);
+				lastRangeFormat.set(sep);
 			} catch (ParsingException e) {
-				log.trace("Parsing failed for date range: " + value, e);
+				log.trace("Parsing failed for date range: {}", value, e);
 				continue;
 			}
-			lastRangeFormat.set(sep);
 			break;
 		}
 		if (result != null) {
 			return result;
 		}
-		throw new ParsingException("Non of the configured formats allowed to parse the date range: " + value);
+		throw new ParsingException("None of the configured formats allowed to parse the date range: " + value);
 	}
 
 	private CDateRange parseToCDateRange(String value, String sep) {
@@ -187,10 +187,17 @@ public class DateReader {
 		assert(rangeSep.length() >= 1);
 		assert(setEnd.length() < 2);
 
+		/*
+		 Create a matcher pattern, that captures the date ranges in group 1 (the only group that is captured and which
+		 is not allowed to hold any of the set-delimiters)
+
+		 Groups starting with "?:" are not captured. The format parameters are reused in the format string by positional
+		 reference "%X$s" where X refers to the position of the argument in String.format(...).
+		 */
 		return Pattern.compile(String.format("(?:(?:%1$s)|(?:%2$s\\s*))([^%1$s%2$s%3$s]+)(?:%3$s)?",
-				setBegin.isEmpty() ? "" : Pattern.quote(setBegin),
-				Pattern.quote(rangeSep),
-				setEnd.isEmpty() ? "" : Pattern.quote(setEnd)));
+				setBegin.isEmpty() ? "" : Pattern.quote(setBegin), // referenced as: %1$s
+				Pattern.quote(rangeSep),  // referenced as: %2$s
+				setEnd.isEmpty() ? "" : Pattern.quote(setEnd)));  // referenced as: %3$s
 	}
 
 	/**

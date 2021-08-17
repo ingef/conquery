@@ -30,8 +30,6 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public class CDateSet {
 
-	private static final String PARSE_PATTERN_TEMPLATE =  "(\\%1$c|%2$c\\s*)(([^%1$c%2$c%3$c%4$c]*+)/([^^%1$c%2$c%3$c%4$c]*+))"; // set_begin, range_sep, range_start_end_sep, set_end
-	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)(([^/{}]*+)/([^/{}]*+))");
 	private final NavigableMap<Integer, CDateRange> rangesByLowerBound;
 	private transient Set<CDateRange> asRanges;
 	private transient Set<CDateRange> asDescendingSetOfRanges;
