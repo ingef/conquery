@@ -20,13 +20,20 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 @Slf4j
 public class ResultUtil {
 
 	public static enum ContentDispositionOption {
-		inline,
-		attachment
+		// Try to display payload in the browser
+		INLINE,
+		// Force download of the payload by the browser
+		ATTACHMENT;
+
+		String getHeaderValue() {
+			return this.name().toLowerCase(Locale.ROOT);
+		}
 	}
 
 	
@@ -45,7 +52,7 @@ public class ResultUtil {
 		if(!(Strings.isNullOrEmpty(label) || label.isBlank())) {
 			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
 			response.header("Content-Disposition", String.format(
-					"%s; filename=\"%s\"", disposition, FileUtil.makeSafeFileName(label, fileExtension)));
+					"%s; filename=\"%s\"", disposition.getHeaderValue(), FileUtil.makeSafeFileName(label, fileExtension)));
 		}
 		return response.build();
 	}
