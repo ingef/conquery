@@ -80,6 +80,11 @@ public class StringTypeEncoded implements StringStore {
 
 	@Override
 	public int getId(String value) {
+		// Make sure we can even decode before doing so
+		if (!encoding.canEncode(value)) {
+			return -1;
+		}
+
 		return subType.getId(encoding.encode(value));
 	}
 
