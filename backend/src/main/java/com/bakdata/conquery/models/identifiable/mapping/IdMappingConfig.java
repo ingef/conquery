@@ -28,8 +28,9 @@ public abstract class IdMappingConfig {
 
 		PersistentIdMap mapping = new PersistentIdMap();
 
-		if (!Arrays.equals(this.getHeader(), csvIterator.next(), StringUtils::compareIgnoreCase)) {
-			throw new IllegalArgumentException("The uploaded CSVs Header does not match the expected");
+		final String[] receivedHeader = csvIterator.next();
+		if (!Arrays.equals(this.getHeader(), receivedHeader, StringUtils::compareIgnoreCase)) {
+			throw new IllegalArgumentException("The uploaded CSVs Header does not match the expected. Expected: " + Arrays.toString(this.getHeader()) + " Received: " + Arrays.toString(receivedHeader));
 		}
 
 		// first column is the external key, the rest is part of the csv id
