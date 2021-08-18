@@ -66,7 +66,7 @@ public class MigrateCommand extends Command {
 	public void configure(Subparser subparser) {
 		subparser
 				.addArgument("--in")
-				.help("Input store.")
+				.help("Input storage directory.")
 				.required(true)
 				.type(Arguments.fileType().verifyIsDirectory().verifyCanRead());
 
