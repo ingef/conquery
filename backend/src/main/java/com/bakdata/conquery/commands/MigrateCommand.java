@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,9 +18,6 @@ import com.github.powerlibraries.io.In;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import groovy.lang.Tuple;
-import io.dropwizard.cli.Command;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.util.Size;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Cursor;
@@ -54,10 +53,9 @@ import org.codehaus.groovy.control.CompilerConfiguration;
  * - `--in` root to the input storage, containing one or multiple environments. This storage is opened in read-only mode.
  * - `--out` root directory of the output storage where data will be written to. This storage will be truncated before usage.
  * - `--script` the above outline groovy script.
- * - `--logsize` {@link Store} size of logs.
  */
 @Slf4j
-public class MigrateCommand extends Command {
+public class MigrateCommand extends ConqueryCommand {
 
 
 	public MigrateCommand() {
@@ -74,7 +72,7 @@ public class MigrateCommand extends Command {
 
 		subparser
 				.addArgument("--out")
-				.help("Output store.")
+				.help("Output storage directory.")
 				.required(true)
 				.type(Arguments.fileType());
 
@@ -82,22 +80,16 @@ public class MigrateCommand extends Command {
 				.addArgument("--script")
 				.help("Migration Script.")
 				.required(true)
-				.type(Arguments.fileType().verifyCanRead());
-
-		subparser
-				.addArgument("--logsize")
-				.help("Log-size of stores.")
-				.required(true);
+				.type(Arguments.fileType().verifyCanRead().verifyCanExecute());
 	}
 
 	@Override
-	public void run(Bootstrap<?> bootstrap, Namespace namespace) throws Exception {
+	protected void run(io.dropwizard.setup.Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
 
 		final File inStoreDirectory = namespace.get("in");
 		final File outStoreDirectory = namespace.get("out");
 
-		// Note: We are using the deprecated Size instead of Datasize because our XodusConfig also uses Size and they actually produce slightly different results.
-		final long logsize = Size.parse(namespace.get("logsize")).toKilobytes();
+		final long logsize = ((XodusStoreFactory) configuration.getStorage()).getXodus().getLogFileSize().toKilobytes();
 
 
 		final File[] environments = inStoreDirectory.listFiles(File::isDirectory);
@@ -135,6 +127,7 @@ public class MigrateCommand extends Command {
 					   });
 
 	}
+
 
 	/**
 	 * Class defining the interface for the Groovy-Script.
