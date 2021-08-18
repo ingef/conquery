@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -162,8 +163,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
+		final Locale locale = I18n.LOCALE.get();
+
 		// First add the id columns to the descriptor list. The are the first columns
-		for (String header : config.getFrontend().getQueryUpload().getPrintIdFields()) {
+		for (String header : config.getFrontend().getQueryUpload().getPrintIdFields(locale)) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(header)
 												   .type(ResultType.IdT.INSTANCE.typeInfo())
@@ -171,7 +174,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		}
 
 		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null);
+		PrintSettings settings = new PrintSettings(true, locale, datasetRegistry, config, null);
 
 		getResultInfo().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
 		return columnDescriptions;

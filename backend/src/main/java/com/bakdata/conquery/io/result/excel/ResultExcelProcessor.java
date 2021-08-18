@@ -1,5 +1,12 @@
 package com.bakdata.conquery.io.result.excel;
 
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
+
+import java.util.Locale;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -7,20 +14,13 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.RequiredArgsConstructor;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-
-import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
 @RequiredArgsConstructor
 public class ResultExcelProcessor {
@@ -40,9 +40,10 @@ public class ResultExcelProcessor {
 
 		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user,exec,namespace);
 
+		final Locale locale = I18n.LOCALE.get();
 		PrintSettings settings = new PrintSettings(
 				pretty,
-				I18n.LOCALE.get(),
+				locale,
 				datasetRegistry,
 				config,
 				idPrinter::createId
@@ -52,7 +53,7 @@ public class ResultExcelProcessor {
 
 		StreamingOutput out = output -> excelRenderer.renderToStream(
 				settings,
-				config.getFrontend().getQueryUpload().getPrintIdFields(),
+				config.getFrontend().getQueryUpload().getPrintIdFields(locale),
 				(ManagedExecution<?> & SingleTableResult)exec,
 				output
 		);

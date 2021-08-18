@@ -7,6 +7,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDown
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.Locale;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -48,13 +49,14 @@ public class ResultCsvProcessor {
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user,exec,namespace);
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user, exec, namespace);
 
 
 		// Get the locale extracted by the LocaleFilter
+		final Locale locale = I18n.LOCALE.get();
 		PrintSettings settings = new PrintSettings(
 				pretty,
-				I18n.LOCALE.get(),
+				locale,
 				datasetRegistry,
 				config,
 				idPrinter::createId
@@ -65,7 +67,7 @@ public class ResultCsvProcessor {
 		StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getFrontend().getQueryUpload().getPrintIdFields(), exec.getResultInfo(), exec.streamResults());
+				renderer.toCSV(config.getFrontend().getQueryUpload().getPrintIdFields(locale), exec.getResultInfo(), exec.streamResults());
 			}
 			catch (EofException e) {
 				log.info("User canceled download");
