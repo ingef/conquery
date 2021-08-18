@@ -33,6 +33,27 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
+/**
+ * Command allowing script based migration of databases. Especially useful for data that cannot be easily recreated after reimports, such as {@link com.bakdata.conquery.models.auth.entities.User}s and {@link com.bakdata.conquery.models.execution.ManagedExecution}s.
+ *
+ * The supplied groovy scripts is expected to return a closure in the form of
+ *
+ * <code>
+ *     return {
+ *        String env, String store, String key, ObjectNode value -> return new Tuple(key,value)
+ *        }
+ * </code>
+ *
+ * The migration will call the returned method on all values in all stores, the returned {@link Tuple} will be used to insert the value into the store. The first value should contain a {@link String} as key, and and {@link ObjectNode} as value to be written into the store.
+ *
+ * Returning null effectively deletes the processed value.
+ *
+ * The command has four required parameters:
+ * 	- `--in` root to the input storage, containing one or multiple environments. This storage is opened in read-only mode.
+ * 	- `--out` root directory of the output storage where data will be written to. This storage will be truncated before usage.
+ * 	- `--script` the above outline groovy script.
+ * 	- `--logsize` {@link Store} size of logs.
+ */
 @Slf4j
 public class MigrateCommand extends Command {
 
@@ -73,6 +94,7 @@ public class MigrateCommand extends Command {
 		final File inStoreDirectory = namespace.get("in");
 		final File outStoreDirectory = namespace.get("out");
 
+		// Note: We are using the deprecated Size instead of Datasize because our XodusConfig also uses Size and they actually produce slightly different results.
 		final long logsize = Size.parse(namespace.get("logsize")).toKilobytes();
 
 
@@ -83,6 +105,7 @@ public class MigrateCommand extends Command {
 			return;
 		}
 
+		// Create Groovy Shell and parse script
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.setScriptBaseClass(MigrationScriptFactory.class.getName());
 		GroovyShell groovy = new GroovyShell(config);
@@ -104,7 +127,9 @@ public class MigrateCommand extends Command {
 
 	}
 
-
+	/**
+	 * Class defining the interface for the Groovy-Script.
+	 */
 	public static abstract class MigrationScriptFactory extends Script {
 
 		/**
@@ -214,7 +239,7 @@ public class MigrateCommand extends Command {
 					log.debug("Mapped `{}`", new String(keyIter.getBytesUnsafe()));
 				}
 
-				outStore.putRight(writeTx, keyIter, valueIter);
+				outStore.put(writeTx, keyIter, valueIter);
 
 				if (++processed % (1 + (count / 10)) == 0) {
 					log.info("Processed {} / {} ({}%)", processed, count, Math.round(100f * (float) processed / (float) count));
