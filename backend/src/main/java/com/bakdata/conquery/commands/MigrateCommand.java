@@ -9,6 +9,8 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
 import groovy.lang.GroovyShell;
@@ -35,24 +37,24 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 
 /**
  * Command allowing script based migration of databases. Especially useful for data that cannot be easily recreated after reimports, such as {@link com.bakdata.conquery.models.auth.entities.User}s and {@link com.bakdata.conquery.models.execution.ManagedExecution}s.
- *
+ * <p>
  * The supplied groovy scripts is expected to return a closure in the form of
  *
  * <code>
- *     return {
- *        String env, String store, String key, ObjectNode value -> return new Tuple(key,value)
- *        }
+ * return {
+ * String env, String store, String key, ObjectNode value -> return new Tuple(key,value)
+ * }
  * </code>
- *
+ * <p>
  * The migration will call the returned method on all values in all stores, the returned {@link Tuple} will be used to insert the value into the store. The first value should contain a {@link String} as key, and and {@link ObjectNode} as value to be written into the store.
- *
+ * <p>
  * Returning null effectively deletes the processed value.
- *
+ * <p>
  * The command has four required parameters:
- * 	- `--in` root to the input storage, containing one or multiple environments. This storage is opened in read-only mode.
- * 	- `--out` root directory of the output storage where data will be written to. This storage will be truncated before usage.
- * 	- `--script` the above outline groovy script.
- * 	- `--logsize` {@link Store} size of logs.
+ * - `--in` root to the input storage, containing one or multiple environments. This storage is opened in read-only mode.
+ * - `--out` root directory of the output storage where data will be written to. This storage will be truncated before usage.
+ * - `--script` the above outline groovy script.
+ * - `--logsize` {@link Store} size of logs.
  */
 @Slf4j
 public class MigrateCommand extends Command {
@@ -116,13 +118,20 @@ public class MigrateCommand extends Command {
 
 		final ObjectMapper mapper = Jackson.BINARY_MAPPER;
 
+		final ObjectReader keyReader = mapper.readerFor(String.class);
+		final ObjectReader valueReader = mapper.readerFor(ObjectNode.class);
+		final ObjectWriter keyWriter = mapper.writerFor(String.class);
+		final ObjectWriter valueWriter = mapper.writerFor(ObjectNode.class);
+
+
 		Arrays.stream(environments)
 			  .parallel()
 			  .forEach(xenv ->
 					   {
 						   final File environmentDirectory = new File(outStoreDirectory, xenv.getName());
 						   environmentDirectory.mkdirs();
-						   processEnvironment(xenv, logsize, environmentDirectory, migrator, mapper);
+
+						   processEnvironment(xenv, logsize, environmentDirectory, migrator, keyReader, valueReader, keyWriter, valueWriter);
 					   });
 
 	}
@@ -139,7 +148,7 @@ public class MigrateCommand extends Command {
 		public abstract Function4<String, String, String, ObjectNode, Tuple> run();
 	}
 
-	private void processEnvironment(File inStoreDirectory, long logSize, File outStoreDirectory, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectMapper mapper) {
+	private void processEnvironment(File inStoreDirectory, long logSize, File outStoreDirectory, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectReader keyReader, ObjectReader valueReader, ObjectWriter keyWriter, ObjectWriter valueWriter) {
 		final jetbrains.exodus.env.Environment inEnvironment = Environments.newInstance(
 				inStoreDirectory,
 				new EnvironmentConfig().setLogFileSize(logSize)
@@ -180,7 +189,7 @@ public class MigrateCommand extends Command {
 				continue;
 			}
 
-			doMigrate(inEnvironment, inStore, outEnvironment, outStore, migrator, mapper);
+			doMigrate(inStore, outStore, migrator, keyReader, valueReader, keyWriter, valueWriter);
 			log.info("Done writing {}.", store);
 		}
 
@@ -196,7 +205,10 @@ public class MigrateCommand extends Command {
 		inEnvironment.close();
 	}
 
-	private void doMigrate(Environment inEnvironment, Store inStore, Environment outEnvironment, Store outStore, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectMapper mapper) {
+	private void doMigrate(Store inStore, Store outStore, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectReader keyReader, ObjectReader valueReader, ObjectWriter keyWriter, ObjectWriter valueWriter) {
+
+		final Environment inEnvironment = inStore.getEnvironment();
+		final Environment outEnvironment = outStore.getEnvironment();
 
 		ConqueryMDC.setLocation(inEnvironment.getLocation() + "\t" + inStore.getName());
 
@@ -213,9 +225,9 @@ public class MigrateCommand extends Command {
 			while (cursor.getNext()) {
 
 				// Everything is mapped with Smile so even the keys.
-				final String key = mapper.readValue(cursor.getKey().getBytesUnsafe(), String.class);
+				final String key = keyReader.readValue(cursor.getKey().getBytesUnsafe());
 
-				final ObjectNode node = mapper.readValue(cursor.getValue().getBytesUnsafe(), ObjectNode.class);
+				final ObjectNode node = valueReader.readValue(cursor.getValue().getBytesUnsafe());
 
 				// Apply the migrator, it will return new key and value
 				final Tuple<?> migrated =
@@ -228,9 +240,9 @@ public class MigrateCommand extends Command {
 				}
 
 				// Serialize the values and write them into new Store.
-				final ByteIterable keyIter = new ArrayByteIterable(mapper.writeValueAsBytes(migrated.get(0)));
+				final ByteIterable keyIter = new ArrayByteIterable(keyWriter.writeValueAsBytes(migrated.get(0)));
 
-				final ByteIterable valueIter = new ArrayByteIterable(mapper.writeValueAsBytes(migrated.get(1)));
+				final ByteIterable valueIter = new ArrayByteIterable(valueWriter.writeValueAsBytes(migrated.get(1)));
 
 				if (log.isTraceEnabled()) {
 					log.trace("Mapped `{}` to \n{}", new String(keyIter.getBytesUnsafe()), new String(valueIter.getBytesUnsafe()));
