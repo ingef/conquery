@@ -78,7 +78,7 @@ public class MigrateCommand extends ConqueryCommand {
 
 		subparser
 				.addArgument("--script")
-				.help("Migration Script.")
+				.help("Migration Script returning a closure implementing MigrationScriptFactory. See supplementary example.groovy for details.\nSignature: String env, String store, String key, ObjectNode value -> return new Tuple(key,value)")
 				.required(true)
 				.type(Arguments.fileType().verifyCanRead().verifyCanExecute());
 	}
