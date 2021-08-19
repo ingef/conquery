@@ -32,6 +32,9 @@
 				'/admin/datasets',
 				{
 					method: 'post',
+					headers: {
+                        'Content-Type': 'application/json'
+                    },
 					credentials: 'same-origin',
 					body: JSON.stringify({
 							name: document.getElementById('entity_id').value,
