@@ -81,14 +81,26 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 				Bucket bucket = cBlock.getBucket();
 				Table table = bucket.getTable();
 
+				final int[] entitiesPerEvent = new int[bucket.getNumberOfEvents()];
+
+				for (Integer entity : bucket.getEntities()) {
+					final int to = bucket.getEntityEnd(entity);
+
+					for (int index = bucket.getEntityStart(entity); index < to; index++) {
+						entitiesPerEvent[index] = entity;
+					}
+				}
+
 				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 
 					final int[] localIds = cBlock.getEventMostSpecificChild(event);
 
+					final int entity = entitiesPerEvent[event];
+
 					if (!(concept instanceof TreeConcept) || localIds == null) {
 
 						results.computeIfAbsent(concept, (ignored) -> new MatchingStats.Entry())
-							   .addEvent(table, bucket, event);
+							   .addEvent(table, bucket, event, entity);
 
 						continue;
 					}
@@ -101,7 +113,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 
 					while (element != null) {
 						results.computeIfAbsent(((ConceptElement<?>) element), (ignored) -> new MatchingStats.Entry())
-							   .addEvent(table, bucket, event);
+							   .addEvent(table, bucket, event, entity);
 						element = element.getParent();
 					}
 				}

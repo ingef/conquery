@@ -61,9 +61,10 @@ public class MatchingStats {
 		private Set<Integer> foundEntities = new HashSet<>();
 
 		private CDateRange span;
-		public void addEvent(Table table, Bucket bucket, int event) {
+
+		public void addEvent(Table table, Bucket bucket, int event, int entityForEvent) {
 			numberOfEvents++;
-			foundEntities.add(bucket.getEntityFromEvent(event));
+			foundEntities.add(entityForEvent);
 
 			for (Column c : table.getColumns()) {
 				if (!c.getType().isDateCompatible()) {
