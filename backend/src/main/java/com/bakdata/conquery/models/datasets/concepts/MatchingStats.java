@@ -60,10 +60,10 @@ public class MatchingStats {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class Entry {
-		private long numberOfEvents = 0;
-		private Set<Integer> foundEntities = new HashSet<>();
-
+		private long numberOfEvents;
+		private IntSet foundEntities ;//= new IntOpenHashSet();
 		private CDateRange span;
+
 		public void addEvent(Table table, Bucket bucket, int event) {
 			numberOfEvents++;
 			foundEntities.add(bucket.getEntityFromEvent(event));
