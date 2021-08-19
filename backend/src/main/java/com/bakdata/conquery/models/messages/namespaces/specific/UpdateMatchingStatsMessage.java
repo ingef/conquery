@@ -47,8 +47,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 										* 5_000); // Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
 
 		List<CompletableFuture<?>> subJobs =
-				worker.getStorage()
-					  .getAllConcepts()
+				worker.getStorage().getAllConcepts()
 					  .stream()
 					  .map(concept -> CompletableFuture.runAsync(() -> calculateConceptMatches(concept, messages, worker), worker.getExecutorService()))
 					  .collect(Collectors.toList());
@@ -83,6 +82,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 
 				final int[] entitiesPerEvent = new int[bucket.getNumberOfEvents()];
 
+				//TODO use a cache for this so we don't calculate this multiple times
 				for (Integer entity : bucket.getEntities()) {
 					final int to = bucket.getEntityEnd(entity);
 
