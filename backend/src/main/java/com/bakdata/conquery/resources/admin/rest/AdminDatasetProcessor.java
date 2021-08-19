@@ -357,7 +357,7 @@ public class AdminDatasetProcessor {
 		));
 	}
 
-	public PersistentIdMap getIdMapping(Namespace namespace) {
+	public EntityIdMap getIdMapping(Namespace namespace) {
 		return namespace.getStorage().getIdMapping();
 	}
 }
