@@ -164,7 +164,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		// Reload the dataset and assert the state.
 		// We have to do some weird trix with StandaloneSupport to open it with another Dataset
 		{
-			final Dataset newDataset = conquery.getDatasetsProcessor().addDataset(dataset.getName());
+			final Dataset newDataset = conquery.getDatasetsProcessor().addDataset(dataset);
 			conquery.waitUntilWorkDone();
 
 			final StandaloneSupport conquery2 =

@@ -29,7 +29,7 @@ import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.apiv1.frontend.FERoot;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
-import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.common.Range;
@@ -114,7 +114,7 @@ public class Constants {
 			Group.builder().name("Config JSON")
 				 .description("The `config.json` is required for every type of execution. Its root element is a [ConqueryConfig](#Type-ConqueryConfig) object.")
 				 .base(new Base(AuthorizationConfig.class, "An `AuthorizationConfig` defines the initial users that are created on application startup and other permission related options."))
-				 .base(new Base(AuthenticationConfig.class, "An `AuthenticationConfig` is used to define how specific realms for authentication are configured."))
+				 .base(new Base(AuthenticationRealmFactory.class, "An `AuthenticationConfig` is used to define how specific realms for authentication are configured."))
 				 .base(new Base(PluginConfig.class, "A `PluginConfig` is used to define settings for Conquery plugins."))
 				 .otherClass(APIConfig.class)
 				 .otherClass(ConqueryConfig.class)

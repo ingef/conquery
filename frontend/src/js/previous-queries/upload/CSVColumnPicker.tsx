@@ -36,6 +36,7 @@ const Td = styled("td")`
 const Th = styled("th")`
   font-size: ${({ theme }) => theme.font.xs};
   min-width: 125px;
+  vertical-align: top;
 `;
 
 const SxIconButton = styled(IconButton)`

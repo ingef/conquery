@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
@@ -16,18 +15,12 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import org.apache.arrow.vector.types.FloatingPointPrecision;
-import org.apache.arrow.vector.types.pojo.ArrowType;
-import org.apache.arrow.vector.types.pojo.Field;
-import org.apache.arrow.vector.types.pojo.FieldType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.StringJoiner;
-
-import static com.bakdata.conquery.io.result.arrow.ArrowUtil.NAMED_FIELD_DATE_DAY;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -43,9 +36,6 @@ public abstract class ResultType {
     protected String print(PrintSettings cfg, @NonNull Object f) {
         return f.toString();
     }
-
-    public abstract Field getArrowFieldType(ResultInfo info, PrintSettings settings);
-
 
     public abstract String typeInfo();
 
@@ -100,12 +90,6 @@ public abstract class ResultType {
 
 			return (Boolean) f ? "1" : "0";
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(ArrowType.Bool.INSTANCE), null);
-        }
-
     }
 
 
@@ -122,12 +106,6 @@ public abstract class ResultType {
             }
             return f.toString();
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
-        }
-
     }
 
     @CPSType(id = "NUMERIC", base = ResultType.class)
@@ -143,12 +121,6 @@ public abstract class ResultType {
             }
             return f.toString();
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null);
-        }
-
     }
 
     @CPSType(id = "CATEGORICAL", base = ResultType.class)
@@ -156,11 +128,6 @@ public abstract class ResultType {
     public static class CategoricalT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final CategoricalT INSTANCE = new CategoricalT();
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-        }
     }
 
     @CPSType(id = "RESOLUTION", base = ResultType.class)
@@ -182,11 +149,6 @@ public abstract class ResultType {
                 throw new IllegalArgumentException(f + " is not a valid resolution.", e);
             }
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-        }
     }
 
     @CPSType(id = "DATE", base = ResultType.class)
@@ -205,11 +167,6 @@ public abstract class ResultType {
                 return print(number, cfg.getDateFormatter());
             }
             return CDate.toLocalDate(number.intValue()).toString();
-        }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return NAMED_FIELD_DATE_DAY.apply(info.getUniqueName(settings));
         }
 
         public static String print(Number num, DateTimeFormatter formatter) {
@@ -245,17 +202,6 @@ public abstract class ResultType {
             String maxString = max == Integer.MAX_VALUE ? "+∞" : ResultType.DateT.print(max, dateFormat);
             return minString + cfg.getDateRangeSeparator() + maxString;
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(
-                    info.getUniqueName(settings),
-                    FieldType.nullable(ArrowType.Struct.INSTANCE),
-                    List.of(
-                            NAMED_FIELD_DATE_DAY.apply("min"),
-                            NAMED_FIELD_DATE_DAY.apply("max")
-                    ));
-        }
     }
 
     @CPSType(id = "STRING", base = ResultType.class)
@@ -263,11 +209,6 @@ public abstract class ResultType {
     public static class StringT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final StringT INSTANCE = new StringT();
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-        }
     }
 
     @CPSType(id = "ID", base = ResultType.class)
@@ -275,11 +216,6 @@ public abstract class ResultType {
     public static class IdT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
         public static final IdT INSTANCE = new IdT();
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Utf8()), null);
-        }
     }
 
     @CPSType(id = "MONEY", base = ResultType.class)
@@ -296,13 +232,6 @@ public abstract class ResultType {
             }
             return IntegerT.INSTANCE.print(cfg, f);
         }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            return new Field(info.getUniqueName(settings), FieldType.nullable(new ArrowType.Int(32, true)), null);
-        }
-
-
     }
 
     @CPSType(id = "LIST", base = ResultType.class)
@@ -329,16 +258,6 @@ public abstract class ResultType {
                 joiner.add(elementType.print(cfg,obj).replace(cfg.getListFormat().getSeparator(), listDelimEscape));
             }
             return joiner.toString();
-        }
-
-        @Override
-        public Field getArrowFieldType(ResultInfo info, PrintSettings settings) {
-            final Field nestedField = elementType.getArrowFieldType(info, settings);
-            return new Field(
-                    info.getUniqueName(settings),
-                    FieldType.nullable(ArrowType.List.INSTANCE),
-                    List.of(nestedField)
-            );
         }
 
         @Override

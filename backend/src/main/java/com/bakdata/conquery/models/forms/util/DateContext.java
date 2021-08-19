@@ -12,6 +12,7 @@ import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.internationalization.DateContextResolutionC10n;
+import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -153,7 +154,7 @@ public class DateContext {
 	 * If the alignment is DAY, then all context will have a length of 365 day, except the dateRangeMask intersects an
 	 * edge context.
 	 */
-	public static enum Resolution {
+	public static enum Resolution implements Localized {
 		/**
 		 * For returning contexts with a single {@link CDateRange} for the entire
 		 * {@link FeatureGroup}.

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -83,14 +84,14 @@ public class FrontendConfig {
 		);
 
 		/**
-		 * Headers for Output CSV.
+		 * Localized header for output CSV.
 		 */
-		@JsonIgnore
-		@Getter(lazy = true)
-		private final List<String> printIdFields = ids.stream()
-													  .filter(ColumnConfig::isPrint)
-													  .map(ColumnConfig::getField)
-													  .collect(Collectors.toUnmodifiableList());
+		public List<String> getPrintIdFields(Locale locale) {
+			return ids.stream()
+					  .filter(ColumnConfig::isPrint)
+					  .map(col -> col.getLabel().getOrDefault(locale.getDisplayName(), col.getField()))
+					  .collect(Collectors.toUnmodifiableList());
+		}
 
 
 		@JsonIgnore
@@ -175,7 +176,8 @@ public class FrontendConfig {
 		 * Try to create a {@link FullIdPrinter} for user if they are allowed. If not allowed to read ids, they will receive a pseudomized result instead.
 		 */
 		public IdPrinter getIdPrinter(User owner, ManagedExecution<?> execution, Namespace namespace) {
-			final int size = getPrintIdFields().size();
+			final int size = (int) ids.stream().filter(ColumnConfig::isPrint).count();
+
 			final int pos = IntStream.range(0, getIds().size())
 									 .filter(idx -> getIds().get(idx).isFillAnon())
 									 .findFirst()

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.validation.Validator;
+import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
@@ -46,6 +47,7 @@ import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
+import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
@@ -81,6 +83,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private DatasetRegistry datasetRegistry;
 	private Environment environment;
 	private final List<ResourcesProvider> providers = new ArrayList<>();
+	private Client client;
 
 	// Resources without authentication
 	private DropwizardResourceConfig unprotectedAuthApi;
@@ -99,7 +102,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
-
+		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
+				.build(getName());
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
 
 		//inject datasets into the objectmapper
@@ -130,7 +134,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		loadMetaStorage();
 
-		authController = new AuthorizationController(storage, config.getAuthorization());
+		authController = new AuthorizationController(storage, config.getAuthorizationRealms());
 		environment.lifecycle().manage(authController);
 
 		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
@@ -139,7 +143,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
 
-		authController.externalInit(this, config.getAuthentication());
+		authController.externalInit(this, config.getAuthenticationRealms());
 
 
 		// Register default components for the admin interface
@@ -258,6 +262,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void stop() throws Exception {
+
 		jobManager.close();
 
 		datasetRegistry.close();
@@ -281,5 +286,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		} catch (Exception e) {
 			log.error(storage + " could not be closed", e);
 		}
+
+		client.close();
 	}
 }

@@ -7,11 +7,14 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDown
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.Locale;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -48,13 +51,14 @@ public class ResultCsvProcessor {
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user,exec,namespace);
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user, exec, namespace);
 
 
 		// Get the locale extracted by the LocaleFilter
+		final Locale locale = I18n.LOCALE.get();
 		PrintSettings settings = new PrintSettings(
 				pretty,
-				I18n.LOCALE.get(),
+				locale,
 				datasetRegistry,
 				config,
 				idPrinter::createId
@@ -65,7 +69,7 @@ public class ResultCsvProcessor {
 		StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getFrontend().getQueryUpload().getPrintIdFields(), exec.getResultInfo(), exec.streamResults());
+				renderer.toCSV(config.getFrontend().getQueryUpload().getPrintIdFields(locale), exec.getResultInfo(), exec.streamResults());
 			}
 			catch (EofException e) {
 				log.info("User canceled download");
@@ -74,7 +78,7 @@ public class ResultCsvProcessor {
 				throw new WebApplicationException("Failed to load result", e);
 			}
 		};
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv");
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv", new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 }
