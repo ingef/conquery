@@ -192,10 +192,11 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		int entity;
 		for (entity = 0; entity < start.length - 1; entity++) {
 			if (start[entity+1]>event) {
-				break;
+				return entity;
 			}
 		}
-		return entity;
+		return 0;
+
 	}
 
 	@JsonIgnore

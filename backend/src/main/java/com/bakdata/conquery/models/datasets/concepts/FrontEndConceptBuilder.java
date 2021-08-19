@@ -107,7 +107,7 @@ public class FrontEndConceptBuilder {
 				.label(c.getLabel())
 				.additionalInfos(c.getAdditionalInfos())
 				.matchingEntries(matchingStats.countEvents())
-				//.matchingEntities(matchingStats.)
+				.matchingEntities(matchingStats.countEntities())
 				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 				.detailsAvailable(Boolean.TRUE)
 				.codeListResolvable(c.countElements() > 1)

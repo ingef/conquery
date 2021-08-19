@@ -11,9 +11,10 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import it.unimi.dsi.fastutil.ints.IntHash;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import lombok.*;
 
 @Getter
 @Setter
@@ -56,6 +57,8 @@ public class MatchingStats {
 	}
 
 	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class Entry {
 		private long numberOfEvents = 0;
 		private Set<Integer> foundEntities = new HashSet<>();
