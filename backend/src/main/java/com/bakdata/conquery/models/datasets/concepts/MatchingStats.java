@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -23,6 +25,9 @@ public class MatchingStats {
 	@JsonIgnore
 	private transient long numberOfEvents = -1;
 
+	@JsonIgnore
+	private transient long numberOfEntities = -1;
+
 	public synchronized long countEvents() {
 		if (numberOfEvents == -1L) {
 			numberOfEvents = entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
@@ -30,6 +35,13 @@ public class MatchingStats {
 		return numberOfEvents;
 	}
 
+
+	public synchronized long countEntities() {
+		if (numberOfEntities == -1L) {
+			numberOfEntities = entries.values().stream().map(Entry::getFoundEntities).mapToLong(Set::size).sum();
+		}
+		return numberOfEntities;
+	}
 	public synchronized CDateRange spanEvents() {
 		if (span == null) {
 			span = entries.values().stream().map(Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
@@ -46,10 +58,13 @@ public class MatchingStats {
 	@Data
 	public static class Entry {
 		private long numberOfEvents = 0;
-		private CDateRange span;
+		private Set<Integer> foundEntities = new HashSet<>();
 
+		private CDateRange span;
 		public void addEvent(Table table, Bucket bucket, int event) {
 			numberOfEvents++;
+			foundEntities.add(bucket.getEntityFromEvent(event));
+
 			for (Column c : table.getColumns()) {
 				if (!c.getType().isDateCompatible()) {
 					continue;
@@ -60,7 +75,6 @@ public class MatchingStats {
 				}
 
 				final CDateRange time = bucket.getAsDateRange(event, c);
-
 				span = time.spanClosed(span);
 			}
 		}

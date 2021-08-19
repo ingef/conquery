@@ -188,6 +188,16 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return out;
 	}
 
+	public int getEntityFromEvent(int event) {
+		int entity;
+		for (entity = 0; entity < start.length - 1; entity++) {
+			if (start[entity+1]>event) {
+				break;
+			}
+		}
+		return entity;
+	}
+
 	@JsonIgnore
 	@Override
 	public Dataset getDataset() {
