@@ -14,6 +14,7 @@ const SxBaseInput = styled(BaseInput)`
   width: 100%;
   input {
     padding-right: 60px;
+    height: 34px;
     width: 100%;
     &::placeholder {
       color: ${({ theme }) => theme.col.grayMediumLight};

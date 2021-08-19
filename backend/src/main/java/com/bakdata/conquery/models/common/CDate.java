@@ -32,4 +32,12 @@ public final class CDate {
 		return date.getDayOfMonth() == YearMonth.from(date).lengthOfMonth();
 	}
 
+	public boolean isPositiveInfinity(int epochDay) {
+		return epochDay == Integer.MAX_VALUE;
+	}
+
+	public boolean isNegativeInfinity(int epochDay) {
+		return epochDay == Integer.MIN_VALUE;
+	}
+
 }

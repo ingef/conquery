@@ -70,7 +70,6 @@ const DatasetSelector: FC = () => {
           }
           isDisabled={!!error}
           options={options}
-          small
         />
       </Root>
     </WithTooltip>

@@ -37,7 +37,7 @@ public class EndpointTestHelper {
 		private String clazz;
 
 		public String toString() {
-			return String.format("%s\t\t%s\t\t%s", method, path, clazz);
+			return String.format("%-8s%-25s%s", method, clazz, path);
 		}
 	}
 

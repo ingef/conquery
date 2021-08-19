@@ -3,6 +3,7 @@ import styled from "@emotion/styled";
 import React, { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
+import { IndexPrefix } from "../common/components/IndexPrefix";
 import {
   formatDateFromState,
   parseDate,
@@ -35,7 +36,7 @@ const StyledLabel = styled(Label)<{ large?: boolean }>`
     `}
 `;
 
-const StyledLabeled = styled(Labeled)`
+const SxLabeled = styled(Labeled)`
   &:first-of-type {
     margin-right: 10px;
     margin-bottom: 10px;
@@ -44,6 +45,7 @@ const StyledLabeled = styled(Labeled)`
 
 interface PropsT {
   label?: ReactNode;
+  indexPrefix?: number;
   labelSuffix?: ReactNode;
   className?: string;
   inline?: boolean;
@@ -73,6 +75,7 @@ const InputDateRange: FC<PropsT> = ({
   inline,
   center,
   label,
+  indexPrefix,
   autoFocus,
   labelSuffix,
   input: { value, onChange },
@@ -133,18 +136,20 @@ const InputDateRange: FC<PropsT> = ({
     <Root center={center}>
       {label && (
         <StyledLabel large={large}>
+          {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
           {label}
           <InfoTooltip text={t("inputDateRange.tooltip.possiblePattern")} />
           {labelSuffix && labelSuffix}
         </StyledLabel>
       )}
       <Pickers inline={inline} center={center}>
-        <StyledLabeled label={t("inputDateRange.from")}>
+        <SxLabeled label={t("inputDateRange.from")}>
           <BaseInput
             inputType="text"
             value={min}
             valid={isMinValid}
             invalid={min.length !== 0 && !isMinValid}
+            invalidText={t("common.dateInvalid")}
             placeholder={displayDateFormat.toUpperCase()}
             onChange={(val) =>
               onChangeRaw("min", val as string, displayDateFormat)
@@ -154,20 +159,21 @@ const InputDateRange: FC<PropsT> = ({
               autoFocus,
             }}
           />
-        </StyledLabeled>
-        <StyledLabeled label={t("inputDateRange.to")}>
+        </SxLabeled>
+        <SxLabeled label={t("inputDateRange.to")}>
           <BaseInput
             inputType="text"
             value={max}
             valid={isMaxValid}
             invalid={max.length !== 0 && !isMaxValid}
+            invalidText={t("common.dateInvalid")}
             placeholder={displayDateFormat.toUpperCase()}
             onChange={(val) =>
               onChangeRaw("max", val as string, displayDateFormat)
             }
             onBlur={(e) => applyDate("max", e.target.value, displayDateFormat)}
           />
-        </StyledLabeled>
+        </SxLabeled>
       </Pickers>
     </Root>
   );

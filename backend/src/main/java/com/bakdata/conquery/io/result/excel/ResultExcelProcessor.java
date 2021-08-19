@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.result.excel;
 
+import com.bakdata.conquery.io.result.ResultUtil;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
 import java.util.Locale;
@@ -22,9 +23,17 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.RequiredArgsConstructor;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
+import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
+
 @RequiredArgsConstructor
 public class ResultExcelProcessor {
 
+	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
+	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 
@@ -58,7 +67,7 @@ public class ResultExcelProcessor {
 				output
 		);
 
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx");
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx", MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 }

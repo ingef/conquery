@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth.web;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
 
 import javax.annotation.Priority;
 import javax.ws.rs.Priorities;
@@ -15,7 +16,10 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.UriBuilder;
 
+import io.dropwizard.util.Strings;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.util.StringUtil;
 import org.eclipse.jetty.http.HttpHeader;
 
 /**
@@ -30,12 +34,12 @@ import org.eclipse.jetty.http.HttpHeader;
 @PreMatching
 // Chain this filter before the Authentication filter
 @Priority(Priorities.AUTHENTICATION-100)
+@RequiredArgsConstructor
 public class AuthCookieFilter implements ContainerRequestFilter, ContainerResponseFilter {
 
-	private static final String ACCESS_TOKEN = "access_token";
+	public static final String ACCESS_TOKEN = "access_token";
 	private static final String PREFIX = "bearer";
-	// Define a maximum age since most browsers use session restoring making session cookies virtual permanent (see https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies)
-	private static final int COOKIE_MAX_AGE_HOURS = (int) TimeUnit.HOURS.toSeconds(12);
+	public final BiFunction<ContainerRequestContext, String, Cookie> cookieCreator;
 
 	/**
 	 * The filter tries to extract a token from a cookie and puts it into the
@@ -45,21 +49,23 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		Cookie cookie = requestContext.getCookies().get(ACCESS_TOKEN);
-		String queryToken = requestContext.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
 		if (cookie == null) {
 			return;
 		}
-		
-		if(cookie != null && !cookie.getValue().isEmpty() && queryToken != null && !cookie.getValue().equals(queryToken)) {
-			throw new IllegalStateException("Different tokens have been provided in cookie and query string");			
+
+		String queryToken = requestContext.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
+
+		if(!cookie.getValue().isEmpty() && queryToken != null) {
+			log.trace("Ignoring cookie");
+			return;
 		}
 		
 		// Get the token from the cookie and put it into the header
-		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, String.join(" ", PREFIX, cookie.getValue()));
+		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION,PREFIX + " " + cookie.getValue());
 		// Remove the cookie for the rest of this processing
 		requestContext.getCookies().remove(ACCESS_TOKEN);
 		// Remove the query parameter
-		UriBuilder uriBuilder = requestContext.getUriInfo().getRequestUriBuilder().replaceQueryParam(ACCESS_TOKEN, new Object[] {});
+		UriBuilder uriBuilder = requestContext.getUriInfo().getRequestUriBuilder().replaceQueryParam(ACCESS_TOKEN);
 		requestContext.setRequestUri(uriBuilder.build());
 
 	}
@@ -73,13 +79,15 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 		String token = request.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
 
 		// Set cookie only if a token is present
-		if (token != null && !token.isEmpty()) {
+		if (!Strings.isNullOrEmpty(token)) {
 			if (cookie != null) {
 				log.debug("Overwriting {} cookie", ACCESS_TOKEN);
 			}
 			response.getHeaders().add(
-				HttpHeader.SET_COOKIE.toString(),
-				new NewCookie(ACCESS_TOKEN, token, null, null, 0, null, COOKIE_MAX_AGE_HOURS, null, false, false));
+					HttpHeader.SET_COOKIE.toString(),
+					cookieCreator.apply(request,token)
+			);
+
 		}
 	}
 

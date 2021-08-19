@@ -134,7 +134,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Issuing deletion of import {}", importId);
 
 			final URI deleteImportUri =
-					HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "deleteImportView")
+					HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminTablesResource.class, "deleteImport")
 								   .buildFromMap(Map.of(
 										   ResourceConstants.DATASET, conquery.getDataset().getId(),
 										   ResourceConstants.TABLE, importId.getTable(),

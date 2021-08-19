@@ -15,8 +15,12 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Workers send their part of the query result to ManagerNode for assembly.
  */
-@CPSType(id="COLLECT_QUERY_RESULT", base=NamespacedMessage.class)
-@AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(of = "result")
+@CPSType(id = "COLLECT_QUERY_RESULT", base = NamespacedMessage.class)
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString(of = "result")
 @Slf4j
 public class CollectQueryResult extends NamespaceMessage.Slow {
 
@@ -25,6 +29,7 @@ public class CollectQueryResult extends NamespaceMessage.Slow {
 	@Override
 	public void react(Namespace context) throws Exception {
 		log.info("Received {} of size {}", result, result.getResults().size());
+
 		context.getExecutionManager().handleQueryResult(result);
 	}
 }

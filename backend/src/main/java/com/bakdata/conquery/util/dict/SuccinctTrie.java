@@ -1,7 +1,10 @@
 package com.bakdata.conquery.util.dict;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -10,7 +13,9 @@ import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.AbstractIterator;
-import it.unimi.dsi.fastutil.bytes.*;
+import it.unimi.dsi.fastutil.bytes.Byte2ObjectArrayMap;
+import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +80,8 @@ public class SuccinctTrie extends Dictionary {
 						int[] lookup,
 						byte[] keyPartArray,
 						int[] selectZeroCache,
-						long totalBytesStored) {
+						long totalBytesStored,
+						int depth) {
 		super(dataset, name);
 		this.nodeCount = nodeCount;
 		this.entryCount = entryCount;
@@ -85,6 +91,7 @@ public class SuccinctTrie extends Dictionary {
 		this.keyPartArray = keyPartArray;
 		this.selectZeroCache = selectZeroCache;
 		this.totalBytesStored = totalBytesStored;
+		this.depth = depth;
 
 		this.root = null;
 		this.compressed = true;

@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import io.dropwizard.auth.Auth;
@@ -63,10 +64,17 @@ public class AdminDatasetResource extends HAdmin {
 		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 
+	@GET
+	@Consumes(MediaType.WILDCARD)
+	@Path("mapping")
+	public PersistentIdMap getIdMapping() {
+		return processor.getIdMapping(namespace);
+	}
+
 	@POST
 	@Consumes(MediaType.WILDCARD)
 	@Path("mapping")
-	public void setIdMapping(@FormDataParam("data_csv") InputStream data) throws IOException, JSONException {
+	public void setIdMapping(InputStream data) {
 		processor.setIdMapping(data, namespace);
 	}
 
@@ -96,7 +104,7 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
 	@Path("cqpp")
-	public void uploadImport(@NotNull InputStream importStream) throws IOException, JSONException {
+	public void uploadImport(@NotNull InputStream importStream) throws IOException {
 		log.info("Importing from file upload");
 		processor.addImport(namespace, new GZIPInputStream(importStream));
 	}
@@ -135,7 +143,7 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("concepts")
-	public void addConcept(Concept<?> concept) throws JSONException {
+	public void addConcept(Concept<?> concept) {
 		processor.addConcept(namespace.getDataset(), concept);
 	}
 
@@ -151,9 +159,14 @@ public class AdminDatasetResource extends HAdmin {
 		processor.deleteSecondaryId(secondaryId);
 	}
 
+	@GET
+	public Dataset getDatasetInfos() {
+		return dataset;
+	}
+
 	@POST
 	@Path("structure")
-	public void setStructure(@NotNull @Valid StructureNode[] structure) throws JSONException {
+	public void setStructure(@NotNull @Valid StructureNode[] structure) {
 		processor.setStructure(namespace, structure);
 	}
 
@@ -177,8 +190,8 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("/update-matching-stats")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)Dataset dataset) throws JSONException {
+	@Consumes(MediaType.WILDCARD)
+	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)Dataset dataset) {
 		processor.updateMatchingStats(dataset);
 	}
 

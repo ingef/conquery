@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.util.Locale;
 import java.util.function.Function;
 
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -44,6 +46,7 @@ public class ResultArrowProcessor {
 			DatasetRegistry datasetRegistry,
 			boolean pretty,
 			String fileExtension,
+			MediaType mediaType,
 			ConqueryConfig config) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
@@ -86,7 +89,7 @@ public class ResultArrowProcessor {
 				exec.streamResults()
 		);
 
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension);
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 }

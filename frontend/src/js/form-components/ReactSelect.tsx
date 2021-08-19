@@ -6,17 +6,11 @@ import Creatable, { Props as CreatableProps } from "react-select/creatable";
 import type { SelectOptionT } from "../api/types";
 
 // Helps to have a common ground for styling selects
-const stylesFromTheme = (theme: Theme, changed?: boolean, small?: boolean) => ({
+const stylesFromTheme = (theme: Theme, changed?: boolean) => ({
   control: (provided: any, state: any) => {
-    const smallStyles = small
-      ? {
-          minHeight: "0",
-        }
-      : {};
-
     return {
       ...provided,
-      ...smallStyles,
+      minHeight: "30px", // makes it a little bit smaller in height than usual
       fontSize: theme.font.sm,
       borderRadius: "3px",
       boxShadow: "none",
@@ -31,7 +25,7 @@ const stylesFromTheme = (theme: Theme, changed?: boolean, small?: boolean) => ({
   dropdownIndicator: (provided: any, state: any) => {
     return {
       ...provided,
-      padding: small ? "3px" : "6px",
+      padding: "3px",
     };
   },
   option: (provided: any, state: any) => {
@@ -64,14 +58,12 @@ const stylesFromTheme = (theme: Theme, changed?: boolean, small?: boolean) => ({
 interface SelectPropsT<IsMulti extends boolean>
   extends Props<SelectOptionT, IsMulti> {
   highlightChanged?: boolean;
-  small?: boolean;
 }
 
 interface CreatablePropsT<IsMulti extends boolean>
   extends CreatableProps<SelectOptionT, IsMulti> {
   creatable: true;
   highlightChanged?: boolean;
-  small?: boolean;
 }
 
 type PropsT<IsMulti extends boolean> =
@@ -81,7 +73,6 @@ type PropsT<IsMulti extends boolean> =
 const ReactSelect = <IsMulti extends boolean>({
   creatable,
   highlightChanged,
-  small,
   ...props
 }: PropsT<IsMulti>) => {
   const theme = useTheme();
@@ -89,7 +80,7 @@ const ReactSelect = <IsMulti extends boolean>({
     JSON.stringify(props.value) !== JSON.stringify(props.defaultValue);
   const changed = hasChanged && highlightChanged;
 
-  const styles = stylesFromTheme(theme, changed, small);
+  const styles = stylesFromTheme(theme, changed);
 
   return creatable ? (
     <Creatable styles={styles} {...props} />

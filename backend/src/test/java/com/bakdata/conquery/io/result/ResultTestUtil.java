@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @UtilityClass
@@ -31,20 +32,21 @@ public class ResultTestUtil {
 				ResultType.StringT.INSTANCE,
 				ResultType.MoneyT.INSTANCE,
 				new ResultType.ListT(ResultType.BooleanT.INSTANCE),
-				new ResultType.ListT(ResultType.DateRangeT.INSTANCE)
+				new ResultType.ListT(ResultType.DateRangeT.INSTANCE),
+				new ResultType.ListT(ResultType.StringT.INSTANCE)
 		);
 	}
 
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {
 		List<EntityResult> results = List.of(
-				new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(345, 534), "test_string", 4521, List.of(true, false), List.of(List.of(345, 534), List.of(1, 2))}),
-				new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(), List.of()}),
-				new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false), null}),
+				new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", DateContext.Resolution.DAYS.toString(), 5646, List.of(345, 534), "test_string", 4521, List.of(true, false), List.of(List.of(345, 534), List.of(1, 2)), List.of("fizz", "buzz")}),
+				new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()}),
+				new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false), null, null}),
 				new MultilineEntityResult(3, List.of(
-						new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false), null},
-						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null, null},
-						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false), null}
+						new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(false), null, null},
+						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null, null, null},
+						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false), null, null}
 				)));
 		return results;
 	}
