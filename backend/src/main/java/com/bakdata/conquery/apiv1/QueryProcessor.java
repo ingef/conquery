@@ -64,8 +64,6 @@ public class QueryProcessor {
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
-	 *
-	 * @return
 	 */
 	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, User user) {
 
@@ -110,7 +108,7 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager));
+			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, user));
 
 			if (execution.isPresent()) {
 				return execution.get();
@@ -132,11 +130,15 @@ public class QueryProcessor {
 	/**
 	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
 	 */
-	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager) {
+	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager, User user) {
 
 		final ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
 
 		if (execution == null) {
+			return null;
+		}
+
+		if (!user.equals(execution.getOwner())) {
 			return null;
 		}
 
