@@ -22,16 +22,13 @@ import java.util.Set;
 public class MatchingStatsTests {
     MatchingStats stats = new MatchingStats();
     public static int NUMBER_OF_ENTRY = 10;
-    public static int NUMBER_OF_ENTITIES = 10;
+    //public static int NUMBER_OF_ENTITIES = 10;
 
     @BeforeEach
     private void fillStats() {
         Map<WorkerId, MatchingStats.Entry> entries = new HashMap<>();
         Random random = new Random();
         for (int i = 0; i < NUMBER_OF_ENTRY; i++) {
-            IntSet foundEntities = new IntOpenHashSet();
-            for (int k = 0; i < NUMBER_OF_ENTITIES; k++)
-                foundEntities.add(random.nextInt() + 1);
 
             entries.put(new WorkerId(new DatasetId("sampleDataset" + i), "worker" + i),
                     new MatchingStats.Entry(5, IntSet.of(1, 3, 4), CDateRange.of(10, 20)));
@@ -43,7 +40,7 @@ public class MatchingStatsTests {
     @Test
     public void entitiesCountTest() {
 
-        assertThat(stats.countEntities()).isEqualTo(3);
+        assertThat(stats.countEntities()).isEqualTo(NUMBER_OF_ENTRY*3);
 
     }
 }
