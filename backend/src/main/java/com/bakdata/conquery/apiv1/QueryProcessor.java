@@ -138,6 +138,7 @@ public class QueryProcessor {
 			return null;
 		}
 
+		// If the user is not the owner of the execution, we definitely create a new Execution, so the owner can cancel it
 		if (!user.equals(execution.getOwner())) {
 			return null;
 		}
