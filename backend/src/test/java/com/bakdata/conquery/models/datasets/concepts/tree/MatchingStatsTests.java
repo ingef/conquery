@@ -22,7 +22,6 @@ import java.util.Set;
 public class MatchingStatsTests {
     MatchingStats stats = new MatchingStats();
     public static int NUMBER_OF_ENTRY = 10;
-    //public static int NUMBER_OF_ENTITIES = 10;
 
     @BeforeEach
     private void fillStats() {

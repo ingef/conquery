@@ -126,7 +126,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
     private int[] getEntitiesPerEvent(Bucket bucket) {
         final int[] entitiesPerEvent = new int[bucket.getNumberOfEvents()];
 
-        //TODO use a cache for this so we don't calculate this multiple times
+
         for (Integer entity : bucket.getEntities()) {
             final int to = bucket.getEntityEnd(entity);
 
