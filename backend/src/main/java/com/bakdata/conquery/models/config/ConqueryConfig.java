@@ -144,7 +144,7 @@ public class ConqueryConfig extends Configuration {
 
 	public static class ConfiguredModule extends SimpleModule {
 		public ConfiguredModule(ConqueryConfig config){
-			DateReader dateReader = config.getPreprocessor().getParsers().getDateReader();
+			DateReader dateReader = config.getLocale().getDateReader();
 			addDeserializer(LocalDate.class, new FormatedDateDeserializer(dateReader));
 			
 			addDeserializer(CDateSet.class, new CDateSetDeserializer(dateReader));

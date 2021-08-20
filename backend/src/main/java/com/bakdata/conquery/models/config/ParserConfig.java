@@ -26,12 +26,4 @@ public class ParserConfig {
      */
     @NotNull
     private Currency currency = Currency.getInstance("EUR");
-
-    /**
-     * Date formats that are available for parsing.
-     */
-    @NotNull
-    private DateReader dateReader = new DateReader(List.of(
-            "yyyy-MM-dd", "yyyyMMdd", "dd.MM.yyyy"
-    ));
 }

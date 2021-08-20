@@ -84,7 +84,7 @@ public class Preprocessor {
 
 		int errors = 0;
 
-		final Preprocessed result = new Preprocessed(config.getPreprocessor().getParsers(), preprocessingJob);
+		final Preprocessed result = new Preprocessed(config, preprocessingJob);
 
 		long lineId = 0;
 
@@ -101,7 +101,7 @@ public class Preprocessor {
 			ConqueryMDC.setLocation(name);
 
 			if (!(sourceFile.exists() && sourceFile.canRead())) {
-				throw new FileNotFoundException(sourceFile.getAbsolutePath().toString());
+				throw new FileNotFoundException(sourceFile.getAbsolutePath());
 			}
 
 			CsvParser parser = null;
@@ -124,7 +124,7 @@ public class Preprocessor {
 				final GroovyPredicate filter = input.createFilter(headers);
 
 
-				DateReader dateReader = config.getPreprocessor().getParsers().getDateReader();
+				DateReader dateReader = config.getLocale().getDateReader();
 				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader);
 				final List<OutputDescription.Output> outputs = new ArrayList<>();
 

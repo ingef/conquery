@@ -53,13 +53,13 @@ public enum DateFormat {
 	DATE_RANGE {
 		@Override
 		public void readDates(String value, DateReader dateReader, CDateSet out) {
-			out.add(DateRangeParser.parseISORange(value, dateReader));
+			out.add(dateReader.parseToCDateRange(value));
 		}
 	},
 	DATE_SET {
 		@Override
 		public void readDates(String value, DateReader dateReader, CDateSet out) {
-			out.addAll(CDateSet.parse(value, dateReader));
+			out.addAll(dateReader.parseToCDateSet(value));
 		}
 	},
 	ALL {

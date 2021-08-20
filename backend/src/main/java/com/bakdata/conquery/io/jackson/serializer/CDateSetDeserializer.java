@@ -36,7 +36,7 @@ public class CDateSetDeserializer extends StdDeserializer<CDateSet> {
         }
 
         if (p.currentToken() == JsonToken.VALUE_STRING) {
-            return CDateSet.parse(p.readValueAs(String.class), formats);
+            return formats.parseToCDateSet(p.readValueAs(String.class));
         }
 
         return (CDateSet) ctxt.handleUnexpectedToken(CDateSet.class, p.currentToken(), p, "can't deserialize CDateSet");

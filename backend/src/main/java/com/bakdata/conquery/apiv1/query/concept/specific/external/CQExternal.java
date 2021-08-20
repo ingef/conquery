@@ -123,7 +123,7 @@ public class CQExternal extends CQElement {
 				resolveEntities(values, format,
 								context.getNamespace().getStorage().getIdMapping(),
 								context.getConfig().getFrontend().getQueryUpload(),
-								context.getConfig().getPreprocessor().getParsers().getDateReader()
+								context.getConfig().getLocale().getDateReader()
 				);
 
 		if (resolved.getResolved().isEmpty()) {

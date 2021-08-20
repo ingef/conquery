@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
@@ -56,7 +57,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 	private String prefix;
 	private String suffix;
 
-	public StringParser(ParserConfig config) {
+	public StringParser(ConqueryConfig config) {
 		super(config);
 	}
 

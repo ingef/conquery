@@ -22,6 +22,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /**
  * (De-)Serializers are are registered programmatically because they depend on {@link DateReader}
@@ -29,7 +30,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode
 public class CDateSet {
 
-	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)((\\d{4}-\\d{2}-\\d{2})?/(\\d{4}-\\d{2}-\\d{2})?)");
 	private final NavigableMap<Integer, CDateRange> rangesByLowerBound;
 	private transient Set<CDateRange> asRanges;
 	private transient Set<CDateRange> asDescendingSetOfRanges;
@@ -37,6 +37,7 @@ public class CDateSet {
 	public static CDateSet create() {
 		return new CDateSet(new TreeMap<>());
 	}
+
 	
 	public static CDateSet createFull() {
 		CDateSet set = new CDateSet(new TreeMap<>());
@@ -444,20 +445,5 @@ public class CDateSet {
 	public int getMaxValue() {
 		return rangesByLowerBound.lastEntry().getValue().getMaxValue();
 	}
-	
-	public static CDateSet parse(String value, DateReader dateReader) {
-		List<CDateRange> ranges = PARSE_PATTERN
-			.matcher(value)
-			.results()
-			.map(mr -> {
-				try {
-					return DateRangeParser.parseISORange(mr.group(2), dateReader);
-				}
-				catch(Exception e) {
-					throw new RuntimeException(e);
-				}
-			})
-			.collect(Collectors.toList());
-		return CDateSet.create(ranges);
-	}
+
 }

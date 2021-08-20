@@ -75,8 +75,6 @@ public class ExcelResultRenderTest {
 				return coll.getInfos();
 			}
 
-			;
-
 			@Override
 			public Stream<EntityResult> streamResults() {
 				return results.stream();
@@ -86,10 +84,9 @@ public class ExcelResultRenderTest {
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-		ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig());
+		ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(),printSettings);
 
 		renderer.renderToStream(
-				printSettings,
 				printIdFields,
 				mquery,
 				output);

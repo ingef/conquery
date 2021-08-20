@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
@@ -28,11 +29,11 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	private int minValue = Integer.MAX_VALUE;
 	private boolean anyOpen;
 
-	public DateRangeParser(ParserConfig config) {
+	public DateRangeParser(ConqueryConfig config) {
 		super(config);
 		minParser = new DateParser(config);
 		maxParser = new DateParser(config);
-		dateReader = config.getDateReader();
+		dateReader = config.getLocale().getDateReader();
 	}
 
 	@Override

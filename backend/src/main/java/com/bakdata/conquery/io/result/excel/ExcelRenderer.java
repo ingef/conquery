@@ -44,13 +44,15 @@ public class ExcelRenderer {
 
     private final SXSSFWorkbook workbook;
     private final ExcelConfig config;
+    private final PrintSettings cfg;
     private final ImmutableMap<String, CellStyle> styles;
 
 
-    public ExcelRenderer(ExcelConfig config) {
+    public ExcelRenderer(ExcelConfig config, PrintSettings cfg) {
         workbook = new SXSSFWorkbook();
         this.config = config;
-        styles = config.generateStyles(workbook);
+        styles = config.generateStyles(workbook, cfg);
+        this.cfg = cfg;
     }
 
     @FunctionalInterface
@@ -59,7 +61,6 @@ public class ExcelRenderer {
     }
 
     public <E extends ManagedExecution<?> & SingleTableResult> void renderToStream(
-            PrintSettings cfg,
             List<String> idHeaders,
             E exec,
             OutputStream outputStream) throws IOException {

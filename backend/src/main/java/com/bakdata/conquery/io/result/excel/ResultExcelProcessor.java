@@ -58,10 +58,9 @@ public class ResultExcelProcessor {
 				idPrinter::createId
 		);
 
-		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel());
+		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel(), settings);
 
 		StreamingOutput out = output -> excelRenderer.renderToStream(
-				settings,
 				config.getFrontend().getQueryUpload().getPrintIdFields(locale),
 				(ManagedExecution<?> & SingleTableResult)exec,
 				output
