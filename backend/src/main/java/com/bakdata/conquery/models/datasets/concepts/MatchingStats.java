@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.*;
 
@@ -76,6 +77,8 @@ public class MatchingStats {
 
 		public void addEvent(Table table, Bucket bucket, int event, int entityForEvent) {
 			numberOfEvents++;
+			if(foundEntities==null)
+				foundEntities = new IntOpenHashSet();
 			foundEntities.add(entityForEvent);
 
 			for (Column c : table.getColumns()) {
