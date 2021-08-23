@@ -57,7 +57,5 @@ public class ConquerySerializersModule extends SimpleModule {
 			addKeyDeserializer(type, new IdKeyDeserializer<>());
 		}
 		addSerializer(new ConqueryDoubleSerializer());
-		//addSerializer(new MatchingStats.IntSetSerializer());
-		//addDeserializer(IntSet.class, new MatchingStats.IntSetDeserializer());
 	}
 }
