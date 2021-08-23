@@ -20,26 +20,36 @@ import java.util.Random;
 import java.util.Set;
 
 public class MatchingStatsTests {
-    MatchingStats stats = new MatchingStats();
-    public static int NUMBER_OF_ENTRY = 10;
 
-    @BeforeEach
-    private void fillStats() {
-        Map<WorkerId, MatchingStats.Entry> entries = new HashMap<>();
-        Random random = new Random();
-        for (int i = 0; i < NUMBER_OF_ENTRY; i++) {
-
-            entries.put(new WorkerId(new DatasetId("sampleDataset" + i), "worker" + i),
-                    new MatchingStats.Entry(5, IntSet.of(1, 3, 4), CDateRange.of(10, 20)));
-        }
-        stats.setEntries(entries);
-
-    }
 
     @Test
     public void entitiesCountTest() {
 
-        assertThat(stats.countEntities()).isEqualTo(NUMBER_OF_ENTRY*3);
+        MatchingStats stats = new MatchingStats();
+
+
+        assertThat(stats.countEntities()).isEqualTo(0);
+
+        Map<WorkerId, MatchingStats.Entry> entries = new HashMap<>();
+        entries.put(new WorkerId(new DatasetId("sampleDataset"), "sampleWorker"), new MatchingStats.Entry(5, 5, CDateRange.of(10, 20)));
+        stats.setEntries(entries);
+        assertThat(stats.countEntities()).isEqualTo(5);
+
+        entries.put(new WorkerId(new DatasetId("sampleDataset"), "sampleWorker"), new MatchingStats.Entry(5, 8, CDateRange.of(10, 20)));
+        stats.setEntries(entries);
+        assertThat(stats.countEntities()).isEqualTo(8);
+
+
+
+        entries.put(new WorkerId(new DatasetId("sampleDataset2"), "sampleWorker"), new MatchingStats.Entry(5, 10, CDateRange.of(10, 20)));
+        stats.setEntries(entries);
+        assertThat(stats.countEntities()).isEqualTo(18);
+
+
+        entries.put(new WorkerId(new DatasetId("sampleDataset2"), "sampleWorker2"), new MatchingStats.Entry(5, 2, CDateRange.of(10, 20)));
+        stats.setEntries(entries);
+        assertThat(stats.countEntities()).isEqualTo(20);
+
 
     }
 }

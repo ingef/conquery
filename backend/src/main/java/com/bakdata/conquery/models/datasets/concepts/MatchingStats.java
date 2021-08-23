@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -11,15 +9,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.*;
@@ -34,8 +23,7 @@ public class MatchingStats {
     @JsonIgnore
     private transient long numberOfEvents = -1;
 
-    @JsonIgnore
-    private transient long numberOfEntities = -1;
+
 
     public synchronized long countEvents() {
         if (numberOfEvents == -1L) {
@@ -46,10 +34,8 @@ public class MatchingStats {
 
 
     public synchronized long countEntities() {
-        if (numberOfEntities == -1L) {
-            numberOfEntities = entries.values().stream().mapToLong(Entry::getNumberEntities).sum();
-        }
-        return numberOfEntities;
+
+        return entries.values().stream().mapToLong(Entry::getNumberOfEntities).sum();
     }
 
     public synchronized CDateRange spanEvents() {
@@ -73,7 +59,7 @@ public class MatchingStats {
 
         @JsonIgnore
         private final IntSet foundEntities = new IntOpenHashSet();
-        private long numberEntities;
+        private long numberOfEntities;
         private CDateRange span;
 
 
@@ -81,7 +67,7 @@ public class MatchingStats {
             numberOfEvents++;
             if(foundEntities.add(entityForEvent))
             {
-                numberEntities++;
+                numberOfEntities++;
             }
 
             for (Column c : table.getColumns()) {
