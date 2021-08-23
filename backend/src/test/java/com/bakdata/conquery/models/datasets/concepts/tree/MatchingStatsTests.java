@@ -52,4 +52,40 @@ public class MatchingStatsTests {
 
 
     }
+
+    @Test
+    public void addEventTest(){
+        MatchingStats stats = new MatchingStats();
+        Table table = new Table();
+        table.setColumns(new Column[0]);
+
+        assertThat(stats.countEvents()).isEqualTo(-1);
+        assertThat(stats.countEntities()).isEqualTo(0);
+
+        Map<WorkerId, MatchingStats.Entry> entries = new HashMap<>();
+
+        MatchingStats.Entry entry1 =  new MatchingStats.Entry();
+        for (int i = 0; i< 3; i++)
+        {
+            entry1.addEvent(table, null, 1, 2+i);
+        }
+        entries.put(new WorkerId(new DatasetId("sampleDataset"), "sampleWorker"), entry1);
+        stats.setEntries(entries);
+        assertThat(stats.countEvents()).isEqualTo(3);
+        assertThat(stats.countEntities()).isEqualTo(3);
+
+
+        MatchingStats.Entry entry2 =  new MatchingStats.Entry();
+        for (int i = 0; i< 4; i++)
+        {
+            entry2.addEvent(table, null, 5, 9+i);
+        }
+        entries.put(new WorkerId(new DatasetId("sampleDataset2"), "sampleWorker2"), entry2);
+        stats.setEntries(entries);
+        assertThat(stats.countEvents()).isEqualTo(7);
+        assertThat(stats.countEntities()).isEqualTo(7);
+
+
+
+    }
 }
