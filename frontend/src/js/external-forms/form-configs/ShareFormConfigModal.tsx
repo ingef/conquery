@@ -19,15 +19,14 @@ import { FormConfigT } from "./reducer";
 import { useLoadFormConfig } from "./selectors";
 
 const Buttons = styled("div")`
-  text-align: center;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 `;
 
-const Btn = styled(TransparentButton)`
-  margin: 0 10px;
-`;
-
-const PrimaryBtn = styled(PrimaryButton)`
-  margin: 0 10px;
+const SxPrimaryButton = styled(PrimaryButton)`
+  margin-left: 20px;
 `;
 
 const SxInputMultiSelect = styled(InputMultiSelect)`
@@ -154,12 +153,14 @@ const ShareFormConfigModal = ({
         closeMenuOnSelect
       />
       <Buttons>
-        <Btn onClick={onClose}>{t("common.cancel")}</Btn>
-        <PrimaryBtn onClick={onShareClicked}>
+        <TransparentButton onClick={onClose}>
+          {t("common.cancel")}
+        </TransparentButton>
+        <SxPrimaryButton onClick={onShareClicked}>
           {formConfig.shared && userGroupsValue.length === 0
             ? t("sharePreviousQueryModal.unshare")
             : t("common.share")}
-        </PrimaryBtn>
+        </SxPrimaryButton>
       </Buttons>
     </Modal>
   );

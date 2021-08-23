@@ -245,9 +245,23 @@ export type QueryNodeT =
 // ---------------------------------------
 export type GetDatasetsResponseT = DatasetT[];
 
+export interface TranslatableString {
+  de: string;
+  en?: string;
+}
+
+export interface QueryUploadConfigT {
+  ids: {
+    name: string;
+    label: TranslatableString;
+    description: TranslatableString;
+  }[];
+}
+
 export interface GetFrontendConfigResponseT {
-  currency: CurrencyConfigT;
   version: string;
+  currency: CurrencyConfigT;
+  queryUpload: QueryUploadConfigT;
 }
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
@@ -403,3 +417,9 @@ export interface PostFormConfigsResponseT {
 export type GetFormConfigsResponseT = FormConfigT[];
 
 export type GetFormConfigResponseT = FormConfigT;
+
+export type UploadQueryResponseT = {
+  resolved: number;
+  unresolvedId: string[][];
+  unreadableDate: string[][];
+};
