@@ -8,7 +8,7 @@ import io.dropwizard.jersey.setup.JerseyEnvironment;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URL;
-import java.util.Optional;
+import java.util.Collection;
 
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -22,7 +22,7 @@ public interface ResultRendererProvider {
 	 * @param allProviders A flag that should override internal "hide-this-url" flags.
 	 * @return An Optional with the url or an empty optional.
 	 */
-	Optional<URL> generateResultURL(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders);
+	Collection<URL> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders);
 
 	void registerResultResource(JerseyEnvironment environment, ManagerNode manager);
 }

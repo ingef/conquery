@@ -1,6 +1,6 @@
 package com.bakdata.conquery.io.result.csv;
 
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -42,7 +42,7 @@ public class CsvRenderer {
 	}
 
 
-	public void printLine(PrintSettings cfg, ExternalEntityId entity, List<ResultInfo> infos, Object[] value) {
+	public void printLine(PrintSettings cfg, EntityPrintId entity, List<ResultInfo> infos, Object[] value) {
 		// Cast here to Object[] so it is clear to intellij that the varargs call is intended
 		writer.addValues((Object[]) entity.getExternalId());
 		try {

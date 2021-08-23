@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.results;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +15,7 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class ShardResult {
 	@ToString.Include
 	private WorkerId workerId;
 
-	private List<EntityResult> results = new ArrayList<>();
+	private List<EntityResult> results = null;
 
 	@ToString.Include
 	private LocalDateTime startTime = LocalDateTime.now();
@@ -53,7 +53,7 @@ public class ShardResult {
 		this.workerId = workerId;
 	}
 
-	public synchronized void finish(List<EntityResult> results, Optional<Throwable> exc, Worker worker) {
+	public synchronized void finish(@NonNull List<EntityResult> results, Optional<Throwable> exc, Worker worker) {
 		if (worker.getQueryExecutor().isCancelled(getQueryId())) {
 			// Query is done so we no longer need the cancellation entry.
 			worker.getQueryExecutor().unsetQueryCancelled(getQueryId());
@@ -63,7 +63,7 @@ public class ShardResult {
 		finishTime = LocalDateTime.now();
 
 		if (exc.isPresent()) {
-			log.info("FAILED Query[{}] with {} results within {}", queryId, this.results.size(), Duration.between(startTime, finishTime));
+			log.info("FAILED Query[{}] within {}", queryId, Duration.between(startTime, finishTime));
 
 			setError(exc.map(ConqueryError::asConqueryError));
 		}

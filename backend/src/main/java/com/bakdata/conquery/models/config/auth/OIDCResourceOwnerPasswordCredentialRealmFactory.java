@@ -16,8 +16,8 @@ import lombok.extern.slf4j.Slf4j;
  * Realm that supports the Open ID Connect Resource-Owner-Password-Credential-Flow with a Keycloak IdP.
  */
 @Slf4j
-@CPSType(base = AuthenticationConfig.class, id = "OIDC_RESOURCE_OWNER_PASSWORD_CREDENTIAL_AUTHENTICATION")
-public class OIDCResourceOwnerPasswordCredentialRealmFactory implements AuthenticationConfig {
+@CPSType(base = AuthenticationRealmFactory.class, id = "OIDC_RESOURCE_OWNER_PASSWORD_CREDENTIAL_AUTHENTICATION")
+public class OIDCResourceOwnerPasswordCredentialRealmFactory implements AuthenticationRealmFactory {
 
 	@Getter
 	@Setter

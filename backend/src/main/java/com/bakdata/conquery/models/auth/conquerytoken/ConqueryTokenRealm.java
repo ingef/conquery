@@ -62,7 +62,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 			throw new IncorrectCredentialsException(e);
 		}
 		catch (JWTVerificationException e) {
-			log.trace("The provided token could not be verified.");
+			log.trace("The provided token could not be verified.", e);
 			throw new AuthenticationException(e);
 		}
 		catch (Exception e) {

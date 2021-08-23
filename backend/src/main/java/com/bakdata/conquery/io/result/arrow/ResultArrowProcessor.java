@@ -3,15 +3,13 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
-import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.channels.Channels;
+import java.util.Locale;
 import java.util.function.Function;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -23,22 +21,16 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
-import org.apache.arrow.vector.dictionary.DictionaryProvider;
-import org.apache.arrow.vector.ipc.ArrowFileWriter;
-import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.http.HttpStatus;
 
@@ -55,6 +47,7 @@ public class ResultArrowProcessor {
 			DatasetRegistry datasetRegistry,
 			boolean pretty,
 			String fileExtension,
+			MediaType mediaType,
 			ConqueryConfig config) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
@@ -75,31 +68,29 @@ public class ResultArrowProcessor {
 		}
 
 		// Get the locale extracted by the LocaleFilter
-		IdMappingConfig idMappingConf = config.getIdMapping();
-		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
+
+
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user, exec, namespace);
+		final Locale locale = I18n.LOCALE.get();
 		PrintSettings settings = new PrintSettings(
 				pretty,
-				I18n.LOCALE.get(),
+				locale,
 				datasetRegistry,
 				config,
-				(EntityResult cer) -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState));
+				idPrinter::createId
+		);
 
 
-		StreamingOutput out = new StreamingOutput() {
+		StreamingOutput out = output -> renderToStream(
+				writerProducer.apply(output),
+				settings,
+				config.getArrow().getBatchSize(),
+				config.getFrontend().getQueryUpload().getPrintIdFields(locale),
+				exec.getResultInfo(),
+				exec.streamResults()
+		);
 
-			@Override
-			public void write(OutputStream output) throws IOException, WebApplicationException {
-				renderToStream(writerProducer.apply(output),
-						settings,
-						config.getArrow().getBatchSize(),
-						idMappingConf.getPrintIdFields(),
-						exec.getResultInfo(),
-						exec.streamResults());
-
-			}
-		};
-
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension);
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 }

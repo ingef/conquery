@@ -104,7 +104,7 @@
                         return response.json();
                     })
                     .then( (json) => {
-                        window.location = '/admin?access_token='+json.access_token;
+                        window.location = '${c}?access_token='+json.access_token;
                     }
                     )
                     .catch(function(error) {

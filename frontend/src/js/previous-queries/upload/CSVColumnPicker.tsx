@@ -47,6 +47,7 @@ const Td = styled("td")`
 `;
 const Th = styled("th")`
   font-size: ${({ theme }) => theme.font.xs};
+  vertical-align: top;
 `;
 
 const FileName = styled("code")`

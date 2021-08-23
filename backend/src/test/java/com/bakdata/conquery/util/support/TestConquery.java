@@ -19,13 +19,16 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.integration.IntegrationTests;
+import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.Wait;
@@ -137,7 +140,7 @@ public class TestConquery {
 			log.info("Reusing existing folder {} for Support", localTmpDir.getPath());
 		}
 
-		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()));
+		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()), IntegrationTests.MAPPER);
 
 
 		StandaloneSupport support = new StandaloneSupport(
@@ -170,9 +173,9 @@ public class TestConquery {
 			if (count > 0) {
 				name += "[" + count + "]";
 			}
-			DatasetId datasetId = new DatasetId(name);
-			standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor().addDataset(name);
-			return createSupport(datasetId, name);
+			Dataset dataset = new Dataset(name);
+			standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor().addDataset(dataset);
+			return createSupport(dataset.getId(), name);
 		}
 		catch (Exception e) {
 			return fail("Failed to create a support for " + name, e);
@@ -284,7 +287,7 @@ public class TestConquery {
 	}
 
 	public void beforeEach() {
-		testUser = standaloneCommand.getManager().getConfig().getAuthorization().getInitialUsers().get(0).getUser();
+		testUser = standaloneCommand.getManager().getConfig().getAuthorizationRealms().getInitialUsers().get(0).getUser();
 		standaloneCommand.getManager().getStorage().updateUser(testUser);
 	}
 }

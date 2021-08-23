@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
@@ -11,10 +12,10 @@ class RealParserTest {
 
 	@Test
 	public void ulpInRange() {
-		final ParserConfig parserConfig = new ParserConfig();
-		parserConfig.setMinPrecision(Math.ulp(10));
+		final ConqueryConfig config = new ConqueryConfig();
+		config.getPreprocessor().getParsers().setMinPrecision(Math.ulp(10));
 
-		final RealParser realParser = new RealParser(parserConfig);
+		final RealParser realParser = new RealParser(config);
 
 		realParser.registerValue(1d);
 		realParser.registerValue(2d);

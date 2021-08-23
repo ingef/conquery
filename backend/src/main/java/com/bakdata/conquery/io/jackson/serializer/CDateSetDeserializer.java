@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
@@ -15,10 +15,10 @@ public class CDateSetDeserializer extends StdDeserializer<CDateSet> {
 
     private static final long serialVersionUID = 1L;
 
-    private final DateFormats formats;
+    private final DateReader formats;
 
 
-    public CDateSetDeserializer(DateFormats formats) {
+    public CDateSetDeserializer(DateReader formats) {
         super(CDateSet.class);
         this.formats = formats;
     }
@@ -36,7 +36,7 @@ public class CDateSetDeserializer extends StdDeserializer<CDateSet> {
         }
 
         if (p.currentToken() == JsonToken.VALUE_STRING) {
-            return CDateSet.parse(p.readValueAs(String.class), formats);
+            return formats.parseToCDateSet(p.readValueAs(String.class));
         }
 
         return (CDateSet) ctxt.handleUnexpectedToken(CDateSet.class, p.currentToken(), p, "can't deserialize CDateSet");

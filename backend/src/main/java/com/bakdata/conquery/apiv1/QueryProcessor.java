@@ -13,15 +13,19 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.ExternalUpload;
+import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
@@ -218,8 +222,8 @@ public class QueryProcessor {
 	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		List<URL> resultUrls = renderer.stream()
-									   .map(r -> r.generateResultURL(exec, uriBuilder.clone(), allProviders))
-									   .flatMap(Optional::stream).collect(Collectors.toList());
+									   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
+									   .flatMap(Collection::stream).collect(Collectors.toList());
 
 		status.setResultUrls(resultUrls);
 
@@ -359,5 +363,45 @@ public class QueryProcessor {
 		return status;
 	}
 
+	/**
+	 * Try to resolve the external upload, if successful, create query for the user and return id and statistics for that.
+	 */
+	public ExternalUploadResult uploadEntities(User user, Dataset dataset, ExternalUpload upload) {
 
+		final CQExternal.ResolveStatistic statistic =
+				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
+										   datasetRegistry.get(dataset.getId()).getStorage().getIdMapping(),
+										   config.getFrontend().getQueryUpload(),
+										   config.getLocale().getDateReader()
+				);
+
+		// Resolving nothing is a problem thus we fail.
+		if (statistic.getResolved().isEmpty()) {
+			throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
+												  .entity(new ExternalUploadResult(null, 0, statistic.getUnresolvedId(), statistic.getUnreadableDate()))
+												  .build());
+		}
+
+		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues()));
+
+		// We only create the Query, really no need to execute it as it's only useful for composition.
+		final ManagedQuery execution =
+				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
+											   .createExecution(datasetRegistry, query, user, dataset));
+
+		execution.setLastResultCount((long) statistic.getResolved().size());
+
+		if (upload.getLabel() != null) {
+			execution.setLabel(upload.getLabel());
+		}
+
+		execution.initExecutable(datasetRegistry, config);
+
+		return new ExternalUploadResult(
+				execution.getId(),
+				statistic.getResolved().size(),
+				statistic.getUnresolvedId(),
+				statistic.getUnreadableDate()
+		);
+	}
 }

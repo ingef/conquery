@@ -9,15 +9,15 @@
       "children": [
         {
           "ids": [
-            "number"
+            "concept"
           ],
           "type": "CONCEPT",
           "tables": [
             {
-              "id": "number.number_connector",
+              "id": "concept.connector",
               "filters": [
                 {
-                  "filter": "number.number_connector.value",
+                  "filter": "concept.connector.value",
                   "type": "REAL_RANGE",
                   "value": {
                     "min": 1,
@@ -27,19 +27,19 @@
               ]
             }
           ],
-          "selects": "number.exists"
+          "selects": "concept.exists"
         },
         {
           "ids": [
-            "number"
+            "concept"
           ],
           "type": "CONCEPT",
           "tables": [
             {
-              "id": "number.number_connector",
+              "id": "concept.connector",
               "filters": [
                 {
-                  "filter": "number.number_connector.value",
+                  "filter": "concept.connector.value",
                   "type": "REAL_RANGE",
                   "value": {
                     "min": 2,
@@ -49,14 +49,14 @@
               ]
             }
           ],
-          "selects": "number.exists"
+          "selects": "concept.exists"
         }
       ]
     }
   },
   "concepts": [
     {
-      "label": "number",
+      "label": "concept",
       "type": "TREE",
       "selects": {
         "type": "EXISTS",
@@ -64,16 +64,16 @@
       },
       "connectors": [
         {
-          "label": "number_connector",
-          "table": "table1",
+          "label": "connector",
+          "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           },
           "filters": {
             "label": "value",
             "description": "xy",
-            "column": "table1.value",
+            "column": "table.value",
             "type": "NUMBER"
           }
         }
@@ -84,7 +84,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/EXISTS_AGGREGATOR_OR/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

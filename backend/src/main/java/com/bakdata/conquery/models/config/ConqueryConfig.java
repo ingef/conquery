@@ -15,16 +15,18 @@ import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.util.DateFormats;
+
+import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.Configuration;
+import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import lombok.AllArgsConstructor;
@@ -80,19 +82,24 @@ public class ConqueryConfig extends Configuration {
 
 	private ConqueryMetricsConfig metricsConfig = new ConqueryMetricsConfig();
 
-	@NotNull
-	@Valid
-	private IdMappingConfig idMapping = new NoIdMapping();
 	@Valid
 	@NotNull
-	private List<AuthenticationConfig> authentication = List.of(new DevAuthConfig());
+	private AuthenticationConfig authentication = new AuthenticationConfig();
 
 	@Valid
 	@NotNull
-	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
+	private List<AuthenticationRealmFactory> authenticationRealms = List.of(new DevAuthConfig());
+
+	@Valid
+	@NotNull
+	private AuthorizationConfig authorizationRealms = new DevelopmentAuthorizationConfig();
 	@Valid
 	@NotNull
 	private ExcelConfig excel = new ExcelConfig();
+
+	@Valid
+	@NotNull
+	private JerseyClientConfiguration jerseyClient = new JerseyClientConfiguration();
 
 	@Valid
 	private List<PluginConfig> plugins = new ArrayList<>();
@@ -137,10 +144,10 @@ public class ConqueryConfig extends Configuration {
 
 	public static class ConfiguredModule extends SimpleModule {
 		public ConfiguredModule(ConqueryConfig config){
-			DateFormats dateFormats = config.getPreprocessor().getParsers().getDateFormats();
-			addDeserializer(LocalDate.class, new FormatedDateDeserializer(dateFormats));
+			DateReader dateReader = config.getLocale().getDateReader();
+			addDeserializer(LocalDate.class, new FormatedDateDeserializer(dateReader));
 			
-			addDeserializer(CDateSet.class, new CDateSetDeserializer(dateFormats));
+			addDeserializer(CDateSet.class, new CDateSetDeserializer(dateReader));
 			addSerializer(CDateSet.class, new CDateSetSerializer());
 		}
 	}
