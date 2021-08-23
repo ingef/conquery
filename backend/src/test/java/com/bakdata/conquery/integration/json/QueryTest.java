@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jvnet.hk2.internal.Utilities;
 
 @Slf4j
 @Getter
@@ -50,7 +51,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		importSecondaryIds(support, content.getSecondaryIds());
 		support.waitUntilWorkDone();
 
-		importTables(support, content);
+		importTables(support, content.getTables());
 		support.waitUntilWorkDone();
 
 		importConcepts(support, rawConcepts);
@@ -62,7 +63,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		importIdMapping(support, content);
 		support.waitUntilWorkDone();
 		
-		importPreviousQueries(support, content);
+		importPreviousQueries(support, content, support.getTestUser());
 		support.waitUntilWorkDone();
 		
 		query = IntegrationUtils.parseQuery(support, rawQuery);

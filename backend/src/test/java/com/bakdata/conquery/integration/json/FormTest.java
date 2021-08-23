@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.json;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importIdMapping;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -21,17 +22,15 @@ import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
-import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -74,9 +73,6 @@ public class FormTest extends ConqueryTestSpec {
 	@JsonIgnore
 	private Form form;
 
-	@JsonIgnore
-	private IdMappingConfig idMappingConfig;
-
 	@Override
 	public void overrideConfig(ConqueryConfig config) {
 		config.setStorage(new NonPersistentStoreFactory());
@@ -87,7 +83,7 @@ public class FormTest extends ConqueryTestSpec {
 		importSecondaryIds(support, content.getSecondaryIds());
 		support.waitUntilWorkDone();
 
-		LoadingUtil.importTables(support, content);
+		LoadingUtil.importTables(support, content.getTables());
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLES", getLabel());
 
@@ -97,6 +93,10 @@ public class FormTest extends ConqueryTestSpec {
 
 		LoadingUtil.importTableContents(support, content.getTables());
 		support.waitUntilWorkDone();
+
+		importIdMapping(support, content);
+		support.waitUntilWorkDone();
+
 		log.info("{} IMPORT TABLE CONTENTS", getLabel());
 		LoadingUtil.importPreviousQueries(support, content, support.getTestUser());
 
@@ -105,7 +105,6 @@ public class FormTest extends ConqueryTestSpec {
 		log.info("{} PARSE JSON FORM DESCRIPTION", getLabel());
 		form = parseForm(support);
 
-		idMappingConfig = support.getConfig().getIdMapping();
 	}
 
 	@Override
@@ -115,7 +114,6 @@ public class FormTest extends ConqueryTestSpec {
 		assertThat(support.getValidator().validate(form))
 				.describedAs("Form Validation Errors")
 				.isEmpty();
-
 
 
 		ManagedExecution<?> managedForm = support.getNamespace().getExecutionManager().runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig());
@@ -137,7 +135,9 @@ public class FormTest extends ConqueryTestSpec {
 
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedForm managedForm, User user) throws IOException {
 		Map<String, List<ManagedQuery>> managedMapping = managedForm.getSubQueries();
-		IdMappingState mappingState = idMappingConfig.initToExternal(user, managedForm);
+
+		IdPrinter idPrinter = standaloneSupport.getConfig().getFrontend().getQueryUpload().getIdPrinter(user, managedForm, standaloneSupport.getNamespace());
+
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		PrintSettings
 				PRINT_SETTINGS =
@@ -146,7 +146,7 @@ public class FormTest extends ConqueryTestSpec {
 						Locale.ENGLISH,
 						standaloneSupport.getDatasetsProcessor().getDatasetRegistry(),
 						config,
-						cer -> ResultUtil.createId(standaloneSupport.getNamespace(), cer, config.getIdMapping(), mappingState)
+						idPrinter::createId
 				);
 
 		CsvLineStreamRenderer renderer = new CsvLineStreamRenderer(config.getCsv().createWriter(), PRINT_SETTINGS);
@@ -156,7 +156,7 @@ public class FormTest extends ConqueryTestSpec {
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
 			List<String> actual =
 					renderer.toStream(
-							config.getIdMapping().getPrintIdFields(),
+							config.getFrontend().getQueryUpload().getPrintIdFields(Locale.ENGLISH),
 							resultInfos,
 							managed.getValue().stream().flatMap(ManagedQuery::streamResults)
 					)

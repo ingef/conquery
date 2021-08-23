@@ -1,2 +1,2 @@
-result,resolution,index,event_date,feature_date_range,outcome_date_range,concept.exists,concept.exists_1
+result,resolution,index,event_date,feature_date_range,outcome_date_range,concept - child1 - exists,concept - child1 - exists_1
 0,,,,,,0,0

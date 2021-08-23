@@ -5,7 +5,6 @@ import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -19,6 +18,7 @@ import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -160,10 +160,20 @@ public abstract class ResultType {
         @Override
         public String print(PrintSettings cfg, @NonNull Object f) {
             if(!(f instanceof Number)) {
-                throw new IllegalStateException("Expected an Number but got an '" + (f != null ? f.getClass().getName() : "no type") + "' with the value: " + f );
+                throw new IllegalStateException("Expected an Number but got an '" + f.getClass().getName() + "' with the value: " + f);
             }
-            return CDate.toLocalDate(((Number)f).intValue()).toString();
+            final Number number = (Number) f;
+            if (cfg.isPrettyPrint()) {
+                return print(number, cfg.getDateFormatter());
+            }
+            return CDate.toLocalDate(number.intValue()).toString();
         }
+
+        public static String print(Number num, DateTimeFormatter formatter) {
+            return formatter.format(LocalDate.ofEpochDay(num.intValue()));
+        }
+
+
     }
 
     /**
@@ -179,13 +189,18 @@ public abstract class ResultType {
         @Override
         public String print(PrintSettings cfg, @NonNull Object f) {
             if(!(f instanceof List)) {
-                throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f != null ? f.getClass().getName() : "no type", f));
+                throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
             }
-            List list = (List) f;
+            List<?> list = (List<?>) f;
             if(list.size() != 2) {
                 throw new IllegalStateException("Expected a list with 2 elements, one min, one max. The list was: " + list);
             }
-            return CDateRange.of((Integer) list.get(0), (Integer) list.get(1)).toString();
+            final DateTimeFormatter dateFormat = cfg.getDateFormatter();
+            final Integer min = (Integer) list.get(0);
+            final Integer max = (Integer) list.get(1);
+            String minString = min == Integer.MIN_VALUE ? "-∞" : ResultType.DateT.print(min, dateFormat);
+            String maxString = max == Integer.MAX_VALUE ? "+∞" : ResultType.DateT.print(max, dateFormat);
+            return minString + cfg.getDateRangeSeparator() + maxString;
         }
     }
 
@@ -226,7 +241,7 @@ public abstract class ResultType {
         private final ResultType elementType;
 
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-		public ListT(ResultType elementType) {
+		public ListT(@NonNull ResultType elementType) {
 			this.elementType = elementType;
 		}
 
@@ -237,10 +252,10 @@ public abstract class ResultType {
                 throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
             }
             // Not sure if this escaping is enough
-            String listDelimEscape = cfg.getListElementEscaper() + cfg.getListElementDelimiter();
-            StringJoiner joiner = new StringJoiner(cfg.getListElementDelimiter(), cfg.getListPrefix(), cfg.getListPostfix());
+            String listDelimEscape = cfg.getListElementEscaper() + cfg.getListFormat().getSeparator();
+            StringJoiner joiner = new StringJoiner(cfg.getListFormat().getSeparator(), cfg.getListFormat().getStart(),cfg.getListFormat().getEnd());
             for(Object obj : (List<?>) f) {
-                joiner.add(elementType.print(cfg,obj).replace(cfg.getListElementDelimiter(), listDelimEscape));
+                joiner.add(elementType.print(cfg,obj).replace(cfg.getListFormat().getSeparator(), listDelimEscape));
             }
             return joiner.toString();
         }

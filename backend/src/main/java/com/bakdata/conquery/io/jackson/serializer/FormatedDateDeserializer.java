@@ -1,6 +1,6 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -11,9 +11,9 @@ import java.time.LocalDate;
 
 public class FormatedDateDeserializer extends StdDeserializer<LocalDate> {
 
-    private final DateFormats formats;
+    private final DateReader formats;
 
-    public FormatedDateDeserializer(DateFormats formats) {
+    public FormatedDateDeserializer(DateReader formats) {
         super(LocalDate.class);
         this.formats = formats;
     }

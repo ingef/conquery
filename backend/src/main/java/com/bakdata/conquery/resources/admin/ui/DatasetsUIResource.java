@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -110,9 +110,9 @@ public class DatasetsUIResource {
 	@Path("{" + DATASET + "}/mapping")
 	public View getIdMapping(@PathParam(DATASET) Dataset dataset) {
 		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset.getId());
-		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
-		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
-			return new UIView<>("idmapping.html.ftl", uiProcessor.getUIContext(), mapping.getCsvIdToExternalIdMap());
+		EntityIdMap mapping = namespace.getStorage().getIdMapping();
+		if (mapping != null && mapping.getInternalToPrint() != null) {
+			return new UIView<>("idmapping.html.ftl", uiProcessor.getUIContext(), mapping.getInternalToPrint());
 		}
 		return new UIView<>("add_idmapping.html.ftl", uiProcessor.getUIContext(), namespace.getDataset().getId());
 	}

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.events;
 
 import java.util.function.Function;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.BooleanParser;
@@ -29,9 +30,9 @@ public enum MajorTypeId {
 
 	@Getter
 	private final boolean dateCompatible;
-	private final Function<ParserConfig, Parser> supplier;
+	private final Function<ConqueryConfig, Parser> supplier;
 
-	public Parser createParser(ParserConfig config) {
+	public Parser createParser(ConqueryConfig config) {
 		return supplier.apply(config);
 	}
 }

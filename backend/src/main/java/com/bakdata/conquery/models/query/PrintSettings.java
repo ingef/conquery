@@ -1,11 +1,14 @@
 package com.bakdata.conquery.models.query;
 
 import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.Currency;
+import java.util.Date;
 import java.util.Locale;
 import java.util.function.Function;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
@@ -28,6 +31,8 @@ public class PrintSettings {
 	private final boolean prettyPrint;
 	@ToString.Include
 	private final Locale locale;
+	private final String dateFormat;
+	private final DateTimeFormatter dateFormatter;
 	private final NumberFormat decimalFormat;
 	private final NumberFormat integerFormat;
 	private final Currency currency;
@@ -39,10 +44,11 @@ public class PrintSettings {
 
 	private final Function<SelectResultInfo, String> columnNamer;
 
-	private final String listElementDelimiter = ", ";
+	private final String dateRangeSeparator;
+
+	private final LocaleConfig.ListFormat listFormat;
+
 	private final String listElementEscaper = "\\";
-	private final String listPrefix = "{";
-	private final String listPostfix = "}";
 
 	private final PrintIdMapper idMapper;
 
@@ -56,6 +62,12 @@ public class PrintSettings {
 
 		this.integerFormat = NUMBER_FORMAT.apply(locale);
 		this.decimalFormat = DECIMAL_FORMAT.apply(locale);
+
+		this.listFormat = config.getLocale().getListFormats().get(0);
+		this.dateRangeSeparator = config.getLocale().findDateRangeSeparator(locale);
+
+		this.dateFormat = config.getLocale().findDateFormat(locale);
+		this.dateFormatter = DateTimeFormatter.ofPattern(dateFormat);
 	}
 
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper) {

@@ -5,7 +5,7 @@ import java.util.Objects;
 /**
  * This exception if thrown if any value could not be parsed as intended.
  */
-public class ParsingException extends Exception {
+public class ParsingException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 

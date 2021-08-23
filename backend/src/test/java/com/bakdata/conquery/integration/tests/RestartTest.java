@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -49,7 +49,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		String testJson = In.resource("/tests/query/RESTART_TEST_DATA/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 
 		Validator validator = Validators.newValidator();
-		PersistentIdMap persistentIdMap = IdMapSerialisationTest.createTestPersistentMap();
+		EntityIdMap entityIdMap = IdMapSerialisationTest.createTestPersistentMap();
 
 		ManagerNode manager = testConquery.getStandaloneCommand().getManager();
 		AdminDatasetProcessor adminDatasetProcessor = manager.getAdmin().getAdminDatasetProcessor();
@@ -69,7 +69,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		// IDMapping Testing
 		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
 
-		namespaceStorage.updateIdMapping(persistentIdMap);
+		namespaceStorage.updateIdMapping(entityIdMap);
 
 
 		final Dataset dataset1 = adminDatasetProcessor.addDataset(TEST_DATASET_1);
@@ -166,9 +166,9 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		}
 
-		PersistentIdMap persistentIdMapAfterRestart = conquery.getNamespaceStorage()
-															  .getIdMapping();
-		assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
+		EntityIdMap entityIdMapAfterRestart = conquery.getNamespaceStorage()
+													  .getIdMapping();
+		assertThat(entityIdMapAfterRestart).isEqualTo(entityIdMap);
 
 		// Cleanup
 		adminDatasetProcessor.deleteDataset(dataset1);

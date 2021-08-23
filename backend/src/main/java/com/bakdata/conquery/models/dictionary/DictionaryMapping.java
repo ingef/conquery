@@ -28,6 +28,7 @@ public class DictionaryMapping {
 	private final Dictionary targetDictionary;
 
 	private final Int2IntMap source2Target;
+
 	private final Int2IntMap target2Source;
 
 	@ToString.Include

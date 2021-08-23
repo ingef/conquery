@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -60,7 +60,7 @@ public class ExcelResultRenderTest {
 				Locale.GERMAN,
 				null,
 				CONFIG,
-				(cer) -> new ExternalEntityId(new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())}),
+				(cer) -> EntityPrintId.from(Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())),
 				(selectInfo) -> selectInfo.getSelect().getLabel());
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
@@ -75,8 +75,6 @@ public class ExcelResultRenderTest {
 				return coll.getInfos();
 			}
 
-			;
-
 			@Override
 			public Stream<EntityResult> streamResults() {
 				return results.stream();
@@ -86,10 +84,9 @@ public class ExcelResultRenderTest {
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-		ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig());
+		ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(),printSettings);
 
 		renderer.renderToStream(
-				printSettings,
 				printIdFields,
 				mquery,
 				output);

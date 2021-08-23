@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-public class SufficientExternalEntityId implements EntityId {
+public class UnresolvedEntityId {
 
-	private final String[] externalIdPart;
+	private final String externalId;
 }

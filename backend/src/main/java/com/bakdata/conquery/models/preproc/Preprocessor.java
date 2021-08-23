@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.bakdata.conquery.util.io.LogUtil;
@@ -84,7 +84,7 @@ public class Preprocessor {
 
 		int errors = 0;
 
-		final Preprocessed result = new Preprocessed(config.getPreprocessor().getParsers(), preprocessingJob);
+		final Preprocessed result = new Preprocessed(config, preprocessingJob);
 
 		long lineId = 0;
 
@@ -101,7 +101,7 @@ public class Preprocessor {
 			ConqueryMDC.setLocation(name);
 
 			if (!(sourceFile.exists() && sourceFile.canRead())) {
-				throw new FileNotFoundException(sourceFile.getAbsolutePath().toString());
+				throw new FileNotFoundException(sourceFile.getAbsolutePath());
 			}
 
 			CsvParser parser = null;
@@ -124,13 +124,13 @@ public class Preprocessor {
 				final GroovyPredicate filter = input.createFilter(headers);
 
 
-				DateFormats dateFormats = config.getPreprocessor().getParsers().getDateFormats();
-				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateFormats);
+				DateReader dateReader = config.getLocale().getDateReader();
+				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader);
 				final List<OutputDescription.Output> outputs = new ArrayList<>();
 
 				// Instantiate Outputs based on descriptors (apply header positions)
 				for (OutputDescription op : input.getOutput()) {
-					outputs.add(op.createForHeaders(headerMap, dateFormats));
+					outputs.add(op.createForHeaders(headerMap, dateReader));
 				}
 
 				String[] row;
