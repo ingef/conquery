@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,8 +11,15 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.unimi.dsi.fastutil.ints.IntHash;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.*;
 
@@ -61,6 +68,8 @@ public class MatchingStats {
 	@AllArgsConstructor
 	public static class Entry {
 		private long numberOfEvents;
+		@JsonSerialize(contentUsing = IntSetSerializer.class)
+		@JsonDeserialize(contentUsing = IntSetDeserializer.class)
 		private IntSet foundEntities ;//= new IntOpenHashSet();
 		private CDateRange span;
 
@@ -81,6 +90,24 @@ public class MatchingStats {
 				final CDateRange time = bucket.getAsDateRange(event, c);
 				span = time.spanClosed(span);
 			}
+		}
+	}
+
+
+
+	public static class IntSetSerializer extends JsonSerializer<IntSet> {
+		@Override
+		public void serialize(IntSet value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+			final int[] ints = value.toIntArray();
+			gen.writeArray(ints, 0, ints.length);
+		}
+	}
+
+	public static class IntSetDeserializer extends JsonDeserializer<IntSet> {
+
+		@Override
+		public IntSet deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+			return IntSet.of(p.readValueAs(int[].class));
 		}
 	}
 }

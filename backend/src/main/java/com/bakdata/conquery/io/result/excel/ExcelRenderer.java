@@ -1,9 +1,12 @@
 package com.bakdata.conquery.io.result.excel;
 
+import c10n.C10N;
+import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -67,7 +70,7 @@ public class ExcelRenderer {
 
 
         // TODO internationalize
-        SXSSFSheet sheet = workbook.createSheet("Result");
+        SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
         try {
             sheet.setDefaultColumnWidth(config.getDefaultColumnWidth());
 
