@@ -47,7 +47,7 @@ public class MatchingStats {
 
     public synchronized long countEntities() {
         if (numberOfEntities == -1L) {
-            numberOfEntities = entries.values().stream().map(Entry::getFoundEntities).mapToLong(Set::size).sum();
+            numberOfEntities = entries.values().stream().mapToLong(Entry::getNumberEntities).sum();
         }
         return numberOfEntities;
     }
@@ -72,16 +72,17 @@ public class MatchingStats {
         private long numberOfEvents;
 
         @JsonIgnore
-        private IntSet foundEntities;
+        private final IntSet foundEntities = new IntOpenHashSet();
+        private long numberEntities;
         private CDateRange span;
 
 
         public void addEvent(Table table, Bucket bucket, int event, int entityForEvent) {
-            if (foundEntities == null)
-                foundEntities = new IntOpenHashSet();
-
-            if (foundEntities.add(entityForEvent))
-                numberOfEvents++;
+            numberOfEvents++;
+            if(foundEntities.add(entityForEvent))
+            {
+                numberEntities++;
+            }
 
             for (Column c : table.getColumns()) {
                 if (!c.getType().isDateCompatible()) {
