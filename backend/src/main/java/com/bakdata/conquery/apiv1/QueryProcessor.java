@@ -345,7 +345,9 @@ public class QueryProcessor {
 	public void deleteQuery(User user, ManagedExecution<?> execution) {
 		log.info("User[{}] deleted Query[{}]", user.getId(), execution.getId());
 
-		execution.getExecutionManager().clearQueryResults(execution);
+		datasetRegistry.get(execution.getDataset().getId())
+					   .getExecutionManager() // Don't go over execution#getExecutionManager() as that's only set when query is initialized
+					   .clearQueryResults(execution);
 
 		storage.removeExecution(execution.getId());
 	}
