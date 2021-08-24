@@ -6,11 +6,11 @@ import IconButton from "../../button/IconButton";
 import Dropzone, {
   ChildArgs,
   PossibleDroppableObject,
-} from "../../form-components/Dropzone";
+} from "../../ui-components/Dropzone";
 import DropzoneWithFileInput, {
   DragItemFile,
-} from "../../form-components/DropzoneWithFileInput";
-import Label from "../../form-components/Label";
+} from "../../ui-components/DropzoneWithFileInput";
+import Label from "../../ui-components/Label";
 
 const ListItem = styled("div")`
   position: relative;

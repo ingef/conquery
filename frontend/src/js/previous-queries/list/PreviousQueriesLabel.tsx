@@ -5,7 +5,7 @@ import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import EditableText from "../../form-components/EditableText";
+import EditableText from "../../ui-components/EditableText";
 
 const Text = styled("div")`
   display: block;

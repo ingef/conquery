@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
 import { PREVIOUS_QUERY, TIMEBASED_NODE } from "../common/constants/dndTypes";
-import Dropzone, { DropzoneProps } from "../form-components/Dropzone";
 import type { DragItemQuery } from "../standard-query-editor/types";
+import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
 import type { DragItemTimebasedNode } from "./TimebasedNode";
 import { removeTimebasedNode } from "./actions";

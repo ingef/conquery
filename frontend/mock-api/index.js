@@ -340,9 +340,12 @@ module.exports = function (app, port) {
 
         const text = req.body.text.toLowerCase();
         const countriesRequested = req.params.filterId === "production_country";
+        const wordsRequested = req.params.filterId === "words";
 
         const storedValues = countriesRequested
           ? require("./autocomplete/countries")
+          : wordsRequested
+          ? require("./autocomplete/words")
           : [
               "1008508208",
               "1015841172",

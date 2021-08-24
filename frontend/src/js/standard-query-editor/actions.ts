@@ -16,8 +16,8 @@ import type {
 } from "../api/types";
 import { ErrorObject, errorPayload, successPayload } from "../common/actions";
 import type { TreesT } from "../concept-trees/reducer";
-import type { ModeT } from "../form-components/InputRange";
 import { useLoadQuery } from "../previous-queries/list/actions";
+import type { ModeT } from "../ui-components/InputRange";
 
 import { StandardQueryStateT } from "./queryReducer";
 import type {

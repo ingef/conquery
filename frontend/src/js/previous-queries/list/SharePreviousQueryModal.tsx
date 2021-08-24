@@ -10,9 +10,9 @@ import PrimaryButton from "../../button/PrimaryButton";
 import TransparentButton from "../../button/TransparentButton";
 import { exists } from "../../common/helpers/exists";
 import { usePrevious } from "../../common/helpers/usePrevious";
-import InputMultiSelect from "../../form-components/InputMultiSelect";
 import Modal from "../../modal/Modal";
 import { setMessage } from "../../snack-message/actions";
+import InputMultiSelect from "../../ui-components/InputMultiSelect";
 
 import { useLoadQuery, shareQuerySuccess } from "./actions";
 import { PreviousQueryT } from "./reducer";

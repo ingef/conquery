@@ -6,10 +6,10 @@ import { useTranslation } from "react-i18next";
 import { getWidthAndHeight } from "../app/DndProvider";
 import IconButton from "../button/IconButton";
 import { TIMEBASED_NODE } from "../common/constants/dndTypes";
+import { DragItemQuery } from "../standard-query-editor/types";
 import VerticalToggleButton, {
   Option,
-} from "../form-components/VerticalToggleButton";
-import { DragItemQuery } from "../standard-query-editor/types";
+} from "../ui-components/VerticalToggleButton";
 
 import { TimebasedResultType } from "./reducer";
 

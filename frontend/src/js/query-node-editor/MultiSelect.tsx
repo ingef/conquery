@@ -8,10 +8,10 @@ import type {
 } from "../api/types";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import { usePrevious } from "../common/helpers/usePrevious";
-import AsyncInputMultiSelect from "../form-components/AsyncInputMultiSelect";
+import AsyncInputMultiSelect from "../ui-components/AsyncInputMultiSelect";
 import InputMultiSelect, {
   MultiSelectInputProps,
-} from "../form-components/InputMultiSelect";
+} from "../ui-components/InputMultiSelect";
 
 import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
@@ -37,7 +37,7 @@ interface PropsT {
   input: MultiSelectInputProps;
 }
 
-const ResolvableMultiSelect: FC<PropsT> = ({
+const MultiSelect: FC<PropsT> = ({
   context,
   input,
   label,
@@ -157,4 +157,4 @@ const ResolvableMultiSelect: FC<PropsT> = ({
   );
 };
 
-export default ResolvableMultiSelect;
+export default MultiSelect;

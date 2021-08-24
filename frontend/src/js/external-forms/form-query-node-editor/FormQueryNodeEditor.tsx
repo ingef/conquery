@@ -11,10 +11,10 @@ import {
   SelectOptionT,
 } from "../../api/types";
 import { toUpperCaseUnderscore } from "../../common/helpers";
-import { ModeT } from "../../form-components/InputRange";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import { DragItemNode } from "../../standard-query-editor/types";
+import { ModeT } from "../../ui-components/InputRange";
 import { FormContextStateT } from "../reducer";
 import {
   selectReduxFormState,

@@ -9,12 +9,12 @@ import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
 import TransparentButton from "../../button/TransparentButton";
 import { parseCSV, toCSV } from "../../file/csv";
-import InputSelect from "../../form-components/InputSelect";
-import ReactSelect from "../../form-components/ReactSelect";
 import FaIcon from "../../icon/FaIcon";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
 import WithTooltip from "../../tooltip/WithTooltip";
+import InputSelect from "../../ui-components/InputSelect";
+import ReactSelect from "../../ui-components/ReactSelect";
 
 const Row = styled("div")`
   display: flex;

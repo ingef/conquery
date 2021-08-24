@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import { isEmpty } from "../common/helpers";
-import VerticalToggleButton from "../form-components/VerticalToggleButton";
+import VerticalToggleButton from "../ui-components/VerticalToggleButton";
 
 import TimebasedConditionDayRange from "./TimebasedConditionDayRange";
 import TimebasedNode from "./TimebasedNode";

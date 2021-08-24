@@ -1,9 +1,9 @@
 import React from "react";
 
 import type { FilterSuggestion, SelectOptionT } from "../api/types";
-import InputMultiSelect from "../form-components/InputMultiSelect";
 import { sortSelects } from "../model/select";
 import { SelectedSelectorT } from "../standard-query-editor/types";
+import InputMultiSelect from "../ui-components/InputMultiSelect";
 
 interface PropsT {
   selects: SelectedSelectorT[];

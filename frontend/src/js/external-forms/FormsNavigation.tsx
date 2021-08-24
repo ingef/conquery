@@ -4,8 +4,8 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import InputSelect from "../form-components/InputSelect";
 import { useActiveLang } from "../localization/useActiveLang";
+import InputSelect from "../ui-components/InputSelect";
 
 import { setExternalForm } from "./actions";
 import { Form } from "./config-types";

@@ -6,8 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { SecondaryId } from "../api/types";
 import { exists } from "../common/helpers/exists";
-import ToggleButton from "../form-components/ToggleButton";
 import FaIcon from "../icon/FaIcon";
+import ToggleButton from "../ui-components/ToggleButton";
 
 import { setSelectedSecondaryId } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";

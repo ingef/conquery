@@ -3,7 +3,8 @@ import Mustache from "mustache";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
-import { components } from "react-select";
+import { components, MenuListComponentProps } from "react-select";
+import { FixedSizeList } from "react-window";
 
 import type { FilterSuggestion, SelectOptionT } from "../api/types";
 import TransparentButton from "../button/TransparentButton";
@@ -48,7 +49,7 @@ const InfoText = styled("p")`
 
 // Arbitrary number that has been set in the backend as well
 // TODO: Unlimited here + paginated backend vs
-const OPTIONS_LIMIT = 50;
+const OPTIONS_LIMIT = 500;
 
 const MultiValueLabel = (params: any) => {
   const label = params.data.optionLabel || params.data.label || params.data;
@@ -62,6 +63,8 @@ const MultiValueLabel = (params: any) => {
     </components.MultiValueLabel>
   );
 };
+
+const Menu = ({ ...ownProps }) => {};
 
 const optionContainsStr = (str: string) => (option: SelectOptionT) => {
   return (
@@ -117,7 +120,10 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
     optionLabel: option.label,
   }));
 
-  const MenuList: FC = ({ children, ...ownProps }) => {
+  const MenuList = ({
+    children,
+    ...ownProps
+  }: MenuListComponentProps<SelectOptionT, true>) => {
     return (
       <>
         <Row>
@@ -133,13 +139,42 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
                 optionContainsStr(ownProps.selectProps.inputValue),
               );
 
-              ownProps.setValue(visibleOptions);
+              ownProps.setValue(visibleOptions, "select-option");
             }}
           >
             {t("inputMultiSelect.insertAll")}
           </TransparentButton>
         </Row>
-        <components.MenuList {...ownProps}>{children}</components.MenuList>
+        <FixedSizeList
+          height={300}
+          itemSize={30}
+          width="100%"
+          itemCount={ownProps.options.length}
+          {...ownProps}
+        >
+          {({ index, style }) => (
+            <components.Option
+              type="option"
+              label={ownProps.options[index].label}
+              data={ownProps.options[index].value}
+              innerProps={{
+                id: ownProps.options[index].value.toString(),
+                key: ownProps.options[index].value.toString(),
+                onClick: () => ownProps.selectOption(ownProps.options[index]),
+                onMouseMove: () => {},
+                onMouseOver: () => {},
+                tabIndex: -1,
+              }}
+              isDisabled={false}
+              isFocused={false}
+              isSelected={false}
+              {...ownProps}
+              {...style}
+            >
+              {ownProps.options[index].label}
+            </components.Option>
+          )}
+        </FixedSizeList>
       </>
     );
   };
@@ -150,6 +185,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       highlightChanged
       isSearchable
       isMulti
+      isMenuOpen={true}
       className="fullwidth"
       createOptionPosition="first"
       name="form-field"
@@ -159,6 +195,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       isDisabled={props.disabled}
       isLoading={!!props.isLoading}
       classNamePrefix={"react-select"}
+      maxMenuHeight={300}
       closeMenuOnSelect={!!props.closeMenuOnSelect}
       placeholder={
         allowDropFile

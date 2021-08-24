@@ -3,10 +3,10 @@ import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
-import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
 import FaIcon from "../../icon/FaIcon";
 import Modal from "../../modal/Modal";
 import InfoTooltip from "../../tooltip/InfoTooltip";
+import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
 
 import CSVColumnPicker, { QueryToUploadT } from "./CSVColumnPicker";
 

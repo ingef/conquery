@@ -5,9 +5,9 @@ import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../../common/constants/dndTypes";
-import type { ChildArgs } from "../../form-components/Dropzone";
 import { PreviousQueryT } from "../../previous-queries/list/reducer";
 import type { DragItemQuery } from "../../standard-query-editor/types";
+import type { ChildArgs } from "../../ui-components/Dropzone";
 import DropzoneList from "../form-components/DropzoneList";
 
 import FormQueryResult from "./FormQueryResult";

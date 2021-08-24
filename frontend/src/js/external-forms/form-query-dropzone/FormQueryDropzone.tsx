@@ -6,9 +6,9 @@ import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../../common/constants/dndTypes";
-import Dropzone from "../../form-components/Dropzone";
-import Label from "../../form-components/Label";
 import type { DragItemQuery } from "../../standard-query-editor/types";
+import Dropzone from "../../ui-components/Dropzone";
+import Label from "../../ui-components/Label";
 
 import FormQueryResult from "./FormQueryResult";
 

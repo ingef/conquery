@@ -6,8 +6,8 @@ import { useHistory } from "react-router-dom";
 import { usePostLogin } from "../api/api";
 import PrimaryButton from "../button/PrimaryButton";
 import ErrorMessage from "../error-message/ErrorMessage";
-import InputPlain from "../form-components/InputPlain";
 import FaIcon from "../icon/FaIcon";
+import InputPlain from "../ui-components/InputPlain";
 
 import { storeAuthToken } from "./helper";
 

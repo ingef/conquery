@@ -8,12 +8,12 @@ import type {
   TableIdT,
   FilterIdT,
 } from "../api/types";
-import InputPlain from "../form-components/InputPlain";
-import InputRange, { ModeT } from "../form-components/InputRange";
-import InputSelect from "../form-components/InputSelect";
 import type { FilterWithValueType } from "../standard-query-editor/types";
+import InputPlain from "../ui-components/InputPlain";
+import InputRange, { ModeT } from "../ui-components/InputRange";
+import InputSelect from "../ui-components/InputSelect";
 
-import ResolvableMultiSelect from "./ResolvableMultiSelect";
+import MultiSelectWithFileSupport from "./MultiSelect";
 
 export interface FiltersContextT {
   datasetId: DatasetIdT;
@@ -67,7 +67,7 @@ const TableFilters = (props: PropsT) => {
               );
             case "MULTI_SELECT":
               return (
-                <ResolvableMultiSelect
+                <MultiSelectWithFileSupport
                   context={{ ...props.context, filterId: filter.id }}
                   indexPrefix={filterIdx + 1}
                   input={{
@@ -84,7 +84,7 @@ const TableFilters = (props: PropsT) => {
               );
             case "BIG_MULTI_SELECT":
               return (
-                <ResolvableMultiSelect
+                <MultiSelectWithFileSupport
                   indexPrefix={filterIdx + 1}
                   context={{ ...props.context, filterId: filter.id }}
                   input={{

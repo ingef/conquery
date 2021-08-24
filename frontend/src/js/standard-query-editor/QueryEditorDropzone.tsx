@@ -11,9 +11,9 @@ import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../common/constants/dndTypes";
-import { DropzoneProps } from "../form-components/Dropzone";
-import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
 import FaIcon from "../icon/FaIcon";
+import { DropzoneProps } from "../ui-components/Dropzone";
+import DropzoneWithFileInput from "../ui-components/DropzoneWithFileInput";
 
 import type {
   DragItemConceptTreeNode,

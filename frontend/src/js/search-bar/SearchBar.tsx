@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import IconButton from "../button/IconButton";
 import { exists } from "../common/helpers/exists";
-import BaseInput from "../form-components/BaseInput";
+import BaseInput from "../ui-components/BaseInput";
 
 const InputContainer = styled("div")`
   flex-grow: 1;

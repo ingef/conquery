@@ -4,9 +4,6 @@ import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
-import InputCheckbox from "../form-components/InputCheckbox";
-import InputMultiSelect from "../form-components/InputMultiSelect";
-import type { ModeT } from "../form-components/InputRange";
 import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { sortSelects } from "../model/select";
@@ -14,6 +11,9 @@ import {
   ConceptQueryNodeType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
+import InputCheckbox from "../ui-components/InputCheckbox";
+import InputMultiSelect from "../ui-components/InputMultiSelect";
+import type { ModeT } from "../ui-components/InputRange";
 
 import ContentCell from "./ContentCell";
 import TableView from "./TableView";

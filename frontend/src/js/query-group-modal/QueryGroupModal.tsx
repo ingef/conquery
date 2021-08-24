@@ -6,11 +6,11 @@ import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../button/IconButton";
 import { DateStringMinMax } from "../common/helpers";
-import InputDateRange from "../form-components/InputDateRange";
 import Modal from "../modal/Modal";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { QueryGroupType } from "../standard-query-editor/types";
+import InputDateRange from "../ui-components/InputDateRange";
 
 import {
   queryGroupModalSetDate,

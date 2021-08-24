@@ -7,11 +7,11 @@ import { useSelector } from "react-redux";
 import type { ConceptIdT, ConceptT } from "../api/types";
 import PrimaryButton from "../button/PrimaryButton";
 import type { TreesT } from "../concept-trees/reducer";
-import InputPlain from "../form-components/InputPlain";
-import InputSelect from "../form-components/InputSelect";
 import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
+import InputPlain from "../ui-components/InputPlain";
+import InputSelect from "../ui-components/InputSelect";
 
 import { useSelectConceptRootNodeAndResolveCodes } from "./actions";
 import { UploadConceptListModalStateT } from "./reducer";
