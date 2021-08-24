@@ -11,12 +11,12 @@ class QuickSearchTest {
 	public void listItems() {
 		final QuickSearch<Integer> quickSearch = new QuickSearch<>();
 
-		quickSearch.addItem(0,"b");
-		quickSearch.addItem(1,"c");
-		quickSearch.addItem(2,"a");
+		quickSearch.addItem(0, "b");
+		quickSearch.addItem(1, "c");
+		quickSearch.addItem(2, "a");
 
 		assertThat(quickSearch.listItems())
-				.containsExactly(2, 0, 1);
+				.containsExactly(0, 1, 2);
 
 
 	}

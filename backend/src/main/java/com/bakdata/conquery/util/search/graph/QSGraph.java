@@ -280,12 +280,12 @@ public class QSGraph<T extends Comparable<T>> {
 	}
 
 	public List<T> listItems() {
-		return fragmentsNodesMap.entrySet()
+		return fragmentsNodesMap.values()
 								.stream()
-								.sorted(Map.Entry.comparingByKey())
-								.map(entry -> entry.getValue().items)
+								.map(GraphNode::getItems)
 								.flatMap(Collection::stream)
 								.distinct()
+								.sorted()
 								.collect(Collectors.toList());
 	}
 
