@@ -89,7 +89,7 @@ public class FrontendConfig {
 		public List<String> getPrintIdFields(Locale locale) {
 			return ids.stream()
 					  .filter(ColumnConfig::isPrint)
-					  .map(col -> col.getLabel().getOrDefault(locale.getDisplayName(), col.getField()))
+					  .map(col -> col.getLabel().getOrDefault(locale.getLanguage(), col.getField()))
 					  .collect(Collectors.toUnmodifiableList());
 		}
 
