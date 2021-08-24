@@ -7,6 +7,9 @@
     "headline": {
       "de": "Datenexport"
     },
+    "description": {
+      "de": "Dieses Formular erlaubt den Export von abhängigen Variablen zu einer bestimmten Ergebnisgruppe. Dabei wird eine CSV-Datei mit den Ergebnissen erzeugt, die dann heruntergeladen werden kann."
+    },
     "fields": [
       {
         "name": "queryGroup",
