@@ -18,6 +18,7 @@ export interface Form {
   title: TranslatableString; // Displayed
   headline: TranslatableString; // Displayed
   fields: GeneralField[];
+  description?: TranslatableString; // Displayed
 }
 
 interface Tabs {
