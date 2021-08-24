@@ -223,8 +223,7 @@ public class ConceptsProcessor {
 		}
 
 		// Quicksearch can split and also schedule for us.
-		List<FilterSearchItem> result;
-		result = search.findItems(String.join(" ", values), numberOfTopItems.orElse(Integer.MAX_VALUE), scorer);
+		List<FilterSearchItem> result = search.findItems(String.join(" ", values), numberOfTopItems.orElse(Integer.MAX_VALUE), scorer);
 
 		if (numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
 			log.warn("The quick search returned the maximum number of results ({}) which probably means not all possible results are returned.", Integer.MAX_VALUE);
