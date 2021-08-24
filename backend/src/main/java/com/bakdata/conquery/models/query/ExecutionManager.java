@@ -87,16 +87,6 @@ public class ExecutionManager {
 		return createQuery(datasets, query, UUID.randomUUID(), user, submittedDataset);
 	}
 
-	/**
-	 * Send message for query execution to all workers.
-	 */
-	private ManagedExecution<?> executeQueryInNamespace(ManagedExecution<?> query) {
-		final WorkerMessage executionMessage = query.createExecutionMessage();
-
-		namespace.sendToAll(executionMessage);
-		return query;
-	}
-
 	public ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, User user, Dataset submittedDataset) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution<?> managed = query.toManagedExecution(user, submittedDataset);
