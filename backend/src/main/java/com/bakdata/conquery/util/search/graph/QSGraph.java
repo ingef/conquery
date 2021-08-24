@@ -279,15 +279,13 @@ public class QSGraph<T extends Comparable<T>> {
 		});
 	}
 
-	public List<T> listItems(int offset, int limit) {
+	public List<T> listItems() {
 		return fragmentsNodesMap.entrySet()
 								.stream()
 								.sorted(Map.Entry.comparingByKey())
 								.map(entry -> entry.getValue().items)
 								.flatMap(Collection::stream)
 								.distinct()
-								.skip(offset)
-								.limit(limit)
 								.collect(Collectors.toList());
 	}
 

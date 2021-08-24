@@ -62,7 +62,6 @@ public class ConceptsProcessor {
 	private final LoadingCache<Concept<?>, FEList> nodeCache =
 			CacheBuilder.newBuilder()
 						.softValues()
-						.weakKeys()
 						.expireAfterWrite(10, TimeUnit.MINUTES)
 						.build(new CacheLoader<Concept<?>, FEList>() {
 							@Override
@@ -74,7 +73,6 @@ public class ConceptsProcessor {
 	private final LoadingCache<Pair<AbstractSelectFilter<?>, String>, List<FEValue>> searchCache =
 			CacheBuilder.newBuilder()
 						.softValues()
-						.weakKeys()
 						.build(new CacheLoader<>() {
 
 							@Override
@@ -166,14 +164,6 @@ public class ConceptsProcessor {
 
 		log.trace("Searching for for the term \"{}\". (Page = {}, Items = {})", text, pageNumber, itemsPerPage);
 
-		if (Strings.isNullOrEmpty(text)) {
-			// If no text provided, we just list them
-			return filter.getSourceSearch().listItems(pageNumber * itemsPerPage, itemsPerPage)
-						 .stream()
-						 .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-						 .collect(Collectors.toList());
-		}
-
 		List<FEValue> fullResult = null;
 		try {
 			fullResult = searchCache.get(Pair.of(filter, text));
@@ -195,12 +185,25 @@ public class ConceptsProcessor {
 	 * Is used by the serach cache to load missing items
 	 */
 	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
+		if (Strings.isNullOrEmpty(text)) {
+			// If no text provided, we just list them
+			return filter.getSourceSearch().listItems()
+						 .stream()
+						 .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+						 .collect(Collectors.toList());
+		}
+
 		List<FEValue> result = new LinkedList<>();
 
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
+
 		if (search != null) {
-			result =
-					createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), OptionalInt.empty(), FilterSearch.FilterSearchType.CONTAINS::score);
+			result = createSourceSearchResult(
+					filter.getSourceSearch(),
+					Collections.singletonList(text),
+					OptionalInt.empty(),
+					FilterSearch.FilterSearchType.CONTAINS::score
+			);
 		}
 
 		String value = filter.getValueFor(text);
