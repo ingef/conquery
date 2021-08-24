@@ -3,11 +3,7 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 import java.net.URL;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -132,16 +128,12 @@ public class QueryProcessor {
 	 */
 	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager, User user) {
 
-		final ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
+		ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
 
 		if (execution == null) {
 			return null;
 		}
 
-		// If the user is not the owner of the execution, we definitely create a new Execution, so the owner can cancel it
-		if (!user.equals(execution.getOwner())) {
-			return null;
-		}
 
 		// Direct reuse only works if the queries are of the same type (As reuse reconstructs the Query for different types)
 		if (!query.getClass().equals(execution.getSubmitted().getClass())) {
@@ -156,6 +148,15 @@ public class QueryProcessor {
 			if (!selectedSecondaryId.equals(reusedSecondaryId)) {
 				return null;
 			}
+		}
+
+		// If the user is not the owner of the execution, we definitely create a new Execution, so the owner can cancel it
+		if (!user.equals(execution.getOwner())) {
+			final ManagedExecution<?> newExecution = executionManager.createExecution(datasetRegistry,execution.getSubmitted(),user,execution.getDataset());
+			newExecution.setLabel(execution.getLabel());
+			newExecution.setTags(execution.getTags().clone());
+			storage.updateExecution(newExecution);
+			execution = newExecution;
 		}
 
 		ExecutionState state = execution.getState();
