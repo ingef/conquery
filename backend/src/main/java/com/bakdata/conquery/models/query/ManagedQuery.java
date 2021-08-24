@@ -260,7 +260,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 						  .forEach(label -> sb.append(label).append(" "));
 
 			// Last entry will output one Space that we don't want
-			sb.deleteCharAt(sb.length() - 1);
+			if(sb.length() > 0) {
+				sb.deleteCharAt(sb.length() - 1);
+			}
 
 			// If not all Concept could be included in the name, point that out
 			if (length.get() > MAX_CONCEPT_LABEL_CONCAT_LENGTH) {
