@@ -31,6 +31,7 @@ interface Tabs {
 interface Tab {
   name: string; // // Sent to backend API
   title: TranslatableString;
+  tooltip?: TranslatableString;
   fields: GeneralField[];
 }
 
@@ -58,6 +59,7 @@ type Field =
 interface CommonField {
   name: string; // Sent to backend API
   label: TranslatableString; // Used to display
+  tooltip?: TranslatableString;
 }
 
 /* ------------------------------ */
