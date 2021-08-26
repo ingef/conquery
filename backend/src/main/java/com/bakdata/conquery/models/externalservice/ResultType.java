@@ -203,12 +203,15 @@ public abstract class ResultType {
             if (min == null || max == null) {
                 log.warn("Encountered incomplete range, treating it as an open range. Either min or max was null: {}", list);
             }
+            // Compute minString first because we need it either way
             String minString = min == null || min == Integer.MIN_VALUE ? "-∞" : ResultType.DateT.print(min, dateFormat);
-            String maxString = max == null || max == Integer.MAX_VALUE ? "+∞" : ResultType.DateT.print(max, dateFormat);
+
             if (min != null && min.equals(max)){
                 // If the min and max are the same we print it like a singe date, not a range
                 return minString;
             }
+            String maxString = max == null || max == Integer.MAX_VALUE ? "+∞" : ResultType.DateT.print(max, dateFormat);
+
             return minString + cfg.getDateRangeSeparator() + maxString;
         }
     }
