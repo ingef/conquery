@@ -15,6 +15,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,6 +25,7 @@ import java.util.StringJoiner;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
+@Slf4j
 public abstract class ResultType {
 
     public String printNullable(PrintSettings cfg, Object f) {
@@ -198,8 +200,15 @@ public abstract class ResultType {
             final DateTimeFormatter dateFormat = cfg.getDateFormatter();
             final Integer min = (Integer) list.get(0);
             final Integer max = (Integer) list.get(1);
-            String minString = min == Integer.MIN_VALUE ? "-∞" : ResultType.DateT.print(min, dateFormat);
-            String maxString = max == Integer.MAX_VALUE ? "+∞" : ResultType.DateT.print(max, dateFormat);
+            if (min == null || max == null) {
+                log.warn("Encountered incomplete range, treating it as an open range. Either min or max was null: {}", list);
+            }
+            String minString = min == null || min == Integer.MIN_VALUE ? "-∞" : ResultType.DateT.print(min, dateFormat);
+            String maxString = max == null || max == Integer.MAX_VALUE ? "+∞" : ResultType.DateT.print(max, dateFormat);
+            if (min != null && min.equals(max)){
+                // If the min and max are the same we print it like a singe date, not a range
+                return minString;
+            }
             return minString + cfg.getDateRangeSeparator() + maxString;
         }
     }
