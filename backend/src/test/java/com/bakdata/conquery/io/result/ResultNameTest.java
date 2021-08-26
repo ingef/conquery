@@ -1,7 +1,7 @@
 package com.bakdata.conquery.io.result;
 
 import com.bakdata.conquery.util.io.FileUtil;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

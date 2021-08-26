@@ -14,7 +14,7 @@ const Description = styled.p`
 const Buttons = styled.div`
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
 `;
 
 interface Props {

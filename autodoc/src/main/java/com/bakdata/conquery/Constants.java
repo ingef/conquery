@@ -62,7 +62,6 @@ import com.bakdata.conquery.apiv1.OverviewExecutionStatus;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -117,7 +116,6 @@ public class Constants {
 				 .base(new Base(AuthorizationConfig.class, "An `AuthorizationConfig` defines the initial users that are created on application startup and other permission related options."))
 				 .base(new Base(AuthenticationRealmFactory.class, "An `AuthenticationConfig` is used to define how specific realms for authentication are configured."))
 				 .base(new Base(PluginConfig.class, "A `PluginConfig` is used to define settings for Conquery plugins."))
-				 .base(new Base(IdMappingConfig.class, "An `IdMappingConfig` is used to define how multi column entity IDs are printed and parsed"))
 				 .otherClass(APIConfig.class)
 				 .otherClass(ConqueryConfig.class)
 				 .otherClass(ClusterConfig.class)

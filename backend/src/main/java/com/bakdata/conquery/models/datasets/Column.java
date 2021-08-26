@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
@@ -24,6 +25,7 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Getter
 @Setter
@@ -39,8 +41,9 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@NotNull
 	private MajorTypeId type;
 
-	@InternalOnly
-	private int position = UNKNOWN_POSITION;
+	@JsonIgnore
+	@Getter(lazy = true)
+	private final int position = ArrayUtils.indexOf(getTable().getColumns(), this);
 	/**
 	 * if set this column should use the given dictionary
 	 * if it is of type string, instead of its own dictionary

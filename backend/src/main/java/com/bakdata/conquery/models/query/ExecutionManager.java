@@ -68,7 +68,15 @@ public class ExecutionManager {
 
 	public void execute(DatasetRegistry datasets, ManagedExecution<?> execution, ConqueryConfig config) {
 		// Initialize the query / create subqueries
-		execution.initExecutable(datasets, config);
+		try {
+			execution.initExecutable(datasets, config);
+		}catch (Exception e){
+			log.error("Failed to initialize Query[{}]", execution.getId(), e);
+
+			//TODO we don't want to store completely faulty queries but is that right like this?
+			datasets.getMetaStorage().removeExecution(execution.getId());
+			throw e;
+		}
 
 		log.info("Executing Query[{}] in Datasets[{}]", execution.getQueryId(), execution.getRequiredDatasets());
 
@@ -86,6 +94,7 @@ public class ExecutionManager {
 	public ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset) {
 		return createQuery(datasets, query, UUID.randomUUID(), user, submittedDataset);
 	}
+
 
 	public ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, User user, Dataset submittedDataset) {
 		// Transform the submitted query into an initialized execution

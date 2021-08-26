@@ -10,8 +10,8 @@
                 <tbody>
                 <#list entities as entity>
                     <tr>
-                        <td><a href="${uiPathBase}${entity.id}">${entity.label}</a></td>
-                        <td><a href="${uiPathBase}${entity.id}">${entity.name}</a></td>
+                        <td><a href="${uiPathBase}/${entity.id}">${entity.label}</a></td>
+                        <td><a href="${uiPathBase}/${entity.id}">${entity.name}</a></td>
                         <td><a href="" onclick="deleteEntity('${entity.id}')"><i class="fas fa-trash-alt text-danger"></i></a></td>
                     </tr>
                 </#list>

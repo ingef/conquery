@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
@@ -10,12 +11,10 @@ import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Date;
 
 @Slf4j
 @ToString(callSuper = true)
@@ -23,26 +22,26 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 	private final DateParser minParser;
 	private final DateParser maxParser;
-	private final DateFormats dateFormats;
+	private final DateReader dateReader;
 
 	private boolean onlyQuarters = true;
 	private int maxValue = Integer.MIN_VALUE;
 	private int minValue = Integer.MAX_VALUE;
 	private boolean anyOpen;
 
-	public DateRangeParser(ParserConfig config) {
+	public DateRangeParser(ConqueryConfig config) {
 		super(config);
 		minParser = new DateParser(config);
 		maxParser = new DateParser(config);
-		dateFormats = config.getDateFormats();
+		dateReader = config.getLocale().getDateReader();
 	}
 
 	@Override
-	protected CDateRange parseValue(@Nonnull String value) throws ParsingException {
-		return DateRangeParser.parseISORange(value, dateFormats);
+	protected CDateRange parseValue(@Nonnull String value) {
+		return DateRangeParser.parseISORange(value, dateReader);
 	}
 
-	public static CDateRange parseISORange(String value, DateFormats dateFormats) throws ParsingException {
+	public static CDateRange parseISORange(String value, DateReader dateReader) {
 		if (value == null) {
 			return null;
 		}
@@ -52,8 +51,8 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 		}
 
 		return CDateRange.of(
-				dateFormats.parseToLocalDate(parts[0]),
-				dateFormats.parseToLocalDate(parts[1])
+				dateReader.parseToLocalDate(parts[0]),
+				dateReader.parseToLocalDate(parts[1])
 		);
 	}
 

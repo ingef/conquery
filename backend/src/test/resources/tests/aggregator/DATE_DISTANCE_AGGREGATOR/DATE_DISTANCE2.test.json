@@ -5,50 +5,42 @@
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-	         "type":"DATE_RESTRICTION",
-         "dateRange":{  
-            "min":"2005-01-01",
-            "max":"2010-03-31"
-         },
-         "child":{  
-            "type":"OR",
-            "children":[  
-               {  
-      "ids": [
-        "con"
-      ],
-      "type": "CONCEPT",
-      "label": "Geschlecht SELECT",
-      "tables": [
-        {
-          "id": "con.geschlecht_connector",
-		  "selects": "con.geschlecht_connector.geb"
-        }
-      ]
-	  
-               }
-            ]
-         }
+      "type": "DATE_RESTRICTION",
+      "dateRange": {
+        "min": "2005-01-01",
+        "max": "2010-03-31"
+      },
+      "child": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "selects": "concept.connector.select"
+          }
+        ]
+      }
     }
   },
   "concepts": [
     {
-      "label": "Geschlecht SELECT",
-	  "name": "con",
+      "name": "concept",
       "type": "TREE",
       "connectors": [
         {
-          "label": "geschlecht_connector",
-          "table": "table1",
+          "label": "connector",
+          "table": "table",
           "validityDates": {
             "label": "indexdatum",
-            "column": "table1.indexdatum"
+            "column": "table.indexdatum"
           },
-		  "selects": {
-			"name": "geb",
-			"type": "DATE_DISTANCE", 
-			"column": "table1.geburtsdatum"
-		  }
+          "selects": {
+            "name": "select",
+            "type": "DATE_DISTANCE",
+            "column": "table.datum"
+          }
         }
       ]
     }
@@ -57,7 +49,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/DATE_DISTANCE_AGGREGATOR/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -67,8 +59,8 @@
             "name": "indexdatum",
             "type": "DATE_RANGE"
           },
-		  {
-            "name": "geburtsdatum",
+          {
+            "name": "datum",
             "type": "DATE"
           }
         ]

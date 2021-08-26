@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -81,6 +81,7 @@ public class AdminDatasetProcessor {
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);
+		datasetStorage.updateIdMapping(new EntityIdMap());
 
 		Namespace ns = new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy()).writerWithView(InternalOnly.class));
 
@@ -180,15 +181,12 @@ public class AdminDatasetProcessor {
 			throw new IllegalArgumentException();
 		}
 
+
 		if (namespace.getStorage().getTable(table.getId()) != null) {
 			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
 		}
 
 		ValidatorHelper.failOnError(log, validator.validate(table));
-
-		for (int p = 0; p < table.getColumns().length; p++) {
-			table.getColumns()[p].setPosition(p);
-		}
 
 		namespace.getStorage().addTable(table);
 		namespace.sendToAll(new UpdateTable(table));
@@ -255,13 +253,21 @@ public class AdminDatasetProcessor {
 		log.info("Received IdMapping for Dataset[{}]", namespace.getDataset().getId());
 
 		CsvParser parser = config.getCsv()
-				.withSkipHeader(false)
-				.withParseHeaders(false)
-				.createParser();
+								 .withSkipHeader(false)
+								 .withParseHeaders(true)
+								 .createParser();
 
-		PersistentIdMap mapping = config.getIdMapping().generateIdMapping(parser.iterate(data).iterator());
+		try {
 
-		namespace.getStorage().updateIdMapping(mapping);
+			parser.beginParsing(data);
+
+			EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getFrontend().getQueryUpload().getIds());
+			namespace.getStorage().updateIdMapping(mapping);
+
+		}
+		finally {
+			parser.stopParsing();
+		}
 	}
 
 	/**
@@ -280,7 +286,7 @@ public class AdminDatasetProcessor {
 	@SneakyThrows
 	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks);
+		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config);
 
 		namespace.getJobManager().addSlowJob(job);
 	}
@@ -351,7 +357,7 @@ public class AdminDatasetProcessor {
 		));
 	}
 
-	public PersistentIdMap getIdMapping(Namespace namespace) {
+	public EntityIdMap getIdMapping(Namespace namespace) {
 		return namespace.getStorage().getIdMapping();
 	}
 }

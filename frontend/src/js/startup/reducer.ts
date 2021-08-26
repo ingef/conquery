@@ -1,10 +1,9 @@
-import type { GetFrontendConfigResponseT } from "../api/types";
+import { getType } from "typesafe-actions";
 
-import {
-  LOAD_CONFIG_START,
-  LOAD_CONFIG_ERROR,
-  LOAD_CONFIG_SUCCESS,
-} from "./actionTypes";
+import type { GetFrontendConfigResponseT } from "../api/types";
+import type { Action } from "../app/actions";
+
+import { loadConfig } from "./actions";
 
 export type StartupStateT = {
   loading: boolean;
@@ -17,6 +16,9 @@ const initialState: StartupStateT = {
   error: null,
   config: {
     version: "No version loaded",
+    queryUpload: {
+      ids: [],
+    },
     currency: {
       prefix: "€",
       thousandSeparator: ".",
@@ -28,21 +30,21 @@ const initialState: StartupStateT = {
 
 const startup = (
   state: StartupStateT = initialState,
-  action: Object,
+  action: Action,
 ): StartupStateT => {
   switch (action.type) {
-    case LOAD_CONFIG_START:
+    case getType(loadConfig.request):
       return {
         ...state,
         loading: true,
       };
-    case LOAD_CONFIG_ERROR:
+    case getType(loadConfig.failure):
       return {
         ...state,
         loading: false,
-        error: action.payload.message,
+        error: action.payload.message || null,
       };
-    case LOAD_CONFIG_SUCCESS:
+    case getType(loadConfig.success):
       return {
         ...state,
         loading: false,

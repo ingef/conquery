@@ -52,6 +52,7 @@ interface PropsT {
   large?: boolean;
   center?: boolean;
   autoFocus?: boolean;
+  tooltip?: string;
   input: {
     value: DateStringMinMax;
     onChange: (value: DateStringMinMax) => void;
@@ -79,6 +80,7 @@ const InputDateRange: FC<PropsT> = ({
   autoFocus,
   labelSuffix,
   input: { value, onChange },
+  tooltip,
 }) => {
   const { t } = useTranslation();
 
@@ -138,7 +140,24 @@ const InputDateRange: FC<PropsT> = ({
         <StyledLabel large={large}>
           {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
           {label}
-          <InfoTooltip text={t("inputDateRange.tooltip.possiblePattern")} />
+          <InfoTooltip
+            html={
+              <>
+                {exists(tooltip) && (
+                  <>
+                    {tooltip}
+                    <br />
+                    <br />
+                  </>
+                )}
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: t("inputDateRange.tooltip.possiblePattern"),
+                  }}
+                />
+              </>
+            }
+          />
           {labelSuffix && labelSuffix}
         </StyledLabel>
       )}
