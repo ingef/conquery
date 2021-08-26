@@ -38,22 +38,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 	@Override
 	protected CDateRange parseValue(@Nonnull String value) {
-		return DateRangeParser.parseISORange(value, dateReader);
-	}
-
-	public static CDateRange parseISORange(String value, DateReader dateReader) {
-		if (value == null) {
-			return null;
-		}
-		String[] parts = StringUtils.split(value, '/');
-		if (parts.length != 2) {
-			throw ParsingException.of(value, "daterange");
-		}
-
-		return CDateRange.of(
-				dateReader.parseToLocalDate(parts[0]),
-				dateReader.parseToLocalDate(parts[1])
-		);
+		return dateReader.parseToCDateRange(value);
 	}
 
 	@Override

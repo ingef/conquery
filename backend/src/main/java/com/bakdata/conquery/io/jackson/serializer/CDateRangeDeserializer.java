@@ -23,6 +23,6 @@ public class CDateRangeDeserializer extends StdDeserializer<CDateRange> {
     @SneakyThrows
     @Override
     public CDateRange deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        return DateRangeParser.parseISORange(p.getText(), dateReader);
+        return dateReader.parseToCDateRange(p.getText());
     }
 }
