@@ -155,7 +155,7 @@ public class QueryProcessor {
 		}
 
 		// If the user is not the owner of the execution, we definitely create a new Execution, so the owner can cancel it
-		if (!user.equals(execution.getOwner())) {
+		if (!user.isOwner(execution)) {
 			final ManagedExecution<?> newExecution = executionManager.createExecution(datasetRegistry,execution.getSubmitted(),user,execution.getDataset());
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
