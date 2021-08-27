@@ -238,6 +238,9 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				// However the Object holding the tags must be different, so the two are not linked here
 				assertThat(copy.getTags()).isNotSameAs(execution.getTags());
+
+				// And the ids must be different
+				assertThat(copy.getId()).isNotSameAs(execution.getId());
 			}
 		}
 	}
