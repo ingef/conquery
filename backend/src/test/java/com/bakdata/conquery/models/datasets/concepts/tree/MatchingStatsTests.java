@@ -59,7 +59,7 @@ public class MatchingStatsTests {
         Table table = new Table();
         table.setColumns(new Column[0]);
 
-        assertThat(stats.countEvents()).isEqualTo(-1);
+        assertThat(stats.countEvents()).isEqualTo(0);
         assertThat(stats.countEntities()).isEqualTo(0);
 
         Map<WorkerId, MatchingStats.Entry> entries = new HashMap<>();

@@ -20,16 +20,9 @@ public class MatchingStats {
     private Map<WorkerId, Entry> entries = new HashMap<>();
     @JsonIgnore
     private transient CDateRange span;
-    @JsonIgnore
-    private transient long numberOfEvents = -1;
-
-
 
     public synchronized long countEvents() {
-        if (numberOfEvents == -1L) {
-            numberOfEvents = entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
-        }
-        return numberOfEvents;
+        return entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
     }
 
 
@@ -47,7 +40,6 @@ public class MatchingStats {
 
     public void updateEntry(WorkerId source, Entry entry) {
         entries.put(source, entry);
-        numberOfEvents = -1;
         span = null;
     }
 
