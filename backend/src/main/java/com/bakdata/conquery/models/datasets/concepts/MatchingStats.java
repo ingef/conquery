@@ -26,7 +26,7 @@ public class MatchingStats {
     }
 
 
-    public synchronized long countEntities() {
+    public long countEntities() {
 
         return entries.values().stream().mapToLong(Entry::getNumberOfEntities).sum();
     }
