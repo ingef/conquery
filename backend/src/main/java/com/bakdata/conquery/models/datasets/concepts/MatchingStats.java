@@ -21,7 +21,7 @@ public class MatchingStats {
     @JsonIgnore
     private transient CDateRange span;
 
-    public synchronized long countEvents() {
+    public long countEvents() {
         return entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
     }
 
