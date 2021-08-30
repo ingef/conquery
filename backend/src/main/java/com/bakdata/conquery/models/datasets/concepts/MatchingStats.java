@@ -32,13 +32,14 @@ public class MatchingStats {
     }
 
     public synchronized CDateRange spanEvents() {
-        synchronized (this)
-        {
-            if (span == null) {
-                span = entries.values().stream().map(Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
+        if (span == null) {
+            synchronized (this) {
+                if (span == null) {
+                    span = entries.values().stream().map(Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
+                }
             }
-            return span;
         }
+        return span;
 
     }
 
@@ -63,8 +64,7 @@ public class MatchingStats {
 
         public void addEvent(Table table, Bucket bucket, int event, int entityForEvent) {
             numberOfEvents++;
-            if(foundEntities.add(entityForEvent))
-            {
+            if (foundEntities.add(entityForEvent)) {
                 numberOfEntities++;
             }
 
