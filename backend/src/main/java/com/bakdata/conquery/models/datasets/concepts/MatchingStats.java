@@ -32,15 +32,21 @@ public class MatchingStats {
     }
 
     public synchronized CDateRange spanEvents() {
-        if (span == null) {
-            span = entries.values().stream().map(Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
+        synchronized (this)
+        {
+            if (span == null) {
+                span = entries.values().stream().map(Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
+            }
+            return span;
         }
-        return span;
+
     }
 
     public void updateEntry(WorkerId source, Entry entry) {
-        entries.put(source, entry);
-        span = null;
+        synchronized (this) {
+            entries.put(source, entry);
+            span = null;
+        }
     }
 
     @Data
