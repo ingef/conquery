@@ -308,8 +308,8 @@
     "upload": "Upload",
     "uploadAgain": "Upload again",
     "uploadFailed": "Could not upload file. Please check the file format and the network connection.",
-    "uploadSucceeded": "Result list was successfully uploaded (1 line)",
-    "uploadSucceeded_plural": "Result list was successfully uploaded ({{count}} lines)",
+    "uploadSucceeded": "All lines (1 line) were successfully uploaded.",
+    "uploadSucceeded_plural": "All {{count}} lines were successfully uploaded.",
     "formatInfo": {
       "text": "File should contain one result per row, separated by ; (semicolon)"
     },
