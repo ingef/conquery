@@ -3,7 +3,6 @@ import { StateT } from "app-types";
 import React, { FC } from "react";
 import { useSelector } from "react-redux";
 
-import FormConfigSaver from "./FormConfigSaver";
 import type { Form as FormType } from "./config-types";
 import Form from "./form/Form";
 import { selectFormConfig } from "./stateSelectors";
@@ -20,16 +19,7 @@ const FormsContainer: FC = () => {
     selectFormConfig(state),
   );
 
-  return (
-    <Root>
-      {!!formConfig && (
-        <>
-          <FormConfigSaver />
-          <Form config={formConfig} />
-        </>
-      )}
-    </Root>
-  );
+  return <Root>{!!formConfig && <Form config={formConfig} />}</Root>;
 };
 
 export default FormsContainer;
