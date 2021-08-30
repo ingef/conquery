@@ -137,10 +137,8 @@ interface PropsT {
 
 type UploadColumnType =
   | string // some ID column format that will be determined by the backend through the "frontend config"
-  | "EVENT_DATE" // (a single day)
   | "START_DATE" //(a starting day)
   | "END_DATE" // (and end day
-  | "DATE_RANGE" // (two days)
   | "DATE_SET" // (a set of date ranges)
   | "IGNORE"; // (ignore this column)
 
@@ -171,11 +169,9 @@ const CSVColumnPicker: FC<PropsT> = ({
         value: name,
       };
     }),
-    { label: t("csvColumnPicker.dateRange"), value: "DATE_RANGE" },
     { label: t("csvColumnPicker.dateSet"), value: "DATE_SET" },
     { label: t("csvColumnPicker.startDate"), value: "START_DATE" },
     { label: t("csvColumnPicker.endDate"), value: "END_DATE" },
-    { label: t("csvColumnPicker.eventDate"), value: "EVENT_DATE" },
   ];
 
   const DELIMITER_OPTIONS = [

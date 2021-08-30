@@ -324,8 +324,6 @@
     "comma": "Komma",
     "id": "ID",
     "dateSet": "Datumswerte",
-    "dateRange": "Datumsbereich (REMOVE)",
-    "eventDate": "Einzeldatum (REMOVE)",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
     "ignore": "Ignorieren",
