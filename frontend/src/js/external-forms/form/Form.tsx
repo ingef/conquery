@@ -6,6 +6,7 @@ import { reduxForm, formValueSelector } from "redux-form";
 
 import type { SelectOptionT } from "../../api/types";
 import { useActiveLang } from "../../localization/useActiveLang";
+import FormConfigSaver from "../FormConfigSaver";
 import FormHeader from "../FormHeader";
 import type {
   Form as FormType,
@@ -55,7 +56,7 @@ const DEFAULT_VALIDATION_BY_TYPE = {
 };
 
 const SxFormHeader = styled(FormHeader)`
-  margin-bottom: 20px;
+  margin: 5px 0 15px;
 `;
 
 function getNotEmptyValidation(fieldType: string) {
@@ -132,6 +133,7 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
         {config.description && config.description[activeLang] && (
           <SxFormHeader description={config.description[activeLang]} />
         )}
+        <FormConfigSaver />
         {config.fields.map((field, i) => {
           const key = isFormField(field) ? field.name : field.type + i;
 
