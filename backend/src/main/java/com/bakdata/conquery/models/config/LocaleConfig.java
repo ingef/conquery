@@ -56,13 +56,15 @@ public class LocaleConfig {
 
 	/**
 	 * List formats that are available for parsing inputs and (the first one) for rendering result tables.
+	 * Spaces at the ends of the separator are only relevant for the output of results. For the input (parsing)
+	 * the separator string can be surrounded by an arbitrary number of spaces.
 	 */
 	@NotNull
 	@NotEmpty
 	private List<ListFormat> listFormats = List.of(
 			new ListFormat("", ", ", ""),
-			new ListFormat("{", ", ", "}"),
-			new ListFormat("[", ", ", "]"));
+			new ListFormat("{", ",", "}"),
+			new ListFormat("[", ",", "]"));
 
 	/**
 	 * Container to describe the format of a list

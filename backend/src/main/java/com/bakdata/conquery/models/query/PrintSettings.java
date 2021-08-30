@@ -27,6 +27,10 @@ public class PrintSettings {
 		return fmt;
 	};
 
+	private static final LocaleConfig.ListFormat UNPRETTY_LIST_FORMAT = new LocaleConfig.ListFormat("{", ",", "}");
+	private static final String UNPRETTY_DATERANGE_SEPERATOR = "/";
+	private static final DateTimeFormatter UNPRETTY_DATEFORMATTER = DateTimeFormatter.ISO_DATE;
+
 	@ToString.Include
 	private final boolean prettyPrint;
 	@ToString.Include
@@ -63,11 +67,11 @@ public class PrintSettings {
 		this.integerFormat = NUMBER_FORMAT.apply(locale);
 		this.decimalFormat = DECIMAL_FORMAT.apply(locale);
 
-		this.listFormat = config.getLocale().getListFormats().get(0);
-		this.dateRangeSeparator = config.getLocale().findDateRangeSeparator(locale);
+		this.listFormat = prettyPrint ? config.getLocale().getListFormats().get(0) : UNPRETTY_LIST_FORMAT;
+		this.dateRangeSeparator = prettyPrint ? config.getLocale().findDateRangeSeparator(locale) : UNPRETTY_DATERANGE_SEPERATOR;
 
 		this.dateFormat = config.getLocale().findDateFormat(locale);
-		this.dateFormatter = DateTimeFormatter.ofPattern(dateFormat);
+		this.dateFormatter = prettyPrint ? DateTimeFormatter.ofPattern(dateFormat) : UNPRETTY_DATEFORMATTER;
 	}
 
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper) {
