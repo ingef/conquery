@@ -16,7 +16,6 @@ export type GeneralField = FormField | NonFormField;
 export interface Form {
   type: string; // Sent to backend API
   title: TranslatableString; // Displayed
-  headline: TranslatableString; // Displayed
   fields: GeneralField[];
   description?: TranslatableString; // Displayed
 }

@@ -56,7 +56,7 @@ const FormsNavigation: FC = () => {
 
   const options = Object.values(availableForms)
     .map((formType) => ({
-      label: formType.headline[language]!,
+      label: formType.title[language]!,
       value: formType.type,
     }))
     .sort((a, b) => (a.label < b.label ? -1 : 1));
