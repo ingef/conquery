@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.Data;
 
@@ -31,6 +32,11 @@ public class QuarterAggregator implements Aggregator<String> {
 
 	public QuarterAggregator(TemporalSampler sampler) {
 		this.sampler = sampler;
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		set.clear();
 	}
 
 	@Override

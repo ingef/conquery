@@ -6,6 +6,8 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -34,6 +36,12 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	@Override
 	public Column[] getRequiredColumns() {
 		return ArrayUtils.add(aggregator.getRequiredColumns(), getColumn());
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		aggregator.init(entity,context);
+		observed.clear();
 	}
 
 	@Override

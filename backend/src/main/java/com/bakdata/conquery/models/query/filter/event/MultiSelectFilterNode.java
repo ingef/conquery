@@ -107,4 +107,5 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 		requiredTables.add(column.getTable());
 	}
 
+
 }

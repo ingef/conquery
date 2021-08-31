@@ -18,7 +18,7 @@ public interface EventIterating {
 		return out;
 	}
 
-	public void init(QueryExecutionContext ctx);
+	public void init(Entity entity, QueryExecutionContext context);
 	
 	default void nextTable(QueryExecutionContext ctx, Table currentTable) {}
 	

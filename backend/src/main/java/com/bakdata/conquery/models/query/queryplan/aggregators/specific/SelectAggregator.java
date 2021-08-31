@@ -4,6 +4,8 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
 
@@ -19,6 +21,11 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	public SelectAggregator(Column column, String selected) {
 		super(column);
 		this.selected = selected;
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		hits = 0;
 	}
 
 	@Override

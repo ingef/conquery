@@ -5,6 +5,8 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import lombok.Getter;
 
@@ -13,17 +15,24 @@ import lombok.Getter;
  */
 public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 
-	private boolean hit = false;
+	private boolean hit;
 
 	@Getter
-	private Column addendColumn;
+	private final Column addendColumn;
 	@Getter
-	private Column subtrahendColumn;
+	private final Column subtrahendColumn;
 	private BigDecimal sum = BigDecimal.ZERO;
 
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		hit = false;
+		sum = BigDecimal.ZERO;
+	}
+
+
 	public DecimalDiffSumAggregator(Column addend, Column subtrahend) {
-		this.addendColumn = addend;
-		this.subtrahendColumn = subtrahend;
+		addendColumn = addend;
+		subtrahendColumn = subtrahend;
 	}
 
 	@Override

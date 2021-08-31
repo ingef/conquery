@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +27,13 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	public FirstValueAggregator(Column column) {
 		super(column);
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		selectedEvent = OptionalInt.empty();
+		date = Integer.MAX_VALUE;
+		selectedBucket = null;
 	}
 
 	@Override

@@ -7,6 +7,8 @@ import java.util.Set;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.RequiredArgsConstructor;
 
@@ -37,7 +39,13 @@ public class DateAggregator implements Aggregator<CDateSet> {
         this.children.addAll(children);
     }
 
-    @Override
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+    	//TODO don't think this is needed?
+		children.forEach(child -> init(entity, context));
+	}
+
+	@Override
     public void acceptEvent(Bucket bucket, int event) {
         throw new UnsupportedOperationException("This Aggregator uses the result of its siblings and does not accept events");
     }

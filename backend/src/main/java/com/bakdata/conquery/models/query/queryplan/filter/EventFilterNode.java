@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan.filter;
 
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 
 public abstract class EventFilterNode<FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
 
@@ -17,8 +19,14 @@ public abstract class EventFilterNode<FILTER_VALUE> extends FilterNode<FILTER_VA
 		hit = true;
 	}
 
-	public final boolean isContained(){
+	public final boolean isContained() {
 		return hit;
 	}
-	
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		hit = false;
+	}
+
+
 }

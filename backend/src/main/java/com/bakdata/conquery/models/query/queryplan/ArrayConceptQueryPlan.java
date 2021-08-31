@@ -30,7 +30,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	public static final int VALIDITY_DATE_POSITION = 0;
 	private List<ConceptQueryPlan> childPlans;
 	@ToString.Exclude
-	private boolean generateDateAggregation = false;
+	private boolean generateDateAggregation;
 	private final DateAggregator validityDateAggregator = new DateAggregator(DateAggregationAction.MERGE);
 
 	public ArrayConceptQueryPlan(boolean generateDateAggregation) {
@@ -64,7 +64,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 		}
 
 		if (generateDateAggregation) {
-			initDateAggregator(this.validityDateAggregator, childPlans);
+			initDateAggregator(validityDateAggregator, childPlans);
 		}
 	}
 
@@ -74,7 +74,9 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 		}
 	}
 
+	@Override
 	public void init(QueryExecutionContext ctx, Entity entity) {
+		childPlans.forEach(child -> child.init(ctx,entity));
 	}
 
 	@Override
@@ -91,7 +93,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 		}
 
 
-		Object[] resultValues = new Object[this.getAggregatorSize()];
+		Object[] resultValues = new Object[getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
 		final int  resultOffset = generateDateAggregation ? 1 : 0;
 		int resultInsertIdx = resultOffset;

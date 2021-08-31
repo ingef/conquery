@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,11 @@ public class ConstantValueAggregator implements Aggregator<Object> {
 	@Override
 	public Object getAggregationResult() {
 		return value;
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+
 	}
 
 	@Override

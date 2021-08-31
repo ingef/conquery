@@ -6,6 +6,8 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
@@ -60,7 +62,12 @@ public class ResultTestUtil {
 
 		@Override
 		public Aggregator<String> createAggregator() {
-			return new Aggregator<String>() {
+			return new Aggregator<>() {
+
+				@Override
+				public void init(Entity entity, QueryExecutionContext context) {
+
+				}
 
 				@Override
 				public void acceptEvent(Bucket bucket, int event) {
