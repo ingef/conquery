@@ -232,7 +232,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 		private final static String ALIGNMENT = "alignment";
 		private final static String RESOLUTION = "resolution";
-		private final static String TEMPLATE = "Alignment ${" + ALIGNMENT + "} and resolution ${" + RESOLUTION + "} don't fit together.";
+		private final static String TEMPLATE = "Alignment ${" + ALIGNMENT + "} and resolution ${" + RESOLUTION + "} are not compatible.";
 
 		/**
 		 * Constructor for deserialization.
