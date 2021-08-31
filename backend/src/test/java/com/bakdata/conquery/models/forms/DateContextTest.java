@@ -277,7 +277,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysAlignQuarterNeutralTest() {
-		// This should ignore the QUARTER alignment hint be cause it does not make sense to align a finer resolution than the alignment.
+		// This should ignore the QUARTER alignment hint because it does not make sense to align a finer resolution than the alignment.
 
 		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
@@ -294,6 +294,36 @@ public class DateContextTest {
 				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 22)), FeatureGroup.FEATURE, -1, eventDate, DAYS),
 				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 24), LocalDate.of(2001, 5, 24)), FeatureGroup.OUTCOME, 1, eventDate, DAYS),
 				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 25), LocalDate.of(2001, 5, 25)), FeatureGroup.OUTCOME, 2, eventDate, DAYS)
+		);
+	}
+
+
+	@Test
+	public void rangeRelYearsQuarterAlignYearsNeutralTest() {
+		// This should ignore the YEAR alignment hint for QUARTERS because the alignment is to coarse. For QUARTERS it should fallback to QUARTER.
+
+		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
+		LocalDate eventDate = LocalDate.of(2001, 5, 23);
+		int event = CDate.ofLocalDate(eventDate);
+		int featureTime = 3;
+		int outcomeTime = 3;
+		IndexPlacement indexPlacement = IndexPlacement.NEUTRAL;
+
+
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, ExportForm.getResolutionAlignmentMap(List.of(YEARS, QUARTERS), YEAR));
+
+		assertThat(contexts).containsExactly (
+				new DateContext(CDateRange.of(LocalDate.of(2000, 7, 1), LocalDate.of(2000, 12, 31)), FeatureGroup.FEATURE, -2, eventDate, YEARS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, -1, eventDate, YEARS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 12, 31)), FeatureGroup.OUTCOME, 1, eventDate, YEARS),
+				new DateContext(CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 31)), FeatureGroup.OUTCOME, 2, eventDate, YEARS),
+
+				new DateContext(CDateRange.of(LocalDate.of(2000, 7, 1), LocalDate.of(2000, 9, 30)), FeatureGroup.FEATURE, -3, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2000, 12, 31)), FeatureGroup.FEATURE, -2, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, -1, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)), FeatureGroup.OUTCOME, 1, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)), FeatureGroup.OUTCOME, 2, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 31)), FeatureGroup.OUTCOME, 3, eventDate, QUARTERS)
 		);
 	}
 }

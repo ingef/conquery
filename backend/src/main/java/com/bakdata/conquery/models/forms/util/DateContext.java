@@ -159,8 +159,7 @@ public class DateContext {
 		 * For returning contexts with a single {@link CDateRange} for the entire
 		 * {@link FeatureGroup}.
 		 */
-		COMPLETE(null, Map.of(
-				Alignment.NO_ALIGN, 1)) {
+		COMPLETE(null) {
 			@Override
 			public String toString(Locale locale) {
 
@@ -172,10 +171,8 @@ public class DateContext {
 		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
 		 * years.
 		 */
-		YEARS(COMPLETE, Map.of(
-				Alignment.YEAR, 1,
-				Alignment.QUARTER, 4,
-				Alignment.DAY, 365)) {
+
+		YEARS(COMPLETE) {
 			@Override
 			public String toString(Locale locale) {
 
@@ -187,9 +184,7 @@ public class DateContext {
 		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
 		 * quarters.
 		 */
-		QUARTERS(YEARS, Map.of(
-				Alignment.QUARTER, 1,
-				Alignment.DAY, 90)) {
+		QUARTERS(YEARS) {
 			@Override
 			public String toString(Locale locale) {
 
@@ -201,14 +196,29 @@ public class DateContext {
 		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
 		 * days.
 		 */
-		DAYS(QUARTERS, Map.of(
-				Alignment.DAY, 1)) {
+		DAYS(QUARTERS) {
 			@Override
 			public String toString(Locale locale) {
 
 				return C10N.get(DateContextResolutionC10n.class, locale).day();
 			}
 		};
+
+		static {
+			// We need to define this in a static block so the runtime can solve this cyclic
+			// dependency between Resolution and alignment. Otherwise a NPE is thrown by the
+			// Collection
+			COMPLETE.compatibleAlignments = List.of(Alignment.NO_ALIGN);
+			YEARS.compatibleAlignments = List.of(
+					Alignment.YEAR,
+					Alignment.QUARTER,
+					Alignment.DAY);
+			QUARTERS.compatibleAlignments = List.of(
+					Alignment.QUARTER,
+					Alignment.DAY);
+			DAYS.compatibleAlignments = List.of(Alignment.DAY);
+
+		}
 
 
 		@JsonIgnore
@@ -219,7 +229,7 @@ public class DateContext {
 		 * the amount of how many of such subdividions fill in this resolusion subdivision.
 		 */
 		@JsonIgnore
-		private final Map<Alignment, Integer> compatibleAlignmentsAndAmount;
+		private List<Alignment> compatibleAlignments;
 
 
 		private List<Resolution> thisAndCoarserSubdivisions;
@@ -227,8 +237,8 @@ public class DateContext {
 		public abstract String toString(Locale locale);
 
 		@JsonIgnore
-		public Collection<Alignment> getSupportedAlignments(){
-			return compatibleAlignmentsAndAmount.keySet();
+		public List<Alignment> getSupportedAlignments(){
+			return compatibleAlignments;
 		}
 
 		/**
@@ -236,10 +246,10 @@ public class DateContext {
 		 */
 		@JsonIgnore
 		public OptionalInt getAmountForAlignment(Alignment alignment){
-			if (!this.compatibleAlignmentsAndAmount.containsKey(alignment)) {
+			if (!this.compatibleAlignments.contains(alignment)) {
 				return OptionalInt.empty();
 			}
-			return OptionalInt.of(this.compatibleAlignmentsAndAmount.get(alignment));
+			return OptionalInt.of(alignment.getAmountPerResolution().get(this));
 		}
 
 		@JsonIgnore
@@ -270,8 +280,24 @@ public class DateContext {
 		QUARTER(CDateRange::getCoveredQuarters),
 		YEAR(CDateRange::getCoveredYears);
 
+		static {
+			NO_ALIGN.amountPerResolution = Map.of(Resolution.COMPLETE, 1);
+			DAY.amountPerResolution = Map.of(
+					Resolution.YEARS, 365,
+					Resolution.QUARTERS, 90,
+					Resolution.DAYS, 1);
+			QUARTER.amountPerResolution = Map.of(
+					Resolution.YEARS, 4,
+					Resolution.QUARTERS, 1);
+			YEAR.amountPerResolution = Map.of(
+					Resolution.YEARS, 1);
+		}
+
 		@Getter @JsonIgnore
 		private final Function<CDateRange,List<CDateRange>> subdivider;
+
+		@Getter @JsonIgnore
+		private Map<Resolution, Integer> amountPerResolution;
 	}
 
 	@RequiredArgsConstructor
