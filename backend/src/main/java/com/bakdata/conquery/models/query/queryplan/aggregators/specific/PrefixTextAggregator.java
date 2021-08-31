@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Aggregator, returning all values of a column, beginning with a specified value.
@@ -46,7 +47,7 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 
 	@Override
 	public Set<String> getAggregationResult() {
-		return entries.isEmpty() ? null : Set.copyOf(entries);
+		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
 	}
 
 	@Override
