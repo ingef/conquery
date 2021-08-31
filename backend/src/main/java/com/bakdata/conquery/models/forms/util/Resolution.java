@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.*;
 
-@RequiredArgsConstructor
 /**
  * Defines the granularity into which a given date range mask is chunked.
  * The actual size in days depends on the chosen {@link Alignment}, e.g.:
@@ -19,6 +18,7 @@ import java.util.*;
  * If the alignment is DAY, then all context will have a length of 365 day, except the dateRangeMask intersects an
  * edge context.
  */
+@RequiredArgsConstructor
 public enum Resolution implements Localized {
 	/**
 	 * For returning contexts with a single {@link CDateRange} for the entire
@@ -29,6 +29,11 @@ public enum Resolution implements Localized {
 		public String toString(Locale locale) {
 
 			return C10N.get(DateContextResolutionC10n.class, locale).complete();
+		}
+
+		@Override
+		protected List<Alignment> getCompatibleAlignments() {
+			return List.of(Alignment.NO_ALIGN);
 		}
 	},
 
@@ -43,6 +48,14 @@ public enum Resolution implements Localized {
 
 			return C10N.get(DateContextResolutionC10n.class, locale).year();
 		}
+
+		@Override
+		protected List<Alignment> getCompatibleAlignments() {
+			return List.of(
+					Alignment.YEAR,
+					Alignment.QUARTER,
+					Alignment.DAY);
+		}
 	},
 
 	/**
@@ -54,6 +67,13 @@ public enum Resolution implements Localized {
 		public String toString(Locale locale) {
 
 			return C10N.get(DateContextResolutionC10n.class, locale).quarter();
+		}
+
+		@Override
+		protected List<Alignment> getCompatibleAlignments() {
+			return List.of(
+					Alignment.QUARTER,
+					Alignment.DAY);
 		}
 	},
 
@@ -67,50 +87,38 @@ public enum Resolution implements Localized {
 
 			return C10N.get(DateContextResolutionC10n.class, locale).day();
 		}
+
+		@Override
+		protected List<Alignment> getCompatibleAlignments() {
+			return List.of(Alignment.DAY);
+		}
 	};
-
-	static {
-		// We need to define this in a static block so the runtime can solve this cyclic
-		// dependency between Resolution and alignment. Otherwise a NPE is thrown by the
-		// Collection
-		COMPLETE.compatibleAlignments = List.of(Alignment.NO_ALIGN);
-		// Beware that the first alignment is considered the default.
-		YEARS.compatibleAlignments = List.of(
-				Alignment.YEAR,
-				Alignment.QUARTER,
-				Alignment.DAY);
-		QUARTERS.compatibleAlignments = List.of(
-				Alignment.QUARTER,
-				Alignment.DAY);
-		DAYS.compatibleAlignments = List.of(Alignment.DAY);
-
-	}
 
 
 	@JsonIgnore
 	private final Resolution coarser;
 
-	/**
-	 * Holds which calendar alignments are supported by this resolution and
-	 * the amount of how many of such subdividions fill in this resolusion subdivision.
-	 */
-	@JsonIgnore
-	private List<Alignment> compatibleAlignments;
-
-
 	private List<Resolution> thisAndCoarserSubdivisions;
 
 	public abstract String toString(Locale locale);
 
+	/**
+	 * Returns the alignments, that are compatible with this resolution.
+	 *
+	 * @implNote The first aligment of the returned list is considered the default (see getDefaultAlignment)
+	 */
+	@JsonIgnore
+	protected abstract List<Alignment> getCompatibleAlignments();
+
 	@JsonIgnore
 	public boolean isAlignmentSupported(Alignment alignment) {
-		return compatibleAlignments.contains(alignment);
+		return getCompatibleAlignments().contains(alignment);
 	}
 
 	@JsonIgnore
 	public Alignment getDefaultAlignment() {
 		// The first alignment is considered the default
-		return compatibleAlignments.get(0);
+		return getCompatibleAlignments().get(0);
 	}
 
 	/**
@@ -121,7 +129,7 @@ public enum Resolution implements Localized {
 		if (!isAlignmentSupported(alignment)) {
 			return OptionalInt.empty();
 		}
-		return OptionalInt.of(alignment.getAmountPerResolution().get(this));
+		return alignment.getAmountForResolution(this);
 	}
 
 	@JsonIgnore
