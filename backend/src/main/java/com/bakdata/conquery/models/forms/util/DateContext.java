@@ -29,16 +29,12 @@ public class DateContext {
 
 	/**
 	 * The date range.
-	 *
-	 * @return The date range
 	 */
 	@Getter
 	private final CDateRange dateRange;
 
 	/**
 	 * Indicates to which group the context belongs.
-	 *
-	 * @return The groups.
 	 */
 	@Getter
 	@Setter
@@ -46,16 +42,12 @@ public class DateContext {
 
 	/**
 	 * Indicates the relative position of the context to the event context.
-	 *
-	 * @return The index.
 	 */
 	@Getter
 	private Integer index = null;
 	
 	/**
 	 * The date from which the relative context were generated.
-	 * 
-	 * @return The event date
 	 */
 	@Getter @Setter
 	private LocalDate eventDate = null;
@@ -105,9 +97,7 @@ public class DateContext {
 
 		if (alignedPerResolution == 1) {
 			// When the alignment fits the resolution we can use the the alignment subdivision directly
-			return (dateRange) -> {
-				return alignment.getSubdivider().apply(dateRange);
-			};
+			return (dateRange) -> alignment.getSubdivider().apply(dateRange);
 		}
 
 		return (dateRange) -> {
