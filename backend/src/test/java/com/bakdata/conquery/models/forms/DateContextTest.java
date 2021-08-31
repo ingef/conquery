@@ -5,6 +5,7 @@ import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import org.junit.jupiter.api.Test;
 
@@ -107,7 +108,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysBeforeTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
+		CalendarUnit timeUnit = CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -128,7 +129,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysBeforeCompleteOnlyTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
+		CalendarUnit timeUnit = CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -147,7 +148,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysAfterTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
+		CalendarUnit timeUnit = CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -169,7 +170,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysNeutralTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
+		CalendarUnit timeUnit = CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -191,7 +192,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelQuarterBeforeTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
+		CalendarUnit timeUnit = CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -212,7 +213,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelQuarterAfterTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
+		CalendarUnit timeUnit = CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -234,7 +235,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelQuarterNeutralTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
+		CalendarUnit timeUnit = CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -256,7 +257,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelYearsAlignQuarterNeutralTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
+		CalendarUnit timeUnit = CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -279,7 +280,7 @@ public class DateContextTest {
 	public void rangeRelDaysAlignQuarterNeutralTest() {
 		// This should ignore the QUARTER alignment hint because it does not make sense to align a finer resolution than the alignment.
 
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
+		CalendarUnit timeUnit = CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -302,7 +303,7 @@ public class DateContextTest {
 	public void rangeRelYearsQuarterAlignYearsNeutralTest() {
 		// This should ignore the YEAR alignment hint for QUARTERS because the alignment is to coarse. For QUARTERS it should fallback to QUARTER.
 
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
+		CalendarUnit timeUnit = CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 3;

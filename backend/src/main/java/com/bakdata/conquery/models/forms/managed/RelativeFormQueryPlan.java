@@ -7,6 +7,7 @@ import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
@@ -42,7 +43,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final IndexPlacement indexPlacement;
 	private final int timeCountBefore;
 	private final int timeCountAfter;
-	private final DateContext.CalendarUnit timeUnit;
+	private final CalendarUnit timeUnit;
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
 	private final transient List<FormQueryPlan> featureSubqueries = new ArrayList<>();

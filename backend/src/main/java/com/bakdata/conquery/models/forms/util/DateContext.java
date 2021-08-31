@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.error.ConqueryError;
-import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -98,60 +97,6 @@ public class DateContext {
 	}
 
 	/**
-	 * Specifies whether the sub date ranges (which have the maximum length specified by the {@link Resolution})
-	 * are aligned with regard to beginning or the end of a date range mask. This affects the generated sub date ranges
-	 * only if the {@link Alignment} is finer than the {@link Resolution}.
-	 */
-	public static enum AlignmentReference {
-		START(){
-			@Override
-			public List<CDateRange> getAlignedIterationDirection(List<CDateRange> alignedSubDivisions) {
-				return alignedSubDivisions;
-			}
-
-			@Override
-			public int getInterestingBorder(CDateRange daterange) {
-				return daterange.getMinValue();
-			}
-
-			@Override
-			public CDateRange makeMergedRange(CDateRange lastDaterange, int prioInteressingBorder) {
-				return CDateRange.of(prioInteressingBorder, lastDaterange.getMaxValue());
-			}
-		},
-		END(){
-			@Override
-			public List<CDateRange> getAlignedIterationDirection(List<CDateRange> alignedSubDivisions) {
-				return Lists.reverse(alignedSubDivisions);
-			}
-
-			@Override
-			public int getInterestingBorder(CDateRange daterange) {
-				return daterange.getMaxValue();
-			}
-
-			@Override
-			public CDateRange makeMergedRange(CDateRange lastDaterange, int prioInteressingBorder) {
-				return CDateRange.of(lastDaterange.getMinValue(), prioInteressingBorder);
-			}
-		};
-
-		public abstract List<CDateRange> getAlignedIterationDirection(List<CDateRange> alignedSubDivisions);
-		public abstract int getInterestingBorder(CDateRange daterange);
-		public abstract CDateRange makeMergedRange(CDateRange lastDaterange, int prioInteressingBorder);
-	}
-
-	@RequiredArgsConstructor
-	public static enum CalendarUnit {
-		DAYS(Alignment.DAY),
-		QUARTERS(Alignment.QUARTER),
-		YEARS(Alignment.YEAR);
-
-		@Getter
-		private final Alignment alignment;
-	}
-
-	/**
 	 * Factory function that produces a list of {@link CDateRange}s from a given dateRangeMask according to the given
 	 * {@link AlignmentReference}, {@link Resolution} and {@link Alignment}.
 	 */
@@ -205,7 +150,7 @@ public class DateContext {
 	 * The event (a certain day) itself is expanded to a date range according to the desired alignment and the indexPlacement
 	 * determines to which group it belongs.
 	 */
-	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContext.CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
+	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime, int outcomeTime, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		if (featureTime < 1 && outcomeTime < 1) {
 			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
 					+ "; outcomeTime: " + outcomeTime + ")");
@@ -276,7 +221,7 @@ public class DateContext {
 	 * @param timeUnit  The time unit.
 	 * @return The feature range.
 	 */
-	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, DateContext.CalendarUnit timeUnit) {
+	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, CalendarUnit timeUnit) {
 		if(featureTime <= 0){
 			return null;
 		}
@@ -318,7 +263,7 @@ public class DateContext {
 	 * @param resolution  The time unit.
 	 * @return The outcome range.
 	 */
-	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime, DateContext.CalendarUnit resolution) {
+	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime, CalendarUnit resolution) {
 		if (outcomeTime <= 0) {
 			return null;
 		}
