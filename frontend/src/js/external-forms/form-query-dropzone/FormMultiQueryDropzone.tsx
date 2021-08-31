@@ -15,11 +15,13 @@ import FormQueryResult from "./FormQueryResult";
 interface PropsT extends WrappedFieldProps {
   dropzoneChildren: (args: ChildArgs) => ReactNode;
   label: string;
+  tooltip?: string;
 }
 
 const FormMultiQueryDropzone: FC<PropsT> = ({
   input,
   label,
+  tooltip,
   dropzoneChildren,
 }) => {
   const addValue = (newItem) => {
@@ -37,6 +39,7 @@ const FormMultiQueryDropzone: FC<PropsT> = ({
     <DropzoneList<DragItemQuery>
       acceptedDropTypes={[PREVIOUS_QUERY, PREVIOUS_SECONDARY_ID_QUERY]}
       label={label}
+      tooltip={tooltip}
       dropzoneChildren={dropzoneChildren}
       items={input.value.map((query: PreviousQueryT, i: number) => (
         <FormQueryResult key={i} queryResult={query} />

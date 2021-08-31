@@ -6,7 +6,9 @@ import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../../common/constants/dndTypes";
+import { exists } from "../../common/helpers/exists";
 import type { DragItemQuery } from "../../standard-query-editor/types";
+import InfoTooltip from "../../tooltip/InfoTooltip";
 import Dropzone from "../../ui-components/Dropzone";
 import Label from "../../ui-components/Label";
 
@@ -18,6 +20,7 @@ const SxDropzone = styled(Dropzone)<{ centered?: boolean }>`
 
 interface PropsT extends WrappedFieldProps {
   label: string;
+  tooltip?: string;
   dropzoneText: string;
   className?: string;
 }
@@ -29,7 +32,10 @@ const FormQueryDropzone: FC<PropsT> = (props) => {
 
   return (
     <div className={props.className}>
-      <Label>{props.label}</Label>
+      <Label>
+        {props.label}
+        {exists(props.tooltip) && <InfoTooltip text={props.tooltip} />}
+      </Label>
       <SxDropzone<FC<DropzoneProps<DragItemQuery>>>
         onDrop={onDrop}
         acceptedDropTypes={[PREVIOUS_QUERY, PREVIOUS_SECONDARY_ID_QUERY]}

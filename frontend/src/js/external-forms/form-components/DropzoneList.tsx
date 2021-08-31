@@ -3,6 +3,7 @@ import React, { ReactNode } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
+import InfoTooltip from "../../tooltip/InfoTooltip";
 import Dropzone, {
   ChildArgs,
   PossibleDroppableObject,
@@ -27,9 +28,15 @@ const StyledIconButton = styled(IconButton)`
   right: 0;
 `;
 
+const Row = styled("div")`
+  display: flex;
+  align-items: center;
+`;
+
 interface PropsT<DroppableObject> {
   className?: string;
   label?: ReactNode;
+  tooltip?: string;
   dropzoneChildren: (args: ChildArgs) => ReactNode;
   items: ReactNode[];
   acceptedDropTypes: string[];
@@ -53,7 +60,10 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
 
   return (
     <div className={props.className}>
-      {props.label && <Label>{props.label}</Label>}
+      <Row>
+        {props.label && <Label>{props.label}</Label>}
+        {props.tooltip && <InfoTooltip text={props.tooltip} />}
+      </Row>
       {props.items && props.items.length > 0 && (
         <div>
           {props.items.map((item, i) => (

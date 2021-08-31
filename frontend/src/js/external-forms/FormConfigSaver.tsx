@@ -35,6 +35,10 @@ const Root = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
+const SxLabel = styled(Label)`
+  margin: 0;
+`;
+
 const SxEditableText = styled(EditableText)<{ editing: boolean }>`
   margin: ${({ editing }) => (editing ? "" : "5px 0 0px 8px")};
   font-weight: 700;
@@ -184,7 +188,7 @@ const FormConfigSaver: FC = () => {
         {() => (
           <SpacedRow>
             <div>
-              <Label>{t("externalForms.config.headline")}</Label>
+              <SxLabel>{t("externalForms.config.headline")}</SxLabel>
               <Row>
                 {isLoading ? (
                   <LoadingText>

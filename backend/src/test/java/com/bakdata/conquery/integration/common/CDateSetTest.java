@@ -226,6 +226,24 @@ public class CDateSetTest {
 										CDateRange.of(LocalDate.of(2000,01,01), LocalDate.of(2000,01,01)),
 										CDateRange.of(LocalDate.of(2001,01,01), LocalDate.of(2001,01,01)))
 								)
+						),
+						Arguments.of(
+								"{2000-05-01, 2000-01-01/2000-01-01, 2001-01-01/2001-01-01}",
+								CDateSet.create(
+										List.of(
+												CDateRange.exactly(LocalDate.of(2000,05,01)),
+												CDateRange.of(LocalDate.of(2000,01,01), LocalDate.of(2000,01,01)),
+												CDateRange.of(LocalDate.of(2001,01,01), LocalDate.of(2001,01,01)))
+								)
+						),
+						Arguments.of(
+								"01.05.2000, 01.01.2000-01.01.2000, 01.01.2001-01.01.2001",
+								CDateSet.create(
+										List.of(
+												CDateRange.exactly(LocalDate.of(2000,05,01)),
+												CDateRange.of(LocalDate.of(2000,01,01), LocalDate.of(2000,01,01)),
+												CDateRange.of(LocalDate.of(2001,01,01), LocalDate.of(2001,01,01)))
+								)
 						)
 				);
 	}

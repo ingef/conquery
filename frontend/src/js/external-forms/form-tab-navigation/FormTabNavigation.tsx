@@ -2,15 +2,12 @@ import styled from "@emotion/styled";
 import React, { FC } from "react";
 import type { WrappedFieldProps } from "redux-form";
 
-import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
-
-interface OptionsT {
-  label: string;
-  value: string;
-}
+import SmallTabNavigation, {
+  TabOption,
+} from "../../small-tab-navigation/SmallTabNavigation";
 
 interface PropsT extends WrappedFieldProps {
-  options: OptionsT[];
+  options: TabOption[];
 }
 
 const SxSmallTabNavigation = styled(SmallTabNavigation)`

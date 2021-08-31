@@ -45,7 +45,7 @@ public class LocaleConfig {
 	 */
 	@NotEmpty
 	private Map<Locale, String> localeRangeStartEndSeparators = Map.of(
-			Locale.GERMAN, "-",
+			Locale.GERMAN, " - ",
 			Locale.ROOT, "/"
 	);
 
