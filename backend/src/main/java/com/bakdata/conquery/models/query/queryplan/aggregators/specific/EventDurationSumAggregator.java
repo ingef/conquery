@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator, counting the number of days present.
@@ -52,11 +51,6 @@ public class EventDurationSumAggregator implements Aggregator<Long> {
 
 
 		set.maskedAdd(value, dateRestriction);
-	}
-
-	@Override
-	public EventDurationSumAggregator doClone(CloneContext ctx) {
-		return new EventDurationSumAggregator();
 	}
 
 	@Override

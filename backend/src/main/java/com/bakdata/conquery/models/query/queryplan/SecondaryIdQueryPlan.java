@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -14,10 +15,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
@@ -47,6 +46,8 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
 
+
+
 	/**
 	 * This is the same execution as a typical ConceptQueryPlan. The difference
 	 * is that this method will create a new cloned child for each distinct
@@ -60,8 +61,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 			return Optional.empty();
 		}
 
-		query.checkRequiredTables(ctx.getStorage());
-		query.init(entity, ctx);
+		init(ctx, entity);
 
 		if (!query.isOfInterest(entity)) {
 			return Optional.empty();
@@ -95,6 +95,14 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		}
 
 		return Optional.of(new MultilineEntityResult(entity.getId(), result));
+	}
+
+	@Override
+	public void init(QueryExecutionContext ctx, Entity entity) {
+		query.checkRequiredTables(ctx.getStorage());
+		query.init(ctx, entity);
+
+		childPerKey.clear();
 	}
 
 
@@ -186,21 +194,16 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 */
 	private ConceptQueryPlan createChild(Column secondaryIdColumn, QueryExecutionContext currentContext, Bucket currentBucket) {
 
-		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
+		ConceptQueryPlan plan = query;
 
 		QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
 
-		plan.init(query.getEntity(), context);
+		plan.init(context, query.getEntity());
 		plan.nextTable(context, secondaryIdColumn.getTable());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);
 
 		return plan;
-	}
-
-	@Override
-	public QueryPlan clone(CloneContext ctx) {
-		return new SecondaryIdQueryPlan(query.clone(ctx), secondaryId, tablesWithSecondaryId, tablesWithoutSecondaryId);
 	}
 
 	@Override

@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 
 /**
@@ -50,11 +49,6 @@ public class TemporalQueryNode extends QPNode {
 		this.dateUnion = dateUnion;
 	}
 
-	@Override
-	public QPNode doClone(CloneContext ctx) {
-		return new TemporalQueryNode(ctx.clone((SampledNode) reference), ctx.clone((SampledNode) preceding), matcher, ctx.clone(dateUnion));
-	}
-
 	/**
 	 * Collects required tables of {@link #reference} and {@link #preceding} into {@code out}.
 	 *
@@ -75,8 +69,8 @@ public class TemporalQueryNode extends QPNode {
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
 
-		reference.getChild().init(entity, context);
-		preceding.getChild().init(entity, context);
+		reference.getChild().init(context, entity);
+		preceding.getChild().init(context, entity);
 	}
 
 	/**

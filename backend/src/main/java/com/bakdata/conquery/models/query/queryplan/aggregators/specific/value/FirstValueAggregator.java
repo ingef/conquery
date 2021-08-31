@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -77,11 +76,6 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 		return (VALUE) selectedBucket.createScriptValue(selectedEvent.getAsInt(), getColumn());
 	}
 
-	@Override
-	public FirstValueAggregator doClone(CloneContext ctx) {
-		return new FirstValueAggregator(getColumn());
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.resolveResultType(getColumn().getType());

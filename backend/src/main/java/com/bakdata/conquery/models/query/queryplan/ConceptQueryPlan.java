@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.events.EmptyBucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
@@ -44,23 +43,6 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		}
 	}
 
-	@Override
-	public ConceptQueryPlan clone(CloneContext ctx) {
-		checkRequiredTables(ctx.getStorage());
-
-		// We set the date aggregator if needed by manually in the following for loop
-		ConceptQueryPlan clone = new ConceptQueryPlan(false);
-		clone.setChild(ctx.clone(child));
-
-		for (Aggregator<?> agg : aggregators) {
-			clone.aggregators.add(ctx.clone(agg));
-		}
-
-		clone.dateAggregator = ctx.clone(dateAggregator);
-		clone.setRequiredTables(this.getRequiredTables());
-		return clone;
-	}
-
 	protected void checkRequiredTables(ModificationShieldedWorkerStorage storage) {
 		if (requiredTables.get() != null) {
 			return;
@@ -77,7 +59,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		}
 	}
 
-	public void init(Entity entity, QueryExecutionContext ctx) {
+	public void init(QueryExecutionContext ctx, Entity entity) {
 		this.entity = entity;
 		child.init(entity, ctx);
 	}
@@ -108,7 +90,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 			return Optional.empty();
 		}
 
-		init(entity, ctx);
+		init(ctx, entity);
 
 		if(!isOfInterest(entity)){
 			return Optional.empty();

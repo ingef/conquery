@@ -5,17 +5,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
@@ -47,18 +46,6 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 		return false;
 	}
 
-	@Override
-	public ArrayConceptQueryPlan clone(CloneContext ctx) {
-		List<ConceptQueryPlan> childPlanClones = new ArrayList<>();
-		for (ConceptQueryPlan child : childPlans) {
-			childPlanClones.add(child.clone(ctx));
-		}
-		ArrayConceptQueryPlan aqClone = new ArrayConceptQueryPlan(generateDateAggregation);
-		aqClone.childPlans = new ArrayList<>(childPlanClones);
-		initDateAggregator(aqClone.validityDateAggregator, aqClone.childPlans);
-		return aqClone;
-	}
-
 	/**
 	 * Helper function to add child queries. This takes care of the SpecialDateUnion
 	 * union handling. It acts as a gate keeper, so all child queries either have a
@@ -88,7 +75,6 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 	}
 
 	public void init(QueryExecutionContext ctx, Entity entity) {
-		childPlans.forEach(plan -> plan.init(entity, ctx));
 	}
 
 	@Override
@@ -109,7 +95,8 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
 		final int  resultOffset = generateDateAggregation ? 1 : 0;
 		int resultInsertIdx = resultOffset;
-		boolean notContainedInChildQueries = true;
+		boolean containedInChildQueries = false;
+
 		for (ConceptQueryPlan child : childPlans) {
 			Optional<SinglelineEntityResult> result = child.execute(ctx, entity);
 
@@ -129,7 +116,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 
 			SinglelineEntityResult singleLineResult = result.get();
 			// Mark this result line as contained.
-			notContainedInChildQueries = false;
+			containedInChildQueries = true;
 
 			int copyLength = calculateCopyLength(singleLineResult);
 			System.arraycopy(singleLineResult.getValues(), resultOffset, resultValues, resultInsertIdx, copyLength);
@@ -138,7 +125,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 			// aggregators.
 			resultInsertIdx = nextIndex(resultInsertIdx, child);
 		}
-		if (notContainedInChildQueries) {
+		if (!containedInChildQueries) {
 			// None of the subqueries contained an result
 			return Optional.empty();
 		}

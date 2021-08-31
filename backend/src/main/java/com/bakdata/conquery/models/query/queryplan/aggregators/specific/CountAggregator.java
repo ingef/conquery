@@ -4,7 +4,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator counting the number of present values in a column.
@@ -29,11 +28,6 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 		return count > 0 ? count : null;
 	}
 
-	@Override
-	public CountAggregator doClone(CloneContext ctx) {
-		return new CountAggregator(getColumn());
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.IntegerT.INSTANCE;

@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -78,8 +77,4 @@ public class DateRestrictingNode extends QPChainNode {
 		return getChild().isContained();
 	}
 
-	@Override
-	public QPNode doClone(CloneContext ctx) {
-		return new DateRestrictingNode(restriction, ctx.clone(getChild()));
-	}
 }

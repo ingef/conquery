@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -62,18 +61,7 @@ public class DateAggregator implements Aggregator<CDateSet> {
         return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
     }
 
-    @Override
-    public Aggregator<CDateSet> doClone(CloneContext ctx) {
-        DateAggregator clone = new DateAggregator(action);
-        Set<Aggregator<CDateSet>> clonedChildren = new HashSet<>();
-        for (Aggregator<CDateSet> sibling : children) {
-            clonedChildren.add(ctx.clone(sibling));
-        }
-        clone.children = clonedChildren;
-        return clone;
-    }
-
-    public boolean hasChildren() {
+	public boolean hasChildren() {
         return !children.isEmpty();
     }
 }

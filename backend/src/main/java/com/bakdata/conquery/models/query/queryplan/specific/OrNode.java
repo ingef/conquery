@@ -9,9 +9,7 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QPParentNode;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.google.common.collect.ListMultimap;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class OrNode extends QPParentNode {
 
@@ -23,13 +21,7 @@ public class OrNode extends QPParentNode {
 		super(children, childMap, dateAggregator);
 	}
 
-	
-	@Override
-	public QPNode doClone(CloneContext ctx) {
-		Pair<List<QPNode>, ListMultimap<Table, QPNode>> fields = createClonedFields(ctx);
-		return new OrNode(fields.getLeft(), fields.getRight(), getDateAggregator() != null ? ctx.clone(getDateAggregator()): null);
-	}
-	
+
 	@Override
 	public boolean isContained() {
 		boolean currently = false;

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 import java.time.LocalDate;
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.QuarterUtils;
@@ -12,9 +13,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Data;
 
 /**
@@ -53,11 +52,6 @@ public class QuarterAggregator implements Aggregator<String> {
 		}
 
 		set.maskedAdd(value, dateRestriction);
-	}
-
-	@Override
-	public QuarterAggregator doClone(CloneContext ctx) {
-		return new QuarterAggregator(sampler);
 	}
 
 	@Override

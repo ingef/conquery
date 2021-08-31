@@ -4,7 +4,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator implementing a sum over {@code column}, for Integer columns.
@@ -16,11 +15,6 @@ public class IntegerSumAggregator extends SingleColumnAggregator<Long> {
 
 	public IntegerSumAggregator(Column column) {
 		super(column);
-	}
-
-	@Override
-	public IntegerSumAggregator doClone(CloneContext ctx) {
-		return new IntegerSumAggregator(getColumn());
 	}
 
 	@Override

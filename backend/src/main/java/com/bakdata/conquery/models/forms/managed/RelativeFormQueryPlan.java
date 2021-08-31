@@ -1,20 +1,25 @@
 package com.bakdata.conquery.models.forms.managed;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.queryplan.*;
+import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
+import com.bakdata.conquery.models.query.queryplan.DateAggregator;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.google.common.collect.ImmutableList;
@@ -46,6 +51,11 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final transient List<FormQueryPlan> featureSubqueries = new ArrayList<>();
 	private final transient List<FormQueryPlan> outcomeSubqueries = new ArrayList<>();
+
+	@Override
+	public void init(QueryExecutionContext ctxt, Entity entity) {
+
+	}
 
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
@@ -239,22 +249,6 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	public List<Aggregator<?>> getAggregators() {
 		return ImmutableList.copyOf(Iterables.concat(featurePlan.getAggregators(),outcomePlan.getAggregators()));
-	}
-
-	@Override
-	public RelativeFormQueryPlan clone(CloneContext ctx) {
-		RelativeFormQueryPlan copy = new RelativeFormQueryPlan(
-			query.clone(ctx),
-			featurePlan.clone(ctx),
-			outcomePlan.clone(ctx),
-			indexSelector,
-			indexPlacement,
-			timeCountBefore,
-			timeCountAfter,
-			timeUnit,
-			resolutionsAndAlignmentMap
-		);
-		return copy;
 	}
 
 	@Override

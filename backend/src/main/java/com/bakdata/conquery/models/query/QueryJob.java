@@ -6,7 +6,6 @@ import java.util.function.Supplier;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.RequiredArgsConstructor;
 
@@ -14,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 public class QueryJob implements Supplier<Optional<EntityResult>> {
 
 	private final QueryExecutionContext ctx;
-	private final QueryPlan plan;
+	private final ThreadLocal<QueryPlan<?>> plan;
 	private final Entity entity;
 	
 	@Override
@@ -25,9 +24,8 @@ public class QueryJob implements Supplier<Optional<EntityResult>> {
 		}
 
 		try {
-			CloneContext cCtx = new CloneContext(ctx.getStorage());
-			QueryPlan queryPlan = plan.clone(cCtx);
-			
+			QueryPlan queryPlan = plan.get();
+
 			return queryPlan.execute(ctx, entity);
 		}
 		catch (ConqueryError e) {

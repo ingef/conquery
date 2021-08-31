@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.AccessLevel;
@@ -111,27 +110,6 @@ public class FiltersNode extends QPNode {
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
 		return eventDateAggregators;
-	}
-
-	@Override
-	public FiltersNode doClone(CloneContext ctx) {
-		final FiltersNode clone = new FiltersNode();
-
-		List<FilterNode<?>> filters = new ArrayList<>(this.filters);
-		filters.replaceAll(ctx::clone);
-
-		clone.setFilters(filters);
-
-		List<EventFilterNode<?>> eventFilters = new ArrayList<>(this.eventFilters);
-		eventFilters.replaceAll(ctx::clone);
-		clone.setEventFilters(eventFilters);
-
-		List<Aggregator<?>> aggregators = new ArrayList<>(this.aggregators);
-		aggregators.replaceAll(ctx::clone);
-
-		clone.setAggregators(aggregators);
-
-		return clone;
 	}
 
 	@Override

@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,11 +27,6 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 	public PrefixTextFilterNode(Column column, String filterValue) {
 		super(filterValue);
 		this.column = column;
-	}
-
-	@Override
-	public PrefixTextFilterNode doClone(CloneContext ctx) {
-		return new PrefixTextFilterNode(getColumn(), filterValue);
 	}
 
 	@Override

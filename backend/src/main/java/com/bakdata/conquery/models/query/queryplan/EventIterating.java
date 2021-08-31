@@ -17,6 +17,8 @@ public interface EventIterating {
 		this.collectRequiredTables(out);
 		return out;
 	}
+
+	public void init(QueryExecutionContext ctx);
 	
 	default void nextTable(QueryExecutionContext ctx, Table currentTable) {}
 	

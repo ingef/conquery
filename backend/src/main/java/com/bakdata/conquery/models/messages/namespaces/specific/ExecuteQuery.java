@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
 import lombok.AllArgsConstructor;
@@ -36,7 +35,6 @@ public class ExecuteQuery extends WorkerMessage {
 	private final Query query;
 
 
-
 	private ShardResult createShardResult(Worker worker) {
 		final ShardResult result = new ShardResult(id, worker.getInfo().getId());
 
@@ -54,15 +52,13 @@ public class ExecuteQuery extends WorkerMessage {
 
 		queryExecutor.unsetQueryCancelled(executionId);
 
-
-		QueryPlan<?> plan;
 		final ShardResult result = createShardResult(worker);
 
 		// Generate query plans for this execution. For ManagedQueries this is only one plan.
-		// For ManagedForms there might be multiple plans, which originate from ManagedQueries.
 		// The results are send directly to these ManagesQueries
 		try {
-			plan = query.createQueryPlan(new QueryPlanContext(worker));
+			// Assert that we can create the queryPlan
+			query.createQueryPlan(new QueryPlanContext(worker));
 		}
 		catch (Exception e) {
 			ConqueryError err = asConqueryError(e);
@@ -74,7 +70,7 @@ public class ExecuteQuery extends WorkerMessage {
 		final QueryExecutionContext executionContext =
 				new QueryExecutionContext(executionId, queryExecutor, worker.getStorage(), worker.getBucketManager());
 
-		queryExecutor.execute(plan, executionContext, result);
+		queryExecutor.execute(query, executionContext, result);
 	}
 
 }

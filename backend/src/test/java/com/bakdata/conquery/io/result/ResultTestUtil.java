@@ -1,19 +1,17 @@
 package com.bakdata.conquery.io.result;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @UtilityClass
 public class ResultTestUtil {
@@ -63,11 +61,6 @@ public class ResultTestUtil {
 		@Override
 		public Aggregator<String> createAggregator() {
 			return new Aggregator<String>() {
-
-				@Override
-				public Aggregator<String> doClone(CloneContext ctx) {
-					throw new UnsupportedOperationException();
-				}
 
 				@Override
 				public void acceptEvent(Bucket bucket, int event) {

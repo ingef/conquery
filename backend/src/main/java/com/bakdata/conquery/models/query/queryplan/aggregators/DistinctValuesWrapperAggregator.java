@@ -6,7 +6,6 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -48,11 +47,6 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 		}
 	}
 
-	@Override
-	public Aggregator<VALUE> doClone(CloneContext ctx) {
-		return new DistinctValuesWrapperAggregator<>(aggregator.clone(ctx), column);
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return aggregator.getResultType();

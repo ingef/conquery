@@ -4,7 +4,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 
 /**
@@ -22,11 +21,6 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	public MoneyDiffSumAggregator(Column addend, Column subtrahend) {
 		this.addendColumn = addend;
 		this.subtrahendColumn = subtrahend;
-	}
-
-	@Override
-	public MoneyDiffSumAggregator doClone(CloneContext ctx) {
-		return new MoneyDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
 	}
 
 	@Override

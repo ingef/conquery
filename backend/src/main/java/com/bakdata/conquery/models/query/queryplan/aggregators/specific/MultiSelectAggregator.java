@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator counting the occurrence of multiple values.
@@ -65,11 +64,6 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 		return out.isEmpty() ? null : out;
 	}
 
-	@Override
-	public MultiSelectAggregator doClone(CloneContext ctx) {
-		return new MultiSelectAggregator(getColumn(), selection);
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.StringT.INSTANCE;

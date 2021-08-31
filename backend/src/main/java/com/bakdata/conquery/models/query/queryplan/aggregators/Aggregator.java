@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.queryplan.aggregators;
 
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
-import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -18,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  * @param <T> Java result type after aggregation.
  */
-public interface Aggregator<T> extends CtxCloneable<Aggregator<T>>, EventIterating {
+public interface Aggregator<T> extends EventIterating {
 
 	T getAggregationResult();
 

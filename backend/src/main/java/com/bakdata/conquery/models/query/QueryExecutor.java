@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -54,8 +55,9 @@ public class QueryExecutor implements Closeable {
 		result.finish(Collections.emptyList(), Optional.of(error), worker);
 	}
 
-	public boolean execute(QueryPlan<?> queryPlan, QueryExecutionContext executionContext, ShardResult result) {
+	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result) {
 		Collection<Entity> entities = executionContext.getBucketManager().getEntities().values();
+		ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker)));
 
 		if (entities.isEmpty()) {
 			log.warn("Entities for query are empty");
@@ -64,7 +66,7 @@ public class QueryExecutor implements Closeable {
 		try {
 			final List<CompletableFuture<Optional<EntityResult>>> futures =
 					entities.stream()
-							.map(entity -> new QueryJob(executionContext, queryPlan, entity))
+							.map(entity -> new QueryJob(executionContext, plan, entity))
 							.map(job -> CompletableFuture.supplyAsync(job, executor))
 							.collect(Collectors.toList());
 

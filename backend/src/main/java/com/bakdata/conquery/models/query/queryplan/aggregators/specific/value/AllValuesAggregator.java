@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator gathering all unique values in a column, into a Set.
@@ -32,11 +31,6 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	@Override
 	public Set<VALUE> getAggregationResult() {
 		return entries.isEmpty() ? null : entries;
-	}
-
-	@Override
-	public AllValuesAggregator<VALUE> doClone(CloneContext ctx) {
-		return new AllValuesAggregator<>(getColumn());
 	}
 
 	@Override

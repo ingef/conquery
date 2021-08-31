@@ -4,7 +4,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 
 /**
@@ -23,11 +22,6 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 		this.addendColumn = addend;
 		this.subtrahendColumn = subtrahend;
 		this.sum = 0L;
-	}
-
-	@Override
-	public IntegerDiffSumAggregator doClone(CloneContext ctx) {
-		return new IntegerDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
 	}
 
 	@Override

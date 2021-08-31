@@ -1,24 +1,28 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.Optional;
+
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Optional;
 
 @Getter @RequiredArgsConstructor
 public class AbsoluteFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final QueryPlan query;
 	private final FormQueryPlan subPlan;
-	
+
+	@Override
+	public void init(QueryExecutionContext ctxt, Entity entity) {
+
+	}
+
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
@@ -29,14 +33,6 @@ public class AbsoluteFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			return Optional.empty();
 		}
 		return subPlan.execute(ctx, entity);
-	}
-
-	@Override
-	public AbsoluteFormQueryPlan clone(CloneContext ctx) {
-		return new AbsoluteFormQueryPlan(
-			query.clone(ctx),
-			subPlan.clone(ctx)
-		);
 	}
 
 	@Override

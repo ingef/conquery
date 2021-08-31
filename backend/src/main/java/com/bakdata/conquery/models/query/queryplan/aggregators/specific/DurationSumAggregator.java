@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator, counting the number of days present.
@@ -41,11 +40,6 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 
 
 		set.maskedAdd(value, dateRestriction);
-	}
-
-	@Override
-	public DurationSumAggregator doClone(CloneContext ctx) {
-		return new DurationSumAggregator(getColumn());
 	}
 
 	@Override

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import java.util.Collection;
-
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -9,9 +7,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator, listing all days present.
@@ -43,11 +39,6 @@ public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 		}
 
 		set.maskedAdd(value, dateRestriction);
-	}
-
-	@Override
-	public DateUnionAggregator doClone(CloneContext ctx) {
-		return new DateUnionAggregator(getColumn());
 	}
 
 	@Override

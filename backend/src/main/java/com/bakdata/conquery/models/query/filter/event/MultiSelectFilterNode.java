@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -90,12 +89,6 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 		}
 
 		return false;
-	}
-
-	@Override
-	public MultiSelectFilterNode doClone(CloneContext ctx) {
-		// We reuse the cache
-		return new MultiSelectFilterNode(getColumn(), filterValue, selectedValuesCache);
 	}
 
 	@Override

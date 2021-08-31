@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator, returning all values of a column, beginning with a specified value.
@@ -43,11 +42,6 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 		return entries.isEmpty() ? null : entries;
 	}
 
-	@Override
-	public PrefixTextAggregator doClone(CloneContext ctx) {
-		return new PrefixTextAggregator(getColumn(), prefix);
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.StringT.INSTANCE;

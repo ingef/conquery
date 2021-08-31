@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 
 /**
@@ -49,11 +48,6 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 		return hits > 0 ? hits : null;
 	}
 
-	@Override
-	public SelectAggregator doClone(CloneContext ctx) {
-		return new SelectAggregator(getColumn(), selected);
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.IntegerT.INSTANCE;

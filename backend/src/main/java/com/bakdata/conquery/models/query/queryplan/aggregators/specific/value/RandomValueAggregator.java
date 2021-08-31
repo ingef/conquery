@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator, returning a random value of a column.
@@ -57,11 +56,6 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 		}
 
 		return (VALUE) bucket.createScriptValue(event, getColumn());
-	}
-
-	@Override
-	public RandomValueAggregator doClone(CloneContext ctx) {
-		return new RandomValueAggregator(getColumn());
 	}
 
 	@Override

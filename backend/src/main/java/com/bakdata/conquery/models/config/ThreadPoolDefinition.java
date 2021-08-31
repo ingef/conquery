@@ -14,9 +14,9 @@ import lombok.ToString;
 @Getter @Setter @ToString
 public class ThreadPoolDefinition {
 	@Min(0)
-	private int minThreads = Runtime.getRuntime().availableProcessors();
+	private int minThreads = 1;
 	@Min(1)
-	private int maxThreads = Runtime.getRuntime().availableProcessors();
+	private int maxThreads = 2;
 	private boolean allowCoreThreadTimeOut = false;
 	private Duration keepAliveTime = Duration.seconds(60);
 	private Duration shutdownTime = Duration.hours(1);

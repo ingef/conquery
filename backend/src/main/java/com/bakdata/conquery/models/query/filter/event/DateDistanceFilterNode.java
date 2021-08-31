@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,11 +43,6 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 		else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
 		}
-	}
-
-	@Override
-	public DateDistanceFilterNode doClone(CloneContext ctx) {
-		return new DateDistanceFilterNode(getColumn(), unit, filterValue);
 	}
 
 	@Override

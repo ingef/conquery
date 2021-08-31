@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator, returning the min duration in the column, relative to the end of date restriction.
@@ -36,11 +35,6 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 		else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
 		}
-	}
-
-	@Override
-	public DateDistanceAggregator doClone(CloneContext ctx) {
-		return new DateDistanceAggregator(getColumn(), unit);
 	}
 
 	@Override

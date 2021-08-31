@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.filter;
 import java.util.Collection;
 
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 
 /**
@@ -13,11 +12,6 @@ public class CollectionNotEmptyFilterNode<FILTER_VALUE> extends AggregationResul
 
 	public CollectionNotEmptyFilterNode(Aggregator<Collection<?>> aggregator) {
 		super(aggregator, null);
-	}
-
-	@Override
-	public CollectionNotEmptyFilterNode<FILTER_VALUE> doClone(CloneContext context) {
-		return new CollectionNotEmptyFilterNode<>(getAggregator().doClone(context));
 	}
 
 	@Override
