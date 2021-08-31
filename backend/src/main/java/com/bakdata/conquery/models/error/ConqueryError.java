@@ -2,7 +2,8 @@ package com.bakdata.conquery.models.error;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -231,8 +232,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 		private final static String ALIGNMENT = "alignment";
 		private final static String RESOLUTION = "resolution";
-		private final static String ALIGNMENT_SUPPORTED = "alignmentsSupported";
-		private final static String TEMPLATE = "Alignment ${" + ALIGNMENT + "} and resolution ${" + RESOLUTION + "} don't fit together. The resolution only supports these alignments: ${" + ALIGNMENT_SUPPORTED + "}";
+		private final static String TEMPLATE = "Alignment ${" + ALIGNMENT + "} and resolution ${" + RESOLUTION + "} are not compatible.";
 
 		/**
 		 * Constructor for deserialization.
@@ -242,11 +242,10 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			super(TEMPLATE);
 		}
 
-		public ExecutionCreationPlanDateContextError(DateContext.Alignment alignment, DateContext.Resolution resolution) {
+		public ExecutionCreationPlanDateContextError(Alignment alignment, Resolution resolution) {
 			this();
 			getContext().put(ALIGNMENT, Objects.toString(alignment));
 			getContext().put(RESOLUTION, Objects.toString(resolution));
-			getContext().put(ALIGNMENT_SUPPORTED, Objects.toString(resolution.getSupportedAlignments()));
 		}
 	}
 

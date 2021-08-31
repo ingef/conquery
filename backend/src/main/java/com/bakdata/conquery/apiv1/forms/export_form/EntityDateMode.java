@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
-import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -51,7 +51,7 @@ public class EntityDateMode extends Mode {
     }
 
     @NotNull
-    private DateContext.Alignment alignmentHint = DateContext.Alignment.QUARTER;
+    private Alignment alignmentHint = Alignment.QUARTER;
 
     @Override
     public void resolve(QueryResolveContext context) {
