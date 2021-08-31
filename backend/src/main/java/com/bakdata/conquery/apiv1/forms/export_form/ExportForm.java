@@ -132,7 +132,10 @@ public class ExportForm extends Form {
 	}
 
 	private static DateContext.Alignment getFittingAlignment(DateContext.Alignment alignmentHint, DateContext.Resolution resolution) {
-		return resolution.getSupportedAlignments().contains(alignmentHint)? alignmentHint : resolution.getSupportedAlignments().get(0);
+		if(resolution.supportsAlignment(alignmentHint) ) {
+			return alignmentHint;
+		}
+		return resolution.getDefaultAlignment();
 	}
 
 	/**
@@ -146,7 +149,7 @@ public class ExportForm extends Form {
 
 		@JsonCreator
 		public static ResolutionAndAlignment of(DateContext.Resolution resolution, DateContext.Alignment alignment){
-			if (!resolution.getSupportedAlignments().contains(alignment)) {
+			if (!resolution.supportsAlignment(alignment)) {
 				throw new ValidationException(String.format("The alignment %s is not supported by the resolution %s", alignment, resolution));
 			}
 

@@ -209,6 +209,7 @@ public class DateContext {
 			// dependency between Resolution and alignment. Otherwise a NPE is thrown by the
 			// Collection
 			COMPLETE.compatibleAlignments = List.of(Alignment.NO_ALIGN);
+			// Beware that the first alignment is considered the default.
 			YEARS.compatibleAlignments = List.of(
 					Alignment.YEAR,
 					Alignment.QUARTER,
@@ -237,8 +238,14 @@ public class DateContext {
 		public abstract String toString(Locale locale);
 
 		@JsonIgnore
-		public List<Alignment> getSupportedAlignments(){
-			return compatibleAlignments;
+		public boolean supportsAlignment(Alignment alignment){
+			return compatibleAlignments.contains(alignment);
+		}
+
+		@JsonIgnore
+		public Alignment getDefaultAlignment(){
+			// The first alignment is considered the default
+			return compatibleAlignments.get(0);
 		}
 
 		/**
