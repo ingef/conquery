@@ -50,6 +50,7 @@ public class FiltersNode extends QPNode {
 		filters.forEach(child -> child.init(entity, context));
 		aggregators.forEach(child -> child.init(entity, context));
 		eventFilters.forEach(child -> child.init(entity, context));
+		eventDateAggregators.forEach(child -> child.init(entity, context));
 	}
 
 	public static FiltersNode create(List<? extends FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {

@@ -14,7 +14,6 @@
           ],
           "type": "CONCEPT",
           "excludeFromSecondaryIdQuery" : false,
-          "label": "vs",
           "tables": [
             {
               "id": "number.number_connector",
@@ -49,11 +48,11 @@
   },
   "concepts": [
     {
-      "label": "number",
+      "name": "number",
       "type": "TREE",
       "connectors": [
         {
-          "label": "number_connector",
+          "name": "number_connector",
           "table": "table1",
           "validityDates": {
             "label": "datum",
@@ -67,7 +66,7 @@
           }
         },
         {
-          "label": "number_connector2",
+          "name": "number_connector2",
           "table": "table12",
           "validityDates": {
             "label": "datum",

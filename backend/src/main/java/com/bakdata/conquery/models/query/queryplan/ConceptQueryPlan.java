@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -28,9 +27,10 @@ import lombok.extern.slf4j.Slf4j;
 public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = 0;
+
 	@Getter
-	@Setter
-	private ThreadLocal<Set<Table>> requiredTables = new ThreadLocal<>();
+	private final ThreadLocal<Set<Table>> requiredTables = ThreadLocal.withInitial(this::collectRequiredTables);
+
 	private QPNode child;
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
@@ -38,26 +38,11 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	private DateAggregator dateAggregator = new DateAggregator(DateAggregationAction.MERGE);
 
 	public ConceptQueryPlan(boolean generateDateAggregator) {
-		if (generateDateAggregator){
+		if (generateDateAggregator) {
 			aggregators.add(dateAggregator);
 		}
 	}
 
-	protected void checkRequiredTables(ModificationShieldedWorkerStorage storage) {
-		if (requiredTables.get() != null) {
-			return;
-		}
-
-
-		requiredTables.set(this.collectRequiredTables());
-
-		// Assert that all tables are actually present
-		for (Table table : requiredTables.get()) {
-			if (Dataset.isAllIdsTable(table)) {
-				continue;
-			}
-		}
-	}
 
 	public void init(QueryExecutionContext ctx, Entity entity) {
 		this.entity = entity;
@@ -68,7 +53,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		getChild().acceptEvent(bucket, event);
 	}
 
-	protected SinglelineEntityResult result() {
+	protected SinglelineEntityResult createResult() {
 		Object[] values = new Object[aggregators.size()];
 
 		for (int i = 0; i < values.length; i++) {
@@ -80,19 +65,13 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 	@Override
 	public Optional<SinglelineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
-		
+
 		// Only override if none has been set from a higher level
 		ctx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
 
- 		checkRequiredTables(ctx.getStorage());
-
-		if (requiredTables.get().isEmpty()) {
-			return Optional.empty();
-		}
-
 		init(ctx, entity);
 
-		if(!isOfInterest(entity)){
+		if (!isOfInterest(entity)) {
 			return Optional.empty();
 		}
 
@@ -103,7 +82,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 		for (Table currentTable : requiredTables.get()) {
 
-			if(Dataset.isAllIdsTable(currentTable)){
+			if (Dataset.isAllIdsTable(currentTable)) {
 				continue;
 			}
 
@@ -115,7 +94,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 			for (Bucket bucket : tableBuckets) {
 
-				if(bucket == null){
+				if (bucket == null) {
 					continue;
 				}
 
@@ -137,7 +116,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		}
 
 		if (isContained()) {
-			return Optional.of(result());
+			return Optional.of(createResult());
 		}
 		return Optional.empty();
 	}
@@ -164,12 +143,12 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return child.isOfInterest(entity);
+		return !getRequiredTables().get().isEmpty() && child.isOfInterest(entity);
 	}
 
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		if(!isAggregateValidityDates()) {
+		if (!isAggregateValidityDates()) {
 			// The date aggregator was not added to the plan, so we don't collect a validity date
 			return Optional.empty();
 		}
