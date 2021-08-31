@@ -11,8 +11,6 @@ import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
-import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
@@ -28,8 +26,6 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final int constantCount;
 
-	private final List<ArrayConceptQueryPlan> subPlans = new ArrayList<>();
-
 	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features) {
 		this.dateContexts = dateContexts;
 		this.features = features;
@@ -41,14 +37,14 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		}
 
 		// Either all date contexts have an relative event date or none has one
-		boolean withRelativeEventdate = dateContexts.get(0).getEventDate() != null;
+		boolean withRelativeEventDate = dateContexts.get(0).getEventDate() != null;
 
 		for (DateContext dateContext : dateContexts) {
-			if ((dateContext.getEventDate() == null) == withRelativeEventdate) {
-				throw new IllegalStateException("Queryplan has absolute AND relative date contexts. Only one kind is allowed.");
+			if ((dateContext.getEventDate() == null) == withRelativeEventDate) {
+				throw new IllegalStateException("QueryPlan has absolute AND relative date contexts. Only one kind is allowed.");
 			}
 		}
-		constantCount = withRelativeEventdate ? 4 : 3; // resolution indicator, index value, (event date,) date range
+		constantCount = withRelativeEventDate ? 4 : 3; // resolution indicator, index value, (event date,) date range
 	}
 
 	@Override
@@ -98,10 +94,15 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	private MultilineEntityResult createResultForNotContained(Entity entity, DateContext dateContext) {
+
 		List<Object[]> result = new ArrayList<>();
 		result.add(new Object[features.getAggregatorSize()]);
-		return ResultModifier.modify(new MultilineEntityResult(entity.getId(), result), ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(0))
-																									  .unaryAndThen(v -> addConstants(v, dateContext)));
+
+		return ResultModifier.modify(
+				new MultilineEntityResult(entity.getId(), result),
+				ResultModifier.existAggValuesSetterFor(getAggregators(), OptionalInt.of(0))
+							  .unaryAndThen(v -> addConstants(v, dateContext))
+		);
 	}
 
 	public List<Aggregator<?>> getAggregators() {
@@ -141,12 +142,6 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
-
-		subPlans.forEach(
-				p -> p.getValidityDateAggregator().ifPresent(agg::register)
-		);
-
 		return Optional.empty();
 	}
 

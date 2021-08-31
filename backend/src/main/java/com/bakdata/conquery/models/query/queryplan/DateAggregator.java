@@ -22,13 +22,13 @@ public class DateAggregator implements Aggregator<CDateSet> {
 
     private final DateAggregationAction action;
 
-    private Set<Aggregator<CDateSet>> children = new HashSet<>();
+    private final Set<Aggregator<CDateSet>> children = new HashSet<>();
 
     /**
      * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
      */
     public void register(Aggregator<CDateSet> child) {
-        this.children.add(child);
+		children.add(child);
     }
 
 
