@@ -2,7 +2,8 @@ package com.bakdata.conquery.models.error;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -241,7 +242,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			super(TEMPLATE);
 		}
 
-		public ExecutionCreationPlanDateContextError(DateContext.Alignment alignment, DateContext.Resolution resolution) {
+		public ExecutionCreationPlanDateContextError(Alignment alignment, Resolution resolution) {
 			this();
 			getContext().put(ALIGNMENT, Objects.toString(alignment));
 			getContext().put(RESOLUTION, Objects.toString(resolution));

@@ -5,7 +5,7 @@ import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -139,13 +139,13 @@ public abstract class ResultType {
 
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			if (f instanceof DateContext.Resolution) {
-				return ((DateContext.Resolution) f).toString(cfg.getLocale());
+			if (f instanceof Resolution) {
+				return ((Resolution) f).toString(cfg.getLocale());
 			}
 			try {
 				// If the object was parsed as a simple string, try to convert it to a
 				// DateContextMode to get Internationalization
-				return DateContext.Resolution.valueOf(f.toString()).toString(cfg.getLocale());
+				return Resolution.valueOf(f.toString()).toString(cfg.getLocale());
 			} catch (Exception e) {
 				throw new IllegalArgumentException(f + " is not a valid resolution.", e);
 			}

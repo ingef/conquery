@@ -12,8 +12,8 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.bakdata.conquery.models.forms.util.DateContext.Alignment.*;
-import static com.bakdata.conquery.models.forms.util.DateContext.Resolution.*;
+import static com.bakdata.conquery.models.forms.util.Alignment.*;
+import static com.bakdata.conquery.models.forms.util.Resolution.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DateContextTest {
