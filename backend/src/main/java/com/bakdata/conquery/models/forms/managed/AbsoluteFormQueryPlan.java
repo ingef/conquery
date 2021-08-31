@@ -29,6 +29,7 @@ public class AbsoluteFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		// Don't set the query date aggregator here because the subqueries should set their aggregator independently
 
 		Optional<EntityResult> preResult = query.execute(ctx, entity);
+
 		if (preResult.isEmpty()) {
 			return Optional.empty();
 		}

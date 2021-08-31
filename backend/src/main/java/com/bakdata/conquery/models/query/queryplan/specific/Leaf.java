@@ -5,6 +5,7 @@ import java.util.Collections;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -12,6 +13,12 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 public class Leaf extends QPNode {
 
 	private boolean triggered = false;
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
+		triggered = false;
+	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {

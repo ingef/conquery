@@ -42,7 +42,7 @@ public class DateAggregator implements Aggregator<CDateSet> {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
     	//TODO don't think this is needed?
-		children.forEach(child -> init(entity, context));
+		children.forEach(child -> child.init(entity, context));
 	}
 
 	@Override

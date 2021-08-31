@@ -25,9 +25,9 @@ public class CQBeforeOrSameTemporalQuery extends CQAbstractTemporalQuery {
 		plan.getDateAggregator().register(dateAggregator);
 
 		return new TemporalQueryNode(
-			index.createQueryPlan(ctx),
-			preceding.createQueryPlan(ctx),
-			new BeforeOrSameTemporalMatcher(),
+				index.createQueryPlan(ctx),
+				preceding.createQueryPlan(ctx),
+				new BeforeOrSameTemporalMatcher(),
 				dateAggregator
 		);
 	}

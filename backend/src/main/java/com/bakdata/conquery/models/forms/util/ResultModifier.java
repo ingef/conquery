@@ -9,7 +9,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.util.functions.ChainableUnaryOperator;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class ResultModifier {
 
 	/**

@@ -25,7 +25,9 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final List<DateContext> dateContexts;
 	private final ArrayConceptQueryPlan features;
+
 	private final int constantCount;
+
 	private final List<ArrayConceptQueryPlan> subPlans = new ArrayList<>();
 
 	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features) {
@@ -40,6 +42,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		// Either all date contexts have an relative event date or none has one
 		boolean withRelativeEventdate = dateContexts.get(0).getEventDate() != null;
+
 		for (DateContext dateContext : dateContexts) {
 			if ((dateContext.getEventDate() == null) == withRelativeEventdate) {
 				throw new IllegalStateException("Queryplan has absolute AND relative date contexts. Only one kind is allowed.");
@@ -50,7 +53,6 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
-
 
 		init(ctx, entity);
 
@@ -69,7 +71,6 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			QueryExecutionContext innerContext = QueryUtils.determineDateAggregatorForContext(ctx, features::getValidityDateAggregator)
 														   .withDateRestriction(dateRestriction);
 
-			features.init(innerContext, entity);
 
 			Optional<SinglelineEntityResult> subResult = features.execute(innerContext, entity);
 
@@ -81,8 +82,10 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			resultValues.addAll(
 					ResultModifier.modify(
 							subResult.get(),
-							ResultModifier.existAggValuesSetterFor(features.getAggregators(), OptionalInt.of(0)).unaryAndThen(v -> addConstants(v, dateContext))
-					).listResultLines()
+							ResultModifier.existAggValuesSetterFor(features.getAggregators(), OptionalInt.of(0))
+										  .unaryAndThen(v -> addConstants(v, dateContext))
+					)
+								  .listResultLines()
 			);
 		}
 

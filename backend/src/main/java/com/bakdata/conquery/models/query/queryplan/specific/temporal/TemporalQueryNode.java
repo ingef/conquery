@@ -25,22 +25,22 @@ public class TemporalQueryNode extends QPNode {
 	/**
 	 * Matcher to be used when testing for inclusion.
 	 */
-	private PrecedenceMatcher matcher;
+	private final PrecedenceMatcher matcher;
 
 	/**
 	 * QueryPlan for the events to be compared to.
 	 */
-	private SampledNode reference;
+	private final SampledNode reference;
 
 	/**
 	 * QueryPlan for the events being compared.
 	 */
-	private SampledNode preceding;
+	private final SampledNode preceding;
 
 	/**
 	 * The {@link SpecialDateUnion} to be fed with the included dataset.
 	 */
-	private SpecialDateUnion dateUnion;
+	private final SpecialDateUnion dateUnion;
 
 	public TemporalQueryNode(SampledNode reference, SampledNode preceding, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
 		this.reference = reference;
@@ -63,7 +63,6 @@ public class TemporalQueryNode extends QPNode {
 	/**
 	 * Initializes the {@link TemporalQueryNode} and its children.
 	 *
-	 * @param entity the Entity to be worked on.
 	 */
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
@@ -71,6 +70,7 @@ public class TemporalQueryNode extends QPNode {
 
 		reference.getChild().init(context, entity);
 		preceding.getChild().init(context, entity);
+		dateUnion.init(entity, context);
 	}
 
 	/**

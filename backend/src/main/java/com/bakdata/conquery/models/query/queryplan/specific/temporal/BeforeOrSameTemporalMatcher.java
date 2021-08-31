@@ -18,7 +18,7 @@ public class BeforeOrSameTemporalMatcher implements PrecedenceMatcher {
 
 	@Override
 	public boolean isContained(OptionalInt reference, OptionalInt preceding) {
-		if (!preceding.isPresent() || !reference.isPresent()) {
+		if (preceding.isEmpty() || reference.isEmpty()) {
 			return false;
 		}
 

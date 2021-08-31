@@ -76,6 +76,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 
 	@Override
 	public void init(QueryExecutionContext ctx, Entity entity) {
+		validityDateAggregator.init(entity, ctx);
 		childPlans.forEach(child -> child.init(ctx,entity));
 	}
 
@@ -127,6 +128,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 			// aggregators.
 			resultInsertIdx = nextIndex(resultInsertIdx, child);
 		}
+
 		if (!containedInChildQueries) {
 			// None of the subqueries contained an result
 			return Optional.empty();
