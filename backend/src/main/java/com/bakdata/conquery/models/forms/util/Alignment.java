@@ -60,11 +60,11 @@ public enum Alignment {
 	 */
 	@JsonIgnore
 	public OptionalInt getAmountForResolution(Resolution resolution) {
-		Integer amount = getAmountPerResolution().get(resolution);
-		if (amount == null) {
-			return OptionalInt.empty();
+		Map<Resolution, Integer> amountMap = getAmountPerResolution();
+		if (amountMap.containsKey(resolution)) {
+			return OptionalInt.of(amountMap.get(resolution));
 		}
-		return OptionalInt.of(amount);
+		return OptionalInt.empty();
 	}
 }
 
