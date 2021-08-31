@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 
+	@ToString.Exclude
 	private final ConqueryConfig config;
 
 	private int lines = 0;
