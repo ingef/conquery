@@ -95,7 +95,7 @@ public class AdminResource {
     public FullExecutionStatus[] getQueries(@Auth User currentUser) {
         final MetaStorage storage = processor.getStorage();
         final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
-        return processor.getStorage().getAllExecutions().stream().map(t->t.buildStatusFull(storage, currentUser, datasetRegistry)).toArray(FullExecutionStatus[]::new);
+        return storage.getAllExecutions().stream().map(t->t.buildStatusFull(storage, currentUser, datasetRegistry)).toArray(FullExecutionStatus[]::new);
   }
 
 
