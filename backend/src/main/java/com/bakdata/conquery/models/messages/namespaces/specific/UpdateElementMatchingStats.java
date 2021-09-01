@@ -34,7 +34,7 @@ public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
 				ConceptElement<?> target = entry.getKey();
 				MatchingStats.Entry value = entry.getValue();
 
-				target.getMatchingStats().updateEntry(source, value);
+				target.getMatchingStats().putEntry(source, value);
 			}
 			catch(Exception e) {
 				log.error("Failed to set matching stats for '{}'", entry.getKey());
