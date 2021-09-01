@@ -47,14 +47,15 @@ public class CentralRegistry implements Injectable {
 		return map.update(ident);
 	}
 
-	public synchronized Function<IId, Identifiable> updateCacheable(IId id, Function<IId, Identifiable> supplier) {
+	public synchronized Optional<Identifiable> updateCacheable(IId id, Function<IId, Identifiable> supplier) {
 		Function<IId, Identifiable> old = cacheables.put(id, supplier);
-		if (old == null) {
-			// The supplier might have been invoked already and the object gone into the IdMap
-			// So we invalidate it
-			map.remove(id);
+		if (old != null) {
+			// If the cacheable was still there, the Object was never cached.
+			return Optional.empty();
 		}
-		return supplier;
+		// The supplier might have been invoked already and the object gone into the IdMap
+		// So we invalidate it
+		return Optional.ofNullable(map.remove(id));
 	}
 
 	public <T extends Identifiable<?>> Optional<T> getOptional(IId<T> name) {

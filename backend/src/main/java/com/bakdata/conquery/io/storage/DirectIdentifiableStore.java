@@ -5,6 +5,8 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
 
+import java.util.Optional;
+
 /**
  * Registered items are directly referenced. Compare to {@link IdentifiableCachedStore}
  */
@@ -52,6 +54,11 @@ public class DirectIdentifiableStore<VALUE extends Identifiable<?>> extends Iden
 		try {
 			if (value == null) {
 				return;
+			}
+			final Optional<? extends Identifiable<?>> old = centralRegistry.getOptional(value.getId());
+
+			if (old.isPresent()) {
+				onRemove.accept((VALUE) old.get());
 			}
 
 			centralRegistry.update(value);

@@ -19,9 +19,6 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 
 	@NonNull
 	protected ThrowingConsumer<VALUE> onRemove = (v) -> {};
-
-	@NonNull
-	protected ThrowingConsumer<VALUE> onUpdate = (v) -> {};
 	
 	public SingletonStore(Store<Boolean, VALUE> store, Injectable... injectables) {
 		super(store);
@@ -79,7 +76,11 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 	protected void updated(VALUE value) {
 		try {
 			if(value != null) {
-				onUpdate.accept(value);
+				final VALUE old = get();
+				if (old != null) {
+					onRemove.accept(old);
+				}
+				onAdd.accept(value);
 			}
 		} catch(Exception e) {
 			throw new RuntimeException("Failed to update "+value, e);

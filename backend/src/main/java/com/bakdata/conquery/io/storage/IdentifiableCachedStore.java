@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -33,6 +34,7 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends Iden
 	protected void removed(VALUE value) {
 		try {
 			if(value != null) {
+				onRemove.accept(value);
 				centralRegistry.remove(value);
 			}
 		} catch(Exception e) {
@@ -46,6 +48,7 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends Iden
 			if(value != null) {
 				final IId<VALUE> key = extractKey(value);
 				centralRegistry.registerCacheable(key, this::get);
+				onAdd.accept(value);
 			}
 		} catch(Exception e) {
 			throw new RuntimeException("Failed to add "+value, e);
@@ -57,7 +60,12 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends Iden
 		try {
 			if(value != null) {
 				final IId<VALUE> key = extractKey(value);
-				centralRegistry.updateCacheable(key, this::get);
+				final Optional<Identifiable> oldOpt = centralRegistry.updateCacheable(key, this::get);
+				if (oldOpt.isPresent()) {
+					final VALUE old = (VALUE) oldOpt.get();
+					onRemove.accept(old);
+				}
+				onAdd.accept(value);
 			}
 		} catch(Exception e) {
 			throw new RuntimeException("Failed to add "+value, e);

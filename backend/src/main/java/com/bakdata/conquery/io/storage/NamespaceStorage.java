@@ -72,8 +72,7 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	private void decorateIdMapping(SingletonStore<EntityIdMap> idMapping) {
 		idMapping
-				.onAdd(mapping -> mapping.setStorage(this))
-				.onUpdate(mapping -> mapping.setStorage(this));
+				.onAdd(mapping -> mapping.setStorage(this));
 	}
 
 
