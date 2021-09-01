@@ -1,124 +1,124 @@
 {
-    "type": "QUERY_TEST",
-    "label": "ABS_EXPORT Test",
-    "expectedCsv": "tests/query/ABS_EXPORT/expected.csv",
-    "query": {
-        "type": "ABSOLUTE_FORM_QUERY",
-        "dateRange": {
-            "min": "2000-01-01",
-            "max": "2002-12-31"
-        },
-        "resolutionsAndAlignmentMap": [
-            {
-                "resolution": "COMPLETE",
-                "alignment": "NO_ALIGN"
-            },
-            {
-                "resolution": "YEARS",
-                "alignment": "QUARTER"
-            }
-        ],
-        "query": {
-            "type": "CONCEPT_QUERY",
-            "root": {
-                "type": "CONCEPT",
-                "ids": [
-                    "test_tree.test_child1"
-                ],
-                "tables": [
-                    {
-                        "id": "test_tree.test_column",
-                        "filters": []
-                    }
-                ]
-            }
-        },
-        "features": {
-            "type": "ARRAY_CONCEPT_QUERY",
-            "childQueries": {
-                "type": "CONCEPT_QUERY",
-                "root": {
-                    "type": "OR",
-                    "children": {
-                        "type": "CONCEPT",
-                        "ids": [
-                            "test_tree.test_child1"
-                        ],
-                        "selects": [
-                            "test_tree.exists"
-                        ],
-                        "tables": [
-                            {
-                                "id": "test_tree.test_column",
-                                "filters": []
-                            }
-                        ]
-                    }
-                }
-            }
-        }
+  "type": "QUERY_TEST",
+  "label": "ABS_EXPORT Test",
+  "expectedCsv": "tests/query/ABS_EXPORT/expected.csv",
+  "query": {
+    "type": "ABSOLUTE_FORM_QUERY",
+    "dateRange": {
+      "min": "2000-01-01",
+      "max": "2002-12-31"
     },
-    "concepts": [
-        {
-            "label": "test_tree",
-            "type": "TREE",
-            "connectors": {
-                "label": "tree_label",
-                "name": "test_column",
-                "column": "test_table.test_column",
-                "validityDates": {
-                    "label": "datum",
-                    "column": "test_table.datum"
-                }
-            },
-            "selects": [
-                {
-                    "type": "EXISTS",
-                    "name": "exists"
-                }
-            ],
-            "children": [
-                {
-                    "label": "test_child1",
-                    "description": " ",
-                    "condition": {
-                        "type": "PREFIX_LIST",
-                        "prefixes": "A1"
-                    },
-                    "children": []
-                },
-                {
-                    "label": "test_child2",
-                    "description": " ",
-                    "condition": {
-                        "type": "PREFIX_LIST",
-                        "prefixes": "B2"
-                    },
-                    "children": []
-                }
-            ]
-        }
+    "resolutionsAndAlignmentMap": [
+      {
+        "resolution": "COMPLETE",
+        "alignment": "NO_ALIGN"
+      },
+      {
+        "resolution": "YEARS",
+        "alignment": "QUARTER"
+      }
     ],
-    "content": {
+    "query": {
+      "type": "CONCEPT_QUERY",
+      "root": {
+        "type": "CONCEPT",
+        "ids": [
+          "test_tree.test_child1"
+        ],
         "tables": [
-            {
-                "csv": "tests/query/ABS_EXPORT/content.csv",
-                "name": "test_table",
-                "primaryColumn": {
-                    "name": "pid",
-                    "type": "STRING"
-                },
-                "columns": [
-                    {
-                        "name": "datum",
-                        "type": "DATE"
-                    },
-                    {
-                        "name": "test_column",
-                        "type": "STRING"
-                    }
-                ]
-            }
+          {
+            "id": "test_tree.test_column",
+            "filters": []
+          }
         ]
+      }
+    },
+    "features": {
+      "type": "ARRAY_CONCEPT_QUERY",
+      "childQueries": {
+        "type": "CONCEPT_QUERY",
+        "root": {
+          "type": "OR",
+          "children": {
+            "type": "CONCEPT",
+            "ids": [
+              "test_tree.test_child1"
+            ],
+            "selects": [
+              "test_tree.exists"
+            ],
+            "tables": [
+              {
+                "id": "test_tree.test_column",
+                "filters": []
+              }
+            ]
+          }
+        }
+      }
     }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": {
+        "label": "tree_label",
+        "name": "test_column",
+        "column": "test_table.test_column",
+        "validityDates": {
+          "label": "datum",
+          "column": "test_table.datum"
+        }
+      },
+      "selects": [
+        {
+          "type": "EXISTS",
+          "name": "exists"
+        }
+      ],
+      "children": [
+        {
+          "label": "test_child1",
+          "description": " ",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "A1"
+          },
+          "children": []
+        },
+        {
+          "label": "test_child2",
+          "description": " ",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "B2"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/ABS_EXPORT/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
 }

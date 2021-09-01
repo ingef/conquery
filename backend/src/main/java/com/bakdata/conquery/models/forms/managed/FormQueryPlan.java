@@ -50,8 +50,6 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
-		init(ctx, entity);
-
 		if (!isOfInterest(entity)) {
 			// If the entity is not covered by the query generate a basic result line with constants but without features
 			return Optional.of(createResultForNotContained(entity, null));
@@ -67,6 +65,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			QueryExecutionContext innerContext = QueryUtils.determineDateAggregatorForContext(ctx, features::getValidityDateAggregator)
 														   .withDateRestriction(dateRestriction);
 
+			features.init(ctx, entity);
 
 			Optional<SinglelineEntityResult> subResult = features.execute(innerContext, entity);
 

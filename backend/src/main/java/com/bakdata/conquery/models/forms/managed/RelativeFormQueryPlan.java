@@ -184,13 +184,13 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return 5;
 	}
 
+	/**
+	 * Whole result is the concatenation of the subresults. The final output format
+	 * combines resolution info, index and eventdate of both sub queries. The
+	 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]...
+	 * The wanted format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR], [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
+	 */
 	private int calculateCompleteLength() {
-		/*
-		 * Whole result is the concatenation of the subresults. The final output format
-		 * combines resolution info, index and eventdate of both sub queries. The
-		 * feature/outcome sub queries are of in form of: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE/OUTCOME_DR], [FEATURE/OUTCOME_SELECTS]...
-		 * The wanted format is: [RESOLUTION], [INDEX], [EVENTDATE], [FEATURE_DR], [OUTCOME_DR], [FEATURE_SELECTS]... , [OUTCOME_SELECTS]
-		 */
 
 		return getFirstAggregatorPosition() + featurePlan.getAggregatorSize() + outcomePlan.getAggregatorSize();
 		//return featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
