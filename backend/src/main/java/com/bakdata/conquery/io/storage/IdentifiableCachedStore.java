@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import java.util.function.Function;
+
 /**
  * Registers accessors of values instead of the value itself to the central registry.
  * Might be useful if the object are very large and should only be loaded on demand.
@@ -44,6 +46,18 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends Iden
 			if(value != null) {
 				final IId<VALUE> key = extractKey(value);
 				centralRegistry.registerCacheable(key, this::get);
+			}
+		} catch(Exception e) {
+			throw new RuntimeException("Failed to add "+value, e);
+		}
+	}
+
+	@Override
+	protected void updated(VALUE value) {
+		try {
+			if(value != null) {
+				final IId<VALUE> key = extractKey(value);
+				centralRegistry.updateCacheable(key, this::get);
 			}
 		} catch(Exception e) {
 			throw new RuntimeException("Failed to add "+value, e);

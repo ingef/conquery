@@ -46,4 +46,18 @@ public class DirectIdentifiableStore<VALUE extends Identifiable<?>> extends Iden
 			throw new RuntimeException("Failed to add "+value, e);
 		}
 	}
+
+	@Override
+	protected void updated(VALUE value) {
+		try {
+			if (value == null) {
+				return;
+			}
+
+			centralRegistry.update(value);
+			onAdd.accept(value);
+		} catch(Exception e) {
+			throw new RuntimeException("Failed to add "+value, e);
+		}
+	}
 }

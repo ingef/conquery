@@ -31,11 +31,8 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 	}
 
 	public void update(VALUE value) {
-		VALUE old = get(extractKey(value));
-		if(old != null)
-			removed(old);
+		updated(value);
 		store.update(extractKey(value), value);
-		added(value);
 	}
 	
 	public void remove(KEY key) {
@@ -68,6 +65,8 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 	protected abstract void removed(VALUE value);
 
 	protected abstract void added(VALUE value);
+
+	protected abstract void updated(VALUE value);
 
 	public void clear() {
 		store.clear();
