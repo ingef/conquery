@@ -49,6 +49,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
                         * 5_000); // Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
 
 
+        // TODO FK: If this causes issues with memory, use a LoadingCache with SoftReferences instead
         ConcurrentMap<Bucket, int[]> eventEntitiesCache = new ConcurrentHashMap<>();
 
 
