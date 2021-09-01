@@ -129,14 +129,20 @@ public class DateReader {
 
 	private CDateRange parseToCDateRange(String value, String sep) {
 		String[] parts = StringUtils.split(value, sep);
-		if (parts.length != 2) {
-			throw ParsingException.of(value, "daterange");
+
+		if (parts.length == 1) {
+			// If it looks like a single date, try to parse it at one
+			return CDateRange.exactly(parseToLocalDate(parts[0]));
 		}
 
-		return CDateRange.of(
-				parseToLocalDate(parts[0]),
-				parseToLocalDate(parts[1])
-		);
+		if (parts.length == 2) {
+				return CDateRange.of(
+						parseToLocalDate(parts[0]),
+						parseToLocalDate(parts[1])
+				);
+		}
+
+		throw ParsingException.of(value, "daterange");
 	}
 
 	public CDateSet parseToCDateSet(String value) {

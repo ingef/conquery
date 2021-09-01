@@ -16,7 +16,6 @@ export type GeneralField = FormField | NonFormField;
 export interface Form {
   type: string; // Sent to backend API
   title: TranslatableString; // Displayed
-  headline: TranslatableString; // Displayed
   fields: GeneralField[];
   description?: TranslatableString; // Displayed
 }
@@ -31,6 +30,7 @@ interface Tabs {
 interface Tab {
   name: string; // // Sent to backend API
   title: TranslatableString;
+  tooltip?: TranslatableString;
   fields: GeneralField[];
 }
 
@@ -58,6 +58,7 @@ type Field =
 interface CommonField {
   name: string; // Sent to backend API
   label: TranslatableString; // Used to display
+  tooltip?: TranslatableString;
 }
 
 /* ------------------------------ */
