@@ -87,8 +87,6 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 		// Only override if none has been set from a higher level
 		ctx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
 
-		init(ctx, entity);
-
 		if (!isOfInterest(entity)) {
 			return Optional.empty();
 		}
@@ -208,7 +206,6 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 		return length;
 	}
 
-	//TODO unused?
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		childPlans.forEach(plan -> plan.nextTable(ctx, currentTable));
 	}

@@ -2,9 +2,11 @@ package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -21,6 +23,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.util.QueryUtils;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -63,8 +66,6 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
-		init(ctx, entity);
-
 		if (!queryPlan.isOfInterest(entity)) {
 			return Optional.empty();
 		}
@@ -104,10 +105,20 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return Optional.of(new MultilineEntityResult(entity.getId(), result));
 	}
 
+	/**
+	 * This helps us avoid allocations, instead allowing us to reuse the queries.
+	 */
+	@Getter(AccessLevel.NONE)
+	private final Queue<ConceptQueryPlan> childPlanReusePool = new LinkedList<>();
+
 	@Override
 	public void init(QueryExecutionContext ctx, Entity entity) {
 		queryPlan = query.createQueryPlan(queryPlanContext.withSelectedSecondaryId(secondaryId));
 		queryPlan.init(ctx, entity);
+
+
+		// Dump the created children into reuse-pool
+		childPlanReusePool.addAll(childPerKey.values());
 
 		childPerKey.clear();
 	}
@@ -201,7 +212,12 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 */
 	private ConceptQueryPlan createChild(QueryExecutionContext currentContext, Bucket currentBucket) {
 
-		final ConceptQueryPlan plan = query.createQueryPlan(queryPlanContext.withSelectedSecondaryId(secondaryId));
+		ConceptQueryPlan plan;
+
+		// Try to reuse old child plan first before allocating new ones
+		if((plan = childPlanReusePool.poll()) == null) {
+			plan = query.createQueryPlan(queryPlanContext.withSelectedSecondaryId(secondaryId));
+		}
 
 		final QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
 

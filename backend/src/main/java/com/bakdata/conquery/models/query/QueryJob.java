@@ -15,25 +15,26 @@ public class QueryJob implements Supplier<Optional<EntityResult>> {
 	private final QueryExecutionContext ctx;
 	private final ThreadLocal<QueryPlan<?>> plan;
 	private final Entity entity;
-	
+
 	@Override
 	public Optional<EntityResult> get() {
 
-		if(ctx.isQueryCancelled()){
+		if (ctx.isQueryCancelled()) {
 			return Optional.empty();
 		}
 
 		try {
 			QueryPlan queryPlan = plan.get();
+			queryPlan.init(ctx, entity);
 
 			return queryPlan.execute(ctx, entity);
 		}
 		catch (ConqueryError e) {
 			// Catch errors, propagate them with their id.
-			throw new ConqueryError.ExecutionJobErrorWrapper(entity,e);
+			throw new ConqueryError.ExecutionJobErrorWrapper(entity, e);
 		}
 		catch (Exception e) {
-			throw new ConqueryError.ExecutionJobErrorWrapper(entity,new ConqueryError.UnknownError(e));
+			throw new ConqueryError.ExecutionJobErrorWrapper(entity, new ConqueryError.UnknownError(e));
 		}
 	}
 

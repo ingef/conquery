@@ -33,7 +33,8 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public void init(QueryExecutionContext ctxt, Entity entity) {
-
+		query.init(ctxt, entity);
+		features.init(ctxt, entity);
 	}
 
 	@Override

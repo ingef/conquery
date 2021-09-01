@@ -45,7 +45,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public void init(QueryExecutionContext ctxt, Entity entity) {
-		// Does nothing
+		subPlan.init(ctxt, entity);
 	}
 
 	@Override

@@ -69,8 +69,6 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		// Only override if none has been set from a higher level
 		ctx = QueryUtils.determineDateAggregatorForContext(ctx, this::getValidityDateAggregator);
 
-		init(ctx, entity);
-
 		if (!isOfInterest(entity)) {
 			return Optional.empty();
 		}
