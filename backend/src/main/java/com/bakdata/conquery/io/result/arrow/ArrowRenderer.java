@@ -183,6 +183,7 @@ public class ArrowRenderer {
             final int epochDay = value.intValue();
             if (CDate.isNegativeInfinity(epochDay) || CDate.isPositiveInfinity(epochDay)) {
                 vector.setNull(rowNumber);
+                return;
             }
 
             vector.setSafe(rowNumber, epochDay);
