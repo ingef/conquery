@@ -60,6 +60,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
 
+import static org.apache.shiro.util.StringUtils.hasText;
+
 @Getter
 @Setter
 @ToString
@@ -277,6 +279,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		setAvailableSecondaryIds(status);
 		status.setProgress(progress);
 
+		status.setLanguageTag(I18n.LOCALE.get().getLanguage() + (hasText(I18n.LOCALE.get().getCountry()) ? "-" + I18n.LOCALE.get().getCountry() : ""));
 
 		if (getState().equals(ExecutionState.FAILED) && error != null) {
 			// Use plain format here to have a uniform serialization.

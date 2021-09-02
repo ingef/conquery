@@ -16,6 +16,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
+import com.bakdata.conquery.models.i18n.I18n;
+
+import static org.apache.shiro.util.StringUtils.hasText;
 
 /**
  * This status holds extensive information about the query description and meta data that is computational heavy
@@ -28,6 +31,10 @@ import lombok.experimental.FieldNameConstants;
 @FieldNameConstants
 public class FullExecutionStatus extends ExecutionStatus {
 
+	/**
+	 * Indicates the actual language of system
+	 */
+	private String languageTag;
 	/**
 	 * The estimated progress of an running execution in the enclosing interval [0-1].
 	 * This value does not have to be set if the state is RUNNING and it must not be set
