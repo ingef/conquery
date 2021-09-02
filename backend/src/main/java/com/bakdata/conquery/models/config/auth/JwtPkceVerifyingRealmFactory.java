@@ -289,7 +289,8 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
             return null;
         }
 
-        final URI requestUri = request.getUriInfo().getAbsolutePath();
+        // Build the original redirect uri
+        final URI requestUri = UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(request.getUriInfo().getPath()).build();
         log.info("Request URI: {}", requestUri);
         final TokenRequest tokenRequest = new TokenRequest(
                 UriBuilder.fromUri(idpConfiguration.getTokenEndpoint()).build(),
