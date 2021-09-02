@@ -94,7 +94,7 @@ public class JWTokenHandler {
 	 * @return a token
 	 */
 	@Nullable
-	private static String extractTokenFromHeader(ContainerRequestContext request) {
+	public static String extractTokenFromHeader(ContainerRequestContext request) {
 
 		final String header = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 

@@ -1,5 +1,5 @@
 package com.bakdata.conquery.resources.admin;
-
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 import java.util.Collections;
 
 import com.bakdata.conquery.commands.ManagerNode;
@@ -8,7 +8,6 @@ import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
-import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.resources.admin.rest.*;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.AuthOverviewUIResource;
@@ -49,8 +48,8 @@ public class AdminServlet {
 
         RESTServer.configure(manager.getConfig(), jerseyConfig);
 
-        manager.getEnvironment().admin().addServlet("admin", new ServletContainer(jerseyConfig)).addMapping("/admin/*");
-        manager.getEnvironment().admin().addServlet(ADMIN_UI, new ServletContainer(jerseyConfigUI)).addMapping("/" + ADMIN_UI + "/*");
+        manager.getEnvironment().admin().addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig)).addMapping("/" + ADMIN_SERVLET_PATH + "/*");
+        manager.getEnvironment().admin().addServlet(ADMIN_UI_SERVLET_PATH, new ServletContainer(jerseyConfigUI)).addMapping("/" + ADMIN_UI_SERVLET_PATH + "/*");
 
         jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
         // freemarker support
