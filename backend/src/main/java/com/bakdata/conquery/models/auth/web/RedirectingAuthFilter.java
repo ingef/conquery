@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationToken;
 
+import javax.annotation.Priority;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
@@ -30,6 +31,7 @@ import java.util.function.Function;
  */
 @RequiredArgsConstructor
 @Slf4j
+@Priority(Priorities.AUTHENTICATION)
 public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 	/**
