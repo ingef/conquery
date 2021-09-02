@@ -4,6 +4,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -17,6 +18,7 @@ import io.dropwizard.auth.Auth;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -81,4 +83,11 @@ public class AdminResource {
     public ImmutableMap<String, JobManagerStatus> getJobs() {
         return  processor.getJobs();
     }
+
+    @GET
+    @Path("logout")
+    public Response logout() {
+        return  Response.ok().cookie(AuthenticationConfig.expireAuthCookie()).build();
+    }
+
 }

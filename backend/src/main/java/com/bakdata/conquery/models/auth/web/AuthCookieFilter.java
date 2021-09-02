@@ -76,7 +76,7 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 	@Override
 	public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
 		Cookie cookie = request.getCookies().get(ACCESS_TOKEN);
-		String token = request.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
+		String token = request.getHeaderString(ACCESS_TOKEN);
 
 		// Set cookie only if a token is present
 		if (!Strings.isNullOrEmpty(token)) {
