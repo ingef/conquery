@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
@@ -10,12 +11,10 @@ import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Date;
 
 @Slf4j
 @ToString(callSuper = true)
@@ -23,38 +22,23 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
 	private final DateParser minParser;
 	private final DateParser maxParser;
-	private final DateFormats dateFormats;
+	private final DateReader dateReader;
 
 	private boolean onlyQuarters = true;
 	private int maxValue = Integer.MIN_VALUE;
 	private int minValue = Integer.MAX_VALUE;
 	private boolean anyOpen;
 
-	public DateRangeParser(ParserConfig config) {
+	public DateRangeParser(ConqueryConfig config) {
 		super(config);
 		minParser = new DateParser(config);
 		maxParser = new DateParser(config);
-		dateFormats = config.getDateFormats();
+		dateReader = config.getLocale().getDateReader();
 	}
 
 	@Override
-	protected CDateRange parseValue(@Nonnull String value) throws ParsingException {
-		return DateRangeParser.parseISORange(value, dateFormats);
-	}
-
-	public static CDateRange parseISORange(String value, DateFormats dateFormats) throws ParsingException {
-		if (value == null) {
-			return null;
-		}
-		String[] parts = StringUtils.split(value, '/');
-		if (parts.length != 2) {
-			throw ParsingException.of(value, "daterange");
-		}
-
-		return CDateRange.of(
-				dateFormats.parseToLocalDate(parts[0]),
-				dateFormats.parseToLocalDate(parts[1])
-		);
+	protected CDateRange parseValue(@Nonnull String value) {
+		return dateReader.parseToCDateRange(value);
 	}
 
 	@Override

@@ -114,21 +114,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		this.objectMapper = objectMapper;
 
-		valueWriter = objectMapper
-							  .writerFor(valueType)
-							  .withView(InternalOnly.class);
+		valueWriter = objectMapper.writerFor(valueType);
 
-		valueReader = objectMapper
-							  .readerFor(valueType)
-							  .withView(InternalOnly.class);
+		valueReader = objectMapper.readerFor(valueType);
 
-		keyWriter = objectMapper
-							.writerFor(storeInfo.getKeyType())
-							.withView(InternalOnly.class);
+		keyWriter = objectMapper.writerFor(storeInfo.getKeyType());
 
-		keyReader = objectMapper
-							.readerFor(storeInfo.getKeyType())
-							.withView(InternalOnly.class);
+		keyReader = objectMapper.readerFor(storeInfo.getKeyType());
 		
 		removeUnreadablesFromUnderlyingStore = config.isRemoveUnreadableFromStore();
 		

@@ -2,7 +2,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -13,16 +13,16 @@ import java.io.IOException;
 
 public class CDateRangeDeserializer extends StdDeserializer<CDateRange> {
 
-    private final DateFormats dateFormats;
+    private final DateReader dateReader;
 
-    protected CDateRangeDeserializer(DateFormats dateFormats) {
+    protected CDateRangeDeserializer(DateReader dateReader) {
         super(CDateRange.class);
-        this.dateFormats = dateFormats;
+        this.dateReader = dateReader;
     }
 
     @SneakyThrows
     @Override
     public CDateRange deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        return DateRangeParser.parseISORange(p.getText(), dateFormats);
+        return dateReader.parseToCDateRange(p.getText());
     }
 }

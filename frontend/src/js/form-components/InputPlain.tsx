@@ -28,6 +28,7 @@ interface Props<T> extends InputProps<T> {
   inputProps?: Object;
   currencyConfig?: CurrencyConfigT;
   fullWidth?: boolean;
+  tooltip?: string;
 }
 
 const InputPlain = <T extends string | number | null = string | null>(
@@ -41,6 +42,7 @@ const InputPlain = <T extends string | number | null = string | null>(
       tinyLabel={props.tinyLabel}
       largeLabel={props.large}
       indexPrefix={props.indexPrefix}
+      tooltip={props.tooltip}
     >
       <SxBaseInput
         large={props.large}

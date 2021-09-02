@@ -4,7 +4,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.DateFormats;
+import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.NoArgsConstructor;
@@ -30,7 +30,7 @@ public class LineOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateFormats dateFormats) {
+	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {

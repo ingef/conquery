@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.events.stores.types;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,6 +19,6 @@ public class MajorTypesTest {
 	@ParameterizedTest
 	@MethodSource
 	public void reflection(MajorTypeId typeId) {
-		typeId.createParser(new ParserConfig()).findBestType();
+		typeId.createParser(new ConqueryConfig()).findBestType();
 	}
 }

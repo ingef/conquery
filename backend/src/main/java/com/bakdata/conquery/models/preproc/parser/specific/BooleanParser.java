@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 
 import javax.annotation.Nonnull;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
@@ -13,7 +14,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class BooleanParser extends Parser<Boolean, BooleanStore> {
 
-	public BooleanParser(ParserConfig config) {
+	public BooleanParser(ConqueryConfig config) {
 		super(config);
 	}
 

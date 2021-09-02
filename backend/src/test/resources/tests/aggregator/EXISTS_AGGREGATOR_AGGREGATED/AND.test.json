@@ -10,32 +10,32 @@
         "type": "CONCEPT_QUERY",
         "root": {
           "type": "AND",
-          "label" : "AND",
+          "label": "AND",
           "createExists": true,
           "children": [
             {
               "ids": [
-                "number.1"
+                "concept.1"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "number.number_connector"
+                  "id": "concept.connector"
                 }
               ],
-              "selects": "number.exists"
+              "selects": "concept.exists"
             },
             {
               "ids": [
-                "number.2"
+                "concept.2"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "number.number_connector"
+                  "id": "concept.connector"
                 }
               ],
-              "selects": "number.exists"
+              "selects": "concept.exists"
             }
           ]
         }
@@ -44,32 +44,32 @@
         "type": "CONCEPT_QUERY",
         "root": {
           "type": "OR",
-          "label" : "OR",
+          "label": "OR",
           "createExists": true,
           "children": [
             {
               "ids": [
-                "number.1"
+                "concept.1"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "number.number_connector"
+                  "id": "concept.connector"
                 }
               ],
-              "selects": "number.exists"
+              "selects": "concept.exists"
             },
             {
               "ids": [
-                "number.2"
+                "concept.2"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "number.number_connector"
+                  "id": "concept.connector"
                 }
               ],
-              "selects": "number.exists"
+              "selects": "concept.exists"
             }
           ]
         }
@@ -78,7 +78,7 @@
   },
   "concepts": [
     {
-      "label": "number",
+      "label": "concept",
       "type": "TREE",
       "selects": {
         "type": "EXISTS",
@@ -86,11 +86,11 @@
       },
       "connectors": [
         {
-          "column": "table1.value",
-          "label": "number_connector",
+          "column": "table.value",
+          "label": "connector",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           }
         }
       ],
@@ -116,7 +116,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/EXISTS_AGGREGATOR_AGGREGATED/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

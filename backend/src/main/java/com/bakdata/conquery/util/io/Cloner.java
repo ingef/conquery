@@ -12,35 +12,37 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Cloner {
 
-	public static <T> ConqueryConfig clone(ConqueryConfig config, Map<Class<T> , T > injectables) {
+	public static <T> ConqueryConfig clone(ConqueryConfig config, Map<Class<T>, T> injectables, ObjectMapper mapper) {
 		try {
-			ObjectMapper mapper = Jackson.BINARY_MAPPER.copy();
-			MutableInjectableValues injectableHolder = ((MutableInjectableValues)Jackson.BINARY_MAPPER.getInjectableValues());
-			for(Entry<Class<T>, T> injectable : injectables.entrySet()) {
+
+			MutableInjectableValues injectableHolder = ((MutableInjectableValues) mapper.getInjectableValues());
+			for (Entry<Class<T>, T> injectable : injectables.entrySet()) {
 
 				injectableHolder.add(injectable.getKey(), injectable.getValue());
 			}
 			ConqueryConfig clone = mapper.readValue(
-				Jackson.BINARY_MAPPER.writeValueAsBytes(config),
-				ConqueryConfig.class
+					mapper.writeValueAsBytes(config),
+					ConqueryConfig.class
 			);
 			clone.setLoggingFactory(config.getLoggingFactory());
 			return clone;
-		} catch (IOException e) {
-			throw new IllegalStateException("Failed to clone a conquery config "+config, e);
+		}
+		catch (IOException e) {
+			throw new IllegalStateException("Failed to clone a conquery config " + config, e);
 		}
 	}
 
 	public static <T> T clone(T element, Injectable injectable, Class<T> valueType) {
 		try {
 			return injectable
-				.injectInto(Jackson.BINARY_MAPPER)
-				.readValue(
-					Jackson.BINARY_MAPPER.writeValueAsBytes(element),
-					valueType
-				);
-		} catch (IOException e) {
-			throw new IllegalStateException("Failed to clone the CQElement "+element, e);
+						   .injectInto(Jackson.BINARY_MAPPER)
+						   .readValue(
+								   Jackson.BINARY_MAPPER.writeValueAsBytes(element),
+								   valueType
+						   );
+		}
+		catch (IOException e) {
+			throw new IllegalStateException("Failed to clone the CQElement " + element, e);
 		}
 	}
 }

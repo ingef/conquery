@@ -1,76 +1,74 @@
 {
-    "type": "QUERY_TEST",
-    "label": "EVENT_DATE_AGGREGATOR_RESTRICTION Test",
-    "expectedCsv": "tests/aggregator/EVENT_DATE_AGGREGATOR/expected_restriction.csv",
-    "query": {
-        "type": "CONCEPT_QUERY",
-        "root": {
-            "type": "DATE_RESTRICTION",
-            "dateRange": {
-                "min": "2010-02-01",
-                "max": "2010-02-28"
-            },
-            "child": {
-                "ids": [
-                    "con"
-                ],
-                "type": "CONCEPT",
-                "label": "Geschlecht SELECT",
-                "tables": [
-                    {
-                        "id": "con.geschlecht_connector",
-                        "selects": "con.geschlecht_connector.event-date"
-                    }
-                ],
-				"selects": "con.event-date"
-            }
-        }
-    },
-    "concepts": [
-        {
-            "label": "Geschlecht SELECT",
-            "name": "con",
-            "type": "TREE",
-            "connectors": [
-                {
-                    "label": "geschlecht_connector",
-                    "table": "table1",
-                    "validityDates": {
-                        "label": "indexdatum",
-                        "column": "table1.indexdatum"
-                    },
-                    "selects": {
-                        "type": "EVENT_DATE_UNION",
-                        "name": "event-date"
-                    }
-                }
-            ],
-            "selects": {
-                "type": "EVENT_DATE_UNION",
-                "name": "event-date"
-            }
-        }
-    ],
-    "content": {
+  "type": "QUERY_TEST",
+  "label": "EVENT_DATE_AGGREGATOR_RESTRICTION Test",
+  "expectedCsv": "tests/aggregator/EVENT_DATE_AGGREGATOR/expected_restriction.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "DATE_RESTRICTION",
+      "dateRange": {
+        "min": "2010-02-01",
+        "max": "2010-02-28"
+      },
+      "child": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
         "tables": [
-            {
-                "csv": "tests/aggregator/EVENT_DATE_AGGREGATOR/content.csv",
-                "name": "table1",
-                "primaryColumn": {
-                    "name": "pid",
-                    "type": "STRING"
-                },
-                "columns": [
-                    {
-                        "name": "indexdatum",
-                        "type": "DATE_RANGE"
-                    },
-                    {
-                        "name": "geburtsdatum",
-                        "type": "DATE"
-                    }
-                ]
-            }
-        ]
+          {
+            "id": "concept.connector",
+            "selects": "concept.connector.event-date"
+          }
+        ],
+        "selects": "concept.event-date"
+      }
     }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "table",
+          "validityDates": {
+            "label": "indexdatum",
+            "column": "table.indexdatum"
+          },
+          "selects": {
+            "type": "EVENT_DATE_UNION",
+            "name": "event-date"
+          }
+        }
+      ],
+      "selects": {
+        "type": "EVENT_DATE_UNION",
+        "name": "event-date"
+      }
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/EVENT_DATE_AGGREGATOR/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "indexdatum",
+            "type": "DATE_RANGE"
+          },
+          {
+            "name": "geburtsdatum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
 }

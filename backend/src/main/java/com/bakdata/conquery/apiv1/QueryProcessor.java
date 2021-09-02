@@ -3,25 +3,25 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 import java.net.URL;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.ExternalUpload;
+import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
@@ -64,8 +64,6 @@ public class QueryProcessor {
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
-	 *
-	 * @return
 	 */
 	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, User user) {
 
@@ -110,7 +108,7 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager));
+			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, user));
 
 			if (execution.isPresent()) {
 				return execution.get();
@@ -132,13 +130,14 @@ public class QueryProcessor {
 	/**
 	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
 	 */
-	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager) {
+	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager, User user) {
 
-		final ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
+		ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
 
 		if (execution == null) {
 			return null;
 		}
+
 
 		// Direct reuse only works if the queries are of the same type (As reuse reconstructs the Query for different types)
 		if (!query.getClass().equals(execution.getSubmitted().getClass())) {
@@ -153,6 +152,15 @@ public class QueryProcessor {
 			if (!selectedSecondaryId.equals(reusedSecondaryId)) {
 				return null;
 			}
+		}
+
+		// If the user is not the owner of the execution, we definitely create a new Execution, so the owner can cancel it
+		if (!user.isOwner(execution)) {
+			final ManagedExecution<?> newExecution = executionManager.createExecution(datasetRegistry,execution.getSubmitted(),user,execution.getDataset());
+			newExecution.setLabel(execution.getLabel());
+			newExecution.setTags(execution.getTags().clone());
+			storage.updateExecution(newExecution);
+			execution = newExecution;
 		}
 
 		ExecutionState state = execution.getState();
@@ -340,7 +348,9 @@ public class QueryProcessor {
 	public void deleteQuery(User user, ManagedExecution<?> execution) {
 		log.info("User[{}] deleted Query[{}]", user.getId(), execution.getId());
 
-		execution.getExecutionManager().clearQueryResults(execution);
+		datasetRegistry.get(execution.getDataset().getId())
+					   .getExecutionManager() // Don't go over execution#getExecutionManager() as that's only set when query is initialized
+					   .clearQueryResults(execution);
 
 		storage.removeExecution(execution.getId());
 	}
@@ -358,5 +368,45 @@ public class QueryProcessor {
 		return status;
 	}
 
+	/**
+	 * Try to resolve the external upload, if successful, create query for the user and return id and statistics for that.
+	 */
+	public ExternalUploadResult uploadEntities(User user, Dataset dataset, ExternalUpload upload) {
 
+		final CQExternal.ResolveStatistic statistic =
+				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
+										   datasetRegistry.get(dataset.getId()).getStorage().getIdMapping(),
+										   config.getFrontend().getQueryUpload(),
+										   config.getLocale().getDateReader()
+				);
+
+		// Resolving nothing is a problem thus we fail.
+		if (statistic.getResolved().isEmpty()) {
+			throw new BadRequestException(Response.status(Response.Status.BAD_REQUEST)
+												  .entity(new ExternalUploadResult(null, 0, statistic.getUnresolvedId(), statistic.getUnreadableDate()))
+												  .build());
+		}
+
+		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues()));
+
+		// We only create the Query, really no need to execute it as it's only useful for composition.
+		final ManagedQuery execution =
+				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
+											   .createExecution(datasetRegistry, query, user, dataset));
+
+		execution.setLastResultCount((long) statistic.getResolved().size());
+
+		if (upload.getLabel() != null) {
+			execution.setLabel(upload.getLabel());
+		}
+
+		execution.initExecutable(datasetRegistry, config);
+
+		return new ExternalUploadResult(
+				execution.getId(),
+				statistic.getResolved().size(),
+				statistic.getUnresolvedId(),
+				statistic.getUnreadableDate()
+		);
+	}
 }

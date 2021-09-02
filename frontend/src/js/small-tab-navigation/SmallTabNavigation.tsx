@@ -1,10 +1,13 @@
 import React, { FC } from "react";
 
+import InfoTooltip from "../tooltip/InfoTooltip";
+
 import SmallTabNavigationButton from "./SmallTabNavigationButton";
 
-interface TabOption {
+export interface TabOption {
   label: string;
   value: string;
+  tooltip?: string;
 }
 
 interface PropsT {
@@ -33,6 +36,7 @@ const SmallTabNavigation: FC<PropsT> = ({
           onClick={() => onSelectTab(option.value)}
         >
           {option.label}
+          {option.tooltip && <InfoTooltip text={option.tooltip} />}
         </SmallTabNavigationButton>
       ))}
     </div>

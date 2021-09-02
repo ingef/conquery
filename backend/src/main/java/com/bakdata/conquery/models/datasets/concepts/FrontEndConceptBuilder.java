@@ -107,6 +107,7 @@ public class FrontEndConceptBuilder {
 				.label(c.getLabel())
 				.additionalInfos(c.getAdditionalInfos())
 				.matchingEntries(matchingStats.countEvents())
+				.matchingEntities(matchingStats.countEntities())
 				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 				.detailsAvailable(Boolean.TRUE)
 				.codeListResolvable(c.countElements() > 1)
@@ -182,6 +183,7 @@ public class FrontEndConceptBuilder {
 				.label(ce.getLabel())
 				.additionalInfos(ce.getAdditionalInfos())
 				.matchingEntries(matchingStats.countEvents())
+				.matchingEntities(matchingStats.countEntities())
 				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 				.build();
 		

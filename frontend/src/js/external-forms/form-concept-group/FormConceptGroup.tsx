@@ -49,6 +49,7 @@ interface PropsType extends WrappedFieldProps {
   formType: string;
   fieldName: string;
   label: string;
+  tooltip?: string;
   onDropFilterFile: Function;
   newValue?: Object;
   isSingle?: boolean;
@@ -501,6 +502,7 @@ const FormConceptGroup = (props: PropsType) => {
   return (
     <div>
       <DropzoneList<DragItemConceptTreeNode | DragItemFormConceptNode>
+        tooltip={props.tooltip}
         label={
           <>
             {props.label}

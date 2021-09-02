@@ -11,14 +11,13 @@ import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import io.dropwizard.auth.Auth;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -67,7 +66,7 @@ public class AdminDatasetResource extends HAdmin {
 	@GET
 	@Consumes(MediaType.WILDCARD)
 	@Path("mapping")
-	public PersistentIdMap getIdMapping() {
+	public EntityIdMap getIdMapping() {
 		return processor.getIdMapping(namespace);
 	}
 

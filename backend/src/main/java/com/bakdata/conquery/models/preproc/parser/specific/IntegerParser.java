@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
@@ -23,7 +24,7 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 	private long minValue = Long.MAX_VALUE;
 	private long maxValue = Long.MIN_VALUE;
 
-	public IntegerParser(ParserConfig config) {
+	public IntegerParser(ConqueryConfig config) {
 		super(config);
 	}
 

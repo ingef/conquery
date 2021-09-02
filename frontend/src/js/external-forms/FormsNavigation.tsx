@@ -3,9 +3,12 @@ import type { StateT } from "app-types";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
+import { reset } from "redux-form";
 
+import IconButton from "../button/IconButton";
 import InputSelect from "../form-components/InputSelect";
 import { useActiveLang } from "../localization/useActiveLang";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import { setExternalForm } from "./actions";
 import { Form } from "./config-types";
@@ -19,11 +22,17 @@ const Root = styled("div")`
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: flex-end;
 `;
 
 const SxInputSelect = styled(InputSelect)`
   flex-grow: 1;
+`;
+
+const SxIconButton = styled(IconButton)`
+  flex-shrink: 0;
+  margin-left: 10px;
+  padding: 6px 10px;
 `;
 
 const FormsNavigation: FC = () => {
@@ -47,10 +56,19 @@ const FormsNavigation: FC = () => {
 
   const options = Object.values(availableForms)
     .map((formType) => ({
-      label: formType.headline[language]!,
+      label: formType.title[language]!,
       value: formType.type,
     }))
     .sort((a, b) => (a.label < b.label ? -1 : 1));
+
+  const activeFormType = useSelector<StateT, string | null>((state) =>
+    selectActiveFormType(state),
+  );
+  const onClear = () => {
+    if (activeFormType) {
+      dispatch(reset(activeFormType));
+    }
+  };
 
   return (
     <Root>
@@ -67,6 +85,9 @@ const FormsNavigation: FC = () => {
           searchable: false,
         }}
       />
+      <WithTooltip text={t("externalForms.common.clear")}>
+        <SxIconButton frame regular icon="trash-alt" onClick={onClear} />
+      </WithTooltip>
     </Root>
   );
 };

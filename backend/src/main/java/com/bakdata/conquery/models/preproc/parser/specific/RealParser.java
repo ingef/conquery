@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.DoubleArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.FloatArrayStore;
@@ -20,9 +21,9 @@ public class RealParser extends Parser<Double, RealStore> {
 
 	private double floatULP = Float.NEGATIVE_INFINITY;
 
-	public RealParser(ParserConfig config) {
+	public RealParser(ConqueryConfig config) {
 		super(config);
-		requiredPrecision = config.getMinPrecision();
+		requiredPrecision = config.getPreprocessor().getParsers().getMinPrecision();
 	}
 
 	@Override

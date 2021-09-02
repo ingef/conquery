@@ -13,7 +13,7 @@ const Root = styled("div")`
   z-index: 10;
   bottom: 20px;
   right: 20px;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   color: white;
   display: flex;
   flex-direction: row;

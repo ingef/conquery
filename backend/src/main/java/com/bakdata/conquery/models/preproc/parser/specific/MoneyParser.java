@@ -24,9 +24,9 @@ public class MoneyParser extends Parser<Long, MoneyStore> {
 	@JsonIgnore
 	private final BigDecimal moneyFactor;
 
-	public MoneyParser(ParserConfig config) {
+	public MoneyParser(ConqueryConfig config) {
 		super(config);
-		moneyFactor = BigDecimal.valueOf(10).pow(config.getCurrency().getDefaultFractionDigits());
+		moneyFactor = BigDecimal.valueOf(10).pow(config.getPreprocessor().getParsers().getCurrency().getDefaultFractionDigits());
 	}
 
 	@Override

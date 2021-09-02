@@ -50,11 +50,7 @@ import { QUERY_AGAIN_TIMEOUT } from "./constants";
   by sending a DELETE request for that query ID
 */
 
-export type QueryTypeT =
-  | "standard"
-  | "external"
-  | "timebased"
-  | "externalForms";
+export type QueryTypeT = "standard" | "timebased" | "externalForms";
 
 const startQueryStart = (queryType: QueryTypeT) => ({
   type: START_QUERY_START,

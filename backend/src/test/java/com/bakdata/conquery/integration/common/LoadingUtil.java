@@ -23,8 +23,7 @@ import javax.ws.rs.core.Response;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal.FormatColumn;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -32,6 +31,7 @@ import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -39,10 +39,6 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.query.ExecutionManager;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal.FormatColumn;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
@@ -61,10 +57,6 @@ import org.apache.commons.io.FileUtils;
 @UtilityClass
 public class LoadingUtil {
 
-	public static void importPreviousQueries(StandaloneSupport support, RequiredData content) throws IOException {
-		importPreviousQueries(support, content, support.getTestUser());
-	}
-
 	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException {
 		// Load previous query results if available
 		int id = 1;
@@ -74,9 +66,11 @@ public class LoadingUtil {
 			final CsvParser parser = support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createParser();
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
 
-			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
+			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data));
 
-			ManagedExecution<?> managed = support.getNamespace().getExecutionManager().createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
+			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
+												 .createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
+
 			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
@@ -104,10 +98,11 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importTables(StandaloneSupport support, RequiredData content) throws JSONException {
+	public static void importTables(StandaloneSupport support, List<RequiredTable> tables) throws JSONException {
 
-		for (RequiredTable rTable : content.getTables()) {
-			support.getDatasetsProcessor().addTable(rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry()), support.getNamespace());
+		for (RequiredTable rTable : tables) {
+			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
+			support.getDatasetsProcessor().addTable(table, support.getNamespace());
 		}
 	}
 	

@@ -15,6 +15,11 @@
     "clazz": "QueryResource"
   },
   {
+    "method": "POST",
+    "path": "/datasets/{dataset}/queries/upload",
+    "clazz": "QueryResource"
+  },
+  {
     "method": "GET",
     "path": "/datasets/{dataset}/queries/{query}",
     "clazz": "QueryResource"

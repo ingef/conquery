@@ -73,7 +73,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTables(conquery, test.getContent());
+			LoadingUtil.importTables(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
