@@ -113,8 +113,9 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	protected abstract boolean isRegisterImports();
 
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
-		store.onAdd(centralRegistry::register)
-			 .onRemove(centralRegistry::remove);
+		store
+				.onAdd(centralRegistry::register)
+				.onRemove(centralRegistry::remove);
 	}
 
 	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {

@@ -29,21 +29,8 @@ public class CentralRegistry implements Injectable {
 		return this;
 	}
 
-	public synchronized void registerCacheable(IId id, Function<IId, Identifiable> supplier) {
-		cacheables.put(id, supplier);
-	}
-
-	protected  <T extends Identifiable<?>> T get(IId<T> name) {
-		Object res = map.get(name);
-		if (res != null) {
-			return (T) res;
-		}
-
-		Function<IId, Identifiable> supplier = cacheables.get(name);
-		if (supplier == null) {
-			return null;
-		}
-		return (T) supplier.apply(name);
+	public synchronized Function<IId, Identifiable> registerCacheable(IId id, Function<IId, Identifiable> supplier) {
+		return cacheables.put(id, supplier);
 	}
 
 	public <T extends Identifiable<?>> T resolve(IId<T> name) {
@@ -56,16 +43,28 @@ public class CentralRegistry implements Injectable {
 		return result;
 	}
 
+	public Identifiable update(Identifiable<?> ident){
+		return map.update(ident);
+	}
+
+	public synchronized Optional<Identifiable> updateCacheable(IId id, Function<IId, Identifiable> supplier) {
+		Function<IId, Identifiable> old = cacheables.put(id, supplier);
+		if (old != null) {
+			// If the cacheable was still there, the Object was never cached.
+			return Optional.empty();
+		}
+		// The supplier might have been invoked already and the object gone into the IdMap
+		// So we invalidate it
+		return Optional.ofNullable(map.remove(id));
+	}
+
 	public <T extends Identifiable<?>> Optional<T> getOptional(IId<T> name) {
 		return Optional.ofNullable(get(name));
 	}
 
-	public void remove(Identifiable<?> ident) {
+	public synchronized void remove(Identifiable<?> ident) {
 		IId<?> id = ident.getId();
-		synchronized (this) {
-			map.remove(id);
-			cacheables.remove(id);
-		}
+		map.remove(id);
 	}
 
 	@Override
@@ -88,5 +87,33 @@ public class CentralRegistry implements Injectable {
 	public void clear() {
 		map.clear();
 		cacheables.clear();
+	}
+
+	/**
+	 * Needs to be protected in order to be overwritten by {@link InjectingCentralRegistry}
+	 */
+	protected  <T extends Identifiable<?>> T get(IId<T> name) {
+		Object res = map.get(name);
+		if (res != null) {
+			return (T) res;
+		}
+		synchronized (this) {
+			// Retry synchronized to make sure it has not been resolved from cacheables in the mean time
+			Object res2 = map.get(name);
+			if (res2 != null) {
+				return (T) res2;
+			}
+			Function<IId, Identifiable> supplier = cacheables.get(name);
+			if (supplier == null) {
+				return null;
+			}
+
+			// Transfer object to the IdMap
+			final T apply = (T) supplier.apply(name);
+			register(apply);
+			cacheables.remove(name);
+		}
+
+		return (T) map.get(name);
 	}
 }
