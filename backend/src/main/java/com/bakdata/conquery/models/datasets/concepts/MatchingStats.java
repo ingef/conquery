@@ -29,22 +29,34 @@ public class MatchingStats {
 
     public long countEvents() {
         if (numberOfEvents == -1L) {
-            numberOfEvents = entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
+            synchronized (this) {
+                if (numberOfEvents == -1L) {
+                    numberOfEvents = entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
+                }
+            }
         }
         return numberOfEvents;
     }
 
 
-    public synchronized long countEntities() {
+    public long countEntities() {
         if (numberOfEntities == -1L) {
-            numberOfEntities = entries.values().stream().mapToLong(Entry::getNumberOfEntities).sum();
+            synchronized (this) {
+                if (numberOfEntities == -1L) {
+                    numberOfEntities = entries.values().stream().mapToLong(Entry::getNumberOfEntities).sum();
+                }
+            }
         }
         return numberOfEntities;
     }
 
-    public synchronized CDateRange spanEvents() {
+    public CDateRange spanEvents() {
         if (span == null) {
-            span = entries.values().stream().map(Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
+            synchronized (this) {
+                if (span == null) {
+                    span = entries.values().stream().map(Entry::getSpan).reduce(CDateRange.all(), CDateRange::spanClosed);
+                }
+            }
         }
         return span;
 
