@@ -35,6 +35,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 @Slf4j
 public class AdminServlet {
 
+    public static final String ADMIN_UI = "admin-ui";
     private final AdminProcessor adminProcessor;
     private final DropwizardResourceConfig jerseyConfig;
     private final AdminDatasetProcessor adminDatasetProcessor;
@@ -49,7 +50,7 @@ public class AdminServlet {
         RESTServer.configure(manager.getConfig(), jerseyConfig);
 
         manager.getEnvironment().admin().addServlet("admin", new ServletContainer(jerseyConfig)).addMapping("/admin/*");
-        manager.getEnvironment().admin().addServlet("admin-ui", new ServletContainer(jerseyConfigUI)).addMapping("/admin-ui/*");
+        manager.getEnvironment().admin().addServlet(ADMIN_UI, new ServletContainer(jerseyConfigUI)).addMapping("/" + ADMIN_UI + "/*");
 
         jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
         // freemarker support
