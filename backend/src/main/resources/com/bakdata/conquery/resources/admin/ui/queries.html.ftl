@@ -50,8 +50,9 @@ var failedNbrElt = {};
 var succeedNbrElt = {};
 var canUpdate = true;
 var reloader = {};
-
+var languageTag = {};
 window.onload = (event) => {
+   languageTag = navigator.language || navigator.userLanguage;
    reloader = setInterval(getQueries, 5000);
     runningQueriesTable = document.getElementById("runningQueriesTable");
     notStartedQueriesTable = document.getElementById("notStartedQueriesTable");
@@ -166,13 +167,13 @@ function handleUpdateCheck(event){
 
       <div class="row container">
          <div class="col inner">
-            Creation-Time : ${((new Date(data.createdAt)).toLocaleString(data.languageTag))}
+            Creation-Time : ${((new Date(data.createdAt)).toLocaleString(languageTag))}
          </div>
          <div class="col inner">
-            Start-Time : ${((new Date(data.startTime)).toLocaleString(data.languageTag))}
+            Start-Time : ${((new Date(data.startTime)).toLocaleString(languageTag))}
          </div>
          <div class="col inner">
-            Finish-Time : ${((new Date(data.finishTime)).toLocaleString(data.languageTag))}
+            Finish-Time : ${((new Date(data.finishTime)).toLocaleString(languageTag))}
          </div>
       </div>
       <div class="row container">

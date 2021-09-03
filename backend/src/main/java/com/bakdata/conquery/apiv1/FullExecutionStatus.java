@@ -32,10 +32,6 @@ import static org.apache.shiro.util.StringUtils.hasText;
 public class FullExecutionStatus extends ExecutionStatus {
 
 	/**
-	 * Indicates the actual language of system
-	 */
-	private String languageTag;
-	/**
 	 * The estimated progress of an running execution in the enclosing interval [0-1].
 	 * This value does not have to be set if the state is RUNNING and it must not be set
 	 * if the state is not RUNNING.
