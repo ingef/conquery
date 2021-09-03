@@ -16,6 +16,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
+import com.bakdata.conquery.models.i18n.I18n;
+
+import static org.apache.shiro.util.StringUtils.hasText;
 
 /**
  * This status holds extensive information about the query description and meta data that is computational heavy

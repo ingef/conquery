@@ -60,6 +60,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
 
+import static org.apache.shiro.util.StringUtils.hasText;
+
 @Getter
 @Setter
 @ToString

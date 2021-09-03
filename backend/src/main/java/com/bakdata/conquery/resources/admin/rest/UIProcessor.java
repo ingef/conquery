@@ -179,11 +179,6 @@ public class UIProcessor {
 		return new ImportStatistics(imp, cBlockSize);
 	}
 
-	public void getAllQueries()
-	{
-		getStorage().getAllExecutions();
-	}
-
 	public static long calculateCBlocksSizeBytes(Import imp, Collection<? extends Concept<?>> concepts) {
 
 		// CBlocks are created per (per Bucket) Import per Connector targeting this table

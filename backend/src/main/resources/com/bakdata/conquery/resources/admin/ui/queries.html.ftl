@@ -37,7 +37,6 @@
 </style>
 <script type="text/javascript">
 var queries = [];
-var k = 0;
 var queryCounter = 0;
 
 var runningQueriesTable = {};
@@ -49,8 +48,12 @@ var runningNbrElt = {};
 var notStartedNbrElt = {};
 var failedNbrElt = {};
 var succeedNbrElt = {};
+var canUpdate = true;
+var reloader = {};
+var languageTag = {};
 window.onload = (event) => {
-    setInterval(getQueries, 10000);
+   languageTag = navigator.language || navigator.userLanguage;
+   reloader = setInterval(getQueries, 5000);
     runningQueriesTable = document.getElementById("runningQueriesTable");
     notStartedQueriesTable = document.getElementById("notStartedQueriesTable");
     failedQueriesTable = document.getElementById("failedQueriesTable");
@@ -64,10 +67,13 @@ window.onload = (event) => {
 
 }
 
-function updateQueriesTable() {
+function updateQueriesTable(data) {
+    queries = data;
+
     clearTables();
     queryCounter = 0;
-    updateQueriesInnerCounter();
+    updateQueriesInnerCounter(data);
+    if(!data) return;
     for (i = 0; i < queries.length; i++) {
         queryCounter++;
         if(queries[i].status === "RUNNING")
@@ -84,35 +90,24 @@ function updateQueriesTable() {
         if(queries[i].status === "DONE")
             succeedQueriesTable.insertAdjacentHTML('beforeend', getHtmltemplate(queries[i]));
     }
-    if (k <= 30)
-        k++;
-    else k = 0;
+
 }
 
-function updateQueriesInnerCounter() {
-    runningNbrElt.innerText = queries.filter(x => x.status === "RUNNING").length;
-    notStartedNbrElt.innerText = queries.filter(x => x.status === "NEW").length;
-    failedNbrElt.innerText = queries.filter(x => x.status === "FAILED").length;
-    succeedNbrElt.innerText = queries.filter(x => x.status === "DONE").length;
+function updateQueriesInnerCounter(data) {
+    if(!data) return;
+    runningNbrElt.innerText = data.filter(x => x.status === "RUNNING").length;
+    notStartedNbrElt.innerText = data.filter(x => x.status === "NEW").length;
+    failedNbrElt.innerText = data.filter(x => x.status === "FAILED").length;
+    succeedNbrElt.innerText = data.filter(x => x.status === "DONE").length;
 }
 
 function clearTables() {
-    for (var i = runningQueriesTable.rows.length - 1; i > 0; i--) {
-        runningQueriesTable.deleteRow(i);
-    }
 
-    for (var i = notStartedQueriesTable.rows.length - 1; i > 0; i--) {
-        notStartedQueriesTable.deleteRow(i);
-    }
+runningQueriesTable.innerHTML = "";
+failedQueriesTable.innerHTML = "";
+succeedQueriesTable.innerHTML = "";
+notStartedQueriesTable.innerHTML = "";
 
-    for (var i = failedQueriesTable.rows.length - 1; i > 0; i--) {
-        failedQueriesTable.deleteRow(i);
-    }
-
-
-    for (var i = succeedQueriesTable.rows.length - 1; i > 0; i--) {
-        succeedQueriesTable.deleteRow(i);
-    }
 }
 
 function getQueries() {
@@ -127,8 +122,7 @@ function getQueries() {
 
                     credentials: 'same-origin'
                 }).then(response => response.json()).then(data => {
-                queries = data;
-                updateQueriesTable();
+                updateQueriesTable(data);
             })
             .catch(error => {
                 console.log(error);
@@ -140,13 +134,27 @@ function getQueries() {
     };
 
 }
+
+function handleUpdateCheck(event){
+    if(event.checked && !canUpdate){
+       reloader = setInterval(getQueries, 5000);
+       canUpdate = true;
+    }
+    else if(!event.checked && canUpdate){
+        clearInterval(reloader);
+        reloader = 0;
+         canUpdate = false;
+    }
+
+}
+
 <#noparse >
     function getHtmltemplate(data) {
         return `
 
 
-<tr>
-   <td >
+
+<div class="row container" >
 <div class="card container">
   <div class="card-body">
       <div class="row">
@@ -159,13 +167,13 @@ function getQueries() {
 
       <div class="row container">
          <div class="col inner">
-            Creation-Time : ${((new Date(data.createdAt)).toLocaleString("de-De"))}
+            Creation-Time : ${((new Date(data.createdAt)).toLocaleString(languageTag))}
          </div>
          <div class="col inner">
-            Start-Time : ${((new Date(data.startTime)).toLocaleString("de-De"))}
+            Start-Time : ${((new Date(data.startTime)).toLocaleString(languageTag))}
          </div>
          <div class="col inner">
-            Finish-Time : ${((new Date(data.finishTime)).toLocaleString("de-De"))}
+            Finish-Time : ${((new Date(data.finishTime)).toLocaleString(languageTag))}
          </div>
       </div>
       <div class="row container">
@@ -193,8 +201,8 @@ function getQueries() {
       <div class="row container">
         <div class="col">
              <div class="progress">
-                <div class="progress-bar ${(data.status === "RUNNING" ? "bg-warning" : (data.status === "FAILED" ? "bg-danger" : (data.status === "DONE" ? "bg-success" : "") ))}" role="progressbar" style="width: ${(data.progress+k)}%" aria-valuenow="${(data.progress+k)}" aria-valuemin="0" aria-valuemax="100">
-                    ${(data.progress+k)} %
+                <div class="progress-bar ${(data.status === "RUNNING" ? "bg-warning" : (data.status === "FAILED" ? "bg-danger" : (data.status === "DONE" ? "bg-success" : "") ))}" role="progressbar" style="width: ${(data.progress ? data.progress : 0 )}%" aria-valuenow="${(data.progress ? data.progress : 0 )}" aria-valuemin="0" aria-valuemax="100">
+                    ${(data.progress ? data.progress : 0 )} %
                 </div>
              </div>
         </div>
@@ -219,8 +227,7 @@ function getQueries() {
 		</div>
 </div>
 </div>
-   </td>
-</tr>
+</div>
 
 
 
@@ -230,7 +237,7 @@ function getQueries() {
 </script>
 <h1> Queries </h1>
 
-
+<label><input type='checkbox' onclick='handleUpdateCheck(this);' checked> Update automatically.</label>
 
 <div id="accordion">
   <div class="card">
@@ -247,11 +254,9 @@ function getQueries() {
 
       <div class="card-body">
 
-           <table id="runningQueriesTable">
-                    <tr>
-                       <th>#</th>
-                    </tr>
-           </table>
+           <div id="runningQueriesTable" class="container main">
+
+           </div>
       </div>
     </div>
   </div>
@@ -259,18 +264,17 @@ function getQueries() {
     <div class="card-header" id="headingTwo">
       <h5 class="mb-0">
         <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-          Not started <span class="badge badge-light" id="notStartedNbr">0</span>
+          Failed <span class="badge badge-danger" id="notStartedNbr">0</span>
         </button>
       </h5>
     </div>
     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
       <div class="card-body">
+           <div id="failedQueriesTable" class="container main">
 
-                 <table id="notStartedQueriesTable">
-                          <tr>
-                             <th>#</th>
-                          </tr>
-                 </table>
+           </div>
+
+
 
       </div>
     </div>
@@ -279,17 +283,16 @@ function getQueries() {
     <div class="card-header" id="headingThree">
       <h5 class="mb-0">
         <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-          Failed <span class="badge badge-danger" id="failedNbr">0</span>
+          Succeed <span class="badge badge-success" id="failedNbr">0</span>
         </button>
       </h5>
     </div>
     <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordion">
       <div class="card-body">
-                   <table id="failedQueriesTable">
-                            <tr>
-                               <th>#</th>
-                            </tr>
-                   </table>
+                   <div id="succeedQueriesTable" class="container main">
+
+                   </div>
+
         </div>
     </div>
   </div>
@@ -297,17 +300,15 @@ function getQueries() {
       <div class="card-header" id="headingFour">
         <h5 class="mb-0">
           <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-            Succeed <span class="badge badge-success" id="succeedNbr">0</span>
+            Not started <span class="badge badge-light" id="succeedNbr">0</span>
           </button>
         </h5>
       </div>
       <div id="collapseFour" class="collapse" aria-labelledby="headingFour" data-parent="#accordion">
         <div class="card-body">
-                   <table id="succeedQueriesTable">
-                            <tr>
-                               <th>#</th>
-                            </tr>
-                   </table>
+           <div id="notStartedQueriesTable" class="container main">
+
+           </div>
         </div>
       </div>
    </div>
