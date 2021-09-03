@@ -26,4 +26,5 @@ public class FENode {
 	private Boolean detailsAvailable;
 	private boolean codeListResolvable;
 	private List<FESelect> selects;
+	private long matchingEntities;
 }

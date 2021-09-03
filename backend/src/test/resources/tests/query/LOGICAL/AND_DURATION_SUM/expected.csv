@@ -1,5 +1,5 @@
-result,dates,tree.connector.event_duration_sum,tree - a and tree - b
-2,{2012-01-01/2012-01-01},1,1
-3,{},0,1
-4,{2012-01-02/2012-01-02},1,1
-5,{2012-01-02/2012-01-04},3,1
+result,dates,tree - a - event_duration,tree - a and tree - b
+2,2012-01-01,1,1
+3,,0,1
+4,2012-01-02,1,1
+5,2012-01-02/2012-01-04,3,1

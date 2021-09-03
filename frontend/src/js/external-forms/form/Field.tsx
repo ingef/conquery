@@ -75,6 +75,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             label: field.label[locale],
             placeholder: (field.placeholder && field.placeholder[locale]) || "",
             fullWidth: field.style ? field.style.fullWidth : false,
+            tooltip: field.tooltip ? field.tooltip[locale] : undefined,
           }}
         />
       );
@@ -93,6 +94,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               min: field.min,
               max: field.max,
             },
+            tooltip: field.tooltip ? field.tooltip[locale] : undefined,
           }}
         />
       );
@@ -104,6 +106,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           props={{
             inline: true,
             label: field.label[locale],
+            tooltip: field.tooltip ? field.tooltip[locale] : undefined,
           }}
         />
       );
@@ -115,6 +118,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           props={{
             label: field.label[locale],
             dropzoneText: field.dropzoneLabel[locale],
+            tooltip: field.tooltip ? field.tooltip[locale] : undefined,
           }}
         />
       );
@@ -126,6 +130,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           props={{
             label: field.label[locale],
             dropzoneChildren: () => field.dropzoneLabel[locale],
+            tooltip: field.tooltip ? field.tooltip[locale] : undefined,
           }}
         />
       );
@@ -136,6 +141,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           component={Checkbox}
           props={{
             label: field.label[locale],
+            infoTooltip: field.tooltip ? field.tooltip[locale] : undefined,
           }}
         />
       );
@@ -150,6 +156,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               label: option.label[locale],
               value: option.value,
             })),
+            tooltip: field.tooltip ? field.tooltip[locale] : undefined,
           }}
         />
       );
@@ -166,6 +173,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           props={{
             label: field.label[locale],
             options: availableDatasets,
+            tooltip: field.tooltip ? field.tooltip[locale] : undefined,
           }}
         />
       );
@@ -183,6 +191,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               options: field.tabs.map((tab) => ({
                 label: tab.title[locale],
                 value: tab.name,
+                tooltip: tab.tooltip ? tab.tooltip[locale] : undefined,
               })),
             }}
           />
@@ -205,6 +214,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           props={{
             fieldName: field.name,
             label: field.label[locale],
+            tooltip: field.tooltip ? field.tooltip[locale] : undefined,
             conceptDropzoneText: field.conceptDropzoneLabel
               ? field.conceptDropzoneLabel[locale]
               : t("externalForms.default.conceptDropzoneLabel"),

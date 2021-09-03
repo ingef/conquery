@@ -6,15 +6,14 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "ids": [
-        "select"
+        "concept"
       ],
       "type": "CONCEPT",
-      "label": "select",
       "tables": [
         {
-          "id": "select.connector",
+          "id": "concept.connector",
           "selects": [
-            "select.connector.select"
+            "concept.connector.select"
           ]
         }
       ]
@@ -22,20 +21,20 @@
   },
   "concepts": [
     {
-      "label": "select",
+      "name": "concept",
       "type": "TREE",
       "connectors": [
         {
           "label": "connector",
-          "table": "table1",
+          "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           },
           "selects": {
             "type": "COUNT_OCCURENCES",
-            "name" : "select",
-            "column": "table1.geschlecht",
+            "name": "select",
+            "column": "table.value",
             "selection": "f"
           }
         }
@@ -46,7 +45,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/SELECT_AGGREGATOR/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -57,7 +56,7 @@
             "type": "DATE"
           },
           {
-            "name": "geschlecht",
+            "name": "value",
             "type": "STRING"
           }
         ]

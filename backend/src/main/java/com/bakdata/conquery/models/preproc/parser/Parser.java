@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.preproc.parser;
 
 import javax.annotation.Nonnull;
 
-import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class Parser<MAJOR_JAVA_TYPE, STORE_TYPE extends ColumnStore> {
 
-	private final ParserConfig config;
+	private final ConqueryConfig config;
 
 	private int lines = 0;
 	private int nullLines = 0;

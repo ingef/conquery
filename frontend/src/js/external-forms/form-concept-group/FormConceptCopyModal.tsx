@@ -4,8 +4,8 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import BasicButton from "../../button/BasicButton";
 import PrimaryButton from "../../button/PrimaryButton";
+import TransparentButton from "../../button/TransparentButton";
 import InputCheckbox from "../../form-components/InputCheckbox";
 import InputSelect from "../../form-components/InputSelect";
 import { useActiveLang } from "../../localization/useActiveLang";
@@ -168,7 +168,9 @@ const FormConceptCopyModal = ({
         )}
       </Options>
       <Buttons>
-        <BasicButton onClick={onClose}>{t("common.cancel")}</BasicButton>
+        <TransparentButton onClick={onClose}>
+          {t("common.cancel")}
+        </TransparentButton>
         <PrimaryButton onClick={onSubmit} disabled={isAcceptDisabled}>
           {t("externalForms.copyModal.accept")}
         </PrimaryButton>

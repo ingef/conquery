@@ -7,6 +7,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDown
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.Locale;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -20,7 +21,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -50,23 +51,25 @@ public class ResultCsvProcessor {
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
 
-		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user, exec, namespace);
+
 
 		// Get the locale extracted by the LocaleFilter
+		final Locale locale = I18n.LOCALE.get();
 		PrintSettings settings = new PrintSettings(
 				pretty,
-				I18n.LOCALE.get(),
+				locale,
 				datasetRegistry,
 				config,
-				cer -> ResultUtil.createId(namespace, cer, config.getIdMapping(), mappingState)
+				idPrinter::createId
 		);
 		Charset charset = determineCharset(userAgent, queryCharset);
 
 
-		StreamingOutput out =  os -> {
+		StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getIdMapping().getPrintIdFields(), exec.getResultInfo(), exec.streamResults());
+				renderer.toCSV(config.getFrontend().getQueryUpload().getPrintIdFields(locale), exec.getResultInfo(), exec.streamResults());
 			}
 			catch (EofException e) {
 				log.info("User canceled download");

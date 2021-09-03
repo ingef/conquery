@@ -33,3 +33,7 @@ export function loadCSV(
     });
   });
 }
+
+export function toCSV(data: string[][], delimiter: string = ";") {
+  return Papa.unparse(data, { delimiter, newline: "\r\n" });
+}

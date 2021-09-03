@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -78,10 +79,16 @@ public class ImportJob extends Job {
 	private final PreprocessedHeader header;
 	private final PreprocessedDictionaries dictionaries;
 	private final PreprocessedData container;
+	private final ConqueryConfig config;
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static ImportJob create(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks)
+	public static ImportJob create(
+			Namespace namespace,
+			InputStream inputStream,
+			int entityBucketSize,
+			IdMutex<DictionaryId> sharedDictionaryLocks,
+			ConqueryConfig config)
 			throws IOException {
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
 
@@ -133,7 +140,8 @@ public class ImportJob extends Job {
 					entityBucketSize,
 					header,
 					dictionaries,
-					container
+					container,
+					config
 			);
 		}
 	}
@@ -420,15 +428,8 @@ public class ImportJob extends Job {
 
 	private DictionaryMapping importPrimaryDictionary(Dictionary primaryDictionary) {
 
-		final DictionaryId dictionaryId = ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset());
 
-		Dictionary orig = namespace.getStorage().getDictionary(dictionaryId);
-
-		// Start with an empty Dictionary and merge into it
-		if (orig == null) {
-			log.trace("No prior Dictionary[{}], creating one", dictionaryId);
-			orig = new MapDictionary(getDataset(), dictionaryId.getName());
-		}
+		Dictionary orig = namespace.getStorage().getPrimaryDictionaryRaw();
 
 		Dictionary primaryDict = Dictionary.copyUncompressed(orig);
 
@@ -443,7 +444,7 @@ public class ImportJob extends Job {
 		}
 
 		namespace.getStorage()
-				 .updateDictionary(primaryDict);
+				 .updatePrimaryDictionary(primaryDict);
 
 		return primaryMapping;
 	}
@@ -485,7 +486,7 @@ public class ImportJob extends Job {
 			log.debug("Remapping Column[{}] = {} with {}", columnName, stringStore, mapping);
 
 			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
-			final IntegerParser indexParser = new IntegerParser(new ParserConfig());
+			final IntegerParser indexParser = new IntegerParser(config);
 
 			final IntSummaryStatistics statistics = mapping.target().intStream().summaryStatistics();
 

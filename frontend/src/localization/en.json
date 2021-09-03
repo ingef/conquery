@@ -154,7 +154,8 @@
     "max": "Max",
     "std": "SD",
     "logout": "Logout",
-    "dateInvalid": "Invalid date"
+    "dateInvalid": "Invalid date",
+    "missingLabel": "Unknown"
   },
   "tooltip": {
     "headline": "Info",
@@ -305,12 +306,15 @@
     "headline": "Upload result list",
     "dropzone": "Drop a CSV file here",
     "upload": "Upload",
-    "uploadFailed": "Could not upload file",
-    "uploadFailedSub": "Please check the file format and your network connection",
-    "uploadSucceeded": "Result list was successfully uploaded",
+    "uploadAgain": "Upload again",
+    "uploadFailed": "Could not upload file. Please check the file format and the network connection.",
+    "uploadSucceeded": "Result list was successfully uploaded (1 line)",
+    "uploadSucceeded_plural": "Result list was successfully uploaded ({{count}} lines)",
     "formatInfo": {
       "text": "File should contain one result per row, separated by ; (semicolon)"
-    }
+    },
+    "downloadUnresolved": "Download unresolved line (CSV)",
+    "downloadUnresolved_plural": "Download {{count}} unresolved lines (CSV)"
   },
   "csvColumnPicker": {
     "loading": "Reading data ...",
@@ -319,10 +323,19 @@
     "colon": "Colon",
     "comma": "Comma",
     "id": "ID",
-    "dateSet": "DATE_SET",
-    "startDate": "START_DATE",
-    "endDate": "END_DATE",
-    "ignore": "IGNORE"
+    "dateSet": "Date Set",
+    "dateRange": "Date Range (REMOVE)",
+    "eventDate": "Single Date  (REMOVE)",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "ignore": "IGNORE",
+    "partialSuccess": "Upload partially successful.",
+    "resolved": "1 line resolved.",
+    "resolved_plural": "{{count}} lines resolved.",
+    "unreadableDate": "Couldn't read the date for the following line",
+    "unreadableDate_plural": "Couldn't read the date for the following {{count}} lines",
+    "unresolvedId": "Couldn't resolve ID for the following line",
+    "unresolvedId_plural": "Couldn't resolve ID for the following {{count}} lines"
   },
   "uploadConceptListModal": {
     "headline": "Upload concepts",

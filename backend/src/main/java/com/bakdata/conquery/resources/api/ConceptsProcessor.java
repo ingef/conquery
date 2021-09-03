@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,10 +17,10 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.IdLabel;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.apiv1.frontend.FEList;
 import com.bakdata.conquery.apiv1.frontend.FERoot;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -39,12 +38,13 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.search.QuickSearch;
 import com.bakdata.conquery.util.search.SearchScorer;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -56,7 +56,7 @@ import org.apache.commons.lang3.tuple.Pair;
 @Slf4j
 @RequiredArgsConstructor
 public class ConceptsProcessor {
-	
+
 	private final DatasetRegistry namespaces;
 
 	private final LoadingCache<Concept<?>, FEList> nodeCache =
@@ -72,7 +72,7 @@ public class ConceptsProcessor {
 
 	private final LoadingCache<Pair<AbstractSelectFilter<?>, String>, List<FEValue>> searchCache =
 			CacheBuilder.newBuilder()
-						.expireAfterAccess(Duration.ofMinutes(2))
+						.softValues()
 						.build(new CacheLoader<>() {
 
 							@Override
@@ -84,18 +84,18 @@ public class ConceptsProcessor {
 							}
 
 						});
-		
+
 	public FERoot getRoot(NamespaceStorage storage, User user) {
 
 		return FrontEndConceptBuilder.createRoot(storage, user);
 	}
-	
+
 	public FEList getNode(Concept<?> concept) {
 		try {
 			return nodeCache.get(concept);
 		}
 		catch (ExecutionException e) {
-			throw new RuntimeException("failed to create frontend node for "+concept, e);
+			throw new RuntimeException("failed to create frontend node for " + concept, e);
 		}
 	}
 
@@ -117,24 +117,24 @@ public class ConceptsProcessor {
 
 		//search in the full text engine
 		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms, OptionalInt.empty(), filter.getSearchType()::score)
-										   .stream()
-										   .map(FEValue::getValue)
-										   .collect(Collectors.toSet());
+				.stream()
+				.map(FEValue::getValue)
+				.collect(Collectors.toSet());
 
 		Set<String> openSearchTerms = new HashSet<>(searchTerms);
 		openSearchTerms.removeAll(searchResult);
 
 		// Iterate over all unresolved search terms. Gather all that match labels into searchResults. Keep the unresolvable ones.
- 		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext();) {
+		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext(); ) {
 			String searchTerm = it.next();
 			// Test if any of the values occurs directly in the filter's values or their labels (for when we don't have a provided file).
-			if(filter.getValues().contains(searchTerm)) {
+			if (filter.getValues().contains(searchTerm)) {
 				searchResult.add(searchTerm);
 				it.remove();
 			}
 			else {
 				String matchingValue = filter.getLabels().inverse().get(searchTerm);
-				if(matchingValue != null) {
+				if (matchingValue != null) {
 					searchResult.add(matchingValue);
 					it.remove();
 				}
@@ -158,41 +158,56 @@ public class ConceptsProcessor {
 	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
 		int pageNumber = pageNumberOpt.orElse(0);
 		int itemsPerPage = itemsPerPageOpt.orElse(50);
-		
-		if(pageNumber < 0) {
-			throw new IllegalArgumentException("Page number must be 0 or a positive integer");
-		}
-		if(itemsPerPage < 1) {
-			throw new IllegalArgumentException("Items per page number must be larger than 0");
-		}
-		log.trace("Try to generate serach result page {} (with {} results per page) for the term \"{}\".", pageNumber, itemsPerPage, text);
-		
+
+		Preconditions.checkArgument(pageNumber > 0, "Page number must be 0 or a positive integer.");
+		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
+
+		log.trace("Searching for for the term \"{}\". (Page = {}, Items = {})", text, pageNumber, itemsPerPage);
+
 		List<FEValue> fullResult = null;
-		try{
+		try {
 			fullResult = searchCache.get(Pair.of(filter, text));
-		} catch (ExecutionException e) {
-			log.warn("Could not get a search result for the term \"{}\".", text, log.isTraceEnabled()? e : null);
+		}
+		catch (ExecutionException e) {
+			log.warn("Failed to search for \"{}\".", text, log.isTraceEnabled() ? e : null);
 			return ImmutableList.of();
 		}
-		int startIncl = fullResult.isEmpty()? 0 : Math.min(itemsPerPage*pageNumber, fullResult.size());
-		int endExcl = Math.min(startIncl + itemsPerPage,fullResult.size());
+
+		int startIncl = fullResult.isEmpty() ? 0 : Math.min(itemsPerPage * pageNumber, fullResult.size());
+		int endExcl = Math.min(startIncl + itemsPerPage, fullResult.size());
+
 		log.trace("Preparing subresult for search term \"{}\" in the index range [{}-{})", text, startIncl, endExcl);
 		return fullResult.subList(startIncl, endExcl);
 	}
+
 	/**
 	 * Autocompletion for search terms. For values of {@link AbstractSelectFilter<?>}.
 	 * Is used by the serach cache to load missing items
 	 */
 	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
+		if (Strings.isNullOrEmpty(text)) {
+			// If no text provided, we just list them
+			return filter.getSourceSearch().listItems()
+						 .stream()
+						 .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+						 .collect(Collectors.toList());
+		}
+
 		List<FEValue> result = new LinkedList<>();
 
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
+
 		if (search != null) {
-			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), OptionalInt.empty(), FilterSearch.FilterSearchType.CONTAINS::score);
+			result = createSourceSearchResult(
+					filter.getSourceSearch(),
+					Collections.singletonList(text),
+					OptionalInt.empty(),
+					FilterSearch.FilterSearchType.CONTAINS::score
+			);
 		}
-		
+
 		String value = filter.getValueFor(text);
-		if(value != null) {
+		if (value != null) {
 			result.add(new FEValue(text, value));
 		}
 
@@ -203,24 +218,23 @@ public class ConceptsProcessor {
 	 * Do a search with the supplied values.
 	 */
 	private static List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values, OptionalInt numberOfTopItems, SearchScorer scorer) {
-		if(search == null) {
+		if (search == null) {
 			return new ArrayList<>();
 		}
 
 		// Quicksearch can split and also schedule for us.
-		List<FilterSearchItem> result;
-		result = search.findItems(String.join(" ", values), numberOfTopItems.orElse(Integer.MAX_VALUE), scorer);
-		
-		if(numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
+		List<FilterSearchItem> result = search.findItems(String.join(" ", values), numberOfTopItems.orElse(Integer.MAX_VALUE), scorer);
+
+		if (numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
 			log.warn("The quick search returned the maximum number of results ({}) which probably means not all possible results are returned.", Integer.MAX_VALUE);
 		}
-		
+
 		return result
-			.stream()
-			.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-			.collect(Collectors.toList());
+				.stream()
+				.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+				.collect(Collectors.toList());
 	}
-	
+
 	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
 		List<ConceptElementId<?>> resolvedCodes = new ArrayList<>();
 		List<String> unknownCodes = new ArrayList<>();
@@ -241,12 +255,12 @@ public class ConceptsProcessor {
 				}
 			}
 			catch (ConceptConfigurationException e) {
-				log.error("Error while trying to resolve "+conceptCode, e);
+				log.error("Error while trying to resolve " + conceptCode, e);
 			}
 		}
 		return new ResolvedConceptsResult(resolvedCodes, null, unknownCodes);
 	}
-	
+
 	@Getter
 	@Setter
 	@AllArgsConstructor

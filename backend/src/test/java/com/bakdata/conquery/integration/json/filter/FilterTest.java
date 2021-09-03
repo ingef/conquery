@@ -14,7 +14,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
-import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
@@ -74,7 +73,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		content = parseSubTree(support, rawContent, RequiredData.class);
 
-		importTables(support);
+		LoadingUtil.importTables(support, content.getTables());
 		support.waitUntilWorkDone();
 
 
@@ -145,10 +144,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 	}
 
 	private void importTables(StandaloneSupport support) throws JSONException {
-		Dataset dataset = support.getDataset();
-
-		for (RequiredTable rTable : content.getTables()) {
-			support.getDatasetsProcessor().addTable(rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry()), support.getNamespace());
-		}
+		LoadingUtil.importTables(support, content.getTables());
 	}
 }

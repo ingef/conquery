@@ -4,8 +4,8 @@
       "de": "Datenexport"
     },
     "type": "EXPORT_FORM",
-    "headline": {
-      "de": "Datenexport"
+    "description": {
+      "de": "Dieses Formular erlaubt den Export von abhängigen Variablen zu einer bestimmten Ergebnisgruppe. Dabei wird eine CSV-Datei mit den Ergebnissen erzeugt, die dann heruntergeladen werden kann."
     },
     "fields": [
       {
@@ -15,6 +15,9 @@
           "de": "Gruppe"
         },
         "dropzoneLabel": {
+          "de": "Füge eine Gruppe aus einer bestehenden Anfrage hinzu"
+        },
+        "tooltip": {
           "de": "Füge eine Gruppe aus einer bestehenden Anfrage hinzu"
         },
         "validations": ["NOT_EMPTY"]
@@ -29,11 +32,17 @@
             "title": {
               "de": "Absolut"
             },
+            "tooltip": {
+              "de": "Absoluut"
+            },
             "fields": [
               {
                 "name": "dateRange",
                 "type": "DATE_RANGE",
                 "label": {
+                  "de": "Beobachtungszeitraum"
+                },
+                "tooltip": {
                   "de": "Beobachtungszeitraum"
                 }
               },
@@ -41,6 +50,9 @@
                 "name": "features",
                 "type": "CONCEPT_LIST",
                 "label": {
+                  "de": "Konzepte"
+                },
+                "tooltip": {
                   "de": "Konzepte"
                 },
                 "isTwoDimensional": true,
@@ -61,6 +73,9 @@
                 "name": "timeUnit",
                 "type": "SELECT",
                 "label": {
+                  "de": "Zeiteinheit des Vor- und Nachbeobachtungszeitraums"
+                },
+                "tooltip": {
                   "de": "Zeiteinheit des Vor- und Nachbeobachtungszeitraums"
                 },
                 "defaultValue": "QUARTERS",
@@ -100,6 +115,9 @@
                 "label": {
                   "de": "Zeit davor"
                 },
+                "tooltip": {
+                  "de": "Zeit davor"
+                },
                 "placeholder": {
                   "de": "1"
                 },
@@ -114,6 +132,9 @@
                 "label": {
                   "de": "Zeit danach"
                 },
+                "tooltip": {
+                  "de": "Zeit danach"
+                },
                 "placeholder": {
                   "de": "1"
                 },
@@ -124,6 +145,9 @@
                 "name": "indexSelector",
                 "type": "SELECT",
                 "label": {
+                  "de": "Zeitstempel Indexdatum"
+                },
+                "tooltip": {
                   "de": "Zeitstempel Indexdatum"
                 },
                 "defaultValue": "FIRST",
@@ -155,6 +179,9 @@
                 "label": {
                   "de": "Zugehörigkeit Indexdatum"
                 },
+                "tooltip": {
+                  "de": "Zugehörigkeit Indexdatum"
+                },
                 "defaultValue": "BEFORE",
                 "options": [
                   {
@@ -182,6 +209,9 @@
                 "name": "features",
                 "type": "CONCEPT_LIST",
                 "label": {
+                  "de": "Konzepte im Vorbeobachtungszeitraum (Feature Zeitraum)"
+                },
+                "tooltip": {
                   "de": "Konzepte im Vorbeobachtungszeitraum (Feature Zeitraum)"
                 },
                 "isTwoDimensional": true,

@@ -26,15 +26,15 @@
       "connectors": [
         {
           "name": "connector",
-          "table": "table1",
+          "table": "table",
           "validityDates": {
             "name": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           },
           "selects": {
             "name": "select",
             "type": "QUARTER",
-            "sample" : "LATEST"
+            "sample": "LATEST"
           }
         }
       ]
@@ -44,7 +44,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/QUARTER_AGGREGATOR/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

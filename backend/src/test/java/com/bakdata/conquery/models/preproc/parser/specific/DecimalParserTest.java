@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
@@ -15,7 +16,7 @@ class DecimalParserTest {
 
 	@Test
 	public void test(){
-		final DecimalParser parser = new DecimalParser(new ParserConfig());
+		final DecimalParser parser = new DecimalParser(new ConqueryConfig());
 
 		parser.addLine(BigDecimal.valueOf(10,1000));
 		parser.addLine(BigDecimal.valueOf(30,1000));

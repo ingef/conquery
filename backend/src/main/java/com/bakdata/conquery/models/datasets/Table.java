@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -32,6 +33,7 @@ public class Table extends Labeled<TableId>  implements NamespacedIdentifiable<T
 	private Dataset dataset;
 	@NotNull @Valid @JsonManagedReference
 	private Column[] columns = new Column[0];
+
 
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore
