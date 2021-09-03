@@ -37,7 +37,7 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	}
 
 	@Override
-	public Set<VALUE> getAggregationResult() {
+	public Set<VALUE> createAggregationResult() {
 		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
 	}
 

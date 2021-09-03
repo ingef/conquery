@@ -45,7 +45,7 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return result != Long.MAX_VALUE || hit ? result : null;
 	}
 

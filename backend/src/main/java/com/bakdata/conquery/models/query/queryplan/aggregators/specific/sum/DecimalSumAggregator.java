@@ -41,7 +41,7 @@ public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 	}
 
 	@Override
-	public BigDecimal getAggregationResult() {
+	public BigDecimal createAggregationResult() {
 		return hit ? sum : null;
 	}
 	

@@ -54,7 +54,7 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return hit ? sum : null;
 	}
 	

@@ -53,7 +53,7 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
             return Optional.empty();
         }
 
-        final CDateSet aggregationResult = validityDateAggregator.get().getAggregationResult();
+        final CDateSet aggregationResult = validityDateAggregator.get().createAggregationResult();
         aggregationResult.retainAll(dateRestriction);
 
         // Generate DateContexts in the provided resolutions

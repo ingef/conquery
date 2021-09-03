@@ -75,7 +75,7 @@ public class ResultTestUtil {
 				}
 
 				@Override
-				public String getAggregationResult() {
+				public String createAggregationResult() {
 					throw new UnsupportedOperationException();
 				}
 

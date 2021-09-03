@@ -40,7 +40,7 @@ public class CountQuartersOfDatesAggregator extends SingleColumnAggregator<Long>
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return quarters.isEmpty() ? null : (long) quarters.size();
 	}
 

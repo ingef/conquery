@@ -16,6 +16,6 @@ public class CollectionNotEmptyFilterNode<FILTER_VALUE> extends AggregationResul
 
 	@Override
 	public boolean isContained() {
-		return !getAggregator().getAggregationResult().isEmpty();
+		return !getAggregator().createAggregationResult().isEmpty();
 	}
 }

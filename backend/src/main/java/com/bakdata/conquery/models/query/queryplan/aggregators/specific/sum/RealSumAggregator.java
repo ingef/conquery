@@ -40,7 +40,7 @@ public class RealSumAggregator extends SingleColumnAggregator<Double> {
 	}
 
 	@Override
-	public Double getAggregationResult() {
+	public Double createAggregationResult() {
 		return hit ? sum : null;
 	}
 	

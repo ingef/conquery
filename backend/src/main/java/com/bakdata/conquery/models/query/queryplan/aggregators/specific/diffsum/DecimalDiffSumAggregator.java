@@ -56,7 +56,7 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	}
 
 	@Override
-	public BigDecimal getAggregationResult() {
+	public BigDecimal createAggregationResult() {
 		return hit ? sum : null;
 	}
 	

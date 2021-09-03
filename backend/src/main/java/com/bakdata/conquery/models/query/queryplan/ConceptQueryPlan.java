@@ -57,7 +57,7 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		Object[] values = new Object[aggregators.size()];
 
 		for (int i = 0; i < values.length; i++) {
-			values[i] = aggregators.get(i).getAggregationResult();
+			values[i] = aggregators.get(i).createAggregationResult();
 		}
 
 		return new SinglelineEntityResult(entity.getId(), values);

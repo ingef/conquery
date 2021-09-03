@@ -42,7 +42,7 @@ public class ResultModifier {
 			Aggregator<?> agg = aggregators.get(i);
 			// Fill EXIST aggregators with false which evaluated to 'null'
 			if (agg instanceof ExistsAggregator && Objects.isNull(result[i + aggIdx])) {
-				result[i + aggIdx] = agg.getAggregationResult();
+				result[i + aggIdx] = agg.createAggregationResult();
 			}
 		}
 		return result;

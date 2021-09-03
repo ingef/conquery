@@ -48,7 +48,7 @@ public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 	}
 
 	@Override
-	public CDateSet getAggregationResult() {
+	public CDateSet createAggregationResult() {
 		return CDateSet.create(set.asRanges());
 	}
 

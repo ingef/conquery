@@ -40,7 +40,7 @@ public class MoneySumAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return hit ? sum : null;
 	}
 	

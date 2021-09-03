@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
  * flexibility through different {@link DateAggregationAction}s.
  */
 @RequiredArgsConstructor
-public class DateAggregator implements Aggregator<CDateSet> {
+public class DateAggregator extends Aggregator<CDateSet> {
 
     private final DateAggregationAction action;
 
@@ -51,10 +51,10 @@ public class DateAggregator implements Aggregator<CDateSet> {
     }
 
     @Override
-    public CDateSet getAggregationResult() {
+    public CDateSet createAggregationResult() {
         final Set<CDateSet> all = new HashSet<>();
         children.forEach(s -> {
-            CDateSet result = s.getAggregationResult();
+            CDateSet result = s.createAggregationResult();
             if(result != null) {
                 all.add(result);
             }

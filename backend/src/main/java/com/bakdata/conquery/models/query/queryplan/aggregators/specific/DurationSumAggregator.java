@@ -49,7 +49,7 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return set.isEmpty() ? null : set.countDays();
 	}
 

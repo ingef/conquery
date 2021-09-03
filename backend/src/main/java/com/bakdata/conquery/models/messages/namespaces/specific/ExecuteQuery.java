@@ -54,10 +54,8 @@ public class ExecuteQuery extends WorkerMessage {
 
 		final ShardResult result = createShardResult(worker);
 
-		// Generate query plans for this execution. For ManagedQueries this is only one plan.
-		// The results are send directly to these ManagesQueries
+		// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
 		try {
-			// Assert that we can create the queryPlan
 			query.createQueryPlan(new QueryPlanContext(worker));
 		}
 		catch (Exception e) {

@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 /**
  * Aggregator, counting the number of days present.
  */
-public class EventDurationSumAggregator implements Aggregator<Long> {
+public class EventDurationSumAggregator extends Aggregator<Long> {
 
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 	private final CDateSet set = CDateSet.create();
@@ -60,10 +60,10 @@ public class EventDurationSumAggregator implements Aggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 
 		queryDateAggregator
-				.map(Aggregator::getAggregationResult)
+				.map(Aggregator::createAggregationResult)
 				.ifPresent(
 						set::retainAll
 				);

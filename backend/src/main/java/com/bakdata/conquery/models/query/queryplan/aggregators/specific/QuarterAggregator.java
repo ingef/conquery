@@ -21,7 +21,7 @@ import lombok.Data;
  * Samples the incoming dates outputting the year-quarter of the sample.
  */
 @Data
-public class QuarterAggregator implements Aggregator<String> {
+public class QuarterAggregator extends Aggregator<String> {
 
 	private final TemporalSampler sampler;
 
@@ -61,7 +61,7 @@ public class QuarterAggregator implements Aggregator<String> {
 	}
 
 	@Override
-	public String getAggregationResult() {
+	public String createAggregationResult() {
 		if (set.isEmpty()) {
 			return null;
 		}

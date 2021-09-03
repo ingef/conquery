@@ -53,7 +53,7 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		if(quartersInYear.isEmpty()) {
 			return null;
 		}

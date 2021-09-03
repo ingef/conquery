@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter(AccessLevel.PROTECTED) @Setter(AccessLevel.PROTECTED)
-public abstract class QPNode implements EventIterating {
+public abstract class QPNode extends EventIterating {
 	protected QueryExecutionContext context;
 	protected Entity entity;
 
@@ -44,7 +44,7 @@ public abstract class QPNode implements EventIterating {
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName();
+		return getClass().getSimpleName();
 	}
 
 	/**

@@ -31,7 +31,7 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return count > 0 ? count : null;
 	}
 

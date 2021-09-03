@@ -59,7 +59,7 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
+	public VALUE createAggregationResult() {
 		if (bucket == null) {
 			return null;
 		}

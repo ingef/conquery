@@ -29,8 +29,8 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
-		return aggregator.getAggregationResult();
+	public VALUE createAggregationResult() {
+		return aggregator.createAggregationResult();
 	}
 
 	@Override

@@ -46,7 +46,7 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 	}
 
 	@Override
-	public Set<String> getAggregationResult() {
+	public Set<String> createAggregationResult() {
 		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
 	}
 

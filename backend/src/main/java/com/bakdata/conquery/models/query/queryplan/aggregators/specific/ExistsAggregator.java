@@ -17,7 +17,7 @@ import lombok.ToString;
  */
 @RequiredArgsConstructor
 @ToString(of = "requiredTables")
-public class ExistsAggregator implements Aggregator<Boolean> {
+public class ExistsAggregator extends Aggregator<Boolean> {
 
 	private final Set<Table> requiredTables;
 
@@ -32,7 +32,7 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	public void acceptEvent(Bucket bucket, int event) {  }
 
 	@Override
-	public Boolean getAggregationResult() {
+	public Boolean createAggregationResult() {
 		return reference.isContained();
 	}
 	

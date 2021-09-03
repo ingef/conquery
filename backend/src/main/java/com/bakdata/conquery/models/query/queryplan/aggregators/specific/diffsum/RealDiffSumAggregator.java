@@ -59,7 +59,7 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	}
 
 	@Override
-	public Double getAggregationResult() {
+	public Double createAggregationResult() {
 		return hit ? sum : null;
 	}
 	

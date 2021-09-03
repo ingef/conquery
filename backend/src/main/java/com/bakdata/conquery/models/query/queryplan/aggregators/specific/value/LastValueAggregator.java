@@ -77,7 +77,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
+	public VALUE createAggregationResult() {
 		if (selectedBucket == null && selectedEvent.isEmpty()) {
 			return null;
 		}

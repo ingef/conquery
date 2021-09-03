@@ -134,7 +134,7 @@ public class ArrayConceptQueryPlan implements QueryPlan<SinglelineEntityResult> 
 
 		if (generateDateAggregation) {
 			// Dateset was needed, add it to the front.
-			resultValues[VALIDITY_DATE_POSITION] = validityDateAggregator.getAggregationResult();
+			resultValues[VALIDITY_DATE_POSITION] = validityDateAggregator.createAggregationResult();
 		}
 
 		return Optional.of(new SinglelineEntityResult(entity.getId(), resultValues));

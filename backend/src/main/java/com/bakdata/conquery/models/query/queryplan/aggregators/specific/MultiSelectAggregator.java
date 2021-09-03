@@ -59,7 +59,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	}
 
 	@Override
-	public Map<String, Integer> getAggregationResult() {
+	public Map<String, Integer> createAggregationResult() {
 		Map<String, Integer> out = new HashMap<>();
 
 		for (int i = 0; i < hits.length; i++) {

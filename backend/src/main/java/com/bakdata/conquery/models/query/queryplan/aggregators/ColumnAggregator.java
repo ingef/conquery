@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.events.Bucket;
 /**
  * Base class for aggregators acting on columns.
  */
-public abstract class ColumnAggregator<T> implements Aggregator<T> {
+public abstract class ColumnAggregator<T> extends Aggregator<T> {
 
 	@Override
 	public void collectRequiredTables(Set<Table> out) {

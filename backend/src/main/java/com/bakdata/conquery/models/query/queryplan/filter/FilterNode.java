@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @AllArgsConstructor
-public abstract class FilterNode<FILTER_VALUE> implements EventIterating {
+public abstract class FilterNode<FILTER_VALUE> extends EventIterating {
 
 	@Setter @Getter
 	protected FILTER_VALUE filterValue;

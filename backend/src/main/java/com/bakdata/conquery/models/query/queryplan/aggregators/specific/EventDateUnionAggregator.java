@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public class EventDateUnionAggregator implements Aggregator<CDateSet>{
+public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 
 	private final Set<Table> requiredTables;
 	private Column validityDateColumn;
@@ -44,11 +44,11 @@ public class EventDateUnionAggregator implements Aggregator<CDateSet>{
 		}
 		
 		dateRestriction = ctx.getDateRestriction();
-		Aggregator.super.nextTable(ctx, currentTable);
+		super.nextTable(ctx, currentTable);
 	}
 
 	@Override
-	public CDateSet getAggregationResult() {
+	public CDateSet createAggregationResult() {
 		return CDateSet.create(set.asRanges());
 	}
 

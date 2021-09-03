@@ -30,8 +30,8 @@ public class MultiDistinctValuesWrapperAggregator<VALUE> extends ColumnAggregato
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
-		return aggregator.getAggregationResult();
+	public VALUE createAggregationResult() {
+		return aggregator.createAggregationResult();
 	}
 
 	@Override

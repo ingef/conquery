@@ -15,13 +15,13 @@ import lombok.ToString;
 @Getter
 @RequiredArgsConstructor
 @ToString
-public class ConstantValueAggregator implements Aggregator<Object> {
+public class ConstantValueAggregator extends Aggregator<Object> {
 
 	private final Object value;
 	private final ResultType type;
 
 	@Override
-	public Object getAggregationResult() {
+	public Object createAggregationResult() {
 		return value;
 	}
 
