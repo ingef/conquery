@@ -268,8 +268,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
-		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
+	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities, ConqueryConfig config) {
+
+		initExecutable(datasetRegistry, config);
+
 		FullExecutionStatus status = new FullExecutionStatus();
 		setStatusBase(user, status, url, datasetAbilities);
 
