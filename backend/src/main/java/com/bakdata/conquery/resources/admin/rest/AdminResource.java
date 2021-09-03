@@ -92,7 +92,7 @@ public class AdminResource {
 
 
     @GET
-    @Path("/queries")
+    @Path("/queries/")
     public FullExecutionStatus[] getQueries(@Auth User currentUser) {
         final MetaStorage storage = processor.getStorage();
         final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
