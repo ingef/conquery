@@ -236,7 +236,7 @@
   },
   {
     "method": "GET",
-    "path": "/queries/",
+    "path": "/queries",
     "clazz": "AdminResource"
   },
   {

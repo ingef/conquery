@@ -30,9 +30,7 @@ import javax.ws.rs.core.UriBuilder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 import static org.apache.shiro.util.StringUtils.hasText;
@@ -92,14 +90,14 @@ public class AdminResource {
 
 
     @GET
-    @Path("/queries/")
-    public FullExecutionStatus[] getQueries(@Auth User currentUser) {
+    @Path("/queries")
+    public FullExecutionStatus[] getQueries(@Auth User currentUser, @QueryParam("limit") OptionalLong limit, @QueryParam("since") Optional<String> since) {
         final MetaStorage storage = processor.getStorage();
         final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
         return storage.getAllExecutions().stream()
                 .map(t -> t.buildStatusFull(storage, currentUser, datasetRegistry))
-                .filter(t -> t.getCreatedAt().toLocalDate().equals(LocalDate.now(t.getCreatedAt().getZone())))
-                .limit(100)
+                .filter(t -> t.getCreatedAt().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
+                .limit(limit.orElse(100))
                 .toArray(FullExecutionStatus[]::new);
     }
 }
