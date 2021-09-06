@@ -56,7 +56,6 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 		if (tokens.isEmpty()) {
 			log.warn("No tokens could be parsed from the request");
-			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 		}
 
 		int failedTokens = 0; 
@@ -76,13 +75,10 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 				return;
 			} catch (AuthenticationException e) {
 				// This is the shiro way to indicate that authentication failed
-				if(tokens.size() > 1) {
-					failedTokens++; 
-					log.trace("Token authentication failed:",e);
-					// If there is more than one token try the other ones too
-					continue;
-				}
-				throw e;
+				failedTokens++;
+				log.trace("Token authentication failed:",e);
+				// If there is more than one token try the other ones too
+
 			}
 		}
 		log.warn("Non of the configured realms was able to successfully authenticate the extracted token(s).");

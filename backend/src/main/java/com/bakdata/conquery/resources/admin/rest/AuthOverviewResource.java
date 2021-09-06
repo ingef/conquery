@@ -11,14 +11,16 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.resources.hierarchies.HAuthOverview;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.bakdata.conquery.util.io.FileUtil;
 
 /**
  * This class provides endpoints to obtain an authorization overview in form of structured data.
  */
 @Produces(AdditionalMediaTypes.CSV)
-public class AuthOverviewResource extends HAuthOverview {
+@Path(ResourceConstants.AUTH_OVERVIEW_PATH_ELEMENT)
+public class AuthOverviewResource extends HAdmin {
 
 	@Inject
 	protected AdminProcessor processor;

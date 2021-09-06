@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -52,18 +53,8 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Path("/")
 @RequiredArgsConstructor(onConstructor_=@Inject)
-public class AdminUIResource extends HAdmin {
-	
-	public static final String[] AUTO_IMPORTS = Stream
-		.of(
-			LocalDate.class,
-			Range.class,
-			DatasetId.class
-		)
-		.map(Class::getName)
-		.toArray(String[]::new);
+public class AdminUIResource {
 
-	private final AdminProcessor processor;
 	private final UIProcessor uiProcessor;
 
 	@GET
@@ -77,119 +68,10 @@ public class AdminUIResource extends HAdmin {
 		return new UIView<>("script.html.ftl", uiProcessor.getUIContext());
 	}
 
-	/**
-	 * Execute script and serialize value with {@link Objects#toString}.
-	 * Used in admin UI for minor scripting.
-	 */
-	@Produces(MediaType.TEXT_PLAIN)
-	@Consumes(MediaType.TEXT_PLAIN)
-	@POST
-	@Path("/script")
-	public String executeScript(@Auth User user, String script) throws JSONException {
-		return Objects.toString(executeScript(script));
-	}
-
-	/**
-	 * Execute script and serialize return value as Json.
-	 * Useful for configuration and verification scripts.
-	 */
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.TEXT_PLAIN)
-	@POST
-	@Path("/script")
-	public String executeScriptJson(@Auth User user, String script) throws JSONException, JsonProcessingException {
-		return Jackson.MAPPER.writeValueAsString(executeScript(script));
-	}
-
-	private Object executeScript(String script) {
-		CompilerConfiguration config = new CompilerConfiguration();
-		config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
-		GroovyShell groovy = new GroovyShell(config);
-		groovy.setProperty("datasetRegistry", processor.getDatasetRegistry());
-		groovy.setProperty("jobManager", processor.getJobManager());
-		groovy.setProperty("config", processor.getConfig());
-		groovy.setProperty("storage", processor.getStorage());
-
-		try {
-			return groovy.evaluate(script);
-		}
-		catch(Exception e) {
-			return ExceptionUtils.getStackTrace(e);
-		}
-	}
-
-	@POST
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Path("/jobs/{" + JOB_ID + "}/cancel")
-	public Response cancelJob(@PathParam(JOB_ID)UUID jobId) {
-
-		processor.getJobManager().cancelJob(jobId);
-
-		for (ShardNodeInformation info : processor.getDatasetRegistry().getShardNodes().values()) {
-			info.send(new CancelJobMessage(jobId));
-		}
-
-		return Response
-			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
-			.build();
-	}
-
 	@GET
-	@Path("/jobs/")
+	@Path("jobs")
 	public View getJobs() {
-		Map<String, JobManagerStatus> status =
-				ImmutableMap.<String, JobManagerStatus>builder()
-						.put("ManagerNode", processor.getJobManager().reportStatus())
-						// Namespace JobManagers on ManagerNode
-						.putAll(
-								processor.getDatasetRegistry().getDatasets().stream()
-										 .collect(Collectors.toMap(
-												 ns -> String.format("ManagerNode::%s", ns.getDataset().getId()),
-												 ns -> ns.getJobManager().reportStatus()
-										 )))
-						// Remote Worker JobManagers
-						.putAll(
-								processor
-										.getDatasetRegistry()
-										.getShardNodes()
-										.values()
-										.stream()
-										.collect(Collectors.toMap(
-												si -> Objects.toString(si.getRemoteAddress()),
-												ShardNodeInformation::getJobManagerStatus
-										))
-						)
-						.build();
-		return new UIView<>("jobs.html.ftl", uiProcessor.getUIContext(), status);
+		return new UIView<>("jobs.html.ftl", uiProcessor.getUIContext(), uiProcessor.getAdminProcessor().getJobs());
 	}
 
-	@POST @Path("/jobs") @Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response addDemoJob() {
-		processor.getJobManager().addSlowJob(new Job() {
-			private final UUID id = UUID.randomUUID();
-			@Override
-			public void execute() {
-				getProgressReporter().setMax(100);
-
-				while(!getProgressReporter().isDone() && !isCancelled()) {
-					getProgressReporter().report(1);
-
-					if(getProgressReporter().getProgress() >= 100) {
-						getProgressReporter().done();
-					}
-
-					Uninterruptibles.sleepUninterruptibly((int)(Math.random()*200), TimeUnit.MILLISECONDS);
-				}
-			}
-
-			@Override
-			public String getLabel() {
-				return "Demo "+id;
-			}
-		});
-		
-		return Response
-			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
-			.build();
-	}
 }

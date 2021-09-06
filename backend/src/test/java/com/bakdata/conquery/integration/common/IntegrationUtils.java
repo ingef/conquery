@@ -92,6 +92,7 @@ public class IntegrationUtils {
 		// We try at most 5 times, queryStatus waits for 10s, we therefore don't need to timeout here.
 		// Query getQueryStatus until it is no longer running.
 		for (int trial = 0; trial < 5; trial++) {
+			log.debug("Trying to get Query result");
 
 			JsonNode execStatusRaw =
 					conquery.getClient()
@@ -129,6 +130,7 @@ public class IntegrationUtils {
 											.getConqueryTokenRealm()
 											.createTokenForUser(user.getId());
 
+		// Submit Query
 		Response response = conquery.getClient()
 									.target(postQueryURI)
 									.request(MediaType.APPLICATION_JSON_TYPE)

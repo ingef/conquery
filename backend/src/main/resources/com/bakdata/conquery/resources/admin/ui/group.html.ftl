@@ -40,8 +40,8 @@
 					<tbody>
 					<#list c.members as member>
 						<tr>
-							<td><a href="/admin/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}">${member.label}</a></td>
-							<td><a href="#" onclick="removeMember('./${c.owner.id}/${ctx.staticUriElem.USER_PATH_ELEMENT}/${member.id}')">Remove from ${c.owner.label}<i class="fas fa-trash-alt text-danger"></i></a></td>
+							<td><a href="/admin-ui/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}">${member.label}</a></td>
+							<td><a href="#" onclick="removeMember('/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}/${c.owner.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}')">Remove from ${c.owner.label}<i class="fas fa-trash-alt text-danger"></i></a></td>
 						</tr>
 					</#list>
 					</tbody>
@@ -60,7 +60,7 @@
 				</form>
 			</div>
 			<div class="tab-pane fade" id="roles" role="tabpanel" aria-labelledby="roles-tab">
-				<@roleHandler.roleHandler c=c />
+				<@roleHandler.roleHandler c=c adminPathBase="/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}" />
 			</div>
 		</div>
 
@@ -69,18 +69,23 @@
 	function addMember() {
 		event.preventDefault(); 
 		fetch(
-			'./${c.owner.id}/${ctx.staticUriElem.USER_PATH_ELEMENT}/'+document.getElementById('member_id').value,
+			'/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}/${c.owner.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/'+document.getElementById('member_id').value,
 			{
 				method: 'post',
+				credentials: 'same-origin',
 				headers: {'Content-Type': 'application/json'}
-			}).then(function(){location.reload()});
+			})
+			.then(function(){location.reload()});
 	}
 
 	function removeMember(path){
 		event.preventDefault();
 		fetch(
 			path,
-			{method: 'delete'})
+			{
+				method: 'delete',
+				credentials: 'same-origin',
+			})
 			.then(function(){location.reload();});
 	}
 	</script>

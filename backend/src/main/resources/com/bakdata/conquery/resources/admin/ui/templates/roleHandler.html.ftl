@@ -1,4 +1,4 @@
-<#macro roleHandler c>
+<#macro roleHandler c adminPathBase>
 	<table class="table table-striped">
 		<thead>
 			<tr>
@@ -9,10 +9,10 @@
 		<tbody>
 			<#list c.roles as role>
 				<tr>
-					<td><a href="/admin/roles/${role.id}">${role.label}</a></td>
+					<td><a href="/admin-ui/roles/${role.id}">${role.label}</a></td>
 					<td><a href="#"
-							onclick="removeRole('./${c.owner.id}/${ctx.staticUriElem.ROLE_PATH_ELEMENT}/${role.id}')">Remove
-							from user<i class="fas fa-trash-alt text-danger"></i></a></td>
+							onclick="removeRole('${adminPathBase}/${c.owner.id}/${ctx.staticUriElem.ROLES_PATH_ELEMENT}/${role.id}')">Remove
+							from Entity<i class="fas fa-trash-alt text-danger"></i></a></td>
 				</tr>
 			</#list>
 		</tbody>
@@ -33,9 +33,10 @@
 		function addRole() {
 			event.preventDefault();
 			fetch(
-				'./${c.owner.id}/${ctx.staticUriElem.ROLE_PATH_ELEMENT}/' + document.getElementById('role_id').value,
+				'${adminPathBase}/${c.owner.id}/${ctx.staticUriElem.ROLES_PATH_ELEMENT}/' + document.getElementById('role_id').value,
 				{
 					method: 'post',
+					credentials: 'same-origin',
 					headers: { 'Content-Type': 'application/json' }
 				}).then(function () { location.reload() });
 		}
@@ -44,7 +45,10 @@
 			event.preventDefault();
 			fetch(
 				path,
-				{ method: 'delete' })
+				{
+					method: 'delete',
+					credentials: 'same-origin'
+				})
 				.then(function () { location.reload(); });
 		}
 	</script>

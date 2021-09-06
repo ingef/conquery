@@ -1,4 +1,4 @@
-<#macro entityOverview pathBase entities entityName>
+<#macro entityOverview uiPathBase adminPathBase entities entityName>
     <div class="row">
 		<div class="col">
             <table class="table table-striped">
@@ -10,8 +10,8 @@
                 <tbody>
                 <#list entities as entity>
                     <tr>
-                        <td><a href="${pathBase}${entity.id}">${entity.label}</a></td>
-                        <td><a href="${pathBase}${entity.id}">${entity.name}</a></td>
+                        <td><a href="${uiPathBase}/${entity.id}">${entity.label}</a></td>
+                        <td><a href="${uiPathBase}/${entity.id}">${entity.name}</a></td>
                         <td><a href="" onclick="deleteEntity('${entity.id}')"><i class="fas fa-trash-alt text-danger"></i></a></td>
                     </tr>
                 </#list>
@@ -34,9 +34,10 @@
 	<script type="application/javascript">
         function createEntity() {
             event.preventDefault(); 
-            fetch('${pathBase}',
+            fetch('${adminPathBase}',
             {
                 method: 'post',
+                credentials: 'same-origin',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                         name: document.getElementById('entity_id').value,
@@ -47,9 +48,10 @@
 
         function downloadEntities() {
             event.preventDefault(); 
-            fetch('${pathBase}',
+            fetch('${adminPathBase}',
             {
                 method: 'get',
+                credentials: 'same-origin',
                 headers: {'Accept': 'application/json'}
             })
             .then(response => {return response.json()})
@@ -61,7 +63,12 @@
 
         function deleteEntity(entityId){
             event.preventDefault();
-            fetch('${pathBase}'+entityId, {method: 'delete'})
+            fetch(
+                '${adminPathBase}/'+entityId,
+                {
+                    method: 'delete',
+                    credentials: 'same-origin'
+                })
                 .then(function(){location.reload();});
         }
 	

@@ -113,8 +113,9 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	protected abstract boolean isRegisterImports();
 
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
-		store.onAdd(centralRegistry::register)
-			 .onRemove(centralRegistry::remove);
+		store
+				.onAdd(centralRegistry::register)
+				.onRemove(centralRegistry::remove);
 	}
 
 	private void decorateSecondaryIdDescriptionStore(IdentifiableStore<SecondaryIdDescription> store) {
@@ -215,9 +216,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 		dictionaries.remove(id);
 	}
 
-	public EncodedDictionary getPrimaryDictionary() {
-		return new EncodedDictionary(dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset())), StringTypeEncoded.Encoding.UTF8);
-	}
+
 
 	public void addImport(Import imp) {
 		imports.add(imp);

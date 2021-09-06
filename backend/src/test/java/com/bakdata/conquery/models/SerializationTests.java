@@ -2,7 +2,11 @@ package com.bakdata.conquery.models;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
@@ -11,6 +15,8 @@ import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
@@ -22,12 +28,12 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -35,16 +41,15 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
-import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -61,40 +66,41 @@ public class SerializationTests {
 		dataset.setName("dataset");
 
 		SerializationTestUtil
-			.forType(Dataset.class)
-			.test(dataset);
+				.forType(Dataset.class)
+				.test(dataset);
 	}
 
 	@Test
-	public void passwordCredential() throws IOException, JSONException{
+	public void passwordCredential() throws IOException, JSONException {
 		PasswordCredential credential = new PasswordCredential(new String("testPassword").toCharArray());
 
 		SerializationTestUtil
-			.forType(PasswordCredential.class)
-			.test(credential);
+				.forType(PasswordCredential.class)
+				.test(credential);
 	}
 
 	@Test
-	public void role() throws IOException, JSONException{
+	public void role() throws IOException, JSONException {
 		Role mandator = new Role("company", "company");
 
 		SerializationTestUtil
-			.forType(Role.class)
-			.test(mandator);
+				.forType(Role.class)
+				.test(mandator);
 	}
 
 	/*
 	 * Only way to add permission without a storage.
 	 */
 	@Test
-	public void user() throws IOException, JSONException{
-		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(),  null);
+	public void user() throws IOException, JSONException {
+		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
 		User user = new User("user", "user");
 		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user
-			.addPermission(
-				storage,
-				ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+				.addPermission(
+						storage,
+						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
+				);
 		Role role = new Role("company", "company");
 		user.addRole(storage, role);
 
@@ -102,9 +108,9 @@ public class SerializationTests {
 		registry.register(role);
 
 		SerializationTestUtil
-			.forType(User.class)
-			.registry(registry)
-			.test(user);
+				.forType(User.class)
+				.registry(registry)
+				.test(user);
 	}
 
 	@Test
@@ -113,9 +119,10 @@ public class SerializationTests {
 		Group group = new Group("group", "group");
 		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group
-			.addPermission(
-				storage,
-				ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+				.addPermission(
+						storage,
+						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
+				);
 		group.addRole(storage, new Role("company", "company"));
 
 		Role role = new Role("company", "company");
@@ -131,7 +138,7 @@ public class SerializationTests {
 	}
 
 	@Test
-	public void treeConcept() throws IOException, JSONException{
+	public void treeConcept() throws IOException, JSONException {
 		Dataset dataset = new Dataset();
 		dataset.setName("datasetName");
 
@@ -145,17 +152,14 @@ public class SerializationTests {
 		Column column = new Column();
 		column.setLabel("colLabel");
 		column.setName("colName");
-		column.setPosition(0);
 		column.setType(MajorTypeId.STRING);
 		column.setTable(table);
 
 		Column dateColumn = new Column();
 		dateColumn.setLabel("colLabel2");
 		dateColumn.setName("colName2");
-		dateColumn.setPosition(1);
 		dateColumn.setType(MajorTypeId.DATE);
 		dateColumn.setTable(table);
-
 
 
 		table.setColumns(new Column[]{column, dateColumn});
@@ -191,15 +195,15 @@ public class SerializationTests {
 		registry.register(valDate);
 
 		SerializationTestUtil
-			.forType(TreeConcept.class)
-			.registry(registry)
-			.test(concept);
+				.forType(TreeConcept.class)
+				.registry(registry)
+				.test(concept);
 	}
 
 	@Test
 	public void persistentIdMap() throws JSONException, IOException {
-		SerializationTestUtil.forType(PersistentIdMap.class)
-			.test(IdMapSerialisationTest.createTestPersistentMap());
+		SerializationTestUtil.forType(EntityIdMap.class)
+							 .test(IdMapSerialisationTest.createTestPersistentMap());
 
 	}
 
@@ -223,9 +227,9 @@ public class SerializationTests {
 		formConfig.setDataset(dataset);
 
 		SerializationTestUtil
-			.forType(FormConfig.class)
-			.registry(registry)
-			.test(formConfig);
+				.forType(FormConfig.class)
+				.registry(registry)
+				.test(formConfig);
 	}
 
 	@Test
@@ -235,13 +239,13 @@ public class SerializationTests {
 
 		final Dataset dataset = new Dataset("test-dataset");
 
-		final User user = new User("test-user","test-user");
+		final User user = new User("test-user", "test-user");
 
 		registry.register(dataset);
 		registry.register(user);
 
 		ManagedQuery execution = new ManagedQuery(null, user, dataset);
-		execution.setTags(new String[] {"test-tag"});
+		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
 							 .registry(registry)
@@ -289,8 +293,8 @@ public class SerializationTests {
 		ConqueryError error = new ConqueryError.ExecutionCreationPlanError();
 
 		SerializationTestUtil
-			.forType(ConqueryError.class)
-			.test(error);
+				.forType(ConqueryError.class)
+				.test(error);
 	}
 
 	@Test
@@ -298,15 +302,15 @@ public class SerializationTests {
 		ConqueryError error = new ConqueryError.ExecutionCreationResolveError(new DatasetId("test"));
 
 		SerializationTestUtil
-			.forType(ConqueryError.class)
-			.test(error);
+				.forType(ConqueryError.class)
+				.test(error);
 	}
 
 
 	@Test
 	public void executionQueryJobError() throws JSONException, IOException {
 		log.info("Beware, this test will print an ERROR message.");
-		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5),new ConqueryError.UnknownError(null));
+		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5), new ConqueryError.UnknownError(null));
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
@@ -318,11 +322,11 @@ public class SerializationTests {
 		User user = new User("name", "labe");
 
 		MeProcessor.FEMeInformation info = MeProcessor.FEMeInformation.builder()
-				.userName(user.getLabel())
-				.hideLogoutButton(false)
-				.groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
-				.datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FEDatasetAbility(true)))
-				.build();
+																	  .userName(user.getLabel())
+																	  .hideLogoutButton(false)
+																	  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
+																	  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FEDatasetAbility(true)))
+																	  .build();
 
 		SerializationTestUtil
 				.forType(MeProcessor.FEMeInformation.class)
@@ -344,7 +348,7 @@ public class SerializationTests {
 		testConcept.setConnectors(List.of(connector));
 
 		concept.setElements(Collections.singletonList(testConcept));
-		CQTable[] tables = {new CQTable() };
+		CQTable[] tables = {new CQTable()};
 		connector.setTable(new Table());
 		tables[0].setConnector(connector);
 		tables[0].setConcept(concept);
@@ -361,8 +365,9 @@ public class SerializationTests {
 				CDateRange.exactly(LocalDate.now()).toSimpleRange(),
 				ArrayConceptQuery.createFromFeatures(Collections.singletonList(features)),
 				List.of(
-						ExportForm.ResolutionAndAlignment.of(DateContext.Resolution.COMPLETE, DateContext.Alignment.NO_ALIGN),
-						ExportForm.ResolutionAndAlignment.of(DateContext.Resolution.QUARTERS, DateContext.Alignment.QUARTER))
+						ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
+						ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
+				)
 		);
 
 		CentralRegistry centralRegistry = new CentralRegistry();

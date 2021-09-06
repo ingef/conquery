@@ -66,6 +66,7 @@
 		fetch('/admin/permissions/${ownerId}',
 			{
 				method: 'post',
+				credentials: 'same-origin',
 				headers: {'Content-Type': 'text/plain'},
 				body: permission}).then(function(){location.reload()})
 	}

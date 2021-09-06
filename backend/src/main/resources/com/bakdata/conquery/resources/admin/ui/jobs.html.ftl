@@ -27,9 +27,7 @@
                                 </td>
                                 <td>
                                     <#if !job.cancelled>
-                                        <form action="/admin/jobs/${job.jobId}/cancel" method="post" enctype="multipart/form-data">
-                                            <input class="btn btn-warning btn-sm" type="submit" value="Cancel"/>
-                                        </form>
+                                        <a href="" onclick="cancelJob('${job.jobId}')" class="btn btn-warning btn-sm"/>
                                     <#else>
                                         <div>Cancelled</div>
                                     </#if>
@@ -56,6 +54,18 @@
 					
                     location.reload(false);
 				}, 5000);
+
+                
+                function cancelJob(jobId) {
+		            event.preventDefault(); 
+                    fetch(
+                        ${r"`/admin/jobs/${jobId}/cancel`"},
+                        {
+                            method: "post",
+                            credentials: "same-origin"
+                        }
+                    )
+                }
 			</script>
 		</div>
 	</div>

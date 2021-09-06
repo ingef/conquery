@@ -7,7 +7,7 @@
         "root": {
           "type": "EXTERNAL",
           "format": [
-            "id","EVENT_DATE"
+            "ID","EVENT_DATE"
           ],
           "values": [
             ["result","dates"],

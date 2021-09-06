@@ -78,6 +78,7 @@ export interface MultiSelectInputProps {
 
 export interface InputMultiSelectProps {
   label?: string;
+  indexPrefix?: number;
   options: SelectOptionT[];
   disabled?: boolean;
   tooltip?: string;
@@ -200,6 +201,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
           {props.tooltip && <InfoTooltip text={props.tooltip} />}
         </>
       }
+      indexPrefix={props.indexPrefix}
     >
       {hasTooManyValues && (
         <TooManyValues

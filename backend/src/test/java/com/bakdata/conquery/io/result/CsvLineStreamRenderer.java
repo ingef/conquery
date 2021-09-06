@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -45,14 +45,14 @@ public class CsvLineStreamRenderer {
 	}
 
 
-	private Stream<String> createCSVLine(PrintSettings cfg, List<ResultInfo> infos, Pair<ExternalEntityId, EntityResult> idResult) {
+	private Stream<String> createCSVLine(PrintSettings cfg, List<ResultInfo> infos, Pair<EntityPrintId, EntityResult> idResult) {
 		return idResult
 				.getValue()
 				.streamValues()
 				.map(result -> print(cfg, idResult.getKey(), infos, result));
 	}
 
-	private String print(PrintSettings cfg, ExternalEntityId entity, List<ResultInfo> infos, Object[] value) {
+	private String print(PrintSettings cfg, EntityPrintId entity, List<ResultInfo> infos, Object[] value) {
 		List<String> result = new ArrayList<>(entity.getExternalId().length + value.length);
 		result.addAll(Arrays.asList(entity.getExternalId()));
 		try {

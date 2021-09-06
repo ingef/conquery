@@ -29,7 +29,7 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;

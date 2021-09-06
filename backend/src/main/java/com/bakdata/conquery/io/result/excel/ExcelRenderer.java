@@ -1,9 +1,12 @@
 package com.bakdata.conquery.io.result.excel;
 
+import c10n.C10N;
+import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -14,6 +17,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -44,13 +48,15 @@ public class ExcelRenderer {
 
     private final SXSSFWorkbook workbook;
     private final ExcelConfig config;
+    private final PrintSettings cfg;
     private final ImmutableMap<String, CellStyle> styles;
 
 
-    public ExcelRenderer(ExcelConfig config) {
+    public ExcelRenderer(ExcelConfig config, PrintSettings cfg) {
         workbook = new SXSSFWorkbook();
         this.config = config;
-        styles = config.generateStyles(workbook);
+        styles = config.generateStyles(workbook, cfg);
+        this.cfg = cfg;
     }
 
     @FunctionalInterface
@@ -59,15 +65,14 @@ public class ExcelRenderer {
     }
 
     public <E extends ManagedExecution<?> & SingleTableResult> void renderToStream(
-            PrintSettings cfg,
             List<String> idHeaders,
             E exec,
             OutputStream outputStream) throws IOException {
         List<ResultInfo> info = exec.getResultInfo();
 
 
-        // TODO internationalize
-        SXSSFSheet sheet = workbook.createSheet("Result");
+
+        SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
         try {
             sheet.setDefaultColumnWidth(config.getDefaultColumnWidth());
 
@@ -100,8 +105,8 @@ public class ExcelRenderer {
         AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         table.setArea(newArea);
 
-        // TODO Add auto filters. This won't work with excel yet
-        //sheet.setAutoFilter(new CellRangeAddress(1, 1, 1, bottomRight.getCol()));
+        // Add auto filters. This must be done on the lower level CTTable. Using SXSSFSheet::setAutoFilter will corrupt the table
+        table.getCTTable().addNewAutoFilter();
 
         // Freeze Header and id columns
         sheet.createFreezePane(idHeaders.size(), 1);

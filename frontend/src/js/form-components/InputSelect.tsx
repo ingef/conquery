@@ -11,6 +11,7 @@ import ReactSelect from "./ReactSelect";
 interface PropsT {
   className?: string;
   label?: string;
+  indexPrefix?: number;
   options: SelectOptionT[];
   disabled?: boolean;
   small?: boolean;
@@ -30,6 +31,7 @@ const InputSelect = ({
   small,
   input,
   label,
+  indexPrefix,
   options,
   disabled,
   selectProps,
@@ -50,6 +52,7 @@ const InputSelect = ({
       className={className}
       disabled={disabled}
       valueChanged={!isEmpty(input.value) && input.value !== input.defaultValue}
+      indexPrefix={indexPrefix}
       label={
         <>
           {!!label && label}

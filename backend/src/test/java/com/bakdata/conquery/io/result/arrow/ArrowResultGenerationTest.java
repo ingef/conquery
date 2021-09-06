@@ -21,10 +21,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.result.ResultTestUtil;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -117,7 +118,7 @@ public class ArrowResultGenerationTest {
                 Locale.ROOT,
                 null,
                 CONFIG,
-                (cer) -> new ExternalEntityId(new String[]{Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())}),
+                (cer) -> EntityPrintId.from(Integer.toString(cer.getEntityId()), Integer.toString(cer.getEntityId())),
                 (selectInfo) -> selectInfo.getSelect().getLabel());
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = getTestEntityResults();
@@ -212,7 +213,22 @@ public class ArrowResultGenerationTest {
         if (type.equals(ResultType.DateRangeT.INSTANCE)) {
             // Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
             List<?> dr = (List<?>) obj;
-            return "{\"min\":" + dr.get(0) + ",\"max\":" + dr.get(1) + "}";
+            StringBuilder sb = new StringBuilder();
+            sb.append("{");
+            final int min = (int) dr.get(0);
+            final int max = (int) dr.get(1);
+            // Handle cases where one of the limits is infinity
+            if (!CDate.isNegativeInfinity(min)) {
+                sb.append("\"min\":").append(min);
+            }
+            if (!CDate.isNegativeInfinity(min) && !CDate.isPositiveInfinity(max)) {
+                sb.append(",");
+            }
+            if (!CDate.isPositiveInfinity(max)) {
+                sb.append("\"max\":").append(max);
+            }
+            sb.append("}");
+            return sb.toString();
         }
         if (type.equals(ResultType.ResolutionT.INSTANCE)) {
             return type.printNullable(settings, obj);

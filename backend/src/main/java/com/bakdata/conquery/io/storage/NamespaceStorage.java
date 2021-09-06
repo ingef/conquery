@@ -5,10 +5,15 @@ import java.util.Objects;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.EncodedDictionary;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import lombok.Getter;
@@ -23,9 +28,11 @@ public class NamespaceStorage extends NamespacedStorage {
 	@Setter
 	@NonNull
 	private MetaStorage metaStorage;
-	protected SingletonStore<PersistentIdMap> idMapping;
+	protected SingletonStore<EntityIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
+
+	protected SingletonStore<Dictionary> primaryDictionary;
 
 	@Getter
 	private final boolean registerImports = true;
@@ -34,9 +41,40 @@ public class NamespaceStorage extends NamespacedStorage {
 		super(validator, storageFactory, pathName);
 
 		idMapping = storageFactory.createIdMappingStore(pathName);
-		structure = storageFactory.createStructureStore(pathName, new SingletonNamespaceCollection(getCentralRegistry()));
+		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(getCentralRegistry());
+		structure = storageFactory.createStructureStore(pathName, namespaceCollection);
 		workerToBuckets = storageFactory.createWorkerToBucketsStore(pathName);
+		primaryDictionary = storageFactory.createPrimaryDictionaryStore(pathName, namespaceCollection);
+
+		decorateIdMapping(idMapping);
 	}
+
+	public EncodedDictionary getPrimaryDictionary() {
+		return new EncodedDictionary(getPrimaryDictionaryRaw(), StringTypeEncoded.Encoding.UTF8);
+	}
+
+	@NonNull
+	public Dictionary getPrimaryDictionaryRaw() {
+		final Dictionary dictionary = primaryDictionary.get();
+
+		if(dictionary == null){
+			log.trace("No prior PrimaryDictionary, creating one");
+			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY);
+
+			primaryDictionary.update(newPrimary);
+
+			return newPrimary;
+		}
+
+		return dictionary;
+	}
+
+
+	private void decorateIdMapping(SingletonStore<EntityIdMap> idMapping) {
+		idMapping
+				.onAdd(mapping -> mapping.setStorage(this));
+	}
+
 
 	@Override
 	public void loadData() {
@@ -45,6 +83,7 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping.loadData();
 		structure.loadData();
 		workerToBuckets.loadData();
+		primaryDictionary.loadData();
 	}
 
 	@Override
@@ -53,6 +92,8 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping.clear();
 		structure.clear();
 		workerToBuckets.clear();
+		primaryDictionary.clear();
+
 	}
 
 	@Override
@@ -61,6 +102,8 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping.removeStore();
 		structure.removeStore();
 		workerToBuckets.removeStore();
+		primaryDictionary.removeStore();
+
 	}
 
 	@Override
@@ -69,14 +112,20 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping.close();
 		structure.close();
 		workerToBuckets.close();
+		primaryDictionary.close();
+
 	}
 
-	public PersistentIdMap getIdMapping() {
+	public EntityIdMap getIdMapping() {
 		return idMapping.get();
 	}
 
 
-	public void updateIdMapping(PersistentIdMap idMapping) {
+	public void updatePrimaryDictionary(Dictionary dictionary){
+		primaryDictionary.update(dictionary);
+	}
+
+	public void updateIdMapping(EntityIdMap idMapping) {
 		this.idMapping.update(idMapping);
 	}
 

@@ -1,31 +1,12 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.validation.Validator;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
@@ -40,18 +21,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveSecondaryId;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveTable;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryId;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
+import com.bakdata.conquery.models.messages.namespaces.specific.*;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -65,11 +39,25 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
+import javax.validation.Validator;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 @Slf4j
 @RequiredArgsConstructor
 @Getter
 public class AdminDatasetProcessor {
+
+
+
+	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
+	private static final String ABBREVIATION_MARKER = "\u2026";
 
 	private final MetaStorage storage; // TODO Remove
 	private final ConqueryConfig config;
@@ -81,21 +69,19 @@ public class AdminDatasetProcessor {
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
 	 */
-	public synchronized Dataset addDataset(String name) {
+	public synchronized Dataset addDataset(Dataset dataset) {
 
+		final String name = dataset.getName();
 		if (datasetRegistry.get(new DatasetId(name)) != null) {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
-
-		// create dataset
-		Dataset dataset = new Dataset();
-		dataset.setName(name);
 
 		NamespaceStorage datasetStorage = new NamespaceStorage(validator, config.getStorage(), "dataset_" + name);
 
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);
+		datasetStorage.updateIdMapping(new EntityIdMap());
 
 		Namespace ns = new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy()).writerWithView(InternalOnly.class));
 
@@ -195,15 +181,12 @@ public class AdminDatasetProcessor {
 			throw new IllegalArgumentException();
 		}
 
+
 		if (namespace.getStorage().getTable(table.getId()) != null) {
 			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
 		}
 
 		ValidatorHelper.failOnError(log, validator.validate(table));
-
-		for (int p = 0; p < table.getColumns().length; p++) {
-			table.getColumns()[p].setPosition(p);
-		}
 
 		namespace.getStorage().addTable(table);
 		namespace.sendToAll(new UpdateTable(table));
@@ -270,13 +253,21 @@ public class AdminDatasetProcessor {
 		log.info("Received IdMapping for Dataset[{}]", namespace.getDataset().getId());
 
 		CsvParser parser = config.getCsv()
-				.withSkipHeader(false)
-				.withParseHeaders(false)
-				.createParser();
+								 .withSkipHeader(false)
+								 .withParseHeaders(true)
+								 .createParser();
 
-		PersistentIdMap mapping = config.getIdMapping().generateIdMapping(parser.iterate(data).iterator());
+		try {
 
-		namespace.getStorage().updateIdMapping(mapping);
+			parser.beginParsing(data);
+
+			EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getFrontend().getQueryUpload().getIds());
+			namespace.getStorage().updateIdMapping(mapping);
+
+		}
+		finally {
+			parser.stopParsing();
+		}
 	}
 
 	/**
@@ -295,7 +286,7 @@ public class AdminDatasetProcessor {
 	@SneakyThrows
 	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks);
+		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config);
 
 		namespace.getJobManager().addSlowJob(job);
 	}
@@ -364,5 +355,9 @@ public class AdminDatasetProcessor {
 					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
 				}
 		));
+	}
+
+	public EntityIdMap getIdMapping(Namespace namespace) {
+		return namespace.getStorage().getIdMapping();
 	}
 }

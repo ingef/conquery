@@ -5,20 +5,52 @@
 			<ul>
 			<#list c as dataset>
 				<li>
-					<a href="/admin/datasets/${dataset.id}">${dataset.label}</a>
-					<a href="" onclick="event.preventDefault(); fetch('./datasets/${dataset.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+					<a href="/admin-ui/datasets/${dataset.id}">${dataset.label}</a>
+					<a href="" onclick="deleteDataset('${dataset.id}')"><i class="fas fa-trash-alt text-danger"></i></a>
 				</li>
 			</#list>
 			</ul>
-			<br/><br/><br/><br/>
-			<h3>Create Dataset</h3>
-			<form method="post" enctype="multipart/form-data">
+			<br/><br/>
+			<form>
 				<div class="form-group">
-					<label for="dataset_name">Name:</label>
-					<input type="text" class="form-control" name="dataset_name" pattern="<#include "templates/namePattern.ftl">" title="Name of the new dataset" required>
+					<h3>Create Dataset</h3>
+					<label for="entity_name">Name:</label>
+					<input id="entity_name" name="entity_name" pattern="<#include "templates/namePattern.ftl">" class="form-control text-monospace" style="font-family:monospace;">
+					<label for="entity_id">ID:</label>
+					<input id="entity_id" name="entity_id"  class="form-control text-monospace" style="font-family:monospace;">
+					<input class="btn btn-primary" type="submit" onclick="createDataset()"/>
 				</div>
-				<input class="btn btn-primary" type="submit"/>
 			</form>
+
 		</div>
 	</div>
+	<script>
+
+		function createDataset() {
+			event.preventDefault();
+			fetch(
+				'/admin/datasets',
+				{
+					method: 'post',
+					headers: {
+                        'Content-Type': 'application/json'
+                    },
+					credentials: 'same-origin',
+					body: JSON.stringify({
+							name: document.getElementById('entity_id').value,
+							label: document.getElementById('entity_name').value
+						})
+			}).then(function(){location.reload();});
+		}
+
+		function deleteDataset(datasetId) {
+			event.preventDefault();
+			fetch(
+				${r"`/admin/datasets/${datasetId}`"},
+				{
+					method: 'delete',
+					credentials: "same-origin"
+				}).then(function(){location.reload();});
+		}
+	</script>
 </@layout.layout>

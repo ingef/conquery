@@ -12,7 +12,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.ResultInfoDecorator;
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
-import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.google.common.collect.ImmutableClassToInstanceMap;
 import lombok.AllArgsConstructor;
 
@@ -27,7 +27,7 @@ public class RelExportGenerator {
 		return generate(mode.getForm().getPrerequisite(), mode.getResolvedFeatures(), mode.getResolvedOutcomes(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), resolutionsAndAlignments);
 	}
 	
-	public static RelativeFormQuery generate(Query query, ArrayConceptQuery features, ArrayConceptQuery outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, DateContext.CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
+	public static RelativeFormQuery generate(Query query, ArrayConceptQuery features, ArrayConceptQuery outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
 
 		return new RelativeFormQuery(
 			query, 

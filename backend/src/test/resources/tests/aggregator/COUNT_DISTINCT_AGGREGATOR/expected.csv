@@ -1,4 +1,4 @@
-result,dates,select.connector.count_gender
+result,dates,concept - select
 1,{2012-01-01/2012-01-02},1
 2,{2010-07-15/2010-07-15},
 3,{2013-11-10/2013-11-10},1

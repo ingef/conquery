@@ -3,7 +3,6 @@ package com.bakdata.conquery.apiv1.query;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -17,6 +16,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;

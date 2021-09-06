@@ -1,14 +1,24 @@
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
 import React from "react";
 
 import type { CurrencyConfigT } from "../api/types";
-import { isEmpty } from "../common/helpers";
 
 import BaseInput from "./BaseInput";
 import Labeled from "./Labeled";
 import { InputProps } from "./types";
 
+const SxBaseInput = styled(BaseInput)<{ fullWidth?: boolean }>`
+  ${({ fullWidth }) =>
+    fullWidth &&
+    css`
+      width: 100%;
+    `};
+`;
+
 interface Props<T> extends InputProps<T> {
   label: string;
+  indexPrefix?: number;
   inputType?: string;
   money?: boolean;
   className?: string;
@@ -18,6 +28,7 @@ interface Props<T> extends InputProps<T> {
   inputProps?: Object;
   currencyConfig?: CurrencyConfigT;
   fullWidth?: boolean;
+  tooltip?: string;
 }
 
 const InputPlain = <T extends string | number | null = string | null>(
@@ -26,17 +37,16 @@ const InputPlain = <T extends string | number | null = string | null>(
   return (
     <Labeled
       className={props.className}
-      valueChanged={
-        !isEmpty(props.input.value) &&
-        props.input.value !== props.input.defaultValue
-      }
       fullWidth={props.fullWidth}
       label={props.label}
       tinyLabel={props.tinyLabel}
       largeLabel={props.large}
+      indexPrefix={props.indexPrefix}
+      tooltip={props.tooltip}
     >
-      <BaseInput
+      <SxBaseInput
         large={props.large}
+        fullWidth={props.fullWidth}
         inputType={props.inputType || "text"}
         money={props.money}
         placeholder={props.placeholder}

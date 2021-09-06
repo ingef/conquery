@@ -22,6 +22,8 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 @Path(ROLES_PATH_ELEMENT)
 public class RoleResource extends HAdmin {
 
@@ -35,17 +37,15 @@ public class RoleResource extends HAdmin {
 		return Response.ok().build();
 	}
 
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response postRoles(@NotEmpty List<Role> roles) {
-		processor.addRoles(roles);
-		return Response.ok().build();
-	}
-
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
 	public Collection<Role> getRoles() {
 		return processor.getAllRoles();
+	}
+
+	@Path("{" + ROLE_ID + "}")
+	@GET
+	public Response getRole(@PathParam(ROLE_ID) Role role) throws JSONException {
+		return Response.ok(role).build();
 	}
 
 	@Path("{" + ROLE_ID + "}")

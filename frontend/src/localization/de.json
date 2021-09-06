@@ -154,7 +154,8 @@
     "max": "Max",
     "std": "Std.",
     "logout": "Ausloggen",
-    "dateInvalid": "Ungültiges Datum"
+    "dateInvalid": "Ungültiges Datum",
+    "missingLabel": "Unbenannt"
   },
   "tooltip": {
     "headline": "Info",
@@ -305,12 +306,15 @@
     "headline": "Ergebnisliste hochladen",
     "dropzone": "Lege eine CSV-Datei hier ab",
     "upload": "Hochladen",
-    "uploadFailed": "Konnte Datei nicht hochladen",
-    "uploadFailedSub": "Bitte überprüfen Sie das Format und die Netzwerkverbindung",
-    "uploadSucceeded": "Ergebnisliste hochladen erfolgreich",
+    "uploadAgain": "Erneut hochladen",
+    "uploadFailed": "Datei konnte nicht hochgeladen werden. Bitte überprüfe das Dateiformat und die Netzwerkverbindung.",
+    "uploadSucceeded": "Alle Zeilen (1 Zeile) wurden erfolgreich hochgeladen.",
+    "uploadSucceeded_plural": "Alle {{count}} Zeilen wurden erfolgreich hochgeladen.",
     "formatInfo": {
       "text": "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
-    }
+    },
+    "downloadUnresolved": "Eine Unauflösbare Zeile herunterladen (CSV)",
+    "downloadUnresolved_plural": "{{ count }} Unauflösbare Zeilen herunterladen (CSV)"
   },
   "csvColumnPicker": {
     "loading": "Lese Daten ...",
@@ -319,10 +323,17 @@
     "colon": "Doppelpunkt",
     "comma": "Komma",
     "id": "ID",
-    "dateSet": "Datumsbereich",
+    "dateSet": "Datumswerte",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
-    "ignore": "Ignorieren"
+    "ignore": "Ignorieren",
+    "partialSuccess": "Hochladen teilweise erfolgreich.",
+    "resolved": "1 Zeile aufgelöst.",
+    "resolved_plural": "{{count}} Zeilen aufgelöst.",
+    "unreadableDate": "Datum nicht lesbar in der folgenden Zeile",
+    "unreadableDate_plural": "Datum nicht lesbar in den folgenden {{count}} Zeilen",
+    "unresolvedId": "ID nicht auflösbar in der folgenden Zeile",
+    "unresolvedId_plural": "ID nicht auflösbar in den folgenden {{count}} Zeilen"
   },
   "uploadConceptListModal": {
     "headline": "Konzepte aus Liste einfügen",

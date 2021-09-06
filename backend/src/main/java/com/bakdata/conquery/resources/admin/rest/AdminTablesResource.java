@@ -53,6 +53,11 @@ public class AdminTablesResource extends HAdmin {
 		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 
+	@GET
+	public Table getTable() {
+		return table;
+	}
+
 	/**
 	 * Try to delete a table and all it's imports. Fails if it still has dependencies (unless force is used).
 	 * @param force Force deletion of dependent concepts.
@@ -87,11 +92,15 @@ public class AdminTablesResource extends HAdmin {
 
 	@DELETE
 	@Path("imports/{"+IMPORT_ID+"}")
-	public void deleteImportView(@PathParam(IMPORT_ID) Import imp) {
+	public void deleteImport(@PathParam(IMPORT_ID) Import imp) {
 		processor.deleteImport(imp);
 	}
 
 
-
+	@GET
+	@Path("imports/{"+IMPORT_ID+"}")
+	public Import getImport(@PathParam(IMPORT_ID) Import imp) {
+		return imp;
+	}
 
 }

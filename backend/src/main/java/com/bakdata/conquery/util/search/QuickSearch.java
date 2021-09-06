@@ -316,6 +316,10 @@ public class QuickSearch<T extends Comparable<T>> {
 		return findItems(searchString, numberOfTopItems, keywordMatchScorer);
 	}
 
+	public List<T> listItems() {
+		return graph.listItems();
+	}
+
 	/**
      * Retrieve (find) top n items matching the supplied com.bakdata.conquery.util.search string.
      *

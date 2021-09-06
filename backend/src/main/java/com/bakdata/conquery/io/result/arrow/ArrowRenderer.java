@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.internationalization.Localized;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -177,7 +178,15 @@ public class ArrowRenderer {
                 vector.setNull(rowNumber);
                 return;
             }
-            vector.setSafe(rowNumber, value.intValue());
+
+            // Treat our internal infinity dates (Interger.MIN and Integer.MAX) also as null
+            final int epochDay = value.intValue();
+            if (CDate.isNegativeInfinity(epochDay) || CDate.isPositiveInfinity(epochDay)) {
+                vector.setNull(rowNumber);
+                return;
+            }
+
+            vector.setSafe(rowNumber, epochDay);
         };
     }
 

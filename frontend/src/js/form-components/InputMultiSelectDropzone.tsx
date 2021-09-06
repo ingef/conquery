@@ -10,6 +10,10 @@ const Root = styled("div")`
   position: relative;
 `;
 
+const SxDropzone = styled(Dropzone)`
+  padding: 5px;
+`;
+
 const FileInput = styled("input")`
   display: none;
 `;
@@ -44,14 +48,14 @@ const InputMultiSelectDropzone: FC<PropsT> = ({ onDropFile, children }) => {
 
   return (
     <Root>
-      <Dropzone<DragItemFile>
+      <SxDropzone<DragItemFile>
         acceptedDropTypes={[NativeTypes.FILE]}
         onDrop={(item) => {
           onDropFile(item.files[0]);
         }}
       >
         {children}
-      </Dropzone>
+      </SxDropzone>
       <TopRight onClick={onOpenFileDialog}>
         {t("inputMultiSelect.openFileDialog")}
         <FileInput

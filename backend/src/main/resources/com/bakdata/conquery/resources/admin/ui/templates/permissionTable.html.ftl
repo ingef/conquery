@@ -42,8 +42,11 @@
             '/admin/permissions/${ownerId}',
             {
                 method: 'delete',
-                 headers: {'Content-Type': 'text/plain'},
-                 body: permission}).then(function(){location.reload()});
+                credentials: 'same-origin',
+                headers: {'Content-Type': 'text/plain'},
+                body: permission
+            })
+            .then(function(){location.reload()});
     }
     </script>
 </#macro>

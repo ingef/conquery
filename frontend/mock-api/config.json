@@ -7,5 +7,19 @@
     "thousandSeparator": ".",
     "decimalSeparator": ",",
     "decimalScale": 2
+  },
+  "queryUpload": {
+    "ids": [
+      {
+        "name": "ID 1",
+        "label": { "de": "ID eins", "en": "ID one" },
+        "description": { "de": "Beschreibung eins", "en": "Description one" }
+      },
+      {
+        "name": "ID 2",
+        "label": { "de": "ID zwei", "en": "ID two" },
+        "description": { "de": "Beschreibung zwei", "en": "Description two" }
+      }
+    ]
   }
 }

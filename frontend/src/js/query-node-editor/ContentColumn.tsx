@@ -37,6 +37,18 @@ const CommonSettingsContainer = styled("div")`
   margin: 15px 10px;
 `;
 
+const ContentCellGroup = styled(ContentCell)`
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
+
+  &:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+`;
+
 interface PropsT {
   node: StandardQueryNodeT;
   datasetId: DatasetIdT;
@@ -98,7 +110,7 @@ const ContentColumn: FC<PropsT> = ({
 
   return (
     <Column>
-      <ContentCell>
+      <ContentCellGroup>
         <SectionHeading>{t("queryNodeEditor.properties")}</SectionHeading>
         <CommonSettingsContainer>
           {onToggleTimestamps && (
@@ -144,14 +156,14 @@ const ContentColumn: FC<PropsT> = ({
             />
           </ContentCell>
         )}
-      </ContentCell>
+      </ContentCellGroup>
       {tables.map((table, idx) => {
         if (table.exclude) {
           return null;
         }
 
         return (
-          <ContentCell
+          <ContentCellGroup
             key={table.id}
             ref={(instance) => (itemsRef.current[idx] = instance)}
           >
@@ -170,7 +182,7 @@ const ContentColumn: FC<PropsT> = ({
               onSwitchFilterMode={onSwitchFilterMode}
               onLoadFilterSuggestions={onLoadFilterSuggestions}
             />
-          </ContentCell>
+          </ContentCellGroup>
         );
       })}
     </Column>

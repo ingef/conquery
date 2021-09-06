@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import React from "react";
 import { TFunction, useTranslation } from "react-i18next";
 import { connect } from "react-redux";
@@ -5,7 +6,8 @@ import { reduxForm, formValueSelector } from "redux-form";
 
 import type { SelectOptionT } from "../../api/types";
 import { useActiveLang } from "../../localization/useActiveLang";
-import FormsHeader from "../FormsHeader";
+import FormConfigSaver from "../FormConfigSaver";
+import FormHeader from "../FormHeader";
 import type {
   Form as FormType,
   FormField as FormFieldType,
@@ -52,6 +54,10 @@ const DEFAULT_VALIDATION_BY_TYPE = {
   MULTI_SELECT: null,
   DATE_RANGE: validateDateRange,
 };
+
+const SxFormHeader = styled(FormHeader)`
+  margin: 5px 0 15px;
+`;
 
 function getNotEmptyValidation(fieldType: string) {
   switch (fieldType) {
@@ -124,7 +130,10 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
 
     return (
       <form>
-        <FormsHeader headline={config.headline[activeLang]} />
+        {config.description && config.description[activeLang] && (
+          <SxFormHeader description={config.description[activeLang]} />
+        )}
+        <FormConfigSaver />
         {config.fields.map((field, i) => {
           const key = isFormField(field) ? field.name : field.type + i;
 

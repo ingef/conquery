@@ -34,10 +34,9 @@
   	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
-	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	
 	<nav class="navbar navbar-expand-lg navbar-light bg-light" style="margin-bottom:30px">
-	  <a class="navbar-brand" href="/admin">Conquery Admin</a>
+	  <a class="navbar-brand" href="/admin-ui">Conquery Admin</a>
 	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
 		<span class="navbar-toggler-icon"></span>
 	  </button>
@@ -45,22 +44,22 @@
 	  <div class="collapse navbar-collapse" id="navbarSupportedContent">
 		<ul class="navbar-nav mr-auto">
 		  <li class="nav-item">
-			<a class="nav-link" href="/admin/datasets">Datasets</a>
+			<a class="nav-link" href="/admin-ui/datasets">Datasets</a>
 		  </li>
 		  <li class="nav-item">
-			<a class="nav-link" href="/admin/jobs">Jobs</a>
+			<a class="nav-link" href="/admin-ui/jobs">Jobs</a>
 		  </li>
 		  <li class="nav-item">
-			<a class="nav-link" href="/admin/script">Script</a>
+			<a class="nav-link" href="/admin-ui/script">Script</a>
 		  <li class="nav-item dropdown">
 			<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 			  Auth
 			</a>
 			<div class="dropdown-menu" aria-labelledby="navbarDropdown">
-			  <a class="dropdown-item" href="/admin/auth-overview">Overview</a>
-			  <a class="dropdown-item" href="/admin/groups">Groups</a>
-			  <a class="dropdown-item" href="/admin/users">Users</a>
-			  <a class="dropdown-item" href="/admin/roles">Roles</a>
+			  <a class="dropdown-item" href="/admin-ui/auth-overview">Overview</a>
+			  <a class="dropdown-item" href="/admin-ui/groups">Groups</a>
+			  <a class="dropdown-item" href="/admin-ui/users">Users</a>
+			  <a class="dropdown-item" href="/admin-ui/roles">Roles</a>
 			</div>
 		  </li>
 		  <li class="nav-item dropdown">
@@ -82,6 +81,8 @@
 			</#list>
 		</div>
 	  </div>
+
+      <button type="button" class="btn btn-secondary" onclick="logout()">Logout</button>
 	</nav>
 	
 	<div class="container">
@@ -89,13 +90,26 @@
 	</div>
 	
 	<script type="application/javascript">
-		const rest = axios.create({
-			baseURL: '/admin/',
-			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json'
-			}
-		});
+
+		function rest (url, options) {
+			return fetch(
+				url,
+				{
+					method: 'get',
+					credentials: 'same-origin',
+					headers: {
+      					'Content-Type': 'application/json'
+					},
+					...options
+				}
+			)
+		}
+
+		function logout(){
+			event.preventDefault();
+			rest('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/logout')
+			    .then(function () { location.reload() });
+		}
 	
 		function postFile(event, url) {
 			event.preventDefault();
@@ -112,7 +126,7 @@
 				let reader = new FileReader();
 				reader.onload = function(){
 					let json = reader.result;
-					fetch(url, {method: 'post', body: json, headers: {
+					fetch(url, {method: 'post', credentials: 'same-origin', body: json, headers: {
 						"Content-Type": "application/json"
 					}})
 						.then(function(response){

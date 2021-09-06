@@ -185,17 +185,6 @@ const transformTimebasedQueryToApi = (query: any) =>
     ),
   );
 
-const transformExternalQueryToApi = (query: any) =>
-  createConceptQuery(createExternal(query));
-
-const createExternal = (query: any) => {
-  return {
-    type: "EXTERNAL",
-    format: query.format,
-    values: query.values,
-  };
-};
-
 // The query state already contains the query.
 // But small additions are made (properties allowlisted), empty things filtered out
 // to make it compatible with the backend API
@@ -208,8 +197,6 @@ export const transformQueryToApi = (
       return transformTimebasedQueryToApi(query);
     case "standard":
       return transformStandardQueryToApi(query, options.selectedSecondaryId);
-    case "external":
-      return transformExternalQueryToApi(query);
     default:
       return null;
   }

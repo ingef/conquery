@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import static com.bakdata.conquery.io.result.arrow.ResultArrowProcessor.getArrowResult;
@@ -19,6 +20,8 @@ import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_AR
 public class ResultArrowStreamProcessor {
 
 
+	// From https://www.iana.org/assignments/media-types/application/vnd.apache.arrow.stream
+	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.stream");
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 
@@ -32,6 +35,7 @@ public class ResultArrowStreamProcessor {
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_STREAM,
+				MEDIA_TYPE,
 				config);
 	}
 

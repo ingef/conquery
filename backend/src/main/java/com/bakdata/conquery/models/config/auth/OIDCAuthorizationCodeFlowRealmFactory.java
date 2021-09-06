@@ -12,8 +12,8 @@ import lombok.extern.slf4j.Slf4j;
  * Factory for a simple realm that just forwards tokens to the IDP for verification.
  */
 @Slf4j
-@CPSType(base = AuthenticationConfig.class, id = "OIDC_AUTHORIZATION_CODE_FLOW")
-public class OIDCAuthorizationCodeFlowRealmFactory implements AuthenticationConfig {
+@CPSType(base = AuthenticationRealmFactory.class, id = "OIDC_AUTHORIZATION_CODE_FLOW")
+public class OIDCAuthorizationCodeFlowRealmFactory implements AuthenticationRealmFactory {
 
 	@Getter
 	@Setter

@@ -14,6 +14,7 @@ const Container = styled("div")`
   width: 100%;
   display: flex;
   flex-direction: row;
+  margin-top: -3px;
 `;
 
 const SxInputPlain = styled(InputPlain)`
@@ -36,6 +37,7 @@ export type ModeT = "range" | "exact";
 interface PropsType extends InputProps<ValueT | null> {
   moneyRange?: boolean;
   label: string;
+  indexPrefix?: number;
   unit?: string;
   limits?: {
     min?: number;
@@ -71,6 +73,7 @@ const InputRange = ({
   placeholder,
   disabled,
   label,
+  indexPrefix,
   unit,
   tooltip,
   onSwitchMode,
@@ -122,6 +125,7 @@ const InputRange = ({
       <InputRangeHeader
         disabled={disabled}
         label={label}
+        indexPrefix={indexPrefix}
         unit={unit}
         tooltip={tooltip}
       />

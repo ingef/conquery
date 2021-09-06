@@ -21,13 +21,13 @@ public class ResourceConstants {
 	public static final String GROUPS_PATH_ELEMENT = "groups";
 	public static final String USERS_PATH_ELEMENT = "users";
 	public static final String ROLES_PATH_ELEMENT = "roles";
-	public static final String USER_PATH_ELEMENT = "user";
-	public static final String ROLE_PATH_ELEMENT = "role";
 	public static final String AUTH_OVERVIEW_PATH_ELEMENT = "auth-overview";
 	public static final String USER_ID = "userId";
 	public static final String ROLE_ID = "roleId";
 	public static final String GROUP_ID = "groupId";
 	public static final String SECONDARY_ID = "secondaryId";
+	public static final String ADMIN_SERVLET_PATH = "admin";
+	public static final String ADMIN_UI_SERVLET_PATH = "admin-ui";
 
 	public static final String FILE_EXTENTION_ARROW_FILE = "arrf";
 	public static final String FILE_EXTENTION_ARROW_STREAM = "arrs";

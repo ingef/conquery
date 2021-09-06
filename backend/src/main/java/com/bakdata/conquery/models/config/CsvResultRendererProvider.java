@@ -15,6 +15,9 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import javax.ws.rs.core.UriBuilder;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Getter
@@ -25,16 +28,16 @@ public class CsvResultRendererProvider implements ResultRendererProvider {
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
-	public Optional<URL> generateResultURL(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<URL> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 		if (!(exec instanceof SingleTableResult)) {
-			return Optional.empty();
+			return Collections.emptyList();
 		}
 
 		if (hidden && !allProviders) {
-			return Optional.empty();
+			return Collections.emptyList();
 		}
 
-		return Optional.of(ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec));
+		return List.of(ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec));
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,8 +21,8 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQExternal;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -161,15 +162,19 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
+
+		final Locale locale = I18n.LOCALE.get();
+
 		// First add the id columns to the descriptor list. The are the first columns
-		for (String header : config.getIdMapping().getPrintIdFields()) {
+		for (String header : config.getFrontend().getQueryUpload().getPrintIdFields(locale)) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(header)
 												   .type(ResultType.IdT.INSTANCE.typeInfo())
 												   .build());
 		}
+
 		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null);
+		PrintSettings settings = new PrintSettings(true, locale, datasetRegistry, config, null);
 
 		getResultInfo().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
 		return columnDescriptions;
@@ -255,7 +260,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 						  .forEach(label -> sb.append(label).append(" "));
 
 			// Last entry will output one Space that we don't want
-			sb.deleteCharAt(sb.length() - 1);
+			if(sb.length() > 0) {
+				sb.deleteCharAt(sb.length() - 1);
+			}
 
 			// If not all Concept could be included in the name, point that out
 			if (length.get() > MAX_CONCEPT_LABEL_CONCAT_LENGTH) {

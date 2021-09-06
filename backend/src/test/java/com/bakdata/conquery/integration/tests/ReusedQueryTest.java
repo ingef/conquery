@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
@@ -15,6 +16,9 @@ import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -23,6 +27,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -44,6 +49,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
+import net.sourceforge.argparse4j.impl.Arguments;
 
 
 @Slf4j
@@ -69,7 +75,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTables(conquery, test.getContent());
+			LoadingUtil.importTables(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
@@ -85,7 +91,8 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 		assertThat(id).isNotNull();
 
-		final ManagedQuery execution = (ManagedQuery) conquery.getMetaStorage().getExecution(id);
+		final MetaStorage metaStorage = conquery.getMetaStorage();
+		final ManagedQuery execution = (ManagedQuery) metaStorage.getExecution(id);
 
 		// Normal reuse
 		{
@@ -165,7 +172,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			reused1.setSecondaryId(query.getSecondaryId());
 
 			final ManagedExecutionId reused1Id = IntegrationUtils.assertQueryResult(conquery, reused1, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
-			final ManagedQuery execution1 = (ManagedQuery) conquery.getMetaStorage().getExecution(reused1Id);
+			final ManagedQuery execution1 = (ManagedQuery) metaStorage.getExecution(reused1Id);
 			{
 				final SecondaryIdQuery reused2 = new SecondaryIdQuery();
 				reused2.setRoot(new CQReusedQuery(execution1.getId()));
@@ -175,7 +182,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 				final ManagedExecutionId
 						reused2Id =
 						IntegrationUtils.assertQueryResult(conquery, reused2, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
-				final ManagedQuery execution2 = (ManagedQuery) conquery.getMetaStorage().getExecution(reused2Id);
+				final ManagedQuery execution2 = (ManagedQuery) metaStorage.getExecution(reused2Id);
 
 				assertThat(reused2Id)
 						.as("Query should be reused.")
@@ -203,6 +210,37 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 				assertThat(executionId)
 						.as("Query should NOT be reused.")
 						.isNotEqualTo(reused1Id);
+			}
+
+			{
+				// Reuse by another user (create a copy of the actual query)
+
+				final SecondaryIdQuery reused = new SecondaryIdQuery();
+				reused.setRoot(new CQReusedQuery(execution.getId()));
+
+				reused.setSecondaryId(query.getSecondaryId());
+
+				User shareHolder = new User("shareholder", "ShareHolder");
+				conquery.getMetaProcessor().addUser(shareHolder);
+
+				shareHolder.addPermissions(metaStorage, Set.of(
+						dataset.createPermission(Set.of(Ability.READ)),
+						execution.createPermission(Set.of(Ability.READ))
+				));
+
+				ManagedExecutionId copyId = IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE, shareHolder, 201);
+
+				ManagedExecution<?> copy = metaStorage.getExecution(copyId);
+
+
+				// Contentwise the label and tags should be the same
+				assertThat(copy).usingRecursiveComparison().comparingOnlyFields("label","tags").isEqualTo(execution);
+
+				// However the Object holding the tags must be different, so the two are not linked here
+				assertThat(copy.getTags()).isNotSameAs(execution.getTags());
+
+				// And the ids must be different
+				assertThat(copy.getId()).isNotSameAs(execution.getId());
 			}
 		}
 	}
