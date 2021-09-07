@@ -412,10 +412,12 @@ public class XodusStoreFactory implements StoreFactory {
 			return new CachedStore<>(
 					new SerializingStore<>(
 							this,
-							new XodusStore(environment, storeId, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
+							new XodusStore(environment, storeId.getName(), openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
 							validator,
 							storeId,
-							objectMapper
+							objectMapper,
+							(Class<KEY>) storeId.getKeyType(),
+							(Class<VALUE>) storeId.getValueType()
 					));
 		}
 	}

@@ -68,9 +68,12 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 		metaStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, metaStoreInfo, openStores, envCloseHook, envRemoveHook), validator,
+				new XodusStore(env, storeInfo.getName() + "_META", openStores, envCloseHook, envRemoveHook),
+				validator,
 				metaStoreInfo,
-				mapper
+				mapper,
+				(Class<KEY>) storeInfo.getKeyType(),
+				BigStoreMetaKeys.class
 		);
 
 		final SimpleStoreInfo dataStoreInfo = new SimpleStoreInfo(
@@ -81,9 +84,12 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 		dataStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, dataStoreInfo, openStores, envCloseHook, envRemoveHook), validator,
+				new XodusStore(env, storeInfo.getName() + "_DATA", openStores, envCloseHook, envRemoveHook),
+				validator,
 				dataStoreInfo,
-				mapper
+				mapper,
+				UUID.class,
+				byte[].class
 		);
 
 

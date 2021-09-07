@@ -13,7 +13,6 @@ import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Store;
 import jetbrains.exodus.env.StoreConfig;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -24,16 +23,18 @@ public class XodusStore {
 	private final Collection<Store>  openStores;
 	private final Consumer<Environment> envCloseHook;
 	private final Consumer<Environment> envRemoveHook;
+	private String name;
 
-	public XodusStore(Environment env, IStoreInfo storeId, Collection<Store> openStoresInEnv, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook) {
+	public XodusStore(Environment env, String name, Collection<Store> openStoresInEnv, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
 		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
+		this.name = name;
 		this.environment = env;
 		this.openStores = openStoresInEnv;
 		this.envCloseHook = envCloseHook;
 		this.envRemoveHook = envRemoveHook;
 		this.store = env.computeInTransaction(
-			t->env.openStore(storeId.getName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
+			t->env.openStore(this.name, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
 		);
 		openStoresInEnv.add(store);
 	}
