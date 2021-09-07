@@ -1,10 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
@@ -88,6 +84,9 @@ public final class AuthorizationController implements Managed{
 		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
 
 		registerStaticSecurityManager();
+
+		// Register initial users for authorization and authentication (if the realm is able to)
+		initializeAuthConstellation(authorizationConfig, realms, storage);
 	}
 	
 	public void externalInit(ManagerNode manager, List<AuthenticationRealmFactory> authenticationRealmFactories) {
@@ -111,8 +110,6 @@ public final class AuthorizationController implements Managed{
 	public void start() throws Exception {
 		// Call Shiros init on all realms
 		LifecycleUtils.init(realms);
-		// Register initial users for authorization and authentication (if the realm is able to)
-		initializeAuthConstellation(authorizationConfig, realms, storage);
 	}
 
 	@Override
@@ -140,12 +137,14 @@ public final class AuthorizationController implements Managed{
 	 */
 	private static void initializeAuthConstellation(@NonNull AuthorizationConfig config, @NonNull List<Realm> realms, @NonNull MetaStorage storage) {
 		for (ProtoUser pUser : config.getInitialUsers()) {
-			pUser.registerForAuthorization(storage, true);
-			for (Realm realm : realms) {
-				if (realm instanceof UserManageable) {
-					pUser.registerForAuthentication((UserManageable) realm, true);
+			final Optional<User> user = pUser.getUser(storage, true);
+			user.ifPresent(u -> {
+				for (Realm realm : realms) {
+					if (realm instanceof UserManageable) {
+						ProtoUser.registerForAuthentication((UserManageable) realm, u, pUser.getCredentials(), true);
+					}
 				}
-			}
+			});
 		}
 	}
 
@@ -194,9 +193,9 @@ public final class AuthorizationController implements Managed{
 		);
 
 		// Create copied user
-		User copy = new User(name, originUser.getLabel());
+		User copy = new User(name, originUser.getLabel(), storage);
 		storage.addUser(copy);
-		copy.setPermissions(storage, copiedPermission);
+		copy.updatePermissions(copiedPermission);
 
 		return copy;
 	}

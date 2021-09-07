@@ -64,7 +64,7 @@ public class BigStoreTest {
 	public void testFull() throws JSONException, IOException {
 
 		BigStore<DictionaryId, Dictionary> store = new BigStore<>(new XodusStoreFactory(), Validators.newValidator(), env,
-																  StoreInfo.DICTIONARIES, new ArrayList<>(), (e) -> {}, (e) -> {}, MAPPER
+																  StoreInfo.DICTIONARIES.storeInfo(), new ArrayList<>(), (e) -> {}, (e) -> {}, MAPPER
 		);
 
 
@@ -106,7 +106,7 @@ public class BigStoreTest {
 	@Test
 	public void testEmpty() throws JSONException, IOException {
 		BigStore<DictionaryId, Dictionary> store = new BigStore<>(new XodusStoreFactory(), Validators.newValidator(), env,
-																  StoreInfo.DICTIONARIES, new ArrayList<>(), (e) -> {}, (e) -> {}, MAPPER
+																  StoreInfo.DICTIONARIES.storeInfo(), new ArrayList<>(), (e) -> {}, (e) -> {}, MAPPER
 		);
 		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 

@@ -130,6 +130,5 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		log.debug("Starting REST Server");
 		ConqueryMDC.setLocation(null);
 		super.run(environment, namespace, config);
-		manager = conquery.getManager();
 	}
 }

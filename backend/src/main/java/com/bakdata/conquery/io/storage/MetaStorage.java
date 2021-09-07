@@ -2,10 +2,11 @@ package com.bakdata.conquery.io.storage;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -24,7 +25,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MetaStorage implements ConqueryStorage{
+public class MetaStorage implements ConqueryStorage, Injectable {
 
     private IdentifiableStore<ManagedExecution<?>> executions;
 
@@ -45,9 +46,9 @@ public class MetaStorage implements ConqueryStorage{
         this.validator = validator;
 
 
-		authUser = storageFactory.createUserStore(centralRegistry, "meta");
-		authRole = storageFactory.createRoleStore(centralRegistry, "meta");
-		authGroup = storageFactory.createGroupStore(centralRegistry, "meta");
+		authUser = storageFactory.createUserStore(centralRegistry, "meta", this);
+		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this);
+		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this);
 		// Executions depend on users
 		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, "meta");
 		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta");
@@ -194,5 +195,10 @@ public class MetaStorage implements ConqueryStorage{
         authUser.close();
         authRole.close();
         authGroup.close();
+    }
+
+    @Override
+    public MutableInjectableValues inject(MutableInjectableValues values) {
+        return values.add(MetaStorage.class, this);
     }
 }

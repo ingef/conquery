@@ -51,14 +51,18 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
 public class SerializationTests {
+
+	private final static MetaStorage STORAGE = new MetaStorage(Validators.newValidator(), new NonPersistentStoreFactory(), new DatasetRegistry(2));
 
 	@Test
 	public void dataset() throws IOException, JSONException {
@@ -81,10 +85,11 @@ public class SerializationTests {
 
 	@Test
 	public void role() throws IOException, JSONException {
-		Role mandator = new Role("company", "company");
+		Role mandator = new Role("company", "company", STORAGE);
 
 		SerializationTestUtil
 				.forType(Role.class)
+				.injectables(STORAGE)
 				.test(mandator);
 	}
 
@@ -94,15 +99,14 @@ public class SerializationTests {
 	@Test
 	public void user() throws IOException, JSONException {
 		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
-		User user = new User("user", "user");
-		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
+		User user = new User("user", "user", STORAGE);
+		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user
 				.addPermission(
-						storage,
 						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
 				);
-		Role role = new Role("company", "company");
-		user.addRole(storage, role);
+		Role role = new Role("company", "company", STORAGE);
+		user.addRole(role);
 
 		CentralRegistry registry = new CentralRegistry();
 		registry.register(role);
@@ -110,31 +114,35 @@ public class SerializationTests {
 		SerializationTestUtil
 				.forType(User.class)
 				.registry(registry)
+				.injectables(STORAGE)
 				.test(user);
 	}
 
 	@Test
 	public void group() throws IOException, JSONException {
 		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
-		Group group = new Group("group", "group");
-		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
+		Group group = new Group("group", "group", STORAGE);
+		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group
 				.addPermission(
-						storage,
 						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
 				);
-		group.addRole(storage, new Role("company", "company"));
+		group.addRole(new Role("company", "company", STORAGE));
 
-		Role role = new Role("company", "company");
-		group.addRole(storage, role);
-		User user = new User("userName", "userLabel");
-		group.addMember(storage, user);
+		Role role = new Role("company", "company", STORAGE);
+		group.addRole(role);
+		User user = new User("userName", "userLabel", STORAGE);
+		group.addMember(user);
 
 		CentralRegistry registry = new CentralRegistry();
 		registry.register(role);
 		registry.register(user);
 
-		SerializationTestUtil.forType(Group.class).registry(registry).test(group);
+		SerializationTestUtil
+				.forType(Group.class)
+				.injectables(STORAGE)
+				.registry(registry)
+				.test(group);
 	}
 
 	@Test
@@ -239,7 +247,7 @@ public class SerializationTests {
 
 		final Dataset dataset = new Dataset("test-dataset");
 
-		final User user = new User("test-user", "test-user");
+		final User user = new User("test-user", "test-user", STORAGE);
 
 		registry.register(dataset);
 		registry.register(user);
@@ -319,7 +327,7 @@ public class SerializationTests {
 
 	@Test
 	public void meInformation() throws IOException, JSONException {
-		User user = new User("name", "labe");
+		User user = new User("name", "labe", STORAGE);
 
 		MeProcessor.FEMeInformation info = MeProcessor.FEMeInformation.builder()
 																	  .userName(user.getLabel())

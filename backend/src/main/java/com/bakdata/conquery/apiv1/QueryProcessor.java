@@ -112,7 +112,7 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, user));
+			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, storage.getUser(user.getId())));
 
 			if (execution.isPresent()) {
 				return execution.get();
@@ -121,7 +121,7 @@ public class QueryProcessor {
 
 
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = executionManager.runQuery(datasetRegistry, query, user, dataset, config);
+		ManagedExecution<?> mq = executionManager.runQuery(datasetRegistry, query, storage.getUser(user.getId()), dataset, config);
 
 		if (query instanceof Query) {
 			translateToOtherDatasets(dataset, query, user, mq);
@@ -288,7 +288,7 @@ public class QueryProcessor {
 				Query translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
 
 				targetNamespace.getExecutionManager()
-							   .createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
+							   .createQuery(datasetRegistry, translated, mq.getQueryId(), storage.getUser(user.getId()), targetDataset);
 			}
 			catch (Exception e) {
 				log.trace("Could not translate Query[{}] to Dataset[{}]", mq.getId(), targetDataset.getId(), e);
@@ -396,7 +396,7 @@ public class QueryProcessor {
 		// We only create the Query, really no need to execute it as it's only useful for composition.
 		final ManagedQuery execution =
 				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
-											   .createExecution(datasetRegistry, query, user, dataset));
+											   .createExecution(datasetRegistry, query, storage.getUser(user.getId()), dataset));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 

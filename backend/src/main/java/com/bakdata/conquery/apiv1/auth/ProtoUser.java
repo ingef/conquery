@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.auth;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -13,9 +14,10 @@ import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Container class for holding information about initial users.
@@ -45,39 +47,27 @@ public class ProtoUser {
 	@NotNull
 	@Valid
 	private List<CredentialType> credentials = Collections.emptyList();
-	
-	@JsonIgnore
-	// Let this be ignored by the builder
-	private User user = null;
 
-	public User getUser() {
-		if(user != null) {
-			return user;
+	public Optional<User> getUser(@NonNull MetaStorage storage, boolean override) {
+		User user = storage.getUser(new UserId(name));
+		if (!override) {
+			return Optional.ofNullable(user);
 		}
 		if (label == null) {
 			label = name;
 		}
-		user = new User(name, label);
-		return user;
-	}
-
-	public void registerForAuthorization(MetaStorage storage, boolean override) {
-		User user = this.getUser();
-		if(override) {			
-			storage.updateUser(user);
-		} else {
-			// Should throw an exception, if the user already existed
-			storage.addUser(user);
-		}
+		user = new User(name, label, storage);
+		storage.updateUser(user);
 		for (String sPermission : permissions) {
-			user.addPermission(storage, new WildcardPermission(sPermission));
+			user.addPermission(new WildcardPermission(sPermission));
 		}
+		return Optional.of(user);
 	}
 	
-	public boolean registerForAuthentication(UserManageable userManager, boolean override) {
+	public static boolean registerForAuthentication(UserManageable userManager, User user, List<CredentialType> credentials, boolean override) {
 		if(override) {			
-			return userManager.updateUser(getUser(), credentials);
+			return userManager.updateUser(user, credentials);
 		}
-		return userManager.addUser(getUser(), credentials);
+		return userManager.addUser(user, credentials);
 	}
 }

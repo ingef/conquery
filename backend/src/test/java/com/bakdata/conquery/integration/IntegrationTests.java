@@ -30,6 +30,8 @@ import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.node.TextNode;
+import io.dropwizard.logging.DefaultLoggingFactory;
 import io.github.classgraph.Resource;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

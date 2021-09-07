@@ -40,11 +40,6 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.apiv1.query.CQElement;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.api.ResultArrowFileResource;
@@ -122,12 +117,12 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static User mockUser(int id, List<ManagedExecutionId> allowedQueryIds) {
-		final User user = new User("user" + id, null);
+		final User user = new User("user" + id, null, STORAGE);
 
 		STORAGE.addUser(user);
 
 		for (ManagedExecutionId queryId : allowedQueryIds) {
-			AuthorizationHelper.addPermission(user, ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId), STORAGE);
+			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId));
 		}
 
 		return user;

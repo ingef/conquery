@@ -13,6 +13,7 @@ import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Store;
 import jetbrains.exodus.env.StoreConfig;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,7 +24,8 @@ public class XodusStore {
 	private final Collection<Store>  openStores;
 	private final Consumer<Environment> envCloseHook;
 	private final Consumer<Environment> envRemoveHook;
-	private String name;
+	@Getter
+	private final String name;
 
 	public XodusStore(Environment env, String name, Collection<Store> openStoresInEnv, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
