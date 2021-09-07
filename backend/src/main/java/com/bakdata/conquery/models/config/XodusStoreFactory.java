@@ -26,12 +26,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.storage.IdentifiableStore;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.io.storage.NamespacedStorage;
-import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreInfo;
-import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.io.storage.*;
 import com.bakdata.conquery.io.storage.xodus.stores.BigStore;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
@@ -224,7 +219,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 	private boolean environmentHasStores(File pathName) {
 		Environment env = findEnvironment(pathName);
-		boolean exists = env.computeInTransaction(t -> env.storeExists(StoreInfo.DATASET.getName(), t));
+		boolean exists = env.computeInTransaction(t -> env.storeExists(StoreInfo.DATASET.storeInfo().getName(), t));
 		env.computeInTransaction(t -> env.getAllStoreNames(t));
 		if (!exists) {
 			closeEnvironment(env);
@@ -257,7 +252,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 		synchronized (openStoresInEnv) {
 			bigStore =
-					new BigStore<>(this, validator, environment, DICTIONARIES, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, namespaceCollection
+					new BigStore<>(this, validator, environment, DICTIONARIES.storeInfo(), openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, namespaceCollection
 																																										  .injectInto(objectMapper));
 		}
 
@@ -304,7 +299,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 		synchronized (openStoresInEnv) {
 			final BigStore<Boolean, EntityIdMap> bigStore =
-					new BigStore<>(this, validator, environment, ID_MAPPING, openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, objectMapper);
+					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, objectMapper);
 
 			return new SingletonStore<>(new CachedStore<>(bigStore));
 		}
@@ -407,16 +402,16 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreInfo storeId) {
+		final IStoreInfo<KEY, VALUE> storeInfo = storeId.storeInfo();
 		synchronized (openStoresInEnv) {
 			return new CachedStore<>(
 					new SerializingStore<>(
 							this,
-							new XodusStore(environment, storeId.getName(), openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
+							new XodusStore(environment, storeInfo.getName(), openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
 							validator,
-							storeId,
 							objectMapper,
-							(Class<KEY>) storeId.getKeyType(),
-							(Class<VALUE>) storeId.getValueType()
+							storeInfo.getKeyType(),
+							storeInfo.getValueType()
 					));
 		}
 	}

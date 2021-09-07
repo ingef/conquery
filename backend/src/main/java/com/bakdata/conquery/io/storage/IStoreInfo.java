@@ -1,8 +1,8 @@
 package com.bakdata.conquery.io.storage;
 
-public interface IStoreInfo {
+public interface IStoreInfo<KEY,VALUE> {
 
 	String getName();
-	Class<?> getValueType();
-	Class<?> getKeyType();
+	Class<KEY> getKeyType();
+	Class<VALUE> getValueType();
 }
