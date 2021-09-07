@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
-import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -30,7 +30,7 @@ import lombok.Setter;
 @CPSType(id="RELATIVE", base=Mode.class)
 public class RelativeMode extends Mode {
 	@NotNull
-	private DateContext.CalendarUnit timeUnit;
+	private CalendarUnit timeUnit;
 	@Min(0)
 	private int timeCountBefore;
 	@Min(0)

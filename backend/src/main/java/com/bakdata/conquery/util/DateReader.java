@@ -202,7 +202,7 @@ public class DateReader {
 		 */
 		return Pattern.compile(String.format("(?:(?:%1$s)|(?:%2$s\\s*))([^%1$s%2$s%3$s]+)(?:%3$s)?",
 				setBegin.isEmpty() ? "" : Pattern.quote(setBegin), // referenced as: %1$s
-				Pattern.quote(rangeSep),  // referenced as: %2$s
+				Pattern.quote(rangeSep.trim()),  // referenced as: %2$s, ignore white spaces as they are explicitly captured in the regex
 				setEnd.isEmpty() ? "" : Pattern.quote(setEnd)));  // referenced as: %3$s
 	}
 

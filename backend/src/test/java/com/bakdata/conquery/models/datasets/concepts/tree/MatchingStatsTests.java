@@ -25,17 +25,13 @@ public class MatchingStatsTests {
 
         assertThat(stats.countEntities()).isEqualTo(0);
 
-        Map<WorkerId, MatchingStats.Entry> entries = new HashMap<>();
-        entries.put(workerId1, new MatchingStats.Entry(5, 5, CDateRange.of(10, 20)));
-        stats.setEntries(entries);
+        stats.putEntry(workerId1, new MatchingStats.Entry(5, 5, CDateRange.of(10, 20)));
         assertThat(stats.countEntities()).isEqualTo(5);
 
-        entries.put(workerId1, new MatchingStats.Entry(5, 8, CDateRange.of(10, 20)));
-        stats.setEntries(entries);
+        stats.putEntry(workerId1, new MatchingStats.Entry(5, 8, CDateRange.of(10, 20)));
         assertThat(stats.countEntities()).isEqualTo(8);
 
-        entries.put(workerId2, new MatchingStats.Entry(5, 2, CDateRange.of(10, 20)));
-        stats.setEntries(entries);
+        stats.putEntry(workerId2, new MatchingStats.Entry(5, 2, CDateRange.of(10, 20)));
         assertThat(stats.countEntities()).isEqualTo(10);
 
 
@@ -50,7 +46,6 @@ public class MatchingStatsTests {
         assertThat(stats.countEvents()).isEqualTo(0);
         assertThat(stats.countEntities()).isEqualTo(0);
 
-        Map<WorkerId, MatchingStats.Entry> entries = new HashMap<>();
 
         MatchingStats.Entry entry1 =  new MatchingStats.Entry();
         entry1.addEvent(table, null, 1, 1);
@@ -67,8 +62,7 @@ public class MatchingStatsTests {
 
 
 
-        entries.put(workerId1, entry1);
-        stats.setEntries(entries);
+        stats.putEntry(workerId1, entry1);
         assertThat(stats.countEvents()).isEqualTo(8);
         assertThat(stats.countEntities()).isEqualTo(4);
 
@@ -90,8 +84,7 @@ public class MatchingStatsTests {
         entry2.addEvent(table, null, 9, 9);
         entry2.addEvent(table, null, 10, 10);
 
-        entries.put(workerId2, entry2);
-        stats.setEntries(entries);
+        stats.putEntry(workerId2, entry2);
         assertThat(stats.countEvents()).isEqualTo(18);
         assertThat(stats.countEntities()).isEqualTo(14);
 
