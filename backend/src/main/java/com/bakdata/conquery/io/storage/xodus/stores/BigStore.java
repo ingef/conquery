@@ -22,6 +22,7 @@ import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
+import com.bakdata.conquery.io.storage.IStoreInfo;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.StoreInfo;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
@@ -48,45 +49,32 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	private final ObjectWriter valueWriter;
 	private ObjectReader valueReader;
 
-	private final StoreInfo storeInfo;
+	private final IStoreInfo storeInfo;
 
 	@Getter @Setter
 	private int chunkByteSize;
 
 
-	public BigStore(XodusStoreFactory config, Validator validator, Environment env, StoreInfo storeInfo, Collection<jetbrains.exodus.env.Store> openStores, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook, ObjectMapper mapper) {
+	public BigStore(XodusStoreFactory config, Validator validator, Environment env, IStoreInfo<KEY,VALUE> storeInfo, Collection<jetbrains.exodus.env.Store> openStores, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook, ObjectMapper mapper) {
 		this.storeInfo = storeInfo;
 
 		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
 		this.chunkByteSize = Ints.checkedCast(config.getXodus().getLogFileSize().toBytes() / 4L);
 
-		final SimpleStoreInfo metaStoreInfo = new SimpleStoreInfo(
-				storeInfo.getName() + "_META",
-				storeInfo.getKeyType(),
-				BigStoreMetaKeys.class
-		);
-
 		metaStore = new SerializingStore<>(
 				config,
 				new XodusStore(env, storeInfo.getName() + "_META", openStores, envCloseHook, envRemoveHook),
 				validator,
-				metaStoreInfo,
 				mapper,
-				(Class<KEY>) storeInfo.getKeyType(),
+				storeInfo.getKeyType(),
 				BigStoreMetaKeys.class
-		);
 
-		final SimpleStoreInfo dataStoreInfo = new SimpleStoreInfo(
-				storeInfo.getName() + "_DATA",
-				UUID.class,
-				byte[].class
 		);
 
 		dataStore = new SerializingStore<>(
 				config,
 				new XodusStore(env, storeInfo.getName() + "_DATA", openStores, envCloseHook, envRemoveHook),
 				validator,
-				dataStoreInfo,
 				mapper,
 				UUID.class,
 				byte[].class

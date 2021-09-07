@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.storage;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
+import com.bakdata.conquery.io.storage.xodus.stores.SimpleStoreInfo;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -50,7 +51,7 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @Getter
 @ToString(of = {"name", "keyType", "valueType"})
-public enum StoreInfo implements IStoreInfo {
+public enum StoreInfo {
 	DATASET(Dataset.class, Boolean.class),
 	ID_MAPPING(EntityIdMap.class, Boolean.class),
 	NAMESPACES(DatasetRegistry.class, Boolean.class),
@@ -73,6 +74,10 @@ public enum StoreInfo implements IStoreInfo {
 
 	private final Class<?> valueType;
 	private final Class<?> keyType;
+
+	public <KEY,VALUE, CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> IStoreInfo<KEY,VALUE> storeInfo(){
+		return new SimpleStoreInfo<KEY,VALUE>(getName(),(CLASS_K) getKeyType(), (CLASS_V) getValueType());
+	}
 
 	/**
 	 * Store for identifiable values, with injectors. Store is also cached.
@@ -117,8 +122,7 @@ public enum StoreInfo implements IStoreInfo {
 		return new SingletonStore<>(baseStore, injectables);
 	}
 
-	@Override
-	public String getName() {
+	private String getName() {
 		return name();
 	}
 }
