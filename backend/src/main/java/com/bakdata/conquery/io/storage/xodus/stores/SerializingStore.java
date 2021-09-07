@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.IStoreInfo;
@@ -104,23 +103,23 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final ObjectMapper objectMapper;
 
 	@SuppressWarnings("unchecked")
-	public SerializingStore(XodusStoreFactory config, XodusStore store, Validator validator, IStoreInfo storeInfo, ObjectMapper objectMapper) {
+	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStoreFactory config, XodusStore store, Validator validator, IStoreInfo storeInfo, ObjectMapper objectMapper, CLASS_K keyType, CLASS_V valueType) {
 		this.storeInfo = storeInfo;
 		this.store = store;
 		this.validator = validator;
 		this.validateOnWrite = config.isValidateOnWrite();
 
-		valueType = (Class<VALUE>) storeInfo.getValueType();
+		this.valueType = valueType;
 
 		this.objectMapper = objectMapper;
 
-		valueWriter = objectMapper.writerFor(valueType);
+		valueWriter = objectMapper.writerFor(this.valueType);
 
-		valueReader = objectMapper.readerFor(valueType);
+		valueReader = objectMapper.readerFor(this.valueType);
 
-		keyWriter = objectMapper.writerFor(storeInfo.getKeyType());
+		keyWriter = objectMapper.writerFor(keyType);
 
-		keyReader = objectMapper.readerFor(storeInfo.getKeyType());
+		keyReader = objectMapper.readerFor(keyType);
 		
 		removeUnreadablesFromUnderlyingStore = config.isRemoveUnreadableFromStore();
 		
