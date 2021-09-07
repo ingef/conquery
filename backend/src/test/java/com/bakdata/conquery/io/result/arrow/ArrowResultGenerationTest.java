@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.result.ResultTestUtil;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -212,7 +213,22 @@ public class ArrowResultGenerationTest {
         if (type.equals(ResultType.DateRangeT.INSTANCE)) {
             // Special case for daterange in this test because it uses a StructVector, we rebuild the structural information
             List<?> dr = (List<?>) obj;
-            return "{\"min\":" + dr.get(0) + ",\"max\":" + dr.get(1) + "}";
+            StringBuilder sb = new StringBuilder();
+            sb.append("{");
+            final int min = (int) dr.get(0);
+            final int max = (int) dr.get(1);
+            // Handle cases where one of the limits is infinity
+            if (!CDate.isNegativeInfinity(min)) {
+                sb.append("\"min\":").append(min);
+            }
+            if (!CDate.isNegativeInfinity(min) && !CDate.isPositiveInfinity(max)) {
+                sb.append(",");
+            }
+            if (!CDate.isPositiveInfinity(max)) {
+                sb.append("\"max\":").append(max);
+            }
+            sb.append("}");
+            return sb.toString();
         }
         if (type.equals(ResultType.ResolutionT.INSTANCE)) {
             return type.printNullable(settings, obj);

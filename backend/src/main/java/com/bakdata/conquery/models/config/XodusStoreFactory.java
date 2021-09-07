@@ -263,6 +263,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 		final Store<IId<Dictionary>, Dictionary> result;
 
+		// TODO this looks like dictionaries are double cached
 		if (useWeakDictionaryCaching) {
 			result = new WeakCachedStore<>(bigStore, getWeakCacheDuration());
 		}

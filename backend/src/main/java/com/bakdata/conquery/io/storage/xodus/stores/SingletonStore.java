@@ -49,7 +49,8 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 	public void remove() {
 		super.remove(Boolean.TRUE);
 	}
-	
+
+	@Override
 	protected void removed(VALUE value) {
 		try {
 			if(value != null) {
@@ -60,6 +61,7 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 		}
 	}
 
+	@Override
 	protected void added(VALUE value) {
 		try {
 			if(value != null) {
@@ -67,6 +69,21 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 			}
 		} catch(Exception e) {
 			throw new RuntimeException("Failed to add "+value, e);
+		}
+	}
+
+	@Override
+	protected void updated(VALUE value) {
+		try {
+			if(value != null) {
+				final VALUE old = get();
+				if (old != null) {
+					onRemove.accept(old);
+				}
+				onAdd.accept(value);
+			}
+		} catch(Exception e) {
+			throw new RuntimeException("Failed to update "+value, e);
 		}
 	}
 }
