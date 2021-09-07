@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.conquerytoken;
+package com.bakdata.conquery.models.auth.apitoken;
 
 import lombok.Data;
 
@@ -11,7 +11,7 @@ import java.util.Random;
 
 @Data
 public class ApiTokenCreator {
-	public static final int TOKEN_LENGTH = 30;
+	public static final int TOKEN_LENGTH = 37; // GitHub uses 37 alphanumerics for their token
 	public static final String TOKEN_PREFIX = "cq"; // short for conquery
 
 	private static final String ALGORITHM = "PBKDF2WithHmacSHA1";
@@ -31,7 +31,7 @@ public class ApiTokenCreator {
 		return TOKEN_PREFIX + "_" + tokenProvider.getString(TOKEN_LENGTH);
 	}
 
-	public byte[] hashToken(char[] apiToken){
+	public static byte[] hashToken(char[] apiToken){
 		PBEKeySpec spec = new PBEKeySpec(apiToken, SALT, ITERATIONS, KEY_LENGTH);
 		SecretKeyFactory f = null;
 		try {

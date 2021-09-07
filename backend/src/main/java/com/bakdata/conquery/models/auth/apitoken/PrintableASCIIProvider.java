@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.conquerytoken;
+package com.bakdata.conquery.models.auth.apitoken;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.CharUtils;
@@ -22,12 +22,7 @@ public class PrintableASCIIProvider {
 	}
 
 	private boolean isValidChar(int c) {
-		if (CharUtils.isAsciiAlphanumeric((char ) c)) {
-			return true;
-		}
-
-		return c == '-';
-
+		return CharUtils.isAsciiAlphanumeric((char ) c);
 	}
 
 }

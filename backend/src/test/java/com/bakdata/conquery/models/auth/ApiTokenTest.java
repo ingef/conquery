@@ -1,11 +1,10 @@
-package com.bakdata.conquery.models.auth.oidc;
+package com.bakdata.conquery.models.auth;
 
-import static com.bakdata.conquery.models.auth.conquerytoken.ApiTokenCreator.*;
+import static com.bakdata.conquery.models.auth.apitoken.ApiTokenCreator.*;
 import static org.assertj.core.api.Assertions.*;
 
-import com.bakdata.conquery.models.auth.conquerytoken.ApiTokenCreator;
+import com.bakdata.conquery.models.auth.apitoken.ApiTokenCreator;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
@@ -23,7 +22,7 @@ public class ApiTokenTest {
 
 		assertThat(token).hasSize(TOKEN_LENGTH + TOKEN_PREFIX.length() + 1);
 
-		assertThat(token).matches(TOKEN_PREFIX + "_" + "[\\w\\d-_]{"+ TOKEN_LENGTH +"}");
+		assertThat(token).matches(TOKEN_PREFIX + "_" + "[\\w\\d_]{"+ TOKEN_LENGTH +"}");
 
 		assertThat(token.substring(TOKEN_PREFIX.length()+2)).containsPattern("[a-zA-Z]");
 	}

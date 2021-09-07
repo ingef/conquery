@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.conquerytoken;
+package com.bakdata.conquery.models.auth.apitoken;
 
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 
 @Data
-public class ApiToken {
+public class ApiTokenData {
 	private final String name;
 	private final UserId userId;
 	private final Collection<ConqueryPermission> permissions;
