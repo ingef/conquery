@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationToken;
 
+import javax.annotation.Priority;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Response;
@@ -30,6 +31,7 @@ import java.util.function.Function;
  */
 @RequiredArgsConstructor
 @Slf4j
+@Priority(Priorities.AUTHENTICATION)
 public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 	/**
@@ -74,7 +76,7 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 			}
 			else if (authenticatedRedirects.size() > 1) {
 				log.error("Multiple authenticated redirects generated. Only one should be possible");
-				throw new BadRequestException("The request triggered more than multi-step authentication schemas, which is not allowed.");
+				throw new BadRequestException("The request triggered more than one multi-step authentication schema, which is not allowed.");
 			}
 
 			// The request was not authenticated, nor was it a step towards an authentication, so we redirect the user to a login.
@@ -95,12 +97,8 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 				throw new ServiceUnavailableException("No login schema configured");
 			}
 
-			if (loginRedirects.size() == 1) {
-				// There is only one login schema, redirect the user there
-				throw new RedirectionException(Response.seeOther(loginRedirects.get(0)).build());
-			}
-
-			// There are multiple login schemas, give the user a choice to choose between them
+			// Give the user a choice to choose between them. (If there is only one schema, still redirect the user there)
+			// to prevent too many redirects if there was a problem wit the authentication
 			throw new WebApplicationException(Response.ok(new UIView<>("logins.html.ftl", null, loginRedirects)).build());
 		}
 	}

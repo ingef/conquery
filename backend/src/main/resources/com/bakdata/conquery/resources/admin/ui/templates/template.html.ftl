@@ -84,6 +84,8 @@
 			</#list>
 		</div>
 	  </div>
+
+      <button type="button" class="btn btn-secondary" onclick="logout()">Logout</button>
 	</nav>
 	
 	<div class="container">
@@ -104,6 +106,12 @@
 					...options
 				}
 			)
+		}
+
+		function logout(){
+			event.preventDefault();
+			rest('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/logout')
+			    .then(function () { location.reload() });
 		}
 	
 		function postFile(event, url) {

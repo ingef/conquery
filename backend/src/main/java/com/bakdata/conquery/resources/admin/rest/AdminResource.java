@@ -1,17 +1,14 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
@@ -24,6 +21,7 @@ import io.dropwizard.auth.Auth;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -59,6 +57,7 @@ public class AdminResource {
      * Execute script and serialize return value as Json.
      * Useful for configuration and verification scripts.
      */
+    @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
@@ -87,6 +86,14 @@ public class AdminResource {
     public ImmutableMap<String, JobManagerStatus> getJobs() {
         return processor.getJobs();
     }
+
+    @GET
+    @Path("logout")
+    public Response logout() {
+        return  Response.ok().cookie(AuthenticationConfig.expireAuthCookie()).build();
+    }
+
+}
 
 
     @GET
