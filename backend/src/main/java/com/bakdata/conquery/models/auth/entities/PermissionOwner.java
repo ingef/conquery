@@ -62,7 +62,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NonNull
-	@Setter
 	private MetaStorage storage;
 
 

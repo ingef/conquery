@@ -31,6 +31,7 @@ import javax.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -116,7 +117,7 @@ public class SerializingStoreDumpTest {
 	}
 
 	private File getDumpFile(Condition<File> dumpFileCond) {
-		return tmpDir.listFiles((name) -> dumpFileCond.matches(name))[0];
+		return Objects.requireNonNull(tmpDir.listFiles(dumpFileCond::matches))[0];
 	}
 
 	/**

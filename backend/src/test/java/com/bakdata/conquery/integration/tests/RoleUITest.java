@@ -31,19 +31,17 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
  */
 public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-
-	private MetaStorage storage;
-	private Role mandator = new Role("testMandatorName", "testMandatorLabel", storage);
-	private RoleId mandatorId = mandator.getId();
-	private User user = new User("testUser@test.de", "testUserName", storage);
-	private UserId userId = user.getId();
-	private ConqueryPermission permission = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId("testDatasetId"));
-
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
+		MetaStorage storage = conquery.getMetaStorage();
+		Role mandator = new Role("testMandatorName", "testMandatorLabel", storage);
+		RoleId mandatorId = mandator.getId();
+		User user = new User("testUser@test.de", "testUserName", storage);
+		UserId userId = user.getId();
 		try {
-	
-			storage = conquery.getMetaStorage();
+
+			ConqueryPermission permission = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId("testDatasetId"));
+
 			storage.addRole(mandator);
 			storage.addUser(user);
 			// override permission object, because it might have changed by the subject
