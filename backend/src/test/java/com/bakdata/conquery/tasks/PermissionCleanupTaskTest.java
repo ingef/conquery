@@ -56,9 +56,9 @@ class PermissionCleanupTaskTest {
 
         final ManagedQuery managedQuery = createManagedQuery();
         // Saving the Execution
-        User user = new User("test", "test");
+        User user = new User("test", "test", storage);
         storage.updateUser(user);
-        user.addPermission(storage, ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
+        user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
 
         deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers());
 
@@ -73,9 +73,9 @@ class PermissionCleanupTaskTest {
         final ManagedQuery managedQuery = createManagedQuery();
         // Removing the execution
         storage.removeExecution(managedQuery.getId());
-        User user = new User("test", "test");
+        User user = new User("test", "test", storage);
         storage.updateUser(user);
-        user.addPermission(storage, ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
+        user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
 
         deleteQueryPermissionsWithMissingRef(storage, storage.getAllUsers());
 
@@ -91,11 +91,10 @@ class PermissionCleanupTaskTest {
         final ManagedQuery managedQuery2 = createManagedQuery();
         // Removing the second execution
         storage.removeExecution(managedQuery2.getId());
-        User user = new User("test", "test");
+        User user = new User("test", "test", storage);
         storage.updateUser(user);
         user.addPermission(
-                storage,
-                // Build a permission with multiple instances
+				// Build a permission with multiple instances
                 new WildcardPermission(List.of(
                         Set.of(ExecutionPermission.DOMAIN),
                         Set.of(Ability.READ.toString().toLowerCase()),
@@ -115,11 +114,11 @@ class PermissionCleanupTaskTest {
         // Created owned execution
         final ManagedQuery managedQueryOwned = createManagedQuery();
         // Setup user
-		User user = new User("test", "test");
-		User user2 = new User("test2", "test2");
+		User user = new User("test", "test", storage);
+		User user2 = new User("test2", "test2", storage);
 
         storage.updateUser(user);
-        user.addPermission(storage, ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQueryOwned.getId()));
+        user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQueryOwned.getId()));
 
         managedQueryOwned.setOwner(user);
         storage.updateExecution(managedQueryOwned);
@@ -127,7 +126,7 @@ class PermissionCleanupTaskTest {
         // Created not owned execution
         final ManagedQuery managedQueryNotOwned = createManagedQuery();
         // Setup user
-        user.addPermission(storage, ExecutionPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
+        user.addPermission(ExecutionPermission.onInstance(Ability.READ, managedQueryNotOwned.getId()));
 
         // Set owner
         managedQueryNotOwned.setOwner(user2);

@@ -25,17 +25,17 @@ public class CopyUserTest {
 		registry.setMetaStorage(storage);
 
 		// Create test role
-		Role role = new Role("role", "role");
+		Role role = new Role("role", "role", storage);
 		storage.addRole(role);
-		role.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset0")));
+		role.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset0")));
 
 		// Create test group
-		Group group = new Group("group", "group");
+		Group group = new Group("group", "group", storage);
 		storage.addGroup(group);
-		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset1")));
+		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("dataset1")));
 
 		// Create original user with role and group mapping
-		User originUser = new User("user", "user");
+		User originUser = new User("user", "user", storage);
 		storage.addUser(originUser);
 		originUser.addRole(storage, role);
 		group.addMember(storage, originUser);

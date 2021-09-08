@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.auth;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,11 +17,8 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.AdminPermission;
-import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
@@ -33,7 +28,6 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
-import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -51,20 +45,18 @@ public class AuthorizationHelper {
 	 * Utility function to add a permission to a subject (e.g {@link User}).
 	 * @param owner The subject to own the new permission.
 	 * @param permission The permission to add.
-	 * @param storage A storage where the permission are added for persistence.
 	 */
-	public static void addPermission(@NonNull PermissionOwner<?> owner, @NonNull ConqueryPermission permission, @NonNull MetaStorage storage) {
-		owner.addPermission(storage, permission);
+	public static void addPermission(@NonNull PermissionOwner<?> owner, @NonNull ConqueryPermission permission) {
+		owner.addPermission(permission);
 	}
 
 	/**
 	 * Utility function to remove a permission from a subject (e.g {@link User}).
 	 * @param owner The subject to own the new permission.
 	 * @param permission The permission to remove.
-	 * @param storage A storage where the permission is removed from.
 	 */
-	public static void removePermission(@NonNull PermissionOwner<?> owner, @NonNull Permission permission, @NonNull MetaStorage storage) {
-		owner.removePermission(storage, permission);
+	public static void removePermission(@NonNull PermissionOwner<?> owner, @NonNull Permission permission) {
+		owner.removePermission(permission);
 	}
 
 	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MetaStorage storage){

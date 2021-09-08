@@ -6,6 +6,7 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
@@ -63,9 +64,9 @@ public interface StoreFactory {
 	// MetaStorage
     IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName);
 	IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName);
-	IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName);
-	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName);
-	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName);
+	IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
+	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
+	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
 
 	SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, SingletonNamespaceCollection namespaceCollection);
 }

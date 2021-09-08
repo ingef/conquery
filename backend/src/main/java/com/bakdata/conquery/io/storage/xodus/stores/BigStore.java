@@ -24,7 +24,6 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.storage.IStoreInfo;
 import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreInfo;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -49,7 +48,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	private final ObjectWriter valueWriter;
 	private ObjectReader valueReader;
 
-	private final IStoreInfo storeInfo;
+	private final IStoreInfo<KEY,VALUE> storeInfo;
 
 	@Getter @Setter
 	private int chunkByteSize;
@@ -62,22 +61,20 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		this.chunkByteSize = Ints.checkedCast(config.getXodus().getLogFileSize().toBytes() / 4L);
 
 		metaStore = new SerializingStore<>(
-				config,
 				new XodusStore(env, storeInfo.getName() + "_META", openStores, envCloseHook, envRemoveHook),
 				validator,
 				mapper,
 				storeInfo.getKeyType(),
-				BigStoreMetaKeys.class
+				BigStoreMetaKeys.class, config.isValidateOnWrite(), config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory()
 
 		);
 
 		dataStore = new SerializingStore<>(
-				config,
 				new XodusStore(env, storeInfo.getName() + "_DATA", openStores, envCloseHook, envRemoveHook),
 				validator,
 				mapper,
 				UUID.class,
-				byte[].class
+				byte[].class, config.isValidateOnWrite(), config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory()
 		);
 
 

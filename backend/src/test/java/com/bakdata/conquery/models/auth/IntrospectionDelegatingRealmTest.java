@@ -60,7 +60,7 @@ public class IntrospectionDelegatingRealmTest {
 	private static final BearerToken USER_3_TOKEN_WRAPPED = new BearerToken(USER_3_TOKEN);
 	// Groups
 	private static final String GROUPNAME_1 = "group1";
-	private static final Group GROUP_1_EXISTING = new Group(GROUPNAME_1, GROUPNAME_1);
+	private static final Group GROUP_1_EXISTING = new Group(GROUPNAME_1, GROUPNAME_1, STORAGE);
 	private static final String GROUPNAME_2 = "group2"; // Group is created during test
 	
 	private static OIDCMockServer OIDC_SERVER;
@@ -157,12 +157,12 @@ public class IntrospectionDelegatingRealmTest {
 			.usingRecursiveComparison()
 			.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
 			.isEqualTo(new ConqueryAuthenticationInfo(new UserId(USER_1_NAME), USER1_TOKEN_WRAPPED, REALM, true));
-		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_1_NAME, USER_1_NAME));
+		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_1_NAME, USER_1_NAME, STORAGE));
 	}
 	
 	@Test
 	public void tokenIntrospectionSimpleUserExisting() {
-		User existingUser = new User(USER_1_NAME, USER_1_NAME);
+		User existingUser = new User(USER_1_NAME, USER_1_NAME, STORAGE);
 		STORAGE.addUser(existingUser);
 		
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER1_TOKEN_WRAPPED);
@@ -182,7 +182,7 @@ public class IntrospectionDelegatingRealmTest {
 			.usingRecursiveComparison()
 			.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
 			.isEqualTo(new ConqueryAuthenticationInfo(new UserId(USER_2_NAME), USER_2_TOKEN_WRAPPED, REALM, true));
-		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_2_NAME, USER_2_LABEL));
+		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_2_NAME, USER_2_LABEL, STORAGE));
 		assertThat(STORAGE.getAllGroups()).hasSize(2); // Pre-existing group and a second group that has been added in the process
 		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).contains(new UserId(USER_2_NAME));
 		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_2)).getMembers()).contains(new UserId(USER_2_NAME));
@@ -190,7 +190,7 @@ public class IntrospectionDelegatingRealmTest {
 	
 	@Test
 	public void tokenIntrospectionGroupedUserRemoveGroupMapping() {
-		User user = new User(USER_3_NAME, USER_3_LABEL);
+		User user = new User(USER_3_NAME, USER_3_LABEL, STORAGE);
 		STORAGE.addUser(user);
 		GROUP_1_EXISTING.addMember(STORAGE, user);
 		
@@ -202,7 +202,7 @@ public class IntrospectionDelegatingRealmTest {
 			.usingRecursiveComparison()
 			.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
 			.isEqualTo(new ConqueryAuthenticationInfo(new UserId(USER_3_NAME), USER_3_TOKEN_WRAPPED, REALM, true));
-		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_3_NAME, USER_3_LABEL));
+		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_3_NAME, USER_3_LABEL, STORAGE));
 		assertThat(STORAGE.getAllGroups()).hasSize(1); // Pre-existing group 
 		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).doesNotContain(new UserId(USER_3_NAME));
 	}

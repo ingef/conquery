@@ -25,7 +25,7 @@ public class XodusStore {
 	private final Consumer<Environment> envCloseHook;
 	private final Consumer<Environment> envRemoveHook;
 	@Getter
-	private String name;
+	private final String name;
 
 	public XodusStore(Environment env, String name, Collection<Store> openStoresInEnv, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor

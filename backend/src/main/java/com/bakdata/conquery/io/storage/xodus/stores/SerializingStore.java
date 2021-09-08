@@ -9,13 +9,13 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
-import com.bakdata.conquery.io.storage.IStoreInfo;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -98,10 +98,18 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final ObjectMapper objectMapper;
 
 	@SuppressWarnings("unchecked")
-	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStoreFactory config, XodusStore store, Validator validator, ObjectMapper objectMapper, CLASS_K keyType, CLASS_V valueType) {
+	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStore store,
+																					   Validator validator,
+																					   ObjectMapper objectMapper,
+																					   CLASS_K keyType,
+																					   CLASS_V valueType,
+																					   boolean validateOnWrite,
+																					   boolean removeUnreadableFromStore,
+																					   File unreadableDataDumpDirectory,
+																					   Injectable ... injectables) {
 		this.store = store;
 		this.validator = validator;
-		this.validateOnWrite = config.isValidateOnWrite();
+		this.validateOnWrite = validateOnWrite;
 
 		this.valueType = valueType;
 
@@ -110,25 +118,25 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		valueWriter = objectMapper.writerFor(this.valueType);
 
 		valueReader = objectMapper.readerFor(this.valueType);
+		for (Injectable injectable : injectables) {
+			valueReader = injectable.injectInto(valueReader);
+		}
 
 		keyWriter = objectMapper.writerFor(keyType);
 
 		keyReader = objectMapper.readerFor(keyType);
-		
-		removeUnreadablesFromUnderlyingStore = config.isRemoveUnreadableFromStore();
-		
+
+		removeUnreadablesFromUnderlyingStore = removeUnreadableFromStore;
+
+		unreadableValuesDumpDir = unreadableDataDumpDirectory;
 		// Prepare dump directory if there is one set in the config
-		Optional<File> dumpUnreadable = config.getUnreadableDataDumpDirectory();
-		if(dumpUnreadable.isPresent()) {
-			unreadableValuesDumpDir = dumpUnreadable.get();
-			if(!unreadableValuesDumpDir.exists()) {
-				unreadableValuesDumpDir.mkdirs();
+		if(unreadableValuesDumpDir != null ) {
+			if(!unreadableValuesDumpDir.exists() && unreadableValuesDumpDir.mkdirs()) {
+				log.info("Created dump directory for unreadable values: {}", unreadableValuesDumpDir.getAbsolutePath());
 			}
 			else if(!unreadableValuesDumpDir.isDirectory()) {
 				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
 			}
-		} else {
-			unreadableValuesDumpDir = null;
 		}
 	}
 
@@ -251,7 +259,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				// With trace also print the stacktrace
 				log.trace(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
 			} else {
-				log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get());
+				log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
 			}
 		}
 		return null;

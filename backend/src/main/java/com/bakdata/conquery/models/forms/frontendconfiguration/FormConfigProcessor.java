@@ -182,10 +182,10 @@ public class FormConfigProcessor {
 				instancesCleared.remove(config.getId().toString());
 				WildcardPermission clearedPermission =
 						new WildcardPermission(List.of(wpermission.getDomains(), wpermission.getAbilities(), instancesCleared), Instant.now());
-				user.addPermission(storage, clearedPermission);
+				user.addPermission(clearedPermission);
 			}
 			
-			user.removePermission(storage, wpermission);
+			user.removePermission(wpermission);
 		}
 	}
 

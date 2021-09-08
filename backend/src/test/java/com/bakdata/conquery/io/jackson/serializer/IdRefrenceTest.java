@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
+import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -7,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -31,7 +33,7 @@ public class IdRefrenceTest {
 		registry.register(table);
 		final CentralRegistry metaRegistry = new CentralRegistry();
 
-		User user = new User("usermail", "userlabel");
+		User user = new User("usermail", "userlabel", mock(MetaStorage.class));
 		metaRegistry.register(user);
 
 		String json = Jackson.MAPPER.writeValueAsString(

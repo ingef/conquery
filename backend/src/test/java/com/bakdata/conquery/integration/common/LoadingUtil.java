@@ -71,7 +71,7 @@ public class LoadingUtil {
 			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
 												 .createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
 
-			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
 				fail("Query failed");
@@ -85,7 +85,7 @@ public class LoadingUtil {
 			UUID queryId = new UUID(0L, id++);
 
 			ManagedExecution<?> managed = support.getNamespace().getExecutionManager().createQuery(support.getNamespace().getNamespaces(),query, queryId, user, support.getNamespace().getDataset());
-			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
 				fail("Query failed");

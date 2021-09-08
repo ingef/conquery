@@ -5,6 +5,7 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.IStoreInfo;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.StoreInfo;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -13,6 +14,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.io.Files;
 import io.dropwizard.jersey.validation.Validators;
 import jetbrains.exodus.env.Environment;
@@ -28,13 +31,13 @@ import javax.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class SerializingStoreDumpTest {
 
+	private final static MetaStorage STORAGE = new MetaStorage(Validators.newValidator(), new NonPersistentStoreFactory(), new DatasetRegistry(2));
 	public static final IStoreInfo<UserId, User> USER_STORE_ID = StoreInfo.AUTH_USER.storeInfo();
 	private File tmpDir;
 	private Environment env;
@@ -44,7 +47,7 @@ public class SerializingStoreDumpTest {
 	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"));
 	private final ConceptQuery cQuery = new ConceptQuery(
 		new CQReusedQuery(managedQuery.getId()));
-	private final User user = new User("username", "userlabel");
+	private final User user = new User("username", "userlabel", STORAGE);
 
 	@BeforeEach
 	public void init() {
@@ -60,7 +63,7 @@ public class SerializingStoreDumpTest {
 	}
 
 	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, IStoreInfo<KEY,VALUE> storeId) {
-		return new SerializingStore<>(config, new XodusStore(environment, storeId.getName(), new ArrayList<>(), (e) -> {}, (e) -> {}), validator, config.getObjectMapper(), storeId.getKeyType(), storeId.getValueType());
+		return new SerializingStore<>(new XodusStore(environment, storeId.getName(), new ArrayList<>(), (e) -> {}, (e) -> {}), validator, config.getObjectMapper(), storeId.getKeyType(), storeId.getValueType(), config.isValidateOnWrite(), config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory());
 	}
 
 	/**
@@ -69,7 +72,7 @@ public class SerializingStoreDumpTest {
 	@Test
 	public void testCorruptValueDump() throws JSONException, IOException {
 		// Set dump directory to this tests temp-dir
-		config.setUnreadableDataDumpDirectory(Optional.of(tmpDir));
+		config.setUnreadableDataDumpDirectory(tmpDir);
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
@@ -122,7 +125,7 @@ public class SerializingStoreDumpTest {
 	@Test
 	public void testCorruptKeyDump() throws JSONException, IOException {
 		// Set dump directory to this tests temp-dir
-		config.setUnreadableDataDumpDirectory(Optional.of(tmpDir));
+		config.setUnreadableDataDumpDirectory(tmpDir);
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)

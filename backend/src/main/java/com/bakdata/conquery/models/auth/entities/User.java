@@ -33,7 +33,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 public class User extends PermissionOwner<UserId> implements Principal, RoleOwner {
 
 	@JsonProperty
-	private Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
+	private final Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
 
 	@Getter
 	@Setter
@@ -45,8 +45,8 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	@Getter(AccessLevel.PROTECTED)
 	private final transient ShiroUserAdapter shiroUserAdapter;
 
-	public User(String name, String label) {
-		super(name, label);
+	public User(String name, String label, MetaStorage storage) {
+		super(name, label, storage);
 		this.shiroUserAdapter = new ShiroUserAdapter();
 	}
 

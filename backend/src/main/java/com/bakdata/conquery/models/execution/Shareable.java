@@ -50,7 +50,7 @@ public interface  Shareable extends Authorized {
 
 					log.trace("User {} unshares instance {} ({}) from owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), group1);
 
-					AuthorizationHelper.removePermission(group1, shareable.createPermission(AbilitySets.SHAREHOLDER), storage);
+					AuthorizationHelper.removePermission(group1, shareable.createPermission(AbilitySets.SHAREHOLDER));
 				}
 
 
@@ -60,7 +60,7 @@ public interface  Shareable extends Authorized {
 
 					for(Group group : groups) {
 						ConqueryPermission sharePermission = shareable.createPermission(AbilitySets.SHAREHOLDER);
-						AuthorizationHelper.addPermission(group, sharePermission, storage);
+						AuthorizationHelper.addPermission(group, sharePermission);
 
 						log.trace("User {} shares instance {} ({}). Adding permission {} to owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, group);
 					}

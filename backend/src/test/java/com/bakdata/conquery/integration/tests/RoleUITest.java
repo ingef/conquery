@@ -33,9 +33,9 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 
 
 	private MetaStorage storage;
-	private Role mandator = new Role("testMandatorName", "testMandatorLabel");
+	private Role mandator = new Role("testMandatorName", "testMandatorLabel", storage);
 	private RoleId mandatorId = mandator.getId();
-	private User user = new User("testUser@test.de", "testUserName");
+	private User user = new User("testUser@test.de", "testUserName", storage);
 	private UserId userId = user.getId();
 	private ConqueryPermission permission = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId("testDatasetId"));
 
@@ -48,7 +48,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			storage.addUser(user);
 			// override permission object, because it might have changed by the subject
 			// owning the permission
-			mandator.addPermission(storage, permission);
+			mandator.addPermission(permission);
 			user.addRole(storage, mandator);
 
 

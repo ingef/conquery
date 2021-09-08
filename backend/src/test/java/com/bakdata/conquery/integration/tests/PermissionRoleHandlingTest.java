@@ -11,8 +11,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 
 public class PermissionRoleHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private final Role mandator1 = new Role("company", "company");
-	private final TestUser user1 = new TestUser();
+
 
 	/**
 	 * This is a longer test that plays through different scenarios of permission
@@ -21,6 +20,8 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		MetaStorage storage = conquery.getMetaStorage();
+		Role mandator1 = new Role("company", "company", storage);
+		TestUser user1 = new TestUser(storage);
 		Dataset dataset = conquery.getDataset();
 
 		try {
@@ -30,33 +31,33 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 
 			user1.addRole(storage, mandator1);
 
-			user1.addPermission(storage, dataset.createPermission(Ability.READ.asSet()));
-			mandator1.addPermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
+			user1.addPermission(dataset.createPermission(Ability.READ.asSet()));
+			mandator1.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
 
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isTrue();
 
 			// Delete permission from mandator
-			mandator1.removePermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
+			mandator1.removePermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
 			assertThat(mandator1.getPermissions()).isEmpty();
 
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isFalse();
 
 			// Add permission to user
-			user1.addPermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
+			user1.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
 
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isTrue();
 
 			// Delete permission from mandator
-			user1.removePermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
+			user1.removePermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
 
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isFalse();
 
 			// Add permission to mandator, remove mandator from user
-			mandator1.addPermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
+			mandator1.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
 			user1.removeRole(storage, mandator1);
 
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
@@ -69,8 +70,8 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isTrue();
 
 			// Delete all permissions from mandator and user
-			user1.removePermission(storage, dataset.createPermission(Ability.READ.asSet()));
-			mandator1.removePermission(storage, dataset.createPermission(Ability.DOWNLOAD.asSet()));
+			user1.removePermission(dataset.createPermission(Ability.READ.asSet()));
+			mandator1.removePermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
 
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isFalse();
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isFalse();

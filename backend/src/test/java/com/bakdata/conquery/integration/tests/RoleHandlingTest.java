@@ -15,10 +15,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
  */
 public class RoleHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private final Role mandator1 = new Role("company", "company");
-	private final Role mandator1Copy = new Role("company", "company");
-	private final Role mandator2 = new Role("company2", "company2");
-	private final User user1 = new User("user", "user");
+
 	
 
 	@Override
@@ -26,6 +23,11 @@ public class RoleHandlingTest extends IntegrationTest.Simple implements Programm
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
 		MetaStorage storage = conquery.getMetaStorage();
+
+		Role mandator1 = new Role("company", "company", storage);
+		Role mandator1Copy = new Role("company", "company", storage);
+		Role mandator2 = new Role("company2", "company2", storage);
+		User user1 = new User("user", "user", storage);
 		
 		try {
 			storage.addRole(mandator1);

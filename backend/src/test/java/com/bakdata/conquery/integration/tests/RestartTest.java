@@ -35,12 +35,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 	public static final Dataset TEST_DATASET_4 = new Dataset("testDataset4");
 	public static final Dataset TEST_DATASET_5 = new Dataset("testDataset5");
 	public static final Dataset TEST_DATASET_6 = new Dataset("testDataset6");
-	private Role role = new Role("role", "ROLE");
-	private Role roleToDelete = new Role("roleDelete", "ROLE_DELETE");
-	private User user = new User("user@test.email", "USER");
-	private User userToDelete = new User("userDelete@test.email", "USER_DELETE");
-	private Group group = new Group("group", "GROUP");
-	private Group groupToDelete = new Group("groupDelete", "GROUP_DELETE");
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
@@ -78,6 +72,18 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		final Dataset dataset4 = adminDatasetProcessor.addDataset(TEST_DATASET_4);
 		final Dataset dataset5 = adminDatasetProcessor.addDataset(TEST_DATASET_5);
 		final Dataset dataset6 = adminDatasetProcessor.addDataset(TEST_DATASET_6);
+
+
+
+
+		MetaStorage storage = conquery.getMetaStorage();
+
+		Role role = new Role("role", "ROLE", storage);
+		Role roleToDelete = new Role("roleDelete", "ROLE_DELETE", storage);
+		User user = new User("user@test.email", "USER", storage);
+		User userToDelete = new User("userDelete@test.email", "USER_DELETE", storage);
+		Group group = new Group("group", "GROUP", storage);
+		Group groupToDelete = new Group("groupDelete", "GROUP_DELETE", storage);
 
 		{// Auth testing (deletion and permission grant)
 			// build constellation
@@ -137,9 +143,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		log.info("Restart complete");
 
 		test.executeTest(support);
-
-
-		MetaStorage storage = conquery.getMetaStorage();
 
 		{// Auth actual tests
 			User userStored = storage.getUser(user.getId());

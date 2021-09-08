@@ -25,8 +25,8 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	@JsonProperty
 	private Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
 
-	public Group(String name, String label) {
-		super(name, label);
+	public Group(String name, String label, MetaStorage storage) {
+		super(name, label, storage);
 	}
 
 	@Override

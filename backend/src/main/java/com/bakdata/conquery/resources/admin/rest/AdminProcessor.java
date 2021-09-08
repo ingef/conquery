@@ -90,7 +90,7 @@ public class AdminProcessor {
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
 	public void createPermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.addPermission(owner, permission, storage);
+		AuthorizationHelper.addPermission(owner, permission);
 	}
 
 	/**
@@ -101,7 +101,7 @@ public class AdminProcessor {
 	 * @param permission The permission to delete.
 	 */
 	public void deletePermission(PermissionOwner<?> owner, ConqueryPermission permission) {
-		AuthorizationHelper.removePermission(owner, permission, storage);
+		AuthorizationHelper.removePermission(owner, permission);
 	}
 
 

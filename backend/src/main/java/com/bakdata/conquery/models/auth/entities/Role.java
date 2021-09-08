@@ -6,8 +6,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 public class Role extends PermissionOwner<RoleId> {
 	
 
-	public Role(String name, String label) {
-		super(name, label);
+	public Role(String name, String label, MetaStorage storage) {
+		super(name, label, storage);
 	}
 
 	@Override

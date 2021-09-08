@@ -18,9 +18,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
  */
 public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private final Group group1 = new Group("company", "company");
-	private final Role role = new Role("role1", "role1");
-	private final TestUser user1 = new TestUser();
+
 	
 
 	@Override
@@ -28,12 +26,16 @@ public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements P
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
 		MetaStorage storage = conquery.getMetaStorage();
-		
+
+		Group group1 = new Group("company", "company", storage);
+		Role role = new Role("role1", "role1", storage);
+		TestUser user1 = new TestUser(storage);
+
 		try {
 			storage.addRole(role);
 			storage.addUser(user1);
 			storage.addGroup(group1);
-			role.addPermission(storage, new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")));
+			role.addPermission(new DatasetPermission().instancePermission(Ability.READ, new DatasetId("testDataset")));
 
 			//// Add user to group
 			group1.addMember(storage, user1);

@@ -20,6 +20,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.*;
@@ -104,7 +105,7 @@ public class XodusStoreFactory implements StoreFactory {
 	/**
 	 * When set, all values that could not be deserialized from the persistent store, are dump into individual files.
 	 */
-	private Optional<File> unreadableDataDumpDirectory = Optional.empty();
+	private File unreadableDataDumpDirectory = null;
 
 	@JsonIgnore
 	private transient Validator validator;
@@ -246,7 +247,7 @@ public class XodusStoreFactory implements StoreFactory {
 							DICTIONARIES.storeInfo(),
 							openStoresInEnv.get(environment),
 							this::closeEnvironment,
-							this::removeEnvironment,
+							XodusStoreFactory::removeEnvironmentHook,
 							namespaceCollection.injectInto(objectMapper));
 		}
 
@@ -287,7 +288,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 		synchronized (openStoresInEnv) {
 			final BigStore<Boolean, EntityIdMap> bigStore =
-					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, objectMapper);
+					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), openStoresInEnv.get(environment), this::closeEnvironment, XodusStoreFactory::removeEnvironmentHook, objectMapper);
 
 			return new SingletonStore<>(new CachedStore<>(bigStore));
 		}
@@ -314,19 +315,19 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName) {
-		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER), centralRegistry);
+	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER), centralRegistry, storage);
 	}
 
 	@Override
-	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName) {
-		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE), centralRegistry);
+	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE), centralRegistry, storage);
 	}
 
 
 	@Override
-	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName) {
-		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP), centralRegistry);
+	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP), centralRegistry, storage);
 	}
 
 	@Override
@@ -379,7 +380,7 @@ public class XodusStoreFactory implements StoreFactory {
 		}
 	}
 
-	private void removeEnvironment(Environment env) {
+	public static void removeEnvironmentHook(Environment env) {
 		log.info("Deleting Environment[{}]", env.getLocation());
 		try {
 			FileUtil.deleteRecursive(Path.of(env.getLocation()));
@@ -389,17 +390,20 @@ public class XodusStoreFactory implements StoreFactory {
 		}
 	}
 
-	public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreInfo storeId) {
+	public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreInfo storeId, Injectable ... injectables) {
 		final IStoreInfo<KEY, VALUE> storeInfo = storeId.storeInfo();
 		synchronized (openStoresInEnv) {
 			return new CachedStore<>(
 					new SerializingStore<>(
-							this,
-							new XodusStore(environment, storeInfo.getName(), openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
+							new XodusStore(environment, storeInfo.getName(), openStoresInEnv.get(environment), this::closeEnvironment, XodusStoreFactory::removeEnvironmentHook),
 							validator,
 							objectMapper,
 							storeInfo.getKeyType(),
-							storeInfo.getValueType()
+							storeInfo.getValueType(),
+							this.isValidateOnWrite(),
+							this.isRemoveUnreadableFromStore(),
+							this.getUnreadableDataDumpDirectory(),
+							injectables
 					));
 		}
 	}
