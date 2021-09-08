@@ -82,7 +82,7 @@ public enum StoreInfo {
 	/**
 	 * Store for identifiable values, with injectors. Store is also cached.
 	 */
-	public <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry, Injectable... injectables) {
+	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry, Injectable... injectables) {
 
 		for (Injectable injectable : injectables) {
 			baseStore.inject(injectable);
@@ -96,21 +96,21 @@ public enum StoreInfo {
 	/**
 	 * Store for identifiable values, without injectors. Store is also cached.
 	 */
-	public <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry) {
+	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry) {
 		return identifiable(baseStore, centralRegistry, new SingletonNamespaceCollection(centralRegistry));
 	}
 
 	/**
 	 * General Key-Value store with caching.
 	 */
-	public <KEY, VALUE> CachedStore<KEY, VALUE> cached(Store<KEY, VALUE> baseStore) {
+	public static <KEY, VALUE> CachedStore<KEY, VALUE> cached(Store<KEY, VALUE> baseStore) {
 		return new CachedStore<>(baseStore);
 	}
 
 	/**
 	 * Identifiable store, that lazy registers items in the central registry.
 	 */
-	public <T extends Identifiable<?>> IdentifiableCachedStore<T> identifiableCachedStore(Store baseStore, CentralRegistry centralRegistry) {
+	public static <T extends Identifiable<?>> IdentifiableCachedStore<T> identifiableCachedStore(Store<IId<T>,T> baseStore, CentralRegistry centralRegistry) {
 		return new IdentifiableCachedStore<T>(centralRegistry, baseStore);
 	}
 
@@ -118,7 +118,7 @@ public enum StoreInfo {
 	/**
 	 * Store holding a single value.
 	 */
-	public <VALUE> SingletonStore<VALUE> singleton(Store<Boolean, VALUE> baseStore, Injectable... injectables) {
+	public static <VALUE> SingletonStore<VALUE> singleton(Store<Boolean, VALUE> baseStore, Injectable... injectables) {
 		return new SingletonStore<>(baseStore, injectables);
 	}
 
