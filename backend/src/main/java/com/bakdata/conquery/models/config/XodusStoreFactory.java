@@ -239,21 +239,21 @@ public class XodusStoreFactory implements StoreFactory {
 
 		synchronized (openStoresInEnv) {
 			bigStore =
-					new BigStore<>(this, validator, environment, DICTIONARIES.storeInfo(), openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, namespaceCollection
-																																										  .injectInto(objectMapper));
+					new BigStore<>(
+							this,
+							validator,
+							environment,
+							DICTIONARIES.storeInfo(),
+							openStoresInEnv.get(environment),
+							this::closeEnvironment,
+							this::removeEnvironment,
+							namespaceCollection.injectInto(objectMapper));
 		}
 
-		final Store<IId<Dictionary>, Dictionary> result;
-
-		// TODO this looks like dictionaries are double cached
 		if (useWeakDictionaryCaching) {
-			result = new WeakCachedStore<>(bigStore, getWeakCacheDuration());
+			return StoreInfo.identifiableCachedStore(new WeakCachedStore<>(bigStore, getWeakCacheDuration()), centralRegistry);
 		}
-		else {
-			result = StoreInfo.cached(bigStore);
-		}
-
-		return StoreInfo.identifiableCachedStore(result, centralRegistry);
+		return StoreInfo.identifiable(bigStore,centralRegistry);
 	}
 
 	@Override
