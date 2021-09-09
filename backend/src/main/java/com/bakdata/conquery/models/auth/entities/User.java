@@ -12,12 +12,14 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -48,6 +50,26 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public User(String name, String label, MetaStorage storage) {
 		super(name, label, storage);
 		this.shiroUserAdapter = new ShiroUserAdapter();
+	}
+
+	@Override
+	public Set<ConqueryPermission> getEffectivePermissions() {
+		Set<ConqueryPermission> permissions = getPermissions();
+		for (RoleId roleId : roles) {
+			Role role = storage.getRole(roleId);
+			if (role == null) {
+				log.warn("Could not find role {} to gather permissions", roleId);
+				continue;
+			}
+			permissions = Sets.union(permissions, role.getEffectivePermissions());
+		}
+		for (Group group : storage.getAllGroups()) {
+			if (!group.containsMember(this)) {
+				continue;
+			}
+			permissions = Sets.union(permissions, group.getEffectivePermissions());
+		}
+		return permissions;
 	}
 
 	@Override

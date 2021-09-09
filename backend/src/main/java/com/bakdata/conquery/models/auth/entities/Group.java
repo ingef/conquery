@@ -5,10 +5,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,6 +29,15 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
 	public Group(String name, String label, MetaStorage storage) {
 		super(name, label, storage);
+	}
+
+	@Override
+	public Set<ConqueryPermission> getEffectivePermissions() {
+		Set<ConqueryPermission> permissions = getPermissions();
+		for (RoleId roleId : roles) {
+			permissions = Sets.union(permissions,storage.getRole(roleId).getEffectivePermissions());
+		}
+		return permissions;
 	}
 
 	@Override

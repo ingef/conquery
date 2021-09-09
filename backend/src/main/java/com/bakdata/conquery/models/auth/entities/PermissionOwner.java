@@ -140,6 +140,8 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 	}
 
+	public abstract Set<ConqueryPermission> getEffectivePermissions();
+
 	public void updatePermissions(Set<ConqueryPermission> permissionsNew) {
 		synchronized (this) {
 			Set<ConqueryPermission> newSet = new HashSet<>(permissionsNew.size());

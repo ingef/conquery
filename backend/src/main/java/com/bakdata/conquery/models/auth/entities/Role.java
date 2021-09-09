@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.auth.entities;
 
+import java.util.Set;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 
 public class Role extends PermissionOwner<RoleId> {
@@ -8,6 +11,11 @@ public class Role extends PermissionOwner<RoleId> {
 
 	public Role(String name, String label, MetaStorage storage) {
 		super(name, label, storage);
+	}
+
+	@Override
+	public Set<ConqueryPermission> getEffectivePermissions() {
+		return getPermissions();
 	}
 
 	@Override
