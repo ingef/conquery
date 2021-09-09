@@ -47,8 +47,9 @@ public class SerializationTestUtil<T> {
 		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
 	}
 
-	public <T> SerializationTestUtil<T> with(Injectable ... injectables) {
-		return this.with(injectables);
+	public SerializationTestUtil<T> injectables(Injectable ... injectables) {
+		this.injectables = injectables;
+		return this;
 	}
 
 	public void test(T value, T expected) throws JSONException, IOException {
@@ -68,7 +69,7 @@ public class SerializationTestUtil<T> {
 		test(value, value);
 	}
 
-	private void test(T value, T expected, ObjectMapper mapper, Injectable ... injectables) throws JSONException, IOException {
+	private void test(T value, T expected, ObjectMapper mapper) throws IOException {
 		if (registry != null) {
 			mapper = new SingletonNamespaceCollection(registry, registry).injectInto(mapper);
 		}

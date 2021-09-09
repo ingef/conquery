@@ -59,8 +59,6 @@ import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
-import javax.validation.Validator;
-
 @Slf4j
 public class SerializationTests {
 
@@ -91,7 +89,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(Role.class)
-				.with(STORAGE)
+				.injectables(STORAGE)
 				.test(mandator);
 	}
 
@@ -116,7 +114,7 @@ public class SerializationTests {
 		SerializationTestUtil
 				.forType(User.class)
 				.registry(registry)
-				.with(STORAGE)
+				.injectables(STORAGE)
 				.test(user);
 	}
 
@@ -140,7 +138,11 @@ public class SerializationTests {
 		registry.register(role);
 		registry.register(user);
 
-		SerializationTestUtil.forType(Group.class).registry(registry).test(group);
+		SerializationTestUtil
+				.forType(Group.class)
+				.injectables(STORAGE)
+				.registry(registry)
+				.test(group);
 	}
 
 	@Test
