@@ -2,13 +2,11 @@ package com.bakdata.conquery.resources.api;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +19,8 @@ import java.net.URL;
 import java.util.Optional;
 
 import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
-import static com.bakdata.conquery.resources.ResourceConstants.*;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 @Slf4j
 @Path("datasets/{" + DATASET + "}/result/")
@@ -36,7 +35,7 @@ public class ResultExcelResource {
 	@Path("{" + QUERY + "}.xlsx")
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response get(
-		@Auth User user,
+		@Auth Userish user,
 		@PathParam(DATASET) DatasetId datasetId,
 		@PathParam(QUERY) ManagedExecution<?> execution,
 		@QueryParam("pretty") Optional<Boolean> pretty) {

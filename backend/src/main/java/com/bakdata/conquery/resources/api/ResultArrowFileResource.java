@@ -20,6 +20,7 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.arrow.ResultArrowFileProcessor;
 import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -38,7 +39,7 @@ public class ResultArrowFileResource {
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response get(
-		@Auth User user,
+		@Auth Userish user,
 		@PathParam(DATASET) Dataset dataset,
 		@PathParam(QUERY) ManagedExecution<?> query,
 		@QueryParam("pretty") Optional<Boolean> pretty) {

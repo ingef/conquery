@@ -28,6 +28,7 @@ import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -65,7 +66,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, User user) {
+	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Userish user) {
 
 		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), user.getId());
 
@@ -108,7 +109,7 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, user));
+			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, storage.getUser(user.getId())));
 
 			if (execution.isPresent()) {
 				return execution.get();
@@ -117,7 +118,7 @@ public class QueryProcessor {
 
 
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = executionManager.runQuery(datasetRegistry, query, user, dataset, config);
+		ManagedExecution<?> mq = executionManager.runQuery(datasetRegistry, query, storage.getUser(user.getId()), dataset, config);
 
 		if (query instanceof Query) {
 			translateToOtherDatasets(dataset, query, user, mq);
@@ -178,13 +179,13 @@ public class QueryProcessor {
 	}
 
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user, boolean allProviders) {
+	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Userish user, boolean allProviders) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
 		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), user, allQueries, allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, User user, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
+	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Userish user, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
 
 		return allQueries.stream()
@@ -265,7 +266,7 @@ public class QueryProcessor {
 		return root instanceof CQAnd || root instanceof CQExternal;
 	}
 
-	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {
+	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, Userish user, ManagedExecution<?> mq) {
 		Query translateable = (Query) query;
 		// translate the query for all other datasets of user and submit it.
 		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
@@ -285,7 +286,7 @@ public class QueryProcessor {
 				Query translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
 
 				targetNamespace.getExecutionManager()
-							   .createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
+							   .createQuery(datasetRegistry, translated, mq.getQueryId(), storage.getUser(user.getId()), targetDataset);
 			}
 			catch (Exception e) {
 				log.trace("Could not translate Query[{}] to Dataset[{}]", mq.getId(), targetDataset.getId(), e);
@@ -296,7 +297,7 @@ public class QueryProcessor {
 	/**
 	 * Cancel a running query: Sending cancellation to shards, which will cause them to stop executing them, results are not sent back, and incoming results will be discarded.
 	 */
-	public void cancel(User user, Dataset dataset, ManagedExecution<?> query) {
+	public void cancel(Userish user, Dataset dataset, ManagedExecution<?> query) {
 
 		// Does not make sense to cancel a query that isn't running.
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
@@ -312,7 +313,7 @@ public class QueryProcessor {
 		namespace.sendToAll(new CancelQuery(query.getId()));
 	}
 
-	public void patchQuery(User user, ManagedExecution<?> execution, MetaDataPatch patch) {
+	public void patchQuery(Userish user, ManagedExecution<?> execution, MetaDataPatch patch) {
 
 		log.info("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 
@@ -335,7 +336,7 @@ public class QueryProcessor {
 		}
 	}
 
-	public void reexecute(User user, ManagedExecution<?> query) {
+	public void reexecute(Userish user, ManagedExecution<?> query) {
 		log.info("User[{}] reexecuted Query[{}]", user, query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
@@ -346,7 +347,7 @@ public class QueryProcessor {
 	}
 
 
-	public void deleteQuery(User user, ManagedExecution<?> execution) {
+	public void deleteQuery(Userish user, ManagedExecution<?> execution) {
 		log.info("User[{}] deleted Query[{}]", user.getId(), execution.getId());
 
 		datasetRegistry.get(execution.getDataset().getId())
@@ -356,7 +357,7 @@ public class QueryProcessor {
 		storage.removeExecution(execution.getId());
 	}
 
-	public FullExecutionStatus getQueryFullStatus(ManagedExecution<?> query, User user, UriBuilder url, Boolean allProviders) {
+	public FullExecutionStatus getQueryFullStatus(ManagedExecution<?> query, Userish user, UriBuilder url, Boolean allProviders) {
 
 		query.initExecutable(datasetRegistry, config);
 
@@ -372,7 +373,7 @@ public class QueryProcessor {
 	/**
 	 * Try to resolve the external upload, if successful, create query for the user and return id and statistics for that.
 	 */
-	public ExternalUploadResult uploadEntities(User user, Dataset dataset, ExternalUpload upload) {
+	public ExternalUploadResult uploadEntities(Userish user, Dataset dataset, ExternalUpload upload) {
 
 		final CQExternal.ResolveStatistic statistic =
 				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
@@ -393,7 +394,7 @@ public class QueryProcessor {
 		// We only create the Query, really no need to execute it as it's only useful for composition.
 		final ManagedQuery execution =
 				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
-											   .createExecution(datasetRegistry, query, user, dataset));
+											   .createExecution(datasetRegistry, query, storage.getUser(user.getId()), dataset));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 

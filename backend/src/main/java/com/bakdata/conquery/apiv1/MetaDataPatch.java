@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -47,7 +48,7 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 	 * @param user              The user on whose behalf the patch is executed
 	 * @param <INST>            Type of the instance that is patched
 	 */
-	public <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, User user) {
+	public <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, Userish user) {
 		buildChain(QueryUtils.getNoOpEntryPoint(),
 				   storage,
 				   user,
@@ -56,7 +57,7 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 				.accept(this);
 	}
 
-	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, User user, INST instance) {
+	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, Userish user, INST instance) {
 		if (getTags() != null && user.isPermitted(instance, Ability.TAG)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}

@@ -35,6 +35,7 @@ import com.bakdata.conquery.apiv1.query.ExternalUpload;
 import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -59,7 +60,7 @@ public class QueryResource {
 	private Dataset dataset;
 
 	@GET
-	public List<ExecutionStatus> getAllQueries(@Auth User user, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public List<ExecutionStatus> getAllQueries(@Auth Userish user, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 
 		user.authorize(dataset, Ability.READ);
 
@@ -68,7 +69,7 @@ public class QueryResource {
 	}
 
 	@POST
-	public Response postQuery(@Auth User user, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
+	public Response postQuery(@Auth Userish user, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
 
 		user.authorize(dataset, Ability.READ);
 
@@ -81,7 +82,7 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getStatus(@Auth User user, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders)
+	public FullExecutionStatus getStatus(@Auth Userish user, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders)
 			throws InterruptedException {
 
 		user.authorize(dataset, Ability.READ);
@@ -94,7 +95,7 @@ public class QueryResource {
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus patchQuery(@Auth User user, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders, MetaDataPatch patch)
+	public FullExecutionStatus patchQuery(@Auth Userish user, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders, MetaDataPatch patch)
 			throws JSONException {
 		user.authorize(dataset, Ability.READ);
 		user.authorize(query, Ability.READ);
@@ -106,7 +107,7 @@ public class QueryResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public void deleteQuery(@Auth User user, @PathParam(QUERY) ManagedExecution<?> query) {
+	public void deleteQuery(@Auth Userish user, @PathParam(QUERY) ManagedExecution<?> query) {
 		user.authorize(dataset, Ability.READ);
 		user.authorize(query, Ability.DELETE);
 
@@ -115,7 +116,7 @@ public class QueryResource {
 
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
-	public FullExecutionStatus reexecute(@Auth User user, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public FullExecutionStatus reexecute(@Auth Userish user, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 		user.authorize(dataset, Ability.READ);
 		user.authorize(query, Ability.READ);
 
@@ -125,7 +126,7 @@ public class QueryResource {
 
 	@POST
 	@Path("{" + QUERY + "}/cancel")
-	public void cancel(@Auth User user, @PathParam(QUERY) ManagedExecution<?> query) {
+	public void cancel(@Auth Userish user, @PathParam(QUERY) ManagedExecution<?> query) {
 
 		user.authorize(dataset, Ability.READ);
 		user.authorize(query, Ability.CANCEL);
@@ -135,7 +136,7 @@ public class QueryResource {
 
 	@POST
 	@Path("/upload")
-	public ExternalUploadResult upload(@Auth User user, @Valid ExternalUpload upload) {
+	public ExternalUploadResult upload(@Auth Userish user, @Valid ExternalUpload upload) {
 		return processor.uploadEntities(user, dataset, upload);
 	}
 }

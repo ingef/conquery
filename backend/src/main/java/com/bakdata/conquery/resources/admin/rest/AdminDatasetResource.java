@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.rest;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
@@ -190,7 +191,7 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Path("/update-matching-stats")
 	@Consumes(MediaType.WILDCARD)
-	public void updateMatchingStats(@Auth User user, @PathParam(DATASET)Dataset dataset) {
+	public void updateMatchingStats(@PathParam(DATASET) Dataset dataset) {
 		processor.updateMatchingStats(dataset);
 	}
 

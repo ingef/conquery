@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormProcessor;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.auth.Auth;
@@ -33,7 +34,7 @@ public class FormResource {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Collection<JsonNode> getFormFEConfigs(@Auth User user) {
+	public Collection<JsonNode> getFormFEConfigs(@Auth Userish user) {
 		return processor.getFormsForUser(user);
 	}
 

@@ -1,14 +1,7 @@
 package com.bakdata.conquery.io.result.excel;
 
 import com.bakdata.conquery.io.result.ResultUtil;
-import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
-
-import java.util.Locale;
-
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -26,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import java.util.Locale;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
@@ -38,7 +32,7 @@ public class ResultExcelProcessor {
 	private final ConqueryConfig config;
 
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getExcelResult(User user, E exec, DatasetId datasetId, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getExcelResult(Userish user, E exec, DatasetId datasetId, boolean pretty) {
 		ConqueryMDC.setLocation(user.getName());
 		final Namespace namespace = datasetRegistry.get(datasetId);
 		Dataset dataset = namespace.getDataset();

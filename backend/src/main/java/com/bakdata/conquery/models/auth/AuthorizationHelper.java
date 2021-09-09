@@ -1,20 +1,7 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.RoleOwner;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.*;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -32,6 +19,9 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Helper for easier and cleaner authorization.
  *
@@ -40,7 +30,7 @@ import org.apache.shiro.authz.Permission;
 @UtilityClass
 public class AuthorizationHelper {
 
-	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MetaStorage storage){
+	public static List<Group> getGroupsOf(@NonNull Userish user, @NonNull MetaStorage storage){
 
 		List<Group> userGroups = new ArrayList<>();
 
@@ -56,7 +46,7 @@ public class AuthorizationHelper {
 	 * Find the primary group of the user. All users must have a primary group.
 	 * @implNote Currently this is the first group of a user and should also be the only group.
 	 */
-	public static Optional<Group> getPrimaryGroup(@NonNull User user, @NonNull MetaStorage storage) {
+	public static Optional<Group> getPrimaryGroup(@NonNull Userish user, @NonNull MetaStorage storage) {
 		List<Group> groups = getGroupsOf(user, storage);
 		if(groups.isEmpty()) {
 			return Optional.empty();
@@ -138,7 +128,7 @@ public class AuthorizationHelper {
 	 * Checks if an execution is allowed to be downloaded by a user.
 	 * This checks all used {@link DatasetId}s for the {@link Ability#DOWNLOAD} on the user.
 	 */
-	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull Visitable visitable) {
+	public static void authorizeDownloadDatasets(@NonNull Userish user, @NonNull Visitable visitable) {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
 
@@ -155,7 +145,7 @@ public class AuthorizationHelper {
 	 * Checks if a {@link Visitable} has only references to {@link Dataset}s a user is allowed to read.
 	 * This checks all used {@link DatasetId}s for the {@link Ability#READ} on the user.
 	 */
-	public static void authorizeReadDatasets(@NonNull User user, @NonNull Visitable visitable) {
+	public static void authorizeReadDatasets(@NonNull Userish user, @NonNull Visitable visitable) {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
 
@@ -172,7 +162,7 @@ public class AuthorizationHelper {
 	/**
 	 * Calculates the abilities on all datasets a user has based on its permissions.
 	 */
-	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(User user, DatasetRegistry datasetRegistry) {
+	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(Userish user, DatasetRegistry datasetRegistry) {
 		HashMap<DatasetId, Set<Ability>> datasetAbilities = new HashMap<>();
 		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
 

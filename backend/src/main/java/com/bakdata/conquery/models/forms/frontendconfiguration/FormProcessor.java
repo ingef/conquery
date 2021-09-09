@@ -8,12 +8,13 @@ import java.util.List;
 
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class FormProcessor {
 
-	public Collection<JsonNode> getFormsForUser(User user) {
+	public Collection<JsonNode> getFormsForUser(Userish user) {
 		List<JsonNode> allowedForms = new ArrayList<>();
 
 		for (FormType formMapping : FRONTEND_FORM_CONFIGS.values()) {

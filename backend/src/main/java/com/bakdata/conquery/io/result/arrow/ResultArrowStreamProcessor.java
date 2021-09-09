@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -26,7 +27,7 @@ public class ResultArrowStreamProcessor {
 	private final ConqueryConfig config;
 
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getArrowStreamResult(User user, E exec, Dataset dataset, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getArrowStreamResult(Userish user, E exec, Dataset dataset, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				user,

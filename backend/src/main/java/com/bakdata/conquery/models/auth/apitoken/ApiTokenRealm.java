@@ -84,7 +84,7 @@ public class ApiTokenRealm extends AuthorizingRealm {
 
 
 		// TODO return useful stuff
-			return null;
+		return null;
 	}
 
 	@Override

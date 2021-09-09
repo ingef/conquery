@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.rest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -46,7 +47,7 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public String executeScript(@Auth User user, String script) {
+    public String executeScript(@Auth Userish user, String script) {
         return Objects.toString(processor.executeScript(script));
     }
 
@@ -58,7 +59,7 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public Object executeScriptJson(@Auth User user, String script) {
+    public Object executeScriptJson(@Auth Userish user, String script) {
         return processor.executeScript(script);
     }
 
