@@ -47,7 +47,7 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 			// override permission object, because it might have changed by the subject
 			// owning the permission
 			mandator.addPermission(permission);
-			user.addRole(storage, mandator);
+			user.addRole(mandator);
 
 
 			URI classBase = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), RoleUIResource.class, "getRole")

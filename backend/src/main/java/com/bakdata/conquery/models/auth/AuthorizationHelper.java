@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -40,24 +39,6 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @UtilityClass
 public class AuthorizationHelper {
-
-	/**
-	 * Utility function to add a permission to a subject (e.g {@link User}).
-	 * @param owner The subject to own the new permission.
-	 * @param permission The permission to add.
-	 */
-	public static void addPermission(@NonNull PermissionOwner<?> owner, @NonNull ConqueryPermission permission) {
-		owner.addPermission(permission);
-	}
-
-	/**
-	 * Utility function to remove a permission from a subject (e.g {@link User}).
-	 * @param owner The subject to own the new permission.
-	 * @param permission The permission to remove.
-	 */
-	public static void removePermission(@NonNull PermissionOwner<?> owner, @NonNull Permission permission) {
-		owner.removePermission(permission);
-	}
 
 	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MetaStorage storage){
 
@@ -144,35 +125,6 @@ public class AuthorizationHelper {
 		}
 		return mappedPerms;
 	}
-
-
-	public static void addRoleTo(MetaStorage storage, Role role, RoleOwner owner) {
-		owner.addRole(storage, role);
-		log.trace("Added role {} to {}", role, owner);
-	}
-
-	public static void deleteRoleFrom(MetaStorage storage, RoleOwner owner, Role role) {
-
-		owner.removeRole(storage, role);
-
-		log.trace("Deleted role {} from {}", role, owner);
-	}
-
-	public static void deleteRole(MetaStorage storage, Role role) {
-		log.info("Deleting {}", role);
-
-		for (User user : storage.getAllUsers()) {
-			user.removeRole(storage, role);
-		}
-
-		for (Group group : storage.getAllGroups()) {
-			group.removeRole(storage, role);
-		}
-
-		storage.removeRole(role.getId());
-	}
-
-
 
 	public static List<User> getUsersByRole(MetaStorage storage, Role role) {
 		return storage.getAllUsers().stream().filter(u -> u.getRoles().contains(role.getId())).collect(Collectors.toList());

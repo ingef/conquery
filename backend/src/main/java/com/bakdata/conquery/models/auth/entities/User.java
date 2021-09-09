@@ -30,7 +30,7 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.subject.PrincipalCollection;
 
 @Slf4j
-public class User extends PermissionOwner<UserId> implements Principal, RoleOwner {
+public class User extends PermissionOwner<UserId> implements Principal, RoleOwner, Userish {
 
 	@JsonProperty
 	private final Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
@@ -55,7 +55,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		return new UserId(name);
 	}
 
-	public void addRole(MetaStorage storage, Role role) {
+	public synchronized void addRole(Role role) {
 		if (roles.add(role.getId())) {
 			log.trace("Added role {} to user {}", role.getId(), getId());
 			updateStorage(storage);
@@ -63,7 +63,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
-	public void removeRole(MetaStorage storage, Role role) {
+	public synchronized void removeRole(Role role) {
 		if (roles.remove(role.getId())) {
 			log.trace("Removed role {} from user {}", role.getId(), getId());
 			updateStorage(storage);

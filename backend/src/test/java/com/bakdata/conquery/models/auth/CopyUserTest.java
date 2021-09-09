@@ -37,8 +37,8 @@ public class CopyUserTest {
 		// Create original user with role and group mapping
 		User originUser = new User("user", "user", storage);
 		storage.addUser(originUser);
-		originUser.addRole(storage, role);
-		group.addMember(storage, originUser);
+		originUser.addRole(role);
+		group.addMember(originUser);
 
 		// Do copy
 		User copy = AuthorizationController.flatCopyUser(originUser, "copytest", storage);

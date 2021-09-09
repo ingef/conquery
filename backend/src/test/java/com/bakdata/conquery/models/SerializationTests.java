@@ -106,7 +106,7 @@ public class SerializationTests {
 						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
 				);
 		Role role = new Role("company", "company", STORAGE);
-		user.addRole(storage, role);
+		user.addRole(role);
 
 		CentralRegistry registry = new CentralRegistry();
 		registry.register(role);
@@ -127,12 +127,12 @@ public class SerializationTests {
 				.addPermission(
 						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
 				);
-		group.addRole(storage, new Role("company", "company", STORAGE));
+		group.addRole(new Role("company", "company", STORAGE));
 
 		Role role = new Role("company", "company", STORAGE);
-		group.addRole(storage, role);
+		group.addRole(role);
 		User user = new User("userName", "userLabel", STORAGE);
-		group.addMember(storage, user);
+		group.addMember(user);
 
 		CentralRegistry registry = new CentralRegistry();
 		registry.register(role);

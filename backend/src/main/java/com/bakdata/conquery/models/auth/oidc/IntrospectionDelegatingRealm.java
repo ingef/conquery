@@ -177,13 +177,13 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 						mappedGroupsToDo.remove(group);
 					} else {
 						// Mapping is not valid any more remove user from group
-						group.removeMember(storage, user);
+						group.removeMember(user);
 					}
 				}
 			}
 
 			for (Group group : mappedGroupsToDo) {
-				group.addMember(storage, user);
+				group.addMember(user);
 			}
 		}
 

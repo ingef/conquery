@@ -39,16 +39,16 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 		return new GroupId(name);
 	}
 
-	public void addMember(MetaStorage storage, User user) {
+	public synchronized void addMember(User user) {
 		if(members.add(user.getId())) {
 			log.trace("Added user {} to group {}", user.getId(), getId());
 			updateStorage(storage);
 		}
 	}
 
-	public void removeMember(MetaStorage storage, User user) {
-		if(members.remove(user.getId())) {
-			log.trace("Removed user {} from group {}", user.getId(), getId());				
+	public synchronized void removeMember(User user) {
+		if (members.remove(user.getId())) {
+			log.trace("Removed user {} from group {}", user.getId(), getId());
 			updateStorage(storage);
 		}
 	}
@@ -61,14 +61,14 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 		return Collections.unmodifiableSet(members);
 	}
 
-	public void addRole(MetaStorage storage, Role role) {
+	public synchronized void addRole(Role role) {
 		if (roles.add(role.getId())) {
 			log.trace("Added role {} to group {}", role.getId(), getId());
 			updateStorage(storage);
 		}
 	}
 
-	public void removeRole(MetaStorage storage, Role role) {
+	public synchronized void removeRole(Role role) {
 		if (roles.remove(role.getId())) {
 			log.trace("Removed role {} from group {}", role.getId(), getId());
 			updateStorage(storage);

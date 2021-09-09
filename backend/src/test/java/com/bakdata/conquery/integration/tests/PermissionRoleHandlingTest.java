@@ -29,7 +29,7 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 			storage.addRole(mandator1);
 			storage.addUser(user1);
 
-			user1.addRole(storage, mandator1);
+			user1.addRole(mandator1);
 
 			user1.addPermission(dataset.createPermission(Ability.READ.asSet()));
 			mandator1.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
@@ -58,13 +58,13 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 
 			// Add permission to mandator, remove mandator from user
 			mandator1.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
-			user1.removeRole(storage, mandator1);
+			user1.removeRole(mandator1);
 
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isFalse();
 
 			// Add mandator back to user
-			user1.addRole(storage, mandator1);
+			user1.addRole(mandator1);
 
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.READ.asSet()))).isTrue();
 			assertThat(user1.isPermitted(dataset.createPermission(Ability.DOWNLOAD.asSet()))).isTrue();

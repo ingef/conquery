@@ -122,7 +122,7 @@ public class StoredQueriesProcessorTest {
 		STORAGE.addUser(user);
 
 		for (ManagedExecutionId queryId : allowedQueryIds) {
-			AuthorizationHelper.addPermission(user, ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId));
+			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR,queryId));
 		}
 
 		return user;

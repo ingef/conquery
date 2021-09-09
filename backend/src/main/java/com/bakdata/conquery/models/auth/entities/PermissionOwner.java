@@ -63,7 +63,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NonNull
 	@EqualsAndHashCode.Exclude
-	private MetaStorage storage;
+	protected MetaStorage storage;
 
 
 	public PermissionOwner(String name, String label, MetaStorage storage) {
@@ -79,30 +79,22 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @param permissions The permissions to add.
 	 * @return Returns the added Permission
 	 */
-	public boolean addPermissions(Set<ConqueryPermission> permissions) {
-		boolean ret = false;
-		synchronized (this) {
-			this.permissions = ImmutableSet
-									   .<ConqueryPermission>builder()
-									   .addAll(this.permissions)
-									   .addAll(permissions)
-									   .build();
-			updateStorage(this.storage);
-		}
-		return ret;
+	public synchronized void addPermissions(Set<ConqueryPermission> permissions) {
+		this.permissions = ImmutableSet
+								   .<ConqueryPermission>builder()
+								   .addAll(this.permissions)
+								   .addAll(permissions)
+								   .build();
+		updateStorage(this.storage);
 	}
 
-	public boolean addPermission(ConqueryPermission permission) {
-		boolean ret = false;
-		synchronized (this) {
-			this.permissions = ImmutableSet
-									   .<ConqueryPermission>builder()
-									   .addAll(this.permissions)
-									   .add(permission)
-									   .build();
-			updateStorage(this.storage);
-		}
-		return ret;
+	public synchronized void addPermission(ConqueryPermission permission) {
+		this.permissions = ImmutableSet
+								   .<ConqueryPermission>builder()
+								   .addAll(this.permissions)
+								   .add(permission)
+								   .build();
+		updateStorage(this.storage);
 	}
 
 	/**

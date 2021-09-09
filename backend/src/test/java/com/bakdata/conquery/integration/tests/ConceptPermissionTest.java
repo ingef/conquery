@@ -68,7 +68,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		{
 			final ConqueryPermission permission = conceptId.createPermission(Ability.READ.asSet());
 			log.info("Adding the Permission[{}] to User[{}]", permission, user);
-			AuthorizationHelper.addPermission(user, permission);
+			user.addPermission(permission);
 		}
 
 		// Only assert permissions

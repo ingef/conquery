@@ -30,14 +30,14 @@ public class GroupHandlingTest extends IntegrationTest.Simple implements Program
 			storage.addGroup(group1);
 			storage.addUser(user1);
 
-			group1.addMember(storage, user1);
-			group1.addMember(storage, user1copy);
+			group1.addMember(user1);
+			group1.addMember(user1copy);
 			assertThat(group1.getMembers()).containsExactlyInAnyOrder(user1.getId());
 
-			group1.addMember(storage, user2);
+			group1.addMember(user2);
 			assertThat(group1.getMembers()).containsExactlyInAnyOrder(user1.getId(), user2.getId());
 
-			group1.removeMember(storage, user2);
+			group1.removeMember(user2);
 			assertThat(group1.getMembers()).containsExactlyInAnyOrder(user1.getId());
 
 

@@ -28,7 +28,7 @@ public class SuperPermissionTest extends IntegrationTest.Simple implements Progr
 		storage.addRole(role1);
 		
 		try {
-			user1.addRole(storage, role1);
+			user1.addRole(role1);
 			// Add SuperPermission to User
 			user1.addPermission(SuperPermission.onDomain());
 		
