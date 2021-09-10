@@ -28,7 +28,7 @@
         }
     </style>
     <script type="text/javascript">
-        var queryCounter = 0;
+        var QueryCounter = 0;
 
         var runningQueriesTable = {};
         var notStartedQueriesTable = {};
@@ -61,26 +61,26 @@
 
 
           clearTables();
-          queryCounter = 0;
+          QueryCounter = 0;
           updateQueriesInnerCounter(queries);
           if (!queries) return;
 
           queries.sort(compareQueriesDate);
           for (i = 0; i < queries.length; i++) {
-            queryCounter++;
+            QueryCounter++;
             if (queries[i].status === "RUNNING")
-              runningQueriesTable.insertAdjacentHTML('beforeend', getHtmltemplate(queries[i]));
+              runningQueriesTable.insertAdjacentHTML('beforeend', getHtmltemplate(queries[i], QueryCounter));
 
             if (queries[i].status === "NEW")
-              notStartedQueriesTable.insertAdjacentHTML('beforeend', getHtmltemplate(queries[i]));
+              notStartedQueriesTable.insertAdjacentHTML('beforeend', getHtmltemplate(queries[i], QueryCounter));
 
 
             if (queries[i].status === "FAILED")
-              failedQueriesTable.insertAdjacentHTML('beforeend', getHtmltemplate(queries[i]));
+              failedQueriesTable.insertAdjacentHTML('beforeend', getHtmltemplate(queries[i], QueryCounter));
 
 
             if (queries[i].status === "DONE")
-              succeedQueriesTable.insertAdjacentHTML('beforeend', getHtmltemplate(queries[i]));
+              succeedQueriesTable.insertAdjacentHTML('beforeend', getHtmltemplate(queries[i], QueryCounter));
           }
 
         }
@@ -151,7 +151,7 @@
         }
 
         <#noparse >
-            function getHtmltemplate(data) {
+            function getHtmltemplate(data,queryCounter) {
                 return `
 
                 <div class="row container" >
