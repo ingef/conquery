@@ -56,321 +56,321 @@ import java.util.stream.Collectors;
 public class AdminDatasetProcessor {
 
 
-    public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
-    private static final String ABBREVIATION_MARKER = "\u2026";
-
-    private final MetaStorage storage; // TODO Remove
-    private final ConqueryConfig config;
-    private final Validator validator;
-    private final DatasetRegistry datasetRegistry;
-    private final JobManager jobManager;
-    private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
-
-    /**
-     * Creates and initializes a new dataset if it does not already exist.
-     */
-    public synchronized Dataset addDataset(Dataset dataset) {
-
-        final String name = dataset.getName();
-        if (datasetRegistry.get(new DatasetId(name)) != null) {
-            throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
-        }
-
-        NamespaceStorage datasetStorage = new NamespaceStorage(validator, config.getStorage(), "dataset_" + name);
-
-        datasetStorage.loadData();
-        datasetStorage.setMetaStorage(storage);
-        datasetStorage.updateDataset(dataset);
-        datasetStorage.updateIdMapping(new EntityIdMap());
-
-        Namespace ns = new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy()).writerWithView(InternalOnly.class));
-
-        datasetRegistry.add(ns);
-
-        // for now we just add one worker to every ShardNode
-        for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {
-            node.send(new AddWorker(dataset));
-        }
-
-        return dataset;
-    }
-
-    /**
-     * Delete dataset if it is empty.
-     */
-    public synchronized void deleteDataset(Dataset dataset) {
-        final Namespace namespace = datasetRegistry.get(dataset.getId());
-
-        if (!namespace.getStorage().getTables().isEmpty()) {
-            throw new WebApplicationException(
-                    String.format(
-                            "Cannot delete dataset `%s`, because it still has tables: `%s`",
-                            dataset.getId(),
-                            namespace.getStorage().getTables().stream()
-                                    .map(Table::getId)
-                                    .map(Objects::toString)
-                                    .collect(Collectors.joining(","))
-                    ),
-                    Response.Status.CONFLICT);
-        }
-
-        namespace.close();
-        datasetRegistry.removeNamespace(dataset.getId());
-        datasetRegistry.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(dataset)));
-
-    }
-
-    /**
-     * Add SecondaryId if it doesn't already exist.
-     */
-    public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
-        final Dataset dataset = namespace.getDataset();
-        secondaryId.setDataset(dataset);
-
-        if (namespace.getStorage().getSecondaryId(secondaryId.getId()) != null) {
-            throw new WebApplicationException("SecondaryId already exists", Response.Status.CONFLICT);
-        }
-
-        log.info("Received new SecondaryId[{}]", secondaryId.getId());
-
-        namespace.getStorage().addSecondaryId(secondaryId);
-
-        namespace.sendToAll(new UpdateSecondaryId(secondaryId));
-    }
-
-    /**
-     * Delete SecondaryId if it does not have any dependents.
-     */
-    public synchronized void deleteSecondaryId(@NonNull SecondaryIdDescription secondaryId) {
-        final Namespace namespace = datasetRegistry.get(secondaryId.getDataset().getId());
-
-        // Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
-        final List<Column> dependents = namespace.getStorage().getTables().stream()
-                .map(Table::getColumns).flatMap(Arrays::stream)
-                .filter(column -> secondaryId.equals(column.getSecondaryId()))
-                .collect(Collectors.toList());
-
-        if (!dependents.isEmpty()) {
-            final Set<TableId> tables = dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet());
-            log.error(
-                    "SecondaryId[{}] still present on {}",
-                    secondaryId,
-                    tables
-            );
-
-            throw new ForbiddenException(String.format("SecondaryId still has dependencies. %s", tables));
-        }
+	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
+	private static final String ABBREVIATION_MARKER = "\u2026";
+
+	private final MetaStorage storage; // TODO Remove
+	private final ConqueryConfig config;
+	private final Validator validator;
+	private final DatasetRegistry datasetRegistry;
+	private final JobManager jobManager;
+	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
+
+	/**
+	 * Creates and initializes a new dataset if it does not already exist.
+	 */
+	public synchronized Dataset addDataset(Dataset dataset) {
+
+		final String name = dataset.getName();
+		if (datasetRegistry.get(new DatasetId(name)) != null) {
+			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
+		}
+
+		NamespaceStorage datasetStorage = new NamespaceStorage(validator, config.getStorage(), "dataset_" + name);
+
+		datasetStorage.loadData();
+		datasetStorage.setMetaStorage(storage);
+		datasetStorage.updateDataset(dataset);
+		datasetStorage.updateIdMapping(new EntityIdMap());
+
+		Namespace ns = new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy()).writerWithView(InternalOnly.class));
+
+		datasetRegistry.add(ns);
+
+		// for now we just add one worker to every ShardNode
+		for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {
+			node.send(new AddWorker(dataset));
+		}
+
+		return dataset;
+	}
+
+	/**
+	 * Delete dataset if it is empty.
+	 */
+	public synchronized void deleteDataset(Dataset dataset) {
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
+
+		if (!namespace.getStorage().getTables().isEmpty()) {
+			throw new WebApplicationException(
+					String.format(
+							"Cannot delete dataset `%s`, because it still has tables: `%s`",
+							dataset.getId(),
+							namespace.getStorage().getTables().stream()
+									.map(Table::getId)
+									.map(Objects::toString)
+									.collect(Collectors.joining(","))
+					),
+					Response.Status.CONFLICT);
+		}
+
+		namespace.close();
+		datasetRegistry.removeNamespace(dataset.getId());
+		datasetRegistry.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(dataset)));
+
+	}
+
+	/**
+	 * Add SecondaryId if it doesn't already exist.
+	 */
+	public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
+		final Dataset dataset = namespace.getDataset();
+		secondaryId.setDataset(dataset);
+
+		if (namespace.getStorage().getSecondaryId(secondaryId.getId()) != null) {
+			throw new WebApplicationException("SecondaryId already exists", Response.Status.CONFLICT);
+		}
+
+		log.info("Received new SecondaryId[{}]", secondaryId.getId());
+
+		namespace.getStorage().addSecondaryId(secondaryId);
+
+		namespace.sendToAll(new UpdateSecondaryId(secondaryId));
+	}
+
+	/**
+	 * Delete SecondaryId if it does not have any dependents.
+	 */
+	public synchronized void deleteSecondaryId(@NonNull SecondaryIdDescription secondaryId) {
+		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset().getId());
+
+		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
+		final List<Column> dependents = namespace.getStorage().getTables().stream()
+				.map(Table::getColumns).flatMap(Arrays::stream)
+				.filter(column -> secondaryId.equals(column.getSecondaryId()))
+				.collect(Collectors.toList());
+
+		if (!dependents.isEmpty()) {
+			final Set<TableId> tables = dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet());
+			log.error(
+					"SecondaryId[{}] still present on {}",
+					secondaryId,
+					tables
+			);
+
+			throw new ForbiddenException(String.format("SecondaryId still has dependencies. %s", tables));
+		}
 
-        log.info("Deleting SecondaryId[{}]", secondaryId);
-
-        namespace.getStorage().removeSecondaryId(secondaryId.getId());
-        namespace.sendToAll(new RemoveSecondaryId(secondaryId));
-    }
-
-    /**
-     * Add table to Dataset if it doesn't already exist.
-     */
-    @SneakyThrows
-    public synchronized void addTable(@NonNull Table table, Namespace namespace) {
-        Dataset dataset = namespace.getDataset();
-
-        if (table.getDataset() == null) {
-            table.setDataset(dataset);
-        } else if (!table.getDataset().equals(dataset)) {
-            throw new IllegalArgumentException();
-        }
+		log.info("Deleting SecondaryId[{}]", secondaryId);
+
+		namespace.getStorage().removeSecondaryId(secondaryId.getId());
+		namespace.sendToAll(new RemoveSecondaryId(secondaryId));
+	}
+
+	/**
+	 * Add table to Dataset if it doesn't already exist.
+	 */
+	@SneakyThrows
+	public synchronized void addTable(@NonNull Table table, Namespace namespace) {
+		Dataset dataset = namespace.getDataset();
+
+		if (table.getDataset() == null) {
+			table.setDataset(dataset);
+		} else if (!table.getDataset().equals(dataset)) {
+			throw new IllegalArgumentException();
+		}
 
 
-        if (namespace.getStorage().getTable(table.getId()) != null) {
-            throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
-        }
+		if (namespace.getStorage().getTable(table.getId()) != null) {
+			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
+		}
 
-        ValidatorHelper.failOnError(log, validator.validate(table));
-
-        namespace.getStorage().addTable(table);
-        namespace.sendToAll(new UpdateTable(table));
-    }
-
-    /**
-     * Add the concept to the dataset if it does not exist yet.
-     */
-    public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
-        concept.setDataset(dataset);
-        ValidatorHelper.failOnError(log, validator.validate(concept));
-
-        if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
-            throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
-        }
-
-        addAutomaticSelect(concept);
-
-        // Register the Concept in the ManagerNode and Workers
-        datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
-        datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
-    }
-
-    /**
-     * Adds some selects to the concept on all levels for convenience.
-     */
-    private static void addAutomaticSelect(@NotNull Concept<?> concept) {
-        if (!(concept instanceof TreeConcept)) {
-            return;
-        }
-
-        // Add to concept
-        TreeConcept treeConcept = (TreeConcept) concept;
-
-        // Don't add event_duration_sum if Concept has no date-columns
-        if (treeConcept.getConnectors().stream()
-                .map(Connector::getValidityDates)
-                .allMatch(Collection::isEmpty)) {
-            return;
-        }
-
-        final UniversalSelect select = EventDurationSumSelect.create("event_duration_sum");
-        select.setHolder(treeConcept);
-        treeConcept.getSelects().add(select);
-
-
-        // Add to connectors if they have dates
-        for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
-
-            if (connector.getValidityDates().isEmpty()) {
-                continue;
-            }
-
-            final UniversalSelect connectorSelect = EventDurationSumSelect.create("event_duration_sum");
-            connectorSelect.setHolder(connector);
-            connector.getSelects().add(connectorSelect);
-        }
-    }
-
-    /**
-     * Uploads new IdMapping.
-     */
-    public void setIdMapping(InputStream data, Namespace namespace) {
-        log.info("Received IdMapping for Dataset[{}]", namespace.getDataset().getId());
-
-        CsvParser parser = config.getCsv()
-                .withSkipHeader(false)
-                .withParseHeaders(true)
-                .createParser();
-
-        try {
-
-            parser.beginParsing(data);
-
-            EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getFrontend().getQueryUpload().getIds());
-            namespace.getStorage().updateIdMapping(mapping);
-
-        } finally {
-            parser.stopParsing();
-        }
-    }
-
-    /**
-     * Uploads new Structure for namespace.
-     */
-    public void setStructure(Namespace namespace, StructureNode[] structure) {
-        log.info("Add Structure for Dataset[{}]", namespace.getDataset().getId());
-
-        namespace.getStorage().updateStructure(structure);
-    }
-
-
-    /**
-     * Reads an Import partially Importing it if not yet present, then submitting it for full import.
-     */
-    @SneakyThrows
-    public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
-
-        ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config);
-        ImportsManager importsManager = ImportsManager.getInstance();
-        importsManager.addStartedImportJob(job.getImportId().toString(), job.getJobId());
-        namespace.getJobManager().addSlowJob(job);
-    }
-
-
-    public void updateImport(Import imp, Namespace namespace, InputStream inputStream) throws IOException {
-        ImportsManager importsManager = ImportsManager.getInstance();
-        if (importsManager.isJobRunning(imp.getId().toString())) {
-            throw new ConcurrentModificationException("There is an import-job already running.");
-        } else {
-            ImportJob job = ImportJob.update(imp, namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config);
-            importsManager.addStartedImportJob(job.getImportId().toString(), job.getJobId());
-            namespace.getJobManager().addSlowJob(job);
-        }
-
-    }
-
-    /**
-     * Deletes an import.
-     */
-    public synchronized void deleteImport(Import imp) {
-        final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
-
-        namespace.getStorage().removeImport(imp.getId());
-        namespace.sendToAll(new RemoveImportJob(imp));
-
-        // Remove bucket assignments for consistency report
-        namespace.removeBucketAssignmentsForImportFormWorkers(imp);
-    }
-
-    /**
-     * Deletes a table if it has no dependents or not forced to do so.
-     */
-    public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
-        final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
-
-        final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-                .filter(con -> con.getTable().equals(table))
-                .map(Connector::getConcept)
-                .collect(Collectors.toList());
-
-        if (force || dependentConcepts.isEmpty()) {
-            for (Concept<?> concept : dependentConcepts) {
-                deleteConcept(concept);
-            }
-
-            namespace.getStorage().getAllImports().stream()
-                    .filter(imp -> imp.getTable().equals(table))
-                    .forEach(this::deleteImport);
-
-            namespace.getStorage().removeTable(table.getId());
-            namespace.sendToAll(new RemoveTable(table));
-        }
-
-        return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
-    }
-
-    /**
-     * Deletes a concept.
-     */
-    public synchronized void deleteConcept(Concept<?> concept) {
-        final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
-
-        namespace.getStorage().removeConcept(concept.getId());
-        getJobManager()
-                .addSlowJob(new SimpleJob("sendToAll: remove " + concept.getId(), () -> namespace.sendToAll(new RemoveConcept(concept))));
-    }
-
-    /**
-     * Issues all Shards to do an UpdateMatchingStats.
-     *
-     * @implNote This intentionally submits a SlowJob so that it will be queued after all jobs that are already in the queue (usually import jobs).
-     */
-    public void updateMatchingStats(Dataset dataset) {
-        final Namespace ns = getDatasetRegistry().get(dataset.getId());
-
-        ns.getJobManager().addSlowJob(new SimpleJob("Initiate Update Matching Stats and FilterSearch",
-                () -> {
-                    ns.sendToAll(new UpdateMatchingStatsMessage());
-                    FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
-                }
-        ));
-    }
-
-    public EntityIdMap getIdMapping(Namespace namespace) {
-        return namespace.getStorage().getIdMapping();
-    }
+		ValidatorHelper.failOnError(log, validator.validate(table));
+
+		namespace.getStorage().addTable(table);
+		namespace.sendToAll(new UpdateTable(table));
+	}
+
+	/**
+	 * Add the concept to the dataset if it does not exist yet.
+	 */
+	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
+		concept.setDataset(dataset);
+		ValidatorHelper.failOnError(log, validator.validate(concept));
+
+		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
+		}
+
+		addAutomaticSelect(concept);
+
+		// Register the Concept in the ManagerNode and Workers
+		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
+		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
+	}
+
+	/**
+	 * Adds some selects to the concept on all levels for convenience.
+	 */
+	private static void addAutomaticSelect(@NotNull Concept<?> concept) {
+		if (!(concept instanceof TreeConcept)) {
+			return;
+		}
+
+		// Add to concept
+		TreeConcept treeConcept = (TreeConcept) concept;
+
+		// Don't add event_duration_sum if Concept has no date-columns
+		if (treeConcept.getConnectors().stream()
+				.map(Connector::getValidityDates)
+				.allMatch(Collection::isEmpty)) {
+			return;
+		}
+
+		final UniversalSelect select = EventDurationSumSelect.create("event_duration_sum");
+		select.setHolder(treeConcept);
+		treeConcept.getSelects().add(select);
+
+
+		// Add to connectors if they have dates
+		for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
+
+			if (connector.getValidityDates().isEmpty()) {
+				continue;
+			}
+
+			final UniversalSelect connectorSelect = EventDurationSumSelect.create("event_duration_sum");
+			connectorSelect.setHolder(connector);
+			connector.getSelects().add(connectorSelect);
+		}
+	}
+
+	/**
+	 * Uploads new IdMapping.
+	 */
+	public void setIdMapping(InputStream data, Namespace namespace) {
+		log.info("Received IdMapping for Dataset[{}]", namespace.getDataset().getId());
+
+		CsvParser parser = config.getCsv()
+				.withSkipHeader(false)
+				.withParseHeaders(true)
+				.createParser();
+
+		try {
+
+			parser.beginParsing(data);
+
+			EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getFrontend().getQueryUpload().getIds());
+			namespace.getStorage().updateIdMapping(mapping);
+
+		} finally {
+			parser.stopParsing();
+		}
+	}
+
+	/**
+	 * Uploads new Structure for namespace.
+	 */
+	public void setStructure(Namespace namespace, StructureNode[] structure) {
+		log.info("Add Structure for Dataset[{}]", namespace.getDataset().getId());
+
+		namespace.getStorage().updateStructure(structure);
+	}
+
+
+	/**
+	 * Reads an Import partially Importing it if not yet present, then submitting it for full import.
+	 */
+	@SneakyThrows
+	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
+
+		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config);
+		ImportsManager importsManager = ImportsManager.getInstance();
+		importsManager.addStartedImportJob(job.getImportId().toString(), job.getJobId());
+		namespace.getJobManager().addSlowJob(job);
+	}
+
+
+	public void updateImport(Import imp, Namespace namespace, InputStream inputStream) throws IOException {
+		ImportsManager importsManager = ImportsManager.getInstance();
+		if (importsManager.isJobRunning(imp.getId().toString())) {
+			throw new ConcurrentModificationException("There is an import-job already running.");
+		} else {
+			ImportJob job = ImportJob.update(imp, namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config);
+			importsManager.addStartedImportJob(job.getImportId().toString(), job.getJobId());
+			namespace.getJobManager().addSlowJob(job);
+		}
+
+	}
+
+	/**
+	 * Deletes an import.
+	 */
+	public synchronized void deleteImport(Import imp) {
+		final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
+
+		namespace.getStorage().removeImport(imp.getId());
+		namespace.sendToAll(new RemoveImportJob(imp));
+
+		// Remove bucket assignments for consistency report
+		namespace.removeBucketAssignmentsForImportFormWorkers(imp);
+	}
+
+	/**
+	 * Deletes a table if it has no dependents or not forced to do so.
+	 */
+	public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
+		final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
+
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
+				.filter(con -> con.getTable().equals(table))
+				.map(Connector::getConcept)
+				.collect(Collectors.toList());
+
+		if (force || dependentConcepts.isEmpty()) {
+			for (Concept<?> concept : dependentConcepts) {
+				deleteConcept(concept);
+			}
+
+			namespace.getStorage().getAllImports().stream()
+					.filter(imp -> imp.getTable().equals(table))
+					.forEach(this::deleteImport);
+
+			namespace.getStorage().removeTable(table.getId());
+			namespace.sendToAll(new RemoveTable(table));
+		}
+
+		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+	/**
+	 * Deletes a concept.
+	 */
+	public synchronized void deleteConcept(Concept<?> concept) {
+		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
+
+		namespace.getStorage().removeConcept(concept.getId());
+		getJobManager()
+				.addSlowJob(new SimpleJob("sendToAll: remove " + concept.getId(), () -> namespace.sendToAll(new RemoveConcept(concept))));
+	}
+
+	/**
+	 * Issues all Shards to do an UpdateMatchingStats.
+	 *
+	 * @implNote This intentionally submits a SlowJob so that it will be queued after all jobs that are already in the queue (usually import jobs).
+	 */
+	public void updateMatchingStats(Dataset dataset) {
+		final Namespace ns = getDatasetRegistry().get(dataset.getId());
+
+		ns.getJobManager().addSlowJob(new SimpleJob("Initiate Update Matching Stats and FilterSearch",
+				() -> {
+					ns.sendToAll(new UpdateMatchingStatsMessage());
+					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
+				}
+		));
+	}
+
+	public EntityIdMap getIdMapping(Namespace namespace) {
+		return namespace.getStorage().getIdMapping();
+	}
 }

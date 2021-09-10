@@ -48,161 +48,161 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 public class AdminDatasetResource extends HAdmin {
 
 
-    @Inject
-    protected AdminDatasetProcessor processor;
+	@Inject
+	protected AdminDatasetProcessor processor;
 
 
-    @PathParam(DATASET)
-    protected Dataset dataset;
-    protected Namespace namespace;
+	@PathParam(DATASET)
+	protected Dataset dataset;
+	protected Namespace namespace;
 
-    @PostConstruct
-    @Override
-    public void init() {
-        super.init();
-        this.namespace = processor.getDatasetRegistry().get(dataset.getId());
-    }
+	@PostConstruct
+	@Override
+	public void init() {
+		super.init();
+		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
+	}
 
-    @GET
-    @Consumes(MediaType.WILDCARD)
-    @Path("mapping")
-    public EntityIdMap getIdMapping() {
-        return processor.getIdMapping(namespace);
-    }
+	@GET
+	@Consumes(MediaType.WILDCARD)
+	@Path("mapping")
+	public EntityIdMap getIdMapping() {
+		return processor.getIdMapping(namespace);
+	}
 
-    @POST
-    @Consumes(MediaType.WILDCARD)
-    @Path("mapping")
-    public void setIdMapping(InputStream data) {
-        processor.setIdMapping(data, namespace);
-    }
+	@POST
+	@Consumes(MediaType.WILDCARD)
+	@Path("mapping")
+	public void setIdMapping(InputStream data) {
+		processor.setIdMapping(data, namespace);
+	}
 
-    @POST
-    @Path("label")
-    public void setLabel(String label) {
-        Dataset ds = namespace.getDataset();
-        ds.setLabel(label);
-        namespace.getStorage().updateDataset(ds);
-    }
+	@POST
+	@Path("label")
+	public void setLabel(String label) {
+		Dataset ds = namespace.getDataset();
+		ds.setLabel(label);
+		namespace.getStorage().updateDataset(ds);
+	}
 
-    @POST
-    @Path("weight")
-    public void setWeight(@Min(0) int weight) {
-        Dataset ds = namespace.getDataset();
-        ds.setWeight(weight);
-        namespace.getStorage().updateDataset(ds);
-    }
+	@POST
+	@Path("weight")
+	public void setWeight(@Min(0) int weight) {
+		Dataset ds = namespace.getDataset();
+		ds.setWeight(weight);
+		namespace.getStorage().updateDataset(ds);
+	}
 
-    @POST
-    @Path("tables")
-    public void addTable(Table table) {
-        processor.addTable(table, namespace);
-    }
-
-
-    @POST
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
-    @Path("cqpp")
-    public void uploadImport(@NotNull InputStream importStream) throws IOException {
-        log.info("Importing from file upload");
-        processor.addImport(namespace, new GZIPInputStream(importStream));
-    }
-
-    @PUT
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
-    @Path("imports/{" + IMPORT_ID + "}")
-    public void updateImport(@NotNull @PathParam(IMPORT_ID) Import imp, @NotNull InputStream importStream) throws IOException {
-
-        log.info("Importing from file upload");
-        processor.updateImport(imp, namespace, new GZIPInputStream(importStream));
-
-    }
+	@POST
+	@Path("tables")
+	public void addTable(Table table) {
+		processor.addTable(table, namespace);
+	}
 
 
-    @POST
-    @Path("imports")
-    public void addImport(@QueryParam("file") File importFile) throws IOException, JSONException {
+	@POST
+	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("cqpp")
+	public void uploadImport(@NotNull InputStream importStream) throws IOException {
+		log.info("Importing from file upload");
+		processor.addImport(namespace, new GZIPInputStream(importStream));
+	}
 
-        StringJoiner errors = new StringJoiner("\n");
+	@PUT
+	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("imports/{" + IMPORT_ID + "}")
+	public void updateImport(@NotNull @PathParam(IMPORT_ID) Import imp, @NotNull InputStream importStream) throws IOException {
 
-        if (!importFile.canRead()) {
-            errors.add("Cannot read.");
-        }
+		log.info("Importing from file upload");
+		processor.updateImport(imp, namespace, new GZIPInputStream(importStream));
 
-        if (!importFile.exists()) {
-            errors.add("Does not exist.");
-        }
-
-        if (!importFile.isAbsolute()) {
-            errors.add("Is not absolute.");
-        }
-
-        if (!importFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
-            errors.add(String.format("Does not end with `%s`.", ConqueryConstants.EXTENSION_PREPROCESSED));
-        }
-
-        if (errors.length() > 0) {
-            throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors.toString()), Status.BAD_REQUEST);
-        }
+	}
 
 
-        log.info("Importing from local file {}", importFile.getAbsolutePath());
-        processor.addImport(namespace, new GZIPInputStream(new FileInputStream(importFile)));
-    }
+	@POST
+	@Path("imports")
+	public void addImport(@QueryParam("file") File importFile) throws IOException, JSONException {
+
+		StringJoiner errors = new StringJoiner("\n");
+
+		if (!importFile.canRead()) {
+			errors.add("Cannot read.");
+		}
+
+		if (!importFile.exists()) {
+			errors.add("Does not exist.");
+		}
+
+		if (!importFile.isAbsolute()) {
+			errors.add("Is not absolute.");
+		}
+
+		if (!importFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
+			errors.add(String.format("Does not end with `%s`.", ConqueryConstants.EXTENSION_PREPROCESSED));
+		}
+
+		if (errors.length() > 0) {
+			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors.toString()), Status.BAD_REQUEST);
+		}
 
 
-    @POST
-    @Path("concepts")
-    public void addConcept(Concept<?> concept) {
-        processor.addConcept(namespace.getDataset(), concept);
-    }
-
-    @POST
-    @Path("secondaryId")
-    public void addSecondaryId(SecondaryIdDescription secondaryId) {
-        processor.addSecondaryId(namespace, secondaryId);
-    }
-
-    @DELETE
-    @Path("secondaryId/{" + SECONDARY_ID + "}")
-    public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
-        processor.deleteSecondaryId(secondaryId);
-    }
-
-    @GET
-    public Dataset getDatasetInfos() {
-        return dataset;
-    }
-
-    @POST
-    @Path("structure")
-    public void setStructure(@NotNull @Valid StructureNode[] structure) {
-        processor.setStructure(namespace, structure);
-    }
+		log.info("Importing from local file {}", importFile.getAbsolutePath());
+		processor.addImport(namespace, new GZIPInputStream(new FileInputStream(importFile)));
+	}
 
 
-    @GET
-    @Path("tables")
-    public List<TableId> listTables() {
-        return namespace.getStorage().getTables().stream().map(Table::getId).collect(Collectors.toList());
-    }
+	@POST
+	@Path("concepts")
+	public void addConcept(Concept<?> concept) {
+		processor.addConcept(namespace.getDataset(), concept);
+	}
 
-    @GET
-    @Path("concepts")
-    public List<ConceptId> listConcepts() {
-        return namespace.getStorage().getAllConcepts().stream().map(Concept::getId).collect(Collectors.toList());
-    }
+	@POST
+	@Path("secondaryId")
+	public void addSecondaryId(SecondaryIdDescription secondaryId) {
+		processor.addSecondaryId(namespace, secondaryId);
+	}
 
-    @DELETE
-    public void delete() {
-        processor.deleteDataset(dataset);
-    }
+	@DELETE
+	@Path("secondaryId/{" + SECONDARY_ID + "}")
+	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
+		processor.deleteSecondaryId(secondaryId);
+	}
 
-    @POST
-    @Path("/update-matching-stats")
-    @Consumes(MediaType.WILDCARD)
-    public void updateMatchingStats(@Auth User user, @PathParam(DATASET) Dataset dataset) {
-        processor.updateMatchingStats(dataset);
-    }
+	@GET
+	public Dataset getDatasetInfos() {
+		return dataset;
+	}
+
+	@POST
+	@Path("structure")
+	public void setStructure(@NotNull @Valid StructureNode[] structure) {
+		processor.setStructure(namespace, structure);
+	}
+
+
+	@GET
+	@Path("tables")
+	public List<TableId> listTables() {
+		return namespace.getStorage().getTables().stream().map(Table::getId).collect(Collectors.toList());
+	}
+
+	@GET
+	@Path("concepts")
+	public List<ConceptId> listConcepts() {
+		return namespace.getStorage().getAllConcepts().stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+	@DELETE
+	public void delete() {
+		processor.deleteDataset(dataset);
+	}
+
+	@POST
+	@Path("/update-matching-stats")
+	@Consumes(MediaType.WILDCARD)
+	public void updateMatchingStats(@Auth User user, @PathParam(DATASET) Dataset dataset) {
+		processor.updateMatchingStats(dataset);
+	}
 
 }
