@@ -60,8 +60,10 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -71,509 +73,576 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImportJob extends Job {
 
-	private final Namespace namespace;
+    private final Namespace namespace;
 
-	@Getter
-	private final Table table;
-	private final int bucketSize;
-	private final PreprocessedHeader header;
-	private final PreprocessedDictionaries dictionaries;
-	private final PreprocessedData container;
-	private final ConqueryConfig config;
+    @Getter
+    private final Table table;
+    private final int bucketSize;
+    private final PreprocessedHeader header;
+    private final PreprocessedDictionaries dictionaries;
+    private final PreprocessedData container;
+    private final ConqueryConfig config;
 
-	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static ImportJob create(
-			Namespace namespace,
-			InputStream inputStream,
-			int entityBucketSize,
-			IdMutex<DictionaryId> sharedDictionaryLocks,
-			ConqueryConfig config)
-			throws IOException {
-		try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
+    @Getter
+    private final ImportId importId;
 
-			final Dataset ds = namespace.getDataset();
+    private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-			// We parse semi-manually as the incoming file consist of multiple documents we only read progressively:
-			// 1) the header to check metadata
-			// 2) The Dictionaries to be imported and transformed
-			// 3) The ColumnStores themselves which contain references to the previously imported dictionaries.
+    public static ImportJob create(
+            Namespace namespace,
+            InputStream inputStream,
+            int entityBucketSize,
+            IdMutex<DictionaryId> sharedDictionaryLocks,
+            ConqueryConfig config)
+            throws IOException {
+        try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
 
+            final Dataset ds = namespace.getDataset();
 
-			final PreprocessedHeader header = parser.readHeader();
+            // We parse semi-manually as the incoming file consist of multiple documents we only read progressively:
+            // 1) the header to check metadata
+            // 2) The Dictionaries to be imported and transformed
+            // 3) The ColumnStores themselves which contain references to the previously imported dictionaries.
 
-			final TableId tableId = new TableId(ds.getId(), header.getTable());
-			Table table = namespace.getStorage().getTable(tableId);
 
-			if (table == null) {
-				throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
-			}
+            final PreprocessedHeader header = parser.readHeader();
 
-			final ImportId importId = new ImportId(table.getId(), header.getName());
+            final TableId tableId = new TableId(ds.getId(), header.getTable());
+            Table table = namespace.getStorage().getTable(tableId);
 
-			if (namespace.getStorage().getImport(importId) != null) {
-				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
-			}
-			log.trace("Begin reading Dictionaries");
-			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
-			PreprocessedDictionaries dictionaries = parser.readDictionaries();
+            if (table == null) {
+                throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
+            }
 
-			Map<DictionaryId, Dictionary>
-					dictReplacements =
-					createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage(), sharedDictionaryLocks);
+            final ImportId importId = new ImportId(table.getId(), header.getName());
 
-			// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
-			parser.addAllReplacements(dictReplacements);
+            if (namespace.getStorage().getImport(importId) != null) {
+                throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
+            }
+            log.trace("Begin reading Dictionaries");
+            parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
+            PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
-			log.trace("Begin reading data.");
+            Map<DictionaryId, Dictionary>
+                    dictReplacements =
+                    createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage(), sharedDictionaryLocks);
 
-			PreprocessedData container = parser.readData();
+            // We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
+            parser.addAllReplacements(dictReplacements);
 
+            log.trace("Begin reading data.");
 
-			log.debug("Done reading data. Contains {} Entities.", container.size());
+            PreprocessedData container = parser.readData();
 
-			log.info("Importing {} into {}", header.getName(), tableId);
 
-			return new ImportJob(
-					namespace,
-					table,
-					entityBucketSize,
-					header,
-					dictionaries,
-					container,
-					config
-			);
-		}
-	}
+            log.debug("Done reading data. Contains {} Entities.", container.size());
 
+            log.info("Importing {} into {}", header.getName(), tableId);
 
-	/**
-	 * Collects all dictionaries that map only to columns of this import.
-	 */
-	private static Map<DictionaryId, Dictionary> createLocalIdReplacements(Map<String, Dictionary> dicts, Table table, String importName, NamespaceStorage storage, IdMutex<DictionaryId> sharedDictionaryLocks) {
+            return new ImportJob(
+                    namespace,
+                    table,
+                    entityBucketSize,
+                    header,
+                    dictionaries,
+                    container,
+                    config,
+                    importId
+            );
+        }
+    }
 
-		// Empty Maps are Coalesced to null by Jackson
-		if (dicts == null) {
-			return Collections.emptyMap();
-		}
 
-		final Map<DictionaryId, Dictionary> out = new HashMap<>();
+    public static ImportJob update(
+            Import imp,
+            Namespace namespace,
+            InputStream inputStream,
+            int entityBucketSize,
+            IdMutex<DictionaryId> sharedDictionaryLocks,
+            ConqueryConfig config)
+            throws IOException {
+        try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
 
-		log.trace("Importing Normal Dictionaries.");
+            final Dataset ds = namespace.getDataset();
 
-		for (Column column : table.getColumns()) {
+            // We parse semi-manually as the incoming file consist of multiple documents we only read progressively:
+            // 1) the header to check metadata
+            // 2) The Dictionaries to be imported and transformed
+            // 3) The ColumnStores themselves which contain references to the previously imported dictionaries.
 
-			if (column.getType() != MajorTypeId.STRING) {
-				continue;
-			}
 
-			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
-			// but could also be an error :/ Most likely the former
-			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
-				log.trace("No Dictionary for {}", column);
-				continue;
-			}
+            final PreprocessedHeader header = parser.readHeader();
 
-			if (column.getSharedDictionary() != null) {
-				column.createSharedDictionaryReplacement(dicts, storage, out, sharedDictionaryLocks);
-			}
-			else {
-				// Its a normal dictionary (only valid for this column in this import)
-				column.createSingleColumnDictionaryReplacement(dicts, importName, out);
-			}
-		}
+            final TableId tableId = new TableId(ds.getId(), header.getTable());
+            Table table = namespace.getStorage().getTable(tableId);
 
-		return out;
-	}
+            if (table == null) {
+                throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
+            }
 
-	/**
-	 * Import all dictionaries. Shared dictionaries are merge into existing ones. All are distributed to corresponding workers.
-	 * Create mappings for shared dictionaries dict.
-	 * This is not synchronized because the methods is called within the job execution.
-	 */
-	private static Map<String, DictionaryMapping> importDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+            //final ImportId importId = new ImportId(table.getId(), header.getName());
 
-		// Empty Maps are Coalesced to null by Jackson
-		if (dicts == null) {
-			return Collections.emptyMap();
-		}
+            if (namespace.getStorage().getImport(imp.getId()) == null) {
+                throw new BadRequestException(String.format("Import[%s] is not present.", imp.getId()));
+            }
+            log.trace("Begin reading Dictionaries");
+            parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
+            PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
-		final Map<String, DictionaryMapping> out = new HashMap<>();
+            Map<DictionaryId, Dictionary>
+                    dictReplacements =
+                    createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage(), sharedDictionaryLocks);
 
-		log.trace("Importing Dictionaries");
+            // We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
+            parser.addAllReplacements(dictReplacements);
 
-		for (Column column : columns) {
+            log.trace("Begin reading data.");
 
-			if (column.getType() != MajorTypeId.STRING) {
-				continue;
-			}
+            PreprocessedData container = parser.readData();
 
-			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
-			// but could also be an error :/ Most likely the former
-			final Dictionary importDictionary = dicts.get(column.getName());
-			if (importDictionary == null) {
-				log.trace("No Dictionary for {}", column);
-				continue;
-			}
 
+            log.debug("Done reading data. Contains {} Entities.", container.size());
 
-			if (column.getSharedDictionary() == null) {
-				// Normal Dictionary -> no merge necessary, just distribute
-				distributeDictionary(namespace, importDictionary);
-			}
-			else {
-				// It's a shared dictionary
+            log.info("Importing {} into {}", header.getName(), tableId);
 
-				final String sharedDictionaryName = column.getSharedDictionary();
+            return new ImportJob(
+                    namespace,
+                    table,
+                    entityBucketSize,
+                    header,
+                    dictionaries,
+                    container,
+                    config,
+                    imp.getId()
+            );
+        }
+    }
 
-				log.trace("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
+    /**
+     * Collects all dictionaries that map only to columns of this import.
+     */
+    private static Map<DictionaryId, Dictionary> createLocalIdReplacements(Map<String, Dictionary> dicts, Table table, String importName, NamespaceStorage storage, IdMutex<DictionaryId> sharedDictionaryLocks) {
 
-				final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
-				final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
+        // Empty Maps are Coalesced to null by Jackson
+        if (dicts == null) {
+            return Collections.emptyMap();
+        }
 
-				// This should never fail, becaus the dictionary is pre-created in the replacement generation step
-				ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
+        final Map<DictionaryId, Dictionary> out = new HashMap<>();
 
-				log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
+        log.trace("Importing Normal Dictionaries.");
 
+        for (Column column : table.getColumns()) {
 
-				DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
+            if (column.getType() != MajorTypeId.STRING) {
+                continue;
+            }
 
-				if (mapping.getNumberOfNewIds() != 0) {
-					distributeDictionary(namespace, mapping.getTargetDictionary());
-				}
+            // Might not have an underlying Dictionary (eg Singleton, direct-Number)
+            // but could also be an error :/ Most likely the former
+            if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
+                log.trace("No Dictionary for {}", column);
+                continue;
+            }
 
-				out.put(column.getName(), mapping);
-			}
-		}
+            if (column.getSharedDictionary() != null) {
+                column.createSharedDictionaryReplacement(dicts, storage, out, sharedDictionaryLocks);
+            } else {
+                // Its a normal dictionary (only valid for this column in this import)
+                column.createSingleColumnDictionaryReplacement(dicts, importName, out);
+            }
+        }
 
-		return out;
-	}
+        return out;
+    }
 
-	private static void distributeDictionary(Namespace namespace, Dictionary dictionary) {
-		log.trace("Sending {} to all Workers", dictionary);
-		namespace.getStorage().updateDictionary(dictionary);
-		namespace.sendToAll(new UpdateDictionary(dictionary));
-	}
+    /**
+     * Import all dictionaries. Shared dictionaries are merge into existing ones. All are distributed to corresponding workers.
+     * Create mappings for shared dictionaries dict.
+     * This is not synchronized because the methods is called within the job execution.
+     */
+    private static Map<String, DictionaryMapping> importDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
 
+        // Empty Maps are Coalesced to null by Jackson
+        if (dicts == null) {
+            return Collections.emptyMap();
+        }
 
-	@Override
-	public void execute() throws JSONException, InterruptedException, IOException {
+        final Map<String, DictionaryMapping> out = new HashMap<>();
 
-		getProgressReporter().setMax(NUMBER_OF_STEPS);
+        log.trace("Importing Dictionaries");
 
-		log.trace("Updating primary dictionary");
+        for (Column column : columns) {
 
-		// Update primary dictionary: load new data, and create mapping.
-		final DictionaryMapping primaryMapping = importPrimaryDictionary(dictionaries.getPrimaryDictionary());
+            if (column.getType() != MajorTypeId.STRING) {
+                continue;
+            }
 
-		getProgressReporter().report(1);
+            // Might not have an underlying Dictionary (eg Singleton, direct-Number)
+            // but could also be an error :/ Most likely the former
+            final Dictionary importDictionary = dicts.get(column.getName());
+            if (importDictionary == null) {
+                log.trace("No Dictionary for {}", column);
+                continue;
+            }
 
-		// Distribute the new IDs among workers
-		distributeWorkerResponsibilities(primaryMapping);
 
-		getProgressReporter().report(1);
+            if (column.getSharedDictionary() == null) {
+                // Normal Dictionary -> no merge necessary, just distribute
+                distributeDictionary(namespace, importDictionary);
+            } else {
+                // It's a shared dictionary
 
+                final String sharedDictionaryName = column.getSharedDictionary();
 
-		log.info("Importing Dictionaries");
+                log.trace("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
 
-		Map<String, DictionaryMapping> sharedDictionaryMappings =
-				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
+                final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
+                final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
 
-		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
+                // This should never fail, becaus the dictionary is pre-created in the replacement generation step
+                ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
 
-		applyDictionaryMappings(sharedDictionaryMappings, container.getStores());
+                log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
 
 
-		Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
+                DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
 
+                if (mapping.getNumberOfNewIds() != 0) {
+                    distributeDictionary(namespace, mapping.getTargetDictionary());
+                }
 
-		namespace.getStorage().updateImport(imp);
+                out.put(column.getName(), mapping);
+            }
+        }
 
-		Map<Integer, List<Integer>> buckets2LocalEntities = groupEntitiesByBucket(container.entities(), primaryMapping, bucketSize);
+        return out;
+    }
 
+    private static void distributeDictionary(Namespace namespace, Dictionary dictionary) {
+        log.trace("Sending {} to all Workers", dictionary);
+        namespace.getStorage().updateDictionary(dictionary);
+        namespace.sendToAll(new UpdateDictionary(dictionary));
+    }
 
-		final ColumnStore[] storesSorted = Arrays.stream(table.getColumns())
-												 .map(Column::getName)
-												 .map(container.getStores()::get)
-												 .map(Objects::requireNonNull)
-												 .toArray(ColumnStore[]::new);
 
+    @Override
+    public void execute() throws JSONException, InterruptedException, IOException {
 
-		log.info("Start sending {} Buckets", buckets2LocalEntities.size());
+        getProgressReporter().setMax(NUMBER_OF_STEPS);
 
-		// we use this to track assignment to workers.
-		final Map<WorkerId, Set<BucketId>> workerAssignments =
-				sendBuckets(container.getStarts(), container.getLengths(), primaryMapping, imp, buckets2LocalEntities, storesSorted);
+        log.trace("Updating primary dictionary");
 
-		workerAssignments.forEach(namespace::addBucketsToWorker);
+        // Update primary dictionary: load new data, and create mapping.
+        final DictionaryMapping primaryMapping = importPrimaryDictionary(dictionaries.getPrimaryDictionary());
 
-		getProgressReporter().done();
-	}
+        getProgressReporter().report(1);
 
-	/**
-	 * select, then send buckets.
-	 */
-	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore[] storesSorted)
-			throws JsonProcessingException {
+        // Distribute the new IDs among workers
+        distributeWorkerResponsibilities(primaryMapping);
 
-		Map<WorkerId, Set<BucketId>> newWorkerAssignments = new HashMap<>();
+        getProgressReporter().report(1);
 
-		final ProgressReporter subJob = getProgressReporter().subJob(buckets2LocalEntities.size());
 
-		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
+        log.info("Importing Dictionaries");
 
-			WorkerInformation responsibleWorker =
-					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket2entities.getKey()), () -> "No responsible worker for Bucket#"
-																													+ bucket2entities.getKey());
+        Map<String, DictionaryMapping> sharedDictionaryMappings =
+                importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
 
-			awaitFreeJobQueue(responsibleWorker);
+        log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
 
-			final Bucket bucket =
-					selectBucket(starts, lengths, storesSorted, primaryMapping, imp, bucket2entities.getKey(), bucket2entities.getValue());
+        applyDictionaryMappings(sharedDictionaryMappings, container.getStores());
 
-			newWorkerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
-								.add(bucket.getId());
 
-			log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
-			responsibleWorker.send(ImportBucket.forBucket(bucket));
+        Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
 
-			subJob.report(1);
-		}
 
-		subJob.done();
+        namespace.getStorage().updateImport(imp);
 
-		return newWorkerAssignments;
-	}
+        Map<Integer, List<Integer>> buckets2LocalEntities = groupEntitiesByBucket(container.entities(), primaryMapping, bucketSize);
 
-	private void awaitFreeJobQueue(WorkerInformation responsibleWorker) {
-		try {
-			responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
-		}
-		catch (InterruptedException e) {
-			log.error("Interrupted while waiting for worker[{}] to have free space in queue", responsibleWorker, e);
-		}
-	}
 
-	/**
-	 * - remap Entity-Ids to global
-	 * - calculate per-Entity regions of Bucklet (start/end)
-	 * - split stores
-	 */
-	private Bucket selectBucket(Map<Integer, Integer> localStarts, Map<Integer, Integer> localLengths, ColumnStore[] stores, DictionaryMapping primaryMapping, Import imp, int bucketId, List<Integer> localEntities) {
+        final ColumnStore[] storesSorted = Arrays.stream(table.getColumns())
+                .map(Column::getName)
+                .map(container.getStores()::get)
+                .map(Objects::requireNonNull)
+                .toArray(ColumnStore[]::new);
 
-		final int root = bucketSize * bucketId;
 
+        log.info("Start sending {} Buckets", buckets2LocalEntities.size());
 
-		IntList selectionStart = new IntArrayList();
-		IntList selectionLength = new IntArrayList();
-		IntSet entities = new IntOpenHashSet();
+        // we use this to track assignment to workers.
+        final Map<WorkerId, Set<BucketId>> workerAssignments =
+                sendBuckets(container.getStarts(), container.getLengths(), primaryMapping, imp, buckets2LocalEntities, storesSorted);
 
+        workerAssignments.forEach(namespace::addBucketsToWorker);
 
-		// First entity of Bucket starts at 0, the following are appended.
-		int[] entityStarts = new int[bucketSize];
-		int[] entityEnds = new int[bucketSize];
+        getProgressReporter().done();
+    }
 
-		Arrays.fill(entityEnds,-1);
-		Arrays.fill(entityStarts,-1);
+    /**
+     * select, then send buckets.
+     */
+    private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore[] storesSorted)
+            throws JsonProcessingException {
 
-		int currentStart = 0;
+        Map<WorkerId, Set<BucketId>> newWorkerAssignments = new HashMap<>();
 
-		for (int position = 0; position < bucketSize; position++) {
-			int globalId = root + position;
+        final ProgressReporter subJob = getProgressReporter().subJob(buckets2LocalEntities.size());
 
-			int localId = primaryMapping.target2Source(globalId);
+        for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
 
-			if(localId == -1){
-				continue;
-			}
+            WorkerInformation responsibleWorker =
+                    Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket2entities.getKey()), () -> "No responsible worker for Bucket#"
+                            + bucket2entities.getKey());
 
-			if(!localStarts.containsKey(localId)){
-				continue;
-			}
+            awaitFreeJobQueue(responsibleWorker);
 
-			entities.add(globalId);
+            final Bucket bucket =
+                    selectBucket(starts, lengths, storesSorted, primaryMapping, imp, bucket2entities.getKey(), bucket2entities.getValue());
 
-			final int length = localLengths.get(localId);
+            newWorkerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
+                    .add(bucket.getId());
 
-			selectionStart.add(localStarts.get(localId));
+            log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
+            responsibleWorker.send(ImportBucket.forBucket(bucket));
 
-			selectionLength.add(length);
+            subJob.report(1);
+        }
 
-			entityStarts[position] = currentStart;
-			entityEnds[position] = currentStart + length;
+        subJob.done();
 
-			currentStart += length;
-		}
+        return newWorkerAssignments;
+    }
 
+    private void awaitFreeJobQueue(WorkerInformation responsibleWorker) {
+        try {
+            responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
+        } catch (InterruptedException e) {
+            log.error("Interrupted while waiting for worker[{}] to have free space in queue", responsibleWorker, e);
+        }
+    }
 
-		// copy only the parts of the bucket we need
-		final ColumnStore[] bucketStores =
-				Arrays.stream(stores)
-					  .map(store -> store.select(selectionStart.toIntArray(), selectionLength.toIntArray()))
-					  .toArray(ColumnStore[]::new);
+    /**
+     * - remap Entity-Ids to global
+     * - calculate per-Entity regions of Bucklet (start/end)
+     * - split stores
+     */
+    private Bucket selectBucket(Map<Integer, Integer> localStarts, Map<Integer, Integer> localLengths, ColumnStore[] stores, DictionaryMapping primaryMapping, Import imp, int bucketId, List<Integer> localEntities) {
 
+        final int root = bucketSize * bucketId;
 
-		return new Bucket(
-				bucketId,
-				root,
-				selectionLength.intStream().sum(),
-				bucketStores,
-				entities,
-				entityStarts,
-				entityEnds,
-				imp
-		);
-	}
 
-	private DictionaryMapping importPrimaryDictionary(Dictionary primaryDictionary) {
+        IntList selectionStart = new IntArrayList();
+        IntList selectionLength = new IntArrayList();
+        IntSet entities = new IntOpenHashSet();
 
 
-		Dictionary orig = namespace.getStorage().getPrimaryDictionaryRaw();
+        // First entity of Bucket starts at 0, the following are appended.
+        int[] entityStarts = new int[bucketSize];
+        int[] entityEnds = new int[bucketSize];
 
-		Dictionary primaryDict = Dictionary.copyUncompressed(orig);
+        Arrays.fill(entityEnds, -1);
+        Arrays.fill(entityStarts, -1);
 
-		DictionaryMapping primaryMapping = DictionaryMapping.createAndImport(primaryDictionary, primaryDict);
+        int currentStart = 0;
 
-		log.debug("Mapped {} new ids", primaryMapping.getNumberOfNewIds());
+        for (int position = 0; position < bucketSize; position++) {
+            int globalId = root + position;
 
-		//if no new ids we shouldn't recompress and store
-		if (primaryMapping.getNumberOfNewIds() == 0) {
-			log.trace("No new ids");
-			return primaryMapping;
-		}
+            int localId = primaryMapping.target2Source(globalId);
 
-		namespace.getStorage()
-				 .updatePrimaryDictionary(primaryDict);
+            if (localId == -1) {
+                continue;
+            }
 
-		return primaryMapping;
-	}
+            if (!localStarts.containsKey(localId)) {
+                continue;
+            }
 
-	private void distributeWorkerResponsibilities(DictionaryMapping primaryMapping) {
-		log.debug("Updating bucket assignments.");
+            entities.add(globalId);
 
-		synchronized (namespace) {
-			for (int entity : primaryMapping.target()) {
-				int bucket = Entity.getBucket(entity, bucketSize);
+            final int length = localLengths.get(localId);
 
-				if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
-					continue;
-				}
+            selectionStart.add(localStarts.get(localId));
 
-				namespace.addResponsibility(bucket);
-			}
+            selectionLength.add(length);
 
-			// While we hold the lock on the namespace distribute the new, consistent state among the workers
-			for (WorkerInformation w : namespace.getWorkers()) {
-				w.send(new UpdateWorkerBucket(w));
-			}
-		}
-	}
+            entityStarts[position] = currentStart;
+            entityEnds[position] = currentStart + length;
 
+            currentStart += length;
+        }
 
-	/**
-	 * Apply new positions into incoming shared dictionaries.
-	 */
-	private void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values) {
-		final ProgressReporter subJob = getProgressReporter().subJob(mappings.size());
 
-		for (Map.Entry<String, DictionaryMapping> entry : mappings.entrySet()) {
-			final String columnName = entry.getKey();
-			final DictionaryMapping mapping = entry.getValue();
+        // copy only the parts of the bucket we need
+        final ColumnStore[] bucketStores =
+                Arrays.stream(stores)
+                        .map(store -> store.select(selectionStart.toIntArray(), selectionLength.toIntArray()))
+                        .toArray(ColumnStore[]::new);
 
-			final StringStore stringStore = (StringStore) values.get(columnName);
 
-			log.debug("Remapping Column[{}] = {} with {}", columnName, stringStore, mapping);
+        return new Bucket(
+                bucketId,
+                root,
+                selectionLength.intStream().sum(),
+                bucketStores,
+                entities,
+                entityStarts,
+                entityEnds,
+                imp
+        );
+    }
 
-			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
-			final IntegerParser indexParser = new IntegerParser(config);
+    private DictionaryMapping importPrimaryDictionary(Dictionary primaryDictionary) {
 
-			final IntSummaryStatistics statistics = mapping.target().intStream().summaryStatistics();
 
-			indexParser.setLines(stringStore.getLines());
+        Dictionary orig = namespace.getStorage().getPrimaryDictionaryRaw();
 
-			indexParser.setMinValue(statistics.getMin());
-			indexParser.setMaxValue(statistics.getMax());
+        Dictionary primaryDict = Dictionary.copyUncompressed(orig);
 
-			final IntegerStore newType = indexParser.findBestType();
+        DictionaryMapping primaryMapping = DictionaryMapping.createAndImport(primaryDictionary, primaryDict);
 
-			log.trace("Decided for {}", newType);
+        log.debug("Mapped {} new ids", primaryMapping.getNumberOfNewIds());
 
-			mapping.applyToStore(stringStore, newType);
+        //if no new ids we shouldn't recompress and store
+        if (primaryMapping.getNumberOfNewIds() == 0) {
+            log.trace("No new ids");
+            return primaryMapping;
+        }
 
-			stringStore.setIndexStore(newType);
-			subJob.report(1);
-		}
-	}
+        namespace.getStorage()
+                .updatePrimaryDictionary(primaryDict);
 
-	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) {
-		Import imp = new Import(table);
+        return primaryMapping;
+    }
 
-		imp.setName(header.getName());
-		imp.setNumberOfEntries(header.getRows());
-		imp.setNumberOfEntities(size);
+    private void distributeWorkerResponsibilities(DictionaryMapping primaryMapping) {
+        log.debug("Updating bucket assignments.");
 
-		final ImportColumn[] importColumns = new ImportColumn[columns.length];
+        synchronized (namespace) {
+            for (int entity : primaryMapping.target()) {
+                int bucket = Entity.getBucket(entity, bucketSize);
 
-		for (int i = 0; i < columns.length; i++) {
-			final ColumnStore store = stores.get(columns[i].getName());
+                if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
+                    continue;
+                }
 
-			ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines(), store.estimateMemoryConsumptionBytes());
+                namespace.addResponsibility(bucket);
+            }
 
-			col.setName(columns[i].getName());
+            // While we hold the lock on the namespace distribute the new, consistent state among the workers
+            for (WorkerInformation w : namespace.getWorkers()) {
+                w.send(new UpdateWorkerBucket(w));
+            }
+        }
+    }
 
-			importColumns[i] = col;
-		}
 
-		imp.setColumns(importColumns);
+    /**
+     * Apply new positions into incoming shared dictionaries.
+     */
+    private void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values) {
+        final ProgressReporter subJob = getProgressReporter().subJob(mappings.size());
 
-		Set<DictionaryId> dictionaries = new HashSet<>();
+        for (Map.Entry<String, DictionaryMapping> entry : mappings.entrySet()) {
+            final String columnName = entry.getKey();
+            final DictionaryMapping mapping = entry.getValue();
 
-		for (Column column : columns) {
-			// only non-shared dictionaries need to be registered here
-			if (column.getType() != MajorTypeId.STRING) {
-				continue;
-			}
+            final StringStore stringStore = (StringStore) values.get(columnName);
 
-			// shared dictionaries are not related to a specific import.
-			if (column.getSharedDictionary() != null) {
-				continue;
-			}
+            log.debug("Remapping Column[{}] = {} with {}", columnName, stringStore, mapping);
 
-			// Some StringStores don't have Dictionaries.
-			final StringStore stringStore = (StringStore) stores.get(column.getName());
+            // we need to find a new Type for the index-Column as it's going to be remapped and might change in size
+            final IntegerParser indexParser = new IntegerParser(config);
 
-			if (!stringStore.isDictionaryHolding()) {
-				continue;
-			}
+            final IntSummaryStatistics statistics = mapping.target().intStream().summaryStatistics();
 
-			dictionaries.add(stringStore.getUnderlyingDictionary().getId());
-		}
+            indexParser.setLines(stringStore.getLines());
 
-		imp.setDictionaries(dictionaries);
-		namespace.sendToAll(new AddImport(imp));
-		return imp;
-	}
+            indexParser.setMinValue(statistics.getMin());
+            indexParser.setMaxValue(statistics.getMax());
 
+            final IntegerStore newType = indexParser.findBestType();
 
-	/**
-	 * Group entities by their global bucket id.
-	 */
-	private Map<Integer, List<Integer>> groupEntitiesByBucket(Set<Integer> entities, DictionaryMapping primaryMapping, int bucketSize) {
-		return entities.stream()
-					   .collect(Collectors.groupingBy(entity -> Entity.getBucket(primaryMapping.source2Target(entity), bucketSize)));
+            log.trace("Decided for {}", newType);
 
-	}
+            mapping.applyToStore(stringStore, newType);
 
+            stringStore.setIndexStore(newType);
+            subJob.report(1);
+        }
+    }
 
-	private Dataset getDataset() {
-		return namespace.getDataset();
-	}
+    private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) {
+        Import imp = new Import(table);
 
+        imp.setName(header.getName());
+        imp.setNumberOfEntries(header.getRows());
+        imp.setNumberOfEntities(size);
 
-	@Override
-	public String getLabel() {
-		return "Importing into " + table + " from " + header.getName();
-	}
+        final ImportColumn[] importColumns = new ImportColumn[columns.length];
+
+        for (int i = 0; i < columns.length; i++) {
+            final ColumnStore store = stores.get(columns[i].getName());
+
+            ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines(), store.estimateMemoryConsumptionBytes());
+
+            col.setName(columns[i].getName());
+
+            importColumns[i] = col;
+        }
+
+        imp.setColumns(importColumns);
+
+        Set<DictionaryId> dictionaries = new HashSet<>();
+
+        for (Column column : columns) {
+            // only non-shared dictionaries need to be registered here
+            if (column.getType() != MajorTypeId.STRING) {
+                continue;
+            }
+
+            // shared dictionaries are not related to a specific import.
+            if (column.getSharedDictionary() != null) {
+                continue;
+            }
+
+            // Some StringStores don't have Dictionaries.
+            final StringStore stringStore = (StringStore) stores.get(column.getName());
+
+            if (!stringStore.isDictionaryHolding()) {
+                continue;
+            }
+
+            dictionaries.add(stringStore.getUnderlyingDictionary().getId());
+        }
+
+        imp.setDictionaries(dictionaries);
+        namespace.sendToAll(new AddImport(imp));
+        return imp;
+    }
+
+
+    /**
+     * Group entities by their global bucket id.
+     */
+    private Map<Integer, List<Integer>> groupEntitiesByBucket(Set<Integer> entities, DictionaryMapping primaryMapping, int bucketSize) {
+        return entities.stream()
+                .collect(Collectors.groupingBy(entity -> Entity.getBucket(primaryMapping.source2Target(entity), bucketSize)));
+
+    }
+
+
+    private Dataset getDataset() {
+        return namespace.getDataset();
+    }
+
+
+    @Override
+    public String getLabel() {
+        return "Importing into " + table + " from " + header.getName();
+    }
 
 }

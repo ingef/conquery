@@ -8,60 +8,62 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class JobManager implements Closeable{
+public class JobManager implements Closeable {
 
 
-	private final JobExecutor slowExecutor;
-	private final JobExecutor fastExecutor;
+    private final JobExecutor slowExecutor;
+    private final JobExecutor fastExecutor;
 
-	private final Thread.UncaughtExceptionHandler notifyExecutorDied = (thread, ex) -> { System.exit(1);};
+    private final Thread.UncaughtExceptionHandler notifyExecutorDied = (thread, ex) -> {
+        System.exit(1);
+    };
 
-	public JobManager(String name, boolean failOnError) {
+    public JobManager(String name, boolean failOnError) {
 
-		slowExecutor = new JobExecutor("Job Manager slow " + name, failOnError);
-		fastExecutor = new JobExecutor("Job Manager fast " + name, failOnError);
+        slowExecutor = new JobExecutor("Job Manager slow " + name, failOnError);
+        fastExecutor = new JobExecutor("Job Manager fast " + name, failOnError);
 
-		slowExecutor.setUncaughtExceptionHandler(notifyExecutorDied);
-		fastExecutor.setUncaughtExceptionHandler(notifyExecutorDied);
+        slowExecutor.setUncaughtExceptionHandler(notifyExecutorDied);
+        fastExecutor.setUncaughtExceptionHandler(notifyExecutorDied);
 
-		slowExecutor.start();
-		fastExecutor.start();
-	}
+        slowExecutor.start();
+        fastExecutor.start();
+    }
 
-	public void addSlowJob(Job job) {
-		log.trace("Added job {}", job.getLabel());
-		slowExecutor.add(job);
-	}
-	
-	public void addFastJob(Job job) {
-		fastExecutor.add(job);
-	}
-	
-	public List<Job> getSlowJobs() {
-		return slowExecutor.getJobs();
-	}
+    public void addSlowJob(Job job) {
+        log.trace("Added job {}", job.getLabel());
+        slowExecutor.add(job);
+    }
 
-	public JobManagerStatus reportStatus() {
+    public void addFastJob(Job job) {
+        fastExecutor.add(job);
+    }
 
-		return new JobManagerStatus(
-				getSlowJobs()
-						.stream()
-						.map(job -> new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel(), job.isCancelled()))
-						.collect(Collectors.toList())
-		);
-	}
+    public List<Job> getSlowJobs() {
+        return slowExecutor.getJobs();
+    }
 
-	public boolean isSlowWorkerBusy() {
-		return slowExecutor.isBusy();
-	}
+    public JobManagerStatus reportStatus() {
 
-	public boolean cancelJob(UUID jobId) {
-		return fastExecutor.cancelJob(jobId) || slowExecutor.cancelJob(jobId);
-	}
+        return new JobManagerStatus(
+                getSlowJobs()
+                        .stream()
+                        .map(job -> new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel(), job.isCancelled()))
+                        .collect(Collectors.toList())
+        );
+    }
 
-	@Override
-	public void close() {
-		fastExecutor.close();
-		slowExecutor.close();
-	}
+    public boolean isSlowWorkerBusy() {
+        return slowExecutor.isBusy();
+    }
+
+    public boolean cancelJob(UUID jobId) {
+        return fastExecutor.cancelJob(jobId) || slowExecutor.cancelJob(jobId);
+    }
+
+    @Override
+    public void close() {
+        fastExecutor.close();
+        slowExecutor.close();
+    }
 }
