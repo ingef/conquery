@@ -46,13 +46,11 @@ import org.apache.shiro.authc.ExpiredCredentialsException;
 @Slf4j
 @Getter
 @Setter
-@RequiredArgsConstructor
 public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 	private static final String GROUPS_CLAIM = "groups";
 
-	private final MetaStorage storage;
 	private final IntrospectionDelegatingRealmFactory authProviderConf;
 
 	private ClientAuthentication clientAuthentication;
@@ -64,6 +62,11 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 	private LoadingCache<BearerToken, TokenIntrospectionSuccessResponse> tokenCache = CacheBuilder.newBuilder()
 			.expireAfterWrite(10, TimeUnit.MINUTES)
 			.build(new TokenValidator());
+
+	public IntrospectionDelegatingRealm(MetaStorage storage, IntrospectionDelegatingRealmFactory authProviderConf) {
+		super(storage);
+		this.authProviderConf = authProviderConf;
+	}
 
 	@Override
 	protected void onInit() {
@@ -87,13 +90,9 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 
 		UserId userId = extractId(successResponse);
 
-		User user = storage.getUser(userId);
+		User user = getUserOrThrowUnknownAccount(userId);
 
-		if (user == null) {
-			throw new IllegalStateException("Unable to retrieve user with id: " + userId);
-		}
-
-		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
+		return new ConqueryAuthenticationInfo(user, token, this, true);
 	}
 
 	private static UserId extractId(TokenIntrospectionSuccessResponse successResponse) {

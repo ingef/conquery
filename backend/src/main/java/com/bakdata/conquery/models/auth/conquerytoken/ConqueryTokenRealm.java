@@ -30,14 +30,12 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 
-	private final MetaStorage storage;
-	
 	@Setter
 	private JWTConfig jwtConfig = new JWTConfig();
 	
 	
 	public ConqueryTokenRealm(MetaStorage storage) {
-		this.storage = storage;
+		super(storage);
 		setAuthenticationTokenClass(TOKEN_CLASS);
 		setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 	}
@@ -74,16 +72,10 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		String username = decodedToken.getSubject();
 
 		UserId userId = UserId.Parser.INSTANCE.parse(username);
-		User user = storage.getUser(userId);
-		// try to construct a new User if none could be found in the storage
-		if (user == null) {
-			log.warn(
-				"Provided credentials were valid, but a corresponding user was not found in the System. You need to add a user to the system with the id: {}",
-				userId);
-			return null;
-		}
 
-		return new ConqueryAuthenticationInfo(userId, token, this, true);
+		final User user = getUserOrThrowUnknownAccount(userId);
+
+		return new ConqueryAuthenticationInfo(user, token, this, true);
 	}
 
 

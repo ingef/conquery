@@ -4,10 +4,15 @@ import javax.annotation.Nullable;
 import javax.ws.rs.container.ContainerRequestContext;
 
 import com.bakdata.conquery.Conquery;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import lombok.RequiredArgsConstructor;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.util.Destroyable;
 
@@ -15,7 +20,10 @@ import org.apache.shiro.util.Destroyable;
  * Abstract class that needs to be implemented for authenticating realms in
  * Conquery.
  */
+@RequiredArgsConstructor
 public abstract class ConqueryAuthenticationRealm extends AuthenticatingRealm implements Destroyable {
+
+	protected final MetaStorage storage;
 
 	@Override
 	protected final AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
@@ -37,5 +45,13 @@ public abstract class ConqueryAuthenticationRealm extends AuthenticatingRealm im
 	@Override
 	public void destroy() throws Exception {
 		// Might be implemented if the realm needs to release resources
+	}
+
+	protected User getUserOrThrowUnknownAccount(UserId userId) throws UnknownAccountException {
+		final User user = storage.getUser(userId);
+		if (user == null) {
+			throw new UnknownAccountException("The user id was unknown: " + userId);
+		}
+		return user;
 	}
 }

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.auth.develop;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
@@ -40,7 +42,8 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 	/**
 	 * Standard constructor.
 	 */
-	public DefaultInitialUserRealm() {
+	public DefaultInitialUserRealm(MetaStorage storage) {
+		super(storage);
 		log.warn(WARNING);
 		this.setAuthenticationTokenClass(DevelopmentToken.class);
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
@@ -52,6 +55,7 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 			return null;
 		}
 		DevelopmentToken devToken = (DevelopmentToken) token;
-		return new ConqueryAuthenticationInfo(devToken.getPrincipal(), devToken.getCredentials(), this, true);
+		final User user = getUserOrThrowUnknownAccount(devToken.getPrincipal());
+		return new ConqueryAuthenticationInfo(user, devToken.getCredentials(), this, true);
 	}
 }

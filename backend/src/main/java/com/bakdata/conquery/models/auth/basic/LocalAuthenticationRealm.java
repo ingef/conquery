@@ -83,7 +83,13 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration) {
+	public LocalAuthenticationRealm(ConqueryTokenRealm centralTokenRealm,
+									String storeName,
+									File storageDir,
+									XodusConfig passwordStoreConfig,
+									Duration validDuration,
+									MetaStorage storage) {
+		super(storage);
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		this.storeName = storeName;
 		this.storageDir = storageDir;
@@ -158,7 +164,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
 			return false;
 		}
-		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getId().getEmail());
+		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getId().getName());
 		ByteIterable passwordByteIt = passwordToHashedEntry(optPassword);
 
 		return passwordStore.add(usernameByteIt, passwordByteIt);
@@ -171,7 +177,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
 			return false;
 		}
-		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getId().getEmail());
+		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getId().getName());
 		ByteIterable passwordByteIt = passwordToHashedEntry(optPassword);
 
 		return passwordStore.update(usernameByteIt, passwordByteIt);
@@ -180,7 +186,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	@Override
 	public boolean removeUser(User user) {
-		return passwordStore.remove(StringBinding.stringToEntry(user.getId().getEmail()));
+		return passwordStore.remove(StringBinding.stringToEntry(user.getId().getName()));
 	}
 
 	@Override

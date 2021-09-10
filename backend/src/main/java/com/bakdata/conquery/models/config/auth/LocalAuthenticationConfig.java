@@ -80,7 +80,8 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 				storeName,
 				directory,
 				passwordStoreConfig,
-				jwtDuration);
+				jwtDuration,
+				manager.getStorage());
 		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(realm, manager.getStorage());
 
 		// Register resources for users to exchange username and password for an access token

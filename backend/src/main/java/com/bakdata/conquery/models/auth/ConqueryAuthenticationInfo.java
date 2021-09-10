@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -34,17 +35,10 @@ public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 	 */
 	private final boolean displayLogout; 
 
-	public ConqueryAuthenticationInfo(UserId userId, Object credentials, Realm realm, boolean displayLogout) {
+	public ConqueryAuthenticationInfo(Userish user, Object credentials, Realm realm, boolean displayLogout) {
 		this.credentials = credentials;
 		this.displayLogout = displayLogout;
-		principals.add(userId, realm.getName());
+		principals.add(user, realm.getName());
 	}
 
-	public ConqueryAuthenticationInfo(UserId userId, Object credentials, Realm realm, boolean displayLogout, @NonNull Collection<UserId> alternativeIds) {
-		this(userId, credentials, realm, displayLogout);
-		if(!alternativeIds.isEmpty()){
-			// The underlying SimplePrincipalCollection denies empty collections
-			principals.addAll(alternativeIds, realm.getName());
-		}
-	}
 }

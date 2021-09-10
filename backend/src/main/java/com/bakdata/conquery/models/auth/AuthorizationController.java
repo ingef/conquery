@@ -166,7 +166,7 @@ public final class AuthorizationController implements Managed{
 		// Find a new user id that is not used yet
 		String name = null;
 		do {
-			name = namePrefix + UUID.randomUUID() + originUserId.getEmail();
+			name = namePrefix + UUID.randomUUID() + originUserId.getName();
 		} while (storage.getUser(new UserId(name)) != null);
 
 		// Retrieve original user and its effective permissions

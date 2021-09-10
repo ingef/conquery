@@ -1,17 +1,15 @@
 package com.bakdata.conquery.models.auth.oidc;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.BearerToken;
-import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.*;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
@@ -19,7 +17,6 @@ import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.JsonWebToken;
 
 import java.lang.reflect.Array;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,7 +36,12 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
     private final TokenVerifier.Predicate<JsonWebToken>[] tokenChecks;
     private final List<String> alternativeIdClaims;
 
-    public JwtPkceVerifyingRealm(@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier, @NonNull String allowedAudience, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, List<String> alternativeIdClaims) {
+    public JwtPkceVerifyingRealm(@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier,
+                                 @NonNull String allowedAudience,
+                                 List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks,
+                                 List<String> alternativeIdClaims,
+                                 MetaStorage storage) {
+        super(storage);
         this.idpConfigurationSupplier = idpConfigurationSupplier;
         this.allowedAudience = new String[] {allowedAudience};
         this.tokenChecks = additionalTokenChecks.toArray((TokenVerifier.Predicate<JsonWebToken>[])Array.newInstance(TokenVerifier.Predicate.class,0));
@@ -84,7 +86,15 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
         log.trace("Authentication successfull for subject {}", subject);
 
-        // Extract alternative ids
+
+        UserId userId = new UserId(subject);
+        User user = storage.getUser(userId);
+        if (user != null) {
+            log.trace("Successfully authenticated user {}", userId);
+            return new ConqueryAuthenticationInfo(user, token, this, true);
+        }
+
+        // Try alternative ids
         List<UserId> alternativeIds = new ArrayList<>();
         for (String alternativeIdClaim : alternativeIdClaims) {
             Object altId = accessToken.getOtherClaims().get(alternativeIdClaim);
@@ -92,10 +102,15 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
                 log.trace("Found no value for alternative id claim {}", alternativeIdClaim);
                 continue;
             }
-            alternativeIds.add(new UserId((String) altId));
+           userId = new UserId((String) altId);
+            user = storage.getUser(userId);
+            if (user != null) {
+                log.trace("Successfully mapped subject {} using user id {}", subject, userId);
+                return new ConqueryAuthenticationInfo(user, token, this, true);
+            }
         }
 
-        return new ConqueryAuthenticationInfo(new UserId(subject), token, this, true, alternativeIds);
+        throw new UnknownAccountException("The user id was unknown: " + subject);
     }
 
 }

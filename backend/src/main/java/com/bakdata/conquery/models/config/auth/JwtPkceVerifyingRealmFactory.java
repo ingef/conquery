@@ -130,7 +130,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
         redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForAuthCallback);
         redirectingAuthFilter.getLoginInitiators().add(this::initiateLogin);
 
-        return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims);
+        return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, manager.getStorage());
     }
 
     @Data
