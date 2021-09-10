@@ -28,7 +28,6 @@
         }
     </style>
     <script type="text/javascript">
-        var queries = [];
         var queryCounter = 0;
 
         var runningQueriesTable = {};
@@ -40,12 +39,11 @@
         var notStartedNbrElt = {};
         var failedNbrElt = {};
         var succeedNbrElt = {};
-        var canUpdate = true;
         var reloader = {};
         var languageTag = {};
         window.onload = (event) => {
           languageTag = navigator.language || navigator.userLanguage;
-          reloader = setInterval(getQueries, 5000);
+          handleUpdateCheck(document.getElementById("updateCheckBox"));
           runningQueriesTable = document.getElementById("runningQueriesTable");
           notStartedQueriesTable = document.getElementById("notStartedQueriesTable");
           failedQueriesTable = document.getElementById("failedQueriesTable");
@@ -59,13 +57,13 @@
 
         }
 
-        function updateQueriesTable(data) {
-          queries = data;
+        function updateQueriesTable(queries) {
+
 
           clearTables();
           queryCounter = 0;
-          updateQueriesInnerCounter(data);
-          if (!data) return;
+          updateQueriesInnerCounter(queries);
+          if (!queries) return;
 
           queries.sort(compareQueriesDate);
           for (i = 0; i < queries.length; i++) {
@@ -98,12 +96,12 @@
           else return 0;
         }
 
-        function updateQueriesInnerCounter(data) {
-          if (!data) return;
-          runningNbrElt.innerText = data.filter(x => x.status === "RUNNING").length;
-          notStartedNbrElt.innerText = data.filter(x => x.status === "NEW").length;
-          failedNbrElt.innerText = data.filter(x => x.status === "FAILED").length;
-          succeedNbrElt.innerText = data.filter(x => x.status === "DONE").length;
+        function updateQueriesInnerCounter(queries) {
+          if (!queries) return;
+          runningNbrElt.innerText = queries.filter(x => x.status === "RUNNING").length;
+          notStartedNbrElt.innerText = queries.filter(x => x.status === "NEW").length;
+          failedNbrElt.innerText = queries.filter(x => x.status === "FAILED").length;
+          succeedNbrElt.innerText = queries.filter(x => x.status === "DONE").length;
         }
 
         function clearTables() {
@@ -126,8 +124,8 @@
                   },
 
                   credentials: 'same-origin'
-                }).then(response => response.json()).then(data => {
-                updateQueriesTable(data);
+                }).then(response => response.json()).then(queries => {
+                updateQueriesTable(queries);
               })
               .catch(error => {
                 console.log(error);
@@ -141,14 +139,14 @@
         }
 
         function handleUpdateCheck(event) {
-          if (event.checked && !canUpdate) {
+          if (event.checked ) {
             reloader = setInterval(getQueries, 5000);
-            canUpdate = true;
-          } else if (!event.checked && canUpdate) {
-            clearInterval(reloader);
-            reloader = 0;
-            canUpdate = false;
+           return;
           }
+
+          clearInterval(reloader);
+          reloader = 0;
+
 
         }
 
@@ -191,11 +189,11 @@
                           </button>
                         </div>
                       </div>
-                      <div class="row container" ${(!data.progress || data.progress == null ? data.progress : "style=\"display: none;\"" )}>
+                      <div class="row container" ${(data.progress && data.progress != null ? "" : "style=\"display: none;\"" )}>
                       <div class="col">
                         <div class="progress">
-                          <div class="progress-bar ${(data.status === "RUNNING" ? "bg-warning" : (data.status === "FAILED" ? "bg-danger" : (data.status === "DONE" ? "bg-success" : "") ))}" role="progressbar" style="width: ${(data.progress && data.progress != null ? data.progress : 0 )}%" aria-valuenow="${(data.progress && data.progress != null ? data.progress : 0 )}" aria-valuemin="0" aria-valuemax="100">
-                          ${(data.progress && data.progress != null ? data.progress : 0 )} %
+                          <div class="progress-bar ${(data.status === "RUNNING" ? "bg-warning" : (data.status === "FAILED" ? "bg-danger" : (data.status === "DONE" ? "bg-success" : "") ))}" role="progressbar" style="width: ${(data.progress && data.progress != null ? data.progress*100 : 0 )}%" aria-valuenow="${(data.progress && data.progress != null ? data.progress*100 : 0 )}" aria-valuemin="0" aria-valuemax="100">
+                          ${(data.progress && data.progress != null ? data.progress*100 : 0 )} %
                         </div>
                       </div>
                     </div>
@@ -226,7 +224,7 @@
     </script>
 
     <h1> Queries </h1>
-    <label><input type='checkbox' onclick='handleUpdateCheck(this);' checked> Update automatically.</label>
+    <label><input id="updateCheckBox" type='checkbox' onclick='handleUpdateCheck(this);' checked> Update automatically.</label>
     <div id="accordion">
       <div class="card">
         <div class="card-header" id="headingOne">
