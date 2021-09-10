@@ -115,6 +115,11 @@
     "clazz": "AdminTablesResource"
   },
   {
+    "method": "PUT",
+    "path": "/datasets/{dataset}/imports/{importId}",
+    "clazz": "AdminDatasetResource"
+  },
+  {
     "method": "POST",
     "path": "/datasets/{dataset}/update-matching-stats",
     "clazz": "AdminDatasetResource"
