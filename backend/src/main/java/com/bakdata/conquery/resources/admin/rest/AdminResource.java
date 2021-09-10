@@ -1,7 +1,9 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -90,11 +92,8 @@ public class AdminResource {
     @GET
     @Path("logout")
     public Response logout() {
-        return  Response.ok().cookie(AuthenticationConfig.expireAuthCookie()).build();
+        return Response.ok().cookie(AuthenticationConfig.expireAuthCookie()).build();
     }
-
-}
-
 
     @GET
     @Path("/queries")

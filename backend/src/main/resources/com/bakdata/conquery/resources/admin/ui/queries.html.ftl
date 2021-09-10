@@ -191,11 +191,11 @@
                           </button>
                         </div>
                       </div>
-                      <div class="row container" ${(data.progress || data.progress == null ? data.progress : "style=\"display: none;\"" )}>
+                      <div class="row container" ${(!data.progress || data.progress == null ? data.progress : "style=\"display: none;\"" )}>
                       <div class="col">
                         <div class="progress">
-                          <div class="progress-bar ${(data.status === "RUNNING" ? "bg-warning" : (data.status === "FAILED" ? "bg-danger" : (data.status === "DONE" ? "bg-success" : "") ))}" role="progressbar" style="width: ${(data.progress ? data.progress : 0 )}%" aria-valuenow="${(data.progress ? data.progress : 0 )}" aria-valuemin="0" aria-valuemax="100">
-                          ${(data.progress || data.progress == null ? data.progress : 0 )} %
+                          <div class="progress-bar ${(data.status === "RUNNING" ? "bg-warning" : (data.status === "FAILED" ? "bg-danger" : (data.status === "DONE" ? "bg-success" : "") ))}" role="progressbar" style="width: ${(data.progress && data.progress != null ? data.progress : 0 )}%" aria-valuenow="${(data.progress && data.progress != null ? data.progress : 0 )}" aria-valuemin="0" aria-valuemax="100">
+                          ${(data.progress && data.progress != null ? data.progress : 0 )} %
                         </div>
                       </div>
                     </div>
