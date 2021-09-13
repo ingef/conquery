@@ -1,19 +1,24 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.jobs.Job;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.auth.Auth;
 
 import javax.inject.Inject;
@@ -23,12 +28,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.time.LocalDate;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.*;
 
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
+import static org.apache.shiro.util.StringUtils.hasText;
 
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Produces(ExtraMimeTypes.JSON_STRING)
@@ -81,13 +86,24 @@ public class AdminResource {
     @GET
     @Path("/jobs/")
     public ImmutableMap<String, JobManagerStatus> getJobs() {
-        return  processor.getJobs();
+        return processor.getJobs();
     }
 
     @GET
     @Path("logout")
     public Response logout() {
-        return  Response.ok().cookie(AuthenticationConfig.expireAuthCookie()).build();
+        return Response.ok().cookie(AuthenticationConfig.expireAuthCookie()).build();
     }
 
+    @GET
+    @Path("/queries")
+    public FullExecutionStatus[] getQueries(@Auth User currentUser, @QueryParam("limit") OptionalLong limit, @QueryParam("since") Optional<String> since) {
+        final MetaStorage storage = processor.getStorage();
+        final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
+        return storage.getAllExecutions().stream()
+                .map(t -> t.buildStatusFull(storage, currentUser, datasetRegistry))
+                .filter(t -> t.getCreatedAt().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
+                .limit(limit.orElse(100))
+                .toArray(FullExecutionStatus[]::new);
+    }
 }

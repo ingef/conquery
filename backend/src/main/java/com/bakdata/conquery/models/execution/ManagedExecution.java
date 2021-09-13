@@ -55,14 +55,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
+
+import static org.apache.shiro.util.StringUtils.hasText;
 
 @Getter
 @Setter
@@ -238,7 +236,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 	}
 
-	protected void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
+	protected void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -247,6 +245,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setOwn(user.isOwner(this));
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
+		status.setStartTime(startTime);
+		status.setFinishTime(finishTime);
 		status.setStatus(getState());
 		if (owner != null) {
 			status.setOwner(owner.getId());
@@ -257,9 +257,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, User user, Map<DatasetId, Set<Ability>> datasetAbilities) {
+	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, User user) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
-		setStatusBase(user, status, url, datasetAbilities);
+		setStatusBase(user, status);
 
 		return status;
 	}
@@ -268,12 +268,12 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, UriBuilder url, User user, DatasetRegistry datasetRegistry, Map<DatasetId, Set<Ability>> datasetAbilities) {
+	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, User user, DatasetRegistry datasetRegistry) {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		FullExecutionStatus status = new FullExecutionStatus();
-		setStatusBase(user, status, url, datasetAbilities);
+		setStatusBase(user, status);
 
-		setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
+		setAdditionalFieldsForStatusWithColumnDescription(storage, user, status, datasetRegistry);
 		setAdditionalFieldsForStatusWithSource(user, status);
 		setAdditionalFieldsForStatusWithGroups(storage, status);
 		setAvailableSecondaryIds(status);
@@ -313,7 +313,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
 		// Implementation specific
 	}
 

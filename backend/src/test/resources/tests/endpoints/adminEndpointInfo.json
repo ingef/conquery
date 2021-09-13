@@ -240,6 +240,11 @@
     "clazz": "AdminResource"
   },
   {
+    "method": "GET",
+    "path": "/queries",
+    "clazz": "AdminResource"
+  },
+  {
     "method": "POST",
     "path": "/jobs/{jobId}/cancel",
     "clazz": "AdminResource"
