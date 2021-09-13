@@ -200,8 +200,7 @@ public class QueryProcessor {
 						 .map(mq -> {
 							 OverviewExecutionStatus status = mq.buildStatusOverview(
 									 uriBuilder.clone(),
-									 user,
-									 datasetAbilities
+									 user
 							 );
 							 if (mq.isReadyToDownload(datasetAbilities)) {
 								 setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder, allProviders);
@@ -361,7 +360,7 @@ public class QueryProcessor {
 		query.initExecutable(datasetRegistry, config);
 
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
-		final FullExecutionStatus status = query.buildStatusFull(storage, url, user, datasetRegistry, datasetAbilities);
+		final FullExecutionStatus status = query.buildStatusFull(storage, user, datasetRegistry);
 
 		if (query.isReadyToDownload(datasetAbilities)) {
 			setDownloadUrls(status, config.getResultProviders(), query, url, allProviders);

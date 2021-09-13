@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -71,6 +72,12 @@ public class AdminUIResource {
 	@Path("jobs")
 	public View getJobs() {
 		return new UIView<>("jobs.html.ftl", uiProcessor.getUIContext(), uiProcessor.getAdminProcessor().getJobs());
+	}
+
+	@GET
+	@Path("queries")
+	public View getQueries() {
+		return new UIView<>("queries.html.ftl", uiProcessor.getUIContext());
 	}
 
 }

@@ -308,8 +308,8 @@
     "upload": "Hochladen",
     "uploadAgain": "Erneut hochladen",
     "uploadFailed": "Datei konnte nicht hochgeladen werden. Bitte überprüfe das Dateiformat und die Netzwerkverbindung.",
-    "uploadSucceeded": "Ergebnisliste hochladen erfolgreich (1 Zeile)",
-    "uploadSucceeded_plural": "Ergebnisliste hochladen erfolgreich ({{count}} Zeilen)",
+    "uploadSucceeded": "Alle Zeilen (1 Zeile) wurden erfolgreich hochgeladen.",
+    "uploadSucceeded_plural": "Alle {{count}} Zeilen wurden erfolgreich hochgeladen.",
     "formatInfo": {
       "text": "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
     },
@@ -324,8 +324,6 @@
     "comma": "Komma",
     "id": "ID",
     "dateSet": "Datumswerte",
-    "dateRange": "Datumsbereich (REMOVE)",
-    "eventDate": "Einzeldatum (REMOVE)",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
     "ignore": "Ignorieren",

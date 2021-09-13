@@ -7,18 +7,13 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.internationalization.DateContextResolutionC10n;
-import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.error.ConqueryError;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -34,16 +29,12 @@ public class DateContext {
 
 	/**
 	 * The date range.
-	 *
-	 * @return The date range
 	 */
 	@Getter
 	private final CDateRange dateRange;
 
 	/**
 	 * Indicates to which group the context belongs.
-	 *
-	 * @return The groups.
 	 */
 	@Getter
 	@Setter
@@ -51,16 +42,12 @@ public class DateContext {
 
 	/**
 	 * Indicates the relative position of the context to the event context.
-	 *
-	 * @return The index.
 	 */
 	@Getter
 	private Integer index = null;
 	
 	/**
 	 * The date from which the relative context were generated.
-	 * 
-	 * @return The event date
 	 */
 	@Getter @Setter
 	private LocalDate eventDate = null;
@@ -102,189 +89,6 @@ public class DateContext {
 	}
 
 	/**
-	 * Specifies whether the sub date ranges (which have the maximum length specified by the {@link Resolution})
-	 * are aligned with regard to beginning or the end of a date range mask. This affects the generated sub date ranges
-	 * only if the {@link Alignment} is finer than the {@link Resolution}.
-	 */
-	public static enum AlignmentReference {
-		START(){
-			@Override
-			public List<CDateRange> getAlignedIterationDirection(List<CDateRange> alignedSubDivisions) {
-				return alignedSubDivisions;
-			}
-
-			@Override
-			public int getInterestingBorder(CDateRange daterange) {
-				return daterange.getMinValue();
-			}
-
-			@Override
-			public CDateRange makeMergedRange(CDateRange lastDaterange, int prioInteressingBorder) {
-				return CDateRange.of(prioInteressingBorder, lastDaterange.getMaxValue());
-			}
-		},
-		END(){
-			@Override
-			public List<CDateRange> getAlignedIterationDirection(List<CDateRange> alignedSubDivisions) {
-				return Lists.reverse(alignedSubDivisions);
-			}
-
-			@Override
-			public int getInterestingBorder(CDateRange daterange) {
-				return daterange.getMaxValue();
-			}
-
-			@Override
-			public CDateRange makeMergedRange(CDateRange lastDaterange, int prioInteressingBorder) {
-				return CDateRange.of(lastDaterange.getMinValue(), prioInteressingBorder);
-			}
-		};
-
-		public abstract List<CDateRange> getAlignedIterationDirection(List<CDateRange> alignedSubDivisions);
-		public abstract int getInterestingBorder(CDateRange daterange);
-		public abstract CDateRange makeMergedRange(CDateRange lastDaterange, int prioInteressingBorder);
-	}
-
-	@RequiredArgsConstructor
-	/**
-	 * Defines the granularity into which a given date range mask is chunked.
-	 * The actual size in days depends on the chosen {@link Alignment}, e.g.:
-	 * If the resolution is YEARS and it should be aligned on the actual YEAR, the resulting contexts days might vary
-	 * depending on if that year was a leap year.
-	 * If the alignment is DAY, then all context will have a length of 365 day, except the dateRangeMask intersects an
-	 * edge context.
-	 */
-	public static enum Resolution implements Localized {
-		/**
-		 * For returning contexts with a single {@link CDateRange} for the entire
-		 * {@link FeatureGroup}.
-		 */
-		COMPLETE(null, Map.of(
-				Alignment.NO_ALIGN, 1)) {
-			@Override
-			public String toString(Locale locale) {
-
-				return C10N.get(DateContextResolutionC10n.class, locale).complete();
-			}
-		},
-
-		/**
-		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
-		 * years.
-		 */
-		YEARS(COMPLETE, Map.of(
-				Alignment.YEAR, 1,
-				Alignment.QUARTER, 4,
-				Alignment.DAY, 365)) {
-			@Override
-			public String toString(Locale locale) {
-
-				return C10N.get(DateContextResolutionC10n.class, locale).year();
-			}
-		},
-
-		/**
-		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
-		 * quarters.
-		 */
-		QUARTERS(YEARS, Map.of(
-				Alignment.QUARTER, 1,
-				Alignment.DAY, 90)) {
-			@Override
-			public String toString(Locale locale) {
-
-				return C10N.get(DateContextResolutionC10n.class, locale).quarter();
-			}
-		},
-
-		/**
-		 * The {@link CDateRange} contexts per {@link FeatureGroup} are subdivided into
-		 * days.
-		 */
-		DAYS(QUARTERS, Map.of(
-				Alignment.DAY, 1)) {
-			@Override
-			public String toString(Locale locale) {
-
-				return C10N.get(DateContextResolutionC10n.class, locale).day();
-			}
-		};
-
-
-		@JsonIgnore
-		private final Resolution coarser;
-
-		/**
-		 * Holds which calendar alignments are supported by this resolution and
-		 * the amount of how many of such subdividions fill in this resolusion subdivision.
-		 */
-		@JsonIgnore
-		private final Map<Alignment, Integer> compatibleAlignmentsAndAmount;
-
-
-		private List<Resolution> thisAndCoarserSubdivisions;
-
-		public abstract String toString(Locale locale);
-
-		@JsonIgnore
-		public Collection<Alignment> getSupportedAlignments(){
-			return compatibleAlignmentsAndAmount.keySet();
-		}
-
-		/**
-		 * Returns the amount of calendar alignment sub date ranges that would fit in to this resolution.
-		 */
-		@JsonIgnore
-		public OptionalInt getAmountForAlignment(Alignment alignment){
-			if (!this.compatibleAlignmentsAndAmount.containsKey(alignment)) {
-				return OptionalInt.empty();
-			}
-			return OptionalInt.of(this.compatibleAlignmentsAndAmount.get(alignment));
-		}
-
-		@JsonIgnore
-		public List<Resolution> getThisAndCoarserSubdivisions() {
-			if (thisAndCoarserSubdivisions != null) {
-				return thisAndCoarserSubdivisions;
-			}
-			List<Resolution> thisAndCoarser = new ArrayList<>();
-			if (coarser != null) {
-				thisAndCoarser.addAll(coarser.getThisAndCoarserSubdivisions());
-			}
-			thisAndCoarser.add(this);
-			return thisAndCoarserSubdivisions = Collections.unmodifiableList(thisAndCoarser);
-
-		}
-	}
-
-	@RequiredArgsConstructor
-	/**
-	 * Specifier for the alignment of {@link DateContext}s of a certain resolution.
-	 * The alignment provides a method to sub divide a dateRangeMask into ranges aligned to the calendar equivalent.
-	 * These sub divisions can then be merged to form the equally grain or coarser desired resolution for the
-	 * {@link DateContext}s.
-	 */
-	public static enum Alignment {
-		NO_ALIGN(List::of), // Special case for resolution == COMPLETE
-		DAY(CDateRange::getCoveredDays),
-		QUARTER(CDateRange::getCoveredQuarters),
-		YEAR(CDateRange::getCoveredYears);
-
-		@Getter @JsonIgnore
-		private final Function<CDateRange,List<CDateRange>> subdivider;
-	}
-
-	@RequiredArgsConstructor
-	public static enum CalendarUnit {
-		DAYS(Alignment.DAY),
-		QUARTERS(Alignment.QUARTER),
-		YEARS(Alignment.YEAR);
-
-		@Getter
-		private final Alignment alignment;
-	}
-
-	/**
 	 * Factory function that produces a list of {@link CDateRange}s from a given dateRangeMask according to the given
 	 * {@link AlignmentReference}, {@link Resolution} and {@link Alignment}.
 	 */
@@ -293,9 +97,7 @@ public class DateContext {
 
 		if (alignedPerResolution == 1) {
 			// When the alignment fits the resolution we can use the the alignment subdivision directly
-			return (dateRange) -> {
-				return alignment.getSubdivider().apply(dateRange);
-			};
+			return (dateRange) -> alignment.getSubdivider().apply(dateRange);
 		}
 
 		return (dateRange) -> {
@@ -338,7 +140,7 @@ public class DateContext {
 	 * The event (a certain day) itself is expanded to a date range according to the desired alignment and the indexPlacement
 	 * determines to which group it belongs.
 	 */
-	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime,	int outcomeTime, DateContext.CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
+	public static List<DateContext> generateRelativeContexts(int event, IndexPlacement indexPlacement, int featureTime, int outcomeTime, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 		if (featureTime < 1 && outcomeTime < 1) {
 			throw new IllegalArgumentException("Both relative times were smaller than 1 (featureTime: " + featureTime
 					+ "; outcomeTime: " + outcomeTime + ")");
@@ -409,7 +211,7 @@ public class DateContext {
 	 * @param timeUnit  The time unit.
 	 * @return The feature range.
 	 */
-	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, DateContext.CalendarUnit timeUnit) {
+	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, CalendarUnit timeUnit) {
 		if(featureTime <= 0){
 			return null;
 		}
@@ -451,7 +253,7 @@ public class DateContext {
 	 * @param resolution  The time unit.
 	 * @return The outcome range.
 	 */
-	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime, DateContext.CalendarUnit resolution) {
+	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime, CalendarUnit resolution) {
 		if (outcomeTime <= 0) {
 			return null;
 		}

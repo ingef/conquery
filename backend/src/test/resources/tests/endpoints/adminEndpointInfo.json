@@ -236,7 +236,17 @@
   },
   {
     "method": "GET",
+    "path": "/logout",
+    "clazz": "AdminResource"
+  },
+  {
+    "method": "GET",
     "path": "/jobs/",
+    "clazz": "AdminResource"
+  },
+  {
+    "method": "GET",
+    "path": "/queries",
     "clazz": "AdminResource"
   },
   {
