@@ -43,21 +43,21 @@ public class IntrospectionDelegatingRealmTest {
 
 	// User 1
 	private static final String USER_1_NAME = "test_name1";
-	private static User USER_1;
+	private static User USER_1 = new User(USER_1_NAME, USER_1_NAME, STORAGE);
 	private static final String USER_1_PASSWORD = "test_password1";
 	private static final String USER_1_TOKEN = JWT.create().withClaim("name", USER_1_NAME).sign(Algorithm.HMAC256("secret"));;
 	private static final BearerToken USER1_TOKEN_WRAPPED = new BearerToken(USER_1_TOKEN);
 
 	// User 2
 	private static final String USER_2_NAME = "test_name2";
-	private static User USER_2;
+	private static User USER_2 = new User(USER_2_NAME, USER_2_NAME, STORAGE);
 	private static final String USER_2_LABEL = "test_label2";
 	private static final String USER_2_TOKEN = JWT.create().withClaim("name", USER_2_NAME).sign(Algorithm.HMAC256("secret"));;
 	private static final BearerToken USER_2_TOKEN_WRAPPED = new BearerToken(USER_2_TOKEN);
 
 	// User 3 existing
 	private static final String USER_3_NAME = "test_name3";
-	private static User USER_3;
+	private static User USER_3 = new User(USER_3_NAME, USER_3_NAME, STORAGE);
 	private static final String USER_3_LABEL = "test_label3";
 	private static final String USER_3_TOKEN = JWT.create().withClaim("name", USER_3_NAME).sign(Algorithm.HMAC256("secret"));;
 	private static final BearerToken USER_3_TOKEN_WRAPPED = new BearerToken(USER_3_TOKEN);
@@ -72,11 +72,6 @@ public class IntrospectionDelegatingRealmTest {
 	public static void beforeAll() {
 		initRealmConfig();
 		initOIDCServer();
-
-		USER_1 = new User(USER_1_NAME, USER_1_NAME, STORAGE);
-		USER_2 = new User(USER_2_NAME, USER_2_NAME, STORAGE);
-		USER_3 = new User(USER_3_NAME, USER_3_NAME, STORAGE);
-
 	}
 	
 	@BeforeEach
@@ -168,8 +163,7 @@ public class IntrospectionDelegatingRealmTest {
 	
 	@Test
 	public void tokenIntrospectionSimpleUserExisting() {
-		User existingUser = new User(USER_1_NAME, USER_1_NAME, STORAGE);
-		STORAGE.addUser(existingUser);
+		STORAGE.addUser(USER_1);
 		
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER1_TOKEN_WRAPPED);
 		
@@ -177,17 +171,19 @@ public class IntrospectionDelegatingRealmTest {
 			.usingRecursiveComparison()
 			.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
 			.isEqualTo(new ConqueryAuthenticationInfo(USER_1, USER1_TOKEN_WRAPPED, REALM, true));
-		assertThat(STORAGE.getAllUsers()).containsOnly(existingUser);
+		assertThat(STORAGE.getAllUsers()).containsOnly(USER_1);
 	}
 	
 	@Test
 	public void tokenIntrospectionGroupedUser() {
+		STORAGE.addUser(USER_2);
+
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER_2_TOKEN_WRAPPED);
-		
+
+		final ConqueryAuthenticationInfo expected = new ConqueryAuthenticationInfo(USER_2, USER_2_TOKEN_WRAPPED, REALM, true);
 		assertThat(info)
 			.usingRecursiveComparison()
-			.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
-			.isEqualTo(new ConqueryAuthenticationInfo(USER_2, USER_2_TOKEN_WRAPPED, REALM, true));
+			.isEqualTo(expected);
 		assertThat(STORAGE.getAllUsers()).containsOnly(USER_2);
 		assertThat(STORAGE.getAllGroups()).hasSize(2); // Pre-existing group and a second group that has been added in the process
 		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).contains(new UserId(USER_2_NAME));
@@ -196,9 +192,8 @@ public class IntrospectionDelegatingRealmTest {
 	
 	@Test
 	public void tokenIntrospectionGroupedUserRemoveGroupMapping() {
-		User user = new User(USER_3_NAME, USER_3_LABEL, STORAGE);
-		STORAGE.addUser(user);
-		GROUP_1_EXISTING.addMember(user);
+		STORAGE.addUser(USER_3);
+		GROUP_1_EXISTING.addMember(USER_3);
 		
 		assertThat(STORAGE.getGroup(new GroupId(GROUPNAME_1)).getMembers()).contains(new UserId(USER_3_NAME));
 		
