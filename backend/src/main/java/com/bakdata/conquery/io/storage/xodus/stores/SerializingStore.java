@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Key-value-store from {@link KEY} type values to {@link VALUE} values. ACID consistent, stored on disk using {@link jetbrains.exodus.env.Store} via {@link XodusStore}.
  * <p>
- * Values are (de-)serialized using {@linkplain objectMapper}.
+ * Values are (de-)serialized using {@link ObjectMapper}.
  *
  * @param <KEY>   type of keys
  * @param <VALUE> type of values.

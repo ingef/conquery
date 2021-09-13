@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -22,26 +23,24 @@ import org.apache.shiro.authc.AuthenticationToken;
  * We need this authenticator to plug in the security, and hereby shiro, into the AuthFilter.
  */
 @Slf4j
-public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, User>{
+public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, Userish>{
 	
 	/**
 	 * The execeptions thrown by Shiro will be catched by {@link AuthenticationExceptionMapper}.  
 	 */
 	@Override
-	public Optional<User> authenticate(AuthenticationToken token) {
+	public Optional<Userish> authenticate(AuthenticationToken token) {
 		// Submit the token to Shiro (to all realms that were registered)
 		ConqueryAuthenticationInfo info = (ConqueryAuthenticationInfo) SecurityUtils.getSecurityManager().authenticate(token);
-		// All authenticating realms must return a UserId as identifying principal
 
-		// Used the first matching user id
-		User user = info.getPrincipals().oneByType(User.class);
+		// Extract
+		Userish user = info.getPrincipals().oneByType(Userish.class);
 
 
 		// If the user was present, all further authorization can now be performed on the user object
 		log.trace("Using user {} for further authorization", user);
 		ConqueryMDC.setLocation(user.getId().toString());
-		user.setDisplayLogout(info.isDisplayLogout());
-		user.setPrincipals(info.getPrincipals());
+		user.setAuthenticationInfo(info);
 		return Optional.of(user);
 	}
 

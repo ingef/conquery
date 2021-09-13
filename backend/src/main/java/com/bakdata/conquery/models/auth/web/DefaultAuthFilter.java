@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.google.common.base.Function;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
@@ -37,7 +38,7 @@ import java.util.Set;
 @PreMatching
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Priority(Priorities.AUTHENTICATION)
-public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
+public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Userish> {
 
 	private final Set<TokenExtractor> tokenExtractors = new HashSet<>();
 
@@ -100,9 +101,6 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 	 * extraction process the Token is resubmitted to the realm from the AuthFilter
 	 * to the {@link ConqueryAuthenticator} which dispatches it to shiro.
 	 *
-	 * @param request
-	 *            An incoming request that potentially holds a token for the
-	 *            implementing realm.
 	 * @return The extracted {@link AuthenticationToken} or <code>null</code> if no
 	 *         token could be parsed.
 	 */
@@ -116,13 +114,10 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 	 * An {@link AuthorizationController} must be provided during the building
 	 * process.
 	 * </p>
-	 *
-	 * @param <P>
-	 *            the principal
 	 */
 	@Accessors(chain = true)
 	@Setter
-	private static class Builder extends AuthFilterBuilder<AuthenticationToken, User, DefaultAuthFilter> {
+	private static class Builder extends AuthFilterBuilder<AuthenticationToken, Userish, DefaultAuthFilter> {
 
 		@Override
 		protected DefaultAuthFilter newInstance() {

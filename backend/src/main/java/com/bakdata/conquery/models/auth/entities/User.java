@@ -36,11 +36,6 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	@JsonProperty
 	private final Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
 
-	@Getter
-	@Setter
-	@JsonIgnore
-	private transient boolean displayLogout = true;
-
 	// protected for testing purposes
 	@JsonIgnore
 	@Getter(AccessLevel.PROTECTED)
@@ -122,8 +117,15 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@JsonIgnore
-	public void setPrincipals(PrincipalCollection principals) {
-		shiroUserAdapter.setPrincipals(principals);
+	@Override
+	public boolean isDisplayLogout() {
+		return shiroUserAdapter.getAuthenticationInfo().get().isDisplayLogout();
+	}
+
+	@JsonIgnore
+	@Override
+	public void setAuthenticationInfo(ConqueryAuthenticationInfo info) {
+		shiroUserAdapter.getAuthenticationInfo().set(info);
 	}
 
 	/**
@@ -132,9 +134,8 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	 */
 	protected class ShiroUserAdapter extends FilteredUser {
 
-		@JsonIgnore
-		@Setter
-		private PrincipalCollection principals;
+		@Getter
+		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo = ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false));
 
 		@Override
 		public void checkPermission(Permission permission) throws AuthorizationException {
@@ -148,7 +149,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 		@Override
 		public PrincipalCollection getPrincipals() {
-			return principals;
+			return authenticationInfo.get().getPrincipals();
 		}
 
 		@Override

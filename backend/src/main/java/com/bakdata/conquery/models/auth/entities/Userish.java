@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.auth.entities;
 
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -28,4 +29,8 @@ public interface Userish extends Principal {
 	public boolean isOwner(Authorized object);
 
 	public Set<ConqueryPermission> getPermissions();
+
+	public boolean isDisplayLogout();
+
+	public void setAuthenticationInfo(ConqueryAuthenticationInfo info);
 }
