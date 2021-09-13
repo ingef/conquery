@@ -125,6 +125,7 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "optional": "Optional",
     "back": "Back",
     "any": "Any",
     "save": "Save",

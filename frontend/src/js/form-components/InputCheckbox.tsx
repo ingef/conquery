@@ -6,6 +6,8 @@ import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
 
+import Optional from "./Optional";
+
 const Row = styled("div")`
   display: flex;
   flex-direction: row;
