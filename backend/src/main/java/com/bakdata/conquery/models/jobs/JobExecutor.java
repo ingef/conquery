@@ -1,5 +1,13 @@
 package com.bakdata.conquery.models.jobs;
 
+import com.bakdata.conquery.metrics.JobMetrics;
+import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.codahale.metrics.Timer;
+import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -8,17 +16,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.bakdata.conquery.metrics.JobMetrics;
-import com.bakdata.conquery.models.messages.namespaces.specific.ImportsManager;
-import com.bakdata.conquery.util.SimpleObservable;
-import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.codahale.metrics.Timer;
-import com.google.common.base.Stopwatch;
-import com.google.common.util.concurrent.Uninterruptibles;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import net.minidev.json.annotate.JsonIgnore;
-
 @Slf4j
 public class JobExecutor extends Thread {
 
@@ -26,12 +23,10 @@ public class JobExecutor extends Thread {
 	private final AtomicReference<Job> currentJob = new AtomicReference<>();
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final boolean failOnError;
-	@JsonIgnore
-	private final transient SimpleObservable<UUID> jobsObservable = new SimpleObservable<>();
+
 
 	public JobExecutor(String name, boolean failOnError) {
 		super(name);
-		jobsObservable.register(ImportsManager.getInstance());
 		this.failOnError = failOnError;
 		JobMetrics.createJobQueueGauge(name, jobs);
 	}
@@ -135,7 +130,6 @@ public class JobExecutor extends Thread {
 						ConqueryMDC.setLocation(this.getName());
 
 						log.trace("Finished job {} within {}", job, timer.stop());
-						jobsObservable.notifyObservers(job.getJobId());
 						time.stop();
 					}
 				}

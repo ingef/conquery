@@ -46,7 +46,8 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	@Getter
 	private final Validator validator;
-	@Getter @ToString.Include
+	@Getter
+	@ToString.Include
 	private final String pathName;
 
 	protected SingletonStore<Dataset> dataset;
@@ -215,7 +216,6 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	public void removeDictionary(DictionaryId id) {
 		dictionaries.remove(id);
 	}
-
 
 
 	public void addImport(Import imp) {

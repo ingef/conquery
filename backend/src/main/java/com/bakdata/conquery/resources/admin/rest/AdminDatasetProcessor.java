@@ -17,10 +17,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -65,6 +62,7 @@ public class AdminDatasetProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
+	private final transient IdMutex<ImportId> runningImportJobs = new IdMutex<>();
 
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
@@ -284,23 +282,18 @@ public class AdminDatasetProcessor {
 	@SneakyThrows
 	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config);
-		ImportsManager importsManager = ImportsManager.getInstance();
-		importsManager.addStartedImportJob(job.getImportId().toString(), job.getJobId());
+		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, runningImportJobs, Optional.empty());
 		namespace.getJobManager().addSlowJob(job);
 	}
 
-
+	/**
+	 * Reads an Import partially Importing it if it is present, then submitting it for full import [Update of an import].
+	 */
+	@SneakyThrows
 	public void updateImport(Import imp, Namespace namespace, InputStream inputStream) throws IOException {
-		ImportsManager importsManager = ImportsManager.getInstance();
-		if (importsManager.isJobRunning(imp.getId().toString())) {
-			throw new ConcurrentModificationException("There is an import-job already running.");
-		} else {
-			ImportJob job = ImportJob.update(imp, namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config);
-			importsManager.addStartedImportJob(job.getImportId().toString(), job.getJobId());
-			namespace.getJobManager().addSlowJob(job);
-		}
 
+		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, runningImportJobs, Optional.of(imp));
+		namespace.getJobManager().addSlowJob(job);
 	}
 
 	/**

@@ -2,15 +2,7 @@ package com.bakdata.conquery.models.jobs;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IntSummaryStatistics;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.BadRequestException;
@@ -41,10 +33,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
-import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
+import com.bakdata.conquery.models.messages.namespaces.specific.*;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
@@ -82,19 +71,14 @@ public class ImportJob extends Job {
 	private final PreprocessedDictionaries dictionaries;
 	private final PreprocessedData container;
 	private final ConqueryConfig config;
-
-
 	@Getter
 	private final ImportId importId;
+	private final IdMutex.Locked locked;
+
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static ImportJob create(
-			Namespace namespace,
-			InputStream inputStream,
-			int entityBucketSize,
-			IdMutex<DictionaryId> sharedDictionaryLocks,
-			ConqueryConfig config)
+	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, IdMutex<ImportId> runningImportJobs, Optional<Import> toUpdateImp)
 			throws IOException {
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
 
@@ -116,10 +100,23 @@ public class ImportJob extends Job {
 			}
 
 			final ImportId importId = new ImportId(table.getId(), header.getName());
+			if (toUpdateImp.isPresent()) {
+				if (!importId.equals(toUpdateImp.get().getId())) {
+					throw new BadRequestException(String.format("The Import [%s] to update is not the same withe the one in the file [%s]", toUpdateImp.get().getId(), importId));
+				}
+				if (namespace.getStorage().getImport(importId) == null) {
+					throw new BadRequestException(String.format("Import[%s] is not present.", importId));
+				}
 
-			if (namespace.getStorage().getImport(importId) != null) {
-				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
+				namespace.getStorage().removeImport(toUpdateImp.get().getId());
+				namespace.sendToAll(new RemoveImportJob(toUpdateImp.get()));
+
+			} else {
+				if (namespace.getStorage().getImport(importId) != null) {
+					throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
+				}
 			}
+
 			log.trace("Begin reading Dictionaries");
 			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
 			PreprocessedDictionaries dictionaries = parser.readDictionaries();
@@ -135,7 +132,6 @@ public class ImportJob extends Job {
 
 			PreprocessedData container = parser.readData();
 
-
 			log.debug("Done reading data. Contains {} Entities.", container.size());
 
 			log.info("Importing {} into {}", header.getName(), tableId);
@@ -148,73 +144,8 @@ public class ImportJob extends Job {
 					dictionaries,
 					container,
 					config,
-					importId
-			);
-		}
-	}
-
-
-	public static ImportJob update(
-			Import imp,
-			Namespace namespace,
-			InputStream inputStream,
-			int entityBucketSize,
-			IdMutex<DictionaryId> sharedDictionaryLocks,
-			ConqueryConfig config)
-			throws IOException {
-		try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
-
-			final Dataset ds = namespace.getDataset();
-
-			// We parse semi-manually as the incoming file consist of multiple documents we only read progressively:
-			// 1) the header to check metadata
-			// 2) The Dictionaries to be imported and transformed
-			// 3) The ColumnStores themselves which contain references to the previously imported dictionaries.
-
-
-			final PreprocessedHeader header = parser.readHeader();
-
-			final TableId tableId = new TableId(ds.getId(), header.getTable());
-			Table table = namespace.getStorage().getTable(tableId);
-
-			if (table == null) {
-				throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
-			}
-
-			//final ImportId importId = new ImportId(table.getId(), header.getName());
-
-			if (namespace.getStorage().getImport(imp.getId()) == null) {
-				throw new BadRequestException(String.format("Import[%s] is not present.", imp.getId()));
-			}
-			log.trace("Begin reading Dictionaries");
-			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
-			PreprocessedDictionaries dictionaries = parser.readDictionaries();
-
-			Map<DictionaryId, Dictionary>
-					dictReplacements =
-					createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage(), sharedDictionaryLocks);
-
-			// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
-			parser.addAllReplacements(dictReplacements);
-
-			log.trace("Begin reading data.");
-
-			PreprocessedData container = parser.readData();
-
-
-			log.debug("Done reading data. Contains {} Entities.", container.size());
-
-			log.info("Importing {} into {}", header.getName(), tableId);
-
-			return new ImportJob(
-					namespace,
-					table,
-					entityBucketSize,
-					header,
-					dictionaries,
-					container,
-					config,
-					imp.getId()
+					importId,
+					runningImportJobs.acquire(importId)
 			);
 		}
 	}
@@ -379,6 +310,8 @@ public class ImportJob extends Job {
 		workerAssignments.forEach(namespace::addBucketsToWorker);
 
 		getProgressReporter().done();
+
+		locked.release();
 	}
 
 	/**

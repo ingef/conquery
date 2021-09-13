@@ -13,21 +13,21 @@ import lombok.Data;
 @AllArgsConstructor(onConstructor_ = @JsonCreator)
 public class PreprocessedData {
 
-    private final Map<Integer, Integer> starts;
-    private final Map<Integer, Integer> lengths;
+	private final Map<Integer, Integer> starts;
+	private final Map<Integer, Integer> lengths;
 
-    private final Map<String, ColumnStore> stores;
+	private final Map<String, ColumnStore> stores;
 
-    @JsonIgnore
-    public boolean isEmpty() {
-        return getStarts() == null;
-    }
+	@JsonIgnore
+	public boolean isEmpty() {
+		return getStarts() == null;
+	}
 
-    public int size() {
-        return starts.size();
-    }
+	public int size() {
+		return starts.size();
+	}
 
-    public Set<Integer> entities() {
-        return starts.keySet();
-    }
+	public Set<Integer> entities() {
+		return starts.keySet();
+	}
 }
