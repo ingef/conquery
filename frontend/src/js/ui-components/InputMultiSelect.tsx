@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { theme } from "app-theme";
 import Mustache from "mustache";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,6 +39,22 @@ const Row = styled("div")`
   justify-content: space-between;
   padding: 5px 10px;
   border-bottom: 1px solid #ccc;
+`;
+
+const Option = styled("div")<{ isSelected?: boolean }>`
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  font-size: ${({ theme }) => theme.font.sm};
+  color: ${({ isSelected }) => (isSelected ? "white" : theme.col.black)};
+  font-weight: ${({ isSelected }) => (isSelected ? 400 : 300)};
+  cursor: pointer;
+  background-color: ${({ isSelected }) =>
+    isSelected ? theme.col.blueGrayDark : "white"};
+  &:hover {
+    background-color: ${({ isSelected }) =>
+      isSelected ? theme.col.blueGrayDark : theme.col.blueGrayVeryLight};
+  }
 `;
 
 const InfoText = styled("p")`
@@ -153,26 +170,14 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
           {...ownProps}
         >
           {({ index, style }) => (
-            <components.Option
-              type="option"
-              label={ownProps.options[index].label}
-              data={ownProps.options[index].value}
-              innerProps={{
-                id: ownProps.options[index].value.toString(),
-                key: ownProps.options[index].value.toString(),
-                onClick: () => ownProps.selectOption(ownProps.options[index]),
-                onMouseMove: () => {},
-                onMouseOver: () => {},
-                tabIndex: -1,
-              }}
-              isDisabled={false}
-              isFocused={false}
-              isSelected={false}
-              {...ownProps}
-              {...style}
+            <Option
+              title={ownProps.options[index].label}
+              onClick={() => ownProps.selectOption(ownProps.options[index])}
+              isSelected={ownProps.getValue().includes(ownProps.options[index])}
+              style={style}
             >
               {ownProps.options[index].label}
-            </components.Option>
+            </Option>
           )}
         </FixedSizeList>
       </>
@@ -193,6 +198,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       components={{ MultiValueLabel, MenuList }}
       value={props.input.value}
       isDisabled={props.disabled}
+      menuIsOpen
       isLoading={!!props.isLoading}
       classNamePrefix={"react-select"}
       maxMenuHeight={300}
