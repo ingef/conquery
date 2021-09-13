@@ -125,6 +125,7 @@
     "unshare": "Freigabe aufheben"
   },
   "common": {
+    "optional": "Optional",
     "back": "Zurück",
     "any": "Beliebig",
     "save": "Speichern",
