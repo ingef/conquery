@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.auth;
 
 import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.util.UserishPrincipalCollection;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -22,7 +23,7 @@ import java.util.Collection;
 @EqualsAndHashCode
 public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 
-	private final SimplePrincipalCollection principals = new SimplePrincipalCollection();
+	private final UserishPrincipalCollection principals;
 	
 	/**
 	 * The credential a realm used for authentication.
@@ -35,10 +36,10 @@ public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 	 */
 	private final boolean displayLogout; 
 
-	public ConqueryAuthenticationInfo(Userish user, Object credentials, Realm realm, boolean displayLogout) {
+	public ConqueryAuthenticationInfo(Userish user, Object credentials, ConqueryAuthenticationRealm realm, boolean displayLogout) {
 		this.credentials = credentials;
 		this.displayLogout = displayLogout;
-		principals.add(user, realm.getName());
+		principals = new UserishPrincipalCollection(user, realm);
 	}
 
 }

@@ -8,6 +8,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
+import lombok.NonNull;
 import org.apache.shiro.subject.PrincipalCollection;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -15,30 +19,20 @@ import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class SinglePrincipalCollection implements PrincipalCollection {
+public class UserishPrincipalCollection implements PrincipalCollection {
 
 	private static final long serialVersionUID = -1801050265305362978L;
 
-	private final String realm = ConqueryConstants.AuthenticationUtil.REALM_NAME;
-	private final List<PermissionOwnerId<?>> principal;
-	
-	public SinglePrincipalCollection(PermissionOwnerId<?> principal) {
-		if(principal == null) {
-			throw new IllegalArgumentException("Principal is not allowed to be null");
-		}
-		this.principal = Arrays.asList(principal);
-	}
-	
-	@JsonCreator
-	public SinglePrincipalCollection(List<PermissionOwnerId<?>> principal) {
-		if(principal.isEmpty()) {
-			throw new IllegalArgumentException("Principal is not allowed to be empty");
-		}
-		this.principal = principal;
+	private final Userish principal;
+	private final ConqueryAuthenticationRealm realm;
+
+	public UserishPrincipalCollection(@NonNull Userish userish, ConqueryAuthenticationRealm realm) {
+		this.principal = userish;
+		this.realm = realm;
 	}
 
 	@Override @JsonIgnore
-	public Iterator<Object> iterator() {
+	public Iterator<Userish> iterator() {
 		return new Iterator<>() {
 			private boolean notCalled = true;
 			@Override
@@ -49,47 +43,47 @@ public class SinglePrincipalCollection implements PrincipalCollection {
 			}
 
 			@Override
-			public Object next() {
-				return principal.get(0);
+			public Userish next() {
+				return principal;
 			}
 		};
 	}
 
 	@Override @JsonIgnore
-	public Object getPrimaryPrincipal() {
-		return principal.get(0);
+	public Userish getPrimaryPrincipal() {
+		return principal;
 	}
 
 	@Override
 	public <T> T oneByType(Class<T> type) {
-		if(type.isInstance(principal.get(0))) {
-			return (T) principal.get(0);
+		if(type.isAssignableFrom(principal.getClass())) {
+			return (T) principal;
 		}
 		return null;
 	}
 
 	@Override
 	public <T> Collection<T> byType(Class<T> type) {
-		if(type.isInstance(principal.get(0))) {
-			return (Collection<T>) principal;
+		if(type.isAssignableFrom(principal.getClass())) {
+			return List.of((T)principal);
 		}
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List asList() {
-		return  principal;
+	public List<Userish> asList() {
+		return  List.of(principal);
 	}
 
 	@Override
-	public Set asSet() {
-		return new HashSet<>(principal);
+	public Set<Userish> asSet() {
+		return Set.of(principal);
 	}
 
 	@Override
-	public Collection fromRealm(String realmName) {
-		if(realm.equals(realmName)){
-			return principal;
+	public Collection<Userish> fromRealm(String realmName) {
+		if(realm.getName().equals(realmName)){
+			return List.of(principal);
 		}
 		return Collections.emptyList();
 	}
@@ -97,14 +91,14 @@ public class SinglePrincipalCollection implements PrincipalCollection {
 	@Override @JsonIgnore
 	public Set<String> getRealmNames() {
 		if(realm != null) {
-			return new HashSet<String>(Arrays.asList(realm));
+			return Set.of(realm.getName());
 		}
 		return Collections.emptySet();
 	}
 
 	@Override @JsonIgnore
 	public boolean isEmpty() {
-		return principal.isEmpty();
+		return false;
 	}
 
 }

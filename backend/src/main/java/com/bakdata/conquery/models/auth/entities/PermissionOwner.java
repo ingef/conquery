@@ -16,12 +16,7 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.ImmutableSet;
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
@@ -29,10 +24,13 @@ import org.apache.shiro.authz.Permission;
  * The base class of security subjects in this project. Used to represent
  * persons and groups with permissions.
  *
- * @param <T> The id type by which an instance is identified
+ * @param <T> The id type by which an instance is identified.
+ *
+ * @implNote The NoArgsConstructor is private and used for deserialization
  */
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Comparable<PermissionOwner<?>> {
 
 	private static final Comparator<PermissionOwner<?>>

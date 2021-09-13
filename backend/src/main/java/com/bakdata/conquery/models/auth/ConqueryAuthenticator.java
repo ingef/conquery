@@ -22,11 +22,8 @@ import org.apache.shiro.authc.AuthenticationToken;
  * We need this authenticator to plug in the security, and hereby shiro, into the AuthFilter.
  */
 @Slf4j
-@RequiredArgsConstructor
 public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, User>{
 	
-	private final MetaStorage storage;
-
 	/**
 	 * The execeptions thrown by Shiro will be catched by {@link AuthenticationExceptionMapper}.  
 	 */
@@ -37,25 +34,15 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 		// All authenticating realms must return a UserId as identifying principal
 
 		// Used the first matching user id
-		User user = null;
-		Collection<UserId> userIds = info.getPrincipals().byType(UserId.class);
-		for(UserId userId : userIds) {
-			user = storage.getUser(userId);
-			if (user != null) {
-				break;
-			}
-		}
-		
-		if(user == null) {
-			log.trace("None of the provided ids match any user: {}", userIds);
-			return Optional.empty();
-		}
+		User user = info.getPrincipals().oneByType(User.class);
+
 
 		// If the user was present, all further authorization can now be performed on the user object
-		log.trace("Using user {} for further authorization (provided ids: {})", user, userIds );
+		log.trace("Using user {} for further authorization", user);
 		ConqueryMDC.setLocation(user.getId().toString());
 		user.setDisplayLogout(info.isDisplayLogout());
-		return Optional.ofNullable(user);
+		user.setPrincipals(info.getPrincipals());
+		return Optional.of(user);
 	}
 
 }

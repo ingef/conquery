@@ -133,7 +133,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 	public static DefaultAuthFilter asDropwizardFeature(MetaStorage storage) {
 		Builder builder = new Builder();
 		DefaultAuthFilter authFilter = builder
-				.setAuthenticator(new ConqueryAuthenticator(storage)).setUnauthorizedHandler(new DefaultUnauthorizedHandler())
+				.setAuthenticator(new ConqueryAuthenticator()).setUnauthorizedHandler(new DefaultUnauthorizedHandler())
 				.buildAuthFilter();
 		return authFilter;
 	}

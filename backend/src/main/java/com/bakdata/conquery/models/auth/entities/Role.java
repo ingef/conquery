@@ -2,7 +2,10 @@ package com.bakdata.conquery.models.auth.entities;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Role extends PermissionOwner<RoleId> {
 	
 

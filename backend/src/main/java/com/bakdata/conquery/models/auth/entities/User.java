@@ -10,9 +10,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
-import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
+import com.bakdata.conquery.models.auth.util.UserishPrincipalCollection;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -120,11 +121,20 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		return object instanceof Owned && equals(((Owned) object).getOwner());
 	}
 
+	@JsonIgnore
+	public void setPrincipals(PrincipalCollection principals) {
+		shiroUserAdapter.setPrincipals(principals);
+	}
+
 	/**
 	 * This class is non static so its a fixed part of the enclosing User object.
 	 * Its protected for testing purposes only.
 	 */
 	protected class ShiroUserAdapter extends FilteredUser {
+
+		@JsonIgnore
+		@Setter
+		private PrincipalCollection principals;
 
 		@Override
 		public void checkPermission(Permission permission) throws AuthorizationException {
@@ -138,7 +148,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 		@Override
 		public PrincipalCollection getPrincipals() {
-			return new SinglePrincipalCollection(getId());
+			return principals;
 		}
 
 		@Override
