@@ -10,8 +10,8 @@
 		<ul>
 		<#list c.imports as import>
 			<li>
-				<a href="/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${import.id}">${import.name} (${import.numberOfEntries})</a>
-				<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.table.dataset.id}/tables/${c.table.id}/imports/${import.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+				<a href="/admin-ui/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${import.id}">${import.name} (${import.numberOfEntries})</a>
+				<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/imports/${import.id}', {method : 'delete'}).then(() => location.reload());"><i class="fas fa-trash-alt text-danger"></i></a>
 			</li>
 		</#list>
 		</ul>
