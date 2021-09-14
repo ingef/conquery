@@ -1,5 +1,6 @@
 import { useKeycloak } from "@react-keycloak/web";
 import axios, { AxiosRequestConfig } from "axios";
+import { useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
 
 import { getStoredAuthToken } from "../authorization/helper";
@@ -24,12 +25,17 @@ export const useApiUnauthorized = <T>(
 export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
   const history = useHistory();
   const authToken = useAuthToken();
+  const authTokenRef = useRef<string>(authToken);
+
+  useEffect(() => {
+    authTokenRef.current = authToken;
+  }, [authToken]);
 
   return async (
     finalRequestConfig: Partial<AxiosRequestConfig> = {},
   ): Promise<T> => {
     try {
-      const response = await fetchJson(authToken, {
+      const response = await fetchJson(authTokenRef.current, {
         ...requestConfig,
         ...finalRequestConfig,
       });
