@@ -51,6 +51,9 @@
                     },
                     "value": "QUARTERS"
                 }
+            ],
+            "validations": [
+                "NOT_EMPTY"
             ]
         },
         {
