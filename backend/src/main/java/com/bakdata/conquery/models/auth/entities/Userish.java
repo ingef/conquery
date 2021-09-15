@@ -28,9 +28,9 @@ public interface Userish extends Principal {
 
 	public boolean isOwner(Authorized object);
 
-	public Set<ConqueryPermission> getPermissions();
-
 	public boolean isDisplayLogout();
 
 	public void setAuthenticationInfo(ConqueryAuthenticationInfo info);
+
+	public User getUser();
 }

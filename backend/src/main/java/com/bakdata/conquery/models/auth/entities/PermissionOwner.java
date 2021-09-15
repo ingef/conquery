@@ -12,10 +12,12 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
@@ -137,6 +139,13 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		return Collections.unmodifiableSet(permissions);
 
 	}
+
+	/**
+	 * Returns a collection of the effective permissions. These are the permissions of the owner and
+	 * the permission of the roles/groups it inherits from.
+	 * @return Owned and inherited permissions.
+	 */
+	public abstract Set<ConqueryPermission> getEffectivePermissions();
 
 	public void updatePermissions(Set<ConqueryPermission> permissionsNew) {
 		synchronized (this) {

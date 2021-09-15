@@ -34,4 +34,13 @@ public class ApiTokenData {
 	public static class MetaData{
 		private LocalDate lastUsed;
 	}
+
+	public boolean isCoveredByScopes(ConqueryPermission permission) {
+		for (Scopes scope : scopes) {
+			if (scope.isPermissionInScope(permission)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

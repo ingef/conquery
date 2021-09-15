@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ import org.apache.shiro.subject.PrincipalCollection;
  */
 @RequiredArgsConstructor
 public class ConqueryAuthorizationRealm extends AuthorizingRealm {
-	
+
 	public final MetaStorage storage;
 	
 	@Override
@@ -43,10 +44,10 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		Objects.requireNonNull(principals, "No principal info was provided");
-		User user = principals.oneByType(User.class);
+		Userish user = principals.oneByType(Userish.class);
 		SimpleAuthorizationInfo info = new ConqueryAuthorizationInfo();
 
-		info.addObjectPermissions(Collections.unmodifiableSet(AuthorizationHelper.getEffectiveUserPermissions(user, storage)));
+		info.addObjectPermissions(Collections.unmodifiableSet(user.getUser().getEffectivePermissions()));
 		
 		return info;
 	}

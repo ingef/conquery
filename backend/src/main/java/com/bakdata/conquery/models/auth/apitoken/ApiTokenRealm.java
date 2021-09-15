@@ -3,7 +3,12 @@ package com.bakdata.conquery.models.auth.apitoken;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.ConqueryAuthorizationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -12,18 +17,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import jetbrains.exodus.env.Store;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.*;
+import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.Permission;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
 import javax.validation.Validator;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Objects;
 
 @Slf4j
-public class ApiTokenRealm extends AuthorizingRealm {
+public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
 
 	private final File storageDir;
 	private final XodusConfig storeConfig;
@@ -59,7 +72,7 @@ public class ApiTokenRealm extends AuthorizingRealm {
 	}
 
 	@Override
-	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(token instanceof ApiToken)) {
 			return null;
 		}
@@ -80,19 +93,7 @@ public class ApiTokenRealm extends AuthorizingRealm {
 			throw new UnknownAccountException("The UserId does not map to a user: " + userId);
 		}
 
-
-
-
-		// TODO return useful stuff
-		return null;
+		return new ConqueryAuthenticationInfo(new UserToken(user, tokenData), token, this, false);
 	}
-
-	@Override
-	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-		return null;
-	}
-
-
-
 
 }

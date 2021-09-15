@@ -13,12 +13,14 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.util.UserishPrincipalCollection;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -126,6 +128,25 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	@Override
 	public void setAuthenticationInfo(ConqueryAuthenticationInfo info) {
 		shiroUserAdapter.getAuthenticationInfo().set(info);
+	}
+
+	@Override
+	public User getUser() {
+		return this;
+	}
+
+	public Set<ConqueryPermission> getEffectivePermissions() {
+		Set<ConqueryPermission> permissions = getPermissions();
+
+		permissions = collectRolePermissions(permissions, storage);
+
+		for (Group group : storage.getAllGroups()) {
+			if (group.containsMember(this)) {
+				// Get effective permissions of the group
+				permissions = Sets.union(permissions, group.getEffectivePermissions());
+			}
+		}
+		return permissions;
 	}
 
 	/**

@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.realm.AuthenticatingRealm;
 
 /**
  * This realm authenticates requests as if they are effected by the first
@@ -20,7 +21,10 @@ import org.apache.shiro.authc.AuthenticationToken;
  * 
  */
 @Slf4j
-public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
+public class DefaultInitialUserRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
+
+
+	public final MetaStorage storage;
 
 	/**
 	 * The warning that is displayed, when the realm is instantiated.
@@ -43,19 +47,19 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 	 * Standard constructor.
 	 */
 	public DefaultInitialUserRealm(MetaStorage storage) {
-		super(storage);
 		log.warn(WARNING);
+		this.storage = storage;
 		this.setAuthenticationTokenClass(DevelopmentToken.class);
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 	}
 
 	@Override
-	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(token instanceof DevelopmentToken)) {
 			return null;
 		}
 		DevelopmentToken devToken = (DevelopmentToken) token;
-		final User user = getUserOrThrowUnknownAccount(devToken.getPrincipal());
+		final User user = getUserOrThrowUnknownAccount(storage, devToken.getPrincipal());
 		return new ConqueryAuthenticationInfo(user, devToken.getCredentials(), this, true);
 	}
 }

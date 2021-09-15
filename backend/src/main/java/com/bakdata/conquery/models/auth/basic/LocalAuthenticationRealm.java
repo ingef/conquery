@@ -36,6 +36,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.realm.AuthenticatingRealm;
+import org.apache.shiro.util.Destroyable;
 
 /**
  * This realm stores credentials in a local database ({@link XodusStore}). Upon
@@ -49,7 +51,7 @@ import org.apache.shiro.authc.AuthenticationToken;
  * through specific endpoints that are registerd by this realm.
  */
 @Slf4j
-public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AccessTokenCreator {
+public class LocalAuthenticationRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, UserManageable, AccessTokenCreator, Destroyable {
 
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
@@ -59,6 +61,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	private final XodusConfig passwordStoreConfig;
 	private final String storeName;
+	private final MetaStorage storage;
 
 	@JsonIgnore
 	private Environment passwordEnvironment;
@@ -89,7 +92,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 									XodusConfig passwordStoreConfig,
 									Duration validDuration,
 									MetaStorage storage) {
-		super(storage);
+		this.storage = storage;
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		this.storeName = storeName;
 		this.storageDir = storageDir;
@@ -114,7 +117,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	 *  Should not be called since the tokens are now handled by the ConqueryTokenRealm.
 	 */
 	@Override
-	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		throw new UnsupportedOperationException("Should not be called since the tokens are now handled by the ConqueryTokenRealm.");
 	}
 
@@ -220,9 +223,8 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 				if (retries == 0) {
 					log.info("The environment is still working on some transactions. Retry");				
 				}
-				log.info("Waiting for {} seconds to retry.");
+				log.info("Waiting for {} seconds to retry.", ENVIRONMNENT_CLOSING_TIMEOUT);
 				Thread.sleep(ENVIRONMNENT_CLOSING_TIMEOUT*1000 /* milliseconds */);
-				continue;
 			}
 		}
 		// Close the environment with force

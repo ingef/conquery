@@ -1,14 +1,17 @@
 package com.bakdata.conquery.models.auth.entities;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,5 +83,12 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
 	public Set<RoleId> getRoles() {
 		return Collections.unmodifiableSet(roles);
+	}
+
+	public Set<ConqueryPermission> getEffectivePermissions(){
+		Set<ConqueryPermission> permissions = getPermissions();
+
+		permissions = collectRolePermissions(permissions, storage);
+		return permissions;
 	}
 }

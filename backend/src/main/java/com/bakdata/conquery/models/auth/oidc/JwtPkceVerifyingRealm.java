@@ -11,6 +11,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
+import org.apache.shiro.realm.AuthenticatingRealm;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 import org.keycloak.representations.AccessToken;
@@ -27,7 +28,7 @@ import java.util.function.Supplier;
  * the authenticated user from it.
  */
 @Slf4j
-public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
+public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
 
     private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 
@@ -35,13 +36,14 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
     private final String[] allowedAudience;
     private final TokenVerifier.Predicate<JsonWebToken>[] tokenChecks;
     private final List<String> alternativeIdClaims;
+    private final MetaStorage storage;
 
     public JwtPkceVerifyingRealm(@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier,
                                  @NonNull String allowedAudience,
                                  List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks,
                                  List<String> alternativeIdClaims,
                                  MetaStorage storage) {
-        super(storage);
+        this.storage = storage;
         this.idpConfigurationSupplier = idpConfigurationSupplier;
         this.allowedAudience = new String[] {allowedAudience};
         this.tokenChecks = additionalTokenChecks.toArray((TokenVerifier.Predicate<JsonWebToken>[])Array.newInstance(TokenVerifier.Predicate.class,0));
@@ -52,7 +54,7 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
 
     @Override
-    protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+    public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
         if (idpConfigurationOpt.isEmpty()) {
             log.warn("Unable to start authentication, because idp configuration is not available.");

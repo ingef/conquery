@@ -39,6 +39,7 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
+import org.apache.shiro.realm.AuthenticatingRealm;
 
 /**
  * Realm that validates OpenID access tokens by delegating them to an IDP TokenIntrospection endpoint
@@ -46,12 +47,13 @@ import org.apache.shiro.authc.ExpiredCredentialsException;
 @Slf4j
 @Getter
 @Setter
-public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
+public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 	private static final String GROUPS_CLAIM = "groups";
 
 	private final IntrospectionDelegatingRealmFactory authProviderConf;
+	public final MetaStorage storage;
 
 	private ClientAuthentication clientAuthentication;
 
@@ -64,7 +66,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 			.build(new TokenValidator());
 
 	public IntrospectionDelegatingRealm(MetaStorage storage, IntrospectionDelegatingRealmFactory authProviderConf) {
-		super(storage);
+		this.storage = storage;
 		this.authProviderConf = authProviderConf;
 	}
 
@@ -77,7 +79,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 
 	@Override
 	@SneakyThrows
-	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
 			log.trace("Incompatible token. Expected {}, got {}", TOKEN_CLASS, token.getClass());
 			return null;
@@ -90,7 +92,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 
 		UserId userId = extractId(successResponse);
 
-		User user = getUserOrThrowUnknownAccount(userId);
+		User user = getUserOrThrowUnknownAccount(storage, userId);
 
 		return new ConqueryAuthenticationInfo(user, token, this, true);
 	}

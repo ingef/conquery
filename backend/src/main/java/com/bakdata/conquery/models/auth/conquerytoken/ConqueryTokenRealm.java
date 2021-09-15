@@ -24,24 +24,26 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.*;
+import org.apache.shiro.realm.AuthenticatingRealm;
 
 @Slf4j
-public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
+public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 
+	private final MetaStorage storage;
 	@Setter
 	private JWTConfig jwtConfig = new JWTConfig();
 	
 	
 	public ConqueryTokenRealm(MetaStorage storage) {
-		super(storage);
+		this.storage = storage;
 		setAuthenticationTokenClass(TOKEN_CLASS);
 		setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 	}
 
 	@Override
-	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
 			log.trace("Incompatible token. Expected {}, got {}", TOKEN_CLASS, token.getClass());
 			return null;
@@ -73,7 +75,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 
 		UserId userId = UserId.Parser.INSTANCE.parse(username);
 
-		final User user = getUserOrThrowUnknownAccount(userId);
+		final User user = getUserOrThrowUnknownAccount(storage, userId);
 
 		return new ConqueryAuthenticationInfo(user, token, this, true);
 	}
@@ -104,7 +106,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		private JWTVerifier tokenVerifier;
 		
 		@JsonIgnore
-		public JWTVerifier getTokenVerifier(ConqueryAuthenticationRealm realm) {
+		public JWTVerifier getTokenVerifier(AuthenticatingRealm realm) {
 			if(tokenVerifier == null) {
 				tokenVerifier = JWT.require(tokenSignAlgorithm).withIssuer(realm.getName()).build();
 			}

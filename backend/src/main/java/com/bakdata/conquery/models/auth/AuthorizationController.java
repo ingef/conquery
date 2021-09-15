@@ -174,7 +174,7 @@ public final class AuthorizationController implements Managed{
 		// Copy inherited permissions
 		Set<ConqueryPermission> copiedPermission = new HashSet<>();
 
-		copiedPermission.addAll(AuthorizationHelper.getEffectiveUserPermissions(originUser, storage));
+		copiedPermission.addAll(originUser.getEffectivePermissions());
 
 		// Give read permission to all executions the original user owned
 		copiedPermission.addAll(

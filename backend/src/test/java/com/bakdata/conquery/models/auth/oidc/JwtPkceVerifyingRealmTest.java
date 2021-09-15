@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -81,7 +82,7 @@ class JwtPkceVerifyingRealmTest {
                 .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
         BearerToken accessToken = new BearerToken(token);
 
-        assertThat(REALM.doGetConqueryAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+        assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
     }
 
 
@@ -106,7 +107,7 @@ class JwtPkceVerifyingRealmTest {
                 .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
         BearerToken accessToken = new BearerToken(token);
 
-        assertThat(REALM.doGetConqueryAuthenticationInfo(accessToken).getPrincipals()).containsAll(List.of(expected));
+        assertThat((List<Userish>)REALM.doGetAuthenticationInfo(accessToken).getPrincipals()).containsAll(List.of(expected));
     }
 
 
@@ -127,7 +128,7 @@ class JwtPkceVerifyingRealmTest {
                 .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
         BearerToken accessToken = new BearerToken(token);
 
-        assertThatCode(() -> REALM.doGetConqueryAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
+        assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
     }
 
     @Test
@@ -148,7 +149,7 @@ class JwtPkceVerifyingRealmTest {
                 .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
         BearerToken accessToken = new BearerToken(token);
 
-        assertThatCode(() -> REALM.doGetConqueryAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
+        assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
     }
 
     @Test
@@ -167,7 +168,7 @@ class JwtPkceVerifyingRealmTest {
                 .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
         BearerToken accessToken = new BearerToken(token);
 
-        assertThatCode(() -> REALM.doGetConqueryAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
+        assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
     }
 
     @Test
@@ -190,6 +191,6 @@ class JwtPkceVerifyingRealmTest {
                 .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
         BearerToken accessToken = new BearerToken(token);
 
-        assertThatCode(() -> REALM.doGetConqueryAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
+        assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).hasCauseInstanceOf(VerificationException.class);
     }
 }

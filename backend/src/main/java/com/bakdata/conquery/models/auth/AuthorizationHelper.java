@@ -55,61 +55,19 @@ public class AuthorizationHelper {
 		return Optional.of(groups.get(0));
 	}
 
-
-
-	/**
-	 * Returns a list of the effective permissions. These are the permissions of the owner and
-	 * the permission of the roles it inherits.
-	 * @return Owned and inherited permissions.
-	 */
-	public static Set<ConqueryPermission> getEffectiveUserPermissions(User user, MetaStorage storage) {
-		Set<ConqueryPermission> tmpView = collectRolePermissions(storage, user, user.getPermissions());
-
-		for (Group group : storage.getAllGroups()) {
-			if (group.containsMember(user)) {
-				// Get effective permissions of the group
-				tmpView = Sets.union(tmpView, getEffectiveGroupPermissions(group, storage));
-			}
-		}
-		return tmpView;
-	}
-
-	/**
-	 * Returns a list of the effective permissions. These are the permissions of the owner and
-	 * the permission of the roles it inherits.
-	 */
-	public static Set<ConqueryPermission> getEffectiveGroupPermissions(Group group, MetaStorage storage) {
-		// Combine permissions held by the group with those inherited from roles
-		return collectRolePermissions(storage, group, group.getPermissions());
-	}
-
-	private static Set<ConqueryPermission> collectRolePermissions(MetaStorage storage, RoleOwner roleOwner, Set<ConqueryPermission> tmpView) {
-		for (RoleId roleId : roleOwner.getRoles()) {
-			Role role = storage.getRole(roleId);
-			if (role == null) {
-				log.warn("Could not resolve role id [{}]", roleId);
-				continue;
-			}
-			tmpView = Sets.union(tmpView, role.getPermissions());
-		}
-		return tmpView;
-	}
-
-
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
 	 * the permission of the roles it inherits. The query can be filtered by the Permission domain.
 	 * @return Owned and inherited permissions.
 	 */
 	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(User user, List<String> domainSpecifier, MetaStorage storage) {
-		Set<ConqueryPermission> permissions = getEffectiveUserPermissions(user, storage);
+		Set<ConqueryPermission> permissions = user.getEffectivePermissions();
 		Multimap<String, ConqueryPermission> mappedPerms = ArrayListMultimap.create();
-		for(Permission perm : permissions) {
-			ConqueryPermission cPerm = (ConqueryPermission) perm;
-			Set<String> domains = cPerm.getDomains();
-			if(!Collections.disjoint(domainSpecifier, cPerm.getDomains())) {
+		for(ConqueryPermission perm : permissions) {
+			Set<String> domains = perm.getDomains();
+			if(!Collections.disjoint(domainSpecifier, perm.getDomains())) {
 				for(String domain : domains) {
-					mappedPerms.put(domain, cPerm);
+					mappedPerms.put(domain, perm);
 				}
 			}
 		}
@@ -139,23 +97,6 @@ public class AuthorizationHelper {
 					.collect(Collectors.toSet());
 
 		user.authorize(datasets, Ability.DOWNLOAD);
-	}
-
-	/**
-	 * Checks if a {@link Visitable} has only references to {@link Dataset}s a user is allowed to read.
-	 * This checks all used {@link DatasetId}s for the {@link Ability#READ} on the user.
-	 */
-	public static void authorizeReadDatasets(@NonNull Userish user, @NonNull Visitable visitable) {
-		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
-		visitable.visit(collector);
-
-		Set<Dataset> datasets =
-				collector.getIdentifiables()
-						 .stream()
-						 .map(NamespacedIdentifiable::getDataset)
-						 .collect(Collectors.toSet());
-
-		user.authorize(datasets, Ability.READ);
 	}
 
 

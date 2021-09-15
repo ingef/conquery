@@ -51,7 +51,7 @@ public class CopyUserTest {
 		assertThat(copy.getRoles()).isEmpty();
 
 		// Check that the flat map worked
-		assertThat(copy.getPermissions()).containsExactlyInAnyOrderElementsOf(AuthorizationHelper.getEffectiveUserPermissions(originUser,storage));
+		assertThat(copy.getPermissions()).containsExactlyInAnyOrderElementsOf(originUser.getEffectivePermissions());
 
 	}
 }
