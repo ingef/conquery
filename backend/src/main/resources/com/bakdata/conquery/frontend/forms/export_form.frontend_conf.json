@@ -7,10 +7,6 @@
         "de": "Mit diesem Formular werden Konzept- und Ausgabewerte für jeden Versicherten einer Anfrage einzeln auf einen Beobachtungszeitraum aggregiert. Zusätzlich zum gesamten Zeitraum kann dieser nochmal in Jahre oder Quartale unterteilt werden. Die Daten können dabei in einem absoluten Beobachtungszeitraum oder relativ zu einem mit der Anfrage erstellten Indexdatum analysiert werden. Die Ausgabe kann sowohl als Excel, als auch CSV heruntergeladen werden."
     },
     "type": "EXPORT_FORM",
-    "headline": {
-        "en": "Data Export",
-        "de": "Datenexport"
-    },
     "fields": [
         {
             "name": "queryGroup",
