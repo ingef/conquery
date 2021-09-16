@@ -38,7 +38,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import java.io.IOException;

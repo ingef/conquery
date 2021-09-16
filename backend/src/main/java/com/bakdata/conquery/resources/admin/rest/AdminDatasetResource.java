@@ -109,8 +109,6 @@ public class AdminDatasetResource extends HAdmin {
 	}
 
 
-
-
 	@POST
 	@Path("imports")
 	public void addImport(@QueryParam("file") File importFile) throws IOException, JSONException {
@@ -137,11 +135,9 @@ public class AdminDatasetResource extends HAdmin {
 			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors), Status.BAD_REQUEST);
 		}
 
-
 		log.info("Importing from local file {}", importFile.getAbsolutePath());
 		processor.addImport(namespace, new GZIPInputStream(new FileInputStream(importFile)));
 	}
-
 
 	@POST
 	@Path("concepts")

@@ -133,8 +133,6 @@ public class AdminTablesResource extends HAdmin {
 			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors), Status.BAD_REQUEST);
 		}
 
-
-
 		processor.updateImport(imp, namespace, new GZIPInputStream(new FileInputStream(importFile)));
 	}
 
