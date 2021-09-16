@@ -100,19 +100,20 @@ public class ImportJob extends Job {
 			}
 
 			final ImportId importId = new ImportId(table.getId(), header.getName());
+			IdMutex.Locked locked = runningImportJobs.acquire(importId);
 			if (toUpdateImp.isPresent()) {
 				if (!importId.equals(toUpdateImp.get().getId())) {
-					throw new BadRequestException(String.format("The Import [%s] to update is not the same withe the one in the file [%s]", toUpdateImp.get().getId(), importId));
+					locked.release();
+					throw new WebApplicationException(String.format("The Import [%s] to update is not the same as the one in the file [%s]", toUpdateImp.get().getId(), importId), Response.Status.CONFLICT);
 				}
 				if (namespace.getStorage().getImport(importId) == null) {
-					throw new BadRequestException(String.format("Import[%s] is not present.", importId));
+					locked.release();
+					throw new WebApplicationException(String.format("Import[%s] is not present.", importId),Response.Status.NOT_FOUND);
 				}
-
-				namespace.getStorage().removeImport(toUpdateImp.get().getId());
 				namespace.sendToAll(new RemoveImportJob(toUpdateImp.get()));
-
 			} else {
 				if (namespace.getStorage().getImport(importId) != null) {
+					locked.release();
 					throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
 				}
 			}
@@ -145,7 +146,7 @@ public class ImportJob extends Job {
 					container,
 					config,
 					importId,
-					runningImportJobs.acquire(importId)
+					locked
 			);
 		}
 	}
@@ -257,6 +258,10 @@ public class ImportJob extends Job {
 		namespace.sendToAll(new UpdateDictionary(dictionary));
 	}
 
+	@Override
+	public void destroy() {
+		locked.release();
+	}
 
 	@Override
 	public void execute() throws JSONException, InterruptedException, IOException {
@@ -310,8 +315,6 @@ public class ImportJob extends Job {
 		workerAssignments.forEach(namespace::addBucketsToWorker);
 
 		getProgressReporter().done();
-
-		locked.release();
 	}
 
 	/**

@@ -128,9 +128,10 @@ public class JobExecutor extends Thread {
 						}
 					} finally {
 						ConqueryMDC.setLocation(this.getName());
-
+						job.destroy();
 						log.trace("Finished job {} within {}", job, timer.stop());
 						time.stop();
+
 					}
 				}
 			} catch (InterruptedException e) {

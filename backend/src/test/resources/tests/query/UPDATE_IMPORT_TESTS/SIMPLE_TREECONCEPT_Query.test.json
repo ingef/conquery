@@ -1,0 +1,104 @@
+{
+    "type": "QUERY_TEST",
+    "label": "DELETE_IMPORT_TESTS Test",
+    "expectedCsv": "tests/query/DELETE_IMPORT_TESTS/expected.csv",
+    "query": {
+        "type": "CONCEPT_QUERY",
+        "root": {
+            "type": "CONCEPT",
+            "ids": [
+              "test_tree.test_child1"
+            ],
+            "tables": [
+              {
+                "id": "test_tree.test_column",
+                "filters": []
+              },
+              {
+                "id": "test_tree.test_column2",
+                "filters": []
+              }
+            ]
+        }
+    },
+    "concepts": [
+        {
+            "label": "test_tree",
+            "type":"TREE",
+            "connectors": [
+              {
+                "label": "tree_label",
+                "name": "test_column",
+                "column": "test_table.test_column",
+                "validityDates": {
+                  "label": "datum",
+                  "column": "test_table.datum"
+                }
+              },
+              {
+                "label": "tree_label",
+                "name": "test_column2",
+                "column": "test_table2.test_column",
+                "validityDates": {
+                  "label": "datum",
+                  "column": "test_table2.datum"
+                }
+              }
+            ],
+            "children": [
+                {
+                    "label": "test_child1",
+                    "description": " ",
+                    "condition": {"type": "PREFIX_LIST", "prefixes": "A1"},
+                    "children": []
+                },
+                {
+                    "label": "test_child2",
+                    "description": " ",
+                    "condition": {"type": "PREFIX_LIST", "prefixes": "B2"},
+                    "children": []
+                }
+            ]
+        }
+    ],
+    "content": {
+        "tables": [
+          {
+            "csv": "tests/query/DELETE_IMPORT_TESTS/content1.csv",
+            "name": "test_table",
+            "primaryColumn" : {
+              "name": "pid",
+              "type": "STRING"
+            },
+            "columns": [
+              {
+                "name": "datum",
+                "type": "DATE"
+              },
+              {
+                "name": "test_column",
+                "type": "STRING"
+              }
+            ]
+          },
+          {
+            "csv": "tests/query/DELETE_IMPORT_TESTS/content2.csv",
+            "name": "test_table2",
+            "primaryColumn" : {
+              "name": "pid",
+              "type": "STRING"
+            },
+            "columns": [
+              {
+                "name": "datum",
+                "type": "DATE"
+              },
+              {
+                "name": "test_column",
+                "type": "STRING"
+              }
+            ]
+          }
+		]
+    }
+}

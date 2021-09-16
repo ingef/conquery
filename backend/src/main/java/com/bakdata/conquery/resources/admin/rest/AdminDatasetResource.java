@@ -108,15 +108,7 @@ public class AdminDatasetResource extends HAdmin {
 		processor.addImport(namespace, new GZIPInputStream(importStream));
 	}
 
-	@PUT
-	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
-	@Path("imports/{" + IMPORT_ID + "}")
-	public void updateImport(@NotNull @PathParam(IMPORT_ID) Import imp, @NotNull InputStream importStream) throws IOException {
 
-		log.info("Importing from file upload");
-		processor.updateImport(imp, namespace, new GZIPInputStream(importStream));
-
-	}
 
 
 	@POST
@@ -142,7 +134,7 @@ public class AdminDatasetResource extends HAdmin {
 		}
 
 		if (errors.length() > 0) {
-			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors.toString()), Status.BAD_REQUEST);
+			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors), Status.BAD_REQUEST);
 		}
 
 

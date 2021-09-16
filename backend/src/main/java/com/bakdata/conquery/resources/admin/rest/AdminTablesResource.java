@@ -2,22 +2,24 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -33,13 +35,14 @@ import lombok.Setter;
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 
-@Getter @Setter
+@Getter
+@Setter
 @Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
 public class AdminTablesResource extends HAdmin {
 
 	@Inject
 	private AdminDatasetProcessor processor;
-	
+
 	@PathParam(DATASET)
 	protected Dataset dataset;
 	protected Namespace namespace;
@@ -58,8 +61,10 @@ public class AdminTablesResource extends HAdmin {
 		return table;
 	}
 
+
 	/**
 	 * Try to delete a table and all it's imports. Fails if it still has dependencies (unless force is used).
+	 *
 	 * @param force Force deletion of dependent concepts.
 	 * @return List of dependent concepts.
 	 */
@@ -69,8 +74,8 @@ public class AdminTablesResource extends HAdmin {
 
 		if (!force && !dependents.isEmpty()) {
 			return Response.status(Status.CONFLICT)
-						   .entity(dependents)
-						   .build();
+					.entity(dependents)
+					.build();
 		}
 
 		return Response.ok()
@@ -83,24 +88,54 @@ public class AdminTablesResource extends HAdmin {
 	@Produces(AdditionalMediaTypes.JSON)
 	public List<ImportId> listImports() {
 		return namespace.getStorage()
-						.getAllImports()
-						.stream()
-						.filter(imp -> imp.getTable().equals(table))
-						.map(Import::getId)
-						.collect(Collectors.toList());
+				.getAllImports()
+				.stream()
+				.filter(imp -> imp.getTable().equals(table))
+				.map(Import::getId)
+				.collect(Collectors.toList());
 	}
 
 	@DELETE
-	@Path("imports/{"+IMPORT_ID+"}")
+	@Path("imports/{" + IMPORT_ID + "}")
 	public void deleteImport(@PathParam(IMPORT_ID) Import imp) {
 		processor.deleteImport(imp);
 	}
 
 
 	@GET
-	@Path("imports/{"+IMPORT_ID+"}")
+	@Path("imports/{" + IMPORT_ID + "}")
 	public Import getImport(@PathParam(IMPORT_ID) Import imp) {
 		return imp;
+	}
+
+	@PUT
+	@Path("imports")
+	public void updateImport(@NotNull @QueryParam(IMPORT_ID) Import imp, @NotNull @QueryParam("file") File importFile) throws IOException {
+		StringJoiner errors = new StringJoiner("\n");
+
+		if (!importFile.canRead()) {
+			errors.add("Cannot read.");
+		}
+
+		if (!importFile.exists()) {
+			errors.add("Does not exist.");
+		}
+
+		if (!importFile.isAbsolute()) {
+			errors.add("Is not absolute.");
+		}
+
+		if (!importFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
+			errors.add(String.format("Does not end with `%s`.", ConqueryConstants.EXTENSION_PREPROCESSED));
+		}
+
+		if (errors.length() > 0) {
+			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors), Status.BAD_REQUEST);
+		}
+
+
+
+		processor.updateImport(imp, namespace, new GZIPInputStream(new FileInputStream(importFile)));
 	}
 
 }

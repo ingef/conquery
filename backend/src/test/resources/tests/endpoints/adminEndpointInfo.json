@@ -116,8 +116,8 @@
   },
   {
     "method": "PUT",
-    "path": "/datasets/{dataset}/imports/{importId}",
-    "clazz": "AdminDatasetResource"
+    "path": "/datasets/{dataset}/tables/{table}/imports",
+    "clazz": "AdminTablesResource"
   },
   {
     "method": "POST",
