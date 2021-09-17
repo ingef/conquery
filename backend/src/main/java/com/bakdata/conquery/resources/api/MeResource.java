@@ -26,6 +26,6 @@ public class MeResource extends HAuthorized {
 	@Produces(MediaType.APPLICATION_JSON)
 	@GET
 	public FEMeInformation getUserInformation() {
-		return processor.getUserInformation(user);
+		return processor.getUserInformation(user.getUser());
 	}
 }

@@ -104,6 +104,8 @@ public class IntegrationTests {
 		List<Class<?>> programmatic =
 				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 											 .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
+						// TODO remove this filter
+						.filter(info -> info.getSimpleName().startsWith("ApiTokenRealmTest"))
 											 .loadClasses();
 
 		return programmatic

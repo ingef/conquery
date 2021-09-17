@@ -9,6 +9,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Userish;
 import lombok.Getter;
 import lombok.Setter;
 import org.glassfish.jersey.server.ContainerRequest;
@@ -17,7 +18,7 @@ import org.glassfish.jersey.server.ContainerRequest;
 @Setter
 public abstract class HAuthorized {
 
-	protected User user;
+	protected Userish user;
 	@Context
 	protected ContainerRequest request;
 	@Context 
@@ -39,8 +40,8 @@ public abstract class HAuthorized {
      * @return {@link Principal} stored on the request, or {@code null}
      *         if no object was found.
      */
-    public User provide() {
-        final User principal = (User) request.getSecurityContext().getUserPrincipal();
+    public Userish provide() {
+        final Userish principal = (Userish) request.getSecurityContext().getUserPrincipal();
         if (principal == null) {
             throw new IllegalStateException("Cannot inject a custom principal into unauthenticated request");
         }

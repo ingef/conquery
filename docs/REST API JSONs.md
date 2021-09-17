@@ -12,7 +12,7 @@ Instead of a list ConQuery also always accepts a single element.
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.resources.api.APIResource`
+Java Type: `com.bakdata.conquery.resources.api.DatasetsResource`
 
 Method: `getDatasets`
 

@@ -69,7 +69,7 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.filter.ValidityDateContainer;
-import com.bakdata.conquery.resources.api.APIResource;
+import com.bakdata.conquery.resources.api.DatasetsResource;
 import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConfigResource;
@@ -138,7 +138,7 @@ public class Constants {
 					.build(),
 			Group.builder().name("REST API JSONs")
 				 .resource(ConfigResource.class)
-				 .resource(APIResource.class)
+				 .resource(DatasetsResource.class)
 				 .resource(DatasetResource.class)
 				 .resource(ConceptResource.class)
 				 .resource(FilterResource.class)

@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.auth;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenData;
+import com.bakdata.conquery.models.auth.apitoken.ApiTokenRealm;
 import com.bakdata.conquery.models.auth.apitoken.Scopes;
 import com.bakdata.conquery.models.auth.entities.User;
 import io.dropwizard.validation.ValidationMethod;
@@ -41,7 +42,7 @@ public abstract class ApiTokenDataRepresentation {
 	@EqualsAndHashCode(callSuper = true)
 	public static class Request extends ApiTokenDataRepresentation {
 
-		public ApiTokenData toInternalRepresentation(User user, byte[] hash, MetaStorage storage) {
+		public ApiTokenData toInternalRepresentation(User user, ApiTokenRealm.ApiTokenHash hash, MetaStorage storage) {
 			return new ApiTokenData(
 					UUID.randomUUID(),
 					hash,
@@ -62,6 +63,7 @@ public abstract class ApiTokenDataRepresentation {
 	@EqualsAndHashCode(callSuper = true)
 	public static class Response extends ApiTokenDataRepresentation {
 
+		private UUID id;
 		private LocalDate lastUsed;
 		private LocalDate creationDate;
 

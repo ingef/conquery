@@ -40,7 +40,7 @@ public class ApiTokenData implements Authorized, Owned {
 	 *  - The realm gets the token hash from the data
 	 *  - The realm uses this token hash to delete the data from the store
 	 */
-	private final byte[] tokenHash;
+	private final ApiTokenRealm.ApiTokenHash tokenHash;
 	private final String name;
 	private final UserId userId;
 	private final LocalDate creationDate;

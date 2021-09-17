@@ -1,26 +1,37 @@
 package com.bakdata.conquery.integration.tests;
 
+import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.auth.ApiTokenDataRepresentation;
 import com.bakdata.conquery.integration.IntegrationTest;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.apitoken.ApiToken;
+import com.bakdata.conquery.models.auth.apitoken.ApiTokenRealm;
 import com.bakdata.conquery.models.auth.apitoken.Scopes;
+import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.config.auth.ApiTokenRealmFactory;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
 import com.bakdata.conquery.resources.api.ApiTokenResource;
+import com.bakdata.conquery.resources.api.DatasetsResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
+import com.google.common.collect.MoreCollectors;
 
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.EnumSet;
+import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,25 +49,154 @@ public class ApiTokenRealmTest extends IntegrationTest.Simple implements Program
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		final User testUser = conquery.getTestUser();
+		ApiTokenRealm realm = conquery.getAuthorizationController().getAuthenticationRealms().stream().filter(ApiTokenRealm.class::isInstance).map(ApiTokenRealm.class::cast).collect(MoreCollectors.onlyElement());
 
-		final String userToken = conquery.getAuthorizationController().getConqueryTokenRealm().createTokenForUser(testUser.getId());
-
-		final ApiTokenDataRepresentation.Request tokenRequest = new ApiTokenDataRepresentation.Request();
-
-		tokenRequest.setName("test-token");
-		tokenRequest.setScopes(EnumSet.of(Scopes.DATASET));
-		tokenRequest.setExpirationDate(LocalDate.now().plus(1, ChronoUnit.DAYS));
+		final ConqueryTokenRealm conqueryTokenRealm = conquery.getAuthorizationController().getConqueryTokenRealm();
+		final String userToken = conqueryTokenRealm.createTokenForUser(testUser.getId());
 
 		// Request ApiToken
-		ApiToken apiToken =
+		final ApiTokenDataRepresentation.Request tokenRequest1 = new ApiTokenDataRepresentation.Request();
+
+		tokenRequest1.setName("test-token");
+		tokenRequest1.setScopes(EnumSet.of(Scopes.DATASET));
+		tokenRequest1.setExpirationDate(LocalDate.now().plus(1, ChronoUnit.DAYS));
+
+		ApiToken apiToken1 =
 				conquery.getClient()
 						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class,"createToken"))
 						.request(MediaType.APPLICATION_JSON_TYPE)
 						.header("Authorization", "Bearer " + userToken)
-						.post(Entity.entity(tokenRequest, MediaType.APPLICATION_JSON_TYPE), ApiToken.class);
+						.post(Entity.entity(tokenRequest1, MediaType.APPLICATION_JSON_TYPE), ApiToken.class);
 
-		assertThat(apiToken.getToken()).isNotBlank();
+		assertThat(apiToken1.getToken()).isNotBlank();
 
+		// List ApiToken
+		List<ApiTokenDataRepresentation.Response> apiTokens =
+				conquery.getClient()
+						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class,"listUserTokens"))
+						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Authorization", "Bearer " + userToken)
+						.get(new GenericType<List<ApiTokenDataRepresentation.Response>>(){});
+
+		final ApiTokenDataRepresentation.Response expected = new ApiTokenDataRepresentation.Response();
+		expected.setLastUsed(null);
+		expected.setCreationDate(LocalDate.now());
+		expected.setExpirationDate(LocalDate.now().plus(1, ChronoUnit.DAYS));
+		expected.setScopes(EnumSet.of(Scopes.DATASET));
+		expected.setName("test-token");
+
+		assertThat(apiTokens).hasSize(1);
+		assertThat(apiTokens.get(0)).usingRecursiveComparison().ignoringFields("id").isEqualTo(expected);
+
+
+		// Request ApiToken 2
+		final ApiTokenDataRepresentation.Request tokenRequest2 = new ApiTokenDataRepresentation.Request();
+
+		tokenRequest2.setName("test-token");
+		tokenRequest2.setScopes(EnumSet.of(Scopes.ADMIN));
+		tokenRequest2.setExpirationDate(LocalDate.now().plus(1, ChronoUnit.DAYS));
+
+		ApiToken apiToken2 =
+				conquery.getClient()
+						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class,"createToken"))
+						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Authorization", "Bearer " + userToken)
+						.post(Entity.entity(tokenRequest2, MediaType.APPLICATION_JSON_TYPE), ApiToken.class);
+
+		assertThat(apiToken2.getToken()).isNotBlank();
+
+		// List ApiToken 2
+		apiTokens =
+				conquery.getClient()
+						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class,"listUserTokens"))
+						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Authorization", "Bearer " + userToken)
+						.get(new GenericType<List<ApiTokenDataRepresentation.Response>>(){});
+
+		assertThat(apiTokens).hasSize(2);
+
+		// Use ApiToken1 to get Datasets
+		List<IdLabel<DatasetId>> datasets =
+				conquery.getClient()
+						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetsResource.class,"getDatasets"))
+						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Authorization", "Bearer " + apiToken1.getToken())
+						.get(new GenericType<List<IdLabel<DatasetId>>>(){});
+
+		assertThat(datasets).isNotEmpty();
+
+		// Use ApiToken2 to get Datasets
+		datasets =
+				conquery.getClient()
+						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetsResource.class,"getDatasets"))
+						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Authorization", "Bearer " + apiToken2.getToken())
+						.get(new GenericType<List<IdLabel<DatasetId>>>(){});
+
+		assertThat(datasets).as("The second token has no scope for dataset").isEmpty();
+
+
+		// Use ApiToken2 to access Admin
+		List<DatasetId> adminDatasets =
+				conquery.getClient()
+						.target(HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetsResource.class,"listDatasets"))
+						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Authorization", "Bearer " + apiToken2.getToken())
+						.get(new GenericType<List<DatasetId>>(){});
+
+		assertThat(adminDatasets).as("The second token has scope for admin").isNotEmpty();
+
+		// Try to delete ApiToken2 with ApiToken (should fail)
+		final UUID id2 = apiTokens.stream().filter(t -> t.getScopes().contains(Scopes.ADMIN)).map(ApiTokenDataRepresentation.Response::getId).collect(MoreCollectors.onlyElement());
+		Response response =
+				conquery.getClient()
+						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class,"deleteToken"))
+						.resolveTemplate(ApiTokenResource.TOKEN, id2)
+						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Authorization", "Bearer " + apiToken2.getToken())
+						.delete(Response.class);
+
+		assertThat(response.getStatus()).as("It is forbidden to act on ApiTokens with ApiTokens").isEqualTo(403);
+
+
+		// Delete ApiToken2 with user token
+		response =
+				conquery.getClient()
+						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class,"deleteToken"))
+						.resolveTemplate(ApiTokenResource.TOKEN, id2)
+						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Authorization", "Bearer " + userToken)
+						.delete(Response.class);
+
+		assertThat(response.getStatus()).as("It is okay to act on ApiTokens with UserTokens").isEqualTo(200);
+		assertThat(realm.listUserToken(testUser)).hasSize(1);
+
+		// Try to use the deleted token to access Admin
+		response = conquery.getClient()
+				.target(HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetsResource.class,"listDatasets"))
+				.request(MediaType.APPLICATION_JSON_TYPE)
+				.header("Authorization", "Bearer " + apiToken2.getToken())
+				.get(Response.class);
+
+		assertThat(response.getStatus()).as("Cannot use deleted token").isEqualTo(401);
+
+		// Try to act on tokens from another user
+		final MetaStorage metaStorage = conquery.getMetaStorage();
+		final User user2 = new User("TestUser2", "TestUser2", metaStorage);
+		metaStorage.addUser(user2);
+		final String user2Token = conqueryTokenRealm.createTokenForUser(user2.getId());
+
+		// Try to delete ApiToken2 with ApiToken (should fail)
+		final UUID id1 = apiTokens.stream().filter(t -> t.getScopes().contains(Scopes.DATASET)).map(ApiTokenDataRepresentation.Response::getId).collect(MoreCollectors.onlyElement());
+		response =
+				conquery.getClient()
+						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class,"deleteToken"))
+						.resolveTemplate(ApiTokenResource.TOKEN, id1)
+						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Authorization", "Bearer " + user2Token)
+						.delete(Response.class);
+
+		assertThat(response.getStatus()).as("It is forbidden to act on someone else ApiTokens").isEqualTo(403);
 
 
 	}

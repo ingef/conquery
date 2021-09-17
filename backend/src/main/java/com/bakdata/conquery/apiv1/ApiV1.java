@@ -64,7 +64,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(new ConfigResource(manager.getConfig()));
 		environment.register(FormConfigResource.class);
 
-		environment.register(APIResource.class);
+		environment.register(DatasetsResource.class);
 		environment.register(ConceptResource.class);
 		environment.register(DatasetResource.class);
 		environment.register(FilterResource.class);

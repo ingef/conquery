@@ -13,6 +13,7 @@ import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Path("token")
@@ -32,7 +33,7 @@ public class ApiTokenResource {
 	}
 
 	@GET
-	public Collection<ApiTokenDataRepresentation.Response> listUserTokens(@Auth Userish user) {
+	public List<ApiTokenDataRepresentation.Response> listUserTokens(@Auth Userish user) {
 
 		checkRealUser(user);
 
