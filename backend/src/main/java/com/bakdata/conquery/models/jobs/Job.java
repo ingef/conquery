@@ -30,7 +30,7 @@ public abstract class Job {
 
 	public abstract void execute() throws Exception;
 	public abstract String getLabel();
-	public  void destroy(){
+	public void destroy(){
 		
 	}
 
