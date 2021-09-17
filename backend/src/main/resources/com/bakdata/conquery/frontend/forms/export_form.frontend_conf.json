@@ -87,7 +87,10 @@
                                 "NOT_EMPTY"
                             ]
                         }
-                    ]
+                    ],
+                    "tooltip": {
+                        "de": "Die Ausgaben beziehen sich auf einen festen absoluten Zeitraum."
+                    }
                 },
                 {
                     "name": "RELATIVE",
@@ -140,7 +143,7 @@
                                 "GREATER_THAN_ZERO"
                             ],
                             "tooltip": {
-                                "de": "Anzahl an Zeiteinheiten, die die Größe des Zeitraums vor dem Indexdatum bestimmten"
+                                "de": "Anzahl an Zeiteinheiten, die die Größe des Zeitraums vor dem Indexdatum bestimmten."
                             }
                         },
                         {
@@ -160,7 +163,7 @@
                                 "GREATER_THAN_ZERO"
                             ],
                             "tooltip": {
-                                "de": "Anzahl an Zeiteinheiten, die die Größe des Zeitraums nach dem Indexdatum bestimmten"
+                                "de": "Anzahl an Zeiteinheiten, die die Größe des Zeitraums nach dem Indexdatum bestimmten."
                             }
                         },
                         {
@@ -194,7 +197,7 @@
                                 "NOT_EMPTY"
                             ],
                             "tooltip": {
-                                "de": "Wenn mehr als ein Datumswert pro Person vorliegt, kann hier ausgewählt werden welcher als Indexdatum gewertet werden soll"
+                                "de": "Wenn mehr als ein Datumswert pro Person vorliegt, kann hier ausgewählt werden welcher als Indexdatum gewertet werden soll."
                             }
                         },
                         {
@@ -228,7 +231,7 @@
                                 "NOT_EMPTY"
                             ],
                             "tooltip": {
-                                "de": "Angabe für welchen Zeitraum das Quartal mit dem Indexdatum gewertet wird"
+                                "de": "Angabe für welchen Zeitraum das Quartal mit dem Indexdatum gewertet wird."
                             }
                         },
                         {
@@ -265,7 +268,10 @@
                                 "NOT_EMPTY"
                             ]
                         }
-                    ]
+                    ],
+                    "tooltip": {
+                        "de": "Die Ausgaben beziehen sich auf einen Vor- und Nachbeobachtungszeitraum, abhängig von dem Indexdatum jeder Person in der Versichertengruppe."
+                    }
                 }
             ]
         }
