@@ -9,6 +9,7 @@ import {
 import { exists } from "../../common/helpers/exists";
 import Dropzone from "../../form-components/Dropzone";
 import Label from "../../form-components/Label";
+import Optional from "../../form-components/Optional";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 
@@ -21,6 +22,7 @@ const SxDropzone = styled(Dropzone)<{ centered?: boolean }>`
 interface PropsT extends WrappedFieldProps {
   label: string;
   tooltip?: string;
+  optional?: boolean;
   dropzoneText: string;
   className?: string;
 }
@@ -33,6 +35,7 @@ const FormQueryDropzone: FC<PropsT> = (props) => {
   return (
     <div className={props.className}>
       <Label>
+        {props.optional && <Optional />}
         {props.label}
         {exists(props.tooltip) && <InfoTooltip text={props.tooltip} />}
       </Label>

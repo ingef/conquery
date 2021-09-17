@@ -12,7 +12,7 @@ import type {
   Form as FormType,
   FormField as FormFieldType,
 } from "../config-types";
-import { collectAllFormFields, isFormField } from "../helper";
+import { collectAllFormFields, isFormField, isOptionalField } from "../helper";
 import { selectReduxFormState } from "../stateSelectors";
 import {
   validateRequired,
@@ -71,12 +71,8 @@ function getNotEmptyValidation(fieldType: string) {
 }
 
 function getPossibleValidations(fieldType: string) {
-  const notEmptyValidation = {
-    NOT_EMPTY: getNotEmptyValidation(fieldType),
-  };
-
   return {
-    ...notEmptyValidation,
+    NOT_EMPTY: getNotEmptyValidation(fieldType),
     GREATER_THAN_ZERO: validatePositive,
   };
 }
@@ -95,8 +91,14 @@ function getErrorForField(t: TFunction, field: FormFieldType, value: any) {
       const validateFn = getPossibleValidations(field.type)[validation];
 
       if (validateFn) {
-        // If not, someone must have configured an unsupported validation
         error = error || validateFn(t, value);
+      } else {
+        console.error(
+          "Validation configured that is not supported: ",
+          validation,
+          "for field",
+          field.name,
+        );
       }
     }
   }
@@ -131,11 +133,12 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
     return (
       <form>
         {config.description && config.description[activeLang] && (
-          <SxFormHeader description={config.description[activeLang]} />
+          <SxFormHeader description={config.description[activeLang]!} />
         )}
         <FormConfigSaver />
         {config.fields.map((field, i) => {
           const key = isFormField(field) ? field.name : field.type + i;
+          const optional = isOptionalField(field);
 
           return (
             <Field
@@ -145,6 +148,7 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
               field={field}
               availableDatasets={availableDatasets}
               locale={activeLang}
+              optional={optional}
             />
           );
         })}

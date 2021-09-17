@@ -74,4 +74,10 @@ public class AdminUIResource {
 		return new UIView<>("jobs.html.ftl", uiProcessor.getUIContext(), uiProcessor.getAdminProcessor().getJobs());
 	}
 
+	@GET
+	@Path("queries")
+	public View getQueries() {
+		return new UIView<>("queries.html.ftl", uiProcessor.getUIContext());
+	}
+
 }

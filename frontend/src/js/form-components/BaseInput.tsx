@@ -108,7 +108,10 @@ const BaseInput = (props: Props) => {
   };
 
   function safeOnChange(val: string | number | null) {
-    if (typeof val === "string" && val.length === 0) {
+    if (
+      (typeof val === "string" && val.length === 0) ||
+      (typeof val === "number" && isNaN(val))
+    ) {
       props.onChange(null);
     } else {
       props.onChange(val);

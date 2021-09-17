@@ -8,8 +8,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.core.UriBuilder;
-
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -180,8 +178,8 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, Userish user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Userish user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, user, status, datasetRegistry);
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually

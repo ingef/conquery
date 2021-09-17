@@ -3,11 +3,10 @@
         "en": "Data Export",
         "de": "Datenexport"
     },
-    "type": "EXPORT_FORM",
-    "headline": {
-        "en": "Data Export",
-        "de": "Datenexport"
+    "description": {
+        "de": "Mit diesem Formular werden Konzept- und Ausgabewerte für jeden Versicherten einer Anfrage einzeln auf einen Beobachtungszeitraum aggregiert. Zusätzlich zum gesamten Zeitraum kann dieser nochmal in Jahre oder Quartale unterteilt werden. Die Daten können dabei in einem absoluten Beobachtungszeitraum oder relativ zu einem mit der Anfrage erstellten Indexdatum analysiert werden. Die Ausgabe kann sowohl als Excel, als auch CSV heruntergeladen werden."
     },
+    "type": "EXPORT_FORM",
     "fields": [
         {
             "name": "queryGroup",
@@ -48,6 +47,9 @@
                     },
                     "value": "QUARTERS"
                 }
+            ],
+            "validations": [
+                "NOT_EMPTY"
             ]
         },
         {
@@ -116,7 +118,10 @@
                             ],
                             "validations": [
                                 "NOT_EMPTY"
-                            ]
+                            ],
+                            "tooltip": {
+                                "de": "Die Zeiteinheit bezieht sich auf die folgenden Eingabefelder, welche den Zeitraum vor und nach dem Indexdatum bestimmen."
+                            }
                         },
                         {
                             "name": "timeCountBefore",
@@ -133,7 +138,10 @@
                             "validations": [
                                 "NOT_EMPTY",
                                 "GREATER_THAN_ZERO"
-                            ]
+                            ],
+                            "tooltip": {
+                                "de": "Anzahl an Zeiteinheiten, die die Größe des Zeitraums vor dem Indexdatum bestimmten"
+                            }
                         },
                         {
                             "name": "timeCountAfter",
@@ -150,7 +158,10 @@
                             "validations": [
                                 "NOT_EMPTY",
                                 "GREATER_THAN_ZERO"
-                            ]
+                            ],
+                            "tooltip": {
+                                "de": "Anzahl an Zeiteinheiten, die die Größe des Zeitraums nach dem Indexdatum bestimmten"
+                            }
                         },
                         {
                             "name": "indexSelector",
@@ -181,7 +192,10 @@
                             ],
                             "validations": [
                                 "NOT_EMPTY"
-                            ]
+                            ],
+                            "tooltip": {
+                                "de": "Wenn mehr als ein Datumswert pro Person vorliegt, kann hier ausgewählt werden welcher als Indexdatum gewertet werden soll"
+                            }
                         },
                         {
                             "name": "indexPlacement",
@@ -212,7 +226,10 @@
                             ],
                             "validations": [
                                 "NOT_EMPTY"
-                            ]
+                            ],
+                            "tooltip": {
+                                "de": "Angabe für welchen Zeitraum das Quartal mit dem Indexdatum gewertet wird"
+                            }
                         },
                         {
                             "name": "features",
