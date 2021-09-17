@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenCreator;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.util.CharArrayBuffer;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;
@@ -16,7 +17,7 @@ public class ApiTokenTest {
 	public void checkToken () {
 		final ApiTokenCreator apiTokenCreator = new ApiTokenCreator(new Random(1));
 
-		final String token = apiTokenCreator.createToken();
+		final CharArrayBuffer token = apiTokenCreator.createToken();
 
 		log.info("Testing token: {}", token);
 
@@ -24,6 +25,6 @@ public class ApiTokenTest {
 
 		assertThat(token).matches(TOKEN_PREFIX + "_" + "[\\w\\d_]{"+ TOKEN_LENGTH +"}");
 
-		assertThat(token.substring(TOKEN_PREFIX.length()+2)).containsPattern("[a-zA-Z]");
+		assertThat(token.toString().substring(TOKEN_PREFIX.length()+2)).containsPattern("[a-zA-Z]");
 	}
 }

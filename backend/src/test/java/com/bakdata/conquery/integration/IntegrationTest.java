@@ -8,13 +8,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.function.Executable;
 
+import java.io.File;
+
 public interface IntegrationTest {
 
 	void execute(String name, TestConquery testConquery) throws Exception;
 
 
 
-	public default void overrideConfig(ConqueryConfig conf){
+	public default void overrideConfig(final ConqueryConfig conf, final File workdir){
 
 	}
 

@@ -134,6 +134,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		loadMetaStorage();
 
+		// Inject storage into the global om, to allow injection into deserialized object (e.g. throw the API)
+		storage.injectInto(environment.getObjectMapper());
+
 		authController = new AuthorizationController(storage, config.getAuthorizationRealms());
 		environment.lifecycle().manage(authController);
 

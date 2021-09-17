@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.json;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -35,7 +36,7 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 	}
 
 	@Override
-	public void overrideConfig(ConqueryConfig conf) {
+	public void overrideConfig(final ConqueryConfig conf, final File workDir) {
 		testSpec.overrideConfig(conf);
 	}
 

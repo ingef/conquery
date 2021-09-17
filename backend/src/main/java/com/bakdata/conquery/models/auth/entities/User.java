@@ -131,6 +131,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
+	@JsonIgnore
 	public User getUser() {
 		return this;
 	}

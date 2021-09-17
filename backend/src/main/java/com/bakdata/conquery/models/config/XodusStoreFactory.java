@@ -83,7 +83,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "XODUS", base = StoreFactory.class)
 public class XodusStoreFactory implements StoreFactory {
 
-	private Path directory = Path.of("storage");
+	private Path directory = Path.of("storage/");
 
 	private boolean validateOnWrite = false;
 	@NotNull
