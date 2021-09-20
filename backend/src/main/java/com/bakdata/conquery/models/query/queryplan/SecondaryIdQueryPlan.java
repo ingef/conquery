@@ -51,9 +51,11 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final Set<Column> tablesWithSecondaryId;
 	private final Set<Table> tablesWithoutSecondaryId;
 
+	private final ConceptQueryPlan queryPlan;
+
+
 	private final Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
 
-	private ConceptQueryPlan queryPlan;
 
 
 	/**
@@ -113,7 +115,6 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public void init(QueryExecutionContext ctx, Entity entity) {
-		queryPlan = query.createQueryPlan(queryPlanContext.withSelectedSecondaryId(secondaryId));
 		queryPlan.init(ctx, entity);
 
 

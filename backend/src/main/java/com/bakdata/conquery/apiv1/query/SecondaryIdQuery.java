@@ -67,7 +67,7 @@ public class SecondaryIdQuery extends Query {
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
 
-		return new SecondaryIdQueryPlan(query, context, secondaryId, withSecondaryId, withoutSecondaryId);
+		return new SecondaryIdQueryPlan(query, context, secondaryId, withSecondaryId, withoutSecondaryId, query.createQueryPlan(context.withSelectedSecondaryId(secondaryId)));
 	}
 
 	@Override
