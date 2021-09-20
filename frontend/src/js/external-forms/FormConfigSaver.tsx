@@ -18,6 +18,7 @@ import EditableText from "../form-components/EditableText";
 import Label from "../form-components/Label";
 import FaIcon from "../icon/FaIcon";
 import { setMessage } from "../snack-message/actions";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import { loadExternalFormValues, setExternalForm } from "./actions";
 import { DragItemFormConfig } from "./form-configs/FormConfig";
@@ -215,13 +216,15 @@ const FormConfigSaver: FC = () => {
                 )}
               </Row>
             </div>
-            <IconButton
-              frame
-              icon={isSaving ? "spinner" : "save"}
-              onClick={onSubmit}
-            >
-              {t("externalForms.config.save")}
-            </IconButton>
+            <WithTooltip lazy text={t("externalForms.config.saveDescription")}>
+              <IconButton
+                frame
+                icon={isSaving ? "spinner" : "save"}
+                onClick={onSubmit}
+              >
+                {t("externalForms.config.save")}
+              </IconButton>
+            </WithTooltip>
           </SpacedRow>
         )}
       </SxDropzone>
