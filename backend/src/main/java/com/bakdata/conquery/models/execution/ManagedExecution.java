@@ -55,12 +55,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.shiro.authz.Permission;
-
-import static org.apache.shiro.util.StringUtils.hasText;
 
 @Getter
 @Setter
@@ -268,7 +270,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, User user, DatasetRegistry datasetRegistry) {
+	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, User user, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
 		initExecutable(datasetRegistry, config);
 		FullExecutionStatus status = new FullExecutionStatus();
