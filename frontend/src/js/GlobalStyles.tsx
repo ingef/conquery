@@ -1,6 +1,7 @@
-import { css, Global } from "@emotion/react";
+import type { Theme } from "@emotion/react";
+import { css, Global, useTheme } from "@emotion/react";
 
-const globalStyles = css`
+const globalStyles = (theme: Theme) => css`
   * {
     box-sizing: border-box;
   }
@@ -12,9 +13,9 @@ const globalStyles = css`
   body {
     font-family: "Roboto", "Arial", sans-serif;
     font-weight: 300;
-    background: $col-bg;
+    background: ${theme.col.bg};
     margin: 0;
-    color: $col-black;
+    color: ${theme.col.black};
     min-height: 100vh;
     height: 100%;
     overflow: hidden;
@@ -29,7 +30,7 @@ const globalStyles = css`
   a,
   a:visited,
   a:active {
-    color: $col-black;
+    color: ${theme.col.black};
     text-decoration: none;
   }
 
@@ -50,27 +51,27 @@ const globalStyles = css`
     outline: 0;
     border-radius: 3px;
     padding: 8px 30px 8px 8px;
-    border: 1px solid $col-gray;
+    border: 1px solid ${theme.col.gray};
     appearance: none;
-    font-size: $font-sm;
+    font-size: ${theme.font.sm};
     cursor: pointer;
     &:disabled {
       cursor: not-allowed;
     }
     &:hover {
-      background-color: $col-gray-very-light;
+      background-color: ${theme.col.grayVeryLight};
     }
   }
 
   h3 {
-    font-size: $font-sm;
+    font-size: ${theme.font.sm};
     margin: 0 0 10px 0;
-    color: $col-blue-gray-dark;
+    color: ${theme.col.blueGrayDark};
     line-height: 25px;
   }
 `;
 
-const splitPaneStyles = css`
+const splitPaneStyles = (theme: Theme) => css`
   .SplitPane {
     .Pane1 {
       overflow: hidden;
@@ -88,7 +89,7 @@ const splitPaneStyles = css`
   }
 
   .Resizer {
-    background: $col-gray-medium-light;
+    background: ${theme.col.grayMediumLight};
     opacity: 0.8;
     z-index: 1;
     transition: all 0.5s ease-in-out;
@@ -133,11 +134,15 @@ const splitPaneStyles = css`
   }
 `;
 
-const GlobalStyles = () => (
-  <>
-    <Global styles={globalStyles} />
-    <Global styles={splitPaneStyles} />
-  </>
-);
+const GlobalStyles = () => {
+  const theme = useTheme();
+
+  return (
+    <>
+      <Global styles={globalStyles(theme)} />
+      <Global styles={splitPaneStyles(theme)} />
+    </>
+  );
+};
 
 export default GlobalStyles;

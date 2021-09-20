@@ -109,6 +109,9 @@ public class ImportJob extends Job {
 				throw new BadRequestException(String.format("Table[%s] does not exist.", tableId));
 			}
 
+			// Ensure that Import and Table have the same schema
+			header.assertMatch(table);
+
 			final ImportId importId = new ImportId(table.getId(), header.getName());
 
 			if (namespace.getStorage().getImport(importId) != null) {
