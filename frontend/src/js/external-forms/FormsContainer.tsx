@@ -22,4 +22,4 @@ const FormsContainer: FC = () => {
   return <Root>{!!formConfig && <Form config={formConfig} />}</Root>;
 };
 
-export default FormsContainer;
+export default React.memo(FormsContainer);

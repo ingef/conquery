@@ -47,7 +47,7 @@ const NestedFields = styled("div")`
 interface PropsT {
   formType: string;
   field: GeneralField;
-  getFieldValue: (fieldName: string) => any;
+  getFieldValue: () => any;
   locale: "de" | "en";
   availableDatasets: SelectOptionT[];
   optional?: boolean;
@@ -174,15 +174,14 @@ const Field = ({ field, ...commonProps }: PropsT) => {
         />
       );
     case "DATASET_SELECT":
+      const defaultValue =
+        availableDatasets.length > 0 ? availableDatasets[0].value : undefined;
+
       return (
         <RxFormField
           name={field.name}
           component={Select}
-          defaultValue={
-            availableDatasets.length > 0
-              ? availableDatasets[0].value
-              : undefined
-          }
+          defaultValue={defaultValue}
           props={{
             label: field.label[locale],
             options: availableDatasets,
@@ -192,9 +191,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
         />
       );
     case "TABS":
-      const tabToShow = field.tabs.find(
-        (tab) => tab.name === getFieldValue(field.name),
-      );
+      const tabToShow = field.tabs.find((tab) => tab.name === getFieldValue());
 
       return (
         <Tabs>
