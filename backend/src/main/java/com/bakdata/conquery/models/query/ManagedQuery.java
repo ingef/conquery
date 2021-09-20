@@ -12,8 +12,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.ws.rs.core.UriBuilder;
-
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.ExecutionStatus;
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
@@ -27,7 +25,6 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -35,7 +32,6 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -136,8 +132,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	protected void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status, UriBuilder url, Map<DatasetId, Set<Ability>> datasetAbilities) {
-		super.setStatusBase(user, status, url, datasetAbilities);
+	protected void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status) {
+		super.setStatusBase(user, status);
 		status.setNumberOfResults(lastResultCount);
 
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
@@ -148,8 +144,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UriBuilder url, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, url, user, status, datasetRegistry);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, user, status, datasetRegistry);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions(datasetRegistry);
 		}

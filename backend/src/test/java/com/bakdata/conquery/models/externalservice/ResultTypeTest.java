@@ -5,16 +5,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Currency;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Stream;
 
-import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.google.common.collect.ImmutableMap;
@@ -44,8 +42,8 @@ public class ResultTypeTest {
 			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, true,	"Yes"),
 			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, false,	"No"),
 			Arguments.of(PRETTY, ResultType.CategoricalT.INSTANCE, "test", "test"),
-			Arguments.of(PRETTY, ResultType.ResolutionT.INSTANCE, DateContext.Resolution.COMPLETE.name(), "complete"),
-			Arguments.of(PRETTY_DE, ResultType.ResolutionT.INSTANCE, DateContext.Resolution.COMPLETE.name(), "Gesamt"),
+			Arguments.of(PRETTY, ResultType.ResolutionT.INSTANCE, Resolution.COMPLETE.name(), "complete"),
+			Arguments.of(PRETTY_DE, ResultType.ResolutionT.INSTANCE, Resolution.COMPLETE.name(), "Gesamt"),
 			Arguments.of(PRETTY, ResultType.DateT.INSTANCE, LocalDate.of(2013, 7, 12).toEpochDay(), "2013-07-12"),
 			Arguments.of(PRETTY_DE, ResultType.DateT.INSTANCE, LocalDate.of(2013, 7, 12).toEpochDay(), "12.07.2013"),
 			Arguments.of(PRETTY, ResultType.DateRangeT.INSTANCE, List.of(Long.valueOf(LocalDate.of(2013, 7, 12).toEpochDay()).intValue(), Long.valueOf(LocalDate.of(2013, 7, 12).toEpochDay()).intValue()), "2013-07-12"),
@@ -71,7 +69,7 @@ public class ResultTypeTest {
 			Arguments.of(PLAIN, ResultType.NumericT.INSTANCE, 0.2, "0.2"),
 			Arguments.of(PLAIN, ResultType.NumericT.INSTANCE, new BigDecimal("716283712389817246892743124.12312"), "716283712389817246892743124.12312"),
 			Arguments.of(PLAIN, ResultType.StringT.INSTANCE, "test", "test"),
-			Arguments.of(PLAIN, ResultType.CategoricalT.INSTANCE, DateContext.Resolution.COMPLETE.name(), "COMPLETE"),
+			Arguments.of(PLAIN, ResultType.CategoricalT.INSTANCE, Resolution.COMPLETE.name(), "COMPLETE"),
 			Arguments.of(PLAIN, ResultType.StringT.INSTANCE, ImmutableMap.of("a", 2, "c", 1), "{a=2, c=1}")
 		);
 	}

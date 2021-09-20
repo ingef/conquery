@@ -21,17 +21,36 @@ public class MatchingStats {
     @JsonIgnore
     private transient CDateRange span;
 
+    @JsonIgnore
+    private transient long numberOfEvents = -1L;
+
+    @JsonIgnore
+    private transient long numberOfEntities = -1L;
+
     public long countEvents() {
-        return entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
+        if (numberOfEvents == -1L) {
+            synchronized (this) {
+                if (numberOfEvents == -1L) {
+                    numberOfEvents = entries.values().stream().mapToLong(Entry::getNumberOfEvents).sum();
+                }
+            }
+        }
+        return numberOfEvents;
     }
 
 
     public long countEntities() {
-
-        return entries.values().stream().mapToLong(Entry::getNumberOfEntities).sum();
+        if (numberOfEntities == -1L) {
+            synchronized (this) {
+                if (numberOfEntities == -1L) {
+                    numberOfEntities = entries.values().stream().mapToLong(Entry::getNumberOfEntities).sum();
+                }
+            }
+        }
+        return numberOfEntities;
     }
 
-    public synchronized CDateRange spanEvents() {
+    public CDateRange spanEvents() {
         if (span == null) {
             synchronized (this) {
                 if (span == null) {
@@ -43,10 +62,12 @@ public class MatchingStats {
 
     }
 
-    public void updateEntry(WorkerId source, Entry entry) {
+    public void putEntry(WorkerId source, Entry entry) {
         synchronized (this) {
             entries.put(source, entry);
             span = null;
+            numberOfEntities = -1L;
+            numberOfEvents = -1L;
         }
     }
 

@@ -26,7 +26,7 @@ public class AuthenticationConfig {
 
 
 
-	public Cookie createAuthCookie(ContainerRequestContext request, String token) {
+	public NewCookie createAuthCookie(ContainerRequestContext request, String token) {
 		return new NewCookie(
 				AuthCookieFilter.ACCESS_TOKEN,
 				token,
@@ -39,6 +39,17 @@ public class AuthenticationConfig {
 				request.getSecurityContext().isSecure(),
 				true
 		);
+	}
+
+	public static NewCookie expireAuthCookie() {
+		return new NewCookie(
+				AuthCookieFilter.ACCESS_TOKEN,
+				null,
+				"/",
+				null,
+				null,
+				0,
+				false);
 	}
 
 	@JsonIgnore

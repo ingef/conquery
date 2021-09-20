@@ -1,11 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -16,6 +10,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /**
  * This status holds extensive information about the query description and meta data that is computational heavy

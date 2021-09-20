@@ -41,7 +41,8 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
-import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -364,8 +365,8 @@ public class SerializationTests {
 				CDateRange.exactly(LocalDate.now()).toSimpleRange(),
 				ArrayConceptQuery.createFromFeatures(Collections.singletonList(features)),
 				List.of(
-						ExportForm.ResolutionAndAlignment.of(DateContext.Resolution.COMPLETE, DateContext.Alignment.NO_ALIGN),
-						ExportForm.ResolutionAndAlignment.of(DateContext.Resolution.QUARTERS, DateContext.Alignment.QUARTER)
+						ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
+						ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
 				)
 		);
 

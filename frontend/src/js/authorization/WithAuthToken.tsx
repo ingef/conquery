@@ -1,9 +1,10 @@
 import { useKeycloak } from "@react-keycloak/web";
-import React, { FC } from "react";
+import React, { FC, useContext } from "react";
 import { useHistory } from "react-router-dom";
 
 import { isLoginDisabled, isIDPEnabled } from "../environment";
 
+import { AuthTokenContext } from "./AuthTokenProvider";
 import { storeAuthToken, getStoredAuthToken } from "./helper";
 
 interface PropsT {
@@ -14,7 +15,8 @@ interface PropsT {
 
 const WithAuthToken: FC<PropsT> = ({ location, children }) => {
   const history = useHistory();
-  const { keycloak, initialized } = useKeycloak();
+  const { initialized } = useKeycloak();
+  const { authToken } = useContext(AuthTokenContext);
   const goToLogin = () => history.push("/login");
 
   const { search } = location;
@@ -23,7 +25,7 @@ const WithAuthToken: FC<PropsT> = ({ location, children }) => {
 
   if (accessToken) storeAuthToken(accessToken);
 
-  if (isIDPEnabled && (!initialized || !keycloak.token)) {
+  if (isIDPEnabled && (!initialized || !authToken)) {
     return null;
   }
 
