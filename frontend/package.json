@@ -65,6 +65,7 @@
     "react-tippy": "^1.4.0",
     "react-window": "^1.8.6",
     "redux": "^4.0.5",
+    "redux-devtools-extension": "^2.13.9",
     "redux-form": "^8.3.7",
     "redux-multi": "^0.1.12",
     "redux-thunk": "^2.3.0",
