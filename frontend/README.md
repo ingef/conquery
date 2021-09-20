@@ -53,7 +53,7 @@ Commands analogoues to `start_production.sh` script.
 
 **Requirements**
 
-- `node` >= 14
+- `node` >= 16
 - `yarn`
 
 **Install and start**
