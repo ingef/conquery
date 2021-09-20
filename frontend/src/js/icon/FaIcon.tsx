@@ -1,4 +1,5 @@
 import isPropValid from "@emotion/is-prop-valid";
+import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { far } from "@fortawesome/free-regular-svg-icons";
@@ -28,6 +29,15 @@ export interface FaIconPropsT extends IconStyleProps {
   regular?: boolean;
 }
 
+const spin = keyframes`
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+`;
+
 const shouldForwardProp = (prop: keyof FaIconPropsT) =>
   isPropValid(prop) || prop === "icon" || prop === "className";
 
@@ -53,6 +63,10 @@ export const Icon = styled(FontAwesomeIcon, {
       : theme.col.black};
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "inherit")};
   width: initial !important;
+
+  &.fa-spinner {
+    animation: ${spin} 0.5s linear 0s infinite;
+  }
 `;
 
 const FaIcon: React.FC<FaIconPropsT> = ({
