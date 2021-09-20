@@ -1,4 +1,3 @@
-import "./app-styles.sass";
 import { theme } from "./app-theme";
 import conquery from "./js";
 import { language, CustomEnvironment } from "./js/environment";
