@@ -229,4 +229,4 @@ const FormConfigSaver: FC = () => {
   );
 };
 
-export default FormConfigSaver;
+export default React.memo(FormConfigSaver);
