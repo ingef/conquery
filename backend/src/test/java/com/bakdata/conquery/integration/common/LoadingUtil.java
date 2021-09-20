@@ -108,53 +108,61 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables, Dataset dataset) throws Exception {
-		importTableContents(support, Arrays.asList(tables), dataset);
-	}
-
 	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws Exception {
-		importTableContents(support, Arrays.asList(tables), support.getDataset());
-	}
-
-	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
-		importTableContents(support, tables, support.getDataset());
+		importTableContents(support, Arrays.asList(tables));
 	}
 
 	public static List<File> generateCqpp(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
 		List<File> preprocessedFiles = new ArrayList<>();
 		List<File> descriptions = new ArrayList<>();
 
+
 		for (RequiredTable rTable : tables) {
+			List<String> tags = new ArrayList<>();
 			// copy csv to tmp folder
-			String name = rTable.getName();
-			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
+			String tableName = rTable.getName();
+			for (ResourceFile csv : rTable.getCsv()) {
 
-			// create import descriptor
-			final File descriptionFile = support.getTmpDir().toPath().resolve(name + ConqueryConstants.EXTENSION_DESCRIPTION).toFile();
-			final File outFile = support.getTmpDir().toPath().resolve(name + EXTENSION_PREPROCESSED).toFile();
+				FileUtils.copyInputStreamToFile(csv.stream(), new File(support.getTmpDir(), csv.getName()));
 
-			TableImportDescriptor desc = new TableImportDescriptor();
-
-			desc.setName(name);
-			desc.setTable(name);
-			TableInputDescriptor input = new TableInputDescriptor();
-			{
-				input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
-				input.setSourceFile(rTable.getCsv().getName());
-				input.setOutput(new OutputDescription[rTable.getColumns().length]);
-				for (int i = 0; i < rTable.getColumns().length; i++) {
-					input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
+				String outFileName = tableName;
+				String tag = tableName;
+				String taglessName = csv.getName();
+				final String[] nameSplit = csv.getName().split("\\.");
+				if (nameSplit.length == 3) {
+					tag = nameSplit[1];
+					tags.add(tag);
+					outFileName = tableName + "." + tag;
+					taglessName = nameSplit[0] + "." + nameSplit[2];
 				}
+
+
+				// create import descriptor
+				final File descriptionFile = support.getTmpDir().toPath().resolve(csv.getName() + ConqueryConstants.EXTENSION_DESCRIPTION).toFile();
+				final File outFile = support.getTmpDir().toPath().resolve(csv.getName() + EXTENSION_PREPROCESSED).toFile();
+
+				TableImportDescriptor desc = new TableImportDescriptor();
+				desc.setName(outFileName);
+				desc.setTable(tableName);
+				TableInputDescriptor input = new TableInputDescriptor();
+				{
+					input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
+					input.setSourceFile(taglessName);
+					input.setOutput(new OutputDescription[rTable.getColumns().length]);
+					for (int i = 0; i < rTable.getColumns().length; i++) {
+						input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
+					}
+				}
+				desc.setInputs(new TableInputDescriptor[] { input });
+
+				Jackson.MAPPER.writeValue(descriptionFile, desc);
+
+				descriptions.add(descriptionFile);
+				preprocessedFiles.add(outFile);
 			}
-			desc.setInputs(new TableInputDescriptor[]{input});
-
-			Jackson.MAPPER.writeValue(descriptionFile, desc);
-
-			descriptions.add(descriptionFile);
-			preprocessedFiles.add(outFile);
+			// preprocess
+			support.preprocessTmp(support.getTmpDir(), descriptions, tags);
 		}
-		// preprocess
-		support.preprocessTmp(support.getTmpDir(), descriptions);
 		//clear the MDC location from the preprocessor
 		ConqueryMDC.clearLocation();
 		return preprocessedFiles;
@@ -201,59 +209,9 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws Exception {
-		List<File> preprocessedFiles = new ArrayList<>();
-		List<File> descriptions = new ArrayList<>();
-
-		for (RequiredTable rTable : tables) {
-			// copy csv to tmp folder
-			String name = rTable.getName();
-			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
-
-			// create import descriptor
-			final File descriptionFile = support.getTmpDir().toPath().resolve(name + ConqueryConstants.EXTENSION_DESCRIPTION).toFile();
-			final File outFile = support.getTmpDir().toPath().resolve(name + EXTENSION_PREPROCESSED).toFile();
-
-			TableImportDescriptor desc = new TableImportDescriptor();
-
-			desc.setName(name);
-			desc.setTable(name);
-			TableInputDescriptor input = new TableInputDescriptor();
-			{
-				input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
-				input.setSourceFile(rTable.getCsv().getName());
-				input.setOutput(new OutputDescription[rTable.getColumns().length]);
-				for (int i = 0; i < rTable.getColumns().length; i++) {
-					input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
-				}
-			}
-			desc.setInputs(new TableInputDescriptor[]{input});
-
-			Jackson.MAPPER.writeValue(descriptionFile, desc);
-
-			descriptions.add(descriptionFile);
-			preprocessedFiles.add(outFile);
-		}
-		// preprocess
-		support.preprocessTmp(support.getTmpDir(), descriptions);
-		//clear the MDC location from the preprocessor
-		ConqueryMDC.clearLocation();
-
-		// import preprocessedFiles
-		for (File file : preprocessedFiles) {
-			assertThat(file).exists();
-
-			final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
-					.queryParam("file", file)
-					.buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
-
-			final Response response = support.getClient()
-					.target(addImport)
-					.request(MediaType.APPLICATION_JSON)
-					.post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
-
-			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
-		}
+	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
+		List<File> cqpps = generateCqpp(support, tables);
+		importCqppFiles(support, cqpps);
 	}
 
 	public static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {

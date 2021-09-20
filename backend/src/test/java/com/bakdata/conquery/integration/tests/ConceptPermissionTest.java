@@ -48,7 +48,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 
 			storage.addUser(user);

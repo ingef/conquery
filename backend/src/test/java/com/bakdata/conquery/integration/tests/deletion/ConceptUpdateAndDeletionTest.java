@@ -69,7 +69,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			concept = Objects.requireNonNull(namespace.getStorage().getConcept(conceptId));
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 		}
 

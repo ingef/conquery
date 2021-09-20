@@ -1,16 +1,13 @@
 package com.bakdata.conquery.integration.tests;
 
 import com.bakdata.conquery.commands.ShardNode;
-import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
-import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
@@ -36,19 +33,17 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 		MetaStorage storage = conquery.getMetaStorage();
 
 		String testJson = In.resource("/tests/query/UPDATE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
-		String testJson2 = In.resource("/tests/query/UPDATE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Update.test.json").withUTF8().readAll();
 
 		final Dataset dataset = conquery.getDataset();
 		final Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
 
-		final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2");
-		final ImportId importId2 = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table", "test_table");
+		final ImportId importId1 = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table", "test_table");
+		final ImportId importId2 = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2");
 		final ImportId importId3 = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table3", "test_table3");
 
 		QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		QueryTest test2 = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson2);
 
-		List<File> preprocessedFiles;
+		List<File> cqpps;
 
 		// Manually import data, so we can do our own work.
 		{
@@ -63,7 +58,10 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
+			cqpps = LoadingUtil.generateCqpp(conquery, test.getContent().getTables());
+			conquery.waitUntilWorkDone();
+
+			LoadingUtil.importCqppFiles(conquery,List.of(cqpps.get(0)));
 			conquery.waitUntilWorkDone();
 		}
 
@@ -74,10 +72,10 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 			// Must contain the import.
 			assertThat(namespace.getStorage().getAllImports())
-					.filteredOn(imp -> imp.getId().equals(importId))
+					.filteredOn(imp -> imp.getId().equals(importId2))
 					.isNotEmpty();
 
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId))
+			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId2))
 					.isNotEmpty();
 
 			for (ShardNode node : conquery.getShardNodes()) {
@@ -98,7 +96,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 							.isNotEmpty();
 
 					// Must contain the import.
-					assertThat(workerStorage.getImport(importId))
+					assertThat(workerStorage.getImport(importId2))
 							.isNotNull();
 				}
 			}
@@ -107,20 +105,17 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 		//Update import
 		{
-			preprocessedFiles = LoadingUtil.generateCqpp(conquery, test2.getContent().getTables());
-			Assert.assertNotNull(preprocessedFiles);
-			Assert.assertEquals(2, preprocessedFiles.size());
 
 			//different ImportIds
-			LoadingUtil.updateCqppFile(conquery, preprocessedFiles.get(0), importId2, Response.Status.Family.CLIENT_ERROR, "Conflict");
+			LoadingUtil.updateCqppFile(conquery, cqpps.get(0), importId1, Response.Status.Family.CLIENT_ERROR, "Conflict");
 			conquery.waitUntilWorkDone();
 
 			//same ImportIds but Import is not present
-			LoadingUtil.updateCqppFile(conquery, preprocessedFiles.get(1), importId3, Response.Status.Family.CLIENT_ERROR, "Not Found");
+			LoadingUtil.updateCqppFile(conquery, cqpps.get(1), importId3, Response.Status.Family.CLIENT_ERROR, "Not Found");
 			conquery.waitUntilWorkDone();
 
 			//correct update of import
-			LoadingUtil.updateCqppFile(conquery, preprocessedFiles.get(0), importId, Response.Status.Family.SUCCESSFUL, "No Content");
+			LoadingUtil.updateCqppFile(conquery, cqpps.get(0), importId2, Response.Status.Family.SUCCESSFUL, "No Content");
 			conquery.waitUntilWorkDone();
 		}
 	}

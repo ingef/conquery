@@ -10,7 +10,6 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -56,7 +55,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -189,7 +188,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(conquery2.getNamespace().getStorage().getTables()).isNotEmpty();
 
 			conquery.waitUntilWorkDone();
-			LoadingUtil.importTableContents(conquery2, test.getContent().getTables(), newDataset);
+			LoadingUtil.importTableContents(conquery2, test.getContent().getTables());
 
 			conquery.waitUntilWorkDone();
 

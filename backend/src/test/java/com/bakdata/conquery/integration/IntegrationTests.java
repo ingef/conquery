@@ -102,6 +102,7 @@ public class IntegrationTests {
 		List<Class<?>> programmatic =
 				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 											 .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
+						.filter(info -> info.getSimpleName().startsWith("ImportUpdate"))
 											 .loadClasses();
 
 		return programmatic

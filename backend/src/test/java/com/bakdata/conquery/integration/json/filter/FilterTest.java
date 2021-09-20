@@ -82,7 +82,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		
 		query = parseQuery(support);
 
-		LoadingUtil.importTableContents(support, content.getTables(), support.getDataset());
+		LoadingUtil.importTableContents(support, content.getTables());
 	}
 
 

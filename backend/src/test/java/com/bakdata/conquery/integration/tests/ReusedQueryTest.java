@@ -49,7 +49,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
-import net.sourceforge.argparse4j.impl.Arguments;
 
 
 @Slf4j
@@ -81,7 +80,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 		}
 
