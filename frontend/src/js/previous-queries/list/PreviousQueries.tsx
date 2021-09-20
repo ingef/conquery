@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useCallback, useLayoutEffect } from "react";
 import { FixedSizeList } from "react-window";
 
 import { DatasetIdT } from "../../api/types";
+import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
 import EditPreviousQueryFoldersModal from "./EditPreviousQueryFoldersModal";
@@ -16,11 +17,12 @@ interface PropsT {
 }
 
 const ROW_SIZE = 62;
+const ROOT_PADDING_Y = 4;
 
 const Root = styled("div")`
   flex-grow: 1;
   font-size: ${({ theme }) => theme.font.sm};
-  padding: 4px 0;
+  padding: ${ROOT_PADDING_Y}px 0;
 `;
 const Container = styled("div")``;
 
@@ -41,7 +43,24 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
   const onCloseEditFoldersModal = () => setPreviousQueryToEditFolders(null);
 
   const container = useRef<HTMLDivElement | null>(null);
-  const height = useRef<number>(0);
+  const [height, setHeight] = useState<number>(0);
+
+  useResizeObserver(
+    useCallback((entry: ResizeObserverEntry) => {
+      if (entry) {
+        setHeight(entry.contentRect.height - ROOT_PADDING_Y * 2);
+      }
+    }, []),
+    container.current,
+  );
+
+  useLayoutEffect(() => {
+    if (container.current) {
+      const rect = container.current.getBoundingClientRect();
+
+      setHeight(rect.height - ROOT_PADDING_Y * 2);
+    }
+  }, []);
 
   return (
     <Root
@@ -52,11 +71,6 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
         }
 
         container.current = instance;
-
-        // TODO: Detect resize and re-measure
-        const rect = instance.getBoundingClientRect();
-
-        height.current = rect.height;
       }}
     >
       {!!previousQueryToShare && (
@@ -85,7 +99,7 @@ const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
           key={queries.length}
           itemSize={ROW_SIZE}
           itemCount={queries.length}
-          height={height.current}
+          height={height}
           width="100%"
         >
           {({ index, style }) => {
