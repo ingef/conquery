@@ -10,8 +10,9 @@ import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
@@ -24,6 +25,11 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 
 	public QuartersInYearAggregator(Column column) {
 		super(column);
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		quartersInYear.clear();
 	}
 
 	@Override
@@ -47,7 +53,7 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		if(quartersInYear.isEmpty()) {
 			return null;
 		}
@@ -64,11 +70,6 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 		return max;
 	}
 
-	@Override
-	public QuartersInYearAggregator doClone(CloneContext ctx) {
-		return new QuartersInYearAggregator(getColumn());
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.IntegerT.INSTANCE;

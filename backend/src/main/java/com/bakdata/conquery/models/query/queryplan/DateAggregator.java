@@ -7,8 +7,9 @@ import java.util.Set;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -17,17 +18,17 @@ import lombok.RequiredArgsConstructor;
  * flexibility through different {@link DateAggregationAction}s.
  */
 @RequiredArgsConstructor
-public class DateAggregator implements Aggregator<CDateSet> {
+public class DateAggregator extends Aggregator<CDateSet> {
 
     private final DateAggregationAction action;
 
-    private Set<Aggregator<CDateSet>> children = new HashSet<>();
+    private final Set<Aggregator<CDateSet>> children = new HashSet<>();
 
     /**
      * Register {@Aggregator<CDateSet>}s from lower levels for the final result generation.
      */
     public void register(Aggregator<CDateSet> child) {
-        this.children.add(child);
+		children.add(child);
     }
 
 
@@ -38,16 +39,22 @@ public class DateAggregator implements Aggregator<CDateSet> {
         this.children.addAll(children);
     }
 
-    @Override
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+    	//TODO don't think this is needed?
+		children.forEach(child -> child.init(entity, context));
+	}
+
+	@Override
     public void acceptEvent(Bucket bucket, int event) {
         throw new UnsupportedOperationException("This Aggregator uses the result of its siblings and does not accept events");
     }
 
     @Override
-    public CDateSet getAggregationResult() {
+    public CDateSet createAggregationResult() {
         final Set<CDateSet> all = new HashSet<>();
         children.forEach(s -> {
-            CDateSet result = s.getAggregationResult();
+            CDateSet result = s.createAggregationResult();
             if(result != null) {
                 all.add(result);
             }
@@ -62,18 +69,7 @@ public class DateAggregator implements Aggregator<CDateSet> {
         return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
     }
 
-    @Override
-    public Aggregator<CDateSet> doClone(CloneContext ctx) {
-        DateAggregator clone = new DateAggregator(action);
-        Set<Aggregator<CDateSet>> clonedChildren = new HashSet<>();
-        for (Aggregator<CDateSet> sibling : children) {
-            clonedChildren.add(ctx.clone(sibling));
-        }
-        clone.children = clonedChildren;
-        return clone;
-    }
-
-    public boolean hasChildren() {
+	public boolean hasChildren() {
         return !children.isEmpty();
     }
 }

@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
@@ -49,7 +48,7 @@ public class SecondaryIdQuery extends Query {
 
 	@NotNull
 	protected DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
-	
+
 
 	/**
 	 * @apiNote not using {@link ConceptQuery} directly in the API-spec simplifies the API.
@@ -68,11 +67,7 @@ public class SecondaryIdQuery extends Query {
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
 
-		context = context.withSelectedSecondaryId(getSecondaryId());
-
-		final ConceptQueryPlan queryPlan = query.createQueryPlan(context);
-
-		return new SecondaryIdQueryPlan(queryPlan, secondaryId, withSecondaryId, withoutSecondaryId);
+		return new SecondaryIdQueryPlan(query, context, secondaryId, withSecondaryId, withoutSecondaryId, query.createQueryPlan(context.withSelectedSecondaryId(secondaryId)));
 	}
 
 	@Override
@@ -85,7 +80,7 @@ public class SecondaryIdQuery extends Query {
 	public void resolve(QueryResolveContext context) {
 
 		DateAggregationMode resolvedDateAggregationMode = dateAggregationMode;
-		if(context.getDateAggregationMode() != null) {
+		if (context.getDateAggregationMode() != null) {
 			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
 		}

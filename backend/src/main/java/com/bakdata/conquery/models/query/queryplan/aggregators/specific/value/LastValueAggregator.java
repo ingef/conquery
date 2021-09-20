@@ -7,8 +7,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,6 +27,13 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	public LastValueAggregator(Column column) {
 		super(column);
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		selectedEvent = OptionalInt.empty();
+		date = Integer.MIN_VALUE;
+		selectedBucket = null;
 	}
 
 	@Override
@@ -70,7 +77,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
+	public VALUE createAggregationResult() {
 		if (selectedBucket == null && selectedEvent.isEmpty()) {
 			return null;
 		}
@@ -78,11 +85,6 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 		return (VALUE) selectedBucket.createScriptValue(selectedEvent.getAsInt(), getColumn());
 	}
 
-	@Override
-	public LastValueAggregator<VALUE> doClone(CloneContext ctx) {
-		return new LastValueAggregator<VALUE>(getColumn());
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.resolveResultType(getColumn().getType());

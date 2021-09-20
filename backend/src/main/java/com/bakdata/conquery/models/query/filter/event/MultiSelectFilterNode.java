@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -93,12 +92,6 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	}
 
 	@Override
-	public MultiSelectFilterNode doClone(CloneContext ctx) {
-		// We reuse the cache
-		return new MultiSelectFilterNode(getColumn(), filterValue, selectedValuesCache);
-	}
-
-	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (String selected : getFilterValue()) {
 			if(((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(selected) != -1) {
@@ -113,5 +106,6 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.add(column.getTable());
 	}
+
 
 }

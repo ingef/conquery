@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -37,15 +36,9 @@ public class ExternalNode extends QPNode {
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
 		contained = includedEntities.get(entity.getId());
+		dateUnion.init(entity, context);
 	}
-	
-	@Override
-	public ExternalNode doClone(CloneContext ctx) {
-		ExternalNode node = new ExternalNode(table, includedEntities);
-		node.dateUnion = ctx.clone(dateUnion);
-		return node;
-	}
-	
+
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if(contained != null) {

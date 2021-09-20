@@ -5,8 +5,9 @@ import java.util.Random;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator, returning a random value of a column.
@@ -22,6 +23,13 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 
 	public RandomValueAggregator(Column column) {
 		super(column);
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		event = -1;
+		nValues = 0;
+		bucket = null;
 	}
 
 	/**
@@ -51,17 +59,12 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
+	public VALUE createAggregationResult() {
 		if (bucket == null) {
 			return null;
 		}
 
 		return (VALUE) bucket.createScriptValue(event, getColumn());
-	}
-
-	@Override
-	public RandomValueAggregator doClone(CloneContext ctx) {
-		return new RandomValueAggregator(getColumn());
 	}
 
 	@Override

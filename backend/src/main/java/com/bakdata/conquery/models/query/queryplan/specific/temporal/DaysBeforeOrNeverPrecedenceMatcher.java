@@ -26,18 +26,15 @@ public class DaysBeforeOrNeverPrecedenceMatcher implements PrecedenceMatcher {
 
 	@Override
 	public boolean isContained(OptionalInt reference, OptionalInt preceding) {
-		if (!reference.isPresent()) {
+		if (reference.isEmpty()) {
 			return false;
 		}
 
-		// never
-		if (!preceding.isPresent())
+		if (preceding.isEmpty()) {
 			return true;
+		}
 
 		// days before
-		if ((reference.getAsInt() - preceding.getAsInt()) > days)
-			return true;
-
-		return false;
+		return (reference.getAsInt() - preceding.getAsInt()) > days;
 	}
 }
