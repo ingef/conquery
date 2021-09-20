@@ -11,7 +11,9 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -49,7 +51,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final int timeCountBefore;
 	private final int timeCountAfter;
-	private final DateContext.CalendarUnit timeUnit;
+	private final CalendarUnit timeUnit;
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
 
 	private FormQueryPlan featureSubquery = null;
@@ -220,10 +222,13 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		// We have features and outcomes check if both have complete date ranges (they should be at the beginning of the list)
 		return contexts.size() >= 2
-			   && DateContext.Resolution.COMPLETE.equals(contexts.get(0).getSubdivisionMode())
-			   && DateContext.Resolution.COMPLETE.equals(contexts.get(1).getSubdivisionMode())
+				&& contexts.get(0).getSubdivisionMode().equals(Resolution.COMPLETE)
+				&& contexts.get(1).getSubdivisionMode().equals(Resolution.COMPLETE)
 			   && !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup());
-
+		}
+		// Otherwise, if only features or outcomes are given check the first date context. The empty feature/outcome query
+		// will still return an empty result which will be merged with to a complete result.
+		return contexts.get(0).getSubdivisionMode().equals(Resolution.COMPLETE);
 	}
 
 	private static FormQueryPlan createSubQuery(ArrayConceptQueryPlan subPlan, List<DateContext> contexts, FeatureGroup featureGroup) {

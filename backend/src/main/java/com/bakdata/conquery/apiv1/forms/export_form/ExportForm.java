@@ -25,7 +25,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
-import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -56,14 +57,14 @@ public class ExportForm extends Form {
 	private Mode timeMode;
 	
 	@NotNull @NotEmpty
-	private List<DateContext.Resolution> resolution = List.of(DateContext.Resolution.COMPLETE);
+	private List<Resolution> resolution = List.of(Resolution.COMPLETE);
 	
 	private boolean alsoCreateCoarserSubdivisions = true;
 
 	@JsonIgnore
 	private Query prerequisite;
 	@JsonIgnore
-	private List<DateContext.Resolution> resolvedResolutions;
+	private List<Resolution> resolvedResolutions;
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
@@ -118,21 +119,24 @@ public class ExportForm extends Form {
 	/**
 	 * Maps the given resolution to a fitting alignment. It tries to use the alignment which was given as a hint.
 	 * If the alignment does not fit to a resolution (resolution is finer than the alignment), the first alignment that
-	 * this resolution supports is chosen (see the alignment order in {@link DateContext.Resolution})
+	 * this resolution supports is chosen (see the alignment order in {@link Resolution})
 	 * @param resolutions The temporal resolutions for which sub queries should be generated per entity
 	 * @param alignmentHint The preferred calendar alignment on which the sub queries of each resolution should be aligned.
 	 * 						Note that this alignment is chosen when a resolution is equal or coarser.
 	 * @return The given resolutions mapped to a fitting calendar alignment.
 	 */
-	public static List<ExportForm.ResolutionAndAlignment> getResolutionAlignmentMap(List<DateContext.Resolution> resolutions, DateContext.Alignment alignmentHint) {
+	public static List<ExportForm.ResolutionAndAlignment> getResolutionAlignmentMap(List<Resolution> resolutions, Alignment alignmentHint) {
 
 		return resolutions.stream()
 				.map(r -> ResolutionAndAlignment.of(r, getFittingAlignment(alignmentHint, r)))
 				.collect(Collectors.toList());
 	}
 
-	private static DateContext.Alignment getFittingAlignment(DateContext.Alignment alignmentHint, DateContext.Resolution resolution) {
-		return resolution.getSupportedAlignments().contains(alignmentHint)? alignmentHint : resolution.getSupportedAlignments().iterator().next();
+	private static Alignment getFittingAlignment(Alignment alignmentHint, Resolution resolution) {
+		if(resolution.isAlignmentSupported(alignmentHint) ) {
+			return alignmentHint;
+		}
+		return resolution.getDefaultAlignment();
 	}
 
 	/**
@@ -141,12 +145,12 @@ public class ExportForm extends Form {
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	@Getter
 	public static class ResolutionAndAlignment {
-		private final  DateContext.Resolution resolution;
-		private final DateContext.Alignment alignment;
+		private final Resolution resolution;
+		private final Alignment alignment;
 
 		@JsonCreator
-		public static ResolutionAndAlignment of(DateContext.Resolution resolution, DateContext.Alignment alignment){
-			if (!resolution.getSupportedAlignments().contains(alignment)) {
+		public static ResolutionAndAlignment of(Resolution resolution, Alignment alignment){
+			if (!resolution.isAlignmentSupported(alignment)) {
 				throw new ValidationException(String.format("The alignment %s is not supported by the resolution %s", alignment, resolution));
 			}
 

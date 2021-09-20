@@ -1,11 +1,13 @@
 package com.bakdata.conquery.models.config.auth;
 
+import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.oidc.JwtPkceVerifyingRealm;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
+import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -263,7 +265,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
         URI uri = UriBuilder.fromUri(idpConfiguration.getAuthorizationEndpoint())
                 .queryParam("response_type","code")
                 .queryParam("client_id", client)
-                .queryParam("redirect_uri", request.getUriInfo().getRequestUriBuilder().replaceQuery("").build())
+                .queryParam("redirect_uri", UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
                 .queryParam("scope","openid")
                 .queryParam("state", UUID.randomUUID()).build();
         return uri;
@@ -287,7 +289,8 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
             return null;
         }
 
-        final URI requestUri = request.getUriInfo().getAbsolutePath();
+        // Build the original redirect uri
+        final URI requestUri = UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build();
         log.info("Request URI: {}", requestUri);
         final TokenRequest tokenRequest = new TokenRequest(
                 UriBuilder.fromUri(idpConfiguration.getTokenEndpoint()).build(),

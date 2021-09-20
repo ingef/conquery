@@ -79,8 +79,8 @@ public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends I
 		return true;
 	}
 	
-	public void update(V entry) {
-		map.put(entry.getId(), entry);
+	public V update(V entry) {
+		return map.put((ID)entry.getId(), entry);
 	}
 	
 	public V remove(ID id) {
