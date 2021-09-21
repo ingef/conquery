@@ -24,13 +24,13 @@ public class XodusStore {
 	@Getter
 	private String name;
 
-	public XodusStore(Environment env, String name, Consumer<Store> storeCloseHook, Consumer<Store> envRemoveHook) {
+	public XodusStore(Environment env, String name, Consumer<Store> storeCloseHook, Consumer<Store> storeRemoveHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
 		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
 		this.name = name;
 		this.environment = env;
 		this.storeCloseHook = storeCloseHook;
-		this.storeRemoveHook = envRemoveHook;
+		this.storeRemoveHook = storeRemoveHook;
 		this.store = env.computeInTransaction(
 			t->env.openStore(this.name, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
 		);
