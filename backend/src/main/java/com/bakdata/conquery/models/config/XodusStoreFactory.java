@@ -422,12 +422,11 @@ public class XodusStoreFactory implements StoreFactory {
 		synchronized (openStoresInEnv) {
 			return new CachedStore<>(
 					new SerializingStore<>(
-							this,
 							new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore),
 							validator,
 							objectMapper,
 							storeInfo.getKeyType(),
-							storeInfo.getValueType()
+							storeInfo.getValueType(), this.isRemoveUnreadableFromStore(), this.getUnreadableDataDumpDirectory(), this.isValidateOnWrite()
 					));
 		}
 	}

@@ -58,7 +58,8 @@ public class SerializingStoreDumpTest {
 	}
 
 	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, StoreInfo<KEY,VALUE> storeId) {
-		return new SerializingStore<>(config, new XodusStore(environment, storeId.getName(), (e) -> {}, (e) -> {}), validator, config.getObjectMapper(), storeId.getKeyType(), storeId.getValueType());
+		return new SerializingStore<>(new XodusStore(environment, storeId.getName(), (e) -> {}, (e) -> {}), validator, config.getObjectMapper(), storeId.getKeyType(), storeId.getValueType(), config
+				.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory(), config.isValidateOnWrite());
 	}
 
 	/**

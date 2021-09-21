@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -96,10 +95,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private final ObjectMapper objectMapper;
 
-	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStoreFactory config, XodusStore store, Validator validator, ObjectMapper objectMapper, CLASS_K keyType, CLASS_V valueType) {
+	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStore store,
+																					   Validator validator,
+																					   ObjectMapper objectMapper,
+																					   CLASS_K keyType,
+																					   CLASS_V valueType,
+																					   boolean removeUnreadableFromStore,
+																					   File unreadableDataDumpDirectory,
+																					   boolean validateOnWrite) {
 		this.store = store;
 		this.validator = validator;
-		this.validateOnWrite = config.isValidateOnWrite();
+		this.validateOnWrite = validateOnWrite;
 
 		this.valueType = valueType;
 
@@ -112,11 +118,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		keyWriter = objectMapper.writerFor(keyType);
 
 		keyReader = objectMapper.readerFor(keyType);
-		
-		removeUnreadablesFromUnderlyingStore = config.isRemoveUnreadableFromStore();
-		
+
+		removeUnreadablesFromUnderlyingStore = removeUnreadableFromStore;
+
 		// Prepare dump directory if there is one set in the config
-		unreadableValuesDumpDir = config.getUnreadableDataDumpDirectory();
+		unreadableValuesDumpDir = unreadableDataDumpDirectory;
 		if(unreadableValuesDumpDir != null) {
 			if(!unreadableValuesDumpDir.exists() && unreadableValuesDumpDir.mkdirs()) {
 				throw new IllegalStateException("Could not create dump directory: " + unreadableValuesDumpDir);

@@ -47,7 +47,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	private final ObjectWriter valueWriter;
 	private ObjectReader valueReader;
 
-	private final StoreInfo storeInfo;
+	private final StoreInfo<KEY, VALUE> storeInfo;
 
 	@Getter @Setter
 	private int chunkByteSize;
@@ -66,22 +66,20 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		this.chunkByteSize = Ints.checkedCast(config.getXodus().getLogFileSize().toBytes() / 4L);
 
 		metaStore = new SerializingStore<>(
-				config,
 				new XodusStore(env, storeInfo.getName() + "_META", storeCloseHook, storeRemoveHook),
 				validator,
 				mapper,
 				storeInfo.getKeyType(),
-				BigStoreMetaKeys.class
+				BigStoreMetaKeys.class, config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory(), config.isValidateOnWrite()
 
 		);
 
 		dataStore = new SerializingStore<>(
-				config,
 				new XodusStore(env, storeInfo.getName() + "_DATA", storeCloseHook, storeRemoveHook),
 				validator,
 				mapper,
 				UUID.class,
-				byte[].class
+				byte[].class, config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory(), config.isValidateOnWrite()
 		);
 
 
@@ -110,9 +108,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		return metaStore.forEach((key, value, length) -> {
-			consumer.accept(key, createValue(key, value), length);
-		});
+		return metaStore.forEach((key, value, length) -> consumer.accept(key, createValue(key, value), length));
 	}
 
 	@Override
