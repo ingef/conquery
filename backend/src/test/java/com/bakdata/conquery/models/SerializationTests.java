@@ -89,7 +89,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(Role.class)
-				.injectables(STORAGE)
+				.injectables(new Role.StorageUpdater(STORAGE::updateRole))
 				.test(mandator);
 	}
 
@@ -114,7 +114,7 @@ public class SerializationTests {
 		SerializationTestUtil
 				.forType(User.class)
 				.registry(registry)
-				.injectables(STORAGE)
+				.injectables(new User.StorageUpdater(STORAGE::updateUser))
 				.test(user);
 	}
 
@@ -140,7 +140,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(Group.class)
-				.injectables(STORAGE)
+				.injectables(new Group.StorageUpdater(STORAGE::updateGroup))
 				.registry(registry)
 				.test(group);
 	}

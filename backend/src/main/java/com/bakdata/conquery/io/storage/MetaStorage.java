@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -203,5 +204,9 @@ public class MetaStorage implements ConqueryStorage, Injectable {
         return values.add(MetaStorage.class, this);
     }
 
-    public interface StorageUpdater<T> extends Consumer<T>, Injectable{};
+	/**
+	 * An implementation of this interface should be provided by mutable stored entities, so that
+	 * these entities can update their persistent state themselves on change in a thread safe manner.
+	 */
+	public interface StorageUpdater<T extends Identifiable<?>> extends Consumer<T>, Injectable{};
 }
