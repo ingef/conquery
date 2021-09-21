@@ -261,7 +261,7 @@ public class FormConfigTest {
 	@Test
 	public void getConfigs() {
 		// PREPARE
-		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
+		user.addPermission(dataset.createPermission(Ability.READ.asSet()));
 		user.addPermission(FormPermission.onInstance(Ability.CREATE, form.getFormType()));
 		
 		ExportForm form2 = new ExportForm();

@@ -127,7 +127,7 @@ public class FormConfigProcessor {
 	 * @return
 	 */
 	public FormConfig addConfigAndTranslations(User user, Dataset targetDataset, FormConfigAPI config) {
-		FormConfig internalConfig = FormConfigAPI.intern(config, storage.getUser(user.getId()), targetDataset);
+		FormConfig internalConfig = FormConfigAPI.intern(config, user, targetDataset);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 
@@ -160,8 +160,7 @@ public class FormConfigProcessor {
 	/**
 	 * Deletes a configuration from the storage and all permissions, that have this configuration as target.
 	 */
-	public void deleteConfig(User User, FormConfig config) {
-		User user = storage.getUser(User.getId());
+	public void deleteConfig(User user, FormConfig config) {
 		user.authorize( config, Ability.DELETE);
 		storage.removeFormConfig(config.getId());
 		// Delete corresponding permissions (Maybe better to put it into a slow job)

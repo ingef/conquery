@@ -288,7 +288,7 @@ public class QueryProcessor {
 				Query translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
 
 				targetNamespace.getExecutionManager()
-							   .createQuery(datasetRegistry, translated, mq.getQueryId(), storage.getUser(user.getId()), targetDataset);
+							   .createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
 			}
 			catch (Exception e) {
 				log.trace("Could not translate Query[{}] to Dataset[{}]", mq.getId(), targetDataset.getId(), e);
