@@ -49,8 +49,15 @@ import lombok.extern.slf4j.Slf4j;
 public class CQExternal extends CQElement {
 
 	private static final String FORMAT_EXTRA = "EXTRA";
+
 	/**
-	 * List of Type-Ids of Format Columns.
+	 * Describes the format of {@code values}, how to extract data from each row:
+	 *
+	 * - Must contain at least one of {@link FrontendConfig.UploadConfig#getIds()}.
+	 * - May contain names of {@link DateFormat}s.
+	 * - Lines filled with {@code FORMAT_EXTRA} are added as extra data to output.
+	 *
+	 * @implSpec Every name we do not know is implicitly ignored.
 	 */
 	@Getter
 	@NotEmpty
@@ -193,14 +200,15 @@ public class CQExternal extends CQElement {
 	 * Helper method to try and resolve entities in values using the specified format.
 	 */
 	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, FrontendConfig.UploadConfig queryUpload, @NotNull DateReader dateReader) {
-		Map<Integer, CDateSet> resolved = new Int2ObjectOpenHashMap<>();
+		final Map<Integer, CDateSet> resolved = new Int2ObjectOpenHashMap<>();
 
-		List<String[]> unresolvedDate = new ArrayList<>();
-		List<String[]> unresolvedId = new ArrayList<>();
+		final List<String[]> unresolvedDate = new ArrayList<>();
+		final List<String[]> unresolvedId = new ArrayList<>();
 
 		// extract dates from rows
 		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, queryUpload);
 
+		// Extract extra data from rows by Row, to be collected into by entities
 		final Table<String, Integer, String> extraDataByRow = readExtras(values, format);
 
 		final List<Function<String[], EntityIdMap.ExternalId>> readers = queryUpload.getIdReaders(format);
@@ -214,39 +222,18 @@ public class CQExternal extends CQElement {
 
 		// ignore the first row, because this is the header
 		for (int rowNum = 1; rowNum < values.length; rowNum++) {
+
 			final String[] row = values[rowNum];
-
-			int resolvedId = -1;
-
-			for (Function<String[], EntityIdMap.ExternalId> reader : readers) {
-				final EntityIdMap.ExternalId externalId = reader.apply(row);
-
-				if (externalId == null) {
-					continue;
-				}
-
-				int innerResolved = mapping.resolve(externalId);
-
-				if (innerResolved == -1) {
-					continue;
-				}
-
-				if (resolvedId != -1 && innerResolved != resolvedId) {
-					log.error("`{}` maps to different Entities", (Object) row);
-					continue;
-				}
-
-				resolvedId = innerResolved;
-			}
-
-
-			if (resolvedId == -1) {
-				unresolvedId.add(row);
-				continue;
-			}
 
 			if (!rowDates.containsKey(rowNum)) {
 				unresolvedDate.add(row);
+				continue;
+			}
+
+			int resolvedId = tryResolveId(row, readers, mapping);
+
+			if (resolvedId == -1) {
+				unresolvedId.add(row);
 				continue;
 			}
 
@@ -265,6 +252,40 @@ public class CQExternal extends CQElement {
 		return new ResolveStatistic(resolved, extraDataByEntity, unresolvedDate, unresolvedId);
 	}
 
+	/**
+	 * Try to extract a {@link com.bakdata.conquery.models.identifiable.mapping.EntityIdMap.ExternalId} from the row,
+	 * then try to map it to an internal {@link com.bakdata.conquery.models.query.entity.Entity}
+	 */
+	private static int tryResolveId(String[] row, List<Function<String[], EntityIdMap.ExternalId>> readers, EntityIdMap mapping) {
+		int resolvedId = -1;
+
+		for (Function<String[], EntityIdMap.ExternalId> reader : readers) {
+			final EntityIdMap.ExternalId externalId = reader.apply(row);
+
+			if (externalId == null) {
+				continue;
+			}
+
+			int innerResolved = mapping.resolve(externalId);
+
+			if (innerResolved == -1) {
+				continue;
+			}
+
+			// Only if all resolvable ids agree on the same entity, do we return the id.
+			if (resolvedId != -1 && innerResolved != resolvedId) {
+				log.error("`{}` maps to different Entities", (Object) row);
+				continue;
+			}
+
+			resolvedId = innerResolved;
+		}
+		return resolvedId;
+	}
+
+	/**
+	 * Try and extract Extra data from input to be returned as extra-data in output.
+	 */
 	private static Table<String, Integer, String> readExtras(String[][] values, List<String> format) {
 		final String[] names = values[0];
 		final Table<String, Integer, String> extrasByRow = HashBasedTable.create(values.length, 0);
@@ -286,8 +307,10 @@ public class CQExternal extends CQElement {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		extra.keySet()
-			 .forEach(column -> collector.add(new SimpleResultInfo(column, ResultType.StringT.INSTANCE)));
+		if(extra != null) {
+			extra.keySet()
+				 .forEach(column -> collector.add(new SimpleResultInfo(column, ResultType.StringT.INSTANCE)));
+		}
 	}
 
 
