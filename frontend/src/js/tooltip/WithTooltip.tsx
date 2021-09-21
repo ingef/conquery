@@ -1,6 +1,13 @@
+import styled from "@emotion/styled";
 import React, { FC, ReactElement } from "react";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css";
+
+const tooltipStyles = {
+  ul: {
+    paddingLeft: 0,
+  },
+};
 
 interface PropsT {
   className?: string;
@@ -40,6 +47,7 @@ const WithTooltip: FC<PropsT> = ({
       title={text}
       html={html}
       theme="light"
+      style={tooltipStyles}
       {...delayProps}
     >
       {children}
