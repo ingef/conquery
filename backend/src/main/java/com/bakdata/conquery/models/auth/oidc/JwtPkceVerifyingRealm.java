@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
@@ -15,11 +14,11 @@ import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
+import org.keycloak.exceptions.TokenNotActiveException;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.JsonWebToken;
 
 import java.lang.reflect.Array;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,14 +37,16 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
     private final String[] allowedAudience;
     private final TokenVerifier.Predicate<JsonWebToken>[] tokenChecks;
     private final List<String> alternativeIdClaims;
+    private final ActiveWithLeewayVerifier activeVerifier;
 
-    public JwtPkceVerifyingRealm(@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier, @NonNull String allowedAudience, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, List<String> alternativeIdClaims) {
+    public JwtPkceVerifyingRealm(@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier, @NonNull String allowedAudience, List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks, List<String> alternativeIdClaims, int tokenLeeway) {
         this.idpConfigurationSupplier = idpConfigurationSupplier;
         this.allowedAudience = new String[] {allowedAudience};
         this.tokenChecks = additionalTokenChecks.toArray((TokenVerifier.Predicate<JsonWebToken>[])Array.newInstance(TokenVerifier.Predicate.class,0));
         this.alternativeIdClaims = alternativeIdClaims;
         this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
         this.setAuthenticationTokenClass(TOKEN_CLASS);
+        this.activeVerifier = new ActiveWithLeewayVerifier(tokenLeeway);
     }
 
 
@@ -60,7 +61,7 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
         log.trace("Creating token verifier");
         TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class)
-                .withChecks(new TokenVerifier.RealmUrlCheck(idpConfiguration.getIssuer()), TokenVerifier.SUBJECT_EXISTS_CHECK, TokenVerifier.IS_ACTIVE)
+                .withChecks(new TokenVerifier.RealmUrlCheck(idpConfiguration.getIssuer()), TokenVerifier.SUBJECT_EXISTS_CHECK, activeVerifier)
                 .withChecks(tokenChecks)
                 .publicKey(idpConfiguration.getPublicKey())
                 .audience(allowedAudience);
@@ -97,5 +98,16 @@ public class JwtPkceVerifyingRealm extends ConqueryAuthenticationRealm {
 
         return new ConqueryAuthenticationInfo(new UserId(subject), token, this, true, alternativeIds);
     }
+
+    public static final TokenVerifier.Predicate<JsonWebToken> IS_ACTIVE = new TokenVerifier.Predicate<JsonWebToken>() {
+        @Override
+        public boolean test(JsonWebToken t) throws VerificationException {
+            if (! t.isActive()) {
+                throw new TokenNotActiveException(t, "Token is not active");
+            }
+
+            return true;
+        }
+    };
 
 }

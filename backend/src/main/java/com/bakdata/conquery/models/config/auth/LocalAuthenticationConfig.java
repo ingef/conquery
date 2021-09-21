@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
@@ -18,6 +19,7 @@ import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.UserAuthenticationManagementProcessor;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.models.config.XodusConfig;
+import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
 import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
@@ -98,7 +100,7 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 		return (ContainerRequestContext request) -> {
 			URI uri = UriBuilder.fromPath(unprotectedAuthAdmin.getUrlPattern())
 					.path(LoginResource.class)
-					.queryParam(REDIRECT_URI, request.getUriInfo().getRequestUriBuilder().replaceQuery("").build())
+					.queryParam(REDIRECT_URI, UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
 					.build();
 			return uri;
 		};

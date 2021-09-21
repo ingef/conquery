@@ -49,7 +49,8 @@ class JwtPkceVerifyingRealmTest {
                 () -> Optional.of(new JwtPkceVerifyingRealmFactory.IdpConfiguration( PUBLIC_KEY, URI.create("auth"), URI.create("token"), HTTP_REALM_URL)),
                 AUDIENCE,
                 List.of(JwtPkceVerifyingRealmFactory.ScriptedTokenChecker.create("t.getOtherClaims().get(\"groups\").equals(\"conquery\")")),
-                List.of(ALTERNATIVE_ID_CLAIM));
+                List.of(ALTERNATIVE_ID_CLAIM),
+                60);
     }
 
 
@@ -61,6 +62,29 @@ class JwtPkceVerifyingRealmTest {
 
         Date issueDate = new Date();
         Date expDate = DateUtils.addMinutes(issueDate, 1);
+        String token = JWT.create()
+                .withIssuer(HTTP_REALM_URL)
+                .withAudience(AUDIENCE)
+                .withSubject(expected.getEmail())
+                .withIssuedAt(issueDate)
+                .withExpiresAt(expDate)
+                .withClaim("groups", "conquery")
+                .withIssuedAt(issueDate)
+                .withExpiresAt(expDate)
+                .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+        BearerToken accessToken = new BearerToken(token);
+
+        assertThat(REALM.doGetConqueryAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+    }
+
+    @Test
+    void verifyTokenInLeeway() {
+
+        // Setup the expected user id
+        UserId expected = new UserId("Test");
+
+        Date issueDate = new Date();
+        Date expDate = DateUtils.addMinutes(issueDate, -1);
         String token = JWT.create()
                 .withIssuer(HTTP_REALM_URL)
                 .withAudience(AUDIENCE)
@@ -148,7 +172,7 @@ class JwtPkceVerifyingRealmTest {
         UserId expected = new UserId("Test");
 
         Date issueDate = new Date();
-        Date expDate = DateUtils.addMinutes(issueDate, -1);
+        Date expDate = DateUtils.addMinutes(issueDate, -2);
         String token = JWT.create()
                 .withIssuer(HTTP_REALM_URL)
                 .withSubject(expected.getEmail())

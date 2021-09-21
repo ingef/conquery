@@ -1,17 +1,20 @@
 import styled from "@emotion/styled";
-import React from "react";
+import { StateT } from "app-types";
+import React, { useMemo, useCallback } from "react";
 import { TFunction, useTranslation } from "react-i18next";
-import { connect } from "react-redux";
+import { useSelector } from "react-redux";
 import { reduxForm, formValueSelector } from "redux-form";
 
 import type { SelectOptionT } from "../../api/types";
+import type { DatasetT } from "../../dataset/reducer";
 import { useActiveLang } from "../../localization/useActiveLang";
+import FormConfigSaver from "../FormConfigSaver";
 import FormHeader from "../FormHeader";
 import type {
   Form as FormType,
   FormField as FormFieldType,
 } from "../config-types";
-import { collectAllFormFields, isFormField } from "../helper";
+import { collectAllFormFields, isFormField, isOptionalField } from "../helper";
 import { selectReduxFormState } from "../stateSelectors";
 import {
   validateRequired,
@@ -55,7 +58,7 @@ const DEFAULT_VALIDATION_BY_TYPE = {
 };
 
 const SxFormHeader = styled(FormHeader)`
-  margin-bottom: 20px;
+  margin: 5px 0 15px;
 `;
 
 function getNotEmptyValidation(fieldType: string) {
@@ -70,17 +73,20 @@ function getNotEmptyValidation(fieldType: string) {
 }
 
 function getPossibleValidations(fieldType: string) {
-  const notEmptyValidation = {
-    NOT_EMPTY: getNotEmptyValidation(fieldType),
-  };
-
   return {
-    ...notEmptyValidation,
+    NOT_EMPTY: getNotEmptyValidation(fieldType),
     GREATER_THAN_ZERO: validatePositive,
   };
 }
 
-function getInitialValue(field: FormFieldType) {
+function getInitialValue(
+  field: FormFieldType,
+  context: { availableDatasets: SelectOptionT[] },
+) {
+  if (field.type === "DATASET_SELECT" && context.availableDatasets.length > 0) {
+    return context.availableDatasets[0].value;
+  }
+
   return field.defaultValue || DEFAULT_VALUE_BY_TYPE[field.type];
 }
 
@@ -94,8 +100,14 @@ function getErrorForField(t: TFunction, field: FormFieldType, value: any) {
       const validateFn = getPossibleValidations(field.type)[validation];
 
       if (validateFn) {
-        // If not, someone must have configured an unsupported validation
         error = error || validateFn(t, value);
+      } else {
+        console.error(
+          "Validation configured that is not supported: ",
+          validation,
+          "for field",
+          field.name,
+        );
       }
     }
   }
@@ -107,11 +119,57 @@ interface ConfiguredFormPropsType {
   config: FormType;
 }
 
-interface PropsType {
-  onSubmit: Function;
-  getFieldValue: (fieldName: string) => any;
+interface Props {
+  config: FormType;
   availableDatasets: SelectOptionT[];
 }
+
+const Form = React.memo(({ config, availableDatasets }: Props) => {
+  // TODO: THIS REALLY ISN'T IDEAL,
+  // AS THE WHOLE FORM HAS TO RERENDER ON EVERY STATE CHANGE
+  // WE WILL NEED TO MIGRATE AWAY FROM REDUX-FORM SOON
+  const state = useSelector<StateT, StateT>((state) => state);
+  const getFieldValue = useCallback(
+    (fieldname: string) => {
+      const fieldValueSelector = formValueSelector(
+        config.type,
+        selectReduxFormState,
+      );
+
+      return fieldValueSelector(state, fieldname);
+    },
+    [state, config.type],
+  );
+
+  const activeLang = useActiveLang();
+
+  return (
+    <form>
+      {config.description && config.description[activeLang] && (
+        <SxFormHeader description={config.description[activeLang]!} />
+      )}
+      <FormConfigSaver />
+      {config.fields.map((field, i) => {
+        const key = isFormField(field) ? field.name : field.type + i;
+        const optional = isOptionalField(field);
+
+        return (
+          <Field
+            key={key}
+            formType={config.type}
+            getFieldValue={() =>
+              isFormField(field) ? getFieldValue(field.name) : null
+            }
+            field={field}
+            availableDatasets={availableDatasets}
+            locale={activeLang}
+            optional={optional}
+          />
+        );
+      })}
+    </form>
+  );
+});
 
 // This is the generic form component that receives a form config
 // and builds all fields from there.
@@ -119,51 +177,30 @@ interface PropsType {
 // Note: The config contains the fields in a hierarchical structure,
 //       because one of the fields is a "TAB", which contains subfields
 //       depending on the tab, that is selected
-//
-// The form works with `redux-form``
 const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
   const { t } = useTranslation();
-
-  const Form = ({ onSubmit, getFieldValue, availableDatasets }: PropsType) => {
-    const activeLang = useActiveLang();
-
-    return (
-      <form>
-        {config.description && config.description[activeLang] && (
-          <SxFormHeader description={config.description[activeLang]} />
-        )}
-        {config.fields.map((field, i) => {
-          const key = isFormField(field) ? field.name : field.type + i;
-
-          return (
-            <Field
-              key={key}
-              formType={config.type}
-              getFieldValue={getFieldValue}
-              field={field}
-              availableDatasets={availableDatasets}
-              locale={activeLang}
-            />
-          );
-        })}
-      </form>
-    );
-  };
-
-  const allFields = collectAllFormFields(config.fields);
-  const fieldValueSelector = formValueSelector(
-    config.type,
-    selectReduxFormState,
+  const availableDatasets = useSelector<StateT, DatasetT[]>(
+    (state) => state.datasets.data,
   );
+  const datasetOptions = useMemo(
+    () =>
+      availableDatasets.map((dataset) => ({
+        label: dataset.label,
+        value: dataset.id,
+      })),
+    [availableDatasets],
+  );
+  const allFields = collectAllFormFields(config.fields);
 
   const ReduxFormConnectedForm = reduxForm({
     form: config.type,
     getFormState: selectReduxFormState,
-    initialValues: allFields.reduce((allValues, field) => {
-      allValues[field.name] = getInitialValue(field);
-
-      return allValues;
-    }, {}),
+    initialValues: Object.fromEntries(
+      allFields.map((field) => [
+        field.name,
+        getInitialValue(field, { availableDatasets: datasetOptions }),
+      ]),
+    ),
     destroyOnUnmount: false,
     validate: (values) =>
       Object.keys(values).reduce((errors, name) => {
@@ -187,17 +224,13 @@ const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
       }, {}),
   })(Form);
 
-  const mapStateToProps = (state) => ({
-    getFieldValue: (field) => fieldValueSelector(state, field),
-    availableDatasets: state.datasets.data.map((dataset) => ({
-      label: dataset.label,
-      value: dataset.id,
-    })),
-  });
-
-  const ReduxConnectedForm = connect(mapStateToProps)(ReduxFormConnectedForm);
-
-  return <ReduxConnectedForm {...props} />;
+  return (
+    <ReduxFormConnectedForm
+      {...props}
+      config={config}
+      availableDatasets={datasetOptions}
+    />
+  );
 };
 
 export default ConfiguredForm;

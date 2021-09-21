@@ -5,12 +5,11 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Base class for aggregators acting on columns.
  */
-public abstract class ColumnAggregator<T> implements Aggregator<T> {
+public abstract class ColumnAggregator<T> extends Aggregator<T> {
 
 	@Override
 	public void collectRequiredTables(Set<Table> out) {
@@ -28,10 +27,7 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 	public String toString(){
 		return getClass().getSimpleName();
 	}
-	
-	public ColumnAggregator<T> clone(CloneContext ctx) {
-		return ctx.clone(this);
-	}
+
 
 	/**
 	 * Skip all buckets where none of the required columns have values.

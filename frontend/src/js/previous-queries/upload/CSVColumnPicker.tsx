@@ -28,6 +28,10 @@ const Grow = styled("div")`
   align-items: center;
 `;
 
+const HorizontalScrollContainer = styled("div")`
+  overflow-x: auto;
+  width: 100%;
+`;
 const Table = styled("table")`
   margin: 10px 0;
   border: 1px solid #ccc;
@@ -36,7 +40,6 @@ const Table = styled("table")`
   padding: 10px;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
   table-layout: fixed;
-  max-width: 1000px;
 `;
 
 const Td = styled("td")`
@@ -44,10 +47,12 @@ const Td = styled("td")`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  width: 150px;
 `;
 const Th = styled("th")`
   font-size: ${({ theme }) => theme.font.xs};
   vertical-align: top;
+  width: 150px;
 `;
 
 const FileName = styled("code")`
@@ -137,10 +142,8 @@ interface PropsT {
 
 type UploadColumnType =
   | string // some ID column format that will be determined by the backend through the "frontend config"
-  | "EVENT_DATE" // (a single day)
   | "START_DATE" //(a starting day)
   | "END_DATE" // (and end day
-  | "DATE_RANGE" // (two days)
   | "DATE_SET" // (a set of date ranges)
   | "IGNORE"; // (ignore this column)
 
@@ -171,11 +174,9 @@ const CSVColumnPicker: FC<PropsT> = ({
         value: name,
       };
     }),
-    { label: t("csvColumnPicker.dateRange"), value: "DATE_RANGE" },
     { label: t("csvColumnPicker.dateSet"), value: "DATE_SET" },
     { label: t("csvColumnPicker.startDate"), value: "START_DATE" },
     { label: t("csvColumnPicker.endDate"), value: "END_DATE" },
-    { label: t("csvColumnPicker.eventDate"), value: "EVENT_DATE" },
   ];
 
   const DELIMITER_OPTIONS = [
@@ -289,64 +290,67 @@ const CSVColumnPicker: FC<PropsT> = ({
           />
         )}
       </Row>
-      <Table>
-        <thead>
-          {csvLoading && (
-            <tr>
-              <th>{t("csvColumnPicker.loading")}</th>
-            </tr>
-          )}
-          {csv.length > 0 &&
-            csv.slice(0, 1).map((row, j) => (
-              <tr key={j}>
-                {row.map((cell, i) => (
-                  <Th key={cell + i}>
-                    <ReactSelect<false>
-                      small
-                      maxMenuHeight={200}
-                      options={SELECT_OPTIONS}
-                      value={
-                        SELECT_OPTIONS.find((o) => o.value === csvHeader[i]) ||
-                        SELECT_OPTIONS[0]
-                      }
-                      onChange={(value) => {
-                        if (value) {
-                          setCSVHeader([
-                            ...csvHeader.slice(0, i),
-                            value.value as UploadColumnType,
-                            ...csvHeader.slice(i + 1),
-                          ]);
-                        }
-                      }}
-                    />
-                    <SxPadded>{cell}</SxPadded>
-                  </Th>
-                ))}
+      <HorizontalScrollContainer>
+        <Table>
+          <thead>
+            {csvLoading && (
+              <tr>
+                <th>{t("csvColumnPicker.loading")}</th>
               </tr>
-            ))}
-        </thead>
-        <tbody>
-          {csv.length > 0 &&
-            csv.slice(1, 6).map((row, j) => (
-              <tr key={j}>
-                {row.map((cell, i) => (
-                  <Td key={cell + i}>
-                    <Padded>{cell}</Padded>
+            )}
+            {csv.length > 0 &&
+              csv.slice(0, 1).map((row, j) => (
+                <tr key={j}>
+                  {row.map((cell, i) => (
+                    <Th key={cell + i}>
+                      <ReactSelect<false>
+                        small
+                        maxMenuHeight={200}
+                        options={SELECT_OPTIONS}
+                        value={
+                          SELECT_OPTIONS.find(
+                            (o) => o.value === csvHeader[i],
+                          ) || SELECT_OPTIONS[0]
+                        }
+                        onChange={(value) => {
+                          if (value) {
+                            setCSVHeader([
+                              ...csvHeader.slice(0, i),
+                              value.value as UploadColumnType,
+                              ...csvHeader.slice(i + 1),
+                            ]);
+                          }
+                        }}
+                      />
+                      <SxPadded>{cell}</SxPadded>
+                    </Th>
+                  ))}
+                </tr>
+              ))}
+          </thead>
+          <tbody>
+            {csv.length > 0 &&
+              csv.slice(1, 6).map((row, j) => (
+                <tr key={j}>
+                  {row.map((cell, i) => (
+                    <Td key={cell + i}>
+                      <Padded>{cell}</Padded>
+                    </Td>
+                  ))}
+                </tr>
+              ))}
+            {csv.length > 6 && (
+              <tr>
+                {new Array(csv[0].length).fill(null).map((_, j) => (
+                  <Td key={j}>
+                    <Padded>...</Padded>
                   </Td>
                 ))}
               </tr>
-            ))}
-          {csv.length > 6 && (
-            <tr>
-              {new Array(csv[0].length).fill(null).map((_, j) => (
-                <Td key={j}>
-                  <Padded>...</Padded>
-                </Td>
-              ))}
-            </tr>
-          )}
-        </tbody>
-      </Table>
+            )}
+          </tbody>
+        </Table>
+      </HorizontalScrollContainer>
       {uploadResult && (
         <PartialUploadResults>
           <Msg>

@@ -12,6 +12,7 @@ import DropzoneWithFileInput, {
   DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
 import Label from "../../ui-components/Label";
+import Optional from "../../ui-components/Optional";
 
 const ListItem = styled("div")`
   position: relative;
@@ -37,6 +38,7 @@ interface PropsT<DroppableObject> {
   className?: string;
   label?: ReactNode;
   tooltip?: string;
+  optional?: boolean;
   dropzoneChildren: (args: ChildArgs) => ReactNode;
   items: ReactNode[];
   acceptedDropTypes: string[];
@@ -61,7 +63,12 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
   return (
     <div className={props.className}>
       <Row>
-        {props.label && <Label>{props.label}</Label>}
+        {props.label && (
+          <Label>
+            {props.optional && <Optional />}
+            {props.label}
+          </Label>
+        )}
         {props.tooltip && <InfoTooltip text={props.tooltip} />}
       </Row>
       {props.items && props.items.length > 0 && (

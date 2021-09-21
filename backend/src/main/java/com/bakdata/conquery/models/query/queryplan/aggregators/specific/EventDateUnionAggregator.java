@@ -8,8 +8,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public class EventDateUnionAggregator implements Aggregator<CDateSet>{
+public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 
 	private final Set<Table> requiredTables;
 	private Column validityDateColumn;
@@ -32,6 +32,11 @@ public class EventDateUnionAggregator implements Aggregator<CDateSet>{
 	}
 
 	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		set.clear();
+	}
+
+	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		validityDateColumn = ctx.getValidityDateColumn();
 		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
@@ -39,17 +44,12 @@ public class EventDateUnionAggregator implements Aggregator<CDateSet>{
 		}
 		
 		dateRestriction = ctx.getDateRestriction();
-		Aggregator.super.nextTable(ctx, currentTable);
+		super.nextTable(ctx, currentTable);
 	}
 
 	@Override
-	public Aggregator<CDateSet> doClone(CloneContext ctx) {
-		return new EventDateUnionAggregator(requiredTables);
-	}
-
-	@Override
-	public CDateSet getAggregationResult() {
-		return set;
+	public CDateSet createAggregationResult() {
+		return CDateSet.create(set.asRanges());
 	}
 
 	@Override

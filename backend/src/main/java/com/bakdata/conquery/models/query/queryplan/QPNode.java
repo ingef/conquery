@@ -10,13 +10,12 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter(AccessLevel.PROTECTED) @Setter(AccessLevel.PROTECTED)
-public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
+public abstract class QPNode extends EventIterating {
 	protected QueryExecutionContext context;
 	protected Entity entity;
 
@@ -45,7 +44,7 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName();
+		return getClass().getSimpleName();
 	}
 
 	/**

@@ -15,6 +15,7 @@ import { usePrevious } from "../common/helpers/usePrevious";
 import { useDatasetId } from "../dataset/selectors";
 import FaIcon from "../icon/FaIcon";
 import { setMessage } from "../snack-message/actions";
+import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone from "../ui-components/Dropzone";
 import EditableText from "../ui-components/EditableText";
 import Label from "../ui-components/Label";
@@ -215,13 +216,15 @@ const FormConfigSaver: FC = () => {
                 )}
               </Row>
             </div>
-            <IconButton
-              frame
-              icon={isSaving ? "spinner" : "save"}
-              onClick={onSubmit}
-            >
-              {t("externalForms.config.save")}
-            </IconButton>
+            <WithTooltip lazy text={t("externalForms.config.saveDescription")}>
+              <IconButton
+                frame
+                icon={isSaving ? "spinner" : "save"}
+                onClick={onSubmit}
+              >
+                {t("externalForms.config.save")}
+              </IconButton>
+            </WithTooltip>
           </SpacedRow>
         )}
       </SxDropzone>
@@ -229,4 +232,4 @@ const FormConfigSaver: FC = () => {
   );
 };
 
-export default FormConfigSaver;
+export default React.memo(FormConfigSaver);

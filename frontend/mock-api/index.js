@@ -244,7 +244,7 @@ module.exports = function (app, port) {
           ["Another very long long tagname, 2020", 0.001],
         ];
 
-        for (var i = 25600; i < 35600; i++) {
+        for (var i = 25600; i < 25700; i++) {
           const notExecuted = Math.random() < 0.1;
 
           ids.push({

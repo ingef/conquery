@@ -19,6 +19,7 @@ const SxBaseInput = styled(BaseInput)<{ fullWidth?: boolean }>`
 interface Props<T> extends InputProps<T> {
   label: string;
   indexPrefix?: number;
+  optional?: boolean;
   inputType?: string;
   money?: boolean;
   className?: string;
@@ -43,6 +44,7 @@ const InputPlain = <T extends string | number | null = string | null>(
       largeLabel={props.large}
       indexPrefix={props.indexPrefix}
       tooltip={props.tooltip}
+      optional={props.optional}
     >
       <SxBaseInput
         large={props.large}

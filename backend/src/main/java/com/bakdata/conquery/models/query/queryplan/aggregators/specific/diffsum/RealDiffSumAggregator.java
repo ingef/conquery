@@ -3,8 +3,9 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 
 /**
@@ -13,22 +14,24 @@ import lombok.Getter;
 public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 
 	@Getter
-	private Column addendColumn;
+	private final Column addendColumn;
 	@Getter
-	private Column subtrahendColumn;
+	private final Column subtrahendColumn;
 
-	private double sum = 0;
+	private double sum;
 	private boolean hit;
 
 	public RealDiffSumAggregator(Column addend, Column subtrahend) {
-		this.addendColumn = addend;
-		this.subtrahendColumn = subtrahend;
+		addendColumn = addend;
+		subtrahendColumn = subtrahend;
 	}
 
 	@Override
-	public RealDiffSumAggregator doClone(CloneContext ctx) {
-		return new RealDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
+	public void init(Entity entity, QueryExecutionContext context) {
+		hit = false;
+		sum = 0;
 	}
+
 
 	@Override
 	public Column[] getRequiredColumns() {
@@ -56,7 +59,7 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	}
 
 	@Override
-	public Double getAggregationResult() {
+	public Double createAggregationResult() {
 		return hit ? sum : null;
 	}
 	

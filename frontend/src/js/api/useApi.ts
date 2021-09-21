@@ -1,15 +1,9 @@
-import { useKeycloak } from "@react-keycloak/web";
 import axios, { AxiosRequestConfig } from "axios";
+import { useContext, useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
 
-import { getStoredAuthToken } from "../authorization/helper";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { isIDPEnabled, isLoginDisabled } from "../environment";
-
-export const useAuthToken = () => {
-  const { keycloak } = useKeycloak();
-
-  return isIDPEnabled ? keycloak.token || "" : getStoredAuthToken() || "";
-};
 
 export const useApiUnauthorized = <T>(
   requestConfig: Partial<AxiosRequestConfig> = {},
@@ -23,13 +17,23 @@ export const useApiUnauthorized = <T>(
 
 export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
   const history = useHistory();
-  const authToken = useAuthToken();
+  const { authToken } = useContext(AuthTokenContext);
+
+  // In order to always have the up to date token,
+  // especially when polling for a long time within nested loops
+  const authTokenRef = useRef<string>(authToken);
+  useEffect(
+    function updateRef() {
+      authTokenRef.current = authToken;
+    },
+    [authToken],
+  );
 
   return async (
     finalRequestConfig: Partial<AxiosRequestConfig> = {},
   ): Promise<T> => {
     try {
-      const response = await fetchJson(authToken, {
+      const response = await fetchJson(authTokenRef.current, {
         ...requestConfig,
         ...finalRequestConfig,
       });

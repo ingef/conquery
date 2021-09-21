@@ -18,6 +18,7 @@ interface PropsT {
   selectProps?: Object;
   tooltip?: string;
   defaultValue?: string | null; // Weird to have it here as well => TODO: get rid of redux-form
+  optional?: boolean;
   input: {
     clearable?: boolean;
     defaultValue?: string | null;
@@ -37,6 +38,7 @@ const InputSelect = ({
   selectProps,
   tooltip,
   defaultValue,
+  optional,
   ...rest
 }: PropsT) => {
   const { t } = useTranslation();
@@ -53,6 +55,7 @@ const InputSelect = ({
       disabled={disabled}
       valueChanged={!isEmpty(input.value) && input.value !== input.defaultValue}
       indexPrefix={indexPrefix}
+      optional={optional}
       label={
         <>
           {!!label && label}

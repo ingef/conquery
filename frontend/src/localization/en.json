@@ -125,6 +125,7 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "optional": "Optional",
     "back": "Back",
     "any": "Any",
     "save": "Save",
@@ -250,6 +251,7 @@
     "config": {
       "headline": "Form configuration",
       "save": "Save",
+      "saveDescription": "Save all current form settings to load them later.",
       "saveError": "Could not save form configuration"
     },
     "formValidation": {
@@ -308,8 +310,8 @@
     "upload": "Upload",
     "uploadAgain": "Upload again",
     "uploadFailed": "Could not upload file. Please check the file format and the network connection.",
-    "uploadSucceeded": "Result list was successfully uploaded (1 line)",
-    "uploadSucceeded_plural": "Result list was successfully uploaded ({{count}} lines)",
+    "uploadSucceeded": "All lines (1 line) were successfully uploaded.",
+    "uploadSucceeded_plural": "All {{count}} lines were successfully uploaded.",
     "formatInfo": {
       "text": "File should contain one result per row, separated by ; (semicolon)"
     },
@@ -323,11 +325,9 @@
     "colon": "Colon",
     "comma": "Comma",
     "id": "ID",
-    "dateSet": "Date Set",
-    "dateRange": "Date Range (REMOVE)",
-    "eventDate": "Single Date  (REMOVE)",
-    "startDate": "Start Date",
-    "endDate": "End Date",
+    "dateSet": "Date set",
+    "startDate": "Start date",
+    "endDate": "End date",
     "ignore": "IGNORE",
     "partialSuccess": "Upload partially successful.",
     "resolved": "1 line resolved.",
