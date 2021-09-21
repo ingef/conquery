@@ -1,11 +1,19 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Optional;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.storage.IStoreInfo;
-import com.bakdata.conquery.io.storage.StoreInfo;
+import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
@@ -24,18 +32,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.validation.Validator;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @Slf4j
 public class SerializingStoreDumpTest {
 
-	public static final IStoreInfo<UserId, User> USER_STORE_ID = StoreInfo.AUTH_USER.storeInfo();
+	public static final StoreInfo<UserId, User> USER_STORE_ID = StoreMappings.AUTH_USER.storeInfo();
 	private File tmpDir;
 	private Environment env;
 	private XodusStoreFactory config;
@@ -59,7 +59,7 @@ public class SerializingStoreDumpTest {
 		FileUtils.deleteDirectory(tmpDir);
 	}
 
-	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, IStoreInfo<KEY,VALUE> storeId) {
+	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, StoreInfo<KEY,VALUE> storeId) {
 		return new SerializingStore<>(config, new XodusStore(environment, storeId.getName(), new ArrayList<>(), (e) -> {}, (e) -> {}), validator, config.getObjectMapper(), storeId.getKeyType(), storeId.getValueType());
 	}
 
@@ -84,7 +84,7 @@ public class SerializingStoreDumpTest {
 				config,
 				env,
 				Validators.newValidator(),
-				new SimpleStoreInfo<>(USER_STORE_ID.getName(), UserId.class, QueryDescription.class));
+				new StoreInfo<>(USER_STORE_ID.getName(), UserId.class, QueryDescription.class));
 			store.add(new UserId("testU2"), cQuery);
 		}
 
@@ -137,7 +137,7 @@ public class SerializingStoreDumpTest {
 				config,
 				env,
 				Validators.newValidator(),
-				new SimpleStoreInfo<>(USER_STORE_ID.getName(), String.class, QueryDescription.class));
+				new StoreInfo<>(USER_STORE_ID.getName(), String.class, QueryDescription.class));
 			store.add("not a valid conquery Id", cQuery);
 		}
 
@@ -188,7 +188,7 @@ public class SerializingStoreDumpTest {
 					config,
 					env,
 					Validators.newValidator(),
-					new SimpleStoreInfo<>(USER_STORE_ID.getName(), String.class, QueryDescription.class));
+					new StoreInfo<>(USER_STORE_ID.getName(), String.class, QueryDescription.class));
 				store.add("not a valid conquery Id", cQuery);
 			}
 
@@ -197,7 +197,7 @@ public class SerializingStoreDumpTest {
 					config,
 					env,
 					Validators.newValidator(),
-					new SimpleStoreInfo<>(USER_STORE_ID.getName(), UserId.class, QueryDescription.class));
+					new StoreInfo<>(USER_STORE_ID.getName(), UserId.class, QueryDescription.class));
 				store.add(new UserId("testU2"), cQuery);
 			}
 		}

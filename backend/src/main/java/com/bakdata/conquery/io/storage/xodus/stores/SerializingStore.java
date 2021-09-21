@@ -15,7 +15,6 @@ import javax.validation.Validator;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
-import com.bakdata.conquery.io.storage.IStoreInfo;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -36,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Key-value-store from {@link KEY} type values to {@link VALUE} values. ACID consistent, stored on disk using {@link jetbrains.exodus.env.Store} via {@link XodusStore}.
  * <p>
- * Values are (de-)serialized using {@linkplain objectMapper}.
+ * Values are (de-)serialized using {@linkplain ObjectMapper}.
  *
  * @param <KEY>   type of keys
  * @param <VALUE> type of values.
@@ -97,7 +96,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private final ObjectMapper objectMapper;
 
-	@SuppressWarnings("unchecked")
 	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStoreFactory config, XodusStore store, Validator validator, ObjectMapper objectMapper, CLASS_K keyType, CLASS_V valueType) {
 		this.store = store;
 		this.validator = validator;
@@ -121,8 +119,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		Optional<File> dumpUnreadable = config.getUnreadableDataDumpDirectory();
 		if(dumpUnreadable.isPresent()) {
 			unreadableValuesDumpDir = dumpUnreadable.get();
-			if(!unreadableValuesDumpDir.exists()) {
-				unreadableValuesDumpDir.mkdirs();
+			if(!unreadableValuesDumpDir.exists() && unreadableValuesDumpDir.mkdirs()) {
+				throw new IllegalStateException("Could not create dump directory: " + unreadableValuesDumpDir);
 			}
 			else if(!unreadableValuesDumpDir.isDirectory()) {
 				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
@@ -191,8 +189,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			// Try to read the value
 			VALUE value = getDeserializedAndDumpFailed(
 				v, 
-				this::readValue, 
-				() -> key.toString(),
+				this::readValue,
+				key::toString,
 				v, 
 				"Could not parse value for key [{}]");
 			if (value == null) {
@@ -238,7 +236,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * @param onFailKeyStringSupplier When deserilization failed and dump is enabled this is used in the dump file name.
 	 * @param onFailOrigValue Will be the dumpfile content rendered as a json.
 	 * @param onFailWarnMsgFmt The warn message that will be logged on failure.
-	 * @return
+	 * @return The deserialized value
 	 */
 	private <TYPE> TYPE getDeserializedAndDumpFailed(ByteIterable serial, Function<ByteIterable, TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, ByteIterable onFailOrigValue, String onFailWarnMsgFmt ){
 		try {

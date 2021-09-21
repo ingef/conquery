@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.io.storage.IStoreInfo;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -31,8 +30,6 @@ import jetbrains.exodus.bindings.StringBinding;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.EnvironmentClosedException;
 import jetbrains.exodus.env.Environments;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -68,18 +65,6 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	@JsonIgnore
 	private final ConqueryTokenRealm centralTokenRealm;
 	private final Duration validDuration;
-
-	@RequiredArgsConstructor
-	@Getter
-	private static class StoreInfo implements IStoreInfo {
-
-		private final String name;
-		// Not used
-		private final Class<?> keyType = String.class;
-		// Not used
-		private final Class<?> valueType = HashedEntry.class;
-
-	}
 
 	//////////////////// INITIALIZATION ////////////////////
 
