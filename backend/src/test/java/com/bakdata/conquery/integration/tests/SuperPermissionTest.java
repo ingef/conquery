@@ -22,7 +22,7 @@ public class SuperPermissionTest extends IntegrationTest.Simple implements Progr
 		dataset1.setLabel("dataset1");
 		MetaStorage storage = conquery.getMetaStorage();
 
-		Role role1 = new Role("company", "company", storage);
+		Role role1 = new Role("company", "company", storage::updateRole);
 		TestUser user1 = new TestUser(storage);
 
 		storage.addRole(role1);

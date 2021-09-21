@@ -33,7 +33,7 @@ public class IdRefrenceTest {
 		registry.register(table);
 		final CentralRegistry metaRegistry = new CentralRegistry();
 
-		User user = new User("usermail", "userlabel", mock(MetaStorage.class));
+		User user = new User("usermail", "userlabel", mock(MetaStorage.class)::updateUser);
 		metaRegistry.register(user);
 
 		String json = Jackson.MAPPER.writeValueAsString(

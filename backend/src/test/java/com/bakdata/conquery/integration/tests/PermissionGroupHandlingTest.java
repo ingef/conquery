@@ -30,9 +30,9 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 		ManagedExecutionId query1 = new ManagedExecutionId(dataset1.getId(), UUID.randomUUID());
 
 
-		Role role1 = new Role("role", "role", storage);
+		Role role1 = new Role("role", "role", storage::updateRole);
 		TestUser user1 = new TestUser(storage);
-		Group group1 = new Group("company", "company", storage);
+		Group group1 = new Group("company", "company", storage::updateGroup);
 		
 		try {
 

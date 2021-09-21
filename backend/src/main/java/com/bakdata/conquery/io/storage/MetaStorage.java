@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.storage;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.function.Consumer;
 
 import javax.validation.Validator;
 
@@ -201,4 +202,6 @@ public class MetaStorage implements ConqueryStorage, Injectable {
     public MutableInjectableValues inject(MutableInjectableValues values) {
         return values.add(MetaStorage.class, this);
     }
+
+    public interface StorageUpdater<T> extends Consumer<T>, Injectable{};
 }

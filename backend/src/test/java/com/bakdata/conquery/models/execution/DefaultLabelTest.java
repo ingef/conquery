@@ -39,7 +39,7 @@ public class DefaultLabelTest {
 
 	private static final DatasetRegistry DATASET_REGISTRY = Mockito.mock(DatasetRegistry.class);
 	private static final Dataset DATASET = new Dataset("dataset");
-	private static final User user = new User("user","user", STORAGE);
+	private static final User user = new User("user","user", STORAGE::updateUser);
 
 	private static final TreeConcept CONCEPT = new TreeConcept() {
 		{

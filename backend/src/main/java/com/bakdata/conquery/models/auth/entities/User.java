@@ -7,8 +7,10 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
@@ -16,12 +18,16 @@ import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -45,9 +51,16 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	@Getter(AccessLevel.PROTECTED)
 	private final transient ShiroUserAdapter shiroUserAdapter;
 
-	public User(String name, String label, MetaStorage storage) {
-		super(name, label, storage);
+
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NonNull
+	@EqualsAndHashCode.Exclude
+	protected User.StorageUpdater storageUpdater;
+
+	public User(String name, String label, Consumer<User> storageUpdater) {
+		super(name, label);
 		this.shiroUserAdapter = new ShiroUserAdapter();
+		this.storageUpdater = new StorageUpdater(storageUpdater);
 	}
 
 	@Override
@@ -58,7 +71,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public synchronized void addRole(Role role) {
 		if (roles.add(role.getId())) {
 			log.trace("Added role {} to user {}", role.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
@@ -66,7 +79,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public synchronized void removeRole(Role role) {
 		if (roles.remove(role.getId())) {
 			log.trace("Removed role {} from user {}", role.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
@@ -75,8 +88,8 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
-	protected void updateStorage(MetaStorage storage) {
-		storage.updateUser(this);
+	protected void updateStorage() {
+		storageUpdater.accept(this);
 	}
 
 	public void authorize(@NonNull Authorized object, @NonNull Ability ability) {
@@ -163,5 +176,22 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		}
 
 
+	}
+
+	@RequiredArgsConstructor
+	public static class StorageUpdater implements MetaStorage.StorageUpdater<User> {
+
+		private final Consumer<User> storageUpdater;
+
+		@Override
+		public void accept(User user) {
+			storageUpdater.accept(user);
+		}
+
+		@Override
+		public MutableInjectableValues inject(MutableInjectableValues values) {
+			values.add(StorageUpdater.class, this);
+			return values;
+		}
 	}
 }

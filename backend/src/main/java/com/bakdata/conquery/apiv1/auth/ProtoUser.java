@@ -56,7 +56,7 @@ public class ProtoUser {
 		if (label == null) {
 			label = name;
 		}
-		user = new User(name, label, storage);
+		user = new User(name, label, storage::updateUser);
 		storage.updateUser(user);
 		for (String sPermission : permissions) {
 			user.addPermission(new WildcardPermission(sPermission));

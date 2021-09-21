@@ -3,12 +3,19 @@ package com.bakdata.conquery.models.auth.entities;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -25,13 +32,20 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	@JsonProperty
 	private Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
 
-	public Group(String name, String label, MetaStorage storage) {
-		super(name, label, storage);
+
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NonNull
+	@EqualsAndHashCode.Exclude
+	protected StorageUpdater storageUpdater;
+
+	public Group(String name, String label, Consumer<Group> storageUpdater) {
+		super(name, label);
+		this.storageUpdater = new StorageUpdater(storageUpdater);
 	}
 
 	@Override
-	protected void updateStorage(MetaStorage storage) {
-		storage.updateGroup(this);
+	protected void updateStorage() {
+		storageUpdater.accept(this);
 	}
 
 	@Override
@@ -42,14 +56,14 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	public synchronized void addMember(User user) {
 		if(members.add(user.getId())) {
 			log.trace("Added user {} to group {}", user.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
 	public synchronized void removeMember(User user) {
 		if (members.remove(user.getId())) {
 			log.trace("Removed user {} from group {}", user.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
@@ -64,18 +78,37 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	public synchronized void addRole(Role role) {
 		if (roles.add(role.getId())) {
 			log.trace("Added role {} to group {}", role.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
 	public synchronized void removeRole(Role role) {
 		if (roles.remove(role.getId())) {
 			log.trace("Removed role {} from group {}", role.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
 	public Set<RoleId> getRoles() {
 		return Collections.unmodifiableSet(roles);
+	}
+
+
+
+	@RequiredArgsConstructor
+	public static class StorageUpdater implements MetaStorage.StorageUpdater<Group> {
+
+		private final Consumer<Group> storageUpdater;
+
+		@Override
+		public void accept(Group group) {
+			storageUpdater.accept(group);
+		}
+
+		@Override
+		public MutableInjectableValues inject(MutableInjectableValues values) {
+			values.add(Group.StorageUpdater.class, this);
+			return values;
+		}
 	}
 }

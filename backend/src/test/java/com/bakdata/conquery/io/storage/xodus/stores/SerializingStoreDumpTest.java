@@ -40,7 +40,6 @@ import org.junit.jupiter.api.Test;
 public class SerializingStoreDumpTest {
 
 	public static final IStoreInfo<UserId, User> USER_STORE_ID = StoreInfo.AUTH_USER.storeInfo();
-	private final static MetaStorage STORAGE = new MetaStorage(Validators.newValidator(), new NonPersistentStoreFactory(), new DatasetRegistry(2));
 	private File tmpDir;
 	private Environment env;
 	private XodusStoreFactory config;
@@ -49,7 +48,6 @@ public class SerializingStoreDumpTest {
 	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"));
 	private final ConceptQuery cQuery = new ConceptQuery(
 		new CQReusedQuery(managedQuery.getId()));
-	private final User user = new User("username", "userlabel", STORAGE);
 
 	@BeforeEach
 	public void init() {
@@ -79,6 +77,8 @@ public class SerializingStoreDumpTest {
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
 			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), USER_STORE_ID);
+
+			final User user = new User("username", "userlabel", u -> store.add(u.getId(),u));
 			store.add(user.getId(), user);
 		}
 
@@ -132,6 +132,8 @@ public class SerializingStoreDumpTest {
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
 			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), USER_STORE_ID);
+
+			final User user = new User("username", "userlabel", u -> store.add(u.getId(),u));
 			store.add(new UserId("testU1"), user);
 		}
 
@@ -183,6 +185,7 @@ public class SerializingStoreDumpTest {
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
 			SerializingStore<UserId, User> store = createSerializedStore(config, env, Validators.newValidator(), USER_STORE_ID);
+			final User user = new User("username", "userlabel", u -> store.add(u.getId(),u));
 			store.add(new UserId("testU1"), user);
 		}
 
