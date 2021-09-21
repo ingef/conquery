@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import com.bakdata.conquery.io.storage.IStoreInfo;
 import com.google.common.primitives.Ints;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Cursor;

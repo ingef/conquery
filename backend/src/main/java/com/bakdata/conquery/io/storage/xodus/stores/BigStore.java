@@ -65,7 +65,9 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 				validator,
 				mapper,
 				storeInfo.getKeyType(),
-				BigStoreMetaKeys.class, config.isValidateOnWrite(), config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory()
+				BigStoreMetaKeys.class,
+				config.isValidateOnWrite(),
+				config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory()
 
 		);
 

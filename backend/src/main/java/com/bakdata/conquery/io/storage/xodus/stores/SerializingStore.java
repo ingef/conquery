@@ -6,10 +6,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 import javax.validation.Validator;
 

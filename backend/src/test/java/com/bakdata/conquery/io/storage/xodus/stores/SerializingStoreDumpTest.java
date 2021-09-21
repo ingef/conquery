@@ -1,5 +1,14 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Objects;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
@@ -27,19 +36,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.validation.Validator;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Objects;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @Slf4j
 public class SerializingStoreDumpTest {
 
-	private final static MetaStorage STORAGE = new MetaStorage(Validators.newValidator(), new NonPersistentStoreFactory(), new DatasetRegistry(2));
 	public static final IStoreInfo<UserId, User> USER_STORE_ID = StoreInfo.AUTH_USER.storeInfo();
+	private final static MetaStorage STORAGE = new MetaStorage(Validators.newValidator(), new NonPersistentStoreFactory(), new DatasetRegistry(2));
 	private File tmpDir;
 	private Environment env;
 	private XodusStoreFactory config;
