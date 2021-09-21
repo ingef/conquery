@@ -64,9 +64,11 @@ public class CQExternal extends CQElement {
 	@InternalOnly
 	private Map<Integer, CDateSet> valuesResolved;
 
+	// Guava Tables cannot be serialized
 	@InternalOnly
 	@Getter
-	private Map<String, Map<Integer, String>> extra;
+	private Map<String, Map<Integer, List<String>>> extra;
+
 
 	@JsonIgnore
 	private final Map<String, ConstantValueAggregator> extraAggregators = new HashMap<>();
@@ -84,7 +86,8 @@ public class CQExternal extends CQElement {
 		}
 
 		if (extra != null) {
-			extra.keySet().forEach(column -> extraAggregators.put(column, new ConstantValueAggregator(null, ResultType.StringT.INSTANCE)));
+			extra.keySet()
+				 .forEach(column -> extraAggregators.put(column, new ConstantValueAggregator(null, new ResultType.ListT(ResultType.StringT.INSTANCE))));
 
 			extraAggregators.values()
 							.forEach(plan::registerAggregator);
@@ -179,7 +182,7 @@ public class CQExternal extends CQElement {
 		private final Map<Integer, CDateSet> resolved;
 
 		@JsonIgnore
-		private final Map<String, Map<Integer, String>> extra;
+		private final Map<String, Map<Integer, List<String>>> extra;
 
 		private final List<String[]> unreadableDate;
 		private final List<String[]> unresolvedId;
@@ -207,7 +210,7 @@ public class CQExternal extends CQElement {
 			return new ResolveStatistic(Collections.emptyMap(), Collections.emptyMap(), Collections.emptyList(), List.of(values));
 		}
 
-		final Map<String, Map<Integer, String>> extraDataByEntity = new HashMap<>();
+		final Map<String, Map<Integer, List<String>>> extraDataByEntity = new HashMap<>();
 
 		// ignore the first row, because this is the header
 		for (int rowNum = 1; rowNum < values.length; rowNum++) {
@@ -250,11 +253,12 @@ public class CQExternal extends CQElement {
 			//read the dates from the row
 			resolved.put(resolvedId, rowDates.get(rowNum));
 
-			// Entity was resolved for row so we copy the data.
+			// Entity was resolved for row so we collect the data.
 			for (Map.Entry<String, String> entry : extraDataByRow.column(rowNum).entrySet()) {
-				// TODO this might even need to be a list
+
 				extraDataByEntity.computeIfAbsent(entry.getKey(), (ignored) -> new HashMap<>())
-								 .put(resolvedId, entry.getValue());
+								 .computeIfAbsent(resolvedId, (ignored) -> new ArrayList<>())
+								 .add(entry.getValue());
 			}
 		}
 
