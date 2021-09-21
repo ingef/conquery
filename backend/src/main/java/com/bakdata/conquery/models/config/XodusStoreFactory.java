@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -15,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.Validator;
 import javax.validation.constraints.Min;
@@ -113,7 +113,8 @@ public class XodusStoreFactory implements StoreFactory {
 	/**
 	 * When set, all values that could not be deserialized from the persistent store, are dump into individual files.
 	 */
-	private Optional<File> unreadableDataDumpDirectory = Optional.empty();
+	@Nullable
+	private File unreadableDataDumpDirectory = null;
 
 	@JsonIgnore
 	private transient Validator validator;
@@ -216,7 +217,6 @@ public class XodusStoreFactory implements StoreFactory {
 	private boolean environmentHasStores(File pathName) {
 		Environment env = findEnvironment(pathName);
 		boolean exists = env.computeInTransaction(t -> env.storeExists(StoreMappings.DATASET.storeInfo().getName(), t));
-		env.computeInTransaction(env::getAllStoreNames);
 		if (!exists) {
 			closeEnvironment(env);
 		}
@@ -253,9 +253,8 @@ public class XodusStoreFactory implements StoreFactory {
 							validator,
 							environment,
 							DICTIONARIES.storeInfo(),
-							openStoresInEnv.get(environment),
-							this::closeEnvironment,
-							this::removeEnvironment,
+							this::closeStore,
+							this::removeStore,
 							namespaceCollection.injectInto(objectMapper));
 		}
 
@@ -296,7 +295,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 		synchronized (openStoresInEnv) {
 			final BigStore<Boolean, EntityIdMap> bigStore =
-					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment, objectMapper);
+					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), this::closeStore, this::removeStore, objectMapper);
 
 			return new SingletonStore<>(new CachedStore<>(bigStore));
 		}
@@ -375,11 +374,22 @@ public class XodusStoreFactory implements StoreFactory {
 		}
 	}
 
+	private void closeStore(jetbrains.exodus.env.Store store) {
+		Environment env = store.getEnvironment();
+		Collection<jetbrains.exodus.env.Store> stores = openStoresInEnv.get(env);
+		stores.remove(store);
+		log.info("Closed XodusStore: {}", this);
+
+		if (!stores.isEmpty()) {
+			return;
+		}
+		log.info("Closed last XodusStore in Environment. Closing Environment as well: {}", env.getLocation());
+
+		closeEnvironment(env);
+	}
+
 	private void closeEnvironment(Environment env) {
 		synchronized (activeEnvironments) {
-			if (env == null) {
-				return;
-			}
 
 			if (activeEnvironments.remove(activeEnvironments.inverse().get(env)) == null) {
 				return;
@@ -388,8 +398,17 @@ public class XodusStoreFactory implements StoreFactory {
 		}
 	}
 
-	private void removeEnvironment(Environment env) {
-		log.info("Deleting Environment[{}]", env.getLocation());
+	private void removeStore(jetbrains.exodus.env.Store store) {
+		Environment env = store.getEnvironment();
+		Collection<jetbrains.exodus.env.Store> stores = openStoresInEnv.get(env);
+
+		if (!stores.isEmpty()) {
+			return;
+		}
+
+		log.info("Removed last XodusStore in Environment. Removing Environment as well: {}", env.getLocation());
+		env.close();
+
 		try {
 			FileUtil.deleteRecursive(Path.of(env.getLocation()));
 		}
@@ -404,7 +423,7 @@ public class XodusStoreFactory implements StoreFactory {
 			return new CachedStore<>(
 					new SerializingStore<>(
 							this,
-							new XodusStore(environment, storeInfo.getName(), openStoresInEnv.get(environment), this::closeEnvironment, this::removeEnvironment),
+							new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore),
 							validator,
 							objectMapper,
 							storeInfo.getKeyType(),

@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.Objects;
 
 import javax.validation.Validator;
 
@@ -18,7 +17,6 @@ import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationSt
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.google.common.io.Files;
@@ -60,16 +58,16 @@ public class SerializingStoreDumpTest {
 	}
 
 	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, StoreInfo<KEY,VALUE> storeId) {
-		return new SerializingStore<>(config, new XodusStore(environment, storeId.getName(), new ArrayList<>(), (e) -> {}, (e) -> {}), validator, config.getObjectMapper(), storeId.getKeyType(), storeId.getValueType());
+		return new SerializingStore<>(config, new XodusStore(environment, storeId.getName(), (e) -> {}, (e) -> {}), validator, config.getObjectMapper(), storeId.getKeyType(), storeId.getValueType());
 	}
 
 	/**
 	 * Tests if entries with corrupted values are dumped.
 	 */
 	@Test
-	public void testCorruptValueDump() throws JSONException, IOException {
+	public void testCorruptValueDump() throws IOException {
 		// Set dump directory to this tests temp-dir
-		config.setUnreadableDataDumpDirectory(Optional.of(tmpDir));
+		config.setUnreadableDataDumpDirectory(tmpDir);
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
@@ -113,16 +111,16 @@ public class SerializingStoreDumpTest {
 	}
 
 	private File getDumpFile(Condition<File> dumpFileCond) {
-		return tmpDir.listFiles((name) -> dumpFileCond.matches(name))[0];
+		return Objects.requireNonNull(tmpDir.listFiles(dumpFileCond::matches))[0];
 	}
 
 	/**
 	 * Tests if entries with corrupted keys are dumped.
 	 */
 	@Test
-	public void testCorruptKeyDump() throws JSONException, IOException {
+	public void testCorruptKeyDump() throws IOException {
 		// Set dump directory to this tests temp-dir
-		config.setUnreadableDataDumpDirectory(Optional.of(tmpDir));
+		config.setUnreadableDataDumpDirectory(tmpDir);
 
 		{
 			// Open a store and insert a valid key-value pair (UserId & User)
@@ -170,7 +168,7 @@ public class SerializingStoreDumpTest {
 	 * The dump itself is not testet.
 	 */
 	@Test
-	public void testCorruptionRemoval() throws JSONException, IOException {
+	public void testCorruptionRemoval() {
 		log.info("This test will throw some warnings from the SerializingStore.");
 		// Set config to remove corrupt entries
 		config.setRemoveUnreadableFromStore(true);

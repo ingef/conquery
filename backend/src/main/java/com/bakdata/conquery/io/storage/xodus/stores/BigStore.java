@@ -53,7 +53,13 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	private int chunkByteSize;
 
 
-	public BigStore(XodusStoreFactory config, Validator validator, Environment env, StoreInfo<KEY,VALUE> storeInfo, Collection<jetbrains.exodus.env.Store> openStores, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook, ObjectMapper mapper) {
+	public BigStore(XodusStoreFactory config,
+					Validator validator,
+					Environment env,
+					StoreInfo<KEY, VALUE> storeInfo,
+					Consumer<jetbrains.exodus.env.Store> storeCloseHook,
+					Consumer<jetbrains.exodus.env.Store> storeRemoveHook,
+					ObjectMapper mapper) {
 		this.storeInfo = storeInfo;
 
 		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
@@ -61,7 +67,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 		metaStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, storeInfo.getName() + "_META", openStores, envCloseHook, envRemoveHook),
+				new XodusStore(env, storeInfo.getName() + "_META", storeCloseHook, storeRemoveHook),
 				validator,
 				mapper,
 				storeInfo.getKeyType(),
@@ -71,7 +77,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 		dataStore = new SerializingStore<>(
 				config,
-				new XodusStore(env, storeInfo.getName() + "_DATA", openStores, envCloseHook, envRemoveHook),
+				new XodusStore(env, storeInfo.getName() + "_DATA", storeCloseHook, storeRemoveHook),
 				validator,
 				mapper,
 				UUID.class,

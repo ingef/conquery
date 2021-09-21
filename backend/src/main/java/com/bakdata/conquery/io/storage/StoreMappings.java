@@ -74,7 +74,7 @@ public enum StoreMappings {
 	private final Class<?> valueType;
 	private final Class<?> keyType;
 
-	public <KEY,VALUE, CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> StoreInfo storeInfo(){
+	public <KEY,VALUE, CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> StoreInfo<KEY,VALUE> storeInfo(){
 		return new StoreInfo<KEY,VALUE>(getName(), (CLASS_K) getKeyType(), (CLASS_V) getValueType());
 	}
 

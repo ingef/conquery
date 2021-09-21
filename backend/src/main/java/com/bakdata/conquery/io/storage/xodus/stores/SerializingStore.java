@@ -116,17 +116,14 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		removeUnreadablesFromUnderlyingStore = config.isRemoveUnreadableFromStore();
 		
 		// Prepare dump directory if there is one set in the config
-		Optional<File> dumpUnreadable = config.getUnreadableDataDumpDirectory();
-		if(dumpUnreadable.isPresent()) {
-			unreadableValuesDumpDir = dumpUnreadable.get();
+		unreadableValuesDumpDir = config.getUnreadableDataDumpDirectory();
+		if(unreadableValuesDumpDir != null) {
 			if(!unreadableValuesDumpDir.exists() && unreadableValuesDumpDir.mkdirs()) {
 				throw new IllegalStateException("Could not create dump directory: " + unreadableValuesDumpDir);
 			}
 			else if(!unreadableValuesDumpDir.isDirectory()) {
 				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
 			}
-		} else {
-			unreadableValuesDumpDir = null;
 		}
 	}
 
