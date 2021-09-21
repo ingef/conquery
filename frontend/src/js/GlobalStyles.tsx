@@ -134,11 +134,18 @@ const splitPaneStyles = (theme: Theme) => css`
   }
 `;
 
+const tippyStyleOverrides = css`
+  .tippy-popper {
+    max-width: initial;
+  }
+`;
+
 const GlobalStyles = () => {
   const theme = useTheme();
 
   return (
     <>
+      <Global styles={tippyStyleOverrides} />
       <Global styles={globalStyles(theme)} />
       <Global styles={splitPaneStyles(theme)} />
     </>
