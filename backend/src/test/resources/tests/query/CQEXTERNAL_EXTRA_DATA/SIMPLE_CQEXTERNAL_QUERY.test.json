@@ -1,0 +1,49 @@
+{
+    "type": "QUERY_TEST",
+    "label": "CQExternal Extra Data Test",
+    "expectedCsv": "tests/query/CQEXTERNAL_EXTRA_DATA/expected.csv",
+    "query": {
+        "type": "CONCEPT_QUERY",
+        "root": {
+          "type": "EXTERNAL",
+          "format": [
+            "ID","EVENT_DATE","EXTRA"
+          ],
+          "values": [
+            ["result","dates", "payload A"],
+            [1,"2012-01-01", "value"],
+            [3,"2013-11-10", "more value"]
+          ]
+        }
+    },
+    "concepts": [
+        {
+            "label": "test_tree",
+            "type":"TREE",
+            "connectors": {
+              "label": "tree_label",
+              "name": "test_concept",
+              "table": "test_table",
+              "validityDates": {"label": "datum" ,"column": "test_table.datum"}
+            }
+        }
+    ],
+    "content": {
+        "tables": [
+			{
+                "csv": "tests/query/CQEXTERNAL_EXTRA_DATA/content.csv",
+				"name": "test_table",
+                "primaryColumn" : {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+				"columns": [
+					{
+						"name": "datum",
+						"type": "DATE"
+					}
+				]
+			}
+		]
+    }
+}
