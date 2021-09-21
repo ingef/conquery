@@ -64,9 +64,9 @@ public interface StoreFactory {
 	// MetaStorage
     IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName);
 	IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName);
-	IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
-	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
-	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
+	IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, User.StorageUpdater storageUpdater);
+	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, Role.StorageUpdater storageUpdater);
+	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, Group.StorageUpdater storageUpdater);
 
 	SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, SingletonNamespaceCollection namespaceCollection);
 }

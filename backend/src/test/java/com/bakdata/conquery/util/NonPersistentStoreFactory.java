@@ -117,17 +117,17 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, User.StorageUpdater storageUpdater) {
 		return AUTH_USER.identifiable(new NonPersistentStore(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, Role.StorageUpdater storageUpdater) {
 		return AUTH_ROLE.identifiable(new NonPersistentStore(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, Group.StorageUpdater storageUpdater) {
 		return AUTH_GROUP.identifiable(new NonPersistentStore(), centralRegistry);
 	}
 

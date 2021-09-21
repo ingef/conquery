@@ -315,19 +315,19 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER), centralRegistry, new User.StorageUpdater(storage::updateUser));
+	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, User.StorageUpdater storageUpdater) {
+		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER), centralRegistry, storageUpdater);
 	}
 
 	@Override
-	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE), centralRegistry, new Role.StorageUpdater(storage::updateRole));
+	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, Role.StorageUpdater storageUpdater) {
+		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE), centralRegistry, storageUpdater);
 	}
 
 
 	@Override
-	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP), centralRegistry, new Group.StorageUpdater(storage::updateGroup));
+	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, Group.StorageUpdater storageUpdater) {
+		return StoreInfo.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP), centralRegistry, storageUpdater);
 	}
 
 	@Override
