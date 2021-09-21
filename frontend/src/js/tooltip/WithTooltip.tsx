@@ -70,7 +70,6 @@ const WithTooltip: FC<PropsT> = ({
       arrow={true}
       duration={0}
       hideDuration={0}
-      title={text}
       html={
         text ? (
           <Text
