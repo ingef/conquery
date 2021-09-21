@@ -1,13 +1,35 @@
+import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import React, { FC, ReactElement } from "react";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css";
 
-const tooltipStyles = {
-  ul: {
-    paddingLeft: 0,
-  },
-};
+const Text = styled("div")<{ wide?: boolean }>`
+  max-width: ${({ wide }) => (wide ? "700px" : "400px")};
+  text-align: left;
+  font-size: 16px;
+  font-weight: 400;
+  p,
+  h3,
+  h4 {
+    color: ${({ theme }) => theme.col.black};
+    line-height: 1.3;
+    margin: 8px 0 0;
+  }
+  p,
+  h3,
+  li {
+    font-size: ${({ theme }) => theme.font.sm};
+  }
+  ul {
+    margin: 6px 0;
+    padding-left: 16px;
+  }
+  li {
+    line-height: 1.3;
+    margin-bottom: 5px;
+  }
+`;
 
 interface PropsT {
   className?: string;
@@ -15,6 +37,7 @@ interface PropsT {
   text?: string;
   html?: ReactElement;
   lazy?: boolean;
+  wide?: boolean;
 }
 
 const WithTooltip: FC<PropsT> = ({
@@ -24,7 +47,10 @@ const WithTooltip: FC<PropsT> = ({
   text,
   html,
   lazy,
+  wide,
 }) => {
+  const theme = useTheme();
+
   if (!text && !html) return <>{children}</>;
 
   const delayProps = {
@@ -45,9 +71,18 @@ const WithTooltip: FC<PropsT> = ({
       duration={0}
       hideDuration={0}
       title={text}
-      html={html}
+      html={
+        text ? (
+          <Text
+            theme={theme}
+            wide={wide}
+            dangerouslySetInnerHTML={{ __html: text }}
+          />
+        ) : (
+          html
+        )
+      }
       theme="light"
-      style={tooltipStyles}
       {...delayProps}
     >
       {children}
