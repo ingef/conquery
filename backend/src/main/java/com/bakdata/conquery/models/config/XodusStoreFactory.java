@@ -63,6 +63,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 import io.dropwizard.util.Duration;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -86,15 +87,35 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "XODUS", base = StoreFactory.class)
 public class XodusStoreFactory implements StoreFactory {
 
-	public static final Supplier<Stream<StoreInfo>> NAMESPACED_STORES = () -> Stream.of(DATASET, SECONDARY_IDS, TABLES, DICTIONARIES, IMPORTS, CONCEPTS);
-	public static final List<String> NAMESPACE_STORES = Stream.concat(NAMESPACED_STORES.get(), Stream.of(ID_MAPPING, STRUCTURE, WORKER_TO_BUCKETS, PRIMARY_DICTIONARY))
-															  .map(StoreInfo::storeInfo)
-															  .map(IStoreInfo::getName)
-															  .collect(Collectors.toList());
-	public static final List<String> WORKER_STORES = Stream.concat(NAMESPACED_STORES.get(), Stream.of(WORKER, BUCKETS, C_BLOCKS))
-															  .map(StoreInfo::storeInfo)
-															  .map(IStoreInfo::getName)
-															  .collect(Collectors.toList());
+	public static final Supplier<Stream<String>> NAMESPACED_STORES = () -> Stream.of(
+			DATASET.storeInfo().getName(),
+			SECONDARY_IDS.storeInfo().getName(),
+			TABLES.storeInfo().getName(),
+			DICTIONARIES.storeInfo().getName() + BigStore.META,
+			DICTIONARIES.storeInfo().getName() + BigStore.DATA,
+			IMPORTS.storeInfo().getName(),
+			CONCEPTS.storeInfo().getName()
+	);
+	public static final Set<String> NAMESPACE_STORES = Stream.concat(
+			NAMESPACED_STORES.get(),
+			Stream.of(
+					ID_MAPPING.storeInfo().getName() + BigStore.META,
+					ID_MAPPING.storeInfo().getName() + BigStore.DATA,
+					STRUCTURE.storeInfo().getName(),
+					WORKER_TO_BUCKETS.storeInfo().getName(),
+					PRIMARY_DICTIONARY.storeInfo().getName()
+					)
+			)
+			.collect(Collectors.toUnmodifiableSet());
+	public static final Set<String> WORKER_STORES = Stream.concat(
+						NAMESPACED_STORES.get(),
+						Stream.of(
+								WORKER.storeInfo().getName(),
+								BUCKETS.storeInfo().getName(),
+								C_BLOCKS.storeInfo().getName()
+						)
+				)
+				.collect(Collectors.toUnmodifiableSet());
 
 	private Path directory = Path.of("storage");
 
@@ -165,7 +186,7 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 
-	private <T extends NamespacedStorage> Queue<T> loadNamespacedStores(String prefix, Function<String, T> creator, List<String> storesToTest)
+	private <T extends NamespacedStorage> Queue<T> loadNamespacedStores(String prefix, Function<String, T> creator, Set<String> storesToTest)
 			throws InterruptedException {
 		File baseDir = getDirectory().toFile();
 
@@ -190,11 +211,11 @@ public class XodusStoreFactory implements StoreFactory {
 						return;
 					}
 
-					T workerStorage = creator.apply(name);
+					T namespacedStorage = creator.apply(name);
 					log.debug("BEGIN reading Storage");
-					workerStorage.loadData();
+					namespacedStorage.loadData();
 
-					storages.add(workerStorage);
+					storages.add(namespacedStorage);
 
 				}
 				catch (Exception e) {
@@ -218,9 +239,21 @@ public class XodusStoreFactory implements StoreFactory {
 		return storages;
 	}
 
-	private boolean environmentHasStores(File pathName, List<String> storesToTest) {
+	private boolean environmentHasStores(File pathName, Set<String> storesToTest) {
 		Environment env = findEnvironment(pathName);
-		boolean exists = env.computeInTransaction(t -> env.getAllStoreNames(t).containsAll(storesToTest));
+		boolean exists = env.computeInTransaction(t -> {
+			final List<String> allStoreNames = env.getAllStoreNames(t);
+			final boolean complete = allStoreNames.containsAll(storesToTest);
+			if(complete) {
+				log.trace("Storage contained all stores: {}", storesToTest);
+				return true;
+			}
+
+			final HashSet<String> missing = Sets.newHashSet(storesToTest);
+			missing.removeAll(allStoreNames);
+			log.warn("Storage did not contain all required stores. It is missing: {}. It had {}", missing, allStoreNames);
+			return false;
+		});
 		env.computeInTransaction(env::getAllStoreNames);
 		if (!exists) {
 			closeEnvironment(env);

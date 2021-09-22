@@ -43,6 +43,8 @@ import org.apache.commons.collections4.IteratorUtils;
 @Getter
 public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
+	public static final String META = "_META";
+	public static final String DATA = "_DATA";
 	private final SerializingStore<KEY, BigStoreMetaKeys> metaStore;
 	private final SerializingStore<UUID, byte[]> dataStore;
 	private final ObjectWriter valueWriter;
@@ -61,7 +63,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		this.chunkByteSize = Ints.checkedCast(config.getXodus().getLogFileSize().toBytes() / 4L);
 
 		metaStore = new SerializingStore<>(
-				new XodusStore(env, storeInfo.getName() + "_META", openStores, envCloseHook, envRemoveHook),
+				new XodusStore(env, storeInfo.getName() + META, openStores, envCloseHook, envRemoveHook),
 				validator,
 				mapper,
 				storeInfo.getKeyType(),
@@ -72,7 +74,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		);
 
 		dataStore = new SerializingStore<>(
-				new XodusStore(env, storeInfo.getName() + "_DATA", openStores, envCloseHook, envRemoveHook),
+				new XodusStore(env, storeInfo.getName() + DATA, openStores, envCloseHook, envRemoveHook),
 				validator,
 				mapper,
 				UUID.class,
