@@ -22,7 +22,6 @@ import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
-import com.bakdata.conquery.io.storage.IStoreInfo;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
@@ -50,35 +49,47 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	private final ObjectWriter valueWriter;
 	private ObjectReader valueReader;
 
-	private final IStoreInfo<KEY,VALUE> storeInfo;
+	private final StoreInfo<KEY, VALUE> storeInfo;
 
 	@Getter @Setter
 	private int chunkByteSize;
 
 
-	public BigStore(XodusStoreFactory config, Validator validator, Environment env, IStoreInfo<KEY,VALUE> storeInfo, Collection<jetbrains.exodus.env.Store> openStores, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook, ObjectMapper mapper) {
+	public BigStore(XodusStoreFactory config,
+					Validator validator,
+					Environment env,
+					StoreInfo<KEY, VALUE> storeInfo,
+					Consumer<jetbrains.exodus.env.Store> storeCloseHook,
+					Consumer<jetbrains.exodus.env.Store> storeRemoveHook,
+					ObjectMapper mapper) {
 		this.storeInfo = storeInfo;
 
 		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
 		this.chunkByteSize = Ints.checkedCast(config.getXodus().getLogFileSize().toBytes() / 4L);
 
 		metaStore = new SerializingStore<>(
-				new XodusStore(env, storeInfo.getName() + META, openStores, envCloseHook, envRemoveHook),
+
+				new XodusStore(env, storeInfo.getName() + META, storeCloseHook, storeRemoveHook),
 				validator,
 				mapper,
 				storeInfo.getKeyType(),
 				BigStoreMetaKeys.class,
 				config.isValidateOnWrite(),
-				config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory()
+				config.isRemoveUnreadableFromStore(),
+				config.getUnreadableDataDumpDirectory()
 
 		);
 
 		dataStore = new SerializingStore<>(
-				new XodusStore(env, storeInfo.getName() + DATA, openStores, envCloseHook, envRemoveHook),
+
+				new XodusStore(env, storeInfo.getName() + DATA, storeCloseHook, storeRemoveHook),
 				validator,
 				mapper,
 				UUID.class,
-				byte[].class, config.isValidateOnWrite(), config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory()
+				byte[].class,
+				config.isValidateOnWrite(),
+				config.isRemoveUnreadableFromStore(),
+				config.getUnreadableDataDumpDirectory()
 		);
 
 
@@ -107,9 +118,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		return metaStore.forEach((key, value, length) -> {
-			consumer.accept(key, createValue(key, value), length);
-		});
+		return metaStore.forEach((key, value, length) -> consumer.accept(key, createValue(key, value), length));
 	}
 
 	@Override

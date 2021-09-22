@@ -2,8 +2,8 @@ package com.bakdata.conquery.io.storage;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
-import com.bakdata.conquery.io.storage.xodus.stores.SimpleStoreInfo;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
+import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -35,7 +35,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -51,7 +50,7 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @Getter
 @ToString(of = {"name", "keyType", "valueType"})
-public enum StoreInfo {
+public enum StoreMappings {
 	DATASET(Dataset.class, Boolean.class),
 	ID_MAPPING(EntityIdMap.class, Boolean.class),
 	NAMESPACES(DatasetRegistry.class, Boolean.class),
@@ -75,8 +74,8 @@ public enum StoreInfo {
 	private final Class<?> valueType;
 	private final Class<?> keyType;
 
-	public <KEY,VALUE, CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> IStoreInfo<KEY,VALUE> storeInfo(){
-		return new SimpleStoreInfo<KEY,VALUE>(getName(),(CLASS_K) getKeyType(), (CLASS_V) getValueType());
+	public <KEY,VALUE, CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> StoreInfo<KEY,VALUE> storeInfo(){
+		return new StoreInfo<KEY,VALUE>(getName(), (CLASS_K) getKeyType(), (CLASS_V) getValueType());
 	}
 
 	/**

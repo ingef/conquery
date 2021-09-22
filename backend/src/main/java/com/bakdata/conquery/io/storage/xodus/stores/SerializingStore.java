@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Key-value-store from {@link KEY} type values to {@link VALUE} values. ACID consistent, stored on disk using {@link jetbrains.exodus.env.Store} via {@link XodusStore}.
  * <p>
- * Values are (de-)serialized using {@linkplain objectMapper}.
+ * Values are (de-)serialized using {@linkplain ObjectMapper}.
  *
  * @param <KEY>   type of keys
  * @param <VALUE> type of values.
@@ -127,10 +127,9 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		removeUnreadablesFromUnderlyingStore = removeUnreadableFromStore;
 
 		unreadableValuesDumpDir = unreadableDataDumpDirectory;
-		// Prepare dump directory if there is one set in the config
-		if(unreadableValuesDumpDir != null ) {
+		if(unreadableValuesDumpDir != null) {
 			if(!unreadableValuesDumpDir.exists() && unreadableValuesDumpDir.mkdirs()) {
-				log.info("Created dump directory for unreadable values: {}", unreadableValuesDumpDir.getAbsolutePath());
+				throw new IllegalStateException("Could not create dump directory: " + unreadableValuesDumpDir);
 			}
 			else if(!unreadableValuesDumpDir.isDirectory()) {
 				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
@@ -197,8 +196,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			// Try to read the value
 			VALUE value = getDeserializedAndDumpFailed(
 				v, 
-				this::readValue, 
-				() -> key.toString(),
+				this::readValue,
+				key::toString,
 				v, 
 				"Could not parse value for key [{}]");
 			if (value == null) {
@@ -244,7 +243,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * @param onFailKeyStringSupplier When deserilization failed and dump is enabled this is used in the dump file name.
 	 * @param onFailOrigValue Will be the dumpfile content rendered as a json.
 	 * @param onFailWarnMsgFmt The warn message that will be logged on failure.
-	 * @return
+	 * @return The deserialized value
 	 */
 	private <TYPE> TYPE getDeserializedAndDumpFailed(ByteIterable serial, Function<ByteIterable, TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, ByteIterable onFailOrigValue, String onFailWarnMsgFmt ){
 		try {
