@@ -78,7 +78,7 @@ public class ExternalNode extends QPNode {
 
 	@Override
 	public boolean isContained() {
-		return contained != null && !contained.isEmpty();
+		return contained != null;
 	}
 
 	@Override

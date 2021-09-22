@@ -67,11 +67,20 @@ public class CQExternal extends CQElement {
 	@NotEmpty
 	private final String[][] values;
 
+	/**
+	 * Maps from Entity to the computed time-frame.
+	 */
 	@Getter
 	@InternalOnly
 	private Map<Integer, CDateSet> valuesResolved;
 
-	// Guava Tables cannot be serialized
+	/**
+	 * Contains the uploaded additional data for each column for each entity.
+	 *
+	 * Column -> Entity -> Value(s)
+	 *
+	 * @implNote FK: I would prefer to implement this as a guava table, but they cannot be deserialized with Jackson so we implement the Table manually.
+	 */
 	@InternalOnly
 	@Getter
 	private Map<String, Map<Integer, List<String>>> extra;
@@ -113,10 +122,10 @@ public class CQExternal extends CQElement {
 
 		List<DateFormat> dateFormats = format.stream().map(queryUpload::resolveDateFormat).collect(Collectors.toList());
 
-		// If no format provided, put all dates into output.
+		// If no format provided, put empty dates into output.
 		if (dateFormats.stream().allMatch(Objects::isNull)) {
 			for (int row = 0; row < values.length; row++) {
-				out.put(row, CDateSet.createFull());
+				out.put(row, CDateSet.create());
 			}
 			return out;
 		}
