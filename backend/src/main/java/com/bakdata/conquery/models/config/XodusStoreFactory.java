@@ -11,6 +11,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.validation.Valid;
 import javax.validation.Validator;
@@ -83,6 +86,16 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "XODUS", base = StoreFactory.class)
 public class XodusStoreFactory implements StoreFactory {
 
+	public static final Supplier<Stream<StoreInfo>> NAMESPACED_STORES = () -> Stream.of(DATASET, SECONDARY_IDS, TABLES, DICTIONARIES, IMPORTS, CONCEPTS);
+	public static final List<String> NAMESPACE_STORES = Stream.concat(NAMESPACED_STORES.get(), Stream.of(ID_MAPPING, STRUCTURE, WORKER_TO_BUCKETS, PRIMARY_DICTIONARY))
+															  .map(StoreInfo::storeInfo)
+															  .map(IStoreInfo::getName)
+															  .collect(Collectors.toList());
+	public static final List<String> WORKER_STORES = Stream.concat(NAMESPACED_STORES.get(), Stream.of(WORKER, BUCKETS, C_BLOCKS))
+															  .map(StoreInfo::storeInfo)
+															  .map(IStoreInfo::getName)
+															  .collect(Collectors.toList());
+
 	private Path directory = Path.of("storage");
 
 	private boolean validateOnWrite = false;
@@ -142,17 +155,17 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	@SneakyThrows
 	public Collection<NamespaceStorage> loadNamespaceStorages() {
-		return loadNamespacedStores("dataset_", (elements) -> new NamespaceStorage(validator, this, elements));
+		return loadNamespacedStores("dataset_", (elements) -> new NamespaceStorage(validator, this, elements), NAMESPACE_STORES);
 	}
 
 	@Override
 	@SneakyThrows
 	public Collection<WorkerStorage> loadWorkerStorages() {
-		return loadNamespacedStores("worker_", (elements) -> new WorkerStorage(validator, this, elements));
+		return loadNamespacedStores("worker_", (elements) -> new WorkerStorage(validator, this, elements), WORKER_STORES);
 	}
 
 
-	private <T extends NamespacedStorage> Queue<T> loadNamespacedStores(String prefix, Function<String, T> creator)
+	private <T extends NamespacedStorage> Queue<T> loadNamespacedStores(String prefix, Function<String, T> creator, List<String> storesToTest)
 			throws InterruptedException {
 		File baseDir = getDirectory().toFile();
 
@@ -172,7 +185,7 @@ public class XodusStoreFactory implements StoreFactory {
 				try {
 					ConqueryMDC.setLocation(directory.toString());
 
-					if (!environmentHasStores(directory)) {
+					if (!environmentHasStores(directory, storesToTest)) {
 						log.warn("No valid WorkerStorage found.");
 						return;
 					}
@@ -205,9 +218,9 @@ public class XodusStoreFactory implements StoreFactory {
 		return storages;
 	}
 
-	private boolean environmentHasStores(File pathName) {
+	private boolean environmentHasStores(File pathName, List<String> storesToTest) {
 		Environment env = findEnvironment(pathName);
-		boolean exists = env.computeInTransaction(t -> env.storeExists(StoreInfo.DATASET.storeInfo().getName(), t));
+		boolean exists = env.computeInTransaction(t -> env.getAllStoreNames(t).containsAll(storesToTest));
 		env.computeInTransaction(env::getAllStoreNames);
 		if (!exists) {
 			closeEnvironment(env);
