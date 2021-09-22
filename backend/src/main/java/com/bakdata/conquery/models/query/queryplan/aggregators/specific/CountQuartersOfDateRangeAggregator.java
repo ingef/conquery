@@ -13,8 +13,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
@@ -34,8 +34,8 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 	}
 
 	@Override
-	public CountQuartersOfDateRangeAggregator doClone(CloneContext ctx) {
-		return new CountQuartersOfDateRangeAggregator(getColumn());
+	public void init(Entity entity, QueryExecutionContext context) {
+		quarters.clear();
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return quarters.isEmpty() ? null : (long) quarters.size();
 	}
 	

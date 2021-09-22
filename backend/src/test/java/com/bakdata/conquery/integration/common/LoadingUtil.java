@@ -71,7 +71,7 @@ public class LoadingUtil {
 			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
 												 .createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
 
-			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
 			if (managed.getState() == ExecutionState.FAILED) {
 				fail("Query failed");

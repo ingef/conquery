@@ -28,7 +28,7 @@ public class UserAuthenticationManagementResource extends HAuthorized{
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response addUser(ProtoUser pUser) {
 		
-		if(processor.addUser(pUser)) {			
+		if(processor.tryRegister(pUser)) {
 			return Response.status(Status.CREATED).build();
 		}
 		return Response.serverError().status(Status.CONFLICT).build();

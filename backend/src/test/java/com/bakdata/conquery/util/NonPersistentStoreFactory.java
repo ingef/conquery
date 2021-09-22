@@ -1,6 +1,6 @@
 package com.bakdata.conquery.util;
 
-import static com.bakdata.conquery.io.storage.StoreInfo.*;
+import static com.bakdata.conquery.io.storage.StoreMappings.*;
 
 import java.util.Collection;
 import java.util.Collections;

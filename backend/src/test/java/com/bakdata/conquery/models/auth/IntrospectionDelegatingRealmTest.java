@@ -1,5 +1,17 @@
 package com.bakdata.conquery.models.auth;
 
+import static com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory.CONFIDENTIAL_CREDENTIAL;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockserver.model.Header.header;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+import static org.mockserver.model.Parameter.param;
+import static org.mockserver.model.ParameterBody.params;
+
+import java.util.Map;
+
+import javax.validation.Validator;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -21,17 +33,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockserver.model.MediaType;
-
-import javax.validation.Validator;
-import java.util.Map;
-
-import static com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory.CONFIDENTIAL_CREDENTIAL;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockserver.model.Header.header;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-import static org.mockserver.model.Parameter.param;
-import static org.mockserver.model.ParameterBody.params;
 
 @Slf4j
 public class IntrospectionDelegatingRealmTest {
@@ -158,7 +159,7 @@ public class IntrospectionDelegatingRealmTest {
 			.usingRecursiveComparison()
 			.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
 			.isEqualTo(new ConqueryAuthenticationInfo(USER_1, USER1_TOKEN_WRAPPED, REALM, true));
-		assertThat(STORAGE.getAllUsers()).containsOnly(USER_1);
+		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_1_NAME, USER_1_NAME, STORAGE));
 	}
 	
 	@Test

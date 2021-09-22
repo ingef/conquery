@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -48,22 +49,24 @@ public class ProtoUser {
 	@Valid
 	private List<CredentialType> credentials = Collections.emptyList();
 
-	public Optional<User> getUser(@NonNull MetaStorage storage, boolean override) {
-		User user = storage.getUser(new UserId(name));
-		if (!override) {
-			return Optional.ofNullable(user);
-		}
+	public User createOrOverwriteUser(@NonNull MetaStorage storage) {
 		if (label == null) {
 			label = name;
 		}
-		user = new User(name, label, storage);
+		User user = new User(name, label, storage);
 		storage.updateUser(user);
 		for (String sPermission : permissions) {
 			user.addPermission(new WildcardPermission(sPermission));
 		}
-		return Optional.of(user);
+		return user;
 	}
-	
+
+	@org.jetbrains.annotations.NotNull
+	@JsonIgnore
+	public UserId getId() {
+		return new UserId(name);
+	}
+
 	public static boolean registerForAuthentication(UserManageable userManager, User user, List<CredentialType> credentials, boolean override) {
 		if(override) {			
 			return userManager.updateUser(user, credentials);

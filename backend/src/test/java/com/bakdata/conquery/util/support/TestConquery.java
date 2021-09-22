@@ -286,7 +286,7 @@ public class TestConquery {
 
 	public void beforeEach() {
 		final MetaStorage storage = standaloneCommand.getManager().getStorage();
-		testUser = standaloneCommand.getManager().getConfig().getAuthorizationRealms().getInitialUsers().get(0).getUser(storage, true).orElseThrow();
+		testUser = standaloneCommand.getManager().getConfig().getAuthorizationRealms().getInitialUsers().get(0).createOrOverwriteUser(storage);
 		storage.updateUser(testUser);
 	}
 }

@@ -3,8 +3,9 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 
 /**
@@ -13,21 +14,23 @@ import lombok.Getter;
 public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 
 	@Getter
-	private Column addendColumn;
+	private final Column addendColumn;
 	@Getter
-	private Column subtrahendColumn;
-	private long sum = 0L;
+	private final Column subtrahendColumn;
+	private long sum;
 	private boolean hit;
 
 	public MoneyDiffSumAggregator(Column addend, Column subtrahend) {
-		this.addendColumn = addend;
-		this.subtrahendColumn = subtrahend;
+		addendColumn = addend;
+		subtrahendColumn = subtrahend;
 	}
 
 	@Override
-	public MoneyDiffSumAggregator doClone(CloneContext ctx) {
-		return new MoneyDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
+	public void init(Entity entity, QueryExecutionContext context) {
+		hit = false;
+		sum = 0;
 	}
+
 
 	@Override
 	public Column[] getRequiredColumns() {
@@ -51,7 +54,7 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return hit ? sum : null;
 	}
 	

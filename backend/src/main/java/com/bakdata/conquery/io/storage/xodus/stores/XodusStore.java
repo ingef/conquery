@@ -1,12 +1,10 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import com.bakdata.conquery.io.storage.IStoreInfo;
 import com.google.common.primitives.Ints;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Cursor;
@@ -21,24 +19,21 @@ public class XodusStore {
 	private final Store store;
 	private final Environment environment;
 	private final long timeoutHalfMillis; // milliseconds
-	private final Collection<Store>  openStores;
-	private final Consumer<Environment> envCloseHook;
-	private final Consumer<Environment> envRemoveHook;
+	private final Consumer<Store> storeCloseHook;
+	private final Consumer<Store> storeRemoveHook;
 	@Getter
 	private final String name;
 
-	public XodusStore(Environment env, String name, Collection<Store> openStoresInEnv, Consumer<Environment> envCloseHook, Consumer<Environment> envRemoveHook) {
+	public XodusStore(Environment env, String name, Consumer<Store> storeCloseHook, Consumer<Store> storeRemoveHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
 		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
 		this.name = name;
 		this.environment = env;
-		this.openStores = openStoresInEnv;
-		this.envCloseHook = envCloseHook;
-		this.envRemoveHook = envRemoveHook;
+		this.storeCloseHook = storeCloseHook;
+		this.storeRemoveHook = storeRemoveHook;
 		this.store = env.computeInTransaction(
 			t->env.openStore(this.name, StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
 		);
-		openStoresInEnv.add(store);
 	}
 	
 	public boolean add(ByteIterable key, ByteIterable value) {
@@ -104,33 +99,20 @@ public class XodusStore {
 
 	public void remove() {
 		if (!environment.isOpen()) {
-			log.debug("While removing store: Environment is already closed for {}", this);
+			log.warn("While removing store: Environment is already closed for {}", this);
 			return;
 		}
 		log.debug("Removing store {} from environment {}", store, environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
-		close();
-		if (openStores.isEmpty()){
-			// Last Store closes the Environment
-			log.info("Removed last XodusStore in Environment. Removing Environment as well: {}", environment.getLocation());
-			envRemoveHook.accept(environment);
-		}
+		storeRemoveHook.accept(store);
 	}
 
 	public void close() {
 		if (!environment.isOpen()) {
-			log.debug("While closing store: Environment is already closed for {}", this);
+			log.trace("While closing store: Environment is already closed for {}", this);
 			return;
 		}
-		if (!openStores.remove(store)) {
-			log.info("Closed XodusStore: {}", this);
-			return;
-		}
-		if (openStores.isEmpty()){
-			// Last Store closes the Environment
-			log.info("Closed last XodusStore in Environment. Closing Environment as well: {}", environment.getLocation());
-			envCloseHook.accept(environment);
-		}
+		storeCloseHook.accept(store);
 	}
 
 	@Override

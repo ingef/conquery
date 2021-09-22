@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -10,15 +14,9 @@ import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregator;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import lombok.RequiredArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * Implementation of the QueryPlan for an {@link EntityDateQuery}.
@@ -32,9 +30,14 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
     private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments;
     private final CDateRange dateRestriction;
 
-    private Function<MultilineEntityResult, CDateSet> validityDateCollector;
 
-    @Override
+	@Override
+	public void init(QueryExecutionContext ctxt, Entity entity) {
+		query.init(ctxt, entity);
+		features.init(ctxt, entity);
+	}
+
+	@Override
     public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
         // Don't set the query date aggregator here because the subqueries should set their aggregator independently
@@ -50,7 +53,7 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
             return Optional.empty();
         }
 
-        final CDateSet aggregationResult = validityDateAggregator.get().getAggregationResult();
+        final CDateSet aggregationResult = validityDateAggregator.get().createAggregationResult();
         aggregationResult.retainAll(dateRestriction);
 
         // Generate DateContexts in the provided resolutions
@@ -64,17 +67,7 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
         return resolutionQuery.execute(ctx, entity);
     }
 
-    @Override
-    public EntityDateQueryPlan clone(CloneContext ctx) {
-        return new EntityDateQueryPlan(
-                query.clone(ctx),
-                features.clone(ctx),
-                resolutionsAndAlignments,
-                dateRestriction
-        );
-    }
-
-    @Override
+	@Override
     public boolean isOfInterest(Entity entity) {
         return query.isOfInterest(entity);
     }

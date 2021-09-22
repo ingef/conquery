@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.util.UserishPrincipalCollection;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -25,7 +24,6 @@ import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
@@ -49,6 +47,26 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
+	public Set<ConqueryPermission> getEffectivePermissions() {
+		Set<ConqueryPermission> permissions = getPermissions();
+		for (RoleId roleId : roles) {
+			Role role = storage.getRole(roleId);
+			if (role == null) {
+				log.warn("Could not find role {} to gather permissions", roleId);
+				continue;
+			}
+			permissions = Sets.union(permissions, role.getEffectivePermissions());
+		}
+		for (Group group : storage.getAllGroups()) {
+			if (!group.containsMember(this)) {
+				continue;
+			}
+			permissions = Sets.union(permissions, group.getEffectivePermissions());
+		}
+		return permissions;
+	}
+
+	@Override
 	public UserId createId() {
 		return new UserId(name);
 	}
@@ -56,7 +74,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public synchronized void addRole(Role role) {
 		if (roles.add(role.getId())) {
 			log.trace("Added role {} to user {}", role.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
@@ -64,7 +82,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public synchronized void removeRole(Role role) {
 		if (roles.remove(role.getId())) {
 			log.trace("Removed role {} from user {}", role.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
@@ -73,7 +91,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
-	protected void updateStorage(MetaStorage storage) {
+	protected void updateStorage() {
 		storage.updateUser(this);
 	}
 
@@ -136,19 +154,6 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		return this;
 	}
 
-	public Set<ConqueryPermission> getEffectivePermissions() {
-		Set<ConqueryPermission> permissions = getPermissions();
-
-		permissions = collectRolePermissions(permissions, storage);
-
-		for (Group group : storage.getAllGroups()) {
-			if (group.containsMember(this)) {
-				// Get effective permissions of the group
-				permissions = Sets.union(permissions, group.getEffectivePermissions());
-			}
-		}
-		return permissions;
-	}
 
 	/**
 	 * This class is non static so its a fixed part of the enclosing User object.

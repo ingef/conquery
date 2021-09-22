@@ -86,7 +86,8 @@ public class FormConfigTest {
 	private DatasetId datasetId;
 	private DatasetId datasetId1;
 	private ExportForm form;
-	
+	private User user;
+
 	@BeforeAll
 	public void setupTestClass() throws Exception{
 
@@ -138,6 +139,10 @@ public class FormConfigTest {
 		form.setQueryGroupId(managedQuery.getId());
 		mode.setForm(form);
 		mode.setFeatures(List.of(new CQConcept()));
+
+
+		user = new User("test","test", storage);
+		storage.addUser(user);
 	}
 
 	@AfterEach
@@ -147,8 +152,6 @@ public class FormConfigTest {
 	
 	@Test
 	public void addConfigWithoutTranslation() {
-		User user = new User("test","test", storage);
-		storage.addUser(user);
 		user.addPermission(dataset.createPermission(Ability.READ.asSet()));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
@@ -165,8 +168,6 @@ public class FormConfigTest {
 	@Test
 	public void deleteConfig() {
 		// PREPARE
-		User user = new User("test","test", storage);
-		storage.addUser(user);
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
@@ -188,8 +189,6 @@ public class FormConfigTest {
 	@Test
 	public void getConfig() {
 		// PREPARE
-		User user = new User("test","test", storage);
-		storage.addUser(user);
 		user.addPermission(dataset.createPermission(Ability.READ.asSet()));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
@@ -262,10 +261,7 @@ public class FormConfigTest {
 	@Test
 	public void getConfigs() {
 		// PREPARE
-
-		User user = new User("test","test", storage);
-		storage.addUser(user);
-		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
+		user.addPermission(dataset.createPermission(Ability.READ.asSet()));
 		user.addPermission(FormPermission.onInstance(Ability.CREATE, form.getFormType()));
 		
 		ExportForm form2 = new ExportForm();
@@ -330,8 +326,6 @@ public class FormConfigTest {
 	@Test
 	public void patchConfig() {
 		// PREPARE
-		User user = new User("test","test", storage);
-		storage.addUser(user);
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
 		Group group1 = new Group("test1","test1", storage);
 		storage.addGroup(group1);

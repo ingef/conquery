@@ -1,9 +1,22 @@
 package com.bakdata.conquery.models.auth.apitoken;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.apiv1.auth.ApiTokenDataRepresentation;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreInfo;
+import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
@@ -30,14 +43,6 @@ import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.util.Destroyable;
-
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
-import java.io.File;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -81,8 +86,54 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		// Open/create the database/store
 		File tokenStore = new File(storageDir.toFile(), storeName);
 		tokenEnvironment = Environments.newInstance(tokenStore, storeConfig.createConfig());
-		tokenDataStore = StoreInfo.cached(new SerializingStore<>(new XodusStore(tokenEnvironment,"DATA", openStoresInEnv, Environment::close, XodusStoreFactory::removeEnvironmentHook),validator, objectMapper, ApiTokenHash.class, ApiTokenData.class, true, false, null));
-		tokenMetaDataStore = StoreInfo.cached(new SerializingStore<>(new XodusStore(tokenEnvironment,"META", openStoresInEnv, Environment::close, XodusStoreFactory::removeEnvironmentHook),validator, objectMapper, UUID.class, ApiTokenData.MetaData.class, true, false, null));
+		tokenDataStore = StoreMappings.cached(new SerializingStore<>(
+				new XodusStore(
+						tokenEnvironment,
+						"DATA",
+						this::closeStoreHook,
+						this::removeStoreHook
+				),
+				validator,
+				objectMapper,
+				ApiTokenHash.class,
+				ApiTokenData.class,
+				true,
+				false,
+				null
+		));
+		tokenMetaDataStore = StoreMappings.cached(new SerializingStore<>(
+				new XodusStore(
+						tokenEnvironment,
+						"META",
+						this::closeStoreHook,
+						this::removeStoreHook
+				),
+				validator,
+				objectMapper,
+				UUID.class,
+				ApiTokenData.MetaData.class,
+				true,
+				false,
+				null
+		));
+	}
+
+
+	private void removeStoreHook(jetbrains.exodus.env.Store store) {
+		openStoresInEnv.remove(store);
+		if (!openStoresInEnv.isEmpty()) {
+			return;
+		}
+		XodusStoreFactory.removeEnvironmentHook(store.getEnvironment());
+	}
+
+	private void closeStoreHook(jetbrains.exodus.env.Store store) {
+		openStoresInEnv.remove(store);
+		final Environment environment = store.getEnvironment();
+		if (!environment.isOpen()) {
+			return;
+		}
+		environment.close();
 	}
 
 	@Override

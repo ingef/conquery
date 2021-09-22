@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.util.Locale;
 import java.util.function.Function;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;

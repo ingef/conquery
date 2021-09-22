@@ -3,7 +3,6 @@ package com.bakdata.conquery.apiv1;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.auth.permissions.Ability;

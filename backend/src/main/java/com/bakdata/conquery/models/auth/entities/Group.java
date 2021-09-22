@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.auth.entities;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -12,8 +11,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -23,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
  *
  */
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
 	@JsonProperty
@@ -36,7 +32,16 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	@Override
-	protected void updateStorage(MetaStorage storage) {
+	public Set<ConqueryPermission> getEffectivePermissions() {
+		Set<ConqueryPermission> permissions = getPermissions();
+		for (RoleId roleId : roles) {
+			permissions = Sets.union(permissions,storage.getRole(roleId).getEffectivePermissions());
+		}
+		return permissions;
+	}
+
+	@Override
+	protected void updateStorage() {
 		storage.updateGroup(this);
 	}
 
@@ -48,14 +53,14 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	public synchronized void addMember(User user) {
 		if(members.add(user.getId())) {
 			log.trace("Added user {} to group {}", user.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
 	public synchronized void removeMember(User user) {
 		if (members.remove(user.getId())) {
 			log.trace("Removed user {} from group {}", user.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
@@ -70,25 +75,18 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	public synchronized void addRole(Role role) {
 		if (roles.add(role.getId())) {
 			log.trace("Added role {} to group {}", role.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
 	public synchronized void removeRole(Role role) {
 		if (roles.remove(role.getId())) {
 			log.trace("Removed role {} from group {}", role.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
 	public Set<RoleId> getRoles() {
 		return Collections.unmodifiableSet(roles);
-	}
-
-	public Set<ConqueryPermission> getEffectivePermissions(){
-		Set<ConqueryPermission> permissions = getPermissions();
-
-		permissions = collectRolePermissions(permissions, storage);
-		return permissions;
 	}
 }

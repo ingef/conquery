@@ -9,7 +9,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.util.functions.ChainableUnaryOperator;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class ResultModifier {
 
 	/**
@@ -40,7 +42,7 @@ public class ResultModifier {
 			Aggregator<?> agg = aggregators.get(i);
 			// Fill EXIST aggregators with false which evaluated to 'null'
 			if (agg instanceof ExistsAggregator && Objects.isNull(result[i + aggIdx])) {
-				result[i + aggIdx] = agg.getAggregationResult();
+				result[i + aggIdx] = agg.createAggregationResult();
 			}
 		}
 		return result;

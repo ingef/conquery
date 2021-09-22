@@ -28,6 +28,7 @@ import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jwk.JWKParser;
 import org.keycloak.representations.AccessToken;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.client.Client;
@@ -68,6 +69,14 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
      * See wellKnownEndpoint.
      */
     private IdpConfiguration idpConfiguration;
+
+    /**
+     * A leeway for token's expiration in seconds, this should be a short time.
+     *
+     * One Minute is the default.
+     */
+    @Min(0)
+    private int tokenLeeway = 60;
 
 
     /**
@@ -130,7 +139,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
         redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForAuthCallback);
         redirectingAuthFilter.getLoginInitiators().add(this::initiateLogin);
 
-        return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, manager.getStorage());
+        return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, manager.getStorage(), tokenLeeway);
     }
 
     @Data

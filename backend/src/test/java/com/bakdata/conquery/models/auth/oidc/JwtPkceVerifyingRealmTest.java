@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.util.UserishPrincipalCollection;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -57,7 +58,8 @@ class JwtPkceVerifyingRealmTest {
                 AUDIENCE,
                 List.of(JwtPkceVerifyingRealmFactory.ScriptedTokenChecker.create("t.getOtherClaims().get(\"groups\").equals(\"conquery\")")),
                 List.of(ALTERNATIVE_ID_CLAIM),
-                STORAGE);
+                STORAGE,
+                60);
     }
 
 
@@ -70,6 +72,29 @@ class JwtPkceVerifyingRealmTest {
 
         Date issueDate = new Date();
         Date expDate = DateUtils.addMinutes(issueDate, 1);
+        String token = JWT.create()
+                .withIssuer(HTTP_REALM_URL)
+                .withAudience(AUDIENCE)
+                .withSubject(expected.getName())
+                .withIssuedAt(issueDate)
+                .withExpiresAt(expDate)
+                .withClaim("groups", "conquery")
+                .withIssuedAt(issueDate)
+                .withExpiresAt(expDate)
+                .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
+        BearerToken accessToken = new BearerToken(token);
+
+        assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+    }
+
+    @Test
+    void verifyTokenInLeeway() {
+
+        // Setup the expected user id
+		User expected = new User("Test", "Test", STORAGE);
+
+        Date issueDate = new Date();
+        Date expDate = DateUtils.addMinutes(issueDate, -1);
         String token = JWT.create()
                 .withIssuer(HTTP_REALM_URL)
                 .withAudience(AUDIENCE)
@@ -107,7 +132,7 @@ class JwtPkceVerifyingRealmTest {
                 .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
         BearerToken accessToken = new BearerToken(token);
 
-        assertThat((List<Userish>)REALM.doGetAuthenticationInfo(accessToken).getPrincipals()).containsAll(List.of(expected));
+        assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
     }
 
 
@@ -158,7 +183,7 @@ class JwtPkceVerifyingRealmTest {
         UserId expected = new UserId("Test");
 
         Date issueDate = new Date();
-        Date expDate = DateUtils.addMinutes(issueDate, -1);
+        Date expDate = DateUtils.addMinutes(issueDate, -2);
         String token = JWT.create()
                 .withIssuer(HTTP_REALM_URL)
                 .withSubject(expected.getName())

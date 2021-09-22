@@ -90,7 +90,7 @@ export const useSelectActiveFormName = (): string => {
 };
 
 export const selectReduxFormState = (state: StateT) =>
-  state.externalForms ? state.externalForms.reduxForm : null;
+  state.externalForms ? state.externalForms.reduxForm : {};
 
 export const selectQueryRunner = (state: StateT) =>
   state.externalForms ? state.externalForms.queryRunner : null;

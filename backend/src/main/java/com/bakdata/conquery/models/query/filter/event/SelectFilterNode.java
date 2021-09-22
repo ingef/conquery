@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,11 +33,6 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	public void nextBlock(Bucket bucket) {
 		//you can then also skip the block if the id is -1
 		selectedId = ((StringStore) bucket.getStore(getColumn())).getId(filterValue);
-	}
-
-	@Override
-	public SelectFilterNode doClone(CloneContext ctx) {
-		return new SelectFilterNode(getColumn(), filterValue);
 	}
 
 	@Override

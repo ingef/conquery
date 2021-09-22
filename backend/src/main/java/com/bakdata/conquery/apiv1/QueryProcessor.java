@@ -3,7 +3,11 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 import java.net.URL;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -361,7 +365,7 @@ public class QueryProcessor {
 		query.initExecutable(datasetRegistry, config);
 
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
-		final FullExecutionStatus status = query.buildStatusFull(storage, user, datasetRegistry);
+		final FullExecutionStatus status = query.buildStatusFull(storage, user, datasetRegistry, config);
 
 		if (query.isReadyToDownload(datasetAbilities)) {
 			setDownloadUrls(status, config.getResultProviders(), query, url, allProviders);

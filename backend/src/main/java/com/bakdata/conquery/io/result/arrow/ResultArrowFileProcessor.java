@@ -1,5 +1,13 @@
 package com.bakdata.conquery.io.result.arrow;
 
+import static com.bakdata.conquery.io.result.arrow.ResultArrowProcessor.getArrowResult;
+import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
+
+import java.nio.channels.Channels;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -10,13 +18,6 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.RequiredArgsConstructor;
 import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.ipc.ArrowFileWriter;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.nio.channels.Channels;
-
-import static com.bakdata.conquery.io.result.arrow.ResultArrowProcessor.getArrowResult;
-import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 
 @RequiredArgsConstructor
 public class ResultArrowFileProcessor {

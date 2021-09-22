@@ -14,6 +14,7 @@ import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
+import org.keycloak.exceptions.TokenNotActiveException;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.JsonWebToken;
 
@@ -36,13 +37,15 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
     private final String[] allowedAudience;
     private final TokenVerifier.Predicate<JsonWebToken>[] tokenChecks;
     private final List<String> alternativeIdClaims;
+    private final ActiveWithLeewayVerifier activeVerifier;
     private final MetaStorage storage;
 
     public JwtPkceVerifyingRealm(@NonNull Supplier<Optional<JwtPkceVerifyingRealmFactory.IdpConfiguration>> idpConfigurationSupplier,
                                  @NonNull String allowedAudience,
                                  List<TokenVerifier.Predicate<AccessToken>> additionalTokenChecks,
                                  List<String> alternativeIdClaims,
-                                 MetaStorage storage) {
+                                 MetaStorage storage,
+								 int tokenLeeway) {
         this.storage = storage;
         this.idpConfigurationSupplier = idpConfigurationSupplier;
         this.allowedAudience = new String[] {allowedAudience};
@@ -50,6 +53,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
         this.alternativeIdClaims = alternativeIdClaims;
         this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
         this.setAuthenticationTokenClass(TOKEN_CLASS);
+        this.activeVerifier = new ActiveWithLeewayVerifier(tokenLeeway);
     }
 
 
@@ -64,7 +68,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 
         log.trace("Creating token verifier");
         TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class)
-                .withChecks(new TokenVerifier.RealmUrlCheck(idpConfiguration.getIssuer()), TokenVerifier.SUBJECT_EXISTS_CHECK, TokenVerifier.IS_ACTIVE)
+                .withChecks(new TokenVerifier.RealmUrlCheck(idpConfiguration.getIssuer()), TokenVerifier.SUBJECT_EXISTS_CHECK, activeVerifier)
                 .withChecks(tokenChecks)
                 .publicKey(idpConfiguration.getPublicKey())
                 .audience(allowedAudience);
@@ -114,5 +118,16 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 
         throw new UnknownAccountException("The user id was unknown: " + subject);
     }
+
+    public static final TokenVerifier.Predicate<JsonWebToken> IS_ACTIVE = new TokenVerifier.Predicate<JsonWebToken>() {
+        @Override
+        public boolean test(JsonWebToken t) throws VerificationException {
+            if (! t.isActive()) {
+                throw new TokenNotActiveException(t, "Token is not active");
+            }
+
+            return true;
+        }
+    };
 
 }

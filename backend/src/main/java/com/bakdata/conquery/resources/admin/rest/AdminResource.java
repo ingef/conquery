@@ -1,5 +1,25 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
+
+import java.time.LocalDate;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.OptionalLong;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -12,19 +32,6 @@ import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.auth.Auth;
-
-import javax.inject.Inject;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import java.time.LocalDate;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.OptionalLong;
-import java.util.UUID;
-
-import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Produces(ExtraMimeTypes.JSON_STRING)
@@ -92,7 +99,7 @@ public class AdminResource {
         final MetaStorage storage = processor.getStorage();
         final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
         return storage.getAllExecutions().stream()
-                .map(t -> t.buildStatusFull(storage, currentUser, datasetRegistry))
+                .map(t -> t.buildStatusFull(storage, currentUser, datasetRegistry, processor.getConfig()))
                 .filter(t -> t.getCreatedAt().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
                 .limit(limit.orElse(100))
                 .toArray(FullExecutionStatus[]::new);

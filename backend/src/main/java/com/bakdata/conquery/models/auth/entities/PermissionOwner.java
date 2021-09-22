@@ -12,13 +12,17 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
@@ -85,7 +89,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 								   .addAll(this.permissions)
 								   .addAll(permissions)
 								   .build();
-		updateStorage(this.storage);
+		updateStorage();
 	}
 
 	public synchronized void addPermission(ConqueryPermission permission) {
@@ -94,7 +98,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 								   .addAll(this.permissions)
 								   .add(permission)
 								   .build();
-		updateStorage(this.storage);
+		updateStorage();
 	}
 
 	/**
@@ -109,7 +113,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions);
 			ret = newSet.removeAll(permissions);
 			this.permissions = newSet;
-			updateStorage(this.storage);
+			updateStorage();
 		}
 		return ret;
 	}
@@ -120,7 +124,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions);
 			ret = newSet.remove(permission);
 			this.permissions = newSet;
-			updateStorage(this.storage);
+			updateStorage();
 		}
 		return ret;
 	}
@@ -145,6 +149,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * the permission of the roles/groups it inherits from.
 	 * @return Owned and inherited permissions.
 	 */
+	@JsonIgnore
 	public abstract Set<ConqueryPermission> getEffectivePermissions();
 
 	public void updatePermissions(Set<ConqueryPermission> permissionsNew) {
@@ -152,14 +157,14 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			Set<ConqueryPermission> newSet = new HashSet<>(permissionsNew.size());
 			newSet.addAll(permissionsNew);
 			this.permissions = newSet;
-			updateStorage(this.storage);
+			updateStorage();
 		}
 	}
 
 	/**
 	 * Update this instance in the {@link MetaStorage}.
 	 */
-	protected abstract void updateStorage(MetaStorage storage);
+	protected abstract void updateStorage();
 
 
 	@Override
