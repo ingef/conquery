@@ -122,10 +122,10 @@ public class CQExternal extends CQElement {
 
 		List<DateFormat> dateFormats = format.stream().map(queryUpload::resolveDateFormat).collect(Collectors.toList());
 
-		// If no format provided, put all dates into output.
+		// If no format provided, put empty dates into output.
 		if (dateFormats.stream().allMatch(Objects::isNull)) {
 			for (int row = 0; row < values.length; row++) {
-				out.put(row, CDateSet.createFull());
+				out.put(row, CDateSet.create());
 			}
 			return out;
 		}
