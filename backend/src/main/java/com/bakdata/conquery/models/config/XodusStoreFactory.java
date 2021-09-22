@@ -261,7 +261,7 @@ public class XodusStoreFactory implements StoreFactory {
 		if (useWeakDictionaryCaching) {
 			return StoreMappings.identifiableCachedStore(new WeakCachedStore<>(bigStore, getWeakCacheDuration()), centralRegistry);
 		}
-		return StoreMappings.identifiable(/*StoreMappings.cached(bigStore)*/bigStore, centralRegistry);
+		return StoreMappings.identifiable(StoreMappings.cached(bigStore), centralRegistry);
 	}
 
 	@Override
