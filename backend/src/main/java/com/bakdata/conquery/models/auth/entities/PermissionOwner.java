@@ -140,6 +140,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 	}
 
+	@JsonIgnore
 	public abstract Set<ConqueryPermission> getEffectivePermissions();
 
 	public void updatePermissions(Set<ConqueryPermission> permissionsNew) {
