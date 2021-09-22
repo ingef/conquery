@@ -67,11 +67,20 @@ public class CQExternal extends CQElement {
 	@NotEmpty
 	private final String[][] values;
 
+	/**
+	 * Maps from Entity to the computed time-frame.
+	 */
 	@Getter
 	@InternalOnly
 	private Map<Integer, CDateSet> valuesResolved;
 
-	// Guava Tables cannot be serialized
+	/**
+	 * Contains the uploaded additional data for each column for each entity.
+	 *
+	 * Column -> Entity -> Value(s)
+	 *
+	 * @implNote FK: I would prefer to implement this as a guava table, but they cannot be deserialized with Jackson so we implement the Table manually.
+	 */
 	@InternalOnly
 	@Getter
 	private Map<String, Map<Integer, List<String>>> extra;
