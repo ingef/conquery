@@ -17,14 +17,15 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class XodusStore {
 	private final Store store;
+	@Getter
 	private final Environment environment;
 	private final long timeoutHalfMillis; // milliseconds
-	private final Consumer<Store> storeCloseHook;
-	private final Consumer<Store> storeRemoveHook;
+	private final Consumer<XodusStore> storeCloseHook;
+	private final Consumer<XodusStore> storeRemoveHook;
 	@Getter
 	private String name;
 
-	public XodusStore(Environment env, String name, Consumer<Store> storeCloseHook, Consumer<Store> storeRemoveHook) {
+	public XodusStore(Environment env, String name, Consumer<XodusStore> storeCloseHook, Consumer<XodusStore> storeRemoveHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
 		this.timeoutHalfMillis = env.getEnvironmentConfig().getEnvMonitorTxnsTimeout()/2;
 		this.name = name;
@@ -105,7 +106,7 @@ public class XodusStore {
 		log.debug("Removing store {} from environment {}", store, environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
 		close();
-		storeRemoveHook.accept(store);
+		storeRemoveHook.accept(this);
 	}
 
 	public void close() {
@@ -113,7 +114,7 @@ public class XodusStore {
 			log.debug("While closing store: Environment is already closed for {}", this);
 			return;
 		}
-		storeCloseHook.accept(store);
+		storeCloseHook.accept(this);
 	}
 
 	@Override

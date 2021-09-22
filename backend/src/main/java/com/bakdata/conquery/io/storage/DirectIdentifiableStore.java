@@ -68,9 +68,4 @@ public class DirectIdentifiableStore<VALUE extends Identifiable<?>> extends Iden
 			throw new RuntimeException("Failed to add "+value, e);
 		}
 	}
-
-	@Override
-	public void close() throws IOException {
-		centralRegistry.clear();
-	}
 }

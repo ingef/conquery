@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.storage;
 
+import java.io.IOException;
+
 import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -42,4 +44,10 @@ public abstract class IdentifiableStore<VALUE extends Identifiable<?>> extends K
 
     @Override
     protected abstract void added(VALUE value);
+
+	@Override
+	public void close() throws IOException {
+		super.close();
+		centralRegistry.clear();
+	}
 }

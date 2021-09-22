@@ -98,7 +98,7 @@ public class XodusStoreFactory implements StoreFactory {
 	@Valid
 	private XodusConfig xodus = new XodusConfig();
 
-	private boolean useWeakDictionaryCaching = true;
+	private boolean useWeakDictionaryCaching = false;
 	@NotNull
 	private Duration weakCacheDuration = Duration.hours(48);
 
@@ -126,7 +126,7 @@ public class XodusStoreFactory implements StoreFactory {
 	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
 
 	@JsonIgnore
-	private final transient Multimap<Environment, jetbrains.exodus.env.Store>
+	private final transient Multimap<Environment, XodusStore>
 			openStoresInEnv =
 			Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
 
@@ -256,6 +256,8 @@ public class XodusStoreFactory implements StoreFactory {
 							this::closeStore,
 							this::removeStore,
 							namespaceCollection.injectInto(objectMapper));
+			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
+			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
 		}
 
 		if (useWeakDictionaryCaching) {
@@ -297,6 +299,8 @@ public class XodusStoreFactory implements StoreFactory {
 			final BigStore<Boolean, EntityIdMap> bigStore =
 					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), this::closeStore, this::removeStore, objectMapper);
 
+			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
+			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
 			return new SingletonStore<>(new CachedStore<>(bigStore));
 		}
 	}
@@ -374,14 +378,16 @@ public class XodusStoreFactory implements StoreFactory {
 		}
 	}
 
-	private void closeStore(jetbrains.exodus.env.Store store) {
+	private void closeStore(XodusStore store) {
 		Environment env = store.getEnvironment();
-		Collection<jetbrains.exodus.env.Store> stores = openStoresInEnv.get(env);
-		stores.remove(store);
-		log.info("Closed XodusStore: {}", this);
+		synchronized (openStoresInEnv) {
+			Collection<XodusStore> stores = openStoresInEnv.get(env);
+			stores.remove(store);
+			log.info("Closed XodusStore: {}", store);
 
-		if (!stores.isEmpty()) {
-			return;
+			if (!stores.isEmpty()) {
+				return;
+			}
 		}
 		log.info("Closed last XodusStore in Environment. Closing Environment as well: {}", env.getLocation());
 
@@ -398,9 +404,9 @@ public class XodusStoreFactory implements StoreFactory {
 		}
 	}
 
-	private void removeStore(jetbrains.exodus.env.Store store) {
+	private void removeStore(XodusStore store) {
 		Environment env = store.getEnvironment();
-		Collection<jetbrains.exodus.env.Store> stores = openStoresInEnv.get(env);
+		Collection<XodusStore> stores = openStoresInEnv.get(env);
 
 		if (!stores.isEmpty()) {
 			return;
@@ -420,9 +426,11 @@ public class XodusStoreFactory implements StoreFactory {
 	public <KEY, VALUE> Store<KEY, VALUE> createStore(Environment environment, Validator validator, StoreMappings storeId) {
 		final StoreInfo<KEY, VALUE> storeInfo = storeId.storeInfo();
 		synchronized (openStoresInEnv) {
+			final XodusStore store = new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore);
+			openStoresInEnv.put(environment, store);
 			return new CachedStore<>(
 					new SerializingStore<>(
-							new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore),
+							store,
 							validator,
 							objectMapper,
 							storeInfo.getKeyType(),
