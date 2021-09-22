@@ -262,13 +262,13 @@ public class XodusStoreFactory implements StoreFactory {
 				log.trace("Storage contained all stores: {}", storesToTest);
 				return true;
 			}
-
-			final HashSet<String> missing = Sets.newHashSet(storesToTest);
-			missing.removeAll(allStoreNames);
-			log.warn("Storage did not contain all required stores. It is missing: {}. It had {}", missing, allStoreNames);
+			if(log.isWarnEnabled()) {
+				final HashSet<String> missing = Sets.newHashSet(storesToTest);
+				allStoreNames.forEach(missing::remove);
+				log.warn("Storage did not contain all required stores. It is missing: {}. It had {}", missing, allStoreNames);
+			}
 			return false;
 		});
-		env.computeInTransaction(env::getAllStoreNames);
 		if (!exists) {
 			closeEnvironment(env);
 		}

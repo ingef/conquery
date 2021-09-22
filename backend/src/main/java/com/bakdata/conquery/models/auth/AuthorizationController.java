@@ -137,14 +137,12 @@ public final class AuthorizationController implements Managed{
 	 */
 	private static void initializeAuthConstellation(@NonNull AuthorizationConfig config, @NonNull List<Realm> realms, @NonNull MetaStorage storage) {
 		for (ProtoUser pUser : config.getInitialUsers()) {
-			final Optional<User> user = pUser.getUser(storage, true);
-			user.ifPresent(u -> {
-				for (Realm realm : realms) {
-					if (realm instanceof UserManageable) {
-						ProtoUser.registerForAuthentication((UserManageable) realm, u, pUser.getCredentials(), true);
-					}
+			final User user = pUser.createOrOverwriteUser(storage);
+			for (Realm realm : realms) {
+				if (realm instanceof UserManageable) {
+					ProtoUser.registerForAuthentication((UserManageable) realm, user, pUser.getCredentials(), true);
 				}
-			});
+			}
 		}
 	}
 

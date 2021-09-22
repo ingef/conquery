@@ -80,7 +80,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public synchronized void addRole(Role role) {
 		if (roles.add(role.getId())) {
 			log.trace("Added role {} to user {}", role.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
@@ -88,7 +88,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	public synchronized void removeRole(Role role) {
 		if (roles.remove(role.getId())) {
 			log.trace("Removed role {} from user {}", role.getId(), getId());
-			updateStorage(storage);
+			updateStorage();
 		}
 	}
 
@@ -97,7 +97,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
-	protected void updateStorage(MetaStorage storage) {
+	protected void updateStorage() {
 		storage.updateUser(this);
 	}
 

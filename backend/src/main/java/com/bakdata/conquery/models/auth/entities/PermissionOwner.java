@@ -85,7 +85,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 								   .addAll(this.permissions)
 								   .addAll(permissions)
 								   .build();
-		updateStorage(this.storage);
+		updateStorage();
 	}
 
 	public synchronized void addPermission(ConqueryPermission permission) {
@@ -94,7 +94,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 								   .addAll(this.permissions)
 								   .add(permission)
 								   .build();
-		updateStorage(this.storage);
+		updateStorage();
 	}
 
 	/**
@@ -109,7 +109,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions);
 			ret = newSet.removeAll(permissions);
 			this.permissions = newSet;
-			updateStorage(this.storage);
+			updateStorage();
 		}
 		return ret;
 	}
@@ -120,7 +120,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions);
 			ret = newSet.remove(permission);
 			this.permissions = newSet;
-			updateStorage(this.storage);
+			updateStorage();
 		}
 		return ret;
 	}
@@ -148,14 +148,14 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			Set<ConqueryPermission> newSet = new HashSet<>(permissionsNew.size());
 			newSet.addAll(permissionsNew);
 			this.permissions = newSet;
-			updateStorage(this.storage);
+			updateStorage();
 		}
 	}
 
 	/**
 	 * Update this instance in the {@link MetaStorage}.
 	 */
-	protected abstract void updateStorage(MetaStorage storage);
+	protected abstract void updateStorage();
 
 
 	@Override

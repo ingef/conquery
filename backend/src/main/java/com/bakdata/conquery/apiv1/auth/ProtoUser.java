@@ -48,22 +48,23 @@ public class ProtoUser {
 	@Valid
 	private List<CredentialType> credentials = Collections.emptyList();
 
-	public Optional<User> getUser(@NonNull MetaStorage storage, boolean override) {
-		User user = storage.getUser(new UserId(name));
-		if (!override) {
-			return Optional.ofNullable(user);
-		}
+	public User createOrOverwriteUser(@NonNull MetaStorage storage) {
 		if (label == null) {
 			label = name;
 		}
-		user = new User(name, label, storage);
+		User user = new User(name, label, storage);
 		storage.updateUser(user);
 		for (String sPermission : permissions) {
 			user.addPermission(new WildcardPermission(sPermission));
 		}
-		return Optional.of(user);
+		return user;
 	}
-	
+
+	@org.jetbrains.annotations.NotNull
+	public UserId getId() {
+		return new UserId(name);
+	}
+
 	public static boolean registerForAuthentication(UserManageable userManager, User user, List<CredentialType> credentials, boolean override) {
 		if(override) {			
 			return userManager.updateUser(user, credentials);

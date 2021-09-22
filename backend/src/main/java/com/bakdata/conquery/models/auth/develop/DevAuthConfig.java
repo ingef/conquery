@@ -1,12 +1,14 @@
 package com.bakdata.conquery.models.auth.develop;
 
+import java.util.List;
+
+import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
-
-import java.util.Objects;
+import com.google.common.base.Preconditions;
 
 /**
  * Default configuration for the auth system. Sets up all other default components.
@@ -17,8 +19,12 @@ public class DevAuthConfig implements AuthenticationRealmFactory {
 		
 	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
-		User defaultUser = managerNode.getConfig()
-				.getAuthorizationRealms().getInitialUsers().get(0).getUser(managerNode.getStorage(), true).orElseThrow(() -> new IllegalStateException("There must be at least one initial user configured."));
+		final List<ProtoUser> initialUsers = managerNode.getConfig()
+														.getAuthorizationRealms().getInitialUsers();
+
+		Preconditions.checkState(initialUsers.size()>0, "There must be at least one initial user configured.");
+
+		User defaultUser = initialUsers.get(0).createOrOverwriteUser(managerNode.getStorage());
 
 		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(new UserIdTokenExtractor(defaultUser));
 

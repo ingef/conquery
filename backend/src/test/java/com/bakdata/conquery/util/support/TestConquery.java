@@ -20,8 +20,6 @@ import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.integration.IntegrationTests;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -289,7 +287,7 @@ public class TestConquery {
 
 	public void beforeEach() {
 		final MetaStorage storage = standaloneCommand.getManager().getStorage();
-		testUser = standaloneCommand.getManager().getConfig().getAuthorizationRealms().getInitialUsers().get(0).getUser(storage, true).orElseThrow();
+		testUser = standaloneCommand.getManager().getConfig().getAuthorizationRealms().getInitialUsers().get(0).createOrOverwriteUser(storage);
 		storage.updateUser(testUser);
 	}
 }

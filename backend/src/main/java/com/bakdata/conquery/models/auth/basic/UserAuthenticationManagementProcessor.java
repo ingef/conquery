@@ -20,15 +20,14 @@ public class UserAuthenticationManagementProcessor {
 	private final LocalAuthenticationRealm realm;
 	private final MetaStorage storage;
 
-	public boolean addUser(ProtoUser pUser) {
+	public boolean tryRegister(ProtoUser pUser) {
 		// Throws an exception if it would override the existing user
-		final Optional<User> optUser = pUser.getUser(storage,false);
-		if (optUser.isEmpty()){
+		final UserId id = pUser.getId();
+		User user = storage.getUser(id);
+		if (user == null) {
 			log.warn("Unable to add new user {}. Probably already existed.", pUser);
 			return false;
 		}
-		final User user = optUser.get();
-		final UserId id = user.getId();
 		log.trace("Added the user {} to the authorization storage", id);
 		if(ProtoUser.registerForAuthentication(realm, user, pUser.getCredentials(),false)) {
 			log.trace("Added the user {} to the realm {}", id, realm.getName());
@@ -39,8 +38,9 @@ public class UserAuthenticationManagementProcessor {
 	}
 
 	public boolean updateUser(ProtoUser pUser) {
-		final Optional<User> user = pUser.getUser(storage, true);
-		return user.map(u -> ProtoUser.registerForAuthentication(realm, u,pUser.getCredentials(),false)).orElse(false);
+		final User user = pUser.createOrOverwriteUser(storage);
+		ProtoUser.registerForAuthentication(realm, user,pUser.getCredentials(),false);
+		return true;
 	}
 
 	public void remove(User user) {
