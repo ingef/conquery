@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -66,5 +67,10 @@ public class DirectIdentifiableStore<VALUE extends Identifiable<?>> extends Iden
 		} catch(Exception e) {
 			throw new RuntimeException("Failed to add "+value, e);
 		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		centralRegistry.clear();
 	}
 }
