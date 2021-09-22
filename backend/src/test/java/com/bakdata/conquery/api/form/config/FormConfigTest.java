@@ -141,7 +141,7 @@ public class FormConfigTest {
 		mode.setFeatures(List.of(new CQConcept()));
 
 
-		user = new User("test","test", storage::updateUser);
+		user = new User("test","test", storage);
 		storage.addUser(user);
 	}
 
@@ -327,9 +327,9 @@ public class FormConfigTest {
 	public void patchConfig() {
 		// PREPARE
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
-		Group group1 = new Group("test1","test1", storage::updateGroup);
+		Group group1 = new Group("test1","test1", storage);
 		storage.addGroup(group1);
-		Group group2 = new Group("test2","test2", storage::updateGroup);
+		Group group2 = new Group("test2","test2", storage);
 		storage.addGroup(group2);
 		
 		group1.addMember(user);

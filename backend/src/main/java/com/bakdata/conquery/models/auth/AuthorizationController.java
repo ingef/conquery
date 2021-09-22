@@ -193,7 +193,7 @@ public final class AuthorizationController implements Managed{
 		);
 
 		// Create copied user
-		User copy = new User(name, originUser.getLabel(), storage::updateUser);
+		User copy = new User(name, originUser.getLabel(), storage);
 		storage.addUser(copy);
 		copy.updatePermissions(copiedPermission);
 

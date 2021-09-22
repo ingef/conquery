@@ -117,7 +117,7 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static User mockUser(int id, List<ManagedExecutionId> allowedQueryIds) {
-		final User user = new User("user" + id, null, STORAGE::updateUser);
+		final User user = new User("user" + id, null, STORAGE);
 
 		STORAGE.addUser(user);
 

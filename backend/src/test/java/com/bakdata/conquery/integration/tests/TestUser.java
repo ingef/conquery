@@ -10,7 +10,7 @@ import java.util.List;
 public class TestUser extends User {
 
     public TestUser(MetaStorage storage) {
-        super("user", "user", storage::updateUser);
+        super("user", "user", storage);
     }
 
     public boolean isPermitted(Permission permission) {

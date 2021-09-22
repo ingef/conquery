@@ -2,11 +2,11 @@ package com.bakdata.conquery.io.storage;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.function.Consumer;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -26,7 +25,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MetaStorage implements ConqueryStorage {
+public class MetaStorage implements ConqueryStorage, Injectable {
 
     private IdentifiableStore<ManagedExecution<?>> executions;
 
@@ -47,9 +46,9 @@ public class MetaStorage implements ConqueryStorage {
         this.validator = validator;
 
 
-		authUser = storageFactory.createUserStore(centralRegistry, "meta", new User.StorageUpdater(this::updateUser));
-		authRole = storageFactory.createRoleStore(centralRegistry, "meta", new Role.StorageUpdater(this::updateRole));
-		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", new Group.StorageUpdater(this::updateGroup));
+		authUser = storageFactory.createUserStore(centralRegistry, "meta", this);
+		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this);
+		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this);
 		// Executions depend on users
 		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, "meta");
 		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta");
@@ -198,9 +197,8 @@ public class MetaStorage implements ConqueryStorage {
         authGroup.close();
     }
 
-	/**
-	 * An implementation of this interface should be provided by mutable stored entities, so that
-	 * these entities can update their persistent state themselves on change in a thread safe manner.
-	 */
-	public interface StorageUpdater<T extends Identifiable<?>> extends Consumer<T>, Injectable{};
+    @Override
+    public MutableInjectableValues inject(MutableInjectableValues values) {
+        return values.add(MetaStorage.class, this);
+    }
 }

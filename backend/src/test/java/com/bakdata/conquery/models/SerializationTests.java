@@ -85,11 +85,11 @@ public class SerializationTests {
 
 	@Test
 	public void role() throws IOException, JSONException {
-		Role mandator = new Role("company", "company", STORAGE::updateRole);
+		Role mandator = new Role("company", "company", STORAGE);
 
 		SerializationTestUtil
 				.forType(Role.class)
-				.injectables(new Role.StorageUpdater(STORAGE::updateRole))
+				.injectables(STORAGE)
 				.test(mandator);
 	}
 
@@ -99,13 +99,13 @@ public class SerializationTests {
 	@Test
 	public void user() throws IOException, JSONException {
 		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
-		User user = new User("user", "user", STORAGE::updateUser);
+		User user = new User("user", "user", STORAGE);
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user
 				.addPermission(
 						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
 				);
-		Role role = new Role("company", "company", STORAGE::updateRole);
+		Role role = new Role("company", "company", STORAGE);
 		user.addRole(role);
 
 		CentralRegistry registry = new CentralRegistry();
@@ -114,24 +114,24 @@ public class SerializationTests {
 		SerializationTestUtil
 				.forType(User.class)
 				.registry(registry)
-				.injectables(new User.StorageUpdater(STORAGE::updateUser))
+				.injectables(STORAGE)
 				.test(user);
 	}
 
 	@Test
 	public void group() throws IOException, JSONException {
 		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
-		Group group = new Group("group", "group", STORAGE::updateGroup);
+		Group group = new Group("group", "group", STORAGE);
 		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group
 				.addPermission(
 						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
 				);
-		group.addRole(new Role("company", "company", STORAGE::updateRole));
+		group.addRole(new Role("company", "company", STORAGE));
 
-		Role role = new Role("company", "company", STORAGE::updateRole);
+		Role role = new Role("company", "company", STORAGE);
 		group.addRole(role);
-		User user = new User("userName", "userLabel", STORAGE::updateUser);
+		User user = new User("userName", "userLabel", STORAGE);
 		group.addMember(user);
 
 		CentralRegistry registry = new CentralRegistry();
@@ -140,7 +140,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(Group.class)
-				.injectables(new Group.StorageUpdater(STORAGE::updateGroup))
+				.injectables(STORAGE)
 				.registry(registry)
 				.test(group);
 	}
@@ -247,7 +247,7 @@ public class SerializationTests {
 
 		final Dataset dataset = new Dataset("test-dataset");
 
-		final User user = new User("test-user", "test-user", STORAGE::updateUser);
+		final User user = new User("test-user", "test-user", STORAGE);
 
 		registry.register(dataset);
 		registry.register(user);
@@ -327,7 +327,7 @@ public class SerializationTests {
 
 	@Test
 	public void meInformation() throws IOException, JSONException {
-		User user = new User("name", "labe", STORAGE::updateUser);
+		User user = new User("name", "labe", STORAGE);
 
 		MeProcessor.FEMeInformation info = MeProcessor.FEMeInformation.builder()
 																	  .userName(user.getLabel())

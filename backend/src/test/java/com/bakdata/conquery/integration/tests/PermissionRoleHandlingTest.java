@@ -20,7 +20,7 @@ public class PermissionRoleHandlingTest extends IntegrationTest.Simple implement
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		MetaStorage storage = conquery.getMetaStorage();
-		Role mandator1 = new Role("company", "company", storage::updateRole);
+		Role mandator1 = new Role("company", "company", storage);
 		TestUser user1 = new TestUser(storage);
 		Dataset dataset = conquery.getDataset();
 

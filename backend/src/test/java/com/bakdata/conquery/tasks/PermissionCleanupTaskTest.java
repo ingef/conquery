@@ -56,7 +56,7 @@ class PermissionCleanupTaskTest {
 
         final ManagedQuery managedQuery = createManagedQuery();
         // Saving the Execution
-        User user = new User("test", "test", storage::updateUser);
+        User user = new User("test", "test", storage);
         storage.updateUser(user);
         user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
 
@@ -73,7 +73,7 @@ class PermissionCleanupTaskTest {
         final ManagedQuery managedQuery = createManagedQuery();
         // Removing the execution
         storage.removeExecution(managedQuery.getId());
-        User user = new User("test", "test", storage::updateUser);
+        User user = new User("test", "test", storage);
         storage.updateUser(user);
         user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQuery.getId()));
 
@@ -91,7 +91,7 @@ class PermissionCleanupTaskTest {
         final ManagedQuery managedQuery2 = createManagedQuery();
         // Removing the second execution
         storage.removeExecution(managedQuery2.getId());
-        User user = new User("test", "test", storage::updateUser);
+        User user = new User("test", "test", storage);
         storage.updateUser(user);
         user.addPermission(
 				// Build a permission with multiple instances
@@ -114,8 +114,8 @@ class PermissionCleanupTaskTest {
         // Created owned execution
         final ManagedQuery managedQueryOwned = createManagedQuery();
         // Setup user
-		User user = new User("test", "test", storage::updateUser);
-		User user2 = new User("test2", "test2", storage::updateUser);
+		User user = new User("test", "test", storage);
+		User user2 = new User("test2", "test2", storage);
 
         storage.updateUser(user);
         user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managedQueryOwned.getId()));

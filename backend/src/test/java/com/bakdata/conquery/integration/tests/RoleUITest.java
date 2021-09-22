@@ -34,9 +34,9 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		MetaStorage storage = conquery.getMetaStorage();
-		Role mandator = new Role("testMandatorName", "testMandatorLabel", storage::updateRole);
+		Role mandator = new Role("testMandatorName", "testMandatorLabel", storage);
 		RoleId mandatorId = mandator.getId();
-		User user = new User("testUser@test.de", "testUserName", storage::updateUser);
+		User user = new User("testUser@test.de", "testUserName", storage);
 		UserId userId = user.getId();
 		try {
 

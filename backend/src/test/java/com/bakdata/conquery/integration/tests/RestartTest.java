@@ -78,12 +78,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		MetaStorage storage = conquery.getMetaStorage();
 
-		Role role = new Role("role", "ROLE", storage::updateRole);
-		Role roleToDelete = new Role("roleDelete", "ROLE_DELETE", storage::updateRole);
-		User user = new User("user@test.email", "USER", storage::updateUser);
-		User userToDelete = new User("userDelete@test.email", "USER_DELETE", storage::updateUser);
-		Group group = new Group("group", "GROUP", storage::updateGroup);
-		Group groupToDelete = new Group("groupDelete", "GROUP_DELETE", storage::updateGroup);
+		Role role = new Role("role", "ROLE", storage);
+		Role roleToDelete = new Role("roleDelete", "ROLE_DELETE", storage);
+		User user = new User("user@test.email", "USER", storage);
+		User userToDelete = new User("userDelete@test.email", "USER_DELETE", storage);
+		Group group = new Group("group", "GROUP", storage);
+		Group groupToDelete = new Group("groupDelete", "GROUP_DELETE", storage);
 
 		{// Auth testing (deletion and permission grant)
 			// build constellation
