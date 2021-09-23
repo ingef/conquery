@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -61,6 +62,7 @@ public class ProtoUser {
 		return user;
 	}
 
+	@JsonIgnore
 	public UserId getId() {
 		return new UserId(name);
 	}
