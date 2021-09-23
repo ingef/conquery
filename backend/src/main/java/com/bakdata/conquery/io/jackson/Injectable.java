@@ -24,7 +24,7 @@ public interface Injectable {
 			return mapper.copy()
 						 .setInjectableValues(inject(((MutableInjectableValues) mapper.getInjectableValues()).copy()));
 		}
-		// TODO unsuse
+		// TODO unsure if overriding is expected here from the user
 		return mapper.copy()
 					 .setInjectableValues(inject(new MutableInjectableValues()));
 	}
