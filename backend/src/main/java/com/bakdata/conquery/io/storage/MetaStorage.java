@@ -37,12 +37,6 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 
     @Getter
     protected final CentralRegistry centralRegistry = new CentralRegistry();
-    @Getter
-    protected final Validator validator;
-
-    public MetaStorage(Validator validator) {
-        this.validator = validator;
-    }
 
     public void openStores(StoreFactory storageFactory) {
 		authUser = storageFactory.createUserStore(centralRegistry, "meta", this);

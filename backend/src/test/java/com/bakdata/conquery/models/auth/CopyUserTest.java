@@ -20,7 +20,7 @@ public class CopyUserTest {
 		final DatasetRegistry registry = new DatasetRegistry(0);
 
 
-		MetaStorage storage = new MetaStorage(null);
+		MetaStorage storage = new MetaStorage();
 		storage.openStores(new NonPersistentStoreFactory());
 
 		registry.setMetaStorage(storage);

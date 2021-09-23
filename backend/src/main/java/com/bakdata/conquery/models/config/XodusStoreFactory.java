@@ -27,6 +27,7 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -149,7 +150,7 @@ public class XodusStoreFactory implements StoreFactory {
 	private transient Validator validator;
 
 	@JsonIgnore
-	private transient ObjectMapper objectMapper;
+	private transient ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
 
 	@JsonIgnore
 	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
@@ -182,13 +183,13 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	@SneakyThrows
 	public Collection<NamespaceStorage> loadNamespaceStorages() {
-		return loadNamespacedStores("dataset_", (elements) -> new NamespaceStorage(validator, this, elements), NAMESPACE_STORES);
+		return loadNamespacedStores("dataset_", (storesToTest) -> new NamespaceStorage(validator, this, storesToTest), NAMESPACE_STORES);
 	}
 
 	@Override
 	@SneakyThrows
 	public Collection<WorkerStorage> loadWorkerStorages() {
-		return loadNamespacedStores("worker_", (elements) -> new WorkerStorage(validator, this, elements), WORKER_STORES);
+		return loadNamespacedStores("worker_", (storesToTest) -> new WorkerStorage(validator, this, storesToTest), WORKER_STORES);
 	}
 
 
@@ -473,7 +474,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 								new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore),
 								validator,
-								objectMapper,
+								objectMapper.copy(),
 								storeInfo.getKeyType(),
 								storeInfo.getValueType(),
 								this.isValidateOnWrite(),

@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Test;
 class PermissionCleanupTaskTest {
 
 
-    private static final MetaStorage STORAGE = new MetaStorage(null);
+    private static final MetaStorage STORAGE = new MetaStorage();
 
     @BeforeAll
 	public static void beforeAll() {

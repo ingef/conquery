@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 
 public interface ConqueryStorage extends Closeable {
 
-	Validator getValidator();
 	CentralRegistry getCentralRegistry();
 	
 	void loadData();

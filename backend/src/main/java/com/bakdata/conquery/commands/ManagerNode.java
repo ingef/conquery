@@ -105,7 +105,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		// Instantiate DatasetRegistry and MetaStorage so they are ready for injection into the object mapper (API + Storage)
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
-		storage = new MetaStorage(validator);
+		storage = new MetaStorage();
 
 		datasetRegistry.injectInto(environment.getObjectMapper());
 		storage.injectInto(environment.getObjectMapper());

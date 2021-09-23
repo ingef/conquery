@@ -26,7 +26,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
-import io.dropwizard.jersey.validation.Validators;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,7 +34,7 @@ import org.mockito.Mockito;
 
 public class DefaultLabelTest {
 
-	private final static MetaStorage STORAGE = new MetaStorage(null);
+	private final static MetaStorage STORAGE = new MetaStorage();
 
 	private static final DatasetRegistry DATASET_REGISTRY = Mockito.mock(DatasetRegistry.class);
 	private static final Dataset DATASET = new Dataset("dataset");

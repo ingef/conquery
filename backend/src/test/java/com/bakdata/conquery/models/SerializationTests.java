@@ -51,20 +51,17 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
 public class SerializationTests {
 
-	private final static MetaStorage STORAGE = new MetaStorage(null);
+	private final static MetaStorage STORAGE = new MetaStorage();
 
 	@BeforeAll
 	public static void beforAll() {

@@ -44,7 +44,7 @@ class QueryCleanupTaskTest {
 		return managedQuery;
 	}
 
-	private static final MetaStorage STORAGE = new MetaStorage(null);
+	private static final MetaStorage STORAGE = new MetaStorage();
 
 	@BeforeAll
 	public static void beforeAll() {

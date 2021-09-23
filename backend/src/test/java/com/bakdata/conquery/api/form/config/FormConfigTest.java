@@ -117,7 +117,7 @@ public class FormConfigTest {
 		when(namespacesMock.injectIntoNew(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
 
-		storage = new MetaStorage(null);
+		storage = new MetaStorage();
 		storage.openStores(new NonPersistentStoreFactory());
 
 
