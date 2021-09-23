@@ -100,35 +100,31 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "XODUS", base = StoreFactory.class)
 public class XodusStoreFactory implements StoreFactory {
 
-	public static final Supplier<Stream<String>> NAMESPACED_STORES = () -> Stream.of(
+	public static final Set<String> NAMESPACED_STORES = Set.of(
 			DATASET.storeInfo().getName(),
 			SECONDARY_IDS.storeInfo().getName(),
 			TABLES.storeInfo().getName(),
 			DICTIONARIES.storeInfo().getName() + BigStore.META,
 			DICTIONARIES.storeInfo().getName() + BigStore.DATA,
 			IMPORTS.storeInfo().getName(),
-			CONCEPTS.storeInfo().getName()
-	);
-	public static final Set<String> NAMESPACE_STORES = Stream.concat(
-			NAMESPACED_STORES.get(),
-			Stream.of(
+			CONCEPTS.storeInfo().getName());
+
+	public static final Set<String> NAMESPACE_STORES = Sets.union(
+			NAMESPACED_STORES,
+			Set.of(
 					ID_MAPPING.storeInfo().getName() + BigStore.META,
 					ID_MAPPING.storeInfo().getName() + BigStore.DATA,
 					STRUCTURE.storeInfo().getName(),
 					WORKER_TO_BUCKETS.storeInfo().getName(),
 					PRIMARY_DICTIONARY.storeInfo().getName()
-			)
-	)
-															 .collect(Collectors.toUnmodifiableSet());
-	public static final Set<String> WORKER_STORES = Stream.concat(
-			NAMESPACED_STORES.get(),
-			Stream.of(
+			));
+	public static final Set<String> WORKER_STORES = Sets.union(
+			NAMESPACED_STORES,
+			Set.of(
 					WORKER.storeInfo().getName(),
 					BUCKETS.storeInfo().getName(),
 					C_BLOCKS.storeInfo().getName()
-			)
-	)
-														  .collect(Collectors.toUnmodifiableSet());
+			));
 
 	private Path directory = Path.of("storage");
 
@@ -159,7 +155,7 @@ public class XodusStoreFactory implements StoreFactory {
 	private transient Validator validator;
 
 	@JsonIgnore
-	private transient ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
+	private transient final ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
 
 	@JsonIgnore
 	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
@@ -172,7 +168,7 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public void init(ManagerNode managerNode) {
 		validator = managerNode.getValidator();
-		configureMapper(managerNode.getConfig());
+		configureMapper(managerNode.getConfig(), managerNode.getDatasetRegistry(), managerNode.getStorage());
 	}
 
 	@Override
@@ -181,10 +177,14 @@ public class XodusStoreFactory implements StoreFactory {
 		configureMapper(shardNode.getConfig());
 	}
 
-	private void configureMapper(ConqueryConfig config) {
+	private void configureMapper(ConqueryConfig config, Injectable ... injectables) {
 		config.configureObjectMapper(objectMapper);
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
+
+		for (Injectable injectable : injectables) {
+			injectable.injectInto(objectMapper);
+		}
 	}
 
 	@Override
@@ -366,28 +366,28 @@ public class XodusStoreFactory implements StoreFactory {
 
 	@Override
 	public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "executions")), validator, EXECUTIONS), centralRegistry, datasetRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "executions")), validator, EXECUTIONS), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "formConfigs")), validator, FORM_CONFIG), centralRegistry, datasetRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "formConfigs")), validator, FORM_CONFIG), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER), centralRegistry, storage);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE), centralRegistry, storage);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE), centralRegistry);
 	}
 
 
 	@Override
 	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP), centralRegistry, storage);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP), centralRegistry);
 	}
 
 	@Override
@@ -473,7 +473,7 @@ public class XodusStoreFactory implements StoreFactory {
 			}
 		}
 
-		public <KEY, VALUE > Store < KEY, VALUE > createStore(Environment environment, Validator validator, StoreMappings storeId, Injectable ...injectables){
+		public <KEY, VALUE > Store < KEY, VALUE > createStore(Environment environment, Validator validator, StoreMappings storeId){
 			final StoreInfo<KEY, VALUE> storeInfo = storeId.storeInfo();
 			synchronized (openStoresInEnv) {
 				return new CachedStore<>(
@@ -486,8 +486,7 @@ public class XodusStoreFactory implements StoreFactory {
 								storeInfo.getValueType(),
 								this.isValidateOnWrite(),
 								this.isRemoveUnreadableFromStore(),
-								this.getUnreadableDataDumpDirectory(),
-								injectables
+								this.getUnreadableDataDumpDirectory()
 							));
 			}
 		}

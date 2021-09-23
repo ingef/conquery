@@ -81,22 +81,8 @@ public enum StoreMappings {
 	/**
 	 * Store for identifiable values, with injectors. Store is also cached.
 	 */
-	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry, Injectable... injectables) {
-
-		for (Injectable injectable : injectables) {
-			baseStore.inject(injectable);
-		}
-
-		baseStore.inject(centralRegistry);
-
-		return new DirectIdentifiableStore<>(centralRegistry, baseStore);
-	}
-
-	/**
-	 * Store for identifiable values, without injectors. Store is also cached.
-	 */
 	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry) {
-		return identifiable(baseStore, centralRegistry, new SingletonNamespaceCollection(centralRegistry));
+		return new DirectIdentifiableStore<>(centralRegistry, baseStore);
 	}
 
 	/**

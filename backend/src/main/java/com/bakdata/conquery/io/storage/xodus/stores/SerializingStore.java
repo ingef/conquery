@@ -103,8 +103,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 																					   CLASS_V valueType,
 																					   boolean validateOnWrite,
 																					   boolean removeUnreadableFromStore,
-																					   File unreadableDataDumpDirectory,
-																					   Injectable ... injectables) {
+																					   File unreadableDataDumpDirectory) {
 		this.store = store;
 		this.validator = validator;
 		this.validateOnWrite = validateOnWrite;
@@ -116,9 +115,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		valueWriter = objectMapper.writerFor(this.valueType);
 
 		valueReader = objectMapper.readerFor(this.valueType);
-		for (Injectable injectable : injectables) {
-			valueReader = injectable.injectInto(valueReader);
-		}
 
 		keyWriter = objectMapper.writerFor(keyType);
 
