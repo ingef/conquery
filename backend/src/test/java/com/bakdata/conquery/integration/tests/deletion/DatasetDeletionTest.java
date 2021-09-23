@@ -39,7 +39,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		StandaloneSupport conquery = testConquery.getSupport(name);
 		final MetaStorage storage = conquery.getMetaStorage();
 		final Dataset dataset = conquery.getDataset();
-		Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
+		Namespace namespace = conquery.getNamespace();
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 
@@ -170,8 +170,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			final StandaloneSupport conquery2 =
 					new StandaloneSupport(
 							testConquery,
-							storage.getDatasetRegistry()
-								   .get(dataset.getId()),
+							namespace,
 							newDataset,
 							conquery.getTmpDir(),
 							conquery.getConfig(),
@@ -179,9 +178,6 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 							conquery.getDatasetsProcessor(),
 							conquery.getTestUser()
 					);
-
-
-			namespace = storage.getDatasetRegistry().get(dataset.getId());
 
 			// only import the deleted import/table
 			LoadingUtil.importTables(conquery2,test.getContent().getTables());

@@ -390,7 +390,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void inject(Injectable injectable) {
-		valueReader = injectable.injectInto(valueReader);
+		valueReader = injectable.injectIntoNew(valueReader);
 	}
 
 	@Override

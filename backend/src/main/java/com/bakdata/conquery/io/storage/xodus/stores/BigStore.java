@@ -227,7 +227,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 	@Override
 	public void inject(Injectable injectable) {
-		valueReader = injectable.injectInto(valueReader);
+		valueReader = injectable.injectIntoNew(valueReader);
 	}
 
 	@Override

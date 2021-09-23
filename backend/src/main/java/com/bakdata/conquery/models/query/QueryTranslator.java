@@ -51,7 +51,7 @@ public class QueryTranslator {
 			}
 	
 			return (T)namespaces
-				.injectInto(Jackson.MAPPER.copy())
+				.injectIntoNew(Jackson.MAPPER.copy())
 				.readValue(value, element.getClass());
 		}
 		catch(Exception e) {

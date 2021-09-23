@@ -57,12 +57,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Before;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
 public class SerializationTests {
 
-	private final static MetaStorage STORAGE = new MetaStorage(Validators.newValidator(), new NonPersistentStoreFactory(), new DatasetRegistry(2));
+	private final static MetaStorage STORAGE = new MetaStorage(null);
+
+	@BeforeAll
+	public static void beforAll() {
+		STORAGE.openStores(new NonPersistentStoreFactory());
+	}
 
 	@Test
 	public void dataset() throws IOException, JSONException {
@@ -98,13 +105,9 @@ public class SerializationTests {
 	 */
 	@Test
 	public void user() throws IOException, JSONException {
-		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
 		User user = new User("user", "user", STORAGE);
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
-		user
-				.addPermission(
-						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
-				);
+		user.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		Role role = new Role("company", "company", STORAGE);
 		user.addRole(role);
 
@@ -120,13 +123,9 @@ public class SerializationTests {
 
 	@Test
 	public void group() throws IOException, JSONException {
-		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
 		Group group = new Group("group", "group", STORAGE);
 		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
-		group
-				.addPermission(
-						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
-				);
+		group.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		group.addRole(new Role("company", "company", STORAGE));
 
 		Role role = new Role("company", "company", STORAGE);

@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 public class SerializingStoreDumpTest {
 
 	public static final StoreInfo<UserId, User> USER_STORE_ID = StoreMappings.AUTH_USER.storeInfo();
-	private final static MetaStorage STORAGE = new MetaStorage(Validators.newValidator(), new NonPersistentStoreFactory(), new DatasetRegistry(2));
+	private final static MetaStorage STORAGE = new MetaStorage(Validators.newValidator());
 	private File tmpDir;
 	private Environment env;
 	private XodusStoreFactory config;

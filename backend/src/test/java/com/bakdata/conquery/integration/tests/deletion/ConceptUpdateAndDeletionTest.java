@@ -46,7 +46,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
 
 		final Dataset dataset = conquery.getDataset();
-		final Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
+		final Namespace namespace = conquery.getNamespace();
 
 		final ConceptId conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
 		final Concept<?> concept;

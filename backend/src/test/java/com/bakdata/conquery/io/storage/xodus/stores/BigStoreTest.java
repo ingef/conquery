@@ -39,7 +39,7 @@ public class BigStoreTest {
 
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
 	private static SingletonNamespaceCollection NAMESPACE_COLLECTION = new SingletonNamespaceCollection(CENTRAL_REGISTRY);
-	private static ObjectMapper MAPPER = NAMESPACE_COLLECTION.injectInto(Jackson.BINARY_MAPPER);
+	private static ObjectMapper MAPPER = NAMESPACE_COLLECTION.injectIntoNew(Jackson.BINARY_MAPPER);
 
 	@BeforeAll
 	public static void setupRegistry(){

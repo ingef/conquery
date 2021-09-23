@@ -16,9 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
@@ -29,9 +26,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -63,7 +58,6 @@ import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -155,7 +149,7 @@ public class XodusStoreFactory implements StoreFactory {
 	private transient Validator validator;
 
 	@JsonIgnore
-	private transient final ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
+	private transient ObjectMapper objectMapper;
 
 	@JsonIgnore
 	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
@@ -168,23 +162,21 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public void init(ManagerNode managerNode) {
 		validator = managerNode.getValidator();
-		configureMapper(managerNode.getConfig(), managerNode.getDatasetRegistry(), managerNode.getStorage());
+		objectMapper = managerNode.getEnvironment().getObjectMapper();
+		configureMapper(managerNode.getConfig());
 	}
 
 	@Override
 	public void init(ShardNode shardNode) {
 		validator = shardNode.getValidator();
+		objectMapper = shardNode.getEnvironment().getObjectMapper();
 		configureMapper(shardNode.getConfig());
 	}
 
-	private void configureMapper(ConqueryConfig config, Injectable ... injectables) {
+	private void configureMapper(ConqueryConfig config) {
 		config.configureObjectMapper(objectMapper);
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
-
-		for (Injectable injectable : injectables) {
-			injectable.injectInto(objectMapper);
-		}
 	}
 
 	@Override
@@ -307,7 +299,7 @@ public class XodusStoreFactory implements StoreFactory {
 							DICTIONARIES.storeInfo(),
 							this::closeStore,
 							this::removeStore,
-							namespaceCollection.injectInto(objectMapper)
+							namespaceCollection.injectIntoNew(objectMapper)
 					);
 		}
 
@@ -365,12 +357,12 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName) {
+	public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, String pathName) {
 		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "executions")), validator, EXECUTIONS), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName) {
+	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, String pathName) {
 		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "formConfigs")), validator, FORM_CONFIG), centralRegistry);
 	}
 

@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -141,6 +142,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 
 		log.info("Restart complete");
+		
+		DatasetRegistry datasetRegistry = support.getDatasetsProcessor().getDatasetRegistry();
 
 		test.executeTest(support);
 
@@ -154,16 +157,16 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			assertThat(storage.getRole(roleToDelete.getId())).as("deleted role should stay deleted").isNull();
 			assertThat(storage.getGroup(groupToDelete.getId())).as("deleted group should stay deleted").isNull();
 
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(TEST_DATASET_1.getId()).getDataset(), Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry()
+			assertThat(userStored.isPermitted(datasetRegistry.get(TEST_DATASET_1.getId()).getDataset(), Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(datasetRegistry
 													 .get(TEST_DATASET_2.getId())
 													 .getDataset(), Ability.READ)).isFalse(); // Was never permitted
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(TEST_DATASET_3.getId()).getDataset(), Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry()
+			assertThat(userStored.isPermitted(datasetRegistry.get(TEST_DATASET_3.getId()).getDataset(), Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(datasetRegistry
 													 .get(TEST_DATASET_4.getId())
 													 .getDataset(), Ability.READ)).isFalse(); // Was permitted by deleted role
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(TEST_DATASET_5.getId()).getDataset(), Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry()
+			assertThat(userStored.isPermitted(datasetRegistry.get(TEST_DATASET_5.getId()).getDataset(), Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(datasetRegistry
 													 .get(TEST_DATASET_6.getId())
 													 .getDataset(), Ability.READ)).isFalse(); // Was permitted by deleted group
 

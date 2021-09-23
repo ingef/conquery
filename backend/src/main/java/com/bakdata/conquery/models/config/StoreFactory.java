@@ -62,8 +62,8 @@ public interface StoreFactory {
 	SingletonStore<StructureNode[]> createStructureStore(String pathName, SingletonNamespaceCollection centralRegistry);
 
 	// MetaStorage
-    IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName);
-	IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName);
+    IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, String pathName);
+	IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, String pathName);
 	IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
 	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
 	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);

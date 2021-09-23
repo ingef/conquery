@@ -48,7 +48,7 @@ public class IdRefrenceTest {
 				.contains("\"dataset.table\"");
 
 		ListHolder holder = new SingletonNamespaceCollection(registry, metaRegistry)
-									.injectInto(Jackson.MAPPER.readerFor(ListHolder.class))
+									.injectIntoNew(Jackson.MAPPER.readerFor(ListHolder.class))
 									.readValue(json);
 
 		assertThat(holder.getUsers().get(0)).isSameAs(user);

@@ -79,8 +79,8 @@ public class LoadingUtil {
 		}
 
 		for (JsonNode queryNode : content.getPreviousQueries()) {
-			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectInto(Jackson.MAPPER);
-			mapper = support.getDataset().injectInto(mapper);
+			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectIntoNew(Jackson.MAPPER);
+			mapper = support.getDataset().injectIntoNew(mapper);
 			Query query = mapper.readerFor(Query.class).readValue(queryNode);
 			UUID queryId = new UUID(0L, id++);
 

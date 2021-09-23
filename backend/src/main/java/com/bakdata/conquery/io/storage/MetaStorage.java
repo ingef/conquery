@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -35,27 +36,32 @@ public class MetaStorage implements ConqueryStorage, Injectable {
     private IdentifiableStore<Group> authGroup;
 
     @Getter
-    private DatasetRegistry datasetRegistry;
-    @Getter
     protected final CentralRegistry centralRegistry = new CentralRegistry();
     @Getter
     protected final Validator validator;
 
-    public MetaStorage(Validator validator, StoreFactory storageFactory, DatasetRegistry datasetRegistry) {
-        this.datasetRegistry = datasetRegistry;
+    public MetaStorage(Validator validator) {
         this.validator = validator;
+    }
 
-
+    public void openStores(StoreFactory storageFactory) {
 		authUser = storageFactory.createUserStore(centralRegistry, "meta", this);
 		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this);
 		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this);
 		// Executions depend on users
-		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, "meta");
-		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta");
-    }
+		executions = storageFactory.createExecutionsStore(centralRegistry, "meta");
+		formConfigs = storageFactory.createFormConfigStore(centralRegistry, "meta");
+
+	}
 
     @Override
     public void loadData() {
+		Preconditions.checkNotNull(authUser, "User storage was not created");
+		Preconditions.checkNotNull(authRole, "Role storage was not created");
+		Preconditions.checkNotNull(authGroup, "Group storage was not created");
+		Preconditions.checkNotNull(executions, "Execution storage was not created");
+		Preconditions.checkNotNull(formConfigs, "FormConfig storage was not created");
+
         authUser.loadData();
         authRole.loadData();
         authGroup.loadData();
