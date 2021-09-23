@@ -1,16 +1,15 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.List;
-
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+
+import java.util.List;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
 public class ImportId extends AId<Import> implements NamespacedId {

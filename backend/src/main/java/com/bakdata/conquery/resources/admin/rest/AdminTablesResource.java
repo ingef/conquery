@@ -1,24 +1,5 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.*;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
@@ -32,6 +13,24 @@ import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+
+import static com.bakdata.conquery.resources.ResourceConstants.*;
+
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 
@@ -40,100 +39,108 @@ import lombok.Setter;
 @Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
 public class AdminTablesResource extends HAdmin {
 
-	@Inject
-	private AdminDatasetProcessor processor;
+    @Inject
+    private AdminDatasetProcessor processor;
 
-	@PathParam(DATASET)
-	protected Dataset dataset;
-	protected Namespace namespace;
-	@PathParam(TABLE)
-	protected Table table;
+    @PathParam(DATASET)
+    protected Dataset dataset;
+    protected Namespace namespace;
+    @PathParam(TABLE)
+    protected Table table;
 
-	@PostConstruct
-	@Override
-	public void init() {
-		super.init();
-		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
-	}
+    @PostConstruct
+    @Override
+    public void init() {
+        super.init();
+        this.namespace = processor.getDatasetRegistry().get(dataset.getId());
+    }
 
-	@GET
-	public Table getTable() {
-		return table;
-	}
-
-
-	/**
-	 * Try to delete a table and all it's imports. Fails if it still has dependencies (unless force is used).
-	 *
-	 * @param force Force deletion of dependent concepts.
-	 * @return List of dependent concepts.
-	 */
-	@DELETE
-	public Response remove(@QueryParam("force") @DefaultValue("false") boolean force) {
-		final List<ConceptId> dependents = processor.deleteTable(table, force);
-
-		if (!force && !dependents.isEmpty()) {
-			return Response.status(Status.CONFLICT)
-					.entity(dependents)
-					.build();
-		}
-
-		return Response.ok()
-				.entity(dependents)
-				.build();
-	}
-
-	@GET
-	@Path("/imports")
-	@Produces(AdditionalMediaTypes.JSON)
-	public List<ImportId> listImports() {
-		return namespace.getStorage()
-				.getAllImports()
-				.stream()
-				.filter(imp -> imp.getTable().equals(table))
-				.map(Import::getId)
-				.collect(Collectors.toList());
-	}
-
-	@DELETE
-	@Path("imports/{" + IMPORT_ID + "}")
-	public void deleteImport(@PathParam(IMPORT_ID) Import imp) {
-		processor.deleteImport(imp);
-	}
+    @GET
+    public Table getTable() {
+        return table;
+    }
 
 
-	@GET
-	@Path("imports/{" + IMPORT_ID + "}")
-	public Import getImport(@PathParam(IMPORT_ID) Import imp) {
-		return imp;
-	}
+    /**
+     * Try to delete a table and all it's imports. Fails if it still has dependencies (unless force is used).
+     *
+     * @param force Force deletion of dependent concepts.
+     * @return List of dependent concepts.
+     */
+    @DELETE
+    public Response remove(@QueryParam("force") @DefaultValue("false") boolean force) {
+        final List<ConceptId> dependents = processor.deleteTable(table, force);
 
-	@PUT
-	@Path("imports")
-	public void updateImport(@NotNull @QueryParam(IMPORT_ID) Import imp, @NotNull @QueryParam("file") File importFile) throws IOException {
-		StringJoiner errors = new StringJoiner("\n");
+        if (!force && !dependents.isEmpty()) {
+            return Response.status(Status.CONFLICT)
+                    .entity(dependents)
+                    .build();
+        }
 
-		if (!importFile.canRead()) {
-			errors.add("Cannot read.");
-		}
+        return Response.ok()
+                .entity(dependents)
+                .build();
+    }
 
-		if (!importFile.exists()) {
-			errors.add("Does not exist.");
-		}
+    @GET
+    @Path("/imports")
+    @Produces(AdditionalMediaTypes.JSON)
+    public List<ImportId> listImports() {
+        return namespace.getStorage()
+                .getAllImports()
+                .stream()
+                .filter(imp -> imp.getTable().equals(table))
+                .map(Import::getId)
+                .collect(Collectors.toList());
+    }
 
-		if (!importFile.isAbsolute()) {
-			errors.add("Is not absolute.");
-		}
+    @DELETE
+    @Path("imports/{" + IMPORT_ID + "}")
+    public void deleteImport(@PathParam(IMPORT_ID) Import imp) {
+        processor.deleteImport(imp);
+    }
 
-		if (!importFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
-			errors.add(String.format("Does not end with `%s`.", ConqueryConstants.EXTENSION_PREPROCESSED));
-		}
 
-		if (errors.length() > 0) {
-			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors), Status.BAD_REQUEST);
-		}
+    @GET
+    @Path("imports/{" + IMPORT_ID + "}")
+    public Import getImport(@PathParam(IMPORT_ID) Import imp) {
+        return imp;
+    }
 
-		processor.updateImport(imp, namespace, new GZIPInputStream(new FileInputStream(importFile)));
-	}
+
+    @PUT
+    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
+    @Path("cqpp/{" + IMPORT_ID + "}")
+    public void updateCqppImport(@NotNull @PathParam(IMPORT_ID) Import imp, @NotNull InputStream importStream) throws IOException {
+        processor.updateImport(imp, namespace, new GZIPInputStream(importStream));
+    }
+
+    @PUT
+    @Path("imports/{" + IMPORT_ID + "}")
+    public void updateImport(@NotNull @PathParam(IMPORT_ID) Import imp, @NotNull @QueryParam("file") File importFile) throws IOException {
+        StringJoiner errors = new StringJoiner("\n");
+
+        if (!importFile.canRead()) {
+            errors.add("Cannot read.");
+        }
+
+        if (!importFile.exists()) {
+            errors.add("Does not exist.");
+        }
+
+        if (!importFile.isAbsolute()) {
+            errors.add("Is not absolute.");
+        }
+
+        if (!importFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
+            errors.add(String.format("Does not end with `%s`.", ConqueryConstants.EXTENSION_PREPROCESSED));
+        }
+
+        if (errors.length() > 0) {
+            throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors), Status.BAD_REQUEST);
+        }
+
+        processor.updateImport(imp, namespace, new GZIPInputStream(new FileInputStream(importFile)));
+    }
 
 }

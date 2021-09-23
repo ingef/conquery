@@ -64,7 +64,8 @@ public class StandaloneSupport {
 						"in", tmpDir,
 						"out", tmpDir,
 						"desc", descriptions,
-						"tag", tags
+						"tag", tags,
+						"strict", false
 				)
 		);
 
