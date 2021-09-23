@@ -20,7 +20,8 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Container class for holding information about initial users.
+ * Factory class to create configured initial users.
+
  */
 @Getter
 @Builder
