@@ -101,11 +101,6 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public Collection<KEY> getAllKeys() {
 		return store.getAllKeys();
 	}
-
-	@Override
-	public void inject(Injectable injectable) {
-		store.inject(injectable);
-	}
 	
 	@Override
 	public String toString() {

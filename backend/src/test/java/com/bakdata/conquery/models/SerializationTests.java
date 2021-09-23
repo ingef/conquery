@@ -66,12 +66,7 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class SerializationTests {
 
-	private final static MetaStorage STORAGE = new MetaStorage();
-
-	@BeforeAll
-	public static void beforAll() {
-		STORAGE.openStores(new NonPersistentStoreFactory());
-	}
+	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 	@Test
 	public void dataset() throws IOException, JSONException {

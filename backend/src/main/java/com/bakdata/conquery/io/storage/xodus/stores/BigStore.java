@@ -226,11 +226,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	@Override
-	public void inject(Injectable injectable) {
-		valueReader = injectable.injectIntoNew(valueReader);
-	}
-
-	@Override
 	public String toString() {
 		return "big " + storeInfo.getName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
 	}

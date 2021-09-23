@@ -41,10 +41,9 @@ public class NamespaceStorage extends NamespacedStorage {
 		super(validator, storageFactory, pathName);
 
 		idMapping = storageFactory.createIdMappingStore(pathName);
-		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(getCentralRegistry());
-		structure = storageFactory.createStructureStore(pathName, namespaceCollection);
+		structure = storageFactory.createStructureStore(pathName, getCentralRegistry());
 		workerToBuckets = storageFactory.createWorkerToBucketsStore(pathName);
-		primaryDictionary = storageFactory.createPrimaryDictionaryStore(pathName, namespaceCollection);
+		primaryDictionary = storageFactory.createPrimaryDictionaryStore(pathName, getCentralRegistry());
 
 		decorateIdMapping(idMapping);
 	}

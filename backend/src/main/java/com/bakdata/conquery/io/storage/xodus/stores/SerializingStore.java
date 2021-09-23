@@ -389,11 +389,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void inject(Injectable injectable) {
-		valueReader = injectable.injectIntoNew(valueReader);
-	}
-
-	@Override
 	public Collection<KEY> getAllKeys() {
 		throw new UnsupportedOperationException();
 	}

@@ -59,7 +59,7 @@ public interface StoreFactory {
 	// NamespaceStorage
 	SingletonStore<EntityIdMap> createIdMappingStore(String pathName);
 	SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName);
-	SingletonStore<StructureNode[]> createStructureStore(String pathName, SingletonNamespaceCollection centralRegistry);
+	SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry);
 
 	// MetaStorage
     IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, String pathName);
@@ -68,5 +68,5 @@ public interface StoreFactory {
 	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
 	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
 
-	SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, SingletonNamespaceCollection namespaceCollection);
+	SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry namespaceCollection);
 }

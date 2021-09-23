@@ -116,11 +116,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public Collection<VALUE> getAll() {
 		return cache.values();
 	}
-
-	@Override
-	public void inject(Injectable injectable) {
-		store.inject(injectable);
-	}
 	
 	@Override
 	public String toString() {

@@ -25,8 +25,6 @@ public interface Store<KEY, VALUE> {
 
 	public Collection<VALUE> getAll();
 
-	public void inject(Injectable injectable);
-
 	public Collection<KEY> getAllKeys();
 
     /**

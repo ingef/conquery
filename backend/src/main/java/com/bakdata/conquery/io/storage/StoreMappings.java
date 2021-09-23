@@ -103,8 +103,8 @@ public enum StoreMappings {
 	/**
 	 * Store holding a single value.
 	 */
-	public static <VALUE> SingletonStore<VALUE> singleton(Store<Boolean, VALUE> baseStore, Injectable... injectables) {
-		return new SingletonStore<>(baseStore, injectables);
+	public static <VALUE> SingletonStore<VALUE> singleton(Store<Boolean, VALUE> baseStore) {
+		return new SingletonStore<>(baseStore);
 	}
 
 	private String getName() {
