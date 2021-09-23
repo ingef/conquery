@@ -29,12 +29,12 @@ public interface Injectable {
 					 .setInjectableValues(inject(new MutableInjectableValues()));
 	}
 
-	default void injectInto(ObjectMapper mapper) {
+	default ObjectMapper injectInto(ObjectMapper mapper) {
 		// If is already MutableInjectable, add my values to other, else begin from scratch.
 
 		if (mapper.getInjectableValues() instanceof MutableInjectableValues) {
 			mapper.setInjectableValues(inject(((MutableInjectableValues) mapper.getInjectableValues())));
-			return;
+			return mapper;
 		}
 		throw new IllegalStateException("Cannot add additional injectables if the mapper does not provide MutableInjectableValues");
 	}

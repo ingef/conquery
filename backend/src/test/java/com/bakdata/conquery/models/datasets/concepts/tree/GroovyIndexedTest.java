@@ -9,7 +9,11 @@ import java.util.Random;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.validation.Validator;
+
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -20,6 +24,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
@@ -81,16 +86,25 @@ public class GroovyIndexedTest {
 		registry.register(table);
 		registry.register(column);
 
-		// load tree twice to to avoid references
 
-		indexedConcept = new SingletonNamespaceCollection(registry).injectIntoNew(dataset.injectIntoNew(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
+		// Prepare Serdes injections
+		final Validator validator = Validators.newValidator();
+		final ObjectReader conceptReader = new Injectable(){
+			@Override
+			public MutableInjectableValues inject(MutableInjectableValues values) {
+				return values.add(Validator.class, validator);
+			}
+		}.injectInto(registry.injectIntoNew(dataset.injectIntoNew(Jackson.MAPPER))).readerFor(Concept.class);
+
+		// load tree twice to to avoid references
+		indexedConcept = conceptReader.readValue(node);
 
 		indexedConcept.setDataset(dataset);
 		indexedConcept.initElements();
 
 		TreeChildPrefixIndex.putIndexInto(indexedConcept);
 
-		oldConcept = new SingletonNamespaceCollection(registry).injectIntoNew(dataset.injectIntoNew(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
+		oldConcept = conceptReader.readValue(node);
 
 		oldConcept.setDataset(dataset);
 		oldConcept.initElements();
