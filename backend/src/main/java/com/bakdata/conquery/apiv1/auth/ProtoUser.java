@@ -61,15 +61,7 @@ public class ProtoUser {
 		return user;
 	}
 
-	@org.jetbrains.annotations.NotNull
 	public UserId getId() {
 		return new UserId(name);
-	}
-
-	public static boolean registerForAuthentication(UserManageable userManager, User user, List<CredentialType> credentials, boolean override) {
-		if(override) {			
-			return userManager.updateUser(user, credentials);
-		}
-		return userManager.addUser(user, credentials);
 	}
 }

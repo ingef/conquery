@@ -121,7 +121,7 @@ public class QueryProcessor {
 
 
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = executionManager.runQuery(datasetRegistry, query, storage.getUser(user.getId()), dataset, config);
+		ManagedExecution<?> mq = executionManager.runQuery(datasetRegistry, query, user, dataset, config);
 
 		if (query instanceof Query) {
 			translateToOtherDatasets(dataset, query, user, mq);
@@ -396,7 +396,7 @@ public class QueryProcessor {
 		// We only create the Query, really no need to execute it as it's only useful for composition.
 		final ManagedQuery execution =
 				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
-											   .createExecution(datasetRegistry, query, storage.getUser(user.getId()), dataset));
+											   .createExecution(datasetRegistry, query, user, dataset));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 

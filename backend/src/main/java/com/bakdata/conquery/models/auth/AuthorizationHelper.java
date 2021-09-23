@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -149,5 +150,13 @@ public class AuthorizationHelper {
 			}
 		}
 		return datasetAbilities;
+	}
+
+
+	public static boolean registerForAuthentication(UserManageable userManager, User user, List<CredentialType> credentials, boolean override) {
+		if(override) {
+			return userManager.updateUser(user, credentials);
+		}
+		return userManager.addUser(user, credentials);
 	}
 }

@@ -183,7 +183,7 @@ public class FormConfigTest {
 		// CHECK
 		assertThat(storage.getAllFormConfigs()).doesNotContain(formConfig);
 		
-		assertThat(storage.getUser(user.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
+		assertThat(user.getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
 	}
 	
 	@Test

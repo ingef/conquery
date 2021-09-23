@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.auth;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -140,7 +141,7 @@ public final class AuthorizationController implements Managed{
 			final User user = pUser.createOrOverwriteUser(storage);
 			for (Realm realm : realms) {
 				if (realm instanceof UserManageable) {
-					ProtoUser.registerForAuthentication((UserManageable) realm, user, pUser.getCredentials(), true);
+					AuthorizationHelper.registerForAuthentication((UserManageable) realm, user, pUser.getCredentials(), true);
 				}
 			}
 		}

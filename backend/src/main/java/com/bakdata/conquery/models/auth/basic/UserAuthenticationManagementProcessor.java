@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.auth.basic;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationController;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
@@ -29,7 +31,7 @@ public class UserAuthenticationManagementProcessor {
 			return false;
 		}
 		log.trace("Added the user {} to the authorization storage", id);
-		if(ProtoUser.registerForAuthentication(realm, user, pUser.getCredentials(),false)) {
+		if(AuthorizationHelper.registerForAuthentication(realm, user, pUser.getCredentials(), false)) {
 			log.trace("Added the user {} to the realm {}", id, realm.getName());
 			return true;
 		}
@@ -39,7 +41,7 @@ public class UserAuthenticationManagementProcessor {
 
 	public boolean updateUser(ProtoUser pUser) {
 		final User user = pUser.createOrOverwriteUser(storage);
-		ProtoUser.registerForAuthentication(realm, user,pUser.getCredentials(),false);
+		AuthorizationHelper.registerForAuthentication(realm, user,pUser.getCredentials(),false);
 		return true;
 	}
 
