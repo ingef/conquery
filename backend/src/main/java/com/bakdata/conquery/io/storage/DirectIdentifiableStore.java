@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
