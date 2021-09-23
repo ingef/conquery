@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.validation.Validator;
+
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
@@ -19,6 +21,8 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -54,6 +58,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -198,9 +203,18 @@ public class SerializationTests {
 		registry.register(connector);
 		registry.register(valDate);
 
+		final Validator validator = Validators.newValidator();
+		concept.setValidator(validator);
+
 		SerializationTestUtil
 				.forType(TreeConcept.class)
 				.registry(registry)
+				.injectables(new Injectable() {
+					@Override
+					public MutableInjectableValues inject(MutableInjectableValues values) {
+						return values.add(Validator.class, validator);
+					}
+				})
 				.test(concept);
 	}
 
