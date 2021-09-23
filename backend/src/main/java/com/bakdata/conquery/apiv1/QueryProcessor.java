@@ -43,7 +43,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -119,16 +118,8 @@ public class QueryProcessor {
 			}
 		}
 
-
-		// Run the query on behalf of the user
-		ManagedExecution<?> mq = executionManager.runQuery(datasetRegistry, query, user, dataset, config);
-
-		if (query instanceof Query) {
-			translateToOtherDatasets(dataset, query, user, mq);
-		}
-
-		// return status
-		return mq;
+		// Execute the query
+		return executionManager.runQuery(datasetRegistry, query, user, dataset, config);
 	}
 
 	/**
@@ -266,34 +257,6 @@ public class QueryProcessor {
 	 */
 	public static boolean isFrontendStructure(CQElement root) {
 		return root instanceof CQAnd || root instanceof CQExternal;
-	}
-
-	private void translateToOtherDatasets(Dataset dataset, QueryDescription query, User user, ManagedExecution<?> mq) {
-		Query translateable = (Query) query;
-		// translate the query for all other datasets of user and submit it.
-		for (Namespace targetNamespace : datasetRegistry.getDatasets()) {
-
-			final Dataset targetDataset = targetNamespace.getDataset();
-
-			if (targetDataset.equals(dataset)) {
-				continue;
-			}
-
-			if (!user.isPermitted(targetDataset, Ability.READ)) {
-				continue;
-			}
-
-			try {
-				log.trace("Adding Query on Dataset[{}]", dataset.getId());
-				Query translated = QueryTranslator.replaceDataset(datasetRegistry, translateable, targetDataset);
-
-				targetNamespace.getExecutionManager()
-							   .createQuery(datasetRegistry, translated, mq.getQueryId(), user, targetDataset);
-			}
-			catch (Exception e) {
-				log.trace("Could not translate Query[{}] to Dataset[{}]", mq.getId(), targetDataset.getId(), e);
-			}
-		}
 	}
 
 	/**
