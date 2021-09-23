@@ -44,10 +44,4 @@ public abstract class IdentifiableStore<VALUE extends Identifiable<?>> extends K
 
     @Override
     protected abstract void added(VALUE value);
-
-	@Override
-	public void close() throws IOException {
-		super.close();
-		centralRegistry.clear();
-	}
 }
