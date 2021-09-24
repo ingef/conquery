@@ -31,14 +31,6 @@ public abstract class Job {
 	public abstract void execute() throws Exception;
 	public abstract String getLabel();
 
-	/**
-	 * is called to destroy all references used by the job
-	 * can be used for example in ImportJob to make some actions after the job get finished
-	 */
-	public void destroy(){
-		
-	}
-
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName()+"(label='"+getLabel()+"' progress="+progressReporter.getEstimate()+")";

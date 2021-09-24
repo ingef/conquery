@@ -59,12 +59,11 @@ public class ImportJob extends Job {
 	private final ConqueryConfig config;
 	@Getter
 	private final ImportId importId;
-	private final IdMutex.Locked locked;
 
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, IdMutex<ImportId> runningImportJobs, Optional<Import> toUpdateImp)
+	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, Optional<Import> toUpdateImp)
 			throws IOException {
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
 
@@ -86,21 +85,21 @@ public class ImportJob extends Job {
 			}
 
 			final ImportId importId = new ImportId(table.getId(), header.getName());
-			IdMutex.Locked locked = runningImportJobs.acquire(importId);
+
 			if (toUpdateImp.isPresent()) {
 				if (!importId.equals(toUpdateImp.get().getId())) {
-					locked.release();
+
 					throw new WebApplicationException(String.format("The Import [%s] to update is not the same as the one in the file [%s]", toUpdateImp.get().getId(), importId), Response.Status.CONFLICT);
 				}
 				if (namespace.getStorage().getImport(importId) == null) {
-					locked.release();
+
 					throw new WebApplicationException(String.format("Import[%s] is not present.", importId), Response.Status.NOT_FOUND);
 				}
 				// before updating the import, make sure that all workers removed the last import
 				namespace.sendToAll(new RemoveImportJob(toUpdateImp.get()));
 			} else {
 				if (namespace.getStorage().getImport(importId) != null) {
-					locked.release();
+
 					throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
 				}
 			}
@@ -132,8 +131,7 @@ public class ImportJob extends Job {
 					dictionaries,
 					container,
 					config,
-					importId,
-					locked
+					importId
 			);
 		}
 	}
@@ -245,10 +243,6 @@ public class ImportJob extends Job {
 		namespace.sendToAll(new UpdateDictionary(dictionary));
 	}
 
-	@Override
-	public void destroy() {
-		locked.release();
-	}
 
 	@Override
 	public void execute() throws JSONException, InterruptedException, IOException {
