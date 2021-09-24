@@ -7,6 +7,7 @@ import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 import Label from "./Label";
+import Optional from "./Optional";
 
 const Root = styled("label")<{ fullWidth?: boolean }>`
   ${({ fullWidth }) =>
@@ -27,6 +28,7 @@ interface Props {
   largeLabel?: boolean;
   fullWidth?: boolean;
   children?: React.ReactNode;
+  optional?: boolean;
   tooltip?: string;
 }
 
@@ -38,12 +40,14 @@ const Labeled = ({
   tinyLabel,
   largeLabel,
   tooltip,
+  optional,
   children,
 }: Props) => {
   return (
     <Root className={className} fullWidth={fullWidth}>
       <Label fullWidth={fullWidth} tiny={tinyLabel} large={largeLabel}>
         {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
+        {optional && <Optional />}
         {label}
         {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>

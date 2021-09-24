@@ -45,7 +45,7 @@ import {
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode, { DragItemFormConceptNode } from "./FormConceptNode";
 
-interface PropsType extends WrappedFieldProps {
+interface Props extends WrappedFieldProps {
   formType: string;
   fieldName: string;
   label: string;
@@ -53,6 +53,7 @@ interface PropsType extends WrappedFieldProps {
   onDropFilterFile: Function;
   newValue?: Object;
   isSingle?: boolean;
+  optional?: boolean;
   disallowMultipleColumns?: boolean;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
@@ -416,7 +417,7 @@ const SxDescription = styled(Description)`
   font-size: ${({ theme }) => theme.font.xs};
 `;
 
-const FormConceptGroup = (props: PropsType) => {
+const FormConceptGroup = (props: Props) => {
   const newValue = props.newValue;
   const defaults = props.defaults || {};
 
@@ -503,6 +504,7 @@ const FormConceptGroup = (props: PropsType) => {
     <div>
       <DropzoneList<DragItemConceptTreeNode | DragItemFormConceptNode>
         tooltip={props.tooltip}
+        optional={props.optional}
         label={
           <>
             {props.label}

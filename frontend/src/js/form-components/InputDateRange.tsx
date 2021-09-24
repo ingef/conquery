@@ -17,6 +17,7 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 import BaseInput from "./BaseInput";
 import Label from "./Label";
 import Labeled from "./Labeled";
+import Optional from "./Optional";
 
 const Root = styled("div")<{ center?: boolean }>`
   text-align: ${({ center }) => (center ? "center" : "left")};
@@ -39,7 +40,6 @@ const StyledLabel = styled(Label)<{ large?: boolean }>`
 const SxLabeled = styled(Labeled)`
   &:first-of-type {
     margin-right: 10px;
-    margin-bottom: 10px;
   }
 `;
 
@@ -53,6 +53,7 @@ interface PropsT {
   center?: boolean;
   autoFocus?: boolean;
   tooltip?: string;
+  optional?: boolean;
   input: {
     value: DateStringMinMax;
     onChange: (value: DateStringMinMax) => void;
@@ -80,6 +81,7 @@ const InputDateRange: FC<PropsT> = ({
   autoFocus,
   labelSuffix,
   input: { value, onChange },
+  optional,
   tooltip,
 }) => {
   const { t } = useTranslation();
@@ -139,6 +141,7 @@ const InputDateRange: FC<PropsT> = ({
       {label && (
         <StyledLabel large={large}>
           {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
+          {optional && <Optional />}
           {label}
           <InfoTooltip
             html={

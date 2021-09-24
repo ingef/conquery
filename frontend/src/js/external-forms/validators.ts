@@ -7,7 +7,7 @@ export const validateRequired = (t: TFunction, value: any): string | null => {
 };
 
 export const validatePositive = (t: TFunction, value: any) => {
-  return value > 0
+  return isEmpty(value) || value > 0
     ? null
     : t("externalForms.formValidation.mustBePositiveNumber");
 };

@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:14
+FROM mhart/alpine-node:16
 RUN apk add --no-cache bash
 
 RUN mkdir /conquery

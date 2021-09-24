@@ -217,7 +217,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 						.filteredOn(con -> con.getId().equals(conceptId))
 						.isNotEmpty();
 
-				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
+				assertThat(conquery2.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
 						.isNotEmpty();
 
 				for (ShardNode node : conquery2.getShardNodes()) {

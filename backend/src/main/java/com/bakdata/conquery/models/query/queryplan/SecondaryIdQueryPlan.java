@@ -2,11 +2,15 @@ package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -14,12 +18,12 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.util.QueryUtils;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -30,7 +34,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * one result per distinct value in a {@link SecondaryIdDescriptionId} Column.
  *
  * @implNote This class will first execute the Query on all Tables carrying the selected {@link SecondaryIdDescriptionId}. Which will then be joined with all Tables that don't have a {@link SecondaryIdDescriptionId}, or are explicitly excluded (via {@link CQConcept#isExcludeFromSecondaryIdQuery()}.
- *
+ * <p>
  * This Query likely uses a lot of memory!
  */
 @RequiredArgsConstructor
@@ -39,31 +43,32 @@ import org.apache.commons.lang3.ArrayUtils;
 public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;
-	private final ConceptQueryPlan query;
+	private final ConceptQuery query;
+	private final QueryPlanContext queryPlanContext;
+
 	private final SecondaryIdDescription secondaryId;
 
 	private final Set<Column> tablesWithSecondaryId;
 	private final Set<Table> tablesWithoutSecondaryId;
 
-	private Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
+	private final ConceptQueryPlan queryPlan;
+
+
+	private final Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
+
+
 
 	/**
 	 * This is the same execution as a typical ConceptQueryPlan. The difference
 	 * is that this method will create a new cloned child for each distinct
 	 * secondaryId it encounters during iteration.
+	 *
 	 * @return
 	 */
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
-		if (query.getRequiredTables().get().isEmpty()) {
-			return Optional.empty();
-		}
-
-		query.checkRequiredTables(ctx.getStorage());
-		query.init(entity, ctx);
-
-		if (!query.isOfInterest(entity)) {
+		if (!queryPlan.isOfInterest(entity)) {
 			return Optional.empty();
 		}
 
@@ -76,7 +81,13 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 			executeQueriesWithoutSecondaryId(ctx, entity, currentTable);
 		}
 
+		return createResult(entity);
+	}
 
+	/**
+	 * For each secondaryId that is included, create a line, return {@link MultilineEntityResult} containing all results.
+	 */
+	private Optional<MultilineEntityResult> createResult(Entity entity) {
 		List<Object[]> result = new ArrayList<>(childPerKey.values().size());
 
 		// Prepend the key (ie the actual SecondaryId) to the result.
@@ -86,15 +97,31 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 			}
 
 			// Prepend SecondaryId to result-line.
-			result.add(ArrayUtils.insert(0, child.getValue().result().getValues(), child.getKey()));
+			result.add(ArrayUtils.insert(0, child.getValue().createResult().getValues(), child.getKey()));
 		}
-
 
 		if (result.isEmpty()) {
 			return Optional.empty();
 		}
 
 		return Optional.of(new MultilineEntityResult(entity.getId(), result));
+	}
+
+	/**
+	 * This helps us avoid allocations, instead allowing us to reuse the queries.
+	 */
+	@Getter(AccessLevel.NONE)
+	private final Queue<ConceptQueryPlan> childPlanReusePool = new LinkedList<>();
+
+	@Override
+	public void init(QueryExecutionContext ctx, Entity entity) {
+		queryPlan.init(ctx, entity);
+
+
+		// Dump the created children into reuse-pool
+		childPlanReusePool.addAll(childPerKey.values());
+
+		childPerKey.clear();
 	}
 
 
@@ -117,7 +144,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 				continue;
 			}
 
-			if(!isOfInterest(bucket)){
+			if (!isOfInterest(bucket)) {
 				continue;
 			}
 
@@ -131,7 +158,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 				}
 
 				String key = ((String) bucket.createScriptValue(event, secondaryIdColumnId));
-				final ConceptQueryPlan plan = childPerKey.computeIfAbsent(key, k -> this.createChild(secondaryIdColumnId, ctxWithPhase, bucket));
+				final ConceptQueryPlan plan = childPerKey.computeIfAbsent(key, k -> createChild(ctxWithPhase, bucket));
 				plan.nextEvent(bucket, event);
 			}
 		}
@@ -162,7 +189,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	private void nextTable(QueryExecutionContext ctx, Table currentTable) {
-		query.nextTable(ctx, currentTable);
+		queryPlan.nextTable(ctx, currentTable);
 		for (ConceptQueryPlan c : childPerKey.values()) {
 			QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(ctx, c::getValidityDateAggregator);
 			c.nextTable(context, currentTable);
@@ -170,28 +197,33 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	private void nextBlock(Bucket bucket) {
-		query.nextBlock(bucket);
+		queryPlan.nextBlock(bucket);
 		for (ConceptQueryPlan c : childPerKey.values()) {
 			c.nextBlock(bucket);
 		}
 	}
 
 	private boolean isOfInterest(Bucket bucket) {
-		return query.isOfInterest(bucket);
+		return queryPlan.isOfInterest(bucket);
 	}
 
 	/**
 	 * if a new distinct secondaryId was found we create a new clone of the ConceptQueryPlan
 	 * and bring it up to speed
 	 */
-	private ConceptQueryPlan createChild(Column secondaryIdColumn, QueryExecutionContext currentContext, Bucket currentBucket) {
+	private ConceptQueryPlan createChild(QueryExecutionContext currentContext, Bucket currentBucket) {
 
-		ConceptQueryPlan plan = query.clone(new CloneContext(currentContext.getStorage()));
+		ConceptQueryPlan plan;
 
-		QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
+		// Try to reuse old child plan first before allocating new ones
+		if((plan = childPlanReusePool.poll()) == null) {
+			plan = query.createQueryPlan(queryPlanContext.withSelectedSecondaryId(secondaryId));
+		}
 
-		plan.init(query.getEntity(), context);
-		plan.nextTable(context, secondaryIdColumn.getTable());
+		final QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(currentContext, plan::getValidityDateAggregator);
+
+		plan.init(context, queryPlan.getEntity());
+		plan.nextTable(context, currentBucket.getTable());
 		plan.isOfInterest(currentBucket);
 		plan.nextBlock(currentBucket);
 
@@ -199,18 +231,13 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
-	public QueryPlan clone(CloneContext ctx) {
-		return new SecondaryIdQueryPlan(query.clone(ctx), secondaryId, tablesWithSecondaryId, tablesWithoutSecondaryId);
-	}
-
-	@Override
 	public boolean isOfInterest(Entity entity) {
-		return query.isOfInterest(entity);
+		return queryPlan.isOfInterest(entity);
 	}
 
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		if(!query.isAggregateValidityDates()) {
+		if (!queryPlan.isAggregateValidityDates()) {
 			return Optional.empty();
 		}
 

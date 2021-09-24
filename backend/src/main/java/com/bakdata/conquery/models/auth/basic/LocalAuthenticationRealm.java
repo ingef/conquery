@@ -1,16 +1,19 @@
 package com.bakdata.conquery.models.auth.basic;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.io.storage.IStoreInfo;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.Store;
+import com.bakdata.conquery.io.storage.StoreMappings;
+import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
@@ -22,17 +25,15 @@ import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.util.Duration;
-import jetbrains.exodus.ArrayByteIterable;
-import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.ExodusException;
-import jetbrains.exodus.bindings.StringBinding;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.EnvironmentClosedException;
 import jetbrains.exodus.env.Environments;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -63,27 +64,19 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	@JsonIgnore
 	private Environment passwordEnvironment;
 	@JsonIgnore
-	private XodusStore passwordStore;
+	private Store<UserId, PasswordHasher.HashedEntry> passwordStore;
 
 	@JsonIgnore
 	private final ConqueryTokenRealm centralTokenRealm;
 	private final Duration validDuration;
-
-	@RequiredArgsConstructor
-	@Getter
-	private static class StoreInfo implements IStoreInfo {
-
-		private final String name;
-		// Not used
-		private final Class<?> keyType = String.class;
-		// Not used
-		private final Class<?> valueType = HashedEntry.class;
-
-	}
+	private final Validator validator;
+	private final ObjectMapper mapper;
 
 	//////////////////// INITIALIZATION ////////////////////
 
-	public LocalAuthenticationRealm(ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration) {
+	public LocalAuthenticationRealm(Validator validator, ObjectMapper mapper, ConqueryTokenRealm centralTokenRealm, String storeName, File storageDir, XodusConfig passwordStoreConfig, Duration validDuration) {
+		this.validator = validator;
+		this.mapper = mapper;
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		this.storeName = storeName;
 		this.storageDir = storageDir;
@@ -98,7 +91,23 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		// Open/create the database/store
 		File passwordStoreFile = new File(storageDir, storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
-		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"), new ArrayList<>(), (e) -> e.close(), (e) -> {});
+		passwordStore = StoreMappings.cached(
+				new SerializingStore<>(
+						new XodusStore(
+								passwordEnvironment,
+								"passwords",
+								store -> store.getEnvironment().close(),
+								store -> {
+								}
+						),
+						validator,
+						mapper,
+						UserId.class,
+						PasswordHasher.HashedEntry.class,
+						false,
+						null,
+						true
+				));
 	}
 
 	//////////////////// AUTHENTICATION ////////////////////
@@ -126,8 +135,8 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	/**
 	 * Converts the provided password to a Xodus compatible hash.
 	 */
-	private static ByteIterable passwordToHashedEntry(Optional<PasswordCredential> optPassword) {
-		return HashedEntry.asByteIterable(PasswordHasher.generateHashedEntry(optPassword.get().getPassword()));
+	private static HashedEntry passwordToHashedEntry(PasswordCredential credential) {
+		return PasswordHasher.generateHashedEntry(credential.getPassword());
 	}
 
 	/**
@@ -154,44 +163,38 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	@Override
 	public boolean addUser(User user, List<CredentialType> credentials) {
 		Optional<PasswordCredential> optPassword = getTypePassword(credentials);
-		if (!optPassword.isPresent()) {
+		if (optPassword.isEmpty()) {
 			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
 			return false;
 		}
-		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getId().getEmail());
-		ByteIterable passwordByteIt = passwordToHashedEntry(optPassword);
-
-		return passwordStore.add(usernameByteIt, passwordByteIt);
+		HashedEntry passwordByteIt = optPassword.map(LocalAuthenticationRealm::passwordToHashedEntry).get();
+		passwordStore.add(user.getId(), passwordByteIt);
+		return true;
 	}
 
 	@Override
 	public boolean updateUser(User user, List<CredentialType> credentials) {
 		Optional<PasswordCredential> optPassword = getTypePassword(credentials);
-		if (!optPassword.isPresent()) {
+		if (optPassword.isEmpty()) {
 			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
 			return false;
 		}
-		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getId().getEmail());
-		ByteIterable passwordByteIt = passwordToHashedEntry(optPassword);
+		HashedEntry passwordByteIt = optPassword.map(LocalAuthenticationRealm::passwordToHashedEntry).get();
 
-		return passwordStore.update(usernameByteIt, passwordByteIt);
+		passwordStore.update(user.getId(), passwordByteIt);
+		return true;
 
 	}
 
 	@Override
 	public boolean removeUser(User user) {
-		return passwordStore.remove(StringBinding.stringToEntry(user.getId().getEmail()));
+		passwordStore.remove(user.getId());
+		return true;
 	}
 
 	@Override
 	public List<UserId> getAllUsers() {
-		List<String> listId = new ArrayList<>();
-		// Iterate over the store entries by collecting all keys (UserIds/emails).
-		// These must be turned from their binary format into Strings.
-		passwordStore.forEach((k, v) -> listId.add(StringBinding.entryToString(k)));
-
-		// Finally the Strings are turned into UserIds
-		return listId.stream().map(UserId::new).collect(Collectors.toList());
+		return ImmutableList.copyOf(passwordStore.getAllKeys());
 	}
 
 
@@ -199,6 +202,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	//////////////////// LIFECYCLE MANAGEMENT ////////////////////
 		
 	@Override
+	@SneakyThrows(IOException.class)
 	public void destroy() throws InterruptedException {
 		for(int retries = 0; retries < ENVIRONMNENT_CLOSING_RETRYS; retries++) {			
 			try {
@@ -207,23 +211,21 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 				return;
 			}
 			catch (EnvironmentClosedException e) {
-				log.warn("Password environment was already closed, which is odd but mayby the stop() lifecycle event fired twice");
+				log.warn("Password environment was already closed, which is odd but maybe the stop() lifecycle event fired twice");
 				return;
 			}
 			catch (ExodusException e) {
 				if (retries == 0) {
 					log.info("The environment is still working on some transactions. Retry");				
 				}
-				log.info("Waiting for {} seconds to retry.");
+				log.info("Waiting for {} seconds to retry.", ENVIRONMNENT_CLOSING_TIMEOUT);
 				Thread.sleep(ENVIRONMNENT_CLOSING_TIMEOUT*1000 /* milliseconds */);
-				continue;
 			}
 		}
 		// Close the environment with force
 		log.info("Closing the environment forcefully");
 		passwordEnvironment.getEnvironmentConfig().setEnvCloseForcedly(true);
 		passwordEnvironment.close();
-		return;
 
 	}
 }

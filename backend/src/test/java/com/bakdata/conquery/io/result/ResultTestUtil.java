@@ -1,11 +1,14 @@
 package com.bakdata.conquery.io.result;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
@@ -61,11 +64,11 @@ public class ResultTestUtil {
 
 		@Override
 		public Aggregator<String> createAggregator() {
-			return new Aggregator<String>() {
+			return new Aggregator<>() {
 
 				@Override
-				public Aggregator<String> doClone(CloneContext ctx) {
-					throw new UnsupportedOperationException();
+				public void init(Entity entity, QueryExecutionContext context) {
+
 				}
 
 				@Override
@@ -74,7 +77,7 @@ public class ResultTestUtil {
 				}
 
 				@Override
-				public String getAggregationResult() {
+				public String createAggregationResult() {
 					throw new UnsupportedOperationException();
 				}
 

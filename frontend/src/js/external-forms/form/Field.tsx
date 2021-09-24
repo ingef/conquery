@@ -20,7 +20,7 @@ import {
   FormMultiQueryDropzone,
 } from "../form-query-dropzone";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
-import { isFormField } from "../helper";
+import { isFormField, isOptionalField } from "../helper";
 
 const TabsField = styled("div")``;
 
@@ -47,13 +47,20 @@ const NestedFields = styled("div")`
 interface PropsT {
   formType: string;
   field: GeneralField;
-  getFieldValue: (fieldName: string) => any;
+  getFieldValue: () => any;
   locale: "de" | "en";
   availableDatasets: SelectOptionT[];
+  optional?: boolean;
 }
 
 const Field = ({ field, ...commonProps }: PropsT) => {
-  const { formType, locale, availableDatasets, getFieldValue } = commonProps;
+  const {
+    formType,
+    optional,
+    locale,
+    availableDatasets,
+    getFieldValue,
+  } = commonProps;
   const { t } = useTranslation();
 
   switch (field.type) {
@@ -76,6 +83,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             placeholder: (field.placeholder && field.placeholder[locale]) || "",
             fullWidth: field.style ? field.style.fullWidth : false,
             tooltip: field.tooltip ? field.tooltip[locale] : undefined,
+            optional,
           }}
         />
       );
@@ -95,6 +103,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               max: field.max,
             },
             tooltip: field.tooltip ? field.tooltip[locale] : undefined,
+            optional,
           }}
         />
       );
@@ -107,6 +116,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             inline: true,
             label: field.label[locale],
             tooltip: field.tooltip ? field.tooltip[locale] : undefined,
+            optional,
           }}
         />
       );
@@ -119,6 +129,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             label: field.label[locale],
             dropzoneText: field.dropzoneLabel[locale],
             tooltip: field.tooltip ? field.tooltip[locale] : undefined,
+            optional,
           }}
         />
       );
@@ -131,6 +142,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             label: field.label[locale],
             dropzoneChildren: () => field.dropzoneLabel[locale],
             tooltip: field.tooltip ? field.tooltip[locale] : undefined,
+            optional,
           }}
         />
       );
@@ -157,30 +169,29 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               value: option.value,
             })),
             tooltip: field.tooltip ? field.tooltip[locale] : undefined,
+            optional,
           }}
         />
       );
     case "DATASET_SELECT":
+      const defaultValue =
+        availableDatasets.length > 0 ? availableDatasets[0].value : undefined;
+
       return (
         <RxFormField
           name={field.name}
           component={Select}
-          defaultValue={
-            availableDatasets.length > 0
-              ? availableDatasets[0].value
-              : undefined
-          }
+          defaultValue={defaultValue}
           props={{
             label: field.label[locale],
             options: availableDatasets,
             tooltip: field.tooltip ? field.tooltip[locale] : undefined,
+            optional,
           }}
         />
       );
     case "TABS":
-      const tabToShow = field.tabs.find(
-        (tab) => tab.name === getFieldValue(field.name),
-      );
+      const tabToShow = field.tabs.find((tab) => tab.name === getFieldValue());
 
       return (
         <Tabs>
@@ -199,8 +210,16 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             <NestedFields>
               {tabToShow.fields.map((f, i) => {
                 const key = isFormField(f) ? f.name : f.type + i;
+                const nestedFieldOptional = isOptionalField(f);
 
-                return <Field key={key} field={f} {...commonProps} />;
+                return (
+                  <Field
+                    key={key}
+                    field={f}
+                    {...commonProps}
+                    optional={nestedFieldOptional}
+                  />
+                );
               })}
             </NestedFields>
           )}
@@ -228,6 +247,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             blocklistedTables: field.blocklistedConnectors,
             allowlistedTables: field.allowlistedConnectors,
             defaults: field.defaults,
+            optional,
             isValidConcept: (item: Object) =>
               !nodeIsInvalid(
                 item,

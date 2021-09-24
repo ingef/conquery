@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC } from "react";
+import React, { FC, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
 import type { ColumnDescription } from "../api/types";
-import { useAuthToken } from "../api/useApi";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { openPreview } from "../preview/actions";
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -27,7 +27,7 @@ const PreviewButton: FC<PropsT> = ({
   className,
   ...restProps
 }) => {
-  const authToken = useAuthToken();
+  const { authToken } = useContext(AuthTokenContext);
   const isLoading = useSelector<StateT, boolean>(
     (state) => state.preview.isLoading,
   );

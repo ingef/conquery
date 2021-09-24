@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,8 +8,9 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Aggregator counting the occurrence of multiple values.
@@ -24,6 +26,11 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 		this.selection = selection;
 		this.selectedValues = new int[selection.length];
 		this.hits = new int[selection.length];
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		Arrays.fill(hits, 0);
 	}
 
 	@Override
@@ -52,24 +59,19 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	}
 
 	@Override
-	public Map<String, Integer> getAggregationResult() {
+	public Map<String, Integer> createAggregationResult() {
 		Map<String, Integer> out = new HashMap<>();
 
 		for (int i = 0; i < hits.length; i++) {
 			int hit = hits[i];
 			if (hit > 0) {
-				out.merge(selection[i], hit, (a,b)->a+b);
+				out.merge(selection[i], hit, Integer::sum);
 			}
 		}
 
 		return out.isEmpty() ? null : out;
 	}
 
-	@Override
-	public MultiSelectAggregator doClone(CloneContext ctx) {
-		return new MultiSelectAggregator(getColumn(), selection);
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.StringT.INSTANCE;
@@ -78,7 +80,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (String selected : selection) {
-			if(((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(selected) == -1) {
+			if (((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(selected) == -1) {
 				return false;
 			}
 		}

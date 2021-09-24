@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 
 @Getter
@@ -129,11 +128,6 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public boolean isContained() {
 		return getChild().isContained();
-	}
-
-	@Override
-	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(ctx.clone(getChild()), concepts, requiredBits, table, selectedSecondaryId);
 	}
 
 	@Override

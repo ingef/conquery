@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
-import React, { ReactNode, FC } from "react";
+import React, { ReactNode, FC, useContext } from "react";
 
-import { useAuthToken } from "../api/useApi";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 
 import IconButton, { IconButtonPropsT } from "./IconButton";
 
@@ -21,7 +21,7 @@ const DownloadButton: FC<PropsT> = ({
   children,
   ...restProps
 }) => {
-  const authToken = useAuthToken();
+  const { authToken } = useContext(AuthTokenContext);
 
   const href = `${url}?access_token=${encodeURIComponent(
     authToken,
