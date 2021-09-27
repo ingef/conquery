@@ -2,15 +2,12 @@ package com.bakdata.conquery.models.auth.basic;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Optional;
 
 /**
  * Business logic for the {@link UserAuthenticationManagementResource}.
@@ -24,7 +21,7 @@ public class UserAuthenticationManagementProcessor {
 
 	public boolean tryRegister(ProtoUser pUser) {
 		// Throws an exception if it would override the existing user
-		final UserId id = pUser.getId();
+		final UserId id = pUser.createId();
 		User user = storage.getUser(id);
 		if (user == null) {
 			log.warn("Unable to add new user {}. Probably already existed.", pUser);

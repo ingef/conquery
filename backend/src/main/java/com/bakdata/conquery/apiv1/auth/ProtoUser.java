@@ -63,7 +63,7 @@ public class ProtoUser {
 	}
 
 	@JsonIgnore
-	public UserId getId() {
+	public UserId createId() {
 		return new UserId(name);
 	}
 }
