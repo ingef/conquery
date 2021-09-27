@@ -1,7 +1,5 @@
 package com.bakdata.conquery;
 
-import java.nio.charset.StandardCharsets;
-
 import javax.tools.ToolProvider;
 import javax.validation.Validator;
 
@@ -17,13 +15,11 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.util.UrlRewriteBundle;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.Application;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.configuration.JsonConfigurationFactory;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
-import io.dropwizard.servlets.assets.AssetServlet;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -71,10 +67,10 @@ public class Conquery extends Application<ConqueryConfig> {
 
 		// do some setup in other classes after initialization but before running a
 		// command
-		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
+		bootstrap.addBundle(new ConfiguredBundle<>() {
 
 			@Override
-			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
+			public void run(ConqueryConfig configuration, Environment environment) {
 				configuration.configureObjectMapper(environment.getObjectMapper());
 			}
 
@@ -83,25 +79,6 @@ public class Conquery extends Application<ConqueryConfig> {
 				// Allow overriding of config from environment variables.
 				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(
 						bootstrap.getConfigurationSourceProvider(), StringSubstitutor.createInterpolator()));
-			}
-		});
-		// register frontend
-		registerFrontend(bootstrap);
-	}
-
-	protected void registerFrontend(Bootstrap<ConqueryConfig> bootstrap) {
-		bootstrap.addBundle(new UrlRewriteBundle());
-		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
-			@Override
-			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-				String uriPath = "/app/";
-				environment.servlets()
-						.addServlet("app", new AssetServlet("/frontend/app/", uriPath, "static/index.html", StandardCharsets.UTF_8))
-						.addMapping(uriPath + '*');
-			}
-
-			@Override
-			public void initialize(Bootstrap<?> bootstrap) {
 			}
 		});
 	}
