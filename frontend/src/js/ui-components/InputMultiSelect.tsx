@@ -81,8 +81,6 @@ const MultiValueLabel = (params: any) => {
   );
 };
 
-const Menu = ({ ...ownProps }) => {};
-
 const optionContainsStr = (str: string) => (option: SelectOptionT) => {
   return (
     option.value.toString().toLowerCase().includes(str) ||

@@ -4,6 +4,7 @@ import React from 'react';
 import { addDecorator } from '@storybook/react';
 
 import DndProvider from '../src/js/app/DndProvider';
+import GlobalStyles from '../src/js/GlobalStyles';
 
 import i18next from "../src/js/localization/i18next";
 import translationsDe from "../src/localization/de.json";
@@ -24,7 +25,9 @@ addDecorator((Story) => {
   return (
     <ThemeProvider theme={theme}>
     <DndProvider>
-      <Story /></DndProvider>
+      <GlobalStyles />
+      <Story />
+    </DndProvider>
     </ThemeProvider>
   );
 })
