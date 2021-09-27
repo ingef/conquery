@@ -1,5 +1,3 @@
-import '!style-loader!css-loader!sass-loader!../src/app-styles.sass';
-
 import { ThemeProvider } from '@emotion/react';
 import { theme } from '../src/app-theme';
 import React from 'react';
