@@ -44,12 +44,7 @@ class QueryCleanupTaskTest {
 		return managedQuery;
 	}
 
-	private static final MetaStorage STORAGE = new MetaStorage();
-
-	@BeforeAll
-	public static void beforeAll() {
-		STORAGE.openStores(new NonPersistentStoreFactory());
-	}
+	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 
 	@AfterEach

@@ -18,6 +18,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 
@@ -130,5 +131,14 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		log.debug("Starting REST Server");
 		ConqueryMDC.setLocation(null);
 		super.run(environment, namespace, config);
+	}
+
+	@SneakyThrows
+	public void shutdown(){
+		manager.stop();
+		for (ShardNode shardNode : shardNodes) {
+			shardNode.stop();
+		}
+
 	}
 }

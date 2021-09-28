@@ -34,7 +34,7 @@ import org.mockito.Mockito;
 
 public class DefaultLabelTest {
 
-	private final static MetaStorage STORAGE = new MetaStorage();
+	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 	private static final DatasetRegistry DATASET_REGISTRY = Mockito.mock(DatasetRegistry.class);
 	private static final Dataset DATASET = new Dataset("dataset");

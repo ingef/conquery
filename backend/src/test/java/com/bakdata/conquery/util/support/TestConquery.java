@@ -183,8 +183,7 @@ public class TestConquery {
 
 	@SneakyThrows
 	public synchronized void shutdown() {
-		standaloneCommand.getManager().getDatasetRegistry().close();
-		standaloneCommand.getManager().getStorage().close();
+		standaloneCommand.shutdown();
 
 		openSupports.clear();
 	}

@@ -22,10 +22,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class MetaStorage implements ConqueryStorage, Injectable {
 
     private IdentifiableStore<ManagedExecution<?>> executions;
@@ -37,14 +39,15 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 
     @Getter
     protected final CentralRegistry centralRegistry = new CentralRegistry();
+	protected final DatasetRegistry datasetRegistry;
 
     public void openStores(StoreFactory storageFactory) {
 		authUser = storageFactory.createUserStore(centralRegistry, "meta", this);
 		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this);
 		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this);
 		// Executions depend on users
-		executions = storageFactory.createExecutionsStore(centralRegistry, "meta");
-		formConfigs = storageFactory.createFormConfigStore(centralRegistry, "meta");
+		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry,  "meta");
+		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta");
 
 	}
 

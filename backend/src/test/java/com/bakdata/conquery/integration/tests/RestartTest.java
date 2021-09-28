@@ -61,6 +61,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(conquery);
 
+		final int numberOfExecutions = conquery.getMetaStorage().getAllExecutions().size();
+
 		// IDMapping Testing
 		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
 
@@ -144,6 +146,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		log.info("Restart complete");
 		
 		DatasetRegistry datasetRegistry = support.getDatasetsProcessor().getDatasetRegistry();
+
+		assertThat(support.getMetaStorage().getAllExecutions().size()).as("Executions after restart").isEqualTo(numberOfExecutions);
 
 		test.executeTest(support);
 
