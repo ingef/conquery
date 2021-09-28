@@ -246,8 +246,6 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		{
 			testConquery.shutdown();
 
-			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
-			testConquery.getDropwizard().after();
 			//restart
 			testConquery.beforeAll();
 

@@ -201,8 +201,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		// Finally, restart conquery and assert again, that the data is correct.
 		{
 			testConquery.shutdown();
-			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
-			testConquery.getDropwizard().after();
+
 			//restart
 			testConquery.beforeAll();
 			final StandaloneSupport conqueryRestart = testConquery.openDataset(conqueryReimport.getDataset().getId());

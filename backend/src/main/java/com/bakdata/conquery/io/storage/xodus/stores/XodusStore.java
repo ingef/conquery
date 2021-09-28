@@ -99,10 +99,10 @@ public class XodusStore {
 	}
 
 	public void remove() {
-		if (!environment.isOpen()) {
-			log.debug("While removing store: Environment is already closed for {}", this);
-			return;
-		}
+//		if (!environment.isOpen()) {
+//			log.debug("While removing store: Environment is already closed for {}", this);
+//			return;
+//		}
 		log.debug("Removing store {} from environment {}", store.getName(), environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
 		storeRemoveHook.accept(this);

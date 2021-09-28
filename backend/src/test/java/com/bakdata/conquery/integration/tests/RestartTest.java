@@ -135,8 +135,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		testConquery.shutdown();
 
-		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
-		testConquery.getDropwizard().after();
 		log.info("Restarting");
 		testConquery.beforeAll();
 
@@ -180,6 +178,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 													  .getIdMapping();
 		assertThat(entityIdMapAfterRestart).isEqualTo(entityIdMap);
 
+		// We need to reassign the dataset processor because the instance prio to the restart became invalid
+		adminDatasetProcessor = testConquery.getStandaloneCommand().getManager().getAdmin().getAdminDatasetProcessor();
 		// Cleanup
 		adminDatasetProcessor.deleteDataset(dataset1);
 		adminDatasetProcessor.deleteDataset(dataset2);

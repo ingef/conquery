@@ -184,13 +184,8 @@ public class TestConquery {
 
 	@SneakyThrows
 	public synchronized void shutdown() {
-
-		// Don't call ManagerNode::stop, under linux the port is not released instantly, so a consecutive restart probably fails
-		standaloneCommand.getManager().getDatasetRegistry().close();
-		standaloneCommand.getManager().getStorage().close();
-
-		standaloneCommand.getShardNodes().stream().flatMap(s -> s.getWorkers().getWorkers().values().stream()).forEach(Worker::close);
-
+		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
+		getDropwizard().after();
 		openSupports.clear();
 	}
 
