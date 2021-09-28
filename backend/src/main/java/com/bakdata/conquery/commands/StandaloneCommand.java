@@ -132,13 +132,4 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		ConqueryMDC.setLocation(null);
 		super.run(environment, namespace, config);
 	}
-
-	@SneakyThrows
-	public void shutdown(){
-		manager.stop();
-		for (ShardNode shardNode : shardNodes) {
-			shardNode.stop();
-		}
-
-	}
 }

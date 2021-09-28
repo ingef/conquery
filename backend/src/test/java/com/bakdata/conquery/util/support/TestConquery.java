@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -183,7 +184,12 @@ public class TestConquery {
 
 	@SneakyThrows
 	public synchronized void shutdown() {
-		standaloneCommand.shutdown();
+
+		// Don't call ManagerNode::stop, under linux the port is not released instantly, so a consecutive restart probably fails
+		standaloneCommand.getManager().getDatasetRegistry().close();
+		standaloneCommand.getManager().getStorage().close();
+
+		standaloneCommand.getShardNodes().stream().flatMap(s -> s.getWorkers().getWorkers().values().stream()).forEach(Worker::close);
 
 		openSupports.clear();
 	}
