@@ -15,9 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -158,6 +156,10 @@ public class ExcelRenderer {
                 Cell headerCell = header.createCell(currentColumn);
                 headerCell.setCellValue(idHeader);
 
+				// Track column explicitly, because sheet.trackAllColumnsForAutoSizing() does not work with
+				// sheet.getTrackedColumnsForAutoSizing(), if no flush has happened
+				sheet.trackColumnForAutoSizing(currentColumn);
+
                 currentColumn++;
             }
 
@@ -170,65 +172,93 @@ public class ExcelRenderer {
                 Cell headerCell = header.createCell(currentColumn);
                 headerCell.setCellValue(columnName);
 
+				sheet.trackColumnForAutoSizing(currentColumn);
+
                 currentColumn++;
             }
         }
     }
 
-    private int writeBody(
-            Sheet sheet,
-            List<ResultInfo> infos,
-            PrintSettings cfg,
-            Stream<EntityResult> resultLines) {
+	private int writeBody(
+			SXSSFSheet sheet,
+			List<ResultInfo> infos,
+			PrintSettings cfg,
+			Stream<EntityResult> resultLines) {
 
-        // Row 0 is the Header the data starts at 1
-        AtomicInteger currentRow = new AtomicInteger(1);
-        return resultLines.mapToInt(l -> this.writeRowsForEntity(infos, l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg)).sum();
-    }
+		// Row 0 is the Header the data starts at 1
+		AtomicInteger currentRow = new AtomicInteger(1);
+		final int writtenLines = resultLines.mapToInt(l -> this.writeRowsForEntity(infos, l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg, sheet)).sum();
 
-    /**
-     * Writes the result lines for each entity.
-     */
-    private int writeRowsForEntity(
-            List<ResultInfo> infos,
-            EntityResult internalRow,
-            Supplier<Row> externalRowSupplier,
-            PrintSettings settings) {
-        String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
+		// The result was shorter than the number of rows to track, so we auto size here explicitly
+		if (writtenLines < config.getLastRowToAutosize()){
+			setColumnWidthsAndUntrack(sheet);
+		}
 
-        int writtenLines = 0;
+		return writtenLines;
+	}
 
-        for (Object[] resultValues : internalRow.listResultLines()) {
-            Row row = externalRowSupplier.get();
-            // Write id cells
-            int currentColumn = 0;
-            for (String id : ids) {
-                Cell idCell = row.createCell(currentColumn);
-                idCell.setCellValue(id);
-                currentColumn++;
-            }
+	/**
+	 * Writes the result lines for each entity.
+	 */
+	private int writeRowsForEntity(
+			List<ResultInfo> infos,
+			EntityResult internalRow,
+			Supplier<Row> externalRowSupplier,
+			PrintSettings settings,
+			SXSSFSheet sheet) {
+		String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
 
-            // Write data cells
-            for (int i = 0; i < infos.size(); i++) {
-                ResultInfo resultInfo = infos.get(i);
-                Object resultValue = resultValues[i];
-                Cell dataCell = row.createCell(currentColumn);
-                currentColumn++;
-                if (resultValue == null) {
-                    continue;
-                }
+		int writtenLines = 0;
 
-                // Fallback to string if type is not explicitly registered
-                TypeWriter typeWriter = TYPE_WRITER_MAP.getOrDefault(resultInfo.getType().getClass(), ExcelRenderer::writeStringCell);
+		for (Object[] resultValues : internalRow.listResultLines()) {
+			Row row = externalRowSupplier.get();
+			// Write id cells
+			int currentColumn = 0;
+			for (String id : ids) {
+				Cell idCell = row.createCell(currentColumn);
+				idCell.setCellValue(id);
+				currentColumn++;
+			}
 
-                typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
-            }
-            writtenLines++;
-        }
-        return writtenLines;
-    }
+			// Write data cells
+			for (int i = 0; i < infos.size(); i++) {
+				ResultInfo resultInfo = infos.get(i);
+				Object resultValue = resultValues[i];
+				Cell dataCell = row.createCell(currentColumn);
+				currentColumn++;
+				if (resultValue == null) {
+					continue;
+				}
 
-    // Type specific cell writers
+				// Fallback to string if type is not explicitly registered
+				TypeWriter typeWriter = TYPE_WRITER_MAP.getOrDefault(resultInfo.getType().getClass(), ExcelRenderer::writeStringCell);
+
+				typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
+			}
+			writtenLines++;
+
+			if (writtenLines == config.getLastRowToAutosize()){
+				setColumnWidthsAndUntrack(sheet);
+			}
+		}
+		return writtenLines;
+	}
+
+	private void setColumnWidthsAndUntrack(SXSSFSheet sheet) {
+		for (Integer columnIndex : sheet.getTrackedColumnsForAutoSizing()) {
+			sheet.autoSizeColumn(columnIndex);
+
+			// Limit the column with to the default width if it is longer
+			if (sheet.getColumnWidth(columnIndex) > config.getDefaultColumnWidth()){
+				sheet.setColumnWidth(columnIndex, config.getDefaultColumnWidth());
+			}
+
+			// Disable auto sizing so we don't have a performance penalty
+			sheet.untrackColumnForAutoSizing(columnIndex);
+		}
+	}
+
+	// Type specific cell writers
 
     private static void writeStringCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
         cell.setCellValue(info.getType().printNullable(settings, value));
