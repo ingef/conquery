@@ -3,9 +3,6 @@
     "de": "Fullexport"
   },
   "type": "FULL_EXPORT_FORM",
-  "headline": {
-    "de": "Fullexport"
-  },
   "fields": [
     {
       "name": "queryGroup",

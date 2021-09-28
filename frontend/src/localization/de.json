@@ -125,6 +125,7 @@
     "unshare": "Freigabe aufheben"
   },
   "common": {
+    "optional": "Optional",
     "back": "Zurück",
     "any": "Beliebig",
     "save": "Speichern",
@@ -250,6 +251,7 @@
     "config": {
       "headline": "Formular-Konfiguration",
       "save": "Speichern",
+      "saveDescription": "Aktuelle Formular-Einstellungen speichern, um sie später erneut zu laden.",
       "saveError": "Konnte Formular-Konfiguration nicht speichern"
     },
     "formValidation": {

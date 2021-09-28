@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 
 /**
@@ -26,33 +25,28 @@ public class TemporalQueryNode extends QPNode {
 	/**
 	 * Matcher to be used when testing for inclusion.
 	 */
-	private PrecedenceMatcher matcher;
+	private final PrecedenceMatcher matcher;
 
 	/**
 	 * QueryPlan for the events to be compared to.
 	 */
-	private SampledNode reference;
+	private final SampledNode reference;
 
 	/**
 	 * QueryPlan for the events being compared.
 	 */
-	private SampledNode preceding;
+	private final SampledNode preceding;
 
 	/**
 	 * The {@link SpecialDateUnion} to be fed with the included dataset.
 	 */
-	private SpecialDateUnion dateUnion;
+	private final SpecialDateUnion dateUnion;
 
 	public TemporalQueryNode(SampledNode reference, SampledNode preceding, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
 		this.reference = reference;
 		this.preceding = preceding;
 		this.matcher = matcher;
 		this.dateUnion = dateUnion;
-	}
-
-	@Override
-	public QPNode doClone(CloneContext ctx) {
-		return new TemporalQueryNode(ctx.clone((SampledNode) reference), ctx.clone((SampledNode) preceding), matcher, ctx.clone(dateUnion));
 	}
 
 	/**
@@ -69,14 +63,14 @@ public class TemporalQueryNode extends QPNode {
 	/**
 	 * Initializes the {@link TemporalQueryNode} and its children.
 	 *
-	 * @param entity the Entity to be worked on.
 	 */
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
 
-		reference.getChild().init(entity, context);
-		preceding.getChild().init(entity, context);
+		reference.getChild().init(context, entity);
+		preceding.getChild().init(context, entity);
+		dateUnion.init(entity, context);
 	}
 
 	/**
@@ -119,9 +113,9 @@ public class TemporalQueryNode extends QPNode {
 			return false;
 		}
 
-		CDateSet referenceDurations = CDateSet.create(getReference().getChild().getDateAggregator().getAggregationResult());
+		CDateSet referenceDurations = CDateSet.create(getReference().getChild().getDateAggregator().createAggregationResult());
 		// Create copy as we are mutating the set
-		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getDateAggregator().getAggregationResult());
+		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getDateAggregator().createAggregationResult());
 
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);

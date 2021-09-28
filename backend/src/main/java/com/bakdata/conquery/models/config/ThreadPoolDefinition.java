@@ -11,7 +11,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 public class ThreadPoolDefinition {
 	@Min(0)
 	private int minThreads = Runtime.getRuntime().availableProcessors();
@@ -20,7 +22,7 @@ public class ThreadPoolDefinition {
 	private boolean allowCoreThreadTimeOut = false;
 	private Duration keepAliveTime = Duration.seconds(60);
 	private Duration shutdownTime = Duration.hours(1);
-	
+
 	public ThreadPoolExecutor createService(String nameFormat) {
 		final ThreadPoolExecutor executor = new ThreadPoolExecutor(
 				minThreads,

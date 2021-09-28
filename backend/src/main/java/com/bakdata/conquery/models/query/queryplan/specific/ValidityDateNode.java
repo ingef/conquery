@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class ValidityDateNode extends QPChainNode {
 
@@ -40,11 +39,6 @@ public class ValidityDateNode extends QPChainNode {
 	@Override
 	public boolean isContained() {
 		return getChild().isContained();
-	}
-
-	@Override
-	public QPNode doClone(CloneContext ctx) {
-		return new ValidityDateNode(validityDateColumn, ctx.clone(getChild()));
 	}
 
 	@Override

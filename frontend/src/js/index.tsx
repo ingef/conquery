@@ -5,6 +5,7 @@ import ReactDOM from "react-dom";
 import { Store } from "redux";
 
 import AppRoot from "./AppRoot";
+import GlobalStyles from "./GlobalStyles";
 import "./browserShimsAndPolyfills";
 import { initializeEnvironment, CustomEnvironment } from "./environment";
 import { TabT } from "./pane/types";
@@ -24,6 +25,7 @@ const renderRoot = (tabs: TabT[], theme: Theme) => {
 
   ReactDOM.render(
     <ThemeProvider theme={theme}>
+      <GlobalStyles />
       <AppRoot store={store} rightTabs={tabs} />
     </ThemeProvider>,
     document.getElementById("root"),

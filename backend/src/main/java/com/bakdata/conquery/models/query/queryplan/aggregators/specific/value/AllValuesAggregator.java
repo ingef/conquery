@@ -6,8 +6,10 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Aggregator gathering all unique values in a column, into a Set.
@@ -23,6 +25,11 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	}
 
 	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		entries.clear();
+	}
+
+	@Override
 	public void acceptEvent(Bucket bucket, int event) {
 		if (bucket.has(event, getColumn())) {
 			entries.add((VALUE) bucket.createScriptValue(event, getColumn()));
@@ -30,13 +37,8 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	}
 
 	@Override
-	public Set<VALUE> getAggregationResult() {
-		return entries.isEmpty() ? null : entries;
-	}
-
-	@Override
-	public AllValuesAggregator<VALUE> doClone(CloneContext ctx) {
-		return new AllValuesAggregator<>(getColumn());
+	public Set<VALUE> createAggregationResult() {
+		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
 	}
 
 	@Override

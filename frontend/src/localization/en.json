@@ -125,6 +125,7 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "optional": "Optional",
     "back": "Back",
     "any": "Any",
     "save": "Save",
@@ -250,6 +251,7 @@
     "config": {
       "headline": "Form configuration",
       "save": "Save",
+      "saveDescription": "Save all current form settings to load them later.",
       "saveError": "Could not save form configuration"
     },
     "formValidation": {

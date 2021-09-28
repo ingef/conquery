@@ -6,8 +6,10 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Aggregator, returning all values of a column, beginning with a specified value.
@@ -20,6 +22,11 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 	public PrefixTextAggregator(Column column, String prefix) {
 		super(column);
 		this.prefix = prefix;
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		entries.clear();
 	}
 
 	@Override
@@ -39,15 +46,10 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 	}
 
 	@Override
-	public Set<String> getAggregationResult() {
-		return entries.isEmpty() ? null : entries;
+	public Set<String> createAggregationResult() {
+		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
 	}
 
-	@Override
-	public PrefixTextAggregator doClone(CloneContext ctx) {
-		return new PrefixTextAggregator(getColumn(), prefix);
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.StringT.INSTANCE;

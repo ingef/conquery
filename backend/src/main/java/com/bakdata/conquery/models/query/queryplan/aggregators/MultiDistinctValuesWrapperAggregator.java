@@ -8,7 +8,8 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import lombok.Getter;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -29,13 +30,19 @@ public class MultiDistinctValuesWrapperAggregator<VALUE> extends ColumnAggregato
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
-		return aggregator.getAggregationResult();
+	public VALUE createAggregationResult() {
+		return aggregator.createAggregationResult();
 	}
 
 	@Override
 	public Column[] getRequiredColumns() {
 		return ArrayUtils.addAll(aggregator.getRequiredColumns(), getColumns());
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		observed.clear();
+		aggregator.init(entity, context);
 	}
 
 	@Override
@@ -53,11 +60,6 @@ public class MultiDistinctValuesWrapperAggregator<VALUE> extends ColumnAggregato
 		}
 	}
 
-	@Override
-	public Aggregator<VALUE> doClone(CloneContext ctx) {
-		return new MultiDistinctValuesWrapperAggregator<>(aggregator.clone(ctx), columns);
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.IntegerT.INSTANCE;

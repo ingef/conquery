@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * For each {@link com.bakdata.conquery.models.query.queryplan.specific.ConceptNode} calculate the number of matching events and the span of date-ranges.
@@ -29,88 +30,111 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 
-	@Override
-	public void react(Worker worker) throws Exception {
-		if (worker.getStorage().getAllCBlocks().isEmpty()) {
-			log.debug("Worker {} is empty, skipping.", worker);
-			getProgressReporter().done();
-			return;
-		}
 
-		getProgressReporter().setMax(worker.getStorage().getAllConcepts().size());
+    @Override
+    public void react(Worker worker) throws Exception {
+        if (worker.getStorage().getAllCBlocks().isEmpty()) {
+            log.debug("Worker {} is empty, skipping.", worker);
+            getProgressReporter().done();
+            return;
+        }
 
-		log.info("BEGIN update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
+        getProgressReporter().setMax(worker.getStorage().getAllConcepts().size());
 
-		// SubJobs collect into this Map.
-		final ConcurrentMap<ConceptElement<?>, MatchingStats.Entry> messages =
-				new ConcurrentHashMap<>(worker.getStorage().getAllConcepts().size()
-										* 5_000); // Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
+        log.info("BEGIN update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
 
-		List<CompletableFuture<?>> subJobs =
-				worker.getStorage()
-					  .getAllConcepts()
-					  .stream()
-					  .map(concept -> CompletableFuture.runAsync(() -> calculateConceptMatches(concept, messages, worker), worker.getExecutorService()))
-					  .collect(Collectors.toList());
+        // SubJobs collect into this Map.
+        final ConcurrentMap<ConceptElement<?>, MatchingStats.Entry> messages =
+                new ConcurrentHashMap<>(worker.getStorage().getAllConcepts().size()
+                        * 5_000); // Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
 
-		log.debug("All jobs submitted. Waiting for completion.");
 
-		CompletableFuture.allOf(subJobs.toArray(CompletableFuture[]::new)).join();
+        // TODO FK: If this causes issues with memory, use a LoadingCache with SoftReferences instead
+        ConcurrentMap<Bucket, int[]> eventEntitiesCache = new ConcurrentHashMap<>();
 
-		log.debug("All threads are done.");
 
-		if (messages.isEmpty()) {
-			log.warn("Results were empty.");
-		}
-		else {
-			worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
-		}
 
-		getProgressReporter().done();
-	}
+        List<CompletableFuture<?>> subJobs =
+                worker.getStorage().getAllConcepts()
+                        .stream()
+                        .map(concept -> CompletableFuture.runAsync(() -> calculateConceptMatches(concept, messages, worker, eventEntitiesCache), worker.getExecutorService()))
+                        .collect(Collectors.toList());
 
-	public void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
+        log.debug("All jobs submitted. Waiting for completion.");
 
-		for (CBlock cBlock : worker.getStorage().getAllCBlocks()) {
+        CompletableFuture.allOf(subJobs.toArray(CompletableFuture[]::new)).join();
 
-			if (!cBlock.getConnector().getConcept().equals(concept)) {
-				continue;
-			}
+        log.debug("All threads are done.");
 
-			try {
-				Bucket bucket = cBlock.getBucket();
-				Table table = bucket.getTable();
+        if (messages.isEmpty()) {
+            log.warn("Results were empty.");
+        } else {
+            worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
+        }
 
-				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
+        getProgressReporter().done();
+    }
 
-					final int[] localIds = cBlock.getEventMostSpecificChild(event);
+    public void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker, ConcurrentMap<Bucket, int[]> eventEntitiesCache) {
 
-					if (!(concept instanceof TreeConcept) || localIds == null) {
+        for (CBlock cBlock : worker.getStorage().getAllCBlocks()) {
 
-						results.computeIfAbsent(concept, (ignored) -> new MatchingStats.Entry())
-							   .addEvent(table, bucket, event);
+            if (!cBlock.getConnector().getConcept().equals(concept)) {
+                continue;
+            }
 
-						continue;
-					}
+            try {
+                Bucket bucket = cBlock.getBucket();
+                Table table = bucket.getTable();
 
-					if (Connector.isNotContained(localIds)) {
-						continue;
-					}
+                final int[] entitiesPerEvent = eventEntitiesCache.computeIfAbsent(bucket, this::getEntitiesPerEvent);
 
-					ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalId(localIds);
+                for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 
-					while (element != null) {
-						results.computeIfAbsent(((ConceptElement<?>) element), (ignored) -> new MatchingStats.Entry())
-							   .addEvent(table, bucket, event);
-						element = element.getParent();
-					}
-				}
-			}
-			catch (Exception e) {
-				log.error("Failed to collect the matching stats for {}", cBlock, e);
-			}
-		}
+                    final int[] localIds = cBlock.getEventMostSpecificChild(event);
 
-		getProgressReporter().report(1);
-	}
+                    final int entity = entitiesPerEvent[event];
+
+                    if (!(concept instanceof TreeConcept) || localIds == null) {
+
+                        results.computeIfAbsent(concept, (ignored) -> new MatchingStats.Entry())
+                                .addEvent(table, bucket, event, entity);
+
+                        continue;
+                    }
+
+                    if (Connector.isNotContained(localIds)) {
+                        continue;
+                    }
+
+                    ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalId(localIds);
+
+                    while (element != null) {
+                        results.computeIfAbsent(((ConceptElement<?>) element), (ignored) -> new MatchingStats.Entry())
+                                .addEvent(table, bucket, event, entity);
+                        element = element.getParent();
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Failed to collect the matching stats for {}", cBlock, e);
+            }
+        }
+
+        getProgressReporter().report(1);
+    }
+
+    @NotNull
+    private int[] getEntitiesPerEvent(Bucket bucket) {
+        final int[] entitiesPerEvent = new int[bucket.getNumberOfEvents()];
+
+
+        for (Integer entity : bucket.getEntities()) {
+            final int to = bucket.getEntityEnd(entity);
+
+            for (int index = bucket.getEntityStart(entity); index < to; index++) {
+                entitiesPerEvent[index] = entity;
+            }
+        }
+        return entitiesPerEvent;
+    }
 }

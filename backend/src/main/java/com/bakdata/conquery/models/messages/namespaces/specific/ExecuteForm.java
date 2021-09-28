@@ -4,7 +4,6 @@ import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -15,7 +14,6 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.FormShardResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
@@ -59,33 +57,25 @@ public class ExecuteForm extends WorkerMessage {
 		queryExecutor.unsetQueryCancelled(formId);
 
 
-		Map<ManagedExecutionId, QueryPlan<?>> plans = null;
-		// Generate query plans for this execution. For ManagedQueries this is only one plan.
-		// For ManagedForms there might be multiple plans, which originate from ManagedQueries.
-		// The results are send directly to these ManagesQueries
-		try {
-			final QueryPlanContext queryPlanContext = new QueryPlanContext(worker);
-
-			plans = queries.entrySet().stream()
-						   .collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().createQueryPlan(queryPlanContext)));
-
-		}
-		catch (Exception e) {
-			ConqueryError err = asConqueryError(e);
-			log.warn("Failed to create query plans for {}.", formId, err);
-			ShardResult result = createResult(worker, null);
-
-			queryExecutor.sendFailureToManagerNode(result, err);
-			return;
-		}
-
 		// Execute all plans.
-		for (Entry<ManagedExecutionId, QueryPlan<?>> entry : plans.entrySet()) {
+		for (Entry<ManagedExecutionId, Query> entry : queries.entrySet()) {
+			final Query query = entry.getValue();
 			ShardResult result = createResult(worker, entry.getKey());
+
+			// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
+			try {
+				query.createQueryPlan(new QueryPlanContext(worker));
+			}
+			catch (Exception e) {
+				ConqueryError err = asConqueryError(e);
+				log.warn("Failed to create query plans for {}.", formId, err);
+				queryExecutor.sendFailureToManagerNode(result, err);
+				return;
+			}
 
 			final QueryExecutionContext subQueryContext = new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager());
 
-			if (!queryExecutor.execute(entry.getValue(), subQueryContext, result)) {
+			if (!queryExecutor.execute(query, subQueryContext, result)) {
 				return;
 			}
 		}
