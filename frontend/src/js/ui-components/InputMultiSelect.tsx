@@ -203,10 +203,10 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       closeMenuOnSelect={!!props.closeMenuOnSelect}
       placeholder={
         allowDropFile
-          ? t("reactSelect.dndPlaceholder")
-          : t("reactSelect.placeholder")
+          ? t("inputMultiSelect.dndPlaceholder")
+          : t("inputSelect.placeholder")
       }
-      noOptionsMessage={() => t("reactSelect.noResults")}
+      noOptionsMessage={() => t("inputSelect.empty")}
       onChange={props.input.onChange}
       onInputChange={
         props.onInputChange || // To allow for async option loading
@@ -246,7 +246,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
     >
       {hasTooManyValues && (
         <TooManyValues
-          value={props.input.value}
+          count={props.input.value.length}
           onClear={() => props.input.onChange(null)}
         />
       )}

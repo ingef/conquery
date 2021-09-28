@@ -66,7 +66,7 @@ const DatasetSelector: FC = () => {
             exists(value) ? onSelectDataset(value.value) : onSelectDataset(null)
           }
           placeholder={
-            error ? t("datasetSelector.error") : t("reactSelect.placeholder")
+            error ? t("datasetSelector.error") : t("inputSelect.placeholder")
           }
           isDisabled={!!error}
           options={options}

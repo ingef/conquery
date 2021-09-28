@@ -1,10 +1,12 @@
 import { ComponentMeta, Story } from "@storybook/react";
 import React, { ComponentProps, useState } from "react";
 
-import { SelectOptionT } from "../js/api/types";
-import InputMultiSelectTwo from "../js/ui-components/InputMultiSelectTwo";
+import wordslist from "../../../stories/fixtures/words.json";
+import { SelectOptionT } from "../../api/types";
 
-import wordslist from "./fixtures/words.json";
+import InputMultiSelectTwo from "./InputMultiSelectTwo";
+
+const wl = wordslist.slice(0, 100);
 
 export default {
   title: "FormComponents/InputMultiSelectTwo",
@@ -14,9 +16,9 @@ export default {
   },
 } as ComponentMeta<typeof InputMultiSelectTwo>;
 
-const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = (args) => {
+const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
   const [options, setOptions] = useState<SelectOptionT[]>(
-    wordslist.map((w) => ({ label: w, value: w })),
+    wl.map((w) => ({ label: w, value: w })),
   );
   const [value, setValue] = useState<SelectOptionT[] | null>([
     {
@@ -35,13 +37,15 @@ const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = (args) => {
 
   return (
     <InputMultiSelectTwo
-      {...args}
+      label="This is a nice label"
+      creatable
+      tooltip="And here goes some tooltip that really helps the user understand what's going on"
+      indexPrefix={5}
       input={{
         defaultValue: [],
         value: value || [],
         onChange: (v) => setValue(v),
       }}
-      onResolve={console.log}
       options={options}
       onLoad={onLoad}
     />
@@ -49,6 +53,3 @@ const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = (args) => {
 };
 
 export const Default = Template.bind({});
-Default.args = {
-  allowDropFile: true,
-};
