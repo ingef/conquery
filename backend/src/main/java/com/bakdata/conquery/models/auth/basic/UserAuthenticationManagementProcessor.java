@@ -20,7 +20,6 @@ public class UserAuthenticationManagementProcessor {
 	private final MetaStorage storage;
 
 	public boolean tryRegister(ProtoUser pUser) {
-		// Throws an exception if it would override the existing user
 		final UserId id = pUser.createId();
 		User user = storage.getUser(id);
 		if (user == null) {
