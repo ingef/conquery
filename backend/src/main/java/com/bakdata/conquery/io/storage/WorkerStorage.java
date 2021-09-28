@@ -29,19 +29,24 @@ public class WorkerStorage extends NamespacedStorage {
     @Getter
     private final boolean registerImports = false;
 
-    public WorkerStorage(Validator validator, StoreFactory storageFactory, String pathName) {
-        super(validator, storageFactory, pathName);
-
-        worker = storageFactory.createWorkerInformationStore(pathName);
-        buckets = storageFactory.createBucketStore(centralRegistry, pathName);
-        cBlocks = storageFactory.createCBlockStore(centralRegistry, pathName);
-
-        decorateWorkerStore(worker);
-        decorateBucketStore(buckets);
-        decorateCBlockStore(cBlocks);
+    public WorkerStorage(Validator validator, String pathName) {
+        super(validator, pathName);
     }
 
-    public void loadData() {
+	@Override
+	public void openStores(StoreFactory storageFactory) {
+		super.openStores(storageFactory);
+
+		worker = storageFactory.createWorkerInformationStore(getPathName());
+		buckets = storageFactory.createBucketStore(centralRegistry, getPathName());
+		cBlocks = storageFactory.createCBlockStore(centralRegistry, getPathName());
+
+		decorateWorkerStore(worker);
+		decorateBucketStore(buckets);
+		decorateCBlockStore(cBlocks);
+	}
+
+	public void loadData() {
         super.loadData();
         worker.loadData();
         buckets.loadData();

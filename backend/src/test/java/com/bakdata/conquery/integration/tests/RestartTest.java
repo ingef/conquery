@@ -131,7 +131,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		log.info("Shutting down for restart");
 
-		testConquery.shutdown(conquery);
+		testConquery.shutdown();
 
 		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
 		testConquery.getDropwizard().after();

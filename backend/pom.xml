@@ -215,11 +215,6 @@
             <version>0.2</version>
         </dependency>
         <dependency>
-            <groupId>org.tuckey</groupId>
-            <artifactId>urlrewritefilter</artifactId>
-            <version>4.0.4</version>
-        </dependency>
-        <dependency>
             <groupId>com.jakewharton.byteunits</groupId>
             <artifactId>byteunits</artifactId>
             <version>0.9.1</version>

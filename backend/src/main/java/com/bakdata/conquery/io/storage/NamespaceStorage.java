@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import lombok.Getter;
 import lombok.NonNull;
@@ -37,15 +36,8 @@ public class NamespaceStorage extends NamespacedStorage {
 	@Getter
 	private final boolean registerImports = true;
 
-	public NamespaceStorage(Validator validator, StoreFactory storageFactory, String pathName) {
-		super(validator, storageFactory, pathName);
-
-		idMapping = storageFactory.createIdMappingStore(pathName);
-		structure = storageFactory.createStructureStore(pathName, getCentralRegistry());
-		workerToBuckets = storageFactory.createWorkerToBucketsStore(pathName);
-		primaryDictionary = storageFactory.createPrimaryDictionaryStore(pathName, getCentralRegistry());
-
-		decorateIdMapping(idMapping);
+	public NamespaceStorage(Validator validator, String pathName) {
+		super(validator, pathName);
 	}
 
 	public EncodedDictionary getPrimaryDictionary() {
@@ -74,6 +66,17 @@ public class NamespaceStorage extends NamespacedStorage {
 				.onAdd(mapping -> mapping.setStorage(this));
 	}
 
+	@Override
+	public void openStores(StoreFactory storageFactory) {
+		super.openStores(storageFactory);
+
+		idMapping = storageFactory.createIdMappingStore(super.getPathName());
+		structure = storageFactory.createStructureStore(super.getPathName(), getCentralRegistry());
+		workerToBuckets = storageFactory.createWorkerToBucketsStore(super.getPathName());
+		primaryDictionary = storageFactory.createPrimaryDictionaryStore(super.getPathName(), getCentralRegistry());
+
+		decorateIdMapping(idMapping);
+	}
 
 	@Override
 	public void loadData() {

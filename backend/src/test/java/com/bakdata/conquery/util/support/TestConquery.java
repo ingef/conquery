@@ -182,13 +182,11 @@ public class TestConquery {
 	}
 
 	@SneakyThrows
-	public synchronized void shutdown(StandaloneSupport support) {
-		DatasetId dataset = support.getDataset().getId();
-
-		standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();
+	public synchronized void shutdown() {
+		standaloneCommand.getManager().getDatasetRegistry().close();
 		standaloneCommand.getManager().getStorage().close();
 
-		openSupports.remove(support);
+		openSupports.clear();
 	}
 
 

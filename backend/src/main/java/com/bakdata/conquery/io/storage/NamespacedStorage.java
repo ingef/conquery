@@ -53,10 +53,12 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorage(Validator validator, StoreFactory storageFactory, String pathName) {
+	public NamespacedStorage(Validator validator, String pathName) {
 		this.validator = validator;
 		this.pathName = pathName;
+	}
 
+	public void openStores(StoreFactory storageFactory){
 		dataset = storageFactory.createDatasetStore(pathName);
 		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName);
 		tables = storageFactory.createTableStore(centralRegistry, pathName);
@@ -70,7 +72,6 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 		decorateTableStore(tables);
 		decorateImportStore(imports);
 		decorateConceptStore(concepts);
-
 	}
 
 	@Override
