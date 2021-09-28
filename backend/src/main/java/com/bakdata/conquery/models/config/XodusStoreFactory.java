@@ -95,6 +95,11 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "XODUS", base = StoreFactory.class)
 public class XodusStoreFactory implements StoreFactory {
 
+
+	/**
+	 * The store names are created by hand here because the abstraction of {@link BigStore}
+	 * creates two stores. Defining the expected stores like this, does not require a lot or complicated logic.
+	 */
 	public static final Set<String> NAMESPACED_STORES = Set.of(
 			DATASET.storeInfo().getName(),
 			SECONDARY_IDS.storeInfo().getName(),
