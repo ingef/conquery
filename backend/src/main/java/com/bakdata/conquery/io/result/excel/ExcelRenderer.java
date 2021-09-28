@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
+import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -244,7 +245,9 @@ public class ExcelRenderer {
 		return writtenLines;
 	}
 
+	@SneakyThrows(IOException.class)
 	private void setColumnWidthsAndUntrack(SXSSFSheet sheet) {
+		sheet.flushRows();
 		for (Integer columnIndex : sheet.getTrackedColumnsForAutoSizing()) {
 			sheet.autoSizeColumn(columnIndex);
 
