@@ -1,8 +1,36 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
@@ -14,30 +42,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
-import io.dropwizard.auth.Auth;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.StringJoiner;
-import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
-
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
 
 @Slf4j
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -48,149 +55,150 @@ import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
 public class AdminDatasetResource extends HAdmin {
 
 
-    @Inject
-    protected AdminDatasetProcessor processor;
+	@Inject
+	protected AdminDatasetProcessor processor;
 
 
-    @PathParam(DATASET)
-    protected Dataset dataset;
-    protected Namespace namespace;
+	@PathParam(DATASET)
+	protected Dataset dataset;
+	protected Namespace namespace;
 
-    @PostConstruct
-    @Override
-    public void init() {
-        super.init();
-        this.namespace = processor.getDatasetRegistry().get(dataset.getId());
-    }
+	@PostConstruct
+	@Override
+	public void init() {
+		super.init();
+		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
+	}
 
-    @GET
-    @Consumes(MediaType.WILDCARD)
-    @Path("mapping")
-    public EntityIdMap getIdMapping() {
-        return processor.getIdMapping(namespace);
-    }
+	@GET
+	@Consumes(MediaType.WILDCARD)
+	@Path("mapping")
+	public EntityIdMap getIdMapping() {
+		return processor.getIdMapping(namespace);
+	}
 
-    @POST
-    @Consumes(MediaType.WILDCARD)
-    @Path("mapping")
-    public void setIdMapping(InputStream data) {
-        processor.setIdMapping(data, namespace);
-    }
+	@POST
+	@Consumes(MediaType.WILDCARD)
+	@Path("mapping")
+	public void setIdMapping(InputStream data) {
+		processor.setIdMapping(data, namespace);
+	}
 
-    @POST
-    @Path("label")
-    public void setLabel(String label) {
-        Dataset ds = namespace.getDataset();
-        ds.setLabel(label);
-        namespace.getStorage().updateDataset(ds);
-    }
+	@POST
+	@Path("label")
+	public void setLabel(String label) {
+		Dataset ds = namespace.getDataset();
+		ds.setLabel(label);
+		namespace.getStorage().updateDataset(ds);
+	}
 
-    @POST
-    @Path("weight")
-    public void setWeight(@Min(0) int weight) {
-        Dataset ds = namespace.getDataset();
-        ds.setWeight(weight);
-        namespace.getStorage().updateDataset(ds);
-    }
+	@POST
+	@Path("weight")
+	public void setWeight(@Min(0) int weight) {
+		Dataset ds = namespace.getDataset();
+		ds.setWeight(weight);
+		namespace.getStorage().updateDataset(ds);
+	}
 
-    @POST
-    @Path("tables")
-    public void addTable(Table table) {
-        processor.addTable(table, namespace);
-    }
-
-
-    @POST
-    @Consumes(MediaType.APPLICATION_OCTET_STREAM)
-    @Path("cqpp")
-    public void uploadImport(@NotNull InputStream importStream) throws IOException {
-        log.info("Importing from file upload");
-        processor.addImport(namespace, new GZIPInputStream(importStream));
-    }
+	@POST
+	@Path("tables")
+	public void addTable(Table table) {
+		processor.addTable(table, namespace);
+	}
 
 
-    @POST
-    @Path("imports")
-    public void addImport(@QueryParam("file") File importFile) throws IOException, JSONException {
+	@POST
+	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("cqpp")
+	public void uploadImport(@NotNull InputStream importStream) throws IOException {
+		log.info("Importing from file upload");
+		processor.addImport(namespace, new GZIPInputStream(importStream));
+	}
 
-        StringJoiner errors = new StringJoiner("\n");
+	@POST
+	@Path("imports")
+	public void addImport(@QueryParam("file") File importFile) throws IOException, JSONException {
 
-        if (!importFile.canRead()) {
-            errors.add("Cannot read.");
-        }
+		StringJoiner errors = new StringJoiner("\n");
 
-        if (!importFile.exists()) {
-            errors.add("Does not exist.");
-        }
+		if (!importFile.canRead()) {
+			errors.add("Cannot read.");
+		}
 
-        if (!importFile.isAbsolute()) {
-            errors.add("Is not absolute.");
-        }
+		if (!importFile.exists()) {
+			errors.add("Does not exist.");
+		}
 
-        if (!importFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
-            errors.add(String.format("Does not end with `%s`.", ConqueryConstants.EXTENSION_PREPROCESSED));
-        }
+		if (!importFile.isAbsolute()) {
+			errors.add("Is not absolute.");
+		}
 
-        if (errors.length() > 0) {
-            throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors), Status.BAD_REQUEST);
-        }
+		if (!importFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
+			errors.add(String.format("Does not end with `%s`.", ConqueryConstants.EXTENSION_PREPROCESSED));
+		}
 
-        log.info("Importing from local file {}", importFile.getAbsolutePath());
-        processor.addImport(namespace, new GZIPInputStream(new FileInputStream(importFile)));
-    }
-
-    @POST
-    @Path("concepts")
-    public void addConcept(Concept<?> concept) {
-        processor.addConcept(namespace.getDataset(), concept);
-    }
-
-    @POST
-    @Path("secondaryId")
-    public void addSecondaryId(SecondaryIdDescription secondaryId) {
-        processor.addSecondaryId(namespace, secondaryId);
-    }
-
-    @DELETE
-    @Path("secondaryId/{" + SECONDARY_ID + "}")
-    public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
-        processor.deleteSecondaryId(secondaryId);
-    }
-
-    @GET
-    public Dataset getDatasetInfos() {
-        return dataset;
-    }
-
-    @POST
-    @Path("structure")
-    public void setStructure(@NotNull @Valid StructureNode[] structure) {
-        processor.setStructure(namespace, structure);
-    }
+		if (errors.length() > 0) {
+			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors.toString()), Status.BAD_REQUEST);
+		}
 
 
-    @GET
-    @Path("tables")
-    public List<TableId> listTables() {
-        return namespace.getStorage().getTables().stream().map(Table::getId).collect(Collectors.toList());
-    }
+		log.info("Importing from local file {}", importFile.getAbsolutePath());
+		processor.addImport(namespace, new GZIPInputStream(new FileInputStream(importFile)));
+	}
 
-    @GET
-    @Path("concepts")
-    public List<ConceptId> listConcepts() {
-        return namespace.getStorage().getAllConcepts().stream().map(Concept::getId).collect(Collectors.toList());
-    }
 
-    @DELETE
-    public void delete() {
-        processor.deleteDataset(dataset);
-    }
+	@POST
+	@Path("concepts")
+	public void addConcept(Concept<?> concept) {
+		processor.addConcept(namespace.getDataset(), concept);
+	}
 
-    @POST
-    @Path("/update-matching-stats")
-    @Consumes(MediaType.WILDCARD)
-    public void updateMatchingStats(@Auth User user, @PathParam(DATASET) Dataset dataset) {
-        processor.updateMatchingStats(dataset);
-    }
+	@POST
+	@Path("secondaryId")
+	public void addSecondaryId(SecondaryIdDescription secondaryId) {
+		processor.addSecondaryId(namespace, secondaryId);
+	}
+
+	@DELETE
+	@Path("secondaryId/{" + SECONDARY_ID + "}")
+	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
+		processor.deleteSecondaryId(secondaryId);
+	}
+
+	@GET
+	public Dataset getDatasetInfos() {
+		return dataset;
+	}
+
+	@POST
+	@Path("structure")
+	public void setStructure(@NotNull @Valid StructureNode[] structure) {
+		processor.setStructure(namespace, structure);
+	}
+
+
+	@GET
+	@Path("tables")
+	public List<TableId> listTables() {
+		return namespace.getStorage().getTables().stream().map(Table::getId).collect(Collectors.toList());
+	}
+
+	@GET
+	@Path("concepts")
+	public List<ConceptId> listConcepts() {
+		return namespace.getStorage().getAllConcepts().stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+	@DELETE
+	public void delete() {
+		processor.deleteDataset(dataset);
+	}
+
+	@POST
+	@Path("/update-matching-stats")
+	@Consumes(MediaType.WILDCARD)
+	public void updateMatchingStats(@PathParam(DATASET) Dataset dataset) {
+		processor.updateMatchingStats(dataset);
+	}
 
 }

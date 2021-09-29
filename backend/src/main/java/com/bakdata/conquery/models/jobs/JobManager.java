@@ -8,15 +8,13 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class JobManager implements Closeable {
+public class JobManager implements Closeable{
 
 
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
 
-	private final Thread.UncaughtExceptionHandler notifyExecutorDied = (thread, ex) -> {
-		System.exit(1);
-	};
+	private final Thread.UncaughtExceptionHandler notifyExecutorDied = (thread, ex) -> { System.exit(1);};
 
 	public JobManager(String name, boolean failOnError) {
 
@@ -34,11 +32,11 @@ public class JobManager implements Closeable {
 		log.trace("Added job {}", job.getLabel());
 		slowExecutor.add(job);
 	}
-
+	
 	public void addFastJob(Job job) {
 		fastExecutor.add(job);
 	}
-
+	
 	public List<Job> getSlowJobs() {
 		return slowExecutor.getJobs();
 	}
