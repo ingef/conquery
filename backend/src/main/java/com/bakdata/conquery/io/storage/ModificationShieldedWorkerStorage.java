@@ -2,12 +2,10 @@ package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
 
-import javax.validation.Validator;
-
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -26,11 +24,6 @@ import lombok.ToString;
 public class ModificationShieldedWorkerStorage {
 
 	private final WorkerStorage delegate;
-
-	public Validator getValidator() {
-		return delegate.getValidator();
-	}
-
 
 	public CentralRegistry getCentralRegistry() {
 		return delegate.getCentralRegistry();

@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
-import javax.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -64,7 +63,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	public abstract List<? extends Select> getSelects();
 
-	public void initElements(Validator validator) throws ConfigurationException, JSONException {
+	public void initElements() throws ConfigurationException, JSONException {
 	}
 
 	@Override

@@ -1,15 +1,13 @@
 package com.bakdata.conquery.io.storage;
 
-import com.bakdata.conquery.io.jackson.Injectable;
+import java.util.Optional;
+
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * Registers accessors of values instead of the value itself to the central registry.
@@ -18,11 +16,8 @@ import java.util.function.Function;
 @Accessors(fluent=true) @Setter @Getter
 public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends IdentifiableStore<VALUE> {
 
-	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store, Injectable... injectables) {
+	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store) {
 		super(store, centralRegistry);
-		for(Injectable injectable : injectables) {
-			store.inject(injectable);
-		}
 	}
 
 	@Override

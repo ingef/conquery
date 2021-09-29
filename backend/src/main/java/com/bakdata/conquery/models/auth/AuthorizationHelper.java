@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.auth;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,32 +10,24 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.AdminPermission;
-import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
-import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authz.Permission;
 
 /**
  * Helper for easier and cleaner authorization.
@@ -46,26 +36,6 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @UtilityClass
 public class AuthorizationHelper {
-
-	/**
-	 * Utility function to add a permission to a subject (e.g {@link User}).
-	 * @param owner The subject to own the new permission.
-	 * @param permission The permission to add.
-	 * @param storage A storage where the permission are added for persistence.
-	 */
-	public static void addPermission(@NonNull PermissionOwner<?> owner, @NonNull ConqueryPermission permission, @NonNull MetaStorage storage) {
-		owner.addPermission(storage, permission);
-	}
-
-	/**
-	 * Utility function to remove a permission from a subject (e.g {@link User}).
-	 * @param owner The subject to own the new permission.
-	 * @param permission The permission to remove.
-	 * @param storage A storage where the permission is removed from.
-	 */
-	public static void removePermission(@NonNull PermissionOwner<?> owner, @NonNull Permission permission, @NonNull MetaStorage storage) {
-		owner.removePermission(storage, permission);
-	}
 
 	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MetaStorage storage){
 
@@ -92,95 +62,24 @@ public class AuthorizationHelper {
 		return Optional.of(groups.get(0));
 	}
 
-
-
-	/**
-	 * Returns a list of the effective permissions. These are the permissions of the owner and
-	 * the permission of the roles it inherits.
-	 * @return Owned and inherited permissions.
-	 */
-	public static Set<ConqueryPermission> getEffectiveUserPermissions(User user, MetaStorage storage) {
-		Set<ConqueryPermission> tmpView = collectRolePermissions(storage, user, user.getPermissions());
-
-		for (Group group : storage.getAllGroups()) {
-			if (group.containsMember(user)) {
-				// Get effective permissions of the group
-				tmpView = Sets.union(tmpView, getEffectiveGroupPermissions(group, storage));
-			}
-		}
-		return tmpView;
-	}
-
-	/**
-	 * Returns a list of the effective permissions. These are the permissions of the owner and
-	 * the permission of the roles it inherits.
-	 */
-	public static Set<ConqueryPermission> getEffectiveGroupPermissions(Group group, MetaStorage storage) {
-		// Combine permissions held by the group with those inherited from roles
-		return collectRolePermissions(storage, group, group.getPermissions());
-	}
-
-	private static Set<ConqueryPermission> collectRolePermissions(MetaStorage storage, RoleOwner roleOwner, Set<ConqueryPermission> tmpView) {
-		for (RoleId roleId : roleOwner.getRoles()) {
-			Role role = storage.getRole(roleId);
-			if (role == null) {
-				log.warn("Could not resolve role id [{}]", roleId);
-				continue;
-			}
-			tmpView = Sets.union(tmpView, role.getPermissions());
-		}
-		return tmpView;
-	}
-
-
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
 	 * the permission of the roles it inherits. The query can be filtered by the Permission domain.
 	 * @return Owned and inherited permissions.
 	 */
 	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(User user, List<String> domainSpecifier, MetaStorage storage) {
-		Set<ConqueryPermission> permissions = getEffectiveUserPermissions(user, storage);
+		Set<ConqueryPermission> permissions = user.getEffectivePermissions();
 		Multimap<String, ConqueryPermission> mappedPerms = ArrayListMultimap.create();
-		for(Permission perm : permissions) {
-			ConqueryPermission cPerm = (ConqueryPermission) perm;
-			Set<String> domains = cPerm.getDomains();
-			if(!Collections.disjoint(domainSpecifier, cPerm.getDomains())) {
+		for(ConqueryPermission perm : permissions) {
+			Set<String> domains = perm.getDomains();
+			if(!Collections.disjoint(domainSpecifier, perm.getDomains())) {
 				for(String domain : domains) {
-					mappedPerms.put(domain, cPerm);
+					mappedPerms.put(domain, perm);
 				}
 			}
 		}
 		return mappedPerms;
 	}
-
-
-	public static void addRoleTo(MetaStorage storage, Role role, RoleOwner owner) {
-		owner.addRole(storage, role);
-		log.trace("Added role {} to {}", role, owner);
-	}
-
-	public static void deleteRoleFrom(MetaStorage storage, RoleOwner owner, Role role) {
-
-		owner.removeRole(storage, role);
-
-		log.trace("Deleted role {} from {}", role, owner);
-	}
-
-	public static void deleteRole(MetaStorage storage, Role role) {
-		log.info("Deleting {}", role);
-
-		for (User user : storage.getAllUsers()) {
-			user.removeRole(storage, role);
-		}
-
-		for (Group group : storage.getAllGroups()) {
-			group.removeRole(storage, role);
-		}
-
-		storage.removeRole(role.getId());
-	}
-
-
 
 	public static List<User> getUsersByRole(MetaStorage storage, Role role) {
 		return storage.getAllUsers().stream().filter(u -> u.getRoles().contains(role.getId())).collect(Collectors.toList());
@@ -247,5 +146,13 @@ public class AuthorizationHelper {
 			}
 		}
 		return datasetAbilities;
+	}
+
+
+	public static boolean registerForAuthentication(UserManageable userManager, User user, List<CredentialType> credentials, boolean override) {
+		if(override) {
+			return userManager.updateUser(user, credentials);
+		}
+		return userManager.addUser(user, credentials);
 	}
 }

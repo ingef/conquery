@@ -1,9 +1,25 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
-import com.bakdata.conquery.models.auth.entities.*;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.RoleOwner;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -23,12 +39,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
-
-import javax.validation.Validator;
-import java.io.StringWriter;
-import java.util.*;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
 
 /**
  * This class holds the logic for several admin http endpoints.
@@ -74,7 +84,17 @@ public class AdminProcessor {
 	 * @param role the role to delete
 	 */
 	public void deleteRole(Role role) {
-		AuthorizationHelper.deleteRole(storage, role);
+		log.info("Deleting {}", role);
+
+		for (User user : storage.getAllUsers()) {
+			user.removeRole(role);
+		}
+
+		for (Group group : storage.getAllGroups()) {
+			group.removeRole(role);
+		}
+
+		storage.removeRole(role.getId());
 	}
 
 	public SortedSet<Role> getAllRoles() {
@@ -90,7 +110,7 @@ public class AdminProcessor {
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
 	public void createPermission(PermissionOwner<?> owner, ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.addPermission(owner, permission, storage);
+		owner.addPermission(permission);
 	}
 
 	/**
@@ -101,7 +121,7 @@ public class AdminProcessor {
 	 * @param permission The permission to delete.
 	 */
 	public void deletePermission(PermissionOwner<?> owner, ConqueryPermission permission) {
-		AuthorizationHelper.removePermission(owner, permission, storage);
+		owner.removePermission(permission);
 	}
 
 
@@ -111,7 +131,7 @@ public class AdminProcessor {
 
 	public synchronized void deleteUser(User user) {
 		for (Group group : storage.getAllGroups()) {
-			group.removeMember(storage, user);
+			group.removeMember(user);
 		}
 		storage.removeUser(user.getId());
 		log.trace("Removed user {} from the storage.", user.getId());
@@ -158,17 +178,12 @@ public class AdminProcessor {
 	}
 
 	public void addUserToGroup(Group group, User user) {
-		synchronized (storage) {
-			group.addMember(storage, user);
-
-			log.trace("Added user {} to group {}", user, group);
-		}
+		group.addMember(user);
+		log.trace("Added user {} to group {}", user, group);
 	}
 
 	public void deleteUserFromGroup(Group group, User user) {
-		synchronized (storage) {
-			group.removeMember(storage,user);
-		}
+		group.removeMember(user);
 		log.trace("Removed user {} from group {}", user, group);
 	}
 
@@ -178,14 +193,13 @@ public class AdminProcessor {
 	}
 
 	public void  deleteRoleFrom(RoleOwner owner, Role role) {
-		synchronized (storage) {
-			AuthorizationHelper.deleteRoleFrom(storage, owner, role);
-		}
-
+		owner.removeRole(role);
+		log.trace("Removed role {} from {}", role, owner);
 	}
 
 	public  void addRoleTo(RoleOwner owner, Role role) {
-		AuthorizationHelper.addRoleTo(getStorage(), role, owner);
+		owner.addRole(role);
+		log.trace("Added role {} to {}", role, owner);
 	}
 
 	/**

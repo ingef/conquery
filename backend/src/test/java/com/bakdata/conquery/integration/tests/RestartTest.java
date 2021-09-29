@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -35,12 +36,6 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 	public static final Dataset TEST_DATASET_4 = new Dataset("testDataset4");
 	public static final Dataset TEST_DATASET_5 = new Dataset("testDataset5");
 	public static final Dataset TEST_DATASET_6 = new Dataset("testDataset6");
-	private Role role = new Role("role", "ROLE");
-	private Role roleToDelete = new Role("roleDelete", "ROLE_DELETE");
-	private User user = new User("user@test.email", "USER");
-	private User userToDelete = new User("userDelete@test.email", "USER_DELETE");
-	private Group group = new Group("group", "GROUP");
-	private Group groupToDelete = new Group("groupDelete", "GROUP_DELETE");
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
@@ -66,6 +61,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(conquery);
 
+		final int numberOfExecutions = conquery.getMetaStorage().getAllExecutions().size();
+
 		// IDMapping Testing
 		NamespaceStorage namespaceStorage = conquery.getNamespaceStorage();
 
@@ -78,6 +75,18 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		final Dataset dataset4 = adminDatasetProcessor.addDataset(TEST_DATASET_4);
 		final Dataset dataset5 = adminDatasetProcessor.addDataset(TEST_DATASET_5);
 		final Dataset dataset6 = adminDatasetProcessor.addDataset(TEST_DATASET_6);
+
+
+
+
+		MetaStorage storage = conquery.getMetaStorage();
+
+		Role role = new Role("role", "ROLE", storage);
+		Role roleToDelete = new Role("roleDelete", "ROLE_DELETE", storage);
+		User user = new User("user@test.email", "USER", storage);
+		User userToDelete = new User("userDelete@test.email", "USER_DELETE", storage);
+		Group group = new Group("group", "GROUP", storage);
+		Group groupToDelete = new Group("groupDelete", "GROUP_DELETE", storage);
 
 		{// Auth testing (deletion and permission grant)
 			// build constellation
@@ -124,10 +133,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		log.info("Shutting down for restart");
 
-		testConquery.shutdown(conquery);
+		testConquery.shutdown();
 
-		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
-		testConquery.getDropwizard().after();
 		log.info("Restarting");
 		testConquery.beforeAll();
 
@@ -135,11 +142,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 
 		log.info("Restart complete");
+		
+		DatasetRegistry datasetRegistry = support.getDatasetsProcessor().getDatasetRegistry();
+
+		assertThat(support.getMetaStorage().getAllExecutions().size()).as("Executions after restart").isEqualTo(numberOfExecutions);
 
 		test.executeTest(support);
-
-
-		MetaStorage storage = conquery.getMetaStorage();
 
 		{// Auth actual tests
 			User userStored = storage.getUser(user.getId());
@@ -151,16 +159,16 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			assertThat(storage.getRole(roleToDelete.getId())).as("deleted role should stay deleted").isNull();
 			assertThat(storage.getGroup(groupToDelete.getId())).as("deleted group should stay deleted").isNull();
 
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(TEST_DATASET_1.getId()).getDataset(), Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry()
+			assertThat(userStored.isPermitted(datasetRegistry.get(TEST_DATASET_1.getId()).getDataset(), Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(datasetRegistry
 													 .get(TEST_DATASET_2.getId())
 													 .getDataset(), Ability.READ)).isFalse(); // Was never permitted
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(TEST_DATASET_3.getId()).getDataset(), Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry()
+			assertThat(userStored.isPermitted(datasetRegistry.get(TEST_DATASET_3.getId()).getDataset(), Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(datasetRegistry
 													 .get(TEST_DATASET_4.getId())
 													 .getDataset(), Ability.READ)).isFalse(); // Was permitted by deleted role
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry().get(TEST_DATASET_5.getId()).getDataset(), Ability.READ)).isTrue();
-			assertThat(userStored.isPermitted(storage.getDatasetRegistry()
+			assertThat(userStored.isPermitted(datasetRegistry.get(TEST_DATASET_5.getId()).getDataset(), Ability.READ)).isTrue();
+			assertThat(userStored.isPermitted(datasetRegistry
 													 .get(TEST_DATASET_6.getId())
 													 .getDataset(), Ability.READ)).isFalse(); // Was permitted by deleted group
 
@@ -170,6 +178,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 													  .getIdMapping();
 		assertThat(entityIdMapAfterRestart).isEqualTo(entityIdMap);
 
+		// We need to reassign the dataset processor because the instance prio to the restart became invalid
+		adminDatasetProcessor = testConquery.getStandaloneCommand().getManager().getAdmin().getAdminDatasetProcessor();
 		// Cleanup
 		adminDatasetProcessor.deleteDataset(dataset1);
 		adminDatasetProcessor.deleteDataset(dataset2);

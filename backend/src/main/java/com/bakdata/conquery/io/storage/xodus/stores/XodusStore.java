@@ -23,7 +23,7 @@ public class XodusStore {
 	private final Consumer<XodusStore> storeCloseHook;
 	private final Consumer<XodusStore> storeRemoveHook;
 	@Getter
-	private String name;
+	private final String name;
 
 	public XodusStore(Environment env, String name, Consumer<XodusStore> storeCloseHook, Consumer<XodusStore> storeRemoveHook) {
 		// Arbitrary duration that is strictly shorter than the timeout to not get interrupted by StuckTxMonitor
@@ -99,13 +99,12 @@ public class XodusStore {
 	}
 
 	public void remove() {
-		if (!environment.isOpen()) {
-			log.debug("While removing store: Environment is already closed for {}", this);
-			return;
-		}
-		log.debug("Removing store {} from environment {}", store, environment.getLocation());
+//		if (!environment.isOpen()) {
+//			log.debug("While removing store: Environment is already closed for {}", this);
+//			return;
+//		}
+		log.debug("Removing store {} from environment {}", store.getName(), environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
-		close();
 		storeRemoveHook.accept(this);
 	}
 

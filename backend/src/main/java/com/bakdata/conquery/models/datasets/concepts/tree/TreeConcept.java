@@ -13,10 +13,10 @@ import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
@@ -26,12 +26,16 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.TestOnly;
 
 /**
  * This is a single node or concept in a concept tree.
@@ -69,6 +73,13 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@JsonIgnore
 	private Map<Import, ConceptTreeCache> caches = new ConcurrentHashMap<>();
 
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@EqualsAndHashCode.Exclude
+	@JsonIgnore
+	@NotNull
+	@Setter(onMethod = @__(@TestOnly))
+	protected Validator validator;
+
 	@Override
 	public Concept<?> findConcept() {
 		return getConcept();
@@ -89,7 +100,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 	@Override
-	public void initElements(Validator validator) throws ConfigurationException, JSONException {
+	public void initElements() throws ConfigurationException, JSONException {
 		this.setLocalId(0);
 		localIdMap.add(this);
 

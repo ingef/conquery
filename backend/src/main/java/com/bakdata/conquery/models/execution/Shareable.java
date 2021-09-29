@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -50,7 +49,7 @@ public interface  Shareable extends Authorized {
 
 					log.trace("User {} unshares instance {} ({}) from owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), group1);
 
-					AuthorizationHelper.removePermission(group1, shareable.createPermission(AbilitySets.SHAREHOLDER), storage);
+					group1.removePermission(shareable.createPermission(AbilitySets.SHAREHOLDER));
 				}
 
 
@@ -60,7 +59,7 @@ public interface  Shareable extends Authorized {
 
 					for(Group group : groups) {
 						ConqueryPermission sharePermission = shareable.createPermission(AbilitySets.SHAREHOLDER);
-						AuthorizationHelper.addPermission(group, sharePermission, storage);
+						group.addPermission(sharePermission);
 
 						log.trace("User {} shares instance {} ({}). Adding permission {} to owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, group);
 					}

@@ -16,6 +16,10 @@ import java.util.stream.Stream;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.datasets.concepts.conditions.EqualCondition;
@@ -24,12 +28,8 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSel
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -217,6 +217,8 @@ public class DefaultColumnNameTest {
 			setLabel("TestConceptLabel");
 			setDataset(DATASET);
 			setSelects(List.of(new TestUniversalSelect(this)));
+			validator = VALIDATOR;
+
 		}
 
 		public Select extractSelect(CQConcept cq) {
@@ -258,7 +260,7 @@ public class DefaultColumnNameTest {
 			}
 
 			concept.setChildren(children);
-			concept.initElements(VALIDATOR);
+			concept.initElements();
 
 			return concept;
 		}

@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.Store;
@@ -95,14 +94,15 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private final ObjectMapper objectMapper;
 
+	@SuppressWarnings("unchecked")
 	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStore store,
 																					   Validator validator,
 																					   ObjectMapper objectMapper,
 																					   CLASS_K keyType,
 																					   CLASS_V valueType,
+																					   boolean validateOnWrite,
 																					   boolean removeUnreadableFromStore,
-																					   File unreadableDataDumpDirectory,
-																					   boolean validateOnWrite) {
+																					   File unreadableDataDumpDirectory) {
 		this.store = store;
 		this.validator = validator;
 		this.validateOnWrite = validateOnWrite;
@@ -121,7 +121,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		removeUnreadablesFromUnderlyingStore = removeUnreadableFromStore;
 
-		// Prepare dump directory if there is one set in the config
 		unreadableValuesDumpDir = unreadableDataDumpDirectory;
 		if(unreadableValuesDumpDir != null) {
 			if(!unreadableValuesDumpDir.exists() && unreadableValuesDumpDir.mkdirs()) {
@@ -252,7 +251,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				// With trace also print the stacktrace
 				log.trace(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
 			} else {
-				log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get());
+				log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
 			}
 		}
 		return null;
@@ -386,11 +385,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public Collection<VALUE> getAll() {
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void inject(Injectable injectable) {
-		valueReader = injectable.injectInto(valueReader);
 	}
 
 	@Override

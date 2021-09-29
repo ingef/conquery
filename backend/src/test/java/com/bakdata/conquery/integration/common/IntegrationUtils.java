@@ -51,7 +51,7 @@ public class IntegrationUtils {
 			RoleId[] rolesInjected = rUser.getRolesInjected();
 
 			for (RoleId mandatorId : rolesInjected) {
-				user.addRole(storage, storage.getRole(mandatorId));
+				user.addRole(storage.getRole(mandatorId));
 			}
 		}
 	}

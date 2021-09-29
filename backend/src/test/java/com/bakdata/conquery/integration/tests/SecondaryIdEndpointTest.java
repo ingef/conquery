@@ -10,9 +10,9 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.bakdata.conquery.apiv1.frontend.FESecondaryId;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.apiv1.frontend.FESecondaryId;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -133,8 +133,8 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 											  .get(ObjectNode.class);
 
 		// The injection is necessary to deserialize the dataset.
-		ObjectMapper mapper = conquery.getNamespace().getNamespaces().injectInto(Jackson.MAPPER);
-		mapper = conquery.getDataset().injectInto(mapper);
+		ObjectMapper mapper = conquery.getNamespace().getNamespaces().injectIntoNew(Jackson.MAPPER);
+		mapper = conquery.getDataset().injectIntoNew(mapper);
 
 		return objectNode.get("secondaryIds")
 						 .traverse(mapper.getFactory().getCodec())

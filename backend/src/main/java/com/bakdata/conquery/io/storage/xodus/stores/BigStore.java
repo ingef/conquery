@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 import javax.validation.Validator;
 import javax.validation.constraints.NotEmpty;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
@@ -42,6 +41,8 @@ import org.apache.commons.collections4.IteratorUtils;
 @Getter
 public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
+	public static final String META = "_META";
+	public static final String DATA = "_DATA";
 	private final SerializingStore<KEY, BigStoreMetaKeys> metaStore;
 	private final SerializingStore<UUID, byte[]> dataStore;
 	private final ObjectWriter valueWriter;
@@ -73,7 +74,10 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 				validator,
 				mapper,
 				storeInfo.getKeyType(),
-				BigStoreMetaKeys.class, config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory(), config.isValidateOnWrite()
+				BigStoreMetaKeys.class,
+				config.isValidateOnWrite(),
+				config.isRemoveUnreadableFromStore(),
+				config.getUnreadableDataDumpDirectory()
 
 		);
 
@@ -83,7 +87,10 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 				validator,
 				mapper,
 				UUID.class,
-				byte[].class, config.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory(), config.isValidateOnWrite()
+				byte[].class,
+				config.isValidateOnWrite(),
+				config.isRemoveUnreadableFromStore(),
+				config.getUnreadableDataDumpDirectory()
 		);
 
 
@@ -217,11 +224,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		public Stream<byte[]> loadData(SerializingStore<UUID, byte[]> dataStore) {
 			return Arrays.stream(parts).map(dataStore::get);
 		}
-	}
-
-	@Override
-	public void inject(Injectable injectable) {
-		valueReader = injectable.injectInto(valueReader);
 	}
 
 	@Override

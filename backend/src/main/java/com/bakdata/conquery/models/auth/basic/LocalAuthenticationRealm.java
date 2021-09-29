@@ -105,8 +105,8 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 						UserId.class,
 						PasswordHasher.HashedEntry.class,
 						false,
-						null,
-						true
+						true,
+						null
 				));
 	}
 

@@ -10,20 +10,22 @@ import java.util.Locale;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,9 +33,12 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 
 public class DefaultLabelTest {
+
+	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
+
 	private static final DatasetRegistry DATASET_REGISTRY = Mockito.mock(DatasetRegistry.class);
 	private static final Dataset DATASET = new Dataset("dataset");
-	private static final User user = new User("user","user");
+	private static final User user = new User("user","user", STORAGE);
 
 	private static final TreeConcept CONCEPT = new TreeConcept() {
 		{
@@ -46,6 +51,7 @@ public class DefaultLabelTest {
 
 	@BeforeAll
 	public static void beforeAll() {
+		STORAGE.openStores(new NonPersistentStoreFactory());
 
 		I18n.init();
 

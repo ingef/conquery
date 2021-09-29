@@ -1,5 +1,25 @@
 package com.bakdata.conquery.integration.common;
 
+import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -35,19 +55,6 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.*;
-
-import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
 @Slf4j
 @UtilityClass
 public class LoadingUtil {
@@ -66,7 +73,7 @@ public class LoadingUtil {
             ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
                     .createQuery(support.getNamespace().getNamespaces(), q, queryId, user, support.getNamespace().getDataset());
 
-            user.addPermission(support.getMetaStorage(),ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
             if (managed.getState() == ExecutionState.FAILED) {
                 fail("Query failed");
@@ -74,13 +81,13 @@ public class LoadingUtil {
         }
 
         for (JsonNode queryNode : content.getPreviousQueries()) {
-            ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectInto(Jackson.MAPPER);
-            mapper = support.getDataset().injectInto(mapper);
+			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectIntoNew(Jackson.MAPPER);
+			mapper = support.getDataset().injectIntoNew(mapper);
             Query query = mapper.readerFor(Query.class).readValue(queryNode);
             UUID queryId = new UUID(0L, id++);
 
             ManagedExecution<?> managed = support.getNamespace().getExecutionManager().createQuery(support.getNamespace().getNamespaces(), query, queryId, user, support.getNamespace().getDataset());
-            user.addPermission(support.getMetaStorage(),ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
             if (managed.getState() == ExecutionState.FAILED) {
                 fail("Query failed");

@@ -31,7 +31,7 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 			.writerFor(NetworkMessage.class)
 			.withView(InternalOnly.class);
 		this.reader = datasets
-				.injectInto(objectMapper.readerFor(NetworkMessage.class))
+				.injectIntoNew(objectMapper.readerFor(NetworkMessage.class))
 				.without(Feature.AUTO_CLOSE_SOURCE)
 				.withView(InternalOnly.class);
 	}

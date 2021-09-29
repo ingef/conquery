@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.storage;
 import java.io.IOException;
 import java.util.Collection;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 
 public interface Store<KEY, VALUE> {
@@ -24,8 +23,6 @@ public interface Store<KEY, VALUE> {
 	public int count();
 
 	public Collection<VALUE> getAll();
-
-	public void inject(Injectable injectable);
 
 	public Collection<KEY> getAllKeys();
 

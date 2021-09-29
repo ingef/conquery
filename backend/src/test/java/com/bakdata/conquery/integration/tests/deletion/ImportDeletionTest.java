@@ -61,7 +61,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
 		final Dataset dataset = conquery.getDataset();
-		final Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
+		final Namespace namespace = conquery.getNamespace();
 
 		final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2");
 
@@ -272,10 +272,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 		// Finally, restart conquery and assert again, that the data is correct.
 		{
-			testConquery.shutdown(conquery);
+			testConquery.shutdown();
 
-			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
-			testConquery.getDropwizard().after();
 			//restart
 			testConquery.beforeAll();
 

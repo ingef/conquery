@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -17,9 +16,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 
 public class PermissionGroupHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private final Role role1 = new Role("role", "role");
-	private final TestUser user1 = new TestUser();
-	private final Group group1 = new Group("company", "company");
 
 	/**
 	 * This is a longer test that plays through different scenarios of permission
@@ -31,6 +27,11 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
 		ManagedExecutionId query1 = new ManagedExecutionId(dataset1.getId(), UUID.randomUUID());
+
+
+		Role role1 = new Role("role", "role", storage);
+		TestUser user1 = new TestUser(storage);
+		Group group1 = new Group("company", "company", storage);
 		
 		try {
 
@@ -38,20 +39,20 @@ public class PermissionGroupHandlingTest extends IntegrationTest.Simple implemen
 			storage.addUser(user1);
 			storage.addGroup(group1);
 
-			AuthorizationHelper.addRoleTo(storage,role1,user1);
+			user1.addRole(role1);
 
-			group1.addMember(storage, user1);
+			group1.addMember(user1);
 
-			user1.addPermission(storage, ExecutionPermission.onInstance(Ability.READ, query1));
-			role1.addPermission(storage, ExecutionPermission.onInstance(Ability.DELETE, query1));
-			group1.addPermission(storage, ExecutionPermission.onInstance(Ability.SHARE, query1));
+			user1.addPermission(ExecutionPermission.onInstance(Ability.READ, query1));
+			role1.addPermission(ExecutionPermission.onInstance(Ability.DELETE, query1));
+			group1.addPermission(ExecutionPermission.onInstance(Ability.SHARE, query1));
 
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.READ, query1))).isTrue();
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.DELETE, query1))).isTrue();
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.SHARE, query1))).isTrue();
 			
 			// remove user from group
-			group1.removeMember(storage, user1);
+			group1.removeMember(user1);
 
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.READ, query1))).isTrue();
 			assertThat(user1.isPermitted(ExecutionPermission.onInstance(Ability.DELETE, query1))).isTrue();

@@ -37,20 +37,17 @@ public class Workers extends IdResolveContext {
 	private final ThreadPoolDefinition queryThreadPoolDefinition;
 
 	@Getter
-	private final ObjectMapper mapper;
-	@Getter
 	private final ObjectMapper binaryMapper;
 
 	private final int entityBucketSize;
 
 	
-	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, ObjectMapper mapper, ObjectMapper binaryMapper, int entityBucketSize) {
+	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, ObjectMapper binaryMapper, int entityBucketSize) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
 		jobsThreadPool = queryThreadPoolDefinition.createService("Workers");
 
-		this.mapper = injectInto(mapper);
-		this.binaryMapper = injectInto(binaryMapper);
+		this.binaryMapper = injectIntoNew(binaryMapper);
 		this.entityBucketSize = entityBucketSize;
 
 		jobsThreadPool.prestartAllCoreThreads();

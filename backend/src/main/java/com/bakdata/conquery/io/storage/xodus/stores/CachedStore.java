@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
@@ -115,11 +114,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public Collection<VALUE> getAll() {
 		return cache.values();
-	}
-
-	@Override
-	public void inject(Injectable injectable) {
-		store.inject(injectable);
 	}
 	
 	@Override

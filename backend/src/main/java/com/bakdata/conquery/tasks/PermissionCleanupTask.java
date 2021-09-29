@@ -10,7 +10,10 @@ import java.util.function.Function;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.*;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
+import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -78,11 +81,11 @@ public class PermissionCleanupTask extends Task {
 					// Create a new Permission that only contains valid references
 					WildcardPermission reducedPermission = new WildcardPermission(
 							List.of(wpermission.getDomains(), wpermission.getAbilities(), validRef), wpermission.getCreationTime());
-					owner.addPermission(storage, reducedPermission);
+					owner.addPermission(reducedPermission);
 				}
 
 				// Delete the old permission that containes both valid and invalid references
-				owner.removePermission(storage, wpermission);
+				owner.removePermission(wpermission);
 				countDeleted++;
 
 			}
@@ -148,7 +151,7 @@ public class PermissionCleanupTask extends Task {
 				}
 
 				log.trace("User owns the instance. Deleting the permission");
-				user.removePermission(storage, wpermission);
+				user.removePermission(wpermission);
 				countDeleted++;
 
 

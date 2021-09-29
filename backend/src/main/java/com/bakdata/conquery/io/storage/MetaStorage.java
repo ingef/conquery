@@ -2,10 +2,9 @@ package com.bakdata.conquery.io.storage;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 
-import javax.validation.Validator;
-
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -19,12 +18,15 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.google.common.base.Preconditions;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MetaStorage implements ConqueryStorage{
+@RequiredArgsConstructor
+public class MetaStorage implements ConqueryStorage, Injectable {
 
     private IdentifiableStore<ManagedExecution<?>> executions;
 
@@ -34,27 +36,28 @@ public class MetaStorage implements ConqueryStorage{
     private IdentifiableStore<Group> authGroup;
 
     @Getter
-    private DatasetRegistry datasetRegistry;
-    @Getter
     protected final CentralRegistry centralRegistry = new CentralRegistry();
     @Getter
-    protected final Validator validator;
+	protected final DatasetRegistry datasetRegistry;
 
-    public MetaStorage(Validator validator, StoreFactory storageFactory, DatasetRegistry datasetRegistry) {
-        this.datasetRegistry = datasetRegistry;
-        this.validator = validator;
-
-
-		authUser = storageFactory.createUserStore(centralRegistry, "meta");
-		authRole = storageFactory.createRoleStore(centralRegistry, "meta");
-		authGroup = storageFactory.createGroupStore(centralRegistry, "meta");
+    public void openStores(StoreFactory storageFactory) {
+		authUser = storageFactory.createUserStore(centralRegistry, "meta", this);
+		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this);
+		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this);
 		// Executions depend on users
-		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, "meta");
+		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry,  "meta");
 		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta");
-    }
+
+	}
 
     @Override
     public void loadData() {
+		Preconditions.checkNotNull(authUser, "User storage was not created");
+		Preconditions.checkNotNull(authRole, "Role storage was not created");
+		Preconditions.checkNotNull(authGroup, "Group storage was not created");
+		Preconditions.checkNotNull(executions, "Execution storage was not created");
+		Preconditions.checkNotNull(formConfigs, "FormConfig storage was not created");
+
         authUser.loadData();
         authRole.loadData();
         authGroup.loadData();
@@ -194,5 +197,10 @@ public class MetaStorage implements ConqueryStorage{
         authUser.close();
         authRole.close();
         authGroup.close();
+    }
+
+    @Override
+    public MutableInjectableValues inject(MutableInjectableValues values) {
+        return values.add(MetaStorage.class, this);
     }
 }

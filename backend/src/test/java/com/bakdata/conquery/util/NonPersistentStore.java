@@ -1,13 +1,12 @@
 package com.bakdata.conquery.util;
 
-import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
-import com.bakdata.conquery.io.storage.Store;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
+
+import com.bakdata.conquery.io.storage.Store;
+import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 
 public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
@@ -60,11 +59,6 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
     @Override
     public Collection<VALUE> getAll() {
         return map.values();
-    }
-
-    @Override
-    public void inject(Injectable injectable) {
-        // Don't inject here since there is no serdes when non persistent
     }
 
     @Override

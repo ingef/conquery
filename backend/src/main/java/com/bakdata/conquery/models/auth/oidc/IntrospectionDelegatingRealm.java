@@ -177,13 +177,13 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 						mappedGroupsToDo.remove(group);
 					} else {
 						// Mapping is not valid any more remove user from group
-						group.removeMember(storage, user);
+						group.removeMember(user);
 					}
 				}
 			}
 
 			for (Group group : mappedGroupsToDo) {
-				group.addMember(storage, user);
+				group.addMember(user);
 			}
 		}
 
@@ -195,7 +195,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 			}
 			// try to construct a new User if none could be found in the storage
 			String userLabel = successResponse.getStringParameter("name");
-			user = new User(username, userLabel != null ? userLabel : username);
+			user = new User(username, userLabel != null ? userLabel : username, storage);
 			storage.addUser(user);
 			log.info("Created new user: {}", user);
 			return user;
@@ -213,7 +213,7 @@ public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 			if (group != null) {
 				return group;
 			}
-			group = new Group(groupNameId.getValue().getGroup(), groupNameId.getKey());
+			group = new Group(groupNameId.getValue().getGroup(), groupNameId.getKey(), storage);
 			storage.addGroup(group);
 			log.info("Created new group: {}", group);
 			return group;

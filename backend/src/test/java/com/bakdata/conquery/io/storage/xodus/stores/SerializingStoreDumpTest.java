@@ -12,6 +12,7 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -19,6 +20,7 @@ import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.io.Files;
 import io.dropwizard.jersey.validation.Validators;
 import jetbrains.exodus.env.Environment;
@@ -34,6 +36,7 @@ import org.junit.jupiter.api.Test;
 public class SerializingStoreDumpTest {
 
 	public static final StoreInfo<UserId, User> USER_STORE_ID = StoreMappings.AUTH_USER.storeInfo();
+	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 	private File tmpDir;
 	private Environment env;
 	private XodusStoreFactory config;
@@ -42,7 +45,7 @@ public class SerializingStoreDumpTest {
 	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"));
 	private final ConceptQuery cQuery = new ConceptQuery(
 		new CQReusedQuery(managedQuery.getId()));
-	private final User user = new User("username", "userlabel");
+	private final User user = new User("username", "userlabel", STORAGE);
 
 	@BeforeEach
 	public void init() {
@@ -58,8 +61,16 @@ public class SerializingStoreDumpTest {
 	}
 
 	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, StoreInfo<KEY,VALUE> storeId) {
-		return new SerializingStore<>(new XodusStore(environment, storeId.getName(), (e) -> {}, (e) -> {}), validator, config.getObjectMapper(), storeId.getKeyType(), storeId.getValueType(), config
-				.isRemoveUnreadableFromStore(), config.getUnreadableDataDumpDirectory(), config.isValidateOnWrite());
+		return new SerializingStore<>(
+				new XodusStore(environment, storeId.getName(), (e) -> {}, (e) -> {}),
+				validator,
+				config.getObjectMapper(),
+				storeId.getKeyType(),
+				storeId.getValueType(),
+				config.isValidateOnWrite(),
+				config.isRemoveUnreadableFromStore(),
+				config.getUnreadableDataDumpDirectory()
+		);
 	}
 
 	/**

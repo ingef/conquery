@@ -1,15 +1,16 @@
 package com.bakdata.conquery.integration.tests;
 
-import com.bakdata.conquery.models.auth.entities.User;
-import org.apache.shiro.authz.Permission;
-
 import java.util.Collection;
 import java.util.List;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
+import org.apache.shiro.authz.Permission;
+
 public class TestUser extends User {
 
-    public TestUser() {
-        super("user", "user");
+    public TestUser(MetaStorage storage) {
+        super("user", "user", storage);
     }
 
     public boolean isPermitted(Permission permission) {

@@ -47,7 +47,7 @@ public class ApiV1 implements ResourcesProvider {
 				bind(new ConceptsProcessor(manager.getDatasetRegistry())).to(ConceptsProcessor.class);
 				bind(new MeProcessor(manager.getStorage(), datasets)).to(MeProcessor.class);
 				bind(new QueryProcessor(datasets, manager.getStorage(), manager.getConfig())).to(QueryProcessor.class);
-				bind(new FormConfigProcessor(manager.getValidator(), manager.getStorage())).to(FormConfigProcessor.class);
+				bind(new FormConfigProcessor(manager.getValidator(), manager.getStorage(), datasets)).to(FormConfigProcessor.class);
 			}
 		});
 

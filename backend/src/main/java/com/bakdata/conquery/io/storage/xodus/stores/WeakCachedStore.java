@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
 import com.google.common.cache.CacheBuilder;
@@ -100,11 +99,6 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public Collection<KEY> getAllKeys() {
 		return store.getAllKeys();
-	}
-
-	@Override
-	public void inject(Injectable injectable) {
-		store.inject(injectable);
 	}
 	
 	@Override

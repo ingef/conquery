@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.dropwizard.jersey.validation.Validators;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -34,6 +36,8 @@ public class SerializationTestUtil<T> {
 	private final Validator validator = Validators.newValidator();
 	@Setter
 	private CentralRegistry registry;
+	@NonNull
+	private Injectable[] injectables = {};
 
 	public static <T> SerializationTestUtil<T> forType(TypeReference<T> type) {
 		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
@@ -41,6 +45,11 @@ public class SerializationTestUtil<T> {
 
 	public static <T> SerializationTestUtil<T> forType(Class<? extends T> type) {
 		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
+	}
+
+	public SerializationTestUtil<T> injectables(Injectable ... injectables) {
+		this.injectables = injectables;
+		return this;
 	}
 
 	public void test(T value, T expected) throws JSONException, IOException {
@@ -60,9 +69,12 @@ public class SerializationTestUtil<T> {
 		test(value, value);
 	}
 
-	private void test(T value, T expected, ObjectMapper mapper) throws JSONException, IOException {
+	private void test(T value, T expected, ObjectMapper mapper) throws IOException {
 		if (registry != null) {
-			mapper = new SingletonNamespaceCollection(registry, registry).injectInto(mapper);
+			mapper = new SingletonNamespaceCollection(registry, registry).injectIntoNew(mapper);
+		}
+		for (Injectable injectable : injectables) {
+			mapper = injectable.injectIntoNew(mapper);
 		}
 		ObjectWriter writer = mapper.writerFor(type).withView(InternalOnly.class);
 		ObjectReader reader = mapper.readerFor(type).withView(InternalOnly.class);

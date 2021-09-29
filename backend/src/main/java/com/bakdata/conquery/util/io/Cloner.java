@@ -35,7 +35,7 @@ public class Cloner {
 	public static <T> T clone(T element, Injectable injectable, Class<T> valueType) {
 		try {
 			return injectable
-						   .injectInto(Jackson.BINARY_MAPPER)
+						   .injectIntoNew(Jackson.BINARY_MAPPER)
 						   .readValue(
 								   Jackson.BINARY_MAPPER.writeValueAsBytes(element),
 								   valueType

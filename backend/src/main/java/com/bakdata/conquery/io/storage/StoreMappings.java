@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.storage;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
@@ -35,7 +34,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import lombok.Getter;
@@ -81,22 +79,8 @@ public enum StoreMappings {
 	/**
 	 * Store for identifiable values, with injectors. Store is also cached.
 	 */
-	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry, Injectable... injectables) {
-
-		for (Injectable injectable : injectables) {
-			baseStore.inject(injectable);
-		}
-
-		baseStore.inject(centralRegistry);
-
-		return new DirectIdentifiableStore<>(centralRegistry, baseStore);
-	}
-
-	/**
-	 * Store for identifiable values, without injectors. Store is also cached.
-	 */
 	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry) {
-		return identifiable(baseStore, centralRegistry, new SingletonNamespaceCollection(centralRegistry));
+		return new DirectIdentifiableStore<>(centralRegistry, baseStore);
 	}
 
 	/**
@@ -117,8 +101,8 @@ public enum StoreMappings {
 	/**
 	 * Store holding a single value.
 	 */
-	public static <VALUE> SingletonStore<VALUE> singleton(Store<Boolean, VALUE> baseStore, Injectable... injectables) {
-		return new SingletonStore<>(baseStore, injectables);
+	public static <VALUE> SingletonStore<VALUE> singleton(Store<Boolean, VALUE> baseStore) {
+		return new SingletonStore<>(baseStore);
 	}
 
 	private String getName() {

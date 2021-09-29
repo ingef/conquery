@@ -8,14 +8,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.shiro.subject.PrincipalCollection;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.shiro.subject.PrincipalCollection;
 
-public class SinglePrincipalCollection implements PrincipalCollection{
+public class SinglePrincipalCollection implements PrincipalCollection {
 
 	private static final long serialVersionUID = -1801050265305362978L;
 
