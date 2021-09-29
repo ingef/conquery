@@ -57,15 +57,14 @@ public class StandaloneSupport {
 		testConquery.waitUntilWorkDone();
 	}
 
-	public void preprocessTmp(File tmpDir, List<File> descriptions, List<String> tags) throws Exception {
+	public void preprocessTmp(File tmpDir, List<File> descriptions) throws Exception {
 		final Environment env = testConquery.getDropwizard().getEnvironment();
 		final net.sourceforge.argparse4j.inf.Namespace namespace = new net.sourceforge.argparse4j.inf.Namespace(
 				Map.of(
 						"in", tmpDir,
 						"out", tmpDir,
-						"desc", descriptions,
-						"tag", tags,
-						"strict", false
+						"desc", descriptions
+
 				)
 		);
 

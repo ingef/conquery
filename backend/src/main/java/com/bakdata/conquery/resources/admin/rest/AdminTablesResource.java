@@ -110,14 +110,14 @@ public class AdminTablesResource extends HAdmin {
 
     @PUT
     @Consumes(MediaType.APPLICATION_OCTET_STREAM)
-    @Path("cqpp/{" + IMPORT_ID + "}")
-    public void updateCqppImport(@NotNull @PathParam(IMPORT_ID) Import imp, @NotNull InputStream importStream) throws IOException {
-        processor.updateImport(imp, namespace, new GZIPInputStream(importStream));
+    @Path("cqpp")
+    public void updateCqppImport( @NotNull InputStream importStream) throws IOException {
+        processor.updateImport( namespace, new GZIPInputStream(importStream));
     }
 
     @PUT
-    @Path("imports/{" + IMPORT_ID + "}")
-    public void updateImport(@NotNull @PathParam(IMPORT_ID) Import imp, @NotNull @QueryParam("file") File importFile) throws IOException {
+    @Path("imports")
+    public void updateImport(@NotNull @QueryParam("file") File importFile) throws IOException {
         StringJoiner errors = new StringJoiner("\n");
 
         if (!importFile.canRead()) {
@@ -140,7 +140,7 @@ public class AdminTablesResource extends HAdmin {
             throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors), Status.BAD_REQUEST);
         }
 
-        processor.updateImport(imp, namespace, new GZIPInputStream(new FileInputStream(importFile)));
+        processor.updateImport(namespace, new GZIPInputStream(new FileInputStream(importFile)));
     }
 
 }

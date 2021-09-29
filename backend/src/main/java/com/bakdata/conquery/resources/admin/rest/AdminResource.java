@@ -99,7 +99,7 @@ public class AdminResource {
         final MetaStorage storage = processor.getStorage();
         final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
         return storage.getAllExecutions().stream()
-                .map(t -> t.buildStatusFull(storage, currentUser, datasetRegistry, processor.getConfig()))
+                .map(t -> t.buildStatusFull(storage, currentUser, datasetRegistry))
                 .filter(t -> t.getCreatedAt().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
                 .limit(limit.orElse(100))
                 .toArray(FullExecutionStatus[]::new);

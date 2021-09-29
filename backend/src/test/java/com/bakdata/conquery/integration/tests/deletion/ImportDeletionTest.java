@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -207,7 +206,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 													 .orElseThrow();
 
 
-			final ResourceFile csv = import2Table.getCsv()[0];
+			final ResourceFile csv = import2Table.getCsv();
 			final String path = csv.getPath();
 
 			//copy csv to tmp folder
@@ -236,7 +235,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			Jackson.MAPPER.writeValue(descriptionFile, desc);
 
 			//preprocess
-			conquery.preprocessTmp(conquery.getTmpDir(), List.of(descriptionFile), Collections.emptyList());
+			conquery.preprocessTmp(conquery.getTmpDir(), List.of(descriptionFile));
 
 			//import preprocessedFiles
 			conquery.getDatasetsProcessor().addImport(conquery.getNamespace(), new GZIPInputStream(new FileInputStream(preprocessedFile)));

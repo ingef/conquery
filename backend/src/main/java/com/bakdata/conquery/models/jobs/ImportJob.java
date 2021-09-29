@@ -63,7 +63,7 @@ public class ImportJob extends Job {
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, Optional<Import> toUpdateImp)
+	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, boolean update)
 			throws IOException {
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
 
@@ -88,24 +88,19 @@ public class ImportJob extends Job {
 			header.assertMatch(table);
 
 			final ImportId importId = new ImportId(table.getId(), header.getName());
+			Import processedImport = namespace.getStorage().getImport(importId);
 
-			if (toUpdateImp.isPresent()) {
-				if (!importId.equals(toUpdateImp.get().getId())) {
-
-					throw new WebApplicationException(String.format("The Import [%s] to update is not the same as the one in the file [%s]", toUpdateImp.get().getId(), importId), Response.Status.CONFLICT);
-				}
-				if (namespace.getStorage().getImport(importId) == null) {
-
+			if (update) {
+				if (processedImport == null) {
 					throw new WebApplicationException(String.format("Import[%s] is not present.", importId), Response.Status.NOT_FOUND);
 				}
 				// before updating the import, make sure that all workers removed the last import
-				namespace.sendToAll(new RemoveImportJob(toUpdateImp.get()));
-			} else {
-				if (namespace.getStorage().getImport(importId) != null) {
-
-					throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
-				}
+				namespace.sendToAll(new RemoveImportJob(processedImport));
 			}
+			else if (processedImport != null) {
+				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
+			}
+
 
 			log.trace("Begin reading Dictionaries");
 			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
@@ -168,7 +163,8 @@ public class ImportJob extends Job {
 
 			if (column.getSharedDictionary() != null) {
 				column.createSharedDictionaryReplacement(dicts, storage, out, sharedDictionaryLocks);
-			} else {
+			}
+			else {
 				// Its a normal dictionary (only valid for this column in this import)
 				column.createSingleColumnDictionaryReplacement(dicts, importName, out);
 			}
@@ -211,7 +207,8 @@ public class ImportJob extends Job {
 			if (column.getSharedDictionary() == null) {
 				// Normal Dictionary -> no merge necessary, just distribute
 				distributeDictionary(namespace, importDictionary);
-			} else {
+			}
+			else {
 				// It's a shared dictionary
 
 				final String sharedDictionaryName = column.getSharedDictionary();
@@ -339,7 +336,8 @@ public class ImportJob extends Job {
 	private void awaitFreeJobQueue(WorkerInformation responsibleWorker) {
 		try {
 			responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			log.error("Interrupted while waiting for worker[{}] to have free space in queue", responsibleWorker, e);
 		}
 	}

@@ -282,7 +282,7 @@ public class AdminDatasetProcessor {
     @SneakyThrows
     public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-        ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, Optional.empty());
+        ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, false);
         namespace.getJobManager().addSlowJob(job);
     }
 
@@ -290,9 +290,9 @@ public class AdminDatasetProcessor {
      * Reads an Import partially Importing it if it is present, then submitting it for full import [Update of an import].
      */
     @SneakyThrows
-    public void updateImport(Import imp, Namespace namespace, InputStream inputStream) throws IOException {
+    public void updateImport( Namespace namespace, InputStream inputStream) throws IOException {
 
-        ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, Optional.of(imp));
+        ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, true);
         namespace.getJobManager().addSlowJob(job);
     }
 

@@ -25,10 +25,10 @@
 				{
 					"label": "tree_label",
 					"name": "test_column",
-					"column": "table.test_column",
+					"column": "table1.test_column",
 					"validityDates": {
 						"label": "datum",
-						"column": "table.datum"
+						"column": "table1.datum"
 					}
 				}
 			],
@@ -57,13 +57,26 @@
 	"content": {
 		"tables": [
 			{
-				"csv": [
-					"tests/query/UPDATE_IMPORT_TESTS/table1_content1.import1.csv",
-					"tests/query/UPDATE_IMPORT_TESTS/table1_content2.import1.csv",
-					"tests/query/UPDATE_IMPORT_TESTS/table1_content1.import2.csv"
-					
-				],
-				"name": "table",
+				"csv": "tests/query/UPDATE_IMPORT_TESTS/table1_content.csv",
+				"name": "table1",
+				"primaryColumn": {
+					"name": "pid",
+					"type": "STRING"
+				},
+				"columns": [
+					{
+						"name": "datum",
+						"type": "DATE"
+					},
+					{
+						"name": "test_column",
+						"type": "STRING"
+					}
+				]
+			},
+			{
+				"csv": "tests/query/UPDATE_IMPORT_TESTS/table2_content.csv",
+				"name": "table2",
 				"primaryColumn": {
 					"name": "pid",
 					"type": "STRING"

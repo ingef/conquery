@@ -28,7 +28,7 @@ public class RequiredTable {
     @NotEmpty
     private String name;
     @NotNull
-    private ResourceFile[] csv;
+    private ResourceFile csv;
     @NotNull
     @Valid
     private RequiredColumn primaryColumn;

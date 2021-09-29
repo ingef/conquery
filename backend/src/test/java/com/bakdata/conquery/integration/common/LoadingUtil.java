@@ -66,7 +66,7 @@ public class LoadingUtil {
             ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
                     .createQuery(support.getNamespace().getNamespaces(), q, queryId, user, support.getNamespace().getDataset());
 
-            user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+            user.addPermission(support.getMetaStorage(),ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
             if (managed.getState() == ExecutionState.FAILED) {
                 fail("Query failed");
@@ -80,7 +80,7 @@ public class LoadingUtil {
             UUID queryId = new UUID(0L, id++);
 
             ManagedExecution<?> managed = support.getNamespace().getExecutionManager().createQuery(support.getNamespace().getNamespaces(), query, queryId, user, support.getNamespace().getDataset());
-            user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+            user.addPermission(support.getMetaStorage(),ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
             if (managed.getState() == ExecutionState.FAILED) {
                 fail("Query failed");
@@ -111,51 +111,36 @@ public class LoadingUtil {
 
 
         for (RequiredTable rTable : tables) {
-            List<String> tags = new ArrayList<>();
             // copy csv to tmp folder
-            String tableName = rTable.getName();
-            for (ResourceFile csv : rTable.getCsv()) {
+            String name = rTable.getName();
+            FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
-                FileUtils.copyInputStreamToFile(csv.stream(), new File(support.getTmpDir(), csv.getName()));
+            // create import descriptor
+            final File descriptionFile = support.getTmpDir().toPath().resolve(name + ConqueryConstants.EXTENSION_DESCRIPTION).toFile();
+            final File outFile = support.getTmpDir().toPath().resolve(name + EXTENSION_PREPROCESSED).toFile();
 
-                String outFileName = tableName;
-                Optional<String> tag = Optional.empty();
-                String taglessName = csv.getName();
-                final String[] nameSplit = csv.getName().split("\\.");
-                if (nameSplit.length == 3) {
-                    tag = Optional.of(nameSplit[1]);
-                    tags.add(tag.get());
-                    outFileName = nameSplit[0];
-                    taglessName = nameSplit[0] + "." + nameSplit[2];
+            TableImportDescriptor desc = new TableImportDescriptor();
+
+            desc.setName(name);
+            desc.setTable(name);
+            TableInputDescriptor input = new TableInputDescriptor();
+            {
+                input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
+                input.setSourceFile(rTable.getCsv().getName());
+                input.setOutput(new OutputDescription[rTable.getColumns().length]);
+                for (int i = 0; i < rTable.getColumns().length; i++) {
+                    input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
                 }
-
-
-                // create import descriptor
-                final File descriptionFile = support.getTmpDir().toPath().resolve(csv.getName() + ConqueryConstants.EXTENSION_DESCRIPTION).toFile();
-                final File outFile = support.getTmpDir().toPath().resolve(outFileName + (tag.map(s -> "." + s).orElse("")) + EXTENSION_PREPROCESSED).toFile();
-
-                TableImportDescriptor desc = new TableImportDescriptor();
-                desc.setName(outFileName);
-                desc.setTable(tableName);
-                TableInputDescriptor input = new TableInputDescriptor();
-                {
-                    input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
-                    input.setSourceFile(taglessName);
-                    input.setOutput(new OutputDescription[rTable.getColumns().length]);
-                    for (int i = 0; i < rTable.getColumns().length; i++) {
-                        input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
-                    }
-                }
-                desc.setInputs(new TableInputDescriptor[]{input});
-
-                Jackson.MAPPER.writeValue(descriptionFile, desc);
-
-                descriptions.add(descriptionFile);
-                preprocessedFiles.add(outFile);
             }
-            // preprocess
-            support.preprocessTmp(support.getTmpDir(), descriptions, tags);
+            desc.setInputs(new TableInputDescriptor[]{input});
+
+            Jackson.MAPPER.writeValue(descriptionFile, desc);
+
+            descriptions.add(descriptionFile);
+            preprocessedFiles.add(outFile);
         }
+        // preprocess
+        support.preprocessTmp(support.getTmpDir(), descriptions);
         //clear the MDC location from the preprocessor
         ConqueryMDC.clearLocation();
         return preprocessedFiles;
@@ -183,8 +168,7 @@ public class LoadingUtil {
                 .queryParam("file", cqpp)
                 .buildFromMap(Map.of(
                         ResourceConstants.DATASET, support.getDataset().getId(),
-                        ResourceConstants.TABLE, importId.getTable(),
-                        ResourceConstants.IMPORT_ID, importId
+                        ResourceConstants.TABLE, importId.getTable()
                 ));
 
         final Response response = support.getClient()
