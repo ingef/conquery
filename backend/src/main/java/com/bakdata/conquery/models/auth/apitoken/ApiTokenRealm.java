@@ -168,11 +168,11 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 			return null;
 		}
 
-		final CharArrayBuffer credentials = ((ApiToken) token).getCredentials();
-		ApiTokenHash tokenHash = ApiTokenCreator.hashToken(credentials);
+		final ApiToken apiToken = ((ApiToken) token);
+		ApiTokenHash tokenHash = ApiTokenCreator.hashToken(apiToken);
 
 		// Clear the token
-		credentials.clear();
+		apiToken.clear();
 
 
 		ApiTokenData tokenData = tokenDataStore.get(tokenHash);
@@ -196,7 +196,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 
 	public ApiToken createApiToken(User user, ApiTokenDataRepresentation.Request tokenRequest) {
 
-		CharArrayBuffer token;
+		ApiToken token;
 
 		synchronized (this) {
 			ApiTokenHash hash;
@@ -212,7 +212,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 			tokenDataStore.add(hash, apiTokenData);
 		}
 
-		return new ApiToken(token);
+		return token;
 	}
 
 	public List<ApiTokenDataRepresentation.Response> listUserToken(Userish user) {

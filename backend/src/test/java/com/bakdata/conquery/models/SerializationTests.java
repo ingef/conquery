@@ -28,6 +28,7 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.apitoken.ApiToken;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenCreator;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenData;
 import com.bakdata.conquery.models.auth.apitoken.Scopes;
@@ -401,8 +402,9 @@ public class SerializationTests {
 
 	@Test
 	public void testApiTokenData() throws JSONException, IOException {
-		final CharArrayBuffer apiToken = new CharArrayBuffer(5);
-		apiToken.append("testtest");
+		final CharArrayBuffer buffer = new CharArrayBuffer(5);
+		buffer.append("testtest");
+		final ApiToken apiToken = new ApiToken(buffer);
 		final ApiTokenData
 				apiTokenData =
 				new ApiTokenData(

@@ -12,6 +12,7 @@ import org.apache.shiro.authc.AuthenticationToken;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.nio.CharBuffer;
+import java.util.Arrays;
 
 /**
  * Container for a sensitive token that allows to use the APIs (see {@link ApiTokenRealm})
@@ -38,5 +39,10 @@ public class ApiToken implements AuthenticationToken {
 	@JsonIgnore
 	public CharArrayBuffer getCredentials() {
 		return token;
+	}
+
+
+	public void clear() {
+		Arrays.fill(token.buffer(), '\0');
 	}
 }

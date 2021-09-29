@@ -39,16 +39,16 @@ public class ApiTokenCreator {
 
 
 
-	public CharArrayBuffer createToken(){
+	public ApiToken createToken(){
 		CharArrayBuffer buffer = new CharArrayBuffer(TOKEN_PREFIX.length() + "_".length() + TOKEN_LENGTH);
 		buffer.append(TOKEN_PREFIX);
 		buffer.append('_');
 		tokenProvider.fillRemaining(buffer);
-		return buffer;
+		return new ApiToken(buffer);
 	}
 
-	public static ApiTokenHash hashToken(CharArrayBuffer apiToken){
-		PBEKeySpec spec = new PBEKeySpec(apiToken.buffer(), SALT, ITERATIONS, KEY_LENGTH);
+	public static ApiTokenHash hashToken(ApiToken apiToken){
+		PBEKeySpec spec = new PBEKeySpec(apiToken.getCredentials().buffer(), SALT, ITERATIONS, KEY_LENGTH);
 		SecretKeyFactory f = null;
 		try {
 			f = SecretKeyFactory.getInstance(ALGORITHM);
