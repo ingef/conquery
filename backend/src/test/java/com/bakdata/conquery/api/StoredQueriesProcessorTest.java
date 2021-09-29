@@ -49,6 +49,7 @@ import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class StoredQueriesProcessorTest {

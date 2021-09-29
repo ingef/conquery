@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -181,13 +182,10 @@ public class TestConquery {
 	}
 
 	@SneakyThrows
-	public synchronized void shutdown(StandaloneSupport support) {
-		DatasetId dataset = support.getDataset().getId();
-
-		standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();
-		standaloneCommand.getManager().getStorage().close();
-
-		openSupports.remove(support);
+	public synchronized void shutdown() {
+		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
+		getDropwizard().after();
+		openSupports.clear();
 	}
 
 

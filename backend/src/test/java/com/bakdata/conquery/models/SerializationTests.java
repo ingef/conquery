@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.validation.Validator;
+
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
@@ -19,6 +21,8 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -51,18 +55,18 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
 public class SerializationTests {
 
-	private final static MetaStorage STORAGE = new MetaStorage(Validators.newValidator(), new NonPersistentStoreFactory(), new DatasetRegistry(2));
+	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 	@Test
 	public void dataset() throws IOException, JSONException {
@@ -98,13 +102,9 @@ public class SerializationTests {
 	 */
 	@Test
 	public void user() throws IOException, JSONException {
-		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
 		User user = new User("user", "user", STORAGE);
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
-		user
-				.addPermission(
-						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
-				);
+		user.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		Role role = new Role("company", "company", STORAGE);
 		user.addRole(role);
 
@@ -120,13 +120,9 @@ public class SerializationTests {
 
 	@Test
 	public void group() throws IOException, JSONException {
-		MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
 		Group group = new Group("group", "group", STORAGE);
 		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
-		group
-				.addPermission(
-						ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()))
-				);
+		group.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		group.addRole(new Role("company", "company", STORAGE));
 
 		Role role = new Role("company", "company", STORAGE);
@@ -202,9 +198,18 @@ public class SerializationTests {
 		registry.register(connector);
 		registry.register(valDate);
 
+		final Validator validator = Validators.newValidator();
+		concept.setValidator(validator);
+
 		SerializationTestUtil
 				.forType(TreeConcept.class)
 				.registry(registry)
+				.injectables(new Injectable() {
+					@Override
+					public MutableInjectableValues inject(MutableInjectableValues values) {
+						return values.add(Validator.class, validator);
+					}
+				})
 				.test(concept);
 	}
 

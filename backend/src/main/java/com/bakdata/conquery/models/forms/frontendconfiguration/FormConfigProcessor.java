@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,6 +50,7 @@ public class FormConfigProcessor {
 	
 	private final Validator validator;
 	private final MetaStorage storage;
+	private final DatasetRegistry datasetRegistry;
 	@Getter(onMethod = @__({@TestOnly}))
 	private final static ObjectMapper MAPPER = Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);;
 	
@@ -107,11 +109,11 @@ public class FormConfigProcessor {
 	public FormConfig addConfig(Userish user, Dataset targetDataset, FormConfigAPI config) {
 
 		//TODO clear this up
-		final Namespace namespace = storage.getDatasetRegistry().get(targetDataset.getId());
+		final Namespace namespace = datasetRegistry.get(targetDataset.getId());
 
 		user.authorize(namespace.getDataset(), Ability.READ);
 
-		List<DatasetId> translateToDatasets = storage.getDatasetRegistry().getAllDatasets()
+		List<DatasetId> translateToDatasets = datasetRegistry.getAllDatasets()
 													 .stream()
 													 .filter(dId -> user.isPermitted(dId, Ability.READ))
 													 .map(Identifiable::getId)

@@ -59,7 +59,7 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 	}
 
 	public static ConqueryTestSpec readJson(Dataset dataset, String json) throws IOException {
-		return readJson(dataset.getId(), json, dataset.injectInto(TEST_SPEC_READER));
+		return readJson(dataset.getId(), json, dataset.injectIntoNew(TEST_SPEC_READER));
 	}
 
 	private static ConqueryTestSpec readJson(DatasetId dataset, String json, ObjectReader jsonReader) throws IOException {

@@ -27,11 +27,6 @@ public class ModificationShieldedWorkerStorage {
 
 	private final WorkerStorage delegate;
 
-	public Validator getValidator() {
-		return delegate.getValidator();
-	}
-
-
 	public CentralRegistry getCentralRegistry() {
 		return delegate.getCentralRegistry();
 	}

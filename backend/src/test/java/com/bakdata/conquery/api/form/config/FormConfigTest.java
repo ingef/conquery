@@ -114,15 +114,14 @@ public class FormConfigTest {
 			return namespaceMock;
 		}).when(namespacesMock).get(any(DatasetId.class));
 		when(namespacesMock.getAllDatasets()).thenReturn(List.of(dataset,dataset1));
-		when(namespacesMock.injectInto(any(ObjectMapper.class))).thenCallRealMethod();
+		when(namespacesMock.injectIntoNew(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
 
-		storage = new MetaStorage(null, new NonPersistentStoreFactory(),  namespacesMock);
-
+		storage = new NonPersistentStoreFactory().createMetaStorage();
 
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())
 		.add(IdResolveContext.class, namespacesMock);
-		processor = new FormConfigProcessor(validator, storage);
+		processor = new FormConfigProcessor(validator, storage, namespacesMock);
 		controller = new AuthorizationController(storage, new DevelopmentAuthorizationConfig());
 		controller.start();
 	}
@@ -183,7 +182,7 @@ public class FormConfigTest {
 		// CHECK
 		assertThat(storage.getAllFormConfigs()).doesNotContain(formConfig);
 		
-		assertThat(storage.getUser(user.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
+		assertThat(user.getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
 	}
 	
 	@Test

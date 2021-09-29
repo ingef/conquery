@@ -19,12 +19,11 @@ public class DevAuthConfig implements AuthenticationRealmFactory {
 		
 	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
-		final List<ProtoUser> initialUsers = managerNode.getConfig()
-														.getAuthorizationRealms().getInitialUsers();
-
-		Preconditions.checkState(initialUsers.size()>0, "There must be at least one initial user configured.");
-
-		User defaultUser = initialUsers.get(0).createOrOverwriteUser(managerNode.getStorage());
+		User defaultUser = managerNode.getConfig()
+									  .getAuthorizationRealms()
+									  .getInitialUsers()
+									  .get(0)
+									  .createOrOverwriteUser(managerNode.getStorage());
 
 		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(new UserIdTokenExtractor(defaultUser));
 

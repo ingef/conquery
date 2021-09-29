@@ -71,10 +71,10 @@ public class SerializationTestUtil<T> {
 
 	private void test(T value, T expected, ObjectMapper mapper) throws IOException {
 		if (registry != null) {
-			mapper = new SingletonNamespaceCollection(registry, registry).injectInto(mapper);
+			mapper = new SingletonNamespaceCollection(registry, registry).injectIntoNew(mapper);
 		}
 		for (Injectable injectable : injectables) {
-			mapper = injectable.injectInto(mapper);
+			mapper = injectable.injectIntoNew(mapper);
 		}
 		ObjectWriter writer = mapper.writerFor(type).withView(InternalOnly.class);
 		ObjectReader reader = mapper.readerFor(type).withView(InternalOnly.class);

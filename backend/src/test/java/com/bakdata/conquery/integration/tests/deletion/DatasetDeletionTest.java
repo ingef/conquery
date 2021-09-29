@@ -10,7 +10,6 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -36,10 +35,10 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
-		StandaloneSupport conquery = testConquery.getSupport(name);
+		final StandaloneSupport conquery = testConquery.getSupport(name);
 		final MetaStorage storage = conquery.getMetaStorage();
 		final Dataset dataset = conquery.getDataset();
-		Namespace namespace = storage.getDatasetRegistry().get(dataset.getId());
+		Namespace namespace = conquery.getNamespace();
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 
@@ -163,90 +162,73 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 		// Reload the dataset and assert the state.
 		// We have to do some weird trix with StandaloneSupport to open it with another Dataset
+		final StandaloneSupport conqueryReimport = testConquery.getSupport(namespace.getDataset().getName());
 		{
-			final Dataset newDataset = conquery.getDatasetsProcessor().addDataset(dataset);
-			conquery.waitUntilWorkDone();
-
-			final StandaloneSupport conquery2 =
-					new StandaloneSupport(
-							testConquery,
-							storage.getDatasetRegistry()
-								   .get(dataset.getId()),
-							newDataset,
-							conquery.getTmpDir(),
-							conquery.getConfig(),
-							conquery.getMetaProcessor(),
-							conquery.getDatasetsProcessor(),
-							conquery.getTestUser()
-					);
-
-
-			namespace = storage.getDatasetRegistry().get(dataset.getId());
-
 			// only import the deleted import/table
-			LoadingUtil.importTables(conquery2,test.getContent().getTables());
+			LoadingUtil.importTables(conqueryReimport,test.getContent().getTables());
 
-			assertThat(conquery2.getNamespace().getStorage().getTables()).isNotEmpty();
+			assertThat(conqueryReimport.getNamespace().getStorage().getTables()).isNotEmpty();
 
-			conquery.waitUntilWorkDone();
-			LoadingUtil.importTableContents(conquery2, test.getContent().getTables(), newDataset);
+			conqueryReimport.waitUntilWorkDone();
+			LoadingUtil.importTableContents(conqueryReimport, test.getContent().getTables(), conqueryReimport.getDataset());
 
-			conquery.waitUntilWorkDone();
+			conqueryReimport.waitUntilWorkDone();
 
-			LoadingUtil.importConcepts(conquery2, test.getRawConcepts());
-			conquery.waitUntilWorkDone();
+			LoadingUtil.importConcepts(conqueryReimport, test.getRawConcepts());
+			conqueryReimport.waitUntilWorkDone();
 
-			assertThat(conquery2.getDatasetsProcessor().getDatasetRegistry().get(dataset.getId()))
+			assertThat(conqueryReimport.getDatasetsProcessor().getDatasetRegistry().get(conqueryReimport.getDataset().getId()))
 					.describedAs("Dataset after re-import.")
 					.isNotNull();
 
-			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
+			assertThat(conqueryReimport.getNamespace().getStorage().getAllImports().size()).isEqualTo(nImports);
 
-			for (ShardNode node : conquery.getShardNodes()) {
+			for (ShardNode node : conqueryReimport.getShardNodes()) {
 				assertThat(node.getWorkers().getWorkers().values())
-						.filteredOn(w -> w.getInfo().getDataset().equals(dataset.getId()))
+						.filteredOn(w -> w.getInfo().getDataset().equals(conqueryReimport.getDataset().getId()))
 						.describedAs("Workers for node {}", node.getName())
 						.isNotEmpty();
 			}
 
 			log.info("Executing query after re-import");
+			final Query query2 = IntegrationUtils.parseQuery(conqueryReimport, test.getRawQuery());
 
 			// Issue a query and assert that it has the same content as the first time around.
-			IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			IntegrationUtils.assertQueryResult(conqueryReimport, query2, 2L, ExecutionState.DONE, conqueryReimport.getTestUser(), 201);
 		}
 
 
 		// Finally, restart conquery and assert again, that the data is correct.
 		{
-			testConquery.shutdown(conquery);
-			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
-			testConquery.getDropwizard().after();
+			testConquery.shutdown();
+
 			//restart
 			testConquery.beforeAll();
-			StandaloneSupport conquery2 = testConquery.openDataset(dataset.getId());
+			final StandaloneSupport conqueryRestart = testConquery.openDataset(conqueryReimport.getDataset().getId());
 
 			log.info("Checking state after re-start");
 
-				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(2);
+			assertThat(conqueryRestart.getNamespace().getStorage().getAllImports().size()).isEqualTo(2);
 
-				for (ShardNode node : conquery2.getShardNodes()) {
-					for (Worker value : node.getWorkers().getWorkers().values()) {
-						if (!value.getInfo().getDataset().equals(dataset.getId())) {
-							continue;
-						}
-
-						final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
-
-						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getTable().getDataset().getId().equals(dataset.getId())))
-								.describedAs("Buckets for Worker %s", value.getInfo().getId())
-								.isNotEmpty();
+			for (ShardNode node : conqueryRestart.getShardNodes()) {
+				for (Worker value : node.getWorkers().getWorkers().values()) {
+					if (!value.getInfo().getDataset().equals(dataset.getId())) {
+						continue;
 					}
+
+					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
+
+					assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getTable().getDataset().getId().equals(dataset.getId())))
+							.describedAs("Buckets for Worker %s", value.getInfo().getId())
+							.isNotEmpty();
 				}
+			}
 
-				log.info("Executing query after re-import");
+			log.info("Executing query after restart");
+			final Query query3 = IntegrationUtils.parseQuery(conqueryRestart, test.getRawQuery());
 
-				// Issue a query and assert that it has the same content as the first time around.
-				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			// Issue a query and assert that it has the same content as the first time around.
+			IntegrationUtils.assertQueryResult(conqueryRestart, query3, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
 	}
 }

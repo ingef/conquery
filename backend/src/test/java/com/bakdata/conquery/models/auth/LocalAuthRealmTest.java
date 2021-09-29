@@ -39,9 +39,9 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 @TestInstance(Lifecycle.PER_CLASS)
 public class LocalAuthRealmTest {
 
+	private final  MetaStorage storage = new NonPersistentStoreFactory().createMetaStorage();
 	private File tmpDir;
 	private LocalAuthenticationRealm realm;
-	private static final MetaStorage STORAGE =  new NonPersistentStoreFactory().createMetaStorage();
 	private User user1;
 	private ConqueryTokenRealm conqueryTokenRealm;
 
@@ -51,7 +51,7 @@ public class LocalAuthRealmTest {
 
 		assert tmpDir.exists();
 
-		conqueryTokenRealm = new ConqueryTokenRealm(STORAGE);
+		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 
 		realm = new LocalAuthenticationRealm(Validators.newValidator(), Jackson.BINARY_MAPPER, conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig(), Duration.hours(1));
 		LifecycleUtils.init(realm);
@@ -60,9 +60,9 @@ public class LocalAuthRealmTest {
 	@BeforeEach
 	public void setupEach() {
 		// Create User in Realm
-		user1 = new User("TestUser", "Test User", STORAGE);
-		STORAGE.addUser(user1);
+		user1 = new User("TestUser", "Test User", storage);
 		PasswordCredential user1Password = new PasswordCredential("testPassword".toCharArray());
+		storage.addUser(user1);
 		realm.addUser(user1, List.of(user1Password));
 	}
 
@@ -87,13 +87,13 @@ public class LocalAuthRealmTest {
 
 	@Test
 	public void testEmptyPassword() {
-		assertThatThrownBy(() -> realm.createAccessToken(user1.getName(), "".toCharArray()))
+		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "".toCharArray()))
 			.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Password was empty");
 	}
 
 	@Test
 	public void testWrongPassword() {
-		assertThatThrownBy(() -> realm.createAccessToken(user1.getName(), "wrongPassword".toCharArray()))
+		assertThatThrownBy(() -> realm.createAccessToken("TestUser", "wrongPassword".toCharArray()))
 			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
 	}
 
@@ -105,11 +105,8 @@ public class LocalAuthRealmTest {
 
 	@Test
 	public void testValidUsernamePassword() {
-
-		// Setup the expected user id
-
 		// Right username and password should yield a JWT
-		String jwt = realm.createAccessToken(user1.getName(), "testPassword".toCharArray());
+		String jwt = realm.createAccessToken("TestUser", "testPassword".toCharArray());
 		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 
 		assertThat(conqueryTokenRealm.doGetAuthenticationInfo(new BearerToken(jwt)).getPrincipals().getPrimaryPrincipal())

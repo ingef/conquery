@@ -30,7 +30,7 @@ public class PathParamInjector implements ContainerRequestFilter {
 		
 		@Override
 		public ObjectReader modify(EndpointConfigBase<?> endpoint, MultivaluedMap<String, String> httpHeaders, JavaType resultType, ObjectReader reader, JsonParser p) throws IOException {
-			return this.injectInto(reader);
+			return this.injectIntoNew(reader);
 		}
 
 		@Override

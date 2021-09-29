@@ -13,7 +13,6 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -33,7 +32,6 @@ import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
@@ -104,11 +102,13 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
 				.build(getName());
-		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
 
-		//inject datasets into the objectmapper
-		((MutableInjectableValues) environment.getObjectMapper().getInjectableValues())
-				.add(IdResolveContext.class, datasetRegistry);
+		// Instantiate DatasetRegistry and MetaStorage so they are ready for injection into the object mapper (API + Storage)
+		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
+		storage = new MetaStorage(datasetRegistry);
+
+		datasetRegistry.injectInto(environment.getObjectMapper());
+		storage.injectInto(environment.getObjectMapper());
 
 
 		jobManager = new JobManager("ManagerNode", config.isFailOnError());
@@ -186,8 +186,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	private void loadMetaStorage() {
-		log.info("Started meta storage");
-		storage = new MetaStorage(validator, config.getStorage(), datasetRegistry);
+		log.info("Opening MetaStorage");
+		storage.openStores(config.getStorage());
+		log.info("Loading MetaStorage");
 		storage.loadData();
 		log.info("MetaStorage loaded {}", storage);
 

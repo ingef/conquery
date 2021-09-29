@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.Store;
@@ -103,8 +102,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 																					   CLASS_V valueType,
 																					   boolean validateOnWrite,
 																					   boolean removeUnreadableFromStore,
-																					   File unreadableDataDumpDirectory,
-																					   Injectable ... injectables) {
+																					   File unreadableDataDumpDirectory) {
 		this.store = store;
 		this.validator = validator;
 		this.validateOnWrite = validateOnWrite;
@@ -116,9 +114,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		valueWriter = objectMapper.writerFor(this.valueType);
 
 		valueReader = objectMapper.readerFor(this.valueType);
-		for (Injectable injectable : injectables) {
-			valueReader = injectable.injectInto(valueReader);
-		}
 
 		keyWriter = objectMapper.writerFor(keyType);
 
@@ -393,11 +388,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void inject(Injectable injectable) {
-		valueReader = injectable.injectInto(valueReader);
-	}
-
-	@Override
 	public Collection<KEY> getAllKeys() {
 		throw new UnsupportedOperationException();
 	}
@@ -409,7 +399,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void removeStore() {
-		store.remove();
+		store.removeStore();
 	}
 
 	@Override

@@ -2,7 +2,6 @@ package com.bakdata.conquery.apiv1.auth;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -21,7 +20,8 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Container class for holding information about initial users.
+ * Factory class to create configured initial users.
+
  */
 @Getter
 @Builder
@@ -61,16 +61,8 @@ public class ProtoUser {
 		return user;
 	}
 
-	@org.jetbrains.annotations.NotNull
 	@JsonIgnore
-	public UserId getId() {
+	public UserId createId() {
 		return new UserId(name);
-	}
-
-	public static boolean registerForAuthentication(UserManageable userManager, User user, List<CredentialType> credentials, boolean override) {
-		if(override) {			
-			return userManager.updateUser(user, credentials);
-		}
-		return userManager.addUser(user, credentials);
 	}
 }

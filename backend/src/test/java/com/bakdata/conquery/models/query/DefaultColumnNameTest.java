@@ -217,6 +217,8 @@ public class DefaultColumnNameTest {
 			setLabel("TestConceptLabel");
 			setDataset(DATASET);
 			setSelects(List.of(new TestUniversalSelect(this)));
+			validator = VALIDATOR;
+
 		}
 
 		public Select extractSelect(CQConcept cq) {
@@ -258,7 +260,7 @@ public class DefaultColumnNameTest {
 			}
 
 			concept.setChildren(children);
-			concept.initElements(VALIDATOR);
+			concept.initElements();
 
 			return concept;
 		}

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.auth.apitoken;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jetbrains.exodus.ExodusException;
 import jetbrains.exodus.env.Environment;
@@ -58,10 +60,9 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 
 	private final Path storageDir;
 	private final XodusConfig storeConfig;
-	private final String storeName = "api-token";
 	private final Validator validator;
 	private final ObjectMapper objectMapper;
-	private final ArrayList<jetbrains.exodus.env.Store> openStoresInEnv = new ArrayList<>();
+	private final ArrayList<XodusStore> openStoresInEnv = new ArrayList<>();
 	private final MetaStorage storage;
 	private final ApiTokenCreator apiTokenCreator = new ApiTokenCreator();
 
@@ -84,15 +85,18 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 	protected void onInit() {
 		super.onInit();
 		// Open/create the database/store
+		String storeName = "api-token";
 		File tokenStore = new File(storageDir.toFile(), storeName);
 		tokenEnvironment = Environments.newInstance(tokenStore, storeConfig.createConfig());
+
+		final XodusStore data = new XodusStore(
+				tokenEnvironment,
+				"DATA",
+				this::closeStoreHook,
+				this::removeStoreHook
+		);
 		tokenDataStore = StoreMappings.cached(new SerializingStore<>(
-				new XodusStore(
-						tokenEnvironment,
-						"DATA",
-						this::closeStoreHook,
-						this::removeStoreHook
-				),
+				data,
 				validator,
 				objectMapper,
 				ApiTokenHash.class,
@@ -101,13 +105,16 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 				false,
 				null
 		));
+		openStoresInEnv.add(data);
+
+		final XodusStore meta = new XodusStore(
+				tokenEnvironment,
+				"META",
+				this::closeStoreHook,
+				this::removeStoreHook
+		);
 		tokenMetaDataStore = StoreMappings.cached(new SerializingStore<>(
-				new XodusStore(
-						tokenEnvironment,
-						"META",
-						this::closeStoreHook,
-						this::removeStoreHook
-				),
+				meta,
 				validator,
 				objectMapper,
 				UUID.class,
@@ -116,20 +123,42 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 				false,
 				null
 		));
+		openStoresInEnv.add(meta);
 	}
 
 
-	private void removeStoreHook(jetbrains.exodus.env.Store store) {
+	private void removeStoreHook(XodusStore store) {
 		openStoresInEnv.remove(store);
-		if (!openStoresInEnv.isEmpty()) {
+
+		if (!openStoresInEnv.isEmpty()){
 			return;
 		}
-		XodusStoreFactory.removeEnvironmentHook(store.getEnvironment());
+
+		final Environment environment = store.getEnvironment();
+		log.info("Removed last XodusStore in Environment. Removing Environment as well: {}", environment.getLocation());
+
+		final List<String> xodusStores= environment.computeInReadonlyTransaction(environment::getAllStoreNames);
+
+		if (!xodusStores.isEmpty()){
+			throw new IllegalStateException("Cannot delete environment, because it still contains these stores:" + xodusStores);
+		}
+
+		environment.close();
+
+		try {
+			FileUtil.deleteRecursive(Path.of(environment.getLocation()));
+		}
+		catch (IOException e) {
+			log.error("Cannot delete directory of removed Environment[{}]", environment.getLocation(), e);
+		}
 	}
 
-	private void closeStoreHook(jetbrains.exodus.env.Store store) {
+	private void closeStoreHook(XodusStore store) {
 		openStoresInEnv.remove(store);
 		final Environment environment = store.getEnvironment();
+		if (!openStoresInEnv.isEmpty()){
+			return;
+		}
 		if (!environment.isOpen()) {
 			return;
 		}
@@ -170,10 +199,10 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 
 	public ApiToken createApiToken(User user, ApiTokenDataRepresentation.Request tokenRepresentation) {
 
-		CharArrayBuffer token = null;
-		ApiTokenHash hash = null;
+		CharArrayBuffer token;
 
 		synchronized (this) {
+			ApiTokenHash hash;
 			// Generate a token that does not collide with another tokens hash
 			do {
 				token = apiTokenCreator.createToken();
