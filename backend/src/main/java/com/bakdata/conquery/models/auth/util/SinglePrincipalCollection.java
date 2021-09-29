@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class SinglePrincipalCollection implements PrincipalCollection{
+public class SinglePrincipalCollection implements PrincipalCollection {
 
 	private static final long serialVersionUID = -1801050265305362978L;
 

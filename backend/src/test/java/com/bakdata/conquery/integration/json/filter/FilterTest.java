@@ -87,11 +87,12 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 
 
-	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
+	private void importConcepts(StandaloneSupport support) throws JSONException, IOException {
 		Dataset dataset = support.getDataset();
 
 		concept = new TreeConcept();
 		concept.setLabel("concept");
+		concept.setValidator(support.getValidator());
 
 		concept.setDataset(support.getDataset());
 

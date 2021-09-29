@@ -7,7 +7,6 @@ import java.util.List;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -19,8 +18,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -56,10 +53,12 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorage(Validator validator, StoreFactory storageFactory, String pathName) {
+	public NamespacedStorage(Validator validator, String pathName) {
 		this.validator = validator;
 		this.pathName = pathName;
+	}
 
+	public void openStores(StoreFactory storageFactory){
 		dataset = storageFactory.createDatasetStore(pathName);
 		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName);
 		tables = storageFactory.createTableStore(centralRegistry, pathName);
@@ -73,7 +72,6 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 		decorateTableStore(tables);
 		decorateImportStore(imports);
 		decorateConceptStore(concepts);
-
 	}
 
 	@Override
@@ -150,7 +148,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 
 					concept.setDataset(dataset.get());
 
-					concept.initElements(getValidator());
+					concept.initElements();
 
 					concept.getSelects().forEach(centralRegistry::register);
 					for (Connector connector : concept.getConnectors()) {

@@ -17,6 +17,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
@@ -38,77 +39,78 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
 
-		storage.addExecution(managedQuery);
+		STORAGE.addExecution(managedQuery);
 
 		return managedQuery;
 	}
 
-	private MetaStorage storage = new MetaStorage(null, new NonPersistentStoreFactory(), null);
+	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
+
 
 	@AfterEach
 	public void teardownAfterEach() {
-		storage.clear();
+		STORAGE.clear();
 	}
 
 	@Test
 	void emptyIsEmpty() {
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 	}
 
 	@Test
 	void singleUnnamed() throws Exception {
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		createManagedQuery();
 
-		new QueryCleanupTask(storage, queryExpiration).execute( Map.of(QueryCleanupTask.EXPIRATION_PARAM, List.of("PT719H")), null);
+		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(QueryCleanupTask.EXPIRATION_PARAM, List.of("PT719H")), null);
 
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 	}
 
 	@Test
 	void singleNamed() throws Exception {
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		final ManagedQuery managedQuery = createManagedQuery();
 
 		managedQuery.setLabel("test");
 
-		new QueryCleanupTask(storage, queryExpiration).execute( Map.of(), null);
+		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
-		assertThat(storage.getAllExecutions()).containsExactlyInAnyOrder(managedQuery);
+		assertThat(STORAGE.getAllExecutions()).containsExactlyInAnyOrder(managedQuery);
 	}
 
 	@Test
 	void singleNamedButUUID() throws Exception {
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		final ManagedQuery managedQuery = createManagedQuery();
 
 		managedQuery.setLabel(UUID.randomUUID().toString());
 
-		new QueryCleanupTask(storage, queryExpiration).execute( Map.of(), null);
+		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 	}
 
 	@Test
 	void reusedNoNames() throws Exception {
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		final ManagedQuery managedQuery = createManagedQuery();
 		final ManagedQuery managedQueryReused = createManagedQuery();
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storage, queryExpiration).execute( Map.of(), null);
+		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 	}
 
 	@Test
 	void reusedBothNames() throws Exception {
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		final ManagedQuery managedQuery = createManagedQuery();
 		managedQuery.setLabel("test1");
@@ -118,15 +120,15 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storage, queryExpiration).execute(Map.of(), null);
+		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
-		assertThat(storage.getAllExecutions())
+		assertThat(STORAGE.getAllExecutions())
 				.containsExactlyInAnyOrder(managedQuery, managedQueryReused);
 	}
 
 	@Test
 	void reusedNames() throws Exception {
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		final ManagedQuery managedQuery = createManagedQuery();
 
@@ -135,14 +137,14 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storage, queryExpiration).execute( Map.of(), null);
+		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
-		assertThat(storage.getAllExecutions()).containsExactlyInAnyOrder(managedQueryReused);
+		assertThat(STORAGE.getAllExecutions()).containsExactlyInAnyOrder(managedQueryReused);
 	}
 
 	@Test
 	void reusedOtherName() throws Exception {
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		final ManagedQuery managedQuery = createManagedQuery();
 		managedQuery.setLabel("test2");
@@ -151,14 +153,14 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storage, queryExpiration).execute( Map.of(), null);
+		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
-		assertThat(storage.getAllExecutions()).containsExactlyInAnyOrder(managedQueryReused, managedQuery);
+		assertThat(STORAGE.getAllExecutions()).containsExactlyInAnyOrder(managedQueryReused, managedQuery);
 	}
 
 	@Test
 	void reusedTagged() throws Exception {
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		final ManagedQuery managedQuery = createManagedQuery();
 
@@ -167,14 +169,14 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storage, queryExpiration).execute( Map.of(), null);
+		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
-		assertThat(storage.getAllExecutions()).containsExactlyInAnyOrder(managedQueryReused);
+		assertThat(STORAGE.getAllExecutions()).containsExactlyInAnyOrder(managedQueryReused);
 	}
 
 	@Test
 	void reusedYoung() throws Exception {
-		assertThat(storage.getAllExecutions()).isEmpty();
+		assertThat(STORAGE.getAllExecutions()).isEmpty();
 
 		final ManagedQuery managedQuery = createManagedQuery();
 
@@ -183,9 +185,9 @@ class QueryCleanupTaskTest {
 
 		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
 
-		new QueryCleanupTask(storage, queryExpiration).execute( Map.of(), null);
+		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
-		assertThat(storage.getAllExecutions()).containsExactlyInAnyOrder(managedQueryReused);
+		assertThat(STORAGE.getAllExecutions()).containsExactlyInAnyOrder(managedQueryReused);
 	}
 
 }

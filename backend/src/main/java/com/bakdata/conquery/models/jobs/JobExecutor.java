@@ -33,7 +33,8 @@ public class JobExecutor extends Thread {
 
 	public void add(Job job) {
 		if(closed.get()) {
-			throw new IllegalStateException("Tried to add a job to a closed JobManager");
+			log.warn("Tried to add a job to a closed JobManager: {}", job.getLabel());
+			return;
 		}
 		jobs.add(job);
 	}

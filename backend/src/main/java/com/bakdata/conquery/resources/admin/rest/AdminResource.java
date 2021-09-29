@@ -24,6 +24,7 @@ import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;

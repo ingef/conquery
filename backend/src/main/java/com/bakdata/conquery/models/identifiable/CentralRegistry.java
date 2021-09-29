@@ -10,6 +10,7 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.error.ConqueryError.ExecutionCreationResolveError;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.worker.IdResolveContext;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.NoArgsConstructor;
@@ -69,7 +70,9 @@ public class CentralRegistry implements Injectable {
 
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(CentralRegistry.class, this);
+		return values.add(CentralRegistry.class, this)
+					 // Possibly overriding mapping for DatasetRegistry
+				.add(IdResolveContext.class, new SingletonNamespaceCollection(this));
 	}
 
 	public static CentralRegistry get(DeserializationContext ctxt) throws JsonMappingException {

@@ -39,15 +39,14 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 @TestInstance(Lifecycle.PER_CLASS)
 public class LocalAuthRealmTest {
 
+	private final  MetaStorage storage = new NonPersistentStoreFactory().createMetaStorage();
 	private File tmpDir;
 	private LocalAuthenticationRealm realm;
-	private MetaStorage storage;
 	private User user1;
 	private ConqueryTokenRealm conqueryTokenRealm;
 
 	@BeforeAll
 	public void setupAll() throws Exception {
-		storage =  new NonPersistentStoreFactory().createMetaStorage();
 		tmpDir = Files.createTempDirectory(LocalAuthRealmTest.class.getName()).toFile();
 
 		assert tmpDir.exists();
@@ -61,7 +60,7 @@ public class LocalAuthRealmTest {
 	@BeforeEach
 	public void setupEach() {
 		// Create User in Realm
-		user1 = new User("TestUser", "Test User");
+		user1 = new User("TestUser", "Test User", storage);
 		PasswordCredential user1Password = new PasswordCredential("testPassword".toCharArray());
 		storage.addUser(user1);
 		realm.addUser(user1, List.of(user1Password));

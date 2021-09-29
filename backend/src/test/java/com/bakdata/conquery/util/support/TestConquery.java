@@ -20,8 +20,7 @@ import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.integration.IntegrationTests;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
@@ -31,6 +30,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -183,13 +183,10 @@ public class TestConquery {
 	}
 
 	@SneakyThrows
-	public synchronized void shutdown(StandaloneSupport support) {
-		DatasetId dataset = support.getDataset().getId();
-
-		standaloneCommand.getManager().getDatasetRegistry().get(dataset).close();
-		standaloneCommand.getManager().getStorage().close();
-
-		openSupports.remove(support);
+	public synchronized void shutdown() {
+		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
+		getDropwizard().after();
+		openSupports.clear();
 	}
 
 
@@ -287,7 +284,8 @@ public class TestConquery {
 	}
 
 	public void beforeEach() {
-		testUser = standaloneCommand.getManager().getConfig().getAuthorizationRealms().getInitialUsers().get(0).getUser();
-		standaloneCommand.getManager().getStorage().updateUser(testUser);
+		final MetaStorage storage = standaloneCommand.getManager().getStorage();
+		testUser = standaloneCommand.getManager().getConfig().getAuthorizationRealms().getInitialUsers().get(0).createOrOverwriteUser(storage);
+		storage.updateUser(testUser);
 	}
 }

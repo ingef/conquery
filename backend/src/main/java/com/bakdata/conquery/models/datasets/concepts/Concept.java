@@ -64,7 +64,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 
 	public abstract List<? extends Select> getSelects();
 
-	public void initElements(Validator validator) throws ConfigurationException, JSONException {
+	public void initElements() throws ConfigurationException, JSONException {
 	}
 
 	@Override

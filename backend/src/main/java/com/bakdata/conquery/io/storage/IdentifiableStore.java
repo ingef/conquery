@@ -32,7 +32,6 @@ public abstract class IdentifiableStore<VALUE extends Identifiable<?>> extends K
 
     public IdentifiableStore(Store<IId<VALUE>, VALUE> store, CentralRegistry centralRegistry) {
         super(store);
-        store.inject(centralRegistry);
         this.centralRegistry = centralRegistry;
     }
 
