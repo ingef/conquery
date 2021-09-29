@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import InfoTooltip from "../../tooltip/InfoTooltip";
+import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
 import Labeled from "../Labeled";
 
 import EmptyPlaceholder from "./EmptyPlaceholder";
@@ -26,6 +27,10 @@ const Control = styled("div")`
     outline: 1px solid black;
   }
 `;
+const SelectContainer = styled("div")`
+  width: 100%;
+  position: relative;
+`;
 const ItemsInputContainer = styled("div")`
   display: flex;
   align-items: center;
@@ -35,8 +40,12 @@ const ItemsInputContainer = styled("div")`
 `;
 
 const Menu = styled("div")`
+  position: absolute;
+  width: 100%;
   border-radius: 4px;
   box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 10%), 0 4px 11px hsl(0deg 0% 0% / 10%);
+  background-color: ${({ theme }) => theme.col.bg};
+  z-index: 2;
 `;
 
 const List = styled("div")`
@@ -68,6 +77,10 @@ const VerticalSeparator = styled("div")`
   background-color: ${({ theme }) => theme.col.grayVeryLight};
   align-self: stretch;
   flex-shrink: 0;
+`;
+
+const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
+  display: block;
 `;
 
 interface Props {
@@ -192,22 +205,18 @@ const InputMultiSelectTwo = ({
     },
   });
 
-  const menuProps = getMenuProps();
+  const { ref: menuPropsRef, ...menuProps } = getMenuProps();
   const inputProps = getInputProps(getDropdownProps());
+  const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
 
-  return (
-    <SxLabeled
-      {...getLabelProps({})}
-      htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
-      label={
-        <>
-          {label}
-          {tooltip && <InfoTooltip text={tooltip} />}
-        </>
-      }
-      indexPrefix={indexPrefix}
-    >
-      <Control {...getComboboxProps()}>
+  const Select = (
+    <SelectContainer>
+      <Control
+        {...comboboxProps}
+        ref={(instance) => {
+          comboboxRef(instance);
+        }}
+      >
         <ItemsInputContainer>
           {selectedItems.map((option, index) => {
             const selectedItemProps = getSelectedItemProps({
@@ -256,49 +265,72 @@ const InputMultiSelectTwo = ({
         <VerticalSeparator />
         <DropdownToggleButton icon="chevron-down" {...getToggleButtonProps()} />
       </Control>
-      <Menu {...menuProps}>
-        {isOpen && (
-          <>
-            <MenuActionBar
-              optionsCount={filteredOptions.length}
-              onInsertAllClick={() => {
-                setSelectedItems(filteredOptions);
-              }}
-            />
-            <List>
-              {!creatable && filteredOptions.length === 0 && (
-                <EmptyPlaceholder />
-              )}
-              {creatable && inputValue.length > 0 && (
+      {isOpen && (
+        <Menu
+          {...menuProps}
+          ref={(instance) => {
+            menuPropsRef(instance);
+          }}
+        >
+          <MenuActionBar
+            optionsCount={filteredOptions.length}
+            onInsertAllClick={() => {
+              setSelectedItems(filteredOptions);
+            }}
+          />
+          <List>
+            {!creatable && filteredOptions.length === 0 && <EmptyPlaceholder />}
+            {creatable && inputValue.length > 0 && (
+              <ListOption
+                active={highlightedIndex === 0}
+                {...getItemProps({
+                  index: 0,
+                  item: { value: inputValue, label: inputValue },
+                })}
+              >
+                {t("common.create") + `: "${inputValue}"`}
+              </ListOption>
+            )}
+            {filteredOptions.map((option, index) => {
+              const correctedIndex = creatable ? index + 1 : index;
+
+              return (
                 <ListOption
-                  active={highlightedIndex === 0}
+                  key={`${option.value}`}
+                  active={highlightedIndex === correctedIndex}
                   {...getItemProps({
-                    index: 0,
-                    item: { value: inputValue, label: inputValue },
+                    index: correctedIndex,
+                    item: filteredOptions[index],
                   })}
                 >
-                  {t("common.create") + `: "${inputValue}"`}
+                  {option.label}
                 </ListOption>
-              )}
-              {filteredOptions.map((option, index) => {
-                const correctedIndex = creatable ? index + 1 : index;
-                return (
-                  <ListOption
-                    key={`${option.value}`}
-                    active={highlightedIndex === correctedIndex}
-                    {...getItemProps({
-                      index: correctedIndex,
-                      item: filteredOptions[index],
-                    })}
-                  >
-                    {option.label}
-                  </ListOption>
-                );
-              })}
-            </List>
-          </>
-        )}
-      </Menu>
+              );
+            })}
+          </List>
+        </Menu>
+      )}
+    </SelectContainer>
+  );
+
+  return (
+    <SxLabeled
+      {...getLabelProps({})}
+      htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
+      label={
+        <>
+          {label}
+          {tooltip && <InfoTooltip text={tooltip} />}
+        </>
+      }
+      indexPrefix={indexPrefix}
+    >
+      {!onDropFile && Select}
+      {onDropFile && (
+        <SxInputMultiSelectDropzone onDropFile={onDropFile}>
+          {() => Select}
+        </SxInputMultiSelectDropzone>
+      )}
     </SxLabeled>
   );
 };

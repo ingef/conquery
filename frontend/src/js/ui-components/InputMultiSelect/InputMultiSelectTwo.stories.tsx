@@ -39,6 +39,9 @@ const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
     <InputMultiSelectTwo
       label="This is a nice label"
       creatable
+      onDropFile={(file) => {
+        console.log(file);
+      }}
       tooltip="And here goes some tooltip that really helps the user understand what's going on"
       indexPrefix={5}
       input={{
