@@ -4,8 +4,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
-import com.bakdata.conquery.models.auth.util.UserishPrincipalCollection;
 import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;

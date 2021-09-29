@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.auth.util;
 
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -14,16 +14,16 @@ public class UserishPrincipalCollection implements PrincipalCollection {
 
 	private static final long serialVersionUID = -1801050265305362978L;
 
-	private final Userish principal;
+	private final UserLike principal;
 	private final ConqueryAuthenticationRealm realm;
 
-	public UserishPrincipalCollection(@NonNull Userish userish, ConqueryAuthenticationRealm realm) {
-		this.principal = userish;
+	public UserishPrincipalCollection(@NonNull UserLike userLike, ConqueryAuthenticationRealm realm) {
+		this.principal = userLike;
 		this.realm = realm;
 	}
 
 	@Override @JsonIgnore
-	public Iterator<Userish> iterator() {
+	public Iterator<UserLike> iterator() {
 		return new Iterator<>() {
 			private boolean notCalled = true;
 			@Override
@@ -34,14 +34,14 @@ public class UserishPrincipalCollection implements PrincipalCollection {
 			}
 
 			@Override
-			public Userish next() {
+			public UserLike next() {
 				return principal;
 			}
 		};
 	}
 
 	@Override @JsonIgnore
-	public Userish getPrimaryPrincipal() {
+	public UserLike getPrimaryPrincipal() {
 		return principal;
 	}
 
@@ -62,17 +62,17 @@ public class UserishPrincipalCollection implements PrincipalCollection {
 	}
 
 	@Override
-	public List<Userish> asList() {
+	public List<UserLike> asList() {
 		return  List.of(principal);
 	}
 
 	@Override
-	public Set<Userish> asSet() {
+	public Set<UserLike> asSet() {
 		return Set.of(principal);
 	}
 
 	@Override
-	public Collection<Userish> fromRealm(String realmName) {
+	public Collection<UserLike> fromRealm(String realmName) {
 		if(realm.getName().equals(realmName)){
 			return List.of(principal);
 		}

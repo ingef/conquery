@@ -22,7 +22,7 @@ import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
@@ -35,7 +35,6 @@ import jetbrains.exodus.env.EnvironmentClosedException;
 import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.util.CharArrayBuffer;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -191,7 +190,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 			throw new UnknownAccountException("The UserId does not map to a user: " + userId);
 		}
 
-		return new ConqueryAuthenticationInfo(new UserToken(user, tokenData), token, this, false);
+		return new ConqueryAuthenticationInfo(new TokenScopedUser(user, tokenData), token, this, false);
 	}
 
 	public ApiToken createApiToken(User user, ApiTokenDataRepresentation.Request tokenRequest) {
@@ -215,7 +214,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		return token;
 	}
 
-	public List<ApiTokenDataRepresentation.Response> listUserToken(Userish user) {
+	public List<ApiTokenDataRepresentation.Response> listUserToken(UserLike user) {
 		ArrayList<ApiTokenDataRepresentation.Response> summary = new ArrayList<>();
 
 		final Collection<ApiTokenData> allToken = tokenDataStore.getAll();
@@ -243,7 +242,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		return summary;
 	}
 
-	public void deleteToken(@NotNull Userish user, @NonNull UUID tokenId) {
+	public void deleteToken(@NotNull UserLike user, @NonNull UUID tokenId) {
 		AtomicReference<ApiTokenHash> targetHash = new AtomicReference<>();
 
 		// Find the corresponding token data and extract its hash

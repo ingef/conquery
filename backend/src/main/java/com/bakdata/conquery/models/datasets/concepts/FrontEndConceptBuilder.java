@@ -19,8 +19,7 @@ import com.bakdata.conquery.apiv1.frontend.FESelect;
 import com.bakdata.conquery.apiv1.frontend.FETable;
 import com.bakdata.conquery.apiv1.frontend.FEValidityDate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -45,7 +44,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Slf4j
 public class FrontEndConceptBuilder {
 
-	public static FERoot createRoot(NamespaceStorage storage, Userish user) {
+	public static FERoot createRoot(NamespaceStorage storage, UserLike user) {
 
 		FERoot root = new FERoot();
 		Map<IId<?>, FENode> roots = root.getConcepts();

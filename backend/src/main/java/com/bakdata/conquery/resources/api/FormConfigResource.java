@@ -22,8 +22,7 @@ import javax.ws.rs.core.Response.Status;
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
@@ -44,30 +43,30 @@ public class FormConfigResource {
 	private FormConfigProcessor processor;
 
 	@POST
-	public Response postConfig(@Auth Userish user, @Valid FormConfigAPI config) {
+	public Response postConfig(@Auth UserLike user, @Valid FormConfigAPI config) {
 		return Response.ok(new PostResponse(processor.addConfig(user, dataset, config).getId())).status(Status.CREATED).build();
 	}
 	
 	@GET
-	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth Userish user, @QueryParam("formType") Set<String> formType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth UserLike user, @QueryParam("formType") Set<String> formType) {
 		return processor.getConfigsByFormType(user, dataset, formType);
 	}
 
 	@GET
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation getConfig(@Auth Userish user, @PathParam(FORM_CONFIG) FormConfig form) {
+	public FormConfigFullRepresentation getConfig(@Auth UserLike user, @PathParam(FORM_CONFIG) FormConfig form) {
 		return processor.getConfig(user, form);
 	}
 	
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation patchConfig(@Auth Userish user, @PathParam(FORM_CONFIG) FormConfig form, FormConfigPatch patch ) {
+	public FormConfigFullRepresentation patchConfig(@Auth UserLike user, @PathParam(FORM_CONFIG) FormConfig form, FormConfigPatch patch ) {
 		return processor.patchConfig(user, form, patch);
 	}
 	
 	@DELETE
 	@Path("{" + FORM_CONFIG + "}")
-	public Response deleteConfig(@Auth Userish user, @PathParam(FORM_CONFIG) FormConfig form) {
+	public Response deleteConfig(@Auth UserLike user, @PathParam(FORM_CONFIG) FormConfig form) {
 		processor.deleteConfig(user, form);
 		return Response.ok().build();
 	}

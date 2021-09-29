@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-public interface Userish extends Principal {
+public interface UserLike extends Principal {
 
 	UserId getId();
 

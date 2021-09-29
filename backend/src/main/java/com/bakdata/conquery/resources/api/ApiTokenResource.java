@@ -4,15 +4,14 @@ import com.bakdata.conquery.apiv1.auth.ApiTokenDataRepresentation;
 import com.bakdata.conquery.models.auth.apitoken.ApiToken;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import io.dropwizard.auth.Auth;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import java.util.Collection;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +24,7 @@ public class ApiTokenResource {
 
 
 	@POST
-	public ApiToken createToken(@Auth Userish user, @Valid ApiTokenDataRepresentation.Request tokenData){
+	public ApiToken createToken(@Auth UserLike user, @Valid ApiTokenDataRepresentation.Request tokenData){
 
 		checkRealUser(user);
 
@@ -33,7 +32,7 @@ public class ApiTokenResource {
 	}
 
 	@GET
-	public List<ApiTokenDataRepresentation.Response> listUserTokens(@Auth Userish user) {
+	public List<ApiTokenDataRepresentation.Response> listUserTokens(@Auth UserLike user) {
 
 		checkRealUser(user);
 
@@ -42,7 +41,7 @@ public class ApiTokenResource {
 
 	@DELETE
 	@Path("{" + TOKEN + "}")
-	public Response deleteToken(@Auth Userish user, @PathParam(TOKEN) UUID id) {
+	public Response deleteToken(@Auth UserLike user, @PathParam(TOKEN) UUID id) {
 
 		checkRealUser(user);
 
@@ -51,7 +50,7 @@ public class ApiTokenResource {
 		return Response.ok().build();
 	}
 
-	private static void checkRealUser(Userish user) {
+	private static void checkRealUser(UserLike user) {
 		if (!(user instanceof User)){
 			throw new ForbiddenException("Only real users can request API-tokens");
 		}

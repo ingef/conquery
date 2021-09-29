@@ -4,8 +4,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.google.common.base.Function;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
@@ -38,7 +37,7 @@ import java.util.Set;
 @PreMatching
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Priority(Priorities.AUTHENTICATION)
-public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Userish> {
+public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, UserLike> {
 
 	private final Set<TokenExtractor> tokenExtractors = new HashSet<>();
 
@@ -117,7 +116,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Userish> 
 	 */
 	@Accessors(chain = true)
 	@Setter
-	private static class Builder extends AuthFilterBuilder<AuthenticationToken, Userish, DefaultAuthFilter> {
+	private static class Builder extends AuthFilterBuilder<AuthenticationToken, UserLike, DefaultAuthFilter> {
 
 		@Override
 		protected DefaultAuthFilter newInstance() {

@@ -7,8 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +43,7 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		Objects.requireNonNull(principals, "No principal info was provided");
-		Userish user = principals.oneByType(Userish.class);
+		UserLike user = principals.oneByType(UserLike.class);
 		SimpleAuthorizationInfo info = new ConqueryAuthorizationInfo();
 
 		info.addObjectPermissions(Collections.unmodifiableSet(user.getUser().getEffectivePermissions()));

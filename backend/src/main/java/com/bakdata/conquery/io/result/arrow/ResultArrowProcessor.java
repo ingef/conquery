@@ -13,8 +13,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -41,7 +40,7 @@ public class ResultArrowProcessor {
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> Response getArrowResult(
 			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
-			Userish user,
+			UserLike user,
 			E exec,
 			Dataset dataset,
 			DatasetRegistry datasetRegistry,

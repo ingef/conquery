@@ -8,8 +8,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -34,7 +33,7 @@ public interface  Shareable extends Authorized {
 	
 	default  <ID extends IId<?>, S extends Identifiable<? extends ID> & Shareable & Authorized> Consumer<ShareInformation> sharer(
 		MetaStorage storage,
-		Userish user) {
+		UserLike user) {
 		if(!(this instanceof Identifiable<?>)) {
 			log.warn("Cannot share {} ({}) because it does not implement Identifiable", this.getClass(), this.toString());
 			return QueryUtils.getNoOpEntryPoint();

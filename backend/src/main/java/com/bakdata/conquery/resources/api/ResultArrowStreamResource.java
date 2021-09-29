@@ -18,8 +18,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.arrow.ResultArrowStreamProcessor;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -50,7 +49,7 @@ public class ResultArrowStreamResource {
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_STREAM)
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response get(
-		@Auth Userish user,
+		@Auth UserLike user,
 		@PathParam(DATASET) Dataset dataset,
 		@PathParam(QUERY) ManagedExecution<?> execution,
 		@QueryParam("pretty") Optional<Boolean> pretty)

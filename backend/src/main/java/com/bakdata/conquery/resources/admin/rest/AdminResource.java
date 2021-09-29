@@ -23,7 +23,7 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
@@ -49,7 +49,7 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public String executeScript(@Auth Userish user, String script) {
+    public String executeScript(@Auth UserLike user, String script) {
         return Objects.toString(processor.executeScript(script));
     }
 
@@ -61,7 +61,7 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public Object executeScriptJson(@Auth Userish user, String script) {
+    public Object executeScriptJson(@Auth UserLike user, String script) {
         return processor.executeScript(script);
     }
 
@@ -95,7 +95,7 @@ public class AdminResource {
 
     @GET
     @Path("/queries")
-    public FullExecutionStatus[] getQueries(@Auth Userish currentUser, @QueryParam("limit") OptionalLong limit, @QueryParam("since") Optional<String> since) {
+    public FullExecutionStatus[] getQueries(@Auth UserLike currentUser, @QueryParam("limit") OptionalLong limit, @QueryParam("since") Optional<String> since) {
         final MetaStorage storage = processor.getStorage();
         final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
         return storage.getAllExecutions().stream()

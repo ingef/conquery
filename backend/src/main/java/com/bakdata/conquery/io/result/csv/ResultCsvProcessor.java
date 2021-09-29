@@ -15,8 +15,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -40,7 +39,7 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getResult(Userish user, Dataset dataset, E exec, String userAgent, String queryCharset, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getResult(UserLike user, Dataset dataset, E exec, String userAgent, String queryCharset, boolean pretty) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);

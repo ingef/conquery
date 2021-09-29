@@ -27,7 +27,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Userish;
+import com.bakdata.conquery.models.auth.entities.UserLike;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
@@ -239,7 +239,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 	}
 
-	protected void setStatusBase(@NonNull Userish user, @NonNull ExecutionStatus status) {
+	protected void setStatusBase(@NonNull UserLike user, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
@@ -260,7 +260,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Userish user) {
+	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, UserLike user) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 		setStatusBase(user, status);
 
@@ -271,7 +271,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Userish user, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, UserLike user, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
 		initExecutable(datasetRegistry, config);
 		FullExecutionStatus status = new FullExecutionStatus();
@@ -317,14 +317,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Userish user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, UserLike user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
 		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(Userish user, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(UserLike user, FullExecutionStatus status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
