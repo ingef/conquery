@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +26,6 @@ import com.bakdata.conquery.models.auth.entities.Userish;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
-import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +33,6 @@ import jetbrains.exodus.ExodusException;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.EnvironmentClosedException;
 import jetbrains.exodus.env.Environments;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.util.CharArrayBuffer;
@@ -172,13 +169,13 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		}
 
 		final CharArrayBuffer credentials = ((ApiToken) token).getCredentials();
-		byte[] tokenHash = ApiTokenCreator.hashToken(credentials);
+		ApiTokenHash tokenHash = ApiTokenCreator.hashToken(credentials);
 
 		// Clear the token
 		credentials.clear();
 
 
-		ApiTokenData tokenData = tokenDataStore.get(new ApiTokenHash(tokenHash));
+		ApiTokenData tokenData = tokenDataStore.get(tokenHash);
 		if (tokenData == null) {
 			log.trace("Unknown token, cannot map token hash to token data. Aborting authentication");
 			throw new IncorrectCredentialsException();
@@ -197,7 +194,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		return new ConqueryAuthenticationInfo(new UserToken(user, tokenData), token, this, false);
 	}
 
-	public ApiToken createApiToken(User user, ApiTokenDataRepresentation.Request tokenRepresentation) {
+	public ApiToken createApiToken(User user, ApiTokenDataRepresentation.Request tokenRequest) {
 
 		CharArrayBuffer token;
 
@@ -206,11 +203,11 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 			// Generate a token that does not collide with another tokens hash
 			do {
 				token = apiTokenCreator.createToken();
-				hash = new ApiTokenHash(ApiTokenCreator.hashToken(token));
+				hash = ApiTokenCreator.hashToken(token);
 
 			} while(tokenDataStore.get(hash) != null);
 
-			final ApiTokenData apiTokenData = tokenRepresentation.toInternalRepresentation(user, hash, storage);
+			final ApiTokenData apiTokenData = toInternalRepresentation(tokenRequest, user, hash, storage);
 
 			tokenDataStore.add(hash, apiTokenData);
 		}
@@ -280,6 +277,24 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		hash.clear();
 	}
 
+
+	private static ApiTokenData toInternalRepresentation(
+			ApiTokenDataRepresentation.Request apiTokenRequest,
+			User user,
+			ApiTokenHash hash,
+			MetaStorage storage) {
+		return new ApiTokenData(
+				UUID.randomUUID(),
+				hash,
+				apiTokenRequest.getName(),
+				user.getId(),
+				LocalDate.now(),
+				apiTokenRequest.getExpirationDate(),
+				apiTokenRequest.getScopes(),
+				storage
+		);
+	}
+
 	@Override
 	public void destroy() throws InterruptedException {
 		for(int retries = 0; retries < ENVIRONMNENT_CLOSING_RETRYS; retries++) {
@@ -307,27 +322,4 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 
 	}
 
-	@Data
-	public static class ApiTokenHash {
-		private final byte[] hash;
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj == null) {
-				return false;
-			}
-			if (!ApiTokenHash.class.isAssignableFrom(obj.getClass())) {
-				return false;
-			}
-			return Arrays.equals(hash,((ApiTokenHash)obj).hash);
-		}
-
-		public int hashCode() {
-			return Arrays.hashCode(hash);
-		}
-
-		public void clear() {
-			Arrays.fill(hash, (byte) 0);
-		}
-	}
 }

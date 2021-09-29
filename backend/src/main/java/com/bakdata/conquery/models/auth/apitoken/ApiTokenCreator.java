@@ -47,12 +47,12 @@ public class ApiTokenCreator {
 		return buffer;
 	}
 
-	public static byte[] hashToken(CharArrayBuffer apiToken){
+	public static ApiTokenHash hashToken(CharArrayBuffer apiToken){
 		PBEKeySpec spec = new PBEKeySpec(apiToken.buffer(), SALT, ITERATIONS, KEY_LENGTH);
 		SecretKeyFactory f = null;
 		try {
 			f = SecretKeyFactory.getInstance(ALGORITHM);
-			return f.generateSecret(spec).getEncoded();
+			return new ApiTokenHash(f.generateSecret(spec).getEncoded());
 		}
 		catch (NoSuchAlgorithmException e) {
 			throw new IllegalStateException("The indicated algorithm was not found", e);

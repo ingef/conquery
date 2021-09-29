@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
+ * Container class for how tokens are represented through the API.
+ * This is necessary so that the actual token and it's hash are not leaked (with except for the token on creation).
  * @implNote We don't use fluent accessors here, because that does not work well with Jackson
  */
 @Data
@@ -36,28 +38,16 @@ public abstract class ApiTokenDataRepresentation {
 	}
 
 	/**
-	 * Container that is send with an incoming request.
+	 * Container that is send with an incoming request to create a token.
 	 */
 	@Data
 	@EqualsAndHashCode(callSuper = true)
 	public static class Request extends ApiTokenDataRepresentation {
-
-		public ApiTokenData toInternalRepresentation(User user, ApiTokenRealm.ApiTokenHash hash, MetaStorage storage) {
-			return new ApiTokenData(
-					UUID.randomUUID(),
-					hash,
-					name,
-					user.getId(),
-					LocalDate.now(),
-					expirationDate,
-					scopes,
-					storage
-			);
-		}
+		// Intentionally left blank
 	}
 
 	/**
-	 * Container that is send with an outgoing response.
+	 * Container that is send with an outgoing response to give information about created tokens.
 	 */
 	@Data
 	@EqualsAndHashCode(callSuper = true)

@@ -9,23 +9,21 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.ImmutableSet;
 import lombok.*;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE) // Jackson
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(onConstructor = @__(@JsonCreator))
 public class ApiTokenData implements Authorized, Owned {
-	// TODO add serialization test
 
 	/**
 	 * The id is used to reference the token from outside the realm, i.e. the API.
@@ -40,11 +38,19 @@ public class ApiTokenData implements Authorized, Owned {
 	 *  - The realm gets the token hash from the data
 	 *  - The realm uses this token hash to delete the data from the store
 	 */
-	private final ApiTokenRealm.ApiTokenHash tokenHash;
+	@NonNull
+	private final ApiTokenHash tokenHash;
+	@NonNull
 	private final String name;
+	@NotNull
 	private final UserId userId;
+	@NonNull
 	private final LocalDate creationDate;
+	/**
+	 * The expiration date can be null: infinite
+	 */
 	private final LocalDate expirationDate;
+	@NotEmpty
 	private final Set<Scopes> scopes;
 
 	/**
@@ -58,7 +64,7 @@ public class ApiTokenData implements Authorized, Owned {
 	@NotNull
 	@EqualsAndHashCode.Exclude
 	@JsonIgnore
-	private MetaStorage storage;
+	private final MetaStorage storage;
 
 
 	@Override
@@ -67,6 +73,7 @@ public class ApiTokenData implements Authorized, Owned {
 	}
 
 	@Override
+	@JsonIgnore
 	public User getOwner() {
 		return storage.getUser(userId);
 	}
