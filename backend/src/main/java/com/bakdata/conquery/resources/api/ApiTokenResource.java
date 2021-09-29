@@ -15,6 +15,9 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Endpoints to create and manage scoped {@link ApiToken}s.
+ */
 @Path("token")
 public class ApiTokenResource {
 

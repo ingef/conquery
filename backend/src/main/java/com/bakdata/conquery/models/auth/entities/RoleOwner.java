@@ -25,17 +25,4 @@ public interface RoleOwner {
 	@JsonIgnore
 	Set<RoleId> getRoles();
 
-
-
-	default Set<ConqueryPermission> collectRolePermissions(Set<ConqueryPermission> permissions, MetaStorage storage) {
-		for (RoleId roleId : getRoles()) {
-			Role role = storage.getRole(roleId);
-			if (role == null) {
-				log.warn("Could not resolve role id [{}]", roleId);
-				continue;
-			}
-			permissions = Sets.union(permissions, role.getEffectivePermissions());
-		}
-		return permissions;
-	}
 }

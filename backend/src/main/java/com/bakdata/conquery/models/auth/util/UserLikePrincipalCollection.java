@@ -9,15 +9,18 @@ import org.apache.shiro.subject.PrincipalCollection;
 
 import java.util.*;
 
+/**
+ * Principal collection that carries a ready to use {@link UserLike} object.
+ */
 @EqualsAndHashCode
-public class UserishPrincipalCollection implements PrincipalCollection {
+public class UserLikePrincipalCollection implements PrincipalCollection {
 
 	private static final long serialVersionUID = -1801050265305362978L;
 
 	private final UserLike principal;
 	private final ConqueryAuthenticationRealm realm;
 
-	public UserishPrincipalCollection(@NonNull UserLike userLike, ConqueryAuthenticationRealm realm) {
+	public UserLikePrincipalCollection(@NonNull UserLike userLike, ConqueryAuthenticationRealm realm) {
 		this.principal = userLike;
 		this.realm = realm;
 	}

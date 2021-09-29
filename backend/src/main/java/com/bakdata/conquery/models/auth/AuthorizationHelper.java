@@ -43,7 +43,7 @@ public class AuthorizationHelper {
 		List<Group> userGroups = new ArrayList<>();
 
 		for (Group group : storage.getAllGroups()) {
-			if(group.containsMember(user)) {
+			if(group.containsMember(user.getUser())) {
 				userGroups.add(group);
 			}
 		}

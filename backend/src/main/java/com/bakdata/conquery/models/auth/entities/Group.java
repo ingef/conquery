@@ -64,7 +64,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 		}
 	}
 
-	public boolean containsMember(UserLike user) {
+	public boolean containsMember(User user) {
 		return members.contains(user.getId());
 	}
 

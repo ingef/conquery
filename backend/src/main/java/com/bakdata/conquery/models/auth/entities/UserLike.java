@@ -12,25 +12,31 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * An interface for classes that facade a user or represent a user.
+ *
+ * This interface allows realms to present a user different (usually reduced) set of permissions/abilities.
+ * 
+ **/
 public interface UserLike extends Principal {
 
 	UserId getId();
 
-	public void authorize(@NonNull Authorized object, @NonNull Ability ability);
+	void authorize(@NonNull Authorized object, @NonNull Ability ability);
 
-	public void authorize(Set<? extends Authorized> objects, Ability ability);
+	void authorize(Set<? extends Authorized> objects, Ability ability);
 
-	public boolean isPermitted(Authorized object, Ability ability);
+	boolean isPermitted(Authorized object, Ability ability);
 
-	public boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability);
+	boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability);
 
-	public boolean[] isPermitted(List<? extends Authorized> authorizeds, Ability ability);
+	boolean[] isPermitted(List<? extends Authorized> authorized, Ability ability);
 
-	public boolean isOwner(Authorized object);
+	boolean isOwner(Authorized object);
 
-	public boolean isDisplayLogout();
+	boolean isDisplayLogout();
 
-	public void setAuthenticationInfo(ConqueryAuthenticationInfo info);
+	void setAuthenticationInfo(ConqueryAuthenticationInfo info);
 
-	public User getUser();
+	User getUser();
 }
