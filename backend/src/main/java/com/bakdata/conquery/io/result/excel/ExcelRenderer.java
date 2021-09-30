@@ -251,9 +251,11 @@ public class ExcelRenderer {
 		for (Integer columnIndex : sheet.getTrackedColumnsForAutoSizing()) {
 			sheet.autoSizeColumn(columnIndex);
 
+			// Scale the widths to a 256th of a char
+			final int defaultColumnWidth = config.getDefaultColumnWidth()*256;
 			// Limit the column with to the default width if it is longer
-			if (sheet.getColumnWidth(columnIndex) > config.getDefaultColumnWidth()){
-				sheet.setColumnWidth(columnIndex, config.getDefaultColumnWidth());
+			if (sheet.getColumnWidth(columnIndex) > defaultColumnWidth){
+				sheet.setColumnWidth(columnIndex, defaultColumnWidth);
 			}
 
 			// Disable auto sizing so we don't have a performance penalty
