@@ -59,182 +59,186 @@ import org.apache.commons.io.FileUtils;
 @UtilityClass
 public class LoadingUtil {
 
-    public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException {
-        // Load previous query results if available
-        int id = 1;
-        for (ResourceFile queryResults : content.getPreviousQueryResults()) {
-            UUID queryId = new UUID(0L, id++);
+	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException {
+		// Load previous query results if available
+		int id = 1;
+		for (ResourceFile queryResults : content.getPreviousQueryResults()) {
+			UUID queryId = new UUID(0L, id++);
 
-            final CsvParser parser = support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createParser();
-            String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
+			final CsvParser parser = support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createParser();
+			String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
 
-            ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data));
+			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data));
 
-            ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
-                    .createQuery(support.getNamespace().getNamespaces(), q, queryId, user, support.getNamespace().getDataset());
+			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
+												 .createQuery(support.getNamespace().getNamespaces(), q, queryId, user, support.getNamespace().getDataset());
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
-            if (managed.getState() == ExecutionState.FAILED) {
-                fail("Query failed");
-            }
-        }
+			if (managed.getState() == ExecutionState.FAILED) {
+				fail("Query failed");
+			}
+		}
 
-        for (JsonNode queryNode : content.getPreviousQueries()) {
+		for (JsonNode queryNode : content.getPreviousQueries()) {
 			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectIntoNew(Jackson.MAPPER);
 			mapper = support.getDataset().injectIntoNew(mapper);
-            Query query = mapper.readerFor(Query.class).readValue(queryNode);
-            UUID queryId = new UUID(0L, id++);
+			Query query = mapper.readerFor(Query.class).readValue(queryNode);
+			UUID queryId = new UUID(0L, id++);
 
-            ManagedExecution<?> managed = support.getNamespace().getExecutionManager().createQuery(support.getNamespace().getNamespaces(), query, queryId, user, support.getNamespace().getDataset());
+			ManagedExecution<?>
+					managed =
+					support.getNamespace()
+						   .getExecutionManager()
+						   .createQuery(support.getNamespace().getNamespaces(), query, queryId, user, support.getNamespace().getDataset());
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
-            if (managed.getState() == ExecutionState.FAILED) {
-                fail("Query failed");
-            }
-        }
+			if (managed.getState() == ExecutionState.FAILED) {
+				fail("Query failed");
+			}
+		}
 
-        // wait only if we actually did anything
-        if (!content.getPreviousQueryResults().isEmpty()) {
-            support.waitUntilWorkDone();
-        }
-    }
+		// wait only if we actually did anything
+		if (!content.getPreviousQueryResults().isEmpty()) {
+			support.waitUntilWorkDone();
+		}
+	}
 
-    public static void importTables(StandaloneSupport support, List<RequiredTable> tables) throws JSONException {
+	public static void importTables(StandaloneSupport support, List<RequiredTable> tables) throws JSONException {
 
-        for (RequiredTable rTable : tables) {
-            final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
-            support.getDatasetsProcessor().addTable(table, support.getNamespace());
-        }
-    }
+		for (RequiredTable rTable : tables) {
+			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
+			support.getDatasetsProcessor().addTable(table, support.getNamespace());
+		}
+	}
 
-    public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws Exception {
-        importTableContents(support, Arrays.asList(tables));
-    }
+	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws Exception {
+		importTableContents(support, Arrays.asList(tables));
+	}
 
-    public static List<File> generateCqpp(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
-        List<File> preprocessedFiles = new ArrayList<>();
-        List<File> descriptions = new ArrayList<>();
-
-
-        for (RequiredTable rTable : tables) {
-            // copy csv to tmp folder
-            String name = rTable.getName();
-            FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
-
-            // create import descriptor
-            final File descriptionFile = support.getTmpDir().toPath().resolve(name + ConqueryConstants.EXTENSION_DESCRIPTION).toFile();
-            final File outFile = support.getTmpDir().toPath().resolve(name + EXTENSION_PREPROCESSED).toFile();
-
-            TableImportDescriptor desc = new TableImportDescriptor();
-
-            desc.setName(name);
-            desc.setTable(name);
-            TableInputDescriptor input = new TableInputDescriptor();
-            {
-                input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
-                input.setSourceFile(rTable.getCsv().getName());
-                input.setOutput(new OutputDescription[rTable.getColumns().length]);
-                for (int i = 0; i < rTable.getColumns().length; i++) {
-                    input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
-                }
-            }
-            desc.setInputs(new TableInputDescriptor[]{input});
-
-            Jackson.MAPPER.writeValue(descriptionFile, desc);
-
-            descriptions.add(descriptionFile);
-            preprocessedFiles.add(outFile);
-        }
-        // preprocess
-        support.preprocessTmp(support.getTmpDir(), descriptions);
-        //clear the MDC location from the preprocessor
-        ConqueryMDC.clearLocation();
-        return preprocessedFiles;
-    }
-
-    public static void importCqppFile(StandaloneSupport support, File cqpp) {
-        assertThat(cqpp).exists();
-
-        final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
-                .queryParam("file", cqpp)
-                .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
-
-        final Response response = support.getClient()
-                .target(addImport)
-                .request(MediaType.APPLICATION_JSON)
-                .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
-
-        assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
-    }
-
-    public static void updateCqppFile(StandaloneSupport support, File cqpp, ImportId importId, Response.Status.Family expectedResponseFamily, String expectedReason) {
-        assertThat(cqpp).exists();
-
-        final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminTablesResource.class, "updateImport")
-                .queryParam("file", cqpp)
-                .buildFromMap(Map.of(
-                        ResourceConstants.DATASET, support.getDataset().getId(),
-                        ResourceConstants.TABLE, importId.getTable()
-                ));
-
-        final Response response = support.getClient()
-                .target(addImport)
-                .request(MediaType.APPLICATION_JSON)
-                .put(Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE));
-        assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
-        assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
-    }
-
-    public static void importCqppFiles(StandaloneSupport support, List<File> cqppFiles) {
-        for (File cqpp : cqppFiles) {
-            importCqppFile(support, cqpp);
-        }
-    }
-
-    public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
-        List<File> cqpps = generateCqpp(support, tables);
-        importCqppFiles(support, cqpps);
-    }
-
-    public static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
-        Dataset dataset = support.getDataset();
-
-        List<Concept<?>> concepts = ConqueryTestSpec.parseSubTreeList(
-                support,
-                rawConcepts,
-                Concept.class,
-                c -> c.setDataset(support.getDataset())
-        );
-
-        for (Concept<?> concept : concepts) {
-
-            support.getDatasetsProcessor().addConcept(dataset, concept);
-        }
-    }
+	public static List<File> generateCqpp(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
+		List<File> preprocessedFiles = new ArrayList<>();
+		List<File> descriptions = new ArrayList<>();
 
 
-    public static void importIdMapping(StandaloneSupport support, RequiredData content) throws JSONException, IOException {
-        if (content.getIdMapping() == null) {
-            return;
-        }
+		for (RequiredTable rTable : tables) {
+			// copy csv to tmp folder
+			String name = rTable.getName();
+			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
-        try (InputStream in = content.getIdMapping().stream()) {
-            support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
-        }
-    }
+			// create import descriptor
+			final File descriptionFile = support.getTmpDir().toPath().resolve(name + ConqueryConstants.EXTENSION_DESCRIPTION).toFile();
+			final File outFile = support.getTmpDir().toPath().resolve(name + EXTENSION_PREPROCESSED).toFile();
 
-    public static Map<String, SecondaryIdDescription> importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
-        Map<String, SecondaryIdDescription> out = new HashMap<>();
+			TableImportDescriptor desc = new TableImportDescriptor();
 
-        for (RequiredSecondaryId required : secondaryIds) {
-            final SecondaryIdDescription description = required.toSecondaryId();
-            support.getDatasetsProcessor()
-                    .addSecondaryId(support.getNamespace(), description);
+			desc.setName(name);
+			desc.setTable(name);
+			TableInputDescriptor input = new TableInputDescriptor();
+			{
+				input.setPrimary(IntegrationUtils.copyOutput(rTable.getPrimaryColumn()));
+				input.setSourceFile(rTable.getCsv().getName());
+				input.setOutput(new OutputDescription[rTable.getColumns().length]);
+				for (int i = 0; i < rTable.getColumns().length; i++) {
+					input.getOutput()[i] = IntegrationUtils.copyOutput(rTable.getColumns()[i]);
+				}
+			}
+			desc.setInputs(new TableInputDescriptor[]{input});
 
-            out.put(description.getName(), description);
-        }
+			Jackson.MAPPER.writeValue(descriptionFile, desc);
 
-        return out;
-    }
+			descriptions.add(descriptionFile);
+			preprocessedFiles.add(outFile);
+		}
+		// preprocess
+		support.preprocessTmp(support.getTmpDir(), descriptions);
+		//clear the MDC location from the preprocessor
+		ConqueryMDC.clearLocation();
+		return preprocessedFiles;
+	}
+
+	public static void importCqppFile(StandaloneSupport support, File cqpp) {
+		assertThat(cqpp).exists();
+
+		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
+											 .queryParam("file", cqpp)
+											 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
+
+		final Response response = support.getClient()
+										 .target(addImport)
+										 .request(MediaType.APPLICATION_JSON)
+										 .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
+
+		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+	}
+
+	public static void updateCqppFile(StandaloneSupport support, File cqpp, ImportId importId, Response.Status.Family expectedResponseFamily, String expectedReason) {
+		assertThat(cqpp).exists();
+
+		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminTablesResource.class, "updateImport")
+											 .queryParam("file", cqpp)
+											 .buildFromMap(Map.of(
+													 ResourceConstants.DATASET, support.getDataset().getId(),
+													 ResourceConstants.TABLE, importId.getTable()
+											 ));
+
+		final Response response = support.getClient()
+										 .target(addImport)
+										 .request(MediaType.APPLICATION_JSON)
+										 .put(Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE));
+		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
+		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
+	}
+
+	public static void importCqppFiles(StandaloneSupport support, List<File> cqppFiles) {
+		for (File cqpp : cqppFiles) {
+			importCqppFile(support, cqpp);
+		}
+	}
+
+	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws Exception {
+		List<File> cqpps = generateCqpp(support, tables);
+		importCqppFiles(support, cqpps);
+	}
+
+	public static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
+		Dataset dataset = support.getDataset();
+
+		List<Concept<?>> concepts = ConqueryTestSpec.parseSubTreeList(
+				support,
+				rawConcepts,
+				Concept.class,
+				c -> c.setDataset(support.getDataset())
+		);
+
+		for (Concept<?> concept : concepts) {
+
+			support.getDatasetsProcessor().addConcept(dataset, concept);
+		}
+	}
+
+
+	public static void importIdMapping(StandaloneSupport support, RequiredData content) throws JSONException, IOException {
+		if (content.getIdMapping() == null) {
+			return;
+		}
+
+		try (InputStream in = content.getIdMapping().stream()) {
+			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
+		}
+	}
+
+	public static Map<String, SecondaryIdDescription> importSecondaryIds(StandaloneSupport support, List<RequiredSecondaryId> secondaryIds) {
+		Map<String, SecondaryIdDescription> out = new HashMap<>();
+
+		for (RequiredSecondaryId required : secondaryIds) {
+			final SecondaryIdDescription description = required.toSecondaryId();
+			support.getDatasetsProcessor()
+				   .addSecondaryId(support.getNamespace(), description);
+
+			out.put(description.getName(), description);
+		}
+
+		return out;
+	}
 }
