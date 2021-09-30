@@ -39,8 +39,8 @@ const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
     <InputMultiSelectTwo
       label="This is a nice label"
       creatable
-      onDropFile={(file) => {
-        console.log(file);
+      onResolve={(csvLines) => {
+        console.log(csvLines);
       }}
       tooltip="And here goes some tooltip that really helps the user understand what's going on"
       indexPrefix={5}
@@ -50,7 +50,6 @@ const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
         onChange: (v) => setValue(v),
       }}
       options={options}
-      onLoad={onLoad}
     />
   );
 };

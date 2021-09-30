@@ -1,10 +1,12 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
+import { getUniqueFileRows } from "../../common/helpers";
+import { usePrevious } from "../../common/helpers/usePrevious";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
 import Labeled from "../Labeled";
@@ -27,10 +29,12 @@ const Control = styled("div")`
     outline: 1px solid black;
   }
 `;
+
 const SelectContainer = styled("div")`
   width: 100%;
   position: relative;
 `;
+
 const ItemsInputContainer = styled("div")`
   display: flex;
   align-items: center;
@@ -62,15 +66,19 @@ const Input = styled("input")`
   flex-grow: 1;
   flex-basis: 30px;
 `;
+
 const SxLabeled = styled(Labeled)`
   padding: 2px;
 `;
+
 const DropdownToggleButton = styled(IconButton)`
   padding: 5px 6px;
 `;
+
 const ResetButton = styled(IconButton)`
   padding: 5px 8px;
 `;
+
 const VerticalSeparator = styled("div")`
   width: 1px;
   margin: 3px 0;
@@ -82,6 +90,44 @@ const VerticalSeparator = styled("div")`
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
 `;
+
+const useResolvableSelect = ({
+  defaultValue,
+  onResolve,
+}: {
+  defaultValue?: SelectOptionT[];
+  onResolve?: (csvFileLines: string[]) => void;
+}) => {
+  const previousDefaultValue = usePrevious(defaultValue);
+
+  useEffect(
+    function resolveDefault() {
+      if (!onResolve) {
+        return;
+      }
+
+      const hasDefaultValueToLoad =
+        defaultValue &&
+        defaultValue.length > 0 &&
+        JSON.stringify(defaultValue) !== JSON.stringify(previousDefaultValue);
+
+      if (hasDefaultValueToLoad) {
+        onResolve(defaultValue.map((v) => String(v.value)));
+      }
+    },
+    [onResolve, previousDefaultValue, defaultValue],
+  );
+
+  const onDropFile = async (file: File) => {
+    const rows = await getUniqueFileRows(file);
+
+    if (onResolve) {
+      onResolve(rows);
+    }
+  };
+
+  return { onDropFile: onResolve ? onDropFile : undefined };
+};
 
 interface Props {
   label?: string;
@@ -95,7 +141,7 @@ interface Props {
     defaultValue?: SelectOptionT[];
     onChange: (value: SelectOptionT[]) => void;
   };
-  onDropFile?: (file: File) => void;
+  onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
 }
 
 const InputMultiSelectTwo = ({
@@ -105,8 +151,12 @@ const InputMultiSelectTwo = ({
   tooltip,
   indexPrefix,
   creatable,
-  onDropFile,
+  onResolve,
 }: Props) => {
+  const { onDropFile } = useResolvableSelect({
+    defaultValue: input.defaultValue,
+    onResolve,
+  });
   const [inputValue, setInputValue] = useState("");
   const { t } = useTranslation();
   const {
@@ -239,7 +289,7 @@ const InputMultiSelectTwo = ({
             value={inputValue}
             {...inputProps}
             placeholder={
-              onDropFile
+              onResolve
                 ? t("inputMultiSelect.dndPlaceholder")
                 : t("inputSelect.placeholder")
             }
@@ -325,8 +375,8 @@ const InputMultiSelectTwo = ({
       }
       indexPrefix={indexPrefix}
     >
-      {!onDropFile && Select}
-      {onDropFile && (
+      {!onResolve && Select}
+      {onResolve && onDropFile && (
         <SxInputMultiSelectDropzone onDropFile={onDropFile}>
           {() => Select}
         </SxInputMultiSelectDropzone>
