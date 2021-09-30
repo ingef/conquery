@@ -42,6 +42,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import com.bakdata.conquery.util.io.FileUtil;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -117,33 +118,13 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("imports")
-	public void addImport(@QueryParam("file") File importFile) throws IOException, JSONException {
-
-		StringJoiner errors = new StringJoiner("\n");
-
-		if (!importFile.canRead()) {
-			errors.add("Cannot read.");
+	public void addImport(@QueryParam("file") File importFile) throws WebApplicationException, JSONException {
+		try {
+			processor.updateImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
 		}
-
-		if (!importFile.exists()) {
-			errors.add("Does not exist.");
+		catch (IOException err) {
+			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, err.getMessage()), Status.BAD_REQUEST);
 		}
-
-		if (!importFile.isAbsolute()) {
-			errors.add("Is not absolute.");
-		}
-
-		if (!importFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
-			errors.add(String.format("Does not end with `%s`.", ConqueryConstants.EXTENSION_PREPROCESSED));
-		}
-
-		if (errors.length() > 0) {
-			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, errors.toString()), Status.BAD_REQUEST);
-		}
-
-
-		log.info("Importing from local file {}", importFile.getAbsolutePath());
-		processor.addImport(namespace, new GZIPInputStream(new FileInputStream(importFile)));
 	}
 
 
