@@ -4,11 +4,9 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
@@ -21,6 +19,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -29,7 +28,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -107,6 +105,23 @@ public class AdminDatasetResource extends HAdmin {
 		processor.addTable(table, namespace);
 	}
 
+	@PUT
+	@Consumes(MediaType.APPLICATION_OCTET_STREAM)
+	@Path("cqpp")
+	public void updateCqppImport(@NotNull InputStream importStream) throws IOException {
+		processor.updateImport(namespace, new GZIPInputStream(importStream));
+	}
+
+	@PUT
+	@Path("imports")
+	public void updateImport(@NotNull @QueryParam("file") File importFile) throws WebApplicationException {
+		try {
+			processor.updateImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
+		}
+		catch (IOException err) {
+			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, err.getMessage()), Status.BAD_REQUEST);
+		}
+	}
 
 	@POST
 	@Consumes(MediaType.APPLICATION_OCTET_STREAM)

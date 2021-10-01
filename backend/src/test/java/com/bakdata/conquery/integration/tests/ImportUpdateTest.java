@@ -1,5 +1,13 @@
 package com.bakdata.conquery.integration.tests;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
+import java.util.List;
+
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
@@ -13,7 +21,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
@@ -25,16 +32,6 @@ import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-
-import javax.ws.rs.core.Response;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.StringJoiner;
-
-import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class ImportUpdateTest implements ProgrammaticIntegrationTest {
@@ -125,7 +122,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 		}
 
 		//Try to update an import that does not exist should throw a Not-Found Webapplication Exception
-		LoadingUtil.updateCqppFile(conquery, cqpps.get(1), importId2, Response.Status.Family.CLIENT_ERROR, "Not Found");
+		LoadingUtil.updateCqppFile(conquery, cqpps.get(1), Response.Status.Family.CLIENT_ERROR, "Not Found");
 		conquery.waitUntilWorkDone();
 
 		//Load manually new data for import and update the concerned import
@@ -170,7 +167,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 
 			log.info("updating import");
 			//correct update of the import
-			LoadingUtil.updateCqppFile(conquery, newPreprocessedFile, importId1, Response.Status.Family.SUCCESSFUL, "No Content");
+			LoadingUtil.updateCqppFile(conquery, newPreprocessedFile, Response.Status.Family.SUCCESSFUL, "No Content");
 			conquery.waitUntilWorkDone();
 		}
 
