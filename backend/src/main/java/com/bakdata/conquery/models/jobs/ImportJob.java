@@ -57,8 +57,7 @@ public class ImportJob extends Job {
 	private final PreprocessedDictionaries dictionaries;
 	private final PreprocessedData container;
 	private final ConqueryConfig config;
-	@Getter
-	private final ImportId importId;
+
 
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
@@ -128,8 +127,7 @@ public class ImportJob extends Job {
 					header,
 					dictionaries,
 					container,
-					config,
-					importId
+					config
 			);
 		}
 	}
