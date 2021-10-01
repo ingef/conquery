@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.BooleanParser;
+import com.bakdata.conquery.models.preproc.parser.specific.CompoundDateRangeParser;
 import com.bakdata.conquery.models.preproc.parser.specific.DateParser;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.preproc.parser.specific.DecimalParser;
@@ -27,7 +28,6 @@ public enum MajorTypeId {
 	MONEY(false, MoneyParser::new),
 	DATE(true, DateParser::new),
 	DATE_RANGE(true, DateRangeParser::new);
-
 	@Getter
 	private final boolean dateCompatible;
 	private final Function<ConqueryConfig, Parser> supplier;

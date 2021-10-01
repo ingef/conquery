@@ -3,9 +3,12 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
+import com.bakdata.conquery.models.preproc.parser.specific.DateParser;
+import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.bakdata.conquery.util.DateReader;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
@@ -53,4 +56,11 @@ public class EpochOutput extends OutputDescription {
 	public MajorTypeId getResultType() {
 		return MajorTypeId.DATE;
 	}
+
+	@Override
+	public Parser<?, ?> createParser(ConqueryConfig config) {
+
+		return new DateParser(config);
+	}
+
 }
