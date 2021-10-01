@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
+import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
@@ -22,6 +23,7 @@ import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.jetbrains.annotations.Nullable;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
 import org.keycloak.jose.jwk.JWK;
@@ -35,8 +37,11 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response;
+
+import java.io.IOException;
 import java.net.URI;
 import java.security.PublicKey;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
@@ -50,7 +55,8 @@ import java.util.function.Supplier;
 @Slf4j
 public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory {
 
-    /**
+	public static final String REFRESH_TOKEN = "refresh_token";
+	/**
      * The client id is also used as the expected audience in the validated token.
      * Ensure that the IDP is configured accordingly.
      */
@@ -136,7 +142,8 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 
         // Add login schema for admin end
         final RedirectingAuthFilter redirectingAuthFilter = manager.getAuthController().getRedirectingAuthFilter();
-        redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForAuthCallback);
+        redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForAuthzCode);
+        redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForRefreshToken);
         redirectingAuthFilter.getLoginInitiators().add(this::initiateLogin);
 
         return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, tokenLeeway);
@@ -285,50 +292,127 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
      * Checks if the incoming request is an authentication callback.
      */
     @SneakyThrows
-    private Response checkForAuthCallback(ContainerRequestContext request) {
-        final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
-        if (idpConfigurationOpt.isEmpty()) {
-            log.warn("Unable to start authentication, because idp configuration is not available.");
-            return null;
-        }
-        JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
+    private Response checkForAuthzCode(ContainerRequestContext request) {
 
         final String code = request.getUriInfo().getQueryParameters().getFirst("code");
         if (code == null) {
             return null;
         }
 
-        // Build the original redirect uri
-        final URI requestUri = UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build();
-        log.info("Request URI: {}", requestUri);
-        final TokenRequest tokenRequest = new TokenRequest(
+		final AuthorizationCodeGrant authzGrant = new AuthorizationCodeGrant(new AuthorizationCode(code), UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build());
+
+		AccessTokenResponse tokenResponse = getAccessTokenResponse(request, authzGrant);
+		if (tokenResponse == null) {
+			return null;
+		}
+
+		// Get the access token, the server may also return a refresh token
+		final Cookie accessTokenCookie = prepareAccessTokenCookie(request, tokenResponse);
+		final NewCookie refreshTokenCookie = prepareRefreshTokenCookie(request, tokenResponse);
+
+		return prepareResponse(request, accessTokenCookie, refreshTokenCookie);
+	}
+
+
+	/**
+	 * Checks if the incoming request has a valid refresh token.
+	 */
+	@SneakyThrows({ParseException.class, IOException.class})
+	private Response checkForRefreshToken(ContainerRequestContext request) {
+
+		final Cookie refreshToken = request.getCookies().get(REFRESH_TOKEN);
+
+		if (refreshToken == null) {
+			return null;
+		}
+
+		final AccessTokenResponse tokenResponse = getAccessTokenResponse(request, new RefreshTokenGrant(new RefreshToken(refreshToken.getValue())));
+		if (tokenResponse == null) {
+			return null;
+		}
+
+		final Cookie accessTokenCookie = prepareAccessTokenCookie(request, tokenResponse);
+		final NewCookie refreshTokenCookie = prepareRefreshTokenCookie(request, tokenResponse);
+
+
+		return prepareResponse(request, accessTokenCookie, refreshTokenCookie);
+	}
+
+	private Response prepareResponse(ContainerRequestContext request, Cookie accessTokenCookie, NewCookie refreshTokenCookie) {
+		URI uri = request.getUriInfo().getRequestUriBuilder().replaceQuery("").build();
+		return Response
+                .seeOther(uri)
+                .header(HttpHeaders.SET_COOKIE, accessTokenCookie)
+				.header(HttpHeaders.SET_COOKIE, refreshTokenCookie)
+                .build();
+	}
+
+	private Cookie prepareAccessTokenCookie(ContainerRequestContext request, AccessTokenResponse tokenResponse) {
+		com.nimbusds.oauth2.sdk.token.AccessToken accessToken = tokenResponse.getTokens().getAccessToken();
+		return authCookieCreator.apply(request, accessToken.getValue());
+	}
+
+	@org.jetbrains.annotations.NotNull
+	private NewCookie prepareRefreshTokenCookie(ContainerRequestContext request, AccessTokenResponse tokenResponse) {
+		RefreshToken refreshToken = tokenResponse.getTokens().getRefreshToken();
+		final Long exp = (Long) refreshToken.toJSONObject().get("exp");
+		if (exp == null) {
+			throw new IllegalStateException("Refresh token did not include an expiration");
+		}
+
+		// Convert refresh token expiration to cookie expiration (seconds -> Date)
+		Date expirationDate = Date.from(Instant.ofEpochSecond(exp));
+
+
+		return new NewCookie(
+				REFRESH_TOKEN,
+				refreshToken.getValue(),
+				"/",
+				null,
+				0,
+				null,
+				900, //The Constuctor requires us to set a maxAge even though it should be optional. 30 minutes should be okay
+				expirationDate,
+				request.getSecurityContext().isSecure(),
+				true
+		);
+	}
+
+	/**
+	 * Tries to redeem the {@link AuthorizationGrant} for an {@link com.nimbusds.oauth2.sdk.token.AccessToken} ( + {@link RefreshToken}).
+	 */
+	@Nullable
+	private AccessTokenResponse getAccessTokenResponse(ContainerRequestContext request, AuthorizationGrant authzGrant)
+			throws ParseException, IOException {
+
+		final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
+		if (idpConfigurationOpt.isEmpty()) {
+			log.warn("Unable to start authentication, because idp configuration is not available.");
+			return null;
+		}
+		JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
+
+		// Build the original redirect uri
+		final URI requestUri = UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build();
+		log.info("Request URI: {}", requestUri);
+		final TokenRequest tokenRequest = new TokenRequest(
                 UriBuilder.fromUri(idpConfiguration.getTokenEndpoint()).build(),
                 new ClientID(client),
-                new AuthorizationCodeGrant(new AuthorizationCode(code), requestUri)
+				authzGrant
         );
 
-        TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
+		TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
 
-        if (!response.indicatesSuccess()) {
-            HTTPResponse httpResponse = response.toHTTPResponse();
-            log.warn("Unable to retrieve access token from auth server: {}", httpResponse.getContent());
-            return null;
-        }
-        else if (!(response instanceof AccessTokenResponse)) {
-            log.warn("Unknown token response {}.", response.getClass().getName());
-            return null;
-        }
+		if (!response.indicatesSuccess()) {
+			HTTPResponse httpResponse = response.toHTTPResponse();
+			log.warn("Unable to retrieve access token from auth server: {}", httpResponse.getContent());
+			return null;
+		}
+		else if (!(response instanceof AccessTokenResponse)) {
+			log.warn("Unknown token response {}.", response.getClass().getName());
+			return null;
+		}
 
-        AccessTokenResponse successResponse = (AccessTokenResponse) response;
-
-        // Get the access token, the server may also return a refresh token
-        com.nimbusds.oauth2.sdk.token.AccessToken accessToken = successResponse.getTokens().getAccessToken();
-
-        URI uri = request.getUriInfo().getRequestUriBuilder().replaceQuery("").build();
-
-        return Response
-                .seeOther(uri)
-                .header(HttpHeaders.SET_COOKIE, authCookieCreator.apply(request,accessToken.getValue()))
-                .build();
-    }
+		return (AccessTokenResponse) response;
+	}
 }
