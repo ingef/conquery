@@ -57,248 +57,253 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 
 	public static final String REFRESH_TOKEN = "refresh_token";
 	/**
-     * The client id is also used as the expected audience in the validated token.
-     * Ensure that the IDP is configured accordingly.
-     */
-    @NonNull
-    private String client;
-    @NotNull
-    private List<String> additionalTokenChecks = Collections.emptyList();
+	 * The client id is also used as the expected audience in the validated token.
+	 * Ensure that the IDP is configured accordingly.
+	 */
+	@NonNull
+	private String client;
+	@NotNull
+	private List<String> additionalTokenChecks = Collections.emptyList();
 
-    /**
-     * Either the wellKnownEndpoint from which an idpConfiguration can be obtained or the idpConfiguration must be supplied.
-     * If the idpConfiguration is given, the wellKnownEndpoint is ignored.
-     */
-    private URI wellKnownEndpoint;
+	/**
+	 * Either the wellKnownEndpoint from which an idpConfiguration can be obtained or the idpConfiguration must be supplied.
+	 * If the idpConfiguration is given, the wellKnownEndpoint is ignored.
+	 */
+	private URI wellKnownEndpoint;
 
-    /**
-     * See wellKnownEndpoint.
-     */
-    private IdpConfiguration idpConfiguration;
+	/**
+	 * See wellKnownEndpoint.
+	 */
+	private IdpConfiguration idpConfiguration;
 
-    /**
-     * A leeway for token's expiration in seconds, this should be a short time.
-     *
-     * One Minute is the default.
-     */
-    @Min(0)
-    private int tokenLeeway = 60;
-
-
-    /**
-     * Which claims hold alternative Ids of the user in case the user name does not match a user.
-     * Pay attention, that the user must not be able to alter the value of any of these claims.
-     */
-    private List<String> alternativeIdClaims = Collections.emptyList();
+	/**
+	 * A leeway for token's expiration in seconds, this should be a short time.
+	 * <p>
+	 * One Minute is the default.
+	 */
+	@Min(0)
+	private int tokenLeeway = 60;
 
 
-    @JsonIgnore
-    private Supplier<Optional<IdpConfiguration>> idpConfigurationSupplier;
-
-    /**
-     * Authentication cookie creator for using the Admin API
-     */
-    @JsonIgnore
-    public BiFunction<ContainerRequestContext, String, Cookie> authCookieCreator;
+	/**
+	 * Which claims hold alternative Ids of the user in case the user name does not match a user.
+	 * Pay attention, that the user must not be able to alter the value of any of these claims.
+	 */
+	private List<String> alternativeIdClaims = Collections.emptyList();
 
 
+	@JsonIgnore
+	private Supplier<Optional<IdpConfiguration>> idpConfigurationSupplier;
 
-    @ValidationMethod(message = "Neither wellKnownEndpoint nor idpConfiguration was given")
-    @JsonIgnore
-    public boolean isConfigurationAvailable() {
-        return wellKnownEndpoint != null || idpConfiguration != null;
-    }
-
-    @AllArgsConstructor
-    @Getter
-    public static class IdpConfiguration {
-
-        /**
-         * The public key information that is used to validate signed JWT.
-         * It can be retrieved from the IDP.
-         */
-        @NonNull
-        private final PublicKey publicKey;
-
-        @NonNull
-        private final URI authorizationEndpoint;
-
-        @NonNull
-        private final URI tokenEndpoint;
-
-        @NotEmpty
-        private final String issuer;
-    }
-
-    public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {
-        List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
-
-        for (String additionalTokenCheck : additionalTokenChecks) {
-            additionalVerifiers.add(ScriptedTokenChecker.create(additionalTokenCheck));
-        }
-
-        idpConfigurationSupplier = getIdpOptionsSupplier(manager.getClient());
-        authCookieCreator = manager.getConfig().getAuthentication()::createAuthCookie;
-
-        // Add login schema for admin end
-        final RedirectingAuthFilter redirectingAuthFilter = manager.getAuthController().getRedirectingAuthFilter();
-        redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForAuthzCode);
-        redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForRefreshToken);
-        redirectingAuthFilter.getLoginInitiators().add(this::initiateLogin);
-
-        return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, tokenLeeway);
-    }
-
-    @Data
-    private static class JWKs {
-        List<JWK> keys;
-    }
-
-    private Supplier<Optional<IdpConfiguration>> getIdpOptionsSupplier(final Client client) {
-
-        return () -> {
-            if (idpConfiguration == null) {
-                synchronized (this) {
-                    // check again since we are now in an exclusive section
-                    if (idpConfiguration == null) {
-                        // retrieve the configuration and cache it
-                        idpConfiguration = retrieveIdpConfiguration(client);
-                    }
-                }
-            }
-            return Optional.ofNullable(idpConfiguration);
-        };
-    }
-
-    /**
-     * Retrieve the configuration of the IDP from its "wellknown"-endpoint.
-     * @implNote Since this involves https requests, ensure to cache the returned value.
-     */
-    private IdpConfiguration retrieveIdpConfiguration(final Client client) {
-
-        if (wellKnownEndpoint == null) {
-            log.error("Cannot retrieve idp configuration, because no well-known endpoint was given");
-            return null;
-        }
-
-        JsonNode response;
-        try {
-            response = client.target(wellKnownEndpoint)
-                    .request(MediaType.APPLICATION_JSON_TYPE)
-                    .get(JsonNode.class);
-        }
-        catch (Exception e) {
-            log.warn("Unable to retrieve configuration from {}", wellKnownEndpoint, e);
-            return null;
-        }
-
-        if (response == null) {
-            return null;
-        }
-
-        String issuer = response.get("issuer").asText();
-        URI authorizationEndpoint = URI.create(response.get("authorization_endpoint").asText());
-        URI tokenEndpoint = URI.create(response.get("token_endpoint").asText());
-
-        URI jwksUri = URI.create(response.get("jwks_uri").asText());
-
-        JWKs jwks;
-        try {
-            jwks = client.target(jwksUri)
-                    .request(MediaType.APPLICATION_JSON_TYPE)
-                    .get(JWKs.class);
-
-        } catch (Exception e) {
-            log.warn("Unable to retrieve jwks from {}", wellKnownEndpoint, e);
-            return null;
-        }
-
-        if (jwks == null) {
-            return null;
-        }
+	/**
+	 * Authentication cookie creator for using the Admin API
+	 */
+	@JsonIgnore
+	public BiFunction<ContainerRequestContext, String, Cookie> authCookieCreator;
 
 
-        final List<JWK> keys = jwks.getKeys();
-        if (keys.size() != 1) {
-            throw new IllegalStateException("Expected exactly 1 jwk for realm but found: " + keys.size());
-        }
+	@ValidationMethod(message = "Neither wellKnownEndpoint nor idpConfiguration was given")
+	@JsonIgnore
+	public boolean isConfigurationAvailable() {
+		return wellKnownEndpoint != null || idpConfiguration != null;
+	}
 
-        JWK jwk = keys.get(0);
+	@AllArgsConstructor
+	@Getter
+	public static class IdpConfiguration {
 
-        return new IdpConfiguration(getPublicKey(jwk), authorizationEndpoint, tokenEndpoint, issuer);
-    }
+		/**
+		 * The public key information that is used to validate signed JWT.
+		 * It can be retrieved from the IDP.
+		 */
+		@NonNull
+		private final PublicKey publicKey;
+
+		@NonNull
+		private final URI authorizationEndpoint;
+
+		@NonNull
+		private final URI tokenEndpoint;
+
+		@NotEmpty
+		private final String issuer;
+	}
+
+	public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {
+		List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
+
+		for (String additionalTokenCheck : additionalTokenChecks) {
+			additionalVerifiers.add(ScriptedTokenChecker.create(additionalTokenCheck));
+		}
+
+		idpConfigurationSupplier = getIdpOptionsSupplier(manager.getClient());
+		authCookieCreator = manager.getConfig().getAuthentication()::createAuthCookie;
+
+		// Add login schema for admin end
+		final RedirectingAuthFilter redirectingAuthFilter = manager.getAuthController().getRedirectingAuthFilter();
+		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForAuthzCode);
+		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForRefreshToken);
+		redirectingAuthFilter.getLoginInitiators().add(this::initiateLogin);
+
+		return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, tokenLeeway);
+	}
+
+	@Data
+	private static class JWKs {
+		List<JWK> keys;
+	}
+
+	private Supplier<Optional<IdpConfiguration>> getIdpOptionsSupplier(final Client client) {
+
+		return () -> {
+			if (idpConfiguration == null) {
+				synchronized (this) {
+					// check again since we are now in an exclusive section
+					if (idpConfiguration == null) {
+						// retrieve the configuration and cache it
+						idpConfiguration = retrieveIdpConfiguration(client);
+					}
+				}
+			}
+			return Optional.ofNullable(idpConfiguration);
+		};
+	}
+
+	/**
+	 * Retrieve the configuration of the IDP from its "wellknown"-endpoint.
+	 *
+	 * @implNote Since this involves https requests, ensure to cache the returned value.
+	 */
+	private IdpConfiguration retrieveIdpConfiguration(final Client client) {
+
+		if (wellKnownEndpoint == null) {
+			log.error("Cannot retrieve idp configuration, because no well-known endpoint was given");
+			return null;
+		}
+
+		JsonNode response;
+		try {
+			response = client.target(wellKnownEndpoint)
+							 .request(MediaType.APPLICATION_JSON_TYPE)
+							 .get(JsonNode.class);
+		}
+		catch (Exception e) {
+			log.warn("Unable to retrieve configuration from {}", wellKnownEndpoint, e);
+			return null;
+		}
+
+		if (response == null) {
+			return null;
+		}
+
+		String issuer = response.get("issuer").asText();
+		URI authorizationEndpoint = URI.create(response.get("authorization_endpoint").asText());
+		URI tokenEndpoint = URI.create(response.get("token_endpoint").asText());
+
+		URI jwksUri = URI.create(response.get("jwks_uri").asText());
+
+		JWKs jwks;
+		try {
+			jwks = client.target(jwksUri)
+						 .request(MediaType.APPLICATION_JSON_TYPE)
+						 .get(JWKs.class);
+
+		}
+		catch (Exception e) {
+			log.warn("Unable to retrieve jwks from {}", wellKnownEndpoint, e);
+			return null;
+		}
+
+		if (jwks == null) {
+			return null;
+		}
 
 
-    @JsonIgnore
-    @SneakyThrows(JsonProcessingException.class)
-    private static PublicKey getPublicKey(JWK jwk) {
-        // We have to re-serdes the object because it might be a sub class which can not be handled correctly by the JWKParser
-        String jwkString = Jackson.MAPPER.writeValueAsString(jwk);
-        return JWKParser.create().parse(jwkString).toPublicKey();
-    }
+		final List<JWK> keys = jwks.getKeys();
+		if (keys.size() != 1) {
+			throw new IllegalStateException("Expected exactly 1 jwk for realm but found: " + keys.size());
+		}
 
-    public static abstract class ScriptedTokenChecker extends Script implements TokenVerifier.Predicate<AccessToken> {
+		JWK jwk = keys.get(0);
 
-        private final static GroovyShell SHELL;
-
-        static {
-            CompilerConfiguration config = new CompilerConfiguration();
-            config.addCompilationCustomizers(new ImportCustomizer().addImports(AccessToken.class.getName()));
-            config.setScriptBaseClass(ScriptedTokenChecker.class.getName());
-
-            SHELL = new GroovyShell(config);
-        }
-
-        public static ScriptedTokenChecker create(String checkScript) {
+		return new IdpConfiguration(getPublicKey(jwk), authorizationEndpoint, tokenEndpoint, issuer);
+	}
 
 
-            return (ScriptedTokenChecker) SHELL.parse(checkScript);
-        }
+	@JsonIgnore
+	@SneakyThrows(JsonProcessingException.class)
+	private static PublicKey getPublicKey(JWK jwk) {
+		// We have to re-serdes the object because it might be a sub class which can not be handled correctly by the JWKParser
+		String jwkString = Jackson.MAPPER.writeValueAsString(jwk);
+		return JWKParser.create().parse(jwkString).toPublicKey();
+	}
 
-        @Override
-        public abstract Boolean run();
+	public static abstract class ScriptedTokenChecker extends Script implements TokenVerifier.Predicate<AccessToken> {
 
-        @Override
-        public boolean test(AccessToken token) throws VerificationException {
-            Binding binding = new Binding();
-            binding.setVariable("t", token);
-            setBinding(binding);
+		private final static GroovyShell SHELL;
 
-            return run();
-        }
-    }
+		static {
+			CompilerConfiguration config = new CompilerConfiguration();
+			config.addCompilationCustomizers(new ImportCustomizer().addImports(AccessToken.class.getName()));
+			config.setScriptBaseClass(ScriptedTokenChecker.class.getName());
 
-    /**
-     * Generates the link that forwards the user to the login page.
-     */
-    private URI initiateLogin(ContainerRequestContext request) {
-        final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
-        if (idpConfigurationOpt.isEmpty()) {
-            log.warn("Unable to initiate authentication, because idp configuration is not available.");
-            return null;
-        }
-        JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
+			SHELL = new GroovyShell(config);
+		}
+
+		public static ScriptedTokenChecker create(String checkScript) {
+
+
+			return (ScriptedTokenChecker) SHELL.parse(checkScript);
+		}
+
+		@Override
+		public abstract Boolean run();
+
+		@Override
+		public boolean test(AccessToken token) throws VerificationException {
+			Binding binding = new Binding();
+			binding.setVariable("t", token);
+			setBinding(binding);
+
+			return run();
+		}
+	}
+
+	/**
+	 * Generates the link that forwards the user to the login page.
+	 */
+	private URI initiateLogin(ContainerRequestContext request) {
+		final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
+		if (idpConfigurationOpt.isEmpty()) {
+			log.warn("Unable to initiate authentication, because idp configuration is not available.");
+			return null;
+		}
+		JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
 		return UriBuilder.fromUri(idpConfiguration.getAuthorizationEndpoint())
-						 .queryParam("response_type","code")
+						 .queryParam("response_type", "code")
 						 .queryParam("client_id", client)
 						 .queryParam("redirect_uri", UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
-						 .queryParam("scope","openid")
+						 .queryParam("scope", "openid")
 						 .queryParam("state", UUID.randomUUID()).build();
-    }
+	}
 
 
-    /**
-     * Checks if the incoming request is an authentication callback.
-     */
-    @SneakyThrows
-    private Response checkForAuthzCode(ContainerRequestContext request) {
+	/**
+	 * Checks if the incoming request is an authentication callback.
+	 */
+	@SneakyThrows
+	private Response checkForAuthzCode(ContainerRequestContext request) {
 
-        final String code = request.getUriInfo().getQueryParameters().getFirst("code");
-        if (code == null) {
-            return null;
-        }
+		final String code = request.getUriInfo().getQueryParameters().getFirst("code");
+		if (code == null) {
+			return null;
+		}
 
-		final AuthorizationCodeGrant authzGrant = new AuthorizationCodeGrant(new AuthorizationCode(code), UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build());
+		final AuthorizationCodeGrant
+				authzGrant =
+				new AuthorizationCodeGrant(new AuthorizationCode(code), UriBuilder.fromUri(RequestHelper.getRequestURL(request))
+																				  .path(AdminServlet.ADMIN_UI)
+																				  .build());
 
 		AccessTokenResponse tokenResponse = getAccessTokenResponse(request, authzGrant);
 		if (tokenResponse == null) {
@@ -340,10 +345,10 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	private Response prepareResponse(ContainerRequestContext request, Cookie accessTokenCookie, NewCookie refreshTokenCookie) {
 		URI uri = request.getUriInfo().getRequestUriBuilder().replaceQuery("").build();
 		return Response
-                .seeOther(uri)
-                .header(HttpHeaders.SET_COOKIE, accessTokenCookie)
+				.seeOther(uri)
+				.header(HttpHeaders.SET_COOKIE, accessTokenCookie)
 				.header(HttpHeaders.SET_COOKIE, refreshTokenCookie)
-                .build();
+				.build();
 	}
 
 	private Cookie prepareAccessTokenCookie(ContainerRequestContext request, AccessTokenResponse tokenResponse) {
@@ -395,10 +400,10 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		final URI requestUri = UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build();
 		log.info("Request URI: {}", requestUri);
 		final TokenRequest tokenRequest = new TokenRequest(
-                UriBuilder.fromUri(idpConfiguration.getTokenEndpoint()).build(),
-                new ClientID(client),
+				UriBuilder.fromUri(idpConfiguration.getTokenEndpoint()).build(),
+				new ClientID(client),
 				authzGrant
-        );
+		);
 
 		TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
 
