@@ -181,7 +181,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
             return null;
         }
 
-        JsonNode response = null;
+        JsonNode response;
         try {
             response = client.target(wellKnownEndpoint)
                     .request(MediaType.APPLICATION_JSON_TYPE)
@@ -202,7 +202,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 
         URI jwksUri = URI.create(response.get("jwks_uri").asText());
 
-        JWKs jwks = null;
+        JWKs jwks;
         try {
             jwks = client.target(jwksUri)
                     .request(MediaType.APPLICATION_JSON_TYPE)
@@ -278,13 +278,12 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
             return null;
         }
         JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
-        URI uri = UriBuilder.fromUri(idpConfiguration.getAuthorizationEndpoint())
-                .queryParam("response_type","code")
-                .queryParam("client_id", client)
-                .queryParam("redirect_uri", UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
-                .queryParam("scope","openid")
-                .queryParam("state", UUID.randomUUID()).build();
-        return uri;
+		return UriBuilder.fromUri(idpConfiguration.getAuthorizationEndpoint())
+						 .queryParam("response_type","code")
+						 .queryParam("client_id", client)
+						 .queryParam("redirect_uri", UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
+						 .queryParam("scope","openid")
+						 .queryParam("state", UUID.randomUUID()).build();
     }
 
 
@@ -371,7 +370,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 				null,
 				0,
 				null,
-				900, //The Constuctor requires us to set a maxAge even though it should be optional. 30 minutes should be okay
+				900, //The Constructor requires us to set a maxAge even though it should be optional. 30 minutes should be okay
 				expirationDate,
 				request.getSecurityContext().isSecure(),
 				true
