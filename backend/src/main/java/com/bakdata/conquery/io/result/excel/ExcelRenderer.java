@@ -38,14 +38,16 @@ import java.util.stream.Stream;
 
 public class ExcelRenderer {
 
-    private final static Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
+	private final static Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
             ResultType.DateT.class, ExcelRenderer::writeDateCell,
             ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
             ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
             ResultType.NumericT.class, ExcelRenderer::writeNumericCell
     );
+	public static final int CHARACTER_WIDTH_DIVISOR = 256;
+	public static final int AUTOFILTER_SPACE_WIDTH = 3;
 
-    private final SXSSFWorkbook workbook;
+	private final SXSSFWorkbook workbook;
     private final ExcelConfig config;
     private final PrintSettings cfg;
     private final ImmutableMap<String, CellStyle> styles;
@@ -252,11 +254,16 @@ public class ExcelRenderer {
 			sheet.autoSizeColumn(columnIndex);
 
 			// Scale the widths to a 256th of a char
-			final int defaultColumnWidth = config.getDefaultColumnWidth()*256;
+			final int defaultColumnWidth = config.getDefaultColumnWidth() * CHARACTER_WIDTH_DIVISOR;
+
+			// Add a bit extra space for the drop down arrow of the auto filter (so it does not overlap with the column header name)
+			int columnWidth = sheet.getColumnWidth(columnIndex) + AUTOFILTER_SPACE_WIDTH * CHARACTER_WIDTH_DIVISOR;
+
 			// Limit the column with to the default width if it is longer
-			if (sheet.getColumnWidth(columnIndex) > defaultColumnWidth){
-				sheet.setColumnWidth(columnIndex, defaultColumnWidth);
+			if (columnWidth > defaultColumnWidth){
+				columnWidth = defaultColumnWidth;
 			}
+			sheet.setColumnWidth(columnIndex, columnWidth);
 
 			// Disable auto sizing so we don't have a performance penalty
 			sheet.untrackColumnForAutoSizing(columnIndex);
