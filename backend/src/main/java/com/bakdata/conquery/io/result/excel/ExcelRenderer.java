@@ -102,7 +102,9 @@ public class ExcelRenderer {
     private void postProcessTable(List<String> idHeaders, SXSSFSheet sheet, XSSFTable table, int writtenLines) {
         // Extend the table area to the added data
         CellReference topLeft = new CellReference(0, 0);
-        CellReference bottomRight = new CellReference(writtenLines + 1, table.getColumnCount() - 1);
+
+        // The area must be at least a header row and a data row. If no line was written we include an empty data row so POI is happy
+        CellReference bottomRight = new CellReference(Math.max(1,writtenLines), table.getColumnCount() - 1);
         AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         table.setArea(newArea);
 
