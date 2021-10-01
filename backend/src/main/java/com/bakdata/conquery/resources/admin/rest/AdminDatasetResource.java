@@ -120,7 +120,7 @@ public class AdminDatasetResource extends HAdmin {
 	@Path("imports")
 	public void addImport(@QueryParam("file") File importFile) throws WebApplicationException, JSONException {
 		try {
-			processor.updateImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
+			processor.addImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
 		}
 		catch (IOException err) {
 			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, err.getMessage()), Status.BAD_REQUEST);
