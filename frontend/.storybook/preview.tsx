@@ -1,13 +1,13 @@
-import { ThemeProvider } from '@emotion/react';
-import { theme } from '../src/app-theme';
-import React from 'react';
-import { addDecorator } from '@storybook/react';
+import { ThemeProvider } from "@emotion/react";
+import { addDecorator } from "@storybook/react";
+import React from "react";
 
-import DndProvider from '../src/js/app/DndProvider';
-import GlobalStyles from '../src/js/GlobalStyles';
-
+import { theme } from "../src/app-theme";
+import GlobalStyles from "../src/js/GlobalStyles";
+import DndProvider from "../src/js/app/DndProvider";
 import i18next from "../src/js/localization/i18next";
 import translationsDe from "../src/localization/de.json";
+
 i18next.addResourceBundle("de", "translation", translationsDe, true, true);
 i18next.changeLanguage("de");
 
@@ -19,15 +19,15 @@ export const parameters = {
       date: /Date$/,
     },
   },
-}
+};
 
 addDecorator((Story) => {
   return (
     <ThemeProvider theme={theme}>
-    <DndProvider>
-      <GlobalStyles />
-      <Story />
-    </DndProvider>
+      <DndProvider>
+        <GlobalStyles />
+        <Story />
+      </DndProvider>
     </ThemeProvider>
   );
-})
+});
