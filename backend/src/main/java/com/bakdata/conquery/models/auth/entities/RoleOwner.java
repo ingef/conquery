@@ -10,7 +10,6 @@ import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 
 public interface RoleOwner {
-	static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RoleOwner.class);
 
 	void addRole(Role role);
 

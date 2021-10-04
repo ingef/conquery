@@ -27,20 +27,7 @@ public class UserLikePrincipalCollection implements PrincipalCollection {
 
 	@Override @JsonIgnore
 	public Iterator<UserLike> iterator() {
-		return new Iterator<>() {
-			private boolean notCalled = true;
-			@Override
-			public boolean hasNext() {
-				boolean ret = notCalled;
-				notCalled = false;
-				return ret;
-			}
-
-			@Override
-			public UserLike next() {
-				return principal;
-			}
-		};
+		return Collections.singleton(principal).iterator();
 	}
 
 	@Override @JsonIgnore

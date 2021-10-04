@@ -51,8 +51,8 @@ import org.apache.shiro.util.Destroyable;
 @Slf4j
 public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, Destroyable {
 
-	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
-	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
+	private static final int ENVIRONMENT_CLOSING_RETRIES = 2;
+	private static final int ENVIRONMENT_CLOSING_TIMEOUT = 2; // seconds
 
 	private final Path storageDir;
 	private final XodusConfig storeConfig;
@@ -267,6 +267,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 				throw new IllegalStateException("Unable to retrieve token data for hash.");
 			}
 
+			// TODO Admin cannot delete other users token here
 			user.authorize(data, Ability.DELETE);
 
 			tokenDataStore.remove(hash);
@@ -296,7 +297,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 
 	@Override
 	public void destroy() throws InterruptedException {
-		for(int retries = 0; retries < ENVIRONMNENT_CLOSING_RETRYS; retries++) {
+		for(int retries = 0; retries < ENVIRONMENT_CLOSING_RETRIES; retries++) {
 			try {
 				log.info("Closing the password environment.");
 				tokenEnvironment.close();
@@ -310,8 +311,8 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 				if (retries == 0) {
 					log.info("The environment is still working on some transactions. Retry");
 				}
-				log.info("Waiting for {} seconds to retry.", ENVIRONMNENT_CLOSING_TIMEOUT);
-				Thread.sleep(ENVIRONMNENT_CLOSING_TIMEOUT*1000 /* milliseconds */);
+				log.info("Waiting for {} seconds to retry.", ENVIRONMENT_CLOSING_TIMEOUT);
+				Thread.sleep(ENVIRONMENT_CLOSING_TIMEOUT * 1000 /* milliseconds */);
 			}
 		}
 		// Close the environment with force

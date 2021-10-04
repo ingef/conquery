@@ -40,7 +40,8 @@ public class TokenScopedUser implements UserLike {
 
 	@Override
 	public void authorize(Set<? extends Authorized> objects, Ability ability) {
-		if(!objects.stream().map(o -> o.createPermission(EnumSet.of(ability))).allMatch(tokenContext::isCoveredByScopes)) {
+		final EnumSet<Ability> abilityEnumSet = EnumSet.of(ability);
+		if(!objects.stream().map(o -> o.createPermission(abilityEnumSet)).allMatch(tokenContext::isCoveredByScopes)) {
 			throw new UnauthorizedException("The scopes of the tokens do not support handling the permission");
 		}
 		delegate.authorize(objects, ability);

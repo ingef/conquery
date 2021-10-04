@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 @RequiredArgsConstructor
 public class PrintableASCIIProvider {
-	public final Random random;
+	private final Random random;
 
 	public void fillRemaining(CharArrayBuffer buffer) {
 		final int remaining = buffer.capacity() - buffer.length();
