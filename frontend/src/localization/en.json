@@ -323,6 +323,7 @@
     "dateSet": "Date set",
     "startDate": "Start date",
     "endDate": "End date",
+    "extra" : "Additional Info",
     "ignore": "IGNORE",
     "partialSuccess": "Upload partially successful.",
     "resolved": "1 line resolved.",

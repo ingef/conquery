@@ -145,6 +145,7 @@ type UploadColumnType =
   | "START_DATE" //(a starting day)
   | "END_DATE" // (and end day
   | "DATE_SET" // (a set of date ranges)
+  | "EXTRA" // (user supplied additional data per entity)
   | "IGNORE"; // (ignore this column)
 
 const CSVColumnPicker: FC<PropsT> = ({
@@ -177,6 +178,7 @@ const CSVColumnPicker: FC<PropsT> = ({
     { label: t("csvColumnPicker.dateSet"), value: "DATE_SET" },
     { label: t("csvColumnPicker.startDate"), value: "START_DATE" },
     { label: t("csvColumnPicker.endDate"), value: "END_DATE" },
+    { label: t("csvColumnPicker.extra"), value: "EXTRA" },
   ];
 
   const DELIMITER_OPTIONS = [
