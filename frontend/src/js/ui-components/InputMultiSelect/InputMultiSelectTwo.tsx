@@ -1,12 +1,10 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
-import { getUniqueFileRows } from "../../common/helpers";
-import { usePrevious } from "../../common/helpers/usePrevious";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
 import Labeled from "../Labeled";
@@ -15,6 +13,7 @@ import EmptyPlaceholder from "./EmptyPlaceholder";
 import ListOption from "./ListOption";
 import MenuActionBar from "./MenuActionBar";
 import SelectedItem from "./SelectedItem";
+import { useResolvableSelect } from "./useResolvableSelect";
 
 const Control = styled("div")`
   border: 1px solid ${({ theme }) => theme.col.gray};
@@ -90,44 +89,6 @@ const VerticalSeparator = styled("div")`
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
 `;
-
-const useResolvableSelect = ({
-  defaultValue,
-  onResolve,
-}: {
-  defaultValue?: SelectOptionT[];
-  onResolve?: (csvFileLines: string[]) => void;
-}) => {
-  const previousDefaultValue = usePrevious(defaultValue);
-
-  useEffect(
-    function resolveDefault() {
-      if (!onResolve) {
-        return;
-      }
-
-      const hasDefaultValueToLoad =
-        defaultValue &&
-        defaultValue.length > 0 &&
-        JSON.stringify(defaultValue) !== JSON.stringify(previousDefaultValue);
-
-      if (hasDefaultValueToLoad) {
-        onResolve(defaultValue.map((v) => String(v.value)));
-      }
-    },
-    [onResolve, previousDefaultValue, defaultValue],
-  );
-
-  const onDropFile = async (file: File) => {
-    const rows = await getUniqueFileRows(file);
-
-    if (onResolve) {
-      onResolve(rows);
-    }
-  };
-
-  return { onDropFile: onResolve ? onDropFile : undefined };
-};
 
 interface Props {
   label?: string;
