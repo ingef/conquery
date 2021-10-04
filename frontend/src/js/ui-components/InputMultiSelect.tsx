@@ -1,11 +1,9 @@
 import styled from "@emotion/styled";
-import { theme } from "app-theme";
 import Mustache from "mustache";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import { components, MenuListComponentProps } from "react-select";
-import { FixedSizeList } from "react-window";
 
 import type { FilterSuggestion, SelectOptionT } from "../api/types";
 import TransparentButton from "../button/TransparentButton";
@@ -39,22 +37,6 @@ const Row = styled("div")`
   justify-content: space-between;
   padding: 5px 10px;
   border-bottom: 1px solid #ccc;
-`;
-
-const Option = styled("div")<{ isSelected?: boolean }>`
-  padding: 4px 10px;
-  display: flex;
-  align-items: center;
-  font-size: ${({ theme }) => theme.font.sm};
-  color: ${({ isSelected }) => (isSelected ? "white" : theme.col.black)};
-  font-weight: ${({ isSelected }) => (isSelected ? 400 : 300)};
-  cursor: pointer;
-  background-color: ${({ isSelected }) =>
-    isSelected ? theme.col.blueGrayDark : "white"};
-  &:hover {
-    background-color: ${({ isSelected }) =>
-      isSelected ? theme.col.blueGrayDark : theme.col.blueGrayVeryLight};
-  }
 `;
 
 const InfoText = styled("p")`
@@ -160,24 +142,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
             {t("inputMultiSelect.insertAll")}
           </TransparentButton>
         </Row>
-        <FixedSizeList
-          height={300}
-          itemSize={30}
-          width="100%"
-          itemCount={ownProps.options.length}
-          {...ownProps}
-        >
-          {({ index, style }) => (
-            <Option
-              title={ownProps.options[index].label}
-              onClick={() => ownProps.selectOption(ownProps.options[index])}
-              isSelected={ownProps.getValue().includes(ownProps.options[index])}
-              style={style}
-            >
-              {ownProps.options[index].label}
-            </Option>
-          )}
-        </FixedSizeList>
+        <components.MenuList {...ownProps}>{children}</components.MenuList>
       </>
     );
   };
@@ -188,7 +153,6 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       highlightChanged
       isSearchable
       isMulti
-      isMenuOpen={true}
       className="fullwidth"
       createOptionPosition="first"
       name="form-field"
@@ -196,7 +160,6 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       components={{ MultiValueLabel, MenuList }}
       value={props.input.value}
       isDisabled={props.disabled}
-      menuIsOpen
       isLoading={!!props.isLoading}
       classNamePrefix={"react-select"}
       maxMenuHeight={300}

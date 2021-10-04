@@ -183,6 +183,7 @@ const InputMultiSelectTwo = ({
       // - including the `onStateChange` reactions that diverge from default behavior (see below)
       switch (type) {
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
+        case useCombobox.stateChangeTypes.InputBlur:
         case useCombobox.stateChangeTypes.ItemClick:
           const stayAlmostAtTheSamePositionIndex =
             state.highlightedIndex === filteredOptions.length - 1
