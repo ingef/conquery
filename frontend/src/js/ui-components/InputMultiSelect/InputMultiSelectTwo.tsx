@@ -216,6 +216,12 @@ const InputMultiSelectTwo = ({
             setHighlightedIndex(0);
           }
           break;
+        case useCombobox.stateChangeTypes.InputKeyDownEscape:
+          if (action.isOpen) {
+            // Sometimes closing the menu on esc didn't work, this fixes it
+            toggleMenu();
+          }
+          break;
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur:
         case useCombobox.stateChangeTypes.ItemClick:

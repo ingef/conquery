@@ -27,7 +27,6 @@ const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
     },
   ]);
   const onLoad = (str: string) => {
-    console.log(str);
     setOptions(
       wordslist
         .filter((w) => w.startsWith(str))
