@@ -4,9 +4,11 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
+import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
+import com.bakdata.conquery.util.DateReader;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -16,47 +18,39 @@ import org.jetbrains.annotations.NotNull;
 @ToString(callSuper = true)
 public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
+	final private String min, max;
 
-	//ToDo 2 string types min max
 
+	public CompoundDateRangeParser(ConqueryConfig config, String min, String max) {
 
-	public CompoundDateRangeParser(ConqueryConfig config) {
 		super(config);
+		this.max = max;
+		this.min = min;
+
 	}
 
-	/**
-	 * Read a raw CSV-value and return a parsed representation.
-	 *
-	 * @param value
-	 */
+
 	@Override
 	protected CDateRange parseValue(@NotNull String value) throws ParsingException {
 		return null;
 	}
 
-	/**
-	 * Analyze all values and select an optimal store.
-	 * //ToDo erzeugt ein DateRangeStore aus seinen Geschwistern (auf Buckets Ebene) bezogen
-	 */
+	//ToDo erzeugt ein DateRangeStore aus seinen Geschwistern (auf Buckets Ebene) bezogen
+
 	@Override
 	protected DateRangeStore decideType() {
+
 		return null;
 	}
 
-	/**
-	 * Write a parsed value into the store. This allows type-safe generic {@link ColumnStore} implementations.
-	 *
-	 * @param store
-	 * @param event
-	 * @param value
-	 */
+
 	@Override
 	public void setValue(DateRangeStore store, int event, CDateRange value) {
-
+		store.setDateRange(event, value);
 	}
 
 	@Override
 	public ColumnValues createColumnValues() {
-		return null;
+		return new ListColumnValues<>();
 	}
 }

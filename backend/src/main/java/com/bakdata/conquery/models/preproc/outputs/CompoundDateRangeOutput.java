@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -19,6 +21,9 @@ import lombok.ToString;
 @ToString(of = {"startColumn", "endColumn"})
 @CPSType(id = "COMPOUND_DATE_RANGE", base = OutputDescription.class)
 public class CompoundDateRangeOutput extends OutputDescription  {
+
+	@NotNull
+	private String min, max;
 	/**
 	 * Instantiate the corresponding {@link Output} for the rows.
 	 *
@@ -45,6 +50,6 @@ public class CompoundDateRangeOutput extends OutputDescription  {
 	}
 	public Parser<?, ?> createParser(ConqueryConfig config) {
 
-		return new CompoundDateRangeParser(config);
+		return new CompoundDateRangeParser(config, min, max);
 	}
 }

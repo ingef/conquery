@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -96,11 +97,11 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	public Iterable<BucketEntry> entries() {
 		return () -> entities()
-						  .stream()
-						  .flatMap(entity -> IntStream.range(getEntityStart(entity), getEntityEnd(entity))
-													  .mapToObj(e -> new BucketEntry(entity, e))
-						  )
-						  .iterator();
+				.stream()
+				.flatMap(entity -> IntStream.range(getEntityStart(entity), getEntityEnd(entity))
+											.mapToObj(e -> new BucketEntry(entity, e))
+				)
+				.iterator();
 	}
 
 	public int getEntityStart(int entityId) {
@@ -192,5 +193,9 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@Override
 	public Dataset getDataset() {
 		return getTable().getDataset();
+	}
+
+	public ColumnStore getStore(String storeName) {
+		return this.getStore(getTable().getColumnByName(storeName));
 	}
 }

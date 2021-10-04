@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.preproc;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,23 +13,16 @@ import java.util.zip.GZIPOutputStream;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
-import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.bakdata.conquery.models.preproc.parser.specific.string.MapTypeGuesser;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -82,7 +74,8 @@ public class Preprocessed {
 			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
 
 			//ToDo 1-)createParser aus der OutPutDescription
-			columns[index].setParser(columnDescription.getType().createParser(config));
+
+			columns[index].setParser(input.createParser(index, config));
 
 			final Parser parser = columns[index].getParser();
 			values[index] = parser.createColumnValues();
@@ -127,7 +120,8 @@ public class Preprocessed {
 		writePreprocessed(file, header, dictionaries, data);
 	}
 
-	private static void writePreprocessed(File file, PreprocessedHeader header, PreprocessedDictionaries dictionaries, PreprocessedData data) throws IOException {
+	private static void writePreprocessed(File file, PreprocessedHeader header, PreprocessedDictionaries dictionaries, PreprocessedData data)
+			throws IOException {
 		OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
 		try (JsonGenerator generator = Jackson.BINARY_MAPPER.copy()
 															.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
