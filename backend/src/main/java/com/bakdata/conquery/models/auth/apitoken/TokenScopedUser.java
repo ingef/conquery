@@ -17,6 +17,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * This subject combines a {@link User} with a belonging {@link ApiTokenData}. Permissions for an authorization request are filtered based on the {@link Scopes} of the token.
+ * If a permission is covered by a scope the authorization is delegated to the actual user.
+ */
 @RequiredArgsConstructor
 @Getter
 public class TokenScopedUser implements Subject {
