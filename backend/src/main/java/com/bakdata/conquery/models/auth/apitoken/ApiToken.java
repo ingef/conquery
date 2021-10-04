@@ -19,7 +19,9 @@ import java.util.Arrays;
  * This object only carries the authenticating part of the token. The authorizing part is within a corresponding
  * {@link ApiTokenData} object.
  *
- * @implNote After the token is processed, its buffer must be cleared to avoid leakage.
+ * @implNote After the token is processed, its buffer must be cleared to avoid leakage. Conquery has registered the
+ * {@link com.bakdata.conquery.io.jackson.serializer.CharArrayBufferSerializer} to post the token once to the user
+ * through the API. Be aware, that once this object was serialized, its token is cleared.
  */
 @RequiredArgsConstructor(onConstructor = @__(@JsonCreator))
 @Getter
