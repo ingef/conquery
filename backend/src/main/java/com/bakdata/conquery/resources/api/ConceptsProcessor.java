@@ -21,7 +21,7 @@ import com.bakdata.conquery.apiv1.frontend.FEList;
 import com.bakdata.conquery.apiv1.frontend.FERoot;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -85,7 +85,7 @@ public class ConceptsProcessor {
 
 						});
 
-	public FERoot getRoot(NamespaceStorage storage, UserLike user) {
+	public FERoot getRoot(NamespaceStorage storage, Subject user) {
 
 		return FrontEndConceptBuilder.createRoot(storage, user);
 	}
@@ -99,7 +99,7 @@ public class ConceptsProcessor {
 		}
 	}
 
-	public List<IdLabel<DatasetId>> getDatasets(UserLike user) {
+	public List<IdLabel<DatasetId>> getDatasets(Subject user) {
 		return namespaces.getAllDatasets()
 						 .stream()
 						 .filter(d -> user.isPermitted(d, Ability.READ))

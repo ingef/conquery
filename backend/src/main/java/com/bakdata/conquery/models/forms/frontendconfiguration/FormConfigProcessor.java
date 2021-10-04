@@ -14,7 +14,7 @@ import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
@@ -61,7 +61,7 @@ public class FormConfigProcessor {
 	 * @param dataset
 	 * @param requestedFormType Optional form type to filter the overview to that specific type.
 	 **/
-	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull UserLike user, Dataset dataset, @NonNull Set<String> requestedFormType) {
+	public Stream<FormConfigOverviewRepresentation> getConfigsByFormType(@NonNull Subject user, Dataset dataset, @NonNull Set<String> requestedFormType) {
 
 		if (requestedFormType.isEmpty()) {
 			// If no specific form type is provided, show all types the user is permitted to create.
@@ -94,7 +94,7 @@ public class FormConfigProcessor {
 	 * Returns the full configuration of a configuration (meta data + configured values).
 	 * It also tried to convert all {@link NamespacedId}s into the given dataset, so that the frontend can resolve them.
 	 */
-	public FormConfigFullRepresentation getConfig(UserLike user, FormConfig form) {
+	public FormConfigFullRepresentation getConfig(Subject user, FormConfig form) {
 
 		user.authorize(form,Ability.READ);
 		return form.fullRepresentation(storage, user);
@@ -106,7 +106,7 @@ public class FormConfigProcessor {
 	 * translatable to those.
 	 * @return
 	 */
-	public FormConfig addConfig(UserLike user, Dataset targetDataset, FormConfigAPI config) {
+	public FormConfig addConfig(Subject user, Dataset targetDataset, FormConfigAPI config) {
 
 		//TODO clear this up
 		final Namespace namespace = datasetRegistry.get(targetDataset.getId());
@@ -129,7 +129,7 @@ public class FormConfigProcessor {
 	 * This method does not check permissions.
 	 * @return
 	 */
-	public FormConfig addConfigAndTranslations(UserLike user, Dataset targetDataset, FormConfigAPI config) {
+	public FormConfig addConfigAndTranslations(Subject user, Dataset targetDataset, FormConfigAPI config) {
 		FormConfig internalConfig = FormConfigAPI.intern(config, storage.getUser(user.getId()), targetDataset);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
@@ -151,7 +151,7 @@ public class FormConfigProcessor {
 	/**
 	 * Applies a patch to a configuration that allows to change its label or tags or even share it.
 	 */
-	public FormConfigFullRepresentation patchConfig(UserLike user, FormConfig config, FormConfigPatch patch) {
+	public FormConfigFullRepresentation patchConfig(Subject user, FormConfig config, FormConfigPatch patch) {
 
 		patch.applyTo(config, storage, user);
 		
@@ -163,8 +163,8 @@ public class FormConfigProcessor {
 	/**
 	 * Deletes a configuration from the storage and all permissions, that have this configuration as target.
 	 */
-	public void deleteConfig(UserLike userLike, FormConfig config) {
-		User user = storage.getUser(userLike.getId());
+	public void deleteConfig(Subject subject, FormConfig config) {
+		User user = storage.getUser(subject.getId());
 		user.authorize( config, Ability.DELETE);
 		storage.removeFormConfig(config.getId());
 		// Delete corresponding permissions (Maybe better to put it into a slow job)

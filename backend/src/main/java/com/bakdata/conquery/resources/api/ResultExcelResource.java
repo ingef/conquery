@@ -19,7 +19,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -40,7 +40,7 @@ public class ResultExcelResource {
 	@Path("{" + QUERY + "}.xlsx")
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response get(
-		@Auth UserLike user,
+		@Auth Subject user,
 		@PathParam(DATASET) DatasetId datasetId,
 		@PathParam(QUERY) ManagedExecution<?> execution,
 		@QueryParam("pretty") Optional<Boolean> pretty) {

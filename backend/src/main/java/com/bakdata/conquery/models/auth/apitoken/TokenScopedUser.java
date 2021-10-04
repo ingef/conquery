@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.auth.apitoken;
 
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -19,7 +19,7 @@ import java.util.Set;
 
 @RequiredArgsConstructor
 @Getter
-public class TokenScopedUser implements UserLike {
+public class TokenScopedUser implements Subject {
 
 	private final User delegate;
 	private final ApiTokenData tokenContext;

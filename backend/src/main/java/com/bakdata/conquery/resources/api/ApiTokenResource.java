@@ -4,7 +4,7 @@ import com.bakdata.conquery.apiv1.auth.ApiTokenDataRepresentation;
 import com.bakdata.conquery.models.auth.apitoken.ApiToken;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import io.dropwizard.auth.Auth;
 
 import javax.inject.Inject;
@@ -27,7 +27,7 @@ public class ApiTokenResource {
 
 
 	@POST
-	public ApiToken createToken(@Auth UserLike user, @Valid ApiTokenDataRepresentation.Request tokenData){
+	public ApiToken createToken(@Auth Subject user, @Valid ApiTokenDataRepresentation.Request tokenData){
 
 		checkRealUser(user);
 
@@ -35,7 +35,7 @@ public class ApiTokenResource {
 	}
 
 	@GET
-	public List<ApiTokenDataRepresentation.Response> listUserTokens(@Auth UserLike user) {
+	public List<ApiTokenDataRepresentation.Response> listUserTokens(@Auth Subject user) {
 
 		checkRealUser(user);
 
@@ -44,7 +44,7 @@ public class ApiTokenResource {
 
 	@DELETE
 	@Path("{" + TOKEN + "}")
-	public Response deleteToken(@Auth UserLike user, @PathParam(TOKEN) UUID id) {
+	public Response deleteToken(@Auth Subject user, @PathParam(TOKEN) UUID id) {
 
 		checkRealUser(user);
 
@@ -53,7 +53,7 @@ public class ApiTokenResource {
 		return Response.ok().build();
 	}
 
-	private static void checkRealUser(UserLike user) {
+	private static void checkRealUser(Subject user) {
 		if (!(user instanceof User)){
 			throw new ForbiddenException("Only real users can request API-tokens");
 		}

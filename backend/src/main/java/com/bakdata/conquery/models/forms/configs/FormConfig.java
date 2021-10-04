@@ -20,7 +20,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
@@ -93,7 +93,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * Provides an overview (meta data) of this form configuration without the
 	 * actual form field values.
 	 */
-	public FormConfigOverviewRepresentation overview(UserLike user) {
+	public FormConfigOverviewRepresentation overview(Subject user) {
 		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
 
 		return FormConfigOverviewRepresentation.builder()
@@ -112,7 +112,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	/**
 	 * Return the full representation of the configuration with the configured form fields and meta data.
 	 */
-	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, UserLike requestingUser){
+	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, Subject requestingUser){
 		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
 
 		/* Calculate which groups can see this query.

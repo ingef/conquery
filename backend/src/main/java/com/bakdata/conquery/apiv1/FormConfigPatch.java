@@ -3,7 +3,7 @@ package com.bakdata.conquery.apiv1;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.util.QueryUtils;
@@ -23,12 +23,12 @@ import lombok.experimental.SuperBuilder;
 public class FormConfigPatch extends MetaDataPatch {
 	private JsonNode values;
 	
-	public void applyTo(FormConfig instance, MetaStorage storage, UserLike user){
+	public void applyTo(FormConfig instance, MetaStorage storage, Subject user){
 		chain(QueryUtils.getNoOpEntryPoint(), storage, user, instance)
 			.accept(this);		
 	}
 	
-	protected Consumer<FormConfigPatch> chain(Consumer<FormConfigPatch> patchConsumerChain, MetaStorage storage, UserLike user, FormConfig instance) {
+	protected Consumer<FormConfigPatch> chain(Consumer<FormConfigPatch> patchConsumerChain, MetaStorage storage, Subject user, FormConfig instance) {
 		patchConsumerChain = super.buildChain(patchConsumerChain, storage, user, instance);
 
 		if(getValues() != null && user.isPermitted(instance,Ability.MODIFY)) {

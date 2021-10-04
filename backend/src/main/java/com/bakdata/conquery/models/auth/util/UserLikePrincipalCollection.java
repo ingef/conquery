@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.auth.util;
 
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -10,28 +10,28 @@ import org.apache.shiro.subject.PrincipalCollection;
 import java.util.*;
 
 /**
- * Principal collection that carries a ready to use {@link UserLike} object.
+ * Principal collection that carries a ready to use {@link Subject} object.
  */
 @EqualsAndHashCode
 public class UserLikePrincipalCollection implements PrincipalCollection {
 
 	private static final long serialVersionUID = -1801050265305362978L;
 
-	private final UserLike principal;
+	private final Subject principal;
 	private final ConqueryAuthenticationRealm realm;
 
-	public UserLikePrincipalCollection(@NonNull UserLike userLike, ConqueryAuthenticationRealm realm) {
-		this.principal = userLike;
+	public UserLikePrincipalCollection(@NonNull Subject subject, ConqueryAuthenticationRealm realm) {
+		this.principal = subject;
 		this.realm = realm;
 	}
 
 	@Override @JsonIgnore
-	public Iterator<UserLike> iterator() {
+	public Iterator<Subject> iterator() {
 		return Collections.singleton(principal).iterator();
 	}
 
 	@Override @JsonIgnore
-	public UserLike getPrimaryPrincipal() {
+	public Subject getPrimaryPrincipal() {
 		return principal;
 	}
 
@@ -52,17 +52,17 @@ public class UserLikePrincipalCollection implements PrincipalCollection {
 	}
 
 	@Override
-	public List<UserLike> asList() {
+	public List<Subject> asList() {
 		return  List.of(principal);
 	}
 
 	@Override
-	public Set<UserLike> asSet() {
+	public Set<Subject> asSet() {
 		return Set.of(principal);
 	}
 
 	@Override
-	public Collection<UserLike> fromRealm(String realmName) {
+	public Collection<Subject> fromRealm(String realmName) {
 		if(realm.getName().equals(realmName)){
 			return List.of(principal);
 		}

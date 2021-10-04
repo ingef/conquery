@@ -20,7 +20,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -53,7 +53,7 @@ public class ResultCsvResource {
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCsv(
-			@Auth UserLike user,
+			@Auth Subject user,
 			@PathParam(DATASET) Dataset datasetId,
 			@PathParam(QUERY) ManagedExecution<?> execution,
 			@HeaderParam("user-agent") String userAgent,

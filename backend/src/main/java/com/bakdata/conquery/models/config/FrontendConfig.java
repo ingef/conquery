@@ -17,7 +17,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer;
@@ -175,7 +175,7 @@ public class FrontendConfig {
 		/**
 		 * Try to create a {@link FullIdPrinter} for user if they are allowed. If not allowed to read ids, they will receive a pseudomized result instead.
 		 */
-		public IdPrinter getIdPrinter(UserLike owner, ManagedExecution<?> execution, Namespace namespace) {
+		public IdPrinter getIdPrinter(Subject owner, ManagedExecution<?> execution, Namespace namespace) {
 			final int size = (int) ids.stream().filter(ColumnConfig::isPrint).count();
 
 			final int pos = IntStream.range(0, getIds().size())

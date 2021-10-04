@@ -22,7 +22,7 @@ import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.XodusConfig;
@@ -214,7 +214,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		return token;
 	}
 
-	public List<ApiTokenDataRepresentation.Response> listUserToken(UserLike user) {
+	public List<ApiTokenDataRepresentation.Response> listUserToken(Subject user) {
 		ArrayList<ApiTokenDataRepresentation.Response> summary = new ArrayList<>();
 
 		final Collection<ApiTokenData> allToken = tokenDataStore.getAll();
@@ -242,7 +242,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		return summary;
 	}
 
-	public void deleteToken(@NotNull UserLike user, @NonNull UUID tokenId) {
+	public void deleteToken(@NotNull Subject user, @NonNull UUID tokenId) {
 		AtomicReference<ApiTokenHash> targetHash = new AtomicReference<>();
 
 		// Find the corresponding token data and extract its hash

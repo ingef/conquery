@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.util.UserLikePrincipalCollection;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.EqualsAndHashCode;
@@ -31,7 +31,7 @@ public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 	 */
 	private final boolean displayLogout; 
 
-	public ConqueryAuthenticationInfo(UserLike user, Object credentials, ConqueryAuthenticationRealm realm, boolean displayLogout) {
+	public ConqueryAuthenticationInfo(Subject user, Object credentials, ConqueryAuthenticationRealm realm, boolean displayLogout) {
 		this.credentials = credentials;
 		this.displayLogout = displayLogout;
 		principals = new UserLikePrincipalCollection(user, realm);

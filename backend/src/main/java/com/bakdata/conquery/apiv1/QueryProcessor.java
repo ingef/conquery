@@ -32,7 +32,7 @@ import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.UserLike;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -69,7 +69,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, UserLike user) {
+	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject user) {
 
 		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), user.getId());
 
@@ -175,13 +175,13 @@ public class QueryProcessor {
 	}
 
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, UserLike user, boolean allProviders) {
+	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject user, boolean allProviders) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
 		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), user, allQueries, allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, UserLike user, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
+	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject user, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
 
 		return allQueries.stream()
@@ -264,7 +264,7 @@ public class QueryProcessor {
 	/**
 	 * Cancel a running query: Sending cancellation to shards, which will cause them to stop executing them, results are not sent back, and incoming results will be discarded.
 	 */
-	public void cancel(UserLike user, Dataset dataset, ManagedExecution<?> query) {
+	public void cancel(Subject user, Dataset dataset, ManagedExecution<?> query) {
 
 		// Does not make sense to cancel a query that isn't running.
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
@@ -280,7 +280,7 @@ public class QueryProcessor {
 		namespace.sendToAll(new CancelQuery(query.getId()));
 	}
 
-	public void patchQuery(UserLike user, ManagedExecution<?> execution, MetaDataPatch patch) {
+	public void patchQuery(Subject user, ManagedExecution<?> execution, MetaDataPatch patch) {
 
 		log.info("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 
@@ -303,7 +303,7 @@ public class QueryProcessor {
 		}
 	}
 
-	public void reexecute(UserLike user, ManagedExecution<?> query) {
+	public void reexecute(Subject user, ManagedExecution<?> query) {
 		log.info("User[{}] reexecuted Query[{}]", user, query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
@@ -314,7 +314,7 @@ public class QueryProcessor {
 	}
 
 
-	public void deleteQuery(UserLike user, ManagedExecution<?> execution) {
+	public void deleteQuery(Subject user, ManagedExecution<?> execution) {
 		log.info("User[{}] deleted Query[{}]", user.getId(), execution.getId());
 
 		datasetRegistry.get(execution.getDataset().getId())
@@ -324,7 +324,7 @@ public class QueryProcessor {
 		storage.removeExecution(execution.getId());
 	}
 
-	public FullExecutionStatus getQueryFullStatus(ManagedExecution<?> query, UserLike user, UriBuilder url, Boolean allProviders) {
+	public FullExecutionStatus getQueryFullStatus(ManagedExecution<?> query, Subject user, UriBuilder url, Boolean allProviders) {
 
 		query.initExecutable(datasetRegistry, config);
 
@@ -340,7 +340,7 @@ public class QueryProcessor {
 	/**
 	 * Try to resolve the external upload, if successful, create query for the user and return id and statistics for that.
 	 */
-	public ExternalUploadResult uploadEntities(UserLike user, Dataset dataset, ExternalUpload upload) {
+	public ExternalUploadResult uploadEntities(Subject user, Dataset dataset, ExternalUpload upload) {
 
 		final CQExternal.ResolveStatistic statistic =
 				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),

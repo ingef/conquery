@@ -18,7 +18,7 @@ import java.util.Set;
  * This interface allows realms to present a user different (usually reduced) set of permissions/abilities.
  * 
  **/
-public interface UserLike extends Principal {
+public interface Subject extends Principal {
 
 	UserId getId();
 

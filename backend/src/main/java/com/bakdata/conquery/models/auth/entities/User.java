@@ -31,7 +31,7 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.subject.PrincipalCollection;
 
 @Slf4j
-public class User extends PermissionOwner<UserId> implements Principal, RoleOwner, UserLike {
+public class User extends PermissionOwner<UserId> implements Principal, RoleOwner, Subject {
 
 	@JsonProperty
 	private final Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
