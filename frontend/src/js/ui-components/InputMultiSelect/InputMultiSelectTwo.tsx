@@ -178,7 +178,17 @@ const InputMultiSelectTwo = ({
   });
 
   const filteredOptions = useMemo(() => {
-    return options.filter(
+    const creatableOption =
+      creatable && inputValue.length > 0
+        ? [
+            {
+              label: `${t("common.create")}: "${inputValue}"`,
+              value: inputValue,
+            },
+          ]
+        : [];
+
+    const regularOptions = options.filter(
       (option) =>
         selectedItems.indexOf(option) < 0 &&
         (option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
@@ -186,7 +196,9 @@ const InputMultiSelectTwo = ({
             .toLowerCase()
             .includes(inputValue.toLowerCase())),
     );
-  }, [options, selectedItems, inputValue]);
+
+    return [...creatableOption, ...regularOptions];
+  }, [options, selectedItems, inputValue, creatable, t]);
 
   const {
     isOpen,
@@ -198,11 +210,16 @@ const InputMultiSelectTwo = ({
     getComboboxProps,
     getItemProps,
     highlightedIndex,
+    setHighlightedIndex,
     reset: resetComboboxState,
   } = useCombobox({
     inputValue,
     items: filteredOptions,
     stateReducer: (state, { type, changes }) => {
+      // This modifies the action payload itself
+      // in that way
+      // - the default behavior may be adjusted
+      // - including the `onStateChange` reactions that diverge from default behavior (see below)
       switch (type) {
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.ItemClick:
@@ -211,12 +228,13 @@ const InputMultiSelectTwo = ({
               ? state.highlightedIndex - 1
               : state.highlightedIndex;
 
-          const selectedItem =
-            creatable && state.highlightedIndex === 0
-              ? { value: inputValue, label: inputValue }
-              : creatable
-              ? filteredOptions[state.highlightedIndex - 1]
-              : changes.selectedItem;
+          const hasChosenCreatableItem =
+            creatable && state.highlightedIndex === 0 && inputValue.length > 0;
+
+          // The item that will be "chosen"
+          const selectedItem = hasChosenCreatableItem
+            ? { value: inputValue, label: inputValue }
+            : changes.selectedItem;
 
           return {
             ...changes,
@@ -229,9 +247,12 @@ const InputMultiSelectTwo = ({
       }
     },
     onStateChange: (action) => {
+      // This only modifies the behavior of some of the actions, after the state has been changed
       switch (action.type) {
         case useCombobox.stateChangeTypes.InputChange:
-          setInputValue(action.inputValue ? action.inputValue : "");
+          if (action.highlightedIndex !== 0) {
+            setHighlightedIndex(0);
+          }
           break;
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur:
@@ -299,7 +320,12 @@ const InputMultiSelectTwo = ({
               }
               toggleMenu();
             }}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              if (inputProps.onChange) {
+                inputProps.onChange(e);
+              }
+              setInputValue(e.target.value);
+            }}
           />
         </ItemsInputContainer>
         {(inputValue.length > 0 || selectedItems.length > 0) && (
@@ -315,7 +341,7 @@ const InputMultiSelectTwo = ({
         <VerticalSeparator />
         <DropdownToggleButton icon="chevron-down" {...getToggleButtonProps()} />
       </Control>
-      {isOpen && (
+      {isOpen ? (
         <Menu
           {...menuProps}
           ref={(instance) => {
@@ -330,28 +356,12 @@ const InputMultiSelectTwo = ({
           />
           <List>
             {!creatable && filteredOptions.length === 0 && <EmptyPlaceholder />}
-            {creatable && inputValue.length > 0 && (
-              <ListOption
-                active={highlightedIndex === 0}
-                {...getItemProps({
-                  index: 0,
-                  item: { value: inputValue, label: inputValue },
-                })}
-              >
-                {t("common.create") + `: "${inputValue}"`}
-              </ListOption>
-            )}
             {filteredOptions.map((option, index) => {
-              const correctedIndex = creatable ? index + 1 : index;
-
               return (
                 <ListOption
                   key={`${option.value}`}
-                  active={highlightedIndex === correctedIndex}
-                  {...getItemProps({
-                    index: correctedIndex,
-                    item: filteredOptions[index],
-                  })}
+                  active={highlightedIndex === index}
+                  {...getItemProps({ index, item: filteredOptions[index] })}
                 >
                   {option.label}
                 </ListOption>
@@ -359,6 +369,8 @@ const InputMultiSelectTwo = ({
             })}
           </List>
         </Menu>
+      ) : (
+        <span ref={menuPropsRef} /> // To avoid a warning / error by downshift that ref is not applied
       )}
     </SelectContainer>
   );
