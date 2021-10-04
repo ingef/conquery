@@ -37,7 +37,7 @@ interface PropsT {
   input: MultiSelectInputProps;
 }
 
-const MultiSelect: FC<PropsT> = ({
+const FilterListMultiSelect: FC<PropsT> = ({
   context,
   input,
   label,
@@ -157,4 +157,4 @@ const MultiSelect: FC<PropsT> = ({
   );
 };
 
-export default MultiSelect;
+export default FilterListMultiSelect;

@@ -13,7 +13,7 @@ import InputPlain from "../ui-components/InputPlain";
 import InputRange, { ModeT } from "../ui-components/InputRange";
 import InputSelect from "../ui-components/InputSelect";
 
-import MultiSelectWithFileSupport from "./MultiSelect";
+import FilterListMultiSelect from "./FilterListMultiSelect";
 
 export interface FiltersContextT {
   datasetId: DatasetIdT;
@@ -67,7 +67,7 @@ const TableFilters = (props: PropsT) => {
               );
             case "MULTI_SELECT":
               return (
-                <MultiSelectWithFileSupport
+                <FilterListMultiSelect
                   context={{ ...props.context, filterId: filter.id }}
                   indexPrefix={filterIdx + 1}
                   input={{
@@ -84,7 +84,7 @@ const TableFilters = (props: PropsT) => {
               );
             case "BIG_MULTI_SELECT":
               return (
-                <MultiSelectWithFileSupport
+                <FilterListMultiSelect
                   indexPrefix={filterIdx + 1}
                   context={{ ...props.context, filterId: filter.id }}
                   input={{
