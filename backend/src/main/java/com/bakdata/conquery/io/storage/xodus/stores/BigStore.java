@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 import javax.validation.Validator;
 import javax.validation.constraints.NotEmpty;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.mina.ChunkingOutputStream;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
@@ -240,8 +239,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	@Override
-	public void removeStore() {
-		metaStore.removeStore();
-		dataStore.removeStore();
+	public void deleteStore() {
+		metaStore.deleteStore();
+		dataStore.deleteStore();
 	}
 }

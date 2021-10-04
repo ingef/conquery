@@ -398,7 +398,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void removeStore() {
+	public void deleteStore() {
 		store.removeStore();
 	}
 
