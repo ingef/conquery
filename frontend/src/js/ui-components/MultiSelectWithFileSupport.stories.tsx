@@ -1,10 +1,10 @@
 import { ComponentMeta, Story } from "@storybook/react";
-import { SelectOptionT } from "js/api/types";
 import React, { ComponentProps, useState } from "react";
 
-import MultiSelectWithFileSupport from "../js/ui-components/MultiSelectWithFileSupport";
+import wordslist from "../../fixtures/words.json";
+import type { SelectOptionT } from "../api/types";
 
-import wordslist from "./fixtures/words.json";
+import MultiSelectWithFileSupport from "./MultiSelectWithFileSupport";
 
 export default {
   title: "FormComponents/MultiSelectWithFileSupport",

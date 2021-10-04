@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
-import TransparentButton from "js/button/TransparentButton";
 import { useTranslation } from "react-i18next";
+
+import TransparentButton from "../../button/TransparentButton";
 
 const Row = styled("div")`
   display: flex;
