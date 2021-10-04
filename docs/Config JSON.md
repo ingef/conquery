@@ -47,7 +47,7 @@ An `AuthenticationConfig` is used to define how specific realms for authenticati
 Different types of AuthenticationRealmFactory can be used by setting `type` to one of the following values:
 
 
-### API_TOKEN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/ApiTokenRealmFactory.java#L25)</sup></sub></sup>
+### API_TOKEN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/ApiTokenRealmFactory.java#L27)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
