@@ -323,7 +323,7 @@
     "dateSet": "Datumswerte",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
-    "extra" : "Zusatzwert",
+    "extra" : "Zusatzspalte",
     "ignore": "Ignorieren",
     "partialSuccess": "Hochladen teilweise erfolgreich.",
     "resolved": "1 Zeile aufgelöst.",
