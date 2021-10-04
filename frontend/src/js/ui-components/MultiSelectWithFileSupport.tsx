@@ -8,14 +8,12 @@ import InputMultiSelect, { InputMultiSelectProps } from "./InputMultiSelect";
 
 interface PropsT extends InputMultiSelectProps {
   onLoad?: (prefix: string) => void;
-  startLoadingThreshold?: number;
   onResolve: (rows: string[]) => void;
 }
 
 const MultiSelectWithFileSupport: FC<PropsT> = ({
   input,
   onLoad,
-  startLoadingThreshold,
   onResolve,
   ...props
 }) => {
@@ -52,12 +50,7 @@ const MultiSelectWithFileSupport: FC<PropsT> = ({
 
   // Can be both, an auto-completable (async) multi select or a regular one
   return onLoad ? (
-    <AsyncInputMultiSelect
-      {...commonProps}
-      {...props}
-      onLoad={onLoad}
-      startLoadingThreshold={startLoadingThreshold}
-    />
+    <AsyncInputMultiSelect {...commonProps} {...props} onLoad={onLoad} />
   ) : (
     <InputMultiSelect {...commonProps} {...props} />
   );

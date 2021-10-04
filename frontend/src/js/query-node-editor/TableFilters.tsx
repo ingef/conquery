@@ -98,7 +98,6 @@ const TableFilters = (props: PropsT) => {
                   disabled={!!props.excludeTable}
                   allowDropFile={!!filter.allowDropFile}
                   isLoading={filter.isLoading}
-                  startLoadingThreshold={filter.threshold || 1}
                   onLoad={(prefix: string) =>
                     props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)
                   }

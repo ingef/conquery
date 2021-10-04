@@ -1,5 +1,3 @@
-import React from "react";
-
 import InputMultiSelect, { InputMultiSelectProps } from "./InputMultiSelect";
 
 interface PropsType extends InputMultiSelectProps {
@@ -8,7 +6,7 @@ interface PropsType extends InputMultiSelectProps {
 }
 
 const AsyncInputMultiSelect = ({
-  startLoadingThreshold = 3,
+  startLoadingThreshold = 2,
   onLoad,
   ...props
 }: PropsType) => (

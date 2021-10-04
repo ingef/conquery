@@ -32,7 +32,6 @@ interface PropsT {
 
   isLoading?: boolean;
   onLoad?: (prefix: string) => void;
-  startLoadingThreshold: number;
 
   input: MultiSelectInputProps;
 }
@@ -46,7 +45,6 @@ const FilterListMultiSelect: FC<PropsT> = ({
   disabled,
   allowDropFile,
 
-  startLoadingThreshold,
   onLoad,
   isLoading,
 }) => {
@@ -146,7 +144,6 @@ const FilterListMultiSelect: FC<PropsT> = ({
         label={label}
         options={options}
         isLoading={isLoading || loading}
-        startLoadingThreshold={startLoadingThreshold}
         disabled={disabled}
         indexPrefix={indexPrefix}
         onLoad={onLoad}
