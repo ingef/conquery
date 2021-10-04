@@ -7,11 +7,11 @@ import {
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
-import Dropzone from "../../form-components/Dropzone";
-import Label from "../../form-components/Label";
-import Optional from "../../form-components/Optional";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import InfoTooltip from "../../tooltip/InfoTooltip";
+import Dropzone from "../../ui-components/Dropzone";
+import Label from "../../ui-components/Label";
+import Optional from "../../ui-components/Optional";
 
 import FormQueryResult from "./FormQueryResult";
 

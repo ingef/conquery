@@ -72,8 +72,8 @@ const EditableTagsForm: FC<PropsT> = ({
         isMulti
         isClearable
         autoFocus={true}
-        placeholder={t("reactSelect.tagPlaceholder")}
-        noOptionsMessage={() => t("reactSelect.noResults")}
+        placeholder={t("inputMultiSelect.tagPlaceholder")}
+        noOptionsMessage={() => t("inputSelect.empty")}
         formatCreateLabel={(inputValue: string) =>
           t("common.create") + `: "${inputValue}"`
         }

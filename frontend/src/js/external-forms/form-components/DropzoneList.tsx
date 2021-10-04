@@ -3,16 +3,16 @@ import React, { ReactNode } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
+import InfoTooltip from "../../tooltip/InfoTooltip";
 import Dropzone, {
   ChildArgs,
   PossibleDroppableObject,
-} from "../../form-components/Dropzone";
+} from "../../ui-components/Dropzone";
 import DropzoneWithFileInput, {
   DragItemFile,
-} from "../../form-components/DropzoneWithFileInput";
-import Label from "../../form-components/Label";
-import Optional from "../../form-components/Optional";
-import InfoTooltip from "../../tooltip/InfoTooltip";
+} from "../../ui-components/DropzoneWithFileInput";
+import Label from "../../ui-components/Label";
+import Optional from "../../ui-components/Optional";
 
 const ListItem = styled("div")`
   position: relative;

@@ -16,16 +16,16 @@ const Text = styled("p")`
 `;
 
 interface Props {
-  value: unknown[];
+  count: number;
   onClear: () => void;
 }
 
-const TooManyValues: FC<Props> = ({ value, onClear }) => {
+const TooManyValues: FC<Props> = ({ count, onClear }) => {
   const { t } = useTranslation();
 
   return (
     <Root>
-      <Text>{t("queryNodeEditor.tooManyValues", { count: value.length })}</Text>
+      <Text>{t("queryNodeEditor.tooManyValues", { count })}</Text>
       <IconButton
         icon="times"
         title={t("common.clearValue")}

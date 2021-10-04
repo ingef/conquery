@@ -19,13 +19,13 @@ import {
   getConceptsByIdsWithTablesAndSelects,
   hasConceptChildren,
 } from "../../concept-trees/globalTreeStoreHelper";
-import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
-import ToggleButton from "../../form-components/ToggleButton";
 import { nodeHasActiveFilters } from "../../model/node";
 import { selectsWithDefaults } from "../../model/select";
 import { resetAllFiltersInTables } from "../../model/table";
 import { tablesWithDefaults } from "../../model/table";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
+import ToggleButton from "../../ui-components/ToggleButton";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import {
   initUploadConceptListModal,
