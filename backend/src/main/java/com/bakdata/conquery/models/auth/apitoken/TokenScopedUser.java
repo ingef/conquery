@@ -62,7 +62,8 @@ public class TokenScopedUser implements Subject {
 
 	@Override
 	public boolean isPermittedAll(Collection<? extends Authorized> authorized, Ability ability) {
-		if(!authorized.stream().map(o -> o.createPermission(EnumSet.of(ability))).allMatch(tokenContext::isCoveredByScopes)) {
+		final EnumSet<Ability> abilitySet = EnumSet.of(ability);
+		if(!authorized.stream().map(o -> o.createPermission(abilitySet)).allMatch(tokenContext::isCoveredByScopes)) {
 			return false;
 		}
 		return delegate.isPermittedAll(authorized,ability);
@@ -70,11 +71,13 @@ public class TokenScopedUser implements Subject {
 
 	@Override
 	public boolean[] isPermitted(List<? extends Authorized> authorized, Ability ability) {
+		final EnumSet<Ability> abilitySet = EnumSet.of(ability);
+
 		boolean[] ret = new boolean[authorized.size()];
 		for (int i = 0; i < ret.length; i++) {
 			Authorized object = authorized.get(i);
-			ret[i] = tokenContext.isCoveredByScopes(object.createPermission(EnumSet.of(ability))) &&
-					delegate.isPermitted(object, ability);
+			ret[i] = tokenContext.isCoveredByScopes(object.createPermission(abilitySet)) &&
+					 delegate.isPermitted(object, ability);
 		}
 		return ret;
 	}
