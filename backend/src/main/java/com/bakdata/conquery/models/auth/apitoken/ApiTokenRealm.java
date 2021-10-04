@@ -117,7 +117,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 			Pair<ApiTokenData, ApiTokenData.MetaData> apiToken = it.next();
 			// Find all token data belonging to a user
 			final ApiTokenData data = apiToken.getKey();
-			if (!user.getId().equals(data.getUserId())){
+			if (!user.isOwner(data)){
 				continue;
 			}
 
