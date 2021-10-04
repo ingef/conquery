@@ -2,10 +2,12 @@ package com.bakdata.conquery.models.config.auth;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.apitoken.ApiToken;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenCreator;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenRealm;
+import com.bakdata.conquery.models.auth.apitoken.TokenStorage;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.resources.api.ApiTokenResource;
@@ -34,7 +36,11 @@ public class ApiTokenRealmFactory implements AuthenticationRealmFactory {
 
 	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
-		final ApiTokenRealm apiTokenRealm = new ApiTokenRealm(managerNode.getStorage(), storeDir, apiTokenStoreConfig, managerNode.getEnvironment().getValidator(), managerNode.getEnvironment().getObjectMapper());
+
+		final TokenStorage tokenStorage = new TokenStorage(storeDir, apiTokenStoreConfig, managerNode.getValidator(), Jackson.BINARY_MAPPER.copy());
+		managerNode.getEnvironment().lifecycle().manage(tokenStorage);
+
+		final ApiTokenRealm apiTokenRealm = new ApiTokenRealm(managerNode.getStorage(), tokenStorage);
 
 		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(new ApiTokenExtractor());
 

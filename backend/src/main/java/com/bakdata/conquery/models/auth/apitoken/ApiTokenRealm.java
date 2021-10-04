@@ -1,46 +1,31 @@
 package com.bakdata.conquery.models.auth.apitoken;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
-import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.auth.ApiTokenDataRepresentation;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.io.storage.Store;
-import com.bakdata.conquery.io.storage.StoreMappings;
-import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
-import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
-import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.util.io.FileUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jetbrains.exodus.ExodusException;
-import jetbrains.exodus.env.Environment;
-import jetbrains.exodus.env.EnvironmentClosedException;
-import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.realm.AuthenticatingRealm;
-import org.apache.shiro.util.Destroyable;
 
 
 /**
@@ -49,29 +34,16 @@ import org.apache.shiro.util.Destroyable;
  *
  */
 @Slf4j
-public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, Destroyable {
+public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
 
-	private static final int ENVIRONMENT_CLOSING_RETRIES = 2;
-	private static final int ENVIRONMENT_CLOSING_TIMEOUT = 2; // seconds
-
-	private final Path storageDir;
-	private final XodusConfig storeConfig;
-	private final Validator validator;
-	private final ObjectMapper objectMapper;
-	private final ArrayList<XodusStore> openStoresInEnv = new ArrayList<>();
 	private final MetaStorage storage;
+	private final TokenStorage tokenStorage;
+
 	private final ApiTokenCreator apiTokenCreator = new ApiTokenCreator();
 
-	private transient Environment tokenEnvironment;
-	private transient Store<ApiTokenHash, ApiTokenData> tokenDataStore;
-	private transient Store<UUID, ApiTokenData.MetaData> tokenMetaDataStore;
-
-	public ApiTokenRealm(MetaStorage storage, Path storageDir, XodusConfig storeConfig, Validator validator, ObjectMapper objectMapper) {
+	public ApiTokenRealm(MetaStorage storage, TokenStorage tokenStorage) {
 		this.storage = storage;
-		this.storageDir = storageDir;
-		this.storeConfig = storeConfig;
-		this.validator = validator;
-		this.objectMapper = objectMapper;
+		this.tokenStorage = tokenStorage;
 		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 		this.setAuthenticationTokenClass(ApiToken.class);
 	}
@@ -80,86 +52,8 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 	@Override
 	protected void onInit() {
 		super.onInit();
-		// Open/create the database/store
-		String storeName = "api-token";
-		File tokenStore = new File(storageDir.toFile(), storeName);
-		tokenEnvironment = Environments.newInstance(tokenStore, storeConfig.createConfig());
-
-		final XodusStore data = new XodusStore(
-				tokenEnvironment,
-				"DATA",
-				this::closeStoreHook,
-				this::removeStoreHook
-		);
-		tokenDataStore = StoreMappings.cached(new SerializingStore<>(
-				data,
-				validator,
-				objectMapper,
-				ApiTokenHash.class,
-				ApiTokenData.class,
-				true,
-				false,
-				null
-		));
-		openStoresInEnv.add(data);
-
-		final XodusStore meta = new XodusStore(
-				tokenEnvironment,
-				"META",
-				this::closeStoreHook,
-				this::removeStoreHook
-		);
-		tokenMetaDataStore = StoreMappings.cached(new SerializingStore<>(
-				meta,
-				validator,
-				objectMapper,
-				UUID.class,
-				ApiTokenData.MetaData.class,
-				true,
-				false,
-				null
-		));
-		openStoresInEnv.add(meta);
 	}
 
-
-	private void removeStoreHook(XodusStore store) {
-		openStoresInEnv.remove(store);
-
-		if (!openStoresInEnv.isEmpty()){
-			return;
-		}
-
-		final Environment environment = store.getEnvironment();
-		log.info("Removed last XodusStore in Environment. Removing Environment as well: {}", environment.getLocation());
-
-		final List<String> xodusStores= environment.computeInReadonlyTransaction(environment::getAllStoreNames);
-
-		if (!xodusStores.isEmpty()){
-			throw new IllegalStateException("Cannot delete environment, because it still contains these stores:" + xodusStores);
-		}
-
-		environment.close();
-
-		try {
-			FileUtil.deleteRecursive(Path.of(environment.getLocation()));
-		}
-		catch (IOException e) {
-			log.error("Cannot delete directory of removed Environment[{}]", environment.getLocation(), e);
-		}
-	}
-
-	private void closeStoreHook(XodusStore store) {
-		openStoresInEnv.remove(store);
-		final Environment environment = store.getEnvironment();
-		if (!openStoresInEnv.isEmpty()){
-			return;
-		}
-		if (!environment.isOpen()) {
-			return;
-		}
-		environment.close();
-	}
 
 	@Override
 	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
@@ -174,14 +68,14 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		apiToken.clear();
 
 
-		ApiTokenData tokenData = tokenDataStore.get(tokenHash);
+		ApiTokenData tokenData = tokenStorage.get(tokenHash);
 		if (tokenData == null) {
 			log.trace("Unknown token, cannot map token hash to token data. Aborting authentication");
 			throw new IncorrectCredentialsException();
 		}
 
 		final ApiTokenData.MetaData metaData = new ApiTokenData.MetaData(LocalDate.now());
-		tokenMetaDataStore.update(tokenData.getId(), metaData);
+		tokenStorage.updateMetaData(tokenData.getId(), metaData);
 
 		final UserId userId = tokenData.getUserId();
 		final User user = storage.getUser(userId);
@@ -192,6 +86,8 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 
 		return new ConqueryAuthenticationInfo(new TokenScopedUser(user, tokenData), token, this, false);
 	}
+
+
 
 	public ApiToken createApiToken(User user, ApiTokenDataRepresentation.Request tokenRequest) {
 
@@ -204,11 +100,11 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 				token = apiTokenCreator.createToken();
 				hash = ApiTokenCreator.hashToken(token);
 
-			} while(tokenDataStore.get(hash) != null);
+			} while(tokenStorage.get(hash) != null);
 
 			final ApiTokenData apiTokenData = toInternalRepresentation(tokenRequest, user, hash, storage);
 
-			tokenDataStore.add(hash, apiTokenData);
+			tokenStorage.add(hash, apiTokenData);
 		}
 
 		return token;
@@ -217,23 +113,24 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 	public List<ApiTokenDataRepresentation.Response> listUserToken(Subject user) {
 		ArrayList<ApiTokenDataRepresentation.Response> summary = new ArrayList<>();
 
-		final Collection<ApiTokenData> allToken = tokenDataStore.getAll();
-		for (ApiTokenData apiTokenData : allToken) {
+		for (Iterator<Pair<ApiTokenData, ApiTokenData.MetaData>> it = tokenStorage.getAll(); it.hasNext(); ) {
+			Pair<ApiTokenData, ApiTokenData.MetaData> apiToken = it.next();
 			// Find all token data belonging to a user
-			if (!user.getId().equals(apiTokenData.getUserId())){
+			final ApiTokenData data = apiToken.getKey();
+			if (!user.getId().equals(data.getUserId())){
 				continue;
 			}
 
 			// Fill in the response with the details
 			final ApiTokenDataRepresentation.Response response = new ApiTokenDataRepresentation.Response();
-			response.setId(apiTokenData.getId());
-			response.setCreationDate(apiTokenData.getCreationDate());
-			response.setName(apiTokenData.getName());
-			response.setExpirationDate(apiTokenData.getExpirationDate());
-			response.setScopes(apiTokenData.getScopes());
+			response.setId(data.getId());
+			response.setCreationDate(data.getCreationDate());
+			response.setName(data.getName());
+			response.setExpirationDate(data.getExpirationDate());
+			response.setScopes(data.getScopes());
 
 			// If the token was ever used it should have an meta data entry
-			ApiTokenData.MetaData meta = tokenMetaDataStore.get(apiTokenData.getId());
+			ApiTokenData.MetaData meta = apiToken.getValue();
 			if (meta != null) {
 				response.setLastUsed(meta.getLastUsed());
 			}
@@ -243,39 +140,23 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 	}
 
 	public void deleteToken(@NotNull Subject user, @NonNull UUID tokenId) {
-		AtomicReference<ApiTokenHash> targetHash = new AtomicReference<>();
 
-		// Find the corresponding token data and extract its hash
-		for (ApiTokenData apiTokenData : tokenDataStore.getAll()) {
-			if (tokenId.equals(apiTokenData.getId())) {
-				targetHash.set(apiTokenData.getTokenHash());
-				break;
-			}
-		}
+		Optional<ApiTokenData> tokenOpt = tokenStorage.getByUUID(tokenId);
 
-
-		final ApiTokenHash hash = targetHash.get();
-		if (hash == null) {
+		if (tokenOpt.isEmpty()) {
 			log.warn("No token with id {} was found", tokenId);
 			return;
 		}
 
-		synchronized (this) {
-			// This should never return null
-			ApiTokenData data = tokenDataStore.get(hash);
-			if (data == null) {
-				throw new IllegalStateException("Unable to retrieve token data for hash.");
-			}
 
-			// TODO Admin cannot delete other users token here
-			user.authorize(data, Ability.DELETE);
+		final ApiTokenData token = tokenOpt.get();
 
-			tokenDataStore.remove(hash);
-			tokenMetaDataStore.remove(tokenId);
-		}
+		// Only the Owner or a user with admin capabilities can delete a token
+		user.authorize(token, Ability.DELETE);
 
-		hash.clear();
+		tokenStorage.deleteToken(token);
 	}
+
 
 
 	private static ApiTokenData toInternalRepresentation(
@@ -294,32 +175,4 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 				storage
 		);
 	}
-
-	@Override
-	public void destroy() throws InterruptedException {
-		for(int retries = 0; retries < ENVIRONMENT_CLOSING_RETRIES; retries++) {
-			try {
-				log.info("Closing the password environment.");
-				tokenEnvironment.close();
-				return;
-			}
-			catch (EnvironmentClosedException e) {
-				log.warn("Password environment was already closed, which is odd but mayby the stop() lifecycle event fired twice");
-				return;
-			}
-			catch (ExodusException e) {
-				if (retries == 0) {
-					log.info("The environment is still working on some transactions. Retry");
-				}
-				log.info("Waiting for {} seconds to retry.", ENVIRONMENT_CLOSING_TIMEOUT);
-				Thread.sleep(ENVIRONMENT_CLOSING_TIMEOUT * 1000 /* milliseconds */);
-			}
-		}
-		// Close the environment with force
-		log.info("Closing the environment forcefully");
-		tokenEnvironment.getEnvironmentConfig().setEnvCloseForcedly(true);
-		tokenEnvironment.close();
-
-	}
-
 }
