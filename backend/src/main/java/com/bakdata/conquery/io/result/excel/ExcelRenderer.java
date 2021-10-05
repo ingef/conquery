@@ -101,6 +101,7 @@ public class ExcelRenderer {
 	private <E extends ManagedExecution<?> & SingleTableResult> void setMetaData(E exec) {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
+
 		final User owner = exec.getOwner();
 		coreProperties.setCreator(owner != null ? owner.getName() : config.getApplicationName());
 		coreProperties.setKeywords(String.join(" ", exec.getTags()));
