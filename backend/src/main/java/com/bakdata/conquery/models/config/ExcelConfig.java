@@ -55,7 +55,7 @@ public class ExcelConfig {
 	 * The name of this application to use in the xlsx meta data.
 	 */
 	@NotNull
-	private String applicationName = "";
+	private String applicationName = "Conquery";
 
 
 	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook, PrintSettings settings){
