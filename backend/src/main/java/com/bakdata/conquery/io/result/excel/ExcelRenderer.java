@@ -96,7 +96,7 @@ public class ExcelRenderer {
     }
 
 	/**
-	 * Include meta dato in the xlsx such as the title, owner/author, tag and the name of this instance.
+	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
 	 */
 	private <E extends ManagedExecution<?> & SingleTableResult> void setMetaData(E exec) {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
