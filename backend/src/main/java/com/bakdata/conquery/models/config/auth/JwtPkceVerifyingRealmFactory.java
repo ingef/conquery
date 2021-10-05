@@ -300,7 +300,6 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	/**
 	 * Checks if the incoming request is an authentication callback.
 	 */
-	@SneakyThrows
 	private Response checkAndRedeemAuthzCode(ContainerRequestContext request) {
 
 		// Extract the authorization code
@@ -331,7 +330,6 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	/**
 	 * Checks if the incoming request has a valid refresh token.
 	 */
-	@SneakyThrows({ParseException.class, IOException.class})
 	private Response checkAndRedeemRefreshToken(ContainerRequestContext request) {
 
 		// Extract the refresh token which was previously saved in a cookie
@@ -400,8 +398,8 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	 * Tries to redeem the {@link AuthorizationGrant} for an {@link com.nimbusds.oauth2.sdk.token.AccessToken} ( + {@link RefreshToken}).
 	 */
 	@Nullable
-	private AccessTokenResponse getTokenResponse(ContainerRequestContext request, AuthorizationGrant authzGrant)
-			throws ParseException, IOException {
+	@SneakyThrows({ParseException.class, IOException.class})
+	private AccessTokenResponse getTokenResponse(ContainerRequestContext request, AuthorizationGrant authzGrant) {
 
 		final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
 		if (idpConfigurationOpt.isEmpty()) {
