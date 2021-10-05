@@ -57,6 +57,12 @@ public class ExcelConfig {
 	@NotNull
 	private String applicationName = "Conquery";
 
+	/**
+	 * Defines the row after which the tracking for auto sizing columns stops and the final width is applied.
+	 */
+	@Min(1)
+	private int lastRowToAutosize = 30;
+
 
 	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook, PrintSettings settings){
 		ImmutableMap.Builder<String, CellStyle> styles = ImmutableMap.builder();
