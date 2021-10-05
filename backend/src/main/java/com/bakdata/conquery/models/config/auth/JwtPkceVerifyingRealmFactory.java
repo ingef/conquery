@@ -308,10 +308,14 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			return null;
 		}
 
+		// Build the original redirect uri (the request uri without the query added by the IDP)
+		final URI redirectedUri = request.getUriInfo().getRequestUriBuilder().replaceQuery("").build();
+		log.trace("Redirect URI: {}", redirectedUri);
+
 		// Prepare code for exchange with access token
 		final AuthorizationCodeGrant authzGrant = new AuthorizationCodeGrant(
 				new AuthorizationCode(code),
-				UriBuilder.fromUri(request.getUriInfo().getRequestUri()).replaceQuery("").build());
+				redirectedUri);
 
 		// Redeem code
 		AccessTokenResponse tokenResponse = getTokenResponse(request, authzGrant);
@@ -323,7 +327,8 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		final Cookie accessTokenCookie = prepareAccessTokenCookie(request, tokenResponse);
 		final NewCookie refreshTokenCookie = prepareRefreshTokenCookie(request, tokenResponse);
 
-		return prepareRedirectResponse(request, accessTokenCookie, refreshTokenCookie);
+		// Let the client call the same uri again, but this time with valid credentials
+		return prepareRedirectResponse(redirectedUri, accessTokenCookie, refreshTokenCookie);
 	}
 
 
@@ -349,15 +354,13 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		final Cookie accessTokenCookie = prepareAccessTokenCookie(request, tokenResponse);
 		final NewCookie refreshTokenCookie = prepareRefreshTokenCookie(request, tokenResponse);
 
-
-		return prepareRedirectResponse(request, accessTokenCookie, refreshTokenCookie);
+		return prepareRedirectResponse(request.getUriInfo().getRequestUriBuilder().replaceQuery("").build(), accessTokenCookie, refreshTokenCookie);
 	}
 
 	/**
 	 * Prepares a redirect response which also saves the access and refresh token on the client.
 	 */
-	private Response prepareRedirectResponse(ContainerRequestContext request, Cookie accessTokenCookie, NewCookie refreshTokenCookie) {
-		URI uri = request.getUriInfo().getRequestUriBuilder().replaceQuery("").build();
+	private Response prepareRedirectResponse(URI uri, Cookie accessTokenCookie, NewCookie refreshTokenCookie) {
 		return Response
 				.seeOther(uri)
 				.header(HttpHeaders.SET_COOKIE, accessTokenCookie)
@@ -370,7 +373,10 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		return authCookieCreator.apply(request, accessToken.getValue());
 	}
 
-	@SneakyThrows
+	/**
+	 *	Extracts a refresh token and converts it into a cookies with the life span of that refresh token.
+	 */
+	@SneakyThrows(java.text.ParseException.class)
 	private NewCookie prepareRefreshTokenCookie(ContainerRequestContext request, AccessTokenResponse tokenResponse) {
 		RefreshToken refreshToken = tokenResponse.getTokens().getRefreshToken();
 
@@ -401,6 +407,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	@SneakyThrows({ParseException.class, IOException.class})
 	private AccessTokenResponse getTokenResponse(ContainerRequestContext request, AuthorizationGrant authzGrant) {
 
+		// Retrieve the IDP configuration
 		final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
 		if (idpConfigurationOpt.isEmpty()) {
 			log.warn("Unable to start authentication, because idp configuration is not available.");
@@ -408,17 +415,17 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		}
 		JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
 
-		// Build the original redirect uri
-		final URI requestUri = UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build();
-		log.info("Request URI: {}", requestUri);
+		// Send the auth code/refresh token to the IDP to redeem them for a new access and refresh token
 		final TokenRequest tokenRequest = new TokenRequest(
 				UriBuilder.fromUri(idpConfiguration.getTokenEndpoint()).build(),
 				new ClientID(client),
 				authzGrant
 		);
 
+		// Get the response
 		TokenResponse response = TokenResponse.parse(tokenRequest.toHTTPRequest().send());
 
+		// Check if the response was valid
 		if (!response.indicatesSuccess()) {
 			HTTPResponse httpResponse = response.toHTTPResponse();
 			log.warn("Unable to retrieve access token from auth server: {}", httpResponse.getContent());
