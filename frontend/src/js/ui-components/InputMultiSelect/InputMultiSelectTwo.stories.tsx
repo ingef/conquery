@@ -1,7 +1,7 @@
 import { ComponentMeta, Story } from "@storybook/react";
 import React, { ComponentProps, useState } from "react";
 
-import wordslist from "../../../stories/fixtures/words.json";
+import wordslist from "../../../fixtures/words.json";
 import { SelectOptionT } from "../../api/types";
 
 import InputMultiSelectTwo from "./InputMultiSelectTwo";
