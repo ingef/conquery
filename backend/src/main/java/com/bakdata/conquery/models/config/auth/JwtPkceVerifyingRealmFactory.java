@@ -11,6 +11,7 @@ import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
@@ -41,13 +42,21 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
 import java.security.PublicKey;
-import java.time.Instant;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 /**
  * A realm that verifies oauth tokens using PKCE.
+ *
+ * Since the adminEnd-UI mainly works with direct links that do not support setting of the Authorization-header to transport an access token
+ * and it also does not support the oauth code flow, this realm proxies the flow.
+ * 1. The user/client is redirected to the IDP for authentication and redirected back to the adminEnd
+ * 2. The this realm then picks up the code the transported authorization code from the query and redeems it for an access token and refresh token.
+ * 3. Both are converted to cookies, which are saved on the client upon redirection to the page the user initially
+ * wanted to visit.
+ * 4. With the redirection the client sends back the cookies from which the adminEnd extracts the access token and verifies it.
+ * (5.) If the previous step failed. The refresh token is extracted and exchanged for a fresh access token and refresh token and continues with step 3.
  */
 @CPSType(id = "JWT_PKCE_REALM", base = AuthenticationRealmFactory.class)
 @NoArgsConstructor
@@ -141,8 +150,8 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 
 		// Add login schema for admin end
 		final RedirectingAuthFilter redirectingAuthFilter = manager.getAuthController().getRedirectingAuthFilter();
-		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForAuthzCode);
-		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkForRefreshToken);
+		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkAndRedeemAuthzCode);
+		redirectingAuthFilter.getAuthAttemptCheckers().add(this::checkAndRedeemRefreshToken);
 		redirectingAuthFilter.getLoginInitiators().add(this::initiateLogin);
 
 		return new JwtPkceVerifyingRealm(idpConfigurationSupplier, client, additionalVerifiers, alternativeIdClaims, tokenLeeway);
@@ -292,20 +301,21 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	 * Checks if the incoming request is an authentication callback.
 	 */
 	@SneakyThrows
-	private Response checkForAuthzCode(ContainerRequestContext request) {
+	private Response checkAndRedeemAuthzCode(ContainerRequestContext request) {
 
+		// Extract the authorization code
 		final String code = request.getUriInfo().getQueryParameters().getFirst("code");
 		if (code == null) {
 			return null;
 		}
 
-		final AuthorizationCodeGrant
-				authzGrant =
-				new AuthorizationCodeGrant(new AuthorizationCode(code), UriBuilder.fromUri(RequestHelper.getRequestURL(request))
-																				  .path(AdminServlet.ADMIN_UI)
-																				  .build());
+		// Prepare code for exchange with access token
+		final AuthorizationCodeGrant authzGrant = new AuthorizationCodeGrant(
+				new AuthorizationCode(code),
+				UriBuilder.fromUri(request.getUriInfo().getRequestUri()).replaceQuery("").build());
 
-		AccessTokenResponse tokenResponse = getAccessTokenResponse(request, authzGrant);
+		// Redeem code
+		AccessTokenResponse tokenResponse = getTokenResponse(request, authzGrant);
 		if (tokenResponse == null) {
 			return null;
 		}
@@ -314,7 +324,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		final Cookie accessTokenCookie = prepareAccessTokenCookie(request, tokenResponse);
 		final NewCookie refreshTokenCookie = prepareRefreshTokenCookie(request, tokenResponse);
 
-		return prepareResponse(request, accessTokenCookie, refreshTokenCookie);
+		return prepareRedirectResponse(request, accessTokenCookie, refreshTokenCookie);
 	}
 
 
@@ -322,27 +332,33 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	 * Checks if the incoming request has a valid refresh token.
 	 */
 	@SneakyThrows({ParseException.class, IOException.class})
-	private Response checkForRefreshToken(ContainerRequestContext request) {
+	private Response checkAndRedeemRefreshToken(ContainerRequestContext request) {
 
+		// Extract the refresh token which was previously saved in a cookie
 		final Cookie refreshToken = request.getCookies().get(REFRESH_TOKEN);
 
 		if (refreshToken == null) {
 			return null;
 		}
 
-		final AccessTokenResponse tokenResponse = getAccessTokenResponse(request, new RefreshTokenGrant(new RefreshToken(refreshToken.getValue())));
+		// Redeem refresh token for a new access token (+  new refresh token)
+		final AccessTokenResponse tokenResponse = getTokenResponse(request, new RefreshTokenGrant(new RefreshToken(refreshToken.getValue())));
 		if (tokenResponse == null) {
 			return null;
 		}
 
+		// Prepare separate cookies for access token an refresh token
 		final Cookie accessTokenCookie = prepareAccessTokenCookie(request, tokenResponse);
 		final NewCookie refreshTokenCookie = prepareRefreshTokenCookie(request, tokenResponse);
 
 
-		return prepareResponse(request, accessTokenCookie, refreshTokenCookie);
+		return prepareRedirectResponse(request, accessTokenCookie, refreshTokenCookie);
 	}
 
-	private Response prepareResponse(ContainerRequestContext request, Cookie accessTokenCookie, NewCookie refreshTokenCookie) {
+	/**
+	 * Prepares a redirect response which also saves the access and refresh token on the client.
+	 */
+	private Response prepareRedirectResponse(ContainerRequestContext request, Cookie accessTokenCookie, NewCookie refreshTokenCookie) {
 		URI uri = request.getUriInfo().getRequestUriBuilder().replaceQuery("").build();
 		return Response
 				.seeOther(uri)
@@ -356,16 +372,14 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		return authCookieCreator.apply(request, accessToken.getValue());
 	}
 
-	@org.jetbrains.annotations.NotNull
+	@SneakyThrows
 	private NewCookie prepareRefreshTokenCookie(ContainerRequestContext request, AccessTokenResponse tokenResponse) {
 		RefreshToken refreshToken = tokenResponse.getTokens().getRefreshToken();
-		final Long exp = (Long) refreshToken.toJSONObject().get("exp");
+
+		final Date exp = (Date) JWTParser.parse(refreshToken.getValue()).getJWTClaimsSet().getClaim("exp");
 		if (exp == null) {
 			throw new IllegalStateException("Refresh token did not include an expiration");
 		}
-
-		// Convert refresh token expiration to cookie expiration (seconds -> Date)
-		Date expirationDate = Date.from(Instant.ofEpochSecond(exp));
 
 
 		return new NewCookie(
@@ -376,7 +390,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 				0,
 				null,
 				900, //The Constructor requires us to set a maxAge even though it should be optional. 30 minutes should be okay
-				expirationDate,
+				exp,
 				request.getSecurityContext().isSecure(),
 				true
 		);
@@ -386,7 +400,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	 * Tries to redeem the {@link AuthorizationGrant} for an {@link com.nimbusds.oauth2.sdk.token.AccessToken} ( + {@link RefreshToken}).
 	 */
 	@Nullable
-	private AccessTokenResponse getAccessTokenResponse(ContainerRequestContext request, AuthorizationGrant authzGrant)
+	private AccessTokenResponse getTokenResponse(ContainerRequestContext request, AuthorizationGrant authzGrant)
 			throws ParseException, IOException {
 
 		final Optional<IdpConfiguration> idpConfigurationOpt = idpConfigurationSupplier.get();
