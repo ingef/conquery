@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.result.excel;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -12,6 +13,8 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
+import io.dropwizard.util.Strings;
+import org.apache.poi.ooxml.POIXMLProperties;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -70,9 +73,9 @@ public class ExcelRenderer {
             OutputStream outputStream) throws IOException {
         List<ResultInfo> info = exec.getResultInfo();
 
+		setMetaData(exec);
 
-
-        SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
+		SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
         try {
             sheet.setDefaultColumnWidth(config.getDefaultColumnWidth());
 
@@ -92,7 +95,20 @@ public class ExcelRenderer {
 
     }
 
-    /**
+	/**
+	 * Include meta dato in the xlsx such as the title, owner/author, tag and the name of this instance.
+	 */
+	private <E extends ManagedExecution<?> & SingleTableResult> void setMetaData(E exec) {
+		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
+		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
+		final User owner = exec.getOwner();
+		coreProperties.setCreator(owner != null ? owner.getName() : config.getApplicationName());
+		coreProperties.setKeywords(String.join(" ", exec.getTags()));
+		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();
+		extendedProperties.setApplication(config.getApplicationName());
+	}
+
+	/**
      * Do postprocessing on the result to improve the visuals:
      * - Set the area of the table environment
      * - Freeze the id columns

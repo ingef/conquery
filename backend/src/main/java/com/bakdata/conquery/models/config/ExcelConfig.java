@@ -51,6 +51,12 @@ public class ExcelConfig {
 	@Min(1)
 	private int defaultColumnWidth = 30;
 
+	/**
+	 * The name of this application to use in the xlsx meta data.
+	 */
+	@NotNull
+	private String applicationName = "";
+
 
 	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook, PrintSettings settings){
 		ImmutableMap.Builder<String, CellStyle> styles = ImmutableMap.builder();
