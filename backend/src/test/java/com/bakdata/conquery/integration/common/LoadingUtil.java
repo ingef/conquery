@@ -36,14 +36,12 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
-import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -172,20 +170,20 @@ public class LoadingUtil {
 		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
 	}
 
-	public static void updateCqppFile(StandaloneSupport support, File cqpp, ImportId importId, Response.Status.Family expectedResponseFamily, String expectedReason) {
+	public static void updateCqppFile(StandaloneSupport support, File cqpp, Response.Status.Family expectedResponseFamily, String expectedReason) {
 		assertThat(cqpp).exists();
 
-		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminTablesResource.class, "updateImport")
+		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "updateImport")
 											 .queryParam("file", cqpp)
 											 .buildFromMap(Map.of(
-													 ResourceConstants.DATASET, support.getDataset().getId(),
-													 ResourceConstants.TABLE, importId.getTable()
+													 ResourceConstants.DATASET, support.getDataset().getId()
 											 ));
 
 		final Response response = support.getClient()
 										 .target(addImport)
 										 .request(MediaType.APPLICATION_JSON)
 										 .put(Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE));
+
 		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
 		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
 	}

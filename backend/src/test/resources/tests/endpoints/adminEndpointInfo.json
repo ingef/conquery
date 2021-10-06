@@ -116,13 +116,13 @@
   },
   {
     "method": "PUT",
-    "path": "/datasets/{dataset}/tables/{table}/imports",
-    "clazz": "AdminTablesResource"
+    "path": "/datasets/{dataset}/imports",
+    "clazz": "AdminDatasetResource"
   },
   {
     "method": "PUT",
-    "path": "/datasets/{dataset}/tables/{table}/cqpp",
-    "clazz": "AdminTablesResource"
+    "path": "/datasets/{dataset}/cqpp",
+    "clazz": "AdminDatasetResource"
   },
   {
     "method": "POST",
