@@ -73,7 +73,6 @@ public class Preprocessed {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
 			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
 
-			//ToDo 1-)createParser aus der OutPutDescription
 
 			columns[index].setParser(input.createParser(index, config));
 
