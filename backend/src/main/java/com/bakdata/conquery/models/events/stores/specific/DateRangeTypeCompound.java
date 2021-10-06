@@ -52,7 +52,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 		return Math.max(minStore.getLines(), maxStore.getLines());
 	}
 
-	// returns 0 because stores are handled by another component
+	// Reported as 0 because this store does not hold data of its own, but references its neighbouring stores.
 	@Override
 	public long estimateEventBits() {
 		return 0;
