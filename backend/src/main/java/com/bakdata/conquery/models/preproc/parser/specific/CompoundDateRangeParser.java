@@ -32,11 +32,8 @@ public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> 
 		return null;
 	}
 
-	//ToDo erzeugt ein DateRangeStore aus seinen Geschwistern (auf Buckets Ebene) bezogen
-
 	@Override
 	protected DateRangeStore decideType() {
-
 		return null;
 	}
 
