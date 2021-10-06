@@ -14,6 +14,7 @@ export interface IconStyleProps {
   center?: boolean;
   right?: boolean;
   white?: boolean;
+  red?: boolean;
   light?: boolean;
   main?: boolean;
   active?: boolean;
@@ -49,13 +50,15 @@ export const Icon = styled(FontAwesomeIcon, {
   text-align: ${({ center }) => (center ? "center" : "left")};
   font-size: ${({ theme, large, tiny }) =>
     large ? theme.font.md : tiny ? theme.font.tiny : theme.font.sm};
-  color: ${({ theme, white, light, main, active, disabled }) =>
+  color: ${({ theme, white, red, light, main, active, disabled }) =>
     disabled
       ? theme.col.grayMediumLight
       : active
       ? theme.col.blueGrayDark
       : white
       ? "#fff"
+      : red
+      ? theme.col.red
       : main
       ? theme.col.blueGray
       : light

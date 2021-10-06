@@ -22,8 +22,8 @@ const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
   );
   const [value, setValue] = useState<SelectOptionT[] | null>([
     {
-      label: "lol",
-      value: "yes",
+      label: wl[0],
+      value: wl[0],
     },
   ]);
   const onLoad = (str: string) => {

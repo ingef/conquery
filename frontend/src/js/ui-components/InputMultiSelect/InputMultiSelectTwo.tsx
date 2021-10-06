@@ -1,10 +1,12 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
+import { useClickOutside } from "../../common/helpers/useClickOutside";
+import { usePrevious } from "../../common/helpers/usePrevious";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
 import Labeled from "../Labeled";
@@ -102,7 +104,7 @@ interface Props {
     defaultValue?: SelectOptionT[];
     onChange: (value: SelectOptionT[]) => void;
   };
-  onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
+  onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will update `options`
 }
 
 const InputMultiSelectTwo = ({
@@ -130,7 +132,7 @@ const InputMultiSelectTwo = ({
     setSelectedItems,
     activeIndex,
   } = useMultipleSelection<SelectOptionT>({
-    initialSelectedItems: input.defaultValue,
+    initialSelectedItems: input.value || input.defaultValue,
     onSelectedItemsChange: (changes) => {
       if (changes.selectedItems) {
         input.onChange(changes.selectedItems);
@@ -163,6 +165,7 @@ const InputMultiSelectTwo = ({
 
   const {
     isOpen,
+    closeMenu,
     toggleMenu,
     getToggleButtonProps,
     getLabelProps,
@@ -245,8 +248,40 @@ const InputMultiSelectTwo = ({
   });
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
-  const inputProps = getInputProps(getDropdownProps());
+  const { ref: inputPropsRef, ...inputProps } = getInputProps(
+    getDropdownProps(),
+  );
   const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
+
+  const clickOutsideRef = useRef<HTMLDivElement | null>(null);
+  const clickOutsideExceptionRef = useRef<HTMLInputElement | null>(null);
+  useClickOutside(clickOutsideRef, (e) => {
+    if (
+      clickOutsideExceptionRef.current &&
+      clickOutsideExceptionRef.current.contains(e.target as Node)
+    ) {
+      return;
+    }
+
+    closeMenu();
+  });
+
+  const previousInputValue = usePrevious(input.value);
+  useEffect(
+    function syncInputValueFromOutsideIn() {
+      const previousInputValueStr = JSON.stringify(previousInputValue);
+      const inputValueStr = JSON.stringify(input.value);
+      const selectedItemsStr = JSON.stringify(selectedItems);
+
+      const valueChangedOutside = previousInputValueStr !== inputValueStr;
+      const alreadySet = inputValueStr === selectedItemsStr;
+
+      if (valueChangedOutside && !alreadySet) {
+        setSelectedItems(input.value);
+      }
+    },
+    [input.value, selectedItems, previousInputValue, setSelectedItems],
+  );
 
   const Select = (
     <SelectContainer>
@@ -276,6 +311,10 @@ const InputMultiSelectTwo = ({
           <Input
             type="text"
             value={inputValue}
+            ref={(instance) => {
+              inputPropsRef(instance);
+              clickOutsideExceptionRef.current = instance;
+            }}
             {...inputProps}
             placeholder={
               onResolve
@@ -314,6 +353,7 @@ const InputMultiSelectTwo = ({
           {...menuProps}
           ref={(instance) => {
             menuPropsRef(instance);
+            clickOutsideRef.current = instance;
           }}
         >
           <MenuActionBar

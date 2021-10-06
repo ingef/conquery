@@ -7,13 +7,10 @@ import BasicButton, { BasicButtonProps } from "./BasicButton";
 
 interface StyledFaIconProps extends FaIconPropsT {
   tight?: boolean;
-  red?: boolean;
   hasChildren: boolean;
 }
 
 const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
-  color: ${({ theme, active, red }) =>
-    red ? theme.col.red : active ? theme.col.blueGrayDark : theme.col.black};
   font-size: ${({ theme, large, small }) =>
     large ? theme.font.md : small ? theme.font.xs : theme.font.sm};
   margin-right: ${({ hasChildren, tight }) =>

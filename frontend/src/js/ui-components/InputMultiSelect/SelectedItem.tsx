@@ -9,6 +9,7 @@ const Container = styled("div")<{ active?: boolean }>`
   display: flex;
   align-items: center;
   background-color: ${({ theme }) => theme.col.grayVeryLight};
+  color: ${({ theme }) => theme.col.black};
   padding: 1px 5px;
   font-size: ${({ theme }) => theme.font.sm};
 `;
@@ -28,7 +29,11 @@ const SelectedItem = forwardRef<
   return (
     <Container ref={ref} active={active} {...rest}>
       <span>{option.label}</span>
-      <SxIconButton icon="times" onClick={onRemoveClick} />
+      <SxIconButton
+        iconProps={{ light: true }}
+        icon="times"
+        onClick={onRemoveClick}
+      />
     </Container>
   );
 });
