@@ -95,6 +95,7 @@ public class ImportJob extends Job {
 				}
 				// before updating the import, make sure that all workers removed the last import
 				namespace.sendToAll(new RemoveImportJob(processedImport));
+				namespace.getStorage().removeImport(importId);
 			}
 			else if (processedImport != null) {
 				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
