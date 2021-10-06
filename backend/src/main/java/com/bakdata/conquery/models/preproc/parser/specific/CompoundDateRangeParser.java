@@ -2,13 +2,10 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
-import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.util.DateReader;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -18,14 +15,14 @@ import org.jetbrains.annotations.NotNull;
 @ToString(callSuper = true)
 public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> {
 
-	final private String min, max;
+	final private String startColumn, endColumn;
 
 
-	public CompoundDateRangeParser(ConqueryConfig config, String min, String max) {
+	public CompoundDateRangeParser(ConqueryConfig config, String startColumn, String endColumn) {
 
 		super(config);
-		this.max = max;
-		this.min = min;
+		this.endColumn = endColumn;
+		this.startColumn = startColumn;
 
 	}
 

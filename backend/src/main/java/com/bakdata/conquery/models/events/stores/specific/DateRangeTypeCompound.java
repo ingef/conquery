@@ -24,7 +24,7 @@ import lombok.ToString;
 public class DateRangeTypeCompound implements DateRangeStore {
 
 
-	final private String min, max;
+	final private String startColumn, endColumn;
 
 	@JsonIgnore
 	private DateStore minStore;
@@ -34,16 +34,16 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	private Bucket parent;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeCompound(String min, String max) {
-		this.min = min;
-		this.max = max;
+	public DateRangeTypeCompound(String startColumn, String endColumn) {
+		this.startColumn = startColumn;
+		this.endColumn = endColumn;
 	}
 
 	@JsonBackReference
 	public void setParent(Bucket parent) {
 		this.parent = parent;
-		this.minStore = (DateStore) parent.getStore(min);
-		this.maxStore = (DateStore) parent.getStore(max);
+		this.minStore = (DateStore) parent.getStore(startColumn);
+		this.maxStore = (DateStore) parent.getStore(endColumn);
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Override
 	public DateRangeTypeCompound select(int[] starts, int[] length) {
-		return new DateRangeTypeCompound(min, max);
+		return new DateRangeTypeCompound(startColumn, endColumn);
 	}
 
 	@Override
