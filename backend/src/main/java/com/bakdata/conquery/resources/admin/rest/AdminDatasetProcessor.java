@@ -81,7 +81,6 @@ public class AdminDatasetProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
-	private final transient IdMutex<ImportId> runningImportJobs = new IdMutex<>();
 
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
