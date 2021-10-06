@@ -119,7 +119,7 @@ public class AdminDatasetResource extends HAdmin {
 			processor.updateImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
 		}
 		catch (IOException err) {
-			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", importFile, err.getMessage()), Status.BAD_REQUEST);
+			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
 		}
 	}
 
