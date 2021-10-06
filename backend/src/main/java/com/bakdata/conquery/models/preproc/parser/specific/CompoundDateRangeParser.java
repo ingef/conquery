@@ -46,7 +46,6 @@ public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> 
 
 	@Override
 	public void setValue(DateRangeStore store, int event, CDateRange value) {
-		store.setDateRange(event, value);
 	}
 
 	@Override
