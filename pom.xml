@@ -18,7 +18,7 @@
 
 	<properties>
 		<java.required>11</java.required>
-		<lombok.version>1.18.20</lombok.version>
+		<lombok.version>1.18.22</lombok.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>${java.required}</maven.compiler.source>
 		<maven.compiler.target>${java.required}</maven.compiler.target>
