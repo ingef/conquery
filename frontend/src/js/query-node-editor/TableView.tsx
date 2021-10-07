@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
-import type { ModeT } from "../form-components/InputRange";
 import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+import type { ModeT } from "../ui-components/InputRange";
 
 import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";

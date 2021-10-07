@@ -69,8 +69,8 @@ No fields can be set for this type.
 
 </p></details>
 
-### JWT_PKCE_REALM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L44-L46)</sup></sub></sup>
-A realm that verifies oauth tokens using PKCE.
+### JWT_PKCE_REALM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L49-L60)</sup></sub></sup>
+A realm that verifies oauth tokens using PKCE. Since the adminEnd-UI mainly works with direct links that do not support setting of the Authorization-header to transport an access token and it also does not support the oauth code flow, this realm proxies the flow. 1. The user/client is redirected to the IDP for authentication and redirected back to the adminEnd 2. The this realm then picks up the code the transported authorization code from the query and redeems it for an access token and refresh token. 3. Both are converted to cookies, which are saved on the client upon redirection to the page the user initially wanted to visit. 4. With the redirection the client sends back the cookies from which the adminEnd extracts the access token and verifies it. (5.) If the previous step failed. The refresh token is extracted and exchanged for a fresh access token and refresh token and continues with step 3.
 
 <details><summary>Details</summary><p>
 
@@ -80,12 +80,12 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L59) | additionalTokenChecks | list of `String` | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L82-L85) | alternativeIdClaims | list of `String` | `[]` |  | Which claims hold alternative Ids of the user in case the user name does not match a user. Pay attention, that the user must not be able to alter the value of any of these claims. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L53-L56) | client | `String` | `null` |  | The client id is also used as the expected audience in the validated token. Ensure that the IDP is configured accordingly. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L68-L70) | idpConfiguration | `IdpConfiguration` | `null` |  | See wellKnownEndpoint. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L73-L77) | tokenLeeway | `@javax.validation.constraints.Min(0) int` | `60` |  | A leeway for token's expiration in seconds, this should be a short time. One Minute is the default. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L62-L65) | wellKnownEndpoint | `URI` | `null` |  | Either the wellKnownEndpoint from which an idpConfiguration can be obtained or the idpConfiguration must be supplied. If the idpConfiguration is given, the wellKnownEndpoint is ignored. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L74) | additionalTokenChecks | list of `String` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L97-L100) | alternativeIdClaims | list of `String` | `[]` |  | Which claims hold alternative Ids of the user in case the user name does not match a user. Pay attention, that the user must not be able to alter the value of any of these claims. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L68-L71) | client | `String` | `null` |  | The client id is also used as the expected audience in the validated token. Ensure that the IDP is configured accordingly. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L83-L85) | idpConfiguration | `IdpConfiguration` | `null` |  | See wellKnownEndpoint. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L88-L92) | tokenLeeway | `@javax.validation.constraints.Min(0) int` | `60` |  | A leeway for token's expiration in seconds, this should be a short time. <p> One Minute is the default. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L77-L80) | wellKnownEndpoint | `URI` | `null` |  | Either the wellKnownEndpoint from which an idpConfiguration can be obtained or the idpConfiguration must be supplied. If the idpConfiguration is given, the wellKnownEndpoint is ignored. | 
 </p></details>
 
 ### LOCAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/LocalAuthenticationConfig.java#L35)</sup></sub></sup>

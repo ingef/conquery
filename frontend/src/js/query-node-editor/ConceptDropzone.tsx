@@ -3,11 +3,11 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";
-import Dropzone, { DropzoneProps } from "../form-components/Dropzone";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
+import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
 const StyledDropzone = styled(Dropzone)`
   width: 100%;

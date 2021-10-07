@@ -30,6 +30,7 @@ interface Props {
   children?: React.ReactNode;
   optional?: boolean;
   tooltip?: string;
+  htmlFor?: string;
 }
 
 const Labeled = ({
@@ -41,10 +42,11 @@ const Labeled = ({
   largeLabel,
   tooltip,
   optional,
+  htmlFor,
   children,
 }: Props) => {
   return (
-    <Root className={className} fullWidth={fullWidth}>
+    <Root className={className} fullWidth={fullWidth} htmlFor={htmlFor}>
       <Label fullWidth={fullWidth} tiny={tinyLabel} large={largeLabel}>
         {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
         {optional && <Optional />}

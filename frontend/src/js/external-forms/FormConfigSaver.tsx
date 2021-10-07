@@ -13,12 +13,12 @@ import IconButton from "../button/IconButton";
 import { FORM_CONFIG } from "../common/constants/dndTypes";
 import { usePrevious } from "../common/helpers/usePrevious";
 import { useDatasetId } from "../dataset/selectors";
-import Dropzone from "../form-components/Dropzone";
-import EditableText from "../form-components/EditableText";
-import Label from "../form-components/Label";
 import FaIcon from "../icon/FaIcon";
 import { setMessage } from "../snack-message/actions";
 import WithTooltip from "../tooltip/WithTooltip";
+import Dropzone from "../ui-components/Dropzone";
+import EditableText from "../ui-components/EditableText";
+import Label from "../ui-components/Label";
 
 import { loadExternalFormValues, setExternalForm } from "./actions";
 import { DragItemFormConfig } from "./form-configs/FormConfig";

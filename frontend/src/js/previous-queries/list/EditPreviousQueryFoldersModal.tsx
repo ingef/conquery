@@ -4,8 +4,8 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import EditableTagsForm from "../../form-components/EditableTagsForm";
 import Modal from "../../modal/Modal";
+import EditableTagsForm from "../../ui-components/EditableTagsForm";
 
 import { useRetagQuery } from "./actions";
 import type { PreviousQueryT } from "./reducer";
