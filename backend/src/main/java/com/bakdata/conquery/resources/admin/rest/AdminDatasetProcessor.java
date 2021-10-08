@@ -29,10 +29,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
-import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -63,7 +59,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
 
 @Slf4j
@@ -100,8 +95,7 @@ public class AdminDatasetProcessor {
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
 
-		Namespace
-				ns =
+		Namespace ns =
 				new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy())
 																			.writerWithView(InternalOnly.class));
 
@@ -222,47 +216,10 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 		}
 
-		addAutomaticSelect(concept);
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
 		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
-	}
-
-	/**
-	 * Adds some selects to the concept on all levels for convenience.
-	 */
-	private static void addAutomaticSelect(@NotNull Concept<?> concept) {
-		if (!(concept instanceof TreeConcept)) {
-			return;
-		}
-
-		// Add to concept
-		TreeConcept treeConcept = (TreeConcept) concept;
-
-		// Don't add event_duration_sum if Concept has no date-columns
-		if (treeConcept.getConnectors().stream()
-					   .map(Connector::getValidityDates)
-					   .allMatch(Collection::isEmpty)) {
-			return;
-		}
-
-		final UniversalSelect select = EventDurationSumSelect.create("event_duration_sum");
-		select.setHolder(treeConcept);
-		treeConcept.getSelects().add(select);
-
-
-		// Add to connectors if they have dates
-		for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
-
-			if (connector.getValidityDates().isEmpty()) {
-				continue;
-			}
-
-			final UniversalSelect connectorSelect = EventDurationSumSelect.create("event_duration_sum");
-			connectorSelect.setHolder(connector);
-			connector.getSelects().add(connectorSelect);
-		}
 	}
 
 	/**

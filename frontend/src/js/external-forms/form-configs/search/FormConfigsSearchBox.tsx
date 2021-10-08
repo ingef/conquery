@@ -4,7 +4,7 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import ReactSelect from "../../../form-components/ReactSelect";
+import ReactSelect from "../../../ui-components/ReactSelect";
 
 import { setFormConfigsSearch } from "./actions";
 
@@ -37,8 +37,8 @@ const FormConfigsSearchBox: React.FC = () => {
         onChange={(values) =>
           onSearch(values ? values.map((v) => v.value) : [])
         }
-        placeholder={t("reactSelect.searchPlaceholder")}
-        noOptionsMessage={() => t("reactSelect.noResults")}
+        placeholder={t("inputSelect.searchPlaceholder")}
+        noOptionsMessage={() => t("inputSelect.empty")}
         formatCreateLabel={(inputValue) =>
           t("common.create") + `: "${inputValue}"`
         }

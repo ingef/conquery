@@ -76,8 +76,8 @@ const InputSelect = ({
         isSearchable={false}
         isClearable={input.clearable}
         isDisabled={!!disabled}
-        placeholder={t("reactSelect.placeholder")}
-        noOptionsMessage={() => t("reactSelect.noResults")}
+        placeholder={t("inputSelect.placeholder")}
+        noOptionsMessage={() => t("inputSelect.empty")}
         {...selectProps}
       />
     </Labeled>

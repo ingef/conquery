@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.result.excel;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -12,12 +13,13 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
+import io.dropwizard.util.Strings;
+import org.apache.poi.ooxml.POIXMLProperties;
+import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -39,14 +41,16 @@ import java.util.stream.Stream;
 
 public class ExcelRenderer {
 
-    private final static Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
+	private final static Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
             ResultType.DateT.class, ExcelRenderer::writeDateCell,
             ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
             ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
             ResultType.NumericT.class, ExcelRenderer::writeNumericCell
     );
+	public static final int CHARACTER_WIDTH_DIVISOR = 256;
+	public static final int AUTOFILTER_SPACE_WIDTH = 3;
 
-    private final SXSSFWorkbook workbook;
+	private final SXSSFWorkbook workbook;
     private final ExcelConfig config;
     private final PrintSettings cfg;
     private final ImmutableMap<String, CellStyle> styles;
@@ -70,9 +74,9 @@ public class ExcelRenderer {
             OutputStream outputStream) throws IOException {
         List<ResultInfo> info = exec.getResultInfo();
 
+		setMetaData(exec);
 
-
-        SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
+		SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
         try {
             sheet.setDefaultColumnWidth(config.getDefaultColumnWidth());
 
@@ -92,7 +96,21 @@ public class ExcelRenderer {
 
     }
 
-    /**
+	/**
+	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
+	 */
+	private <E extends ManagedExecution<?> & SingleTableResult> void setMetaData(E exec) {
+		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
+		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
+
+		final User owner = exec.getOwner();
+		coreProperties.setCreator(owner != null ? owner.getName() : config.getApplicationName());
+		coreProperties.setKeywords(String.join(" ", exec.getTags()));
+		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();
+		extendedProperties.setApplication(config.getApplicationName());
+	}
+
+	/**
      * Do postprocessing on the result to improve the visuals:
      * - Set the area of the table environment
      * - Freeze the id columns
@@ -101,7 +119,9 @@ public class ExcelRenderer {
     private void postProcessTable(List<String> idHeaders, SXSSFSheet sheet, XSSFTable table, int writtenLines) {
         // Extend the table area to the added data
         CellReference topLeft = new CellReference(0, 0);
-        CellReference bottomRight = new CellReference(writtenLines + 1, table.getColumnCount() - 1);
+
+        // The area must be at least a header row and a data row. If no line was written we include an empty data row so POI is happy
+        CellReference bottomRight = new CellReference(Math.max(1,writtenLines), table.getColumnCount() - 1);
         AreaReference newArea = new AreaReference(topLeft, bottomRight, workbook.getSpreadsheetVersion());
         table.setArea(newArea);
 
@@ -158,6 +178,10 @@ public class ExcelRenderer {
                 Cell headerCell = header.createCell(currentColumn);
                 headerCell.setCellValue(idHeader);
 
+				// Track column explicitly, because sheet.trackAllColumnsForAutoSizing() does not work with
+				// sheet.getTrackedColumnsForAutoSizing(), if no flush has happened
+				sheet.trackColumnForAutoSizing(currentColumn);
+
                 currentColumn++;
             }
 
@@ -170,65 +194,102 @@ public class ExcelRenderer {
                 Cell headerCell = header.createCell(currentColumn);
                 headerCell.setCellValue(columnName);
 
+				sheet.trackColumnForAutoSizing(currentColumn);
+
                 currentColumn++;
             }
         }
     }
 
-    private int writeBody(
-            Sheet sheet,
-            List<ResultInfo> infos,
-            PrintSettings cfg,
-            Stream<EntityResult> resultLines) {
+	private int writeBody(
+			SXSSFSheet sheet,
+			List<ResultInfo> infos,
+			PrintSettings cfg,
+			Stream<EntityResult> resultLines) {
 
-        // Row 0 is the Header the data starts at 1
-        AtomicInteger currentRow = new AtomicInteger(1);
-        return resultLines.mapToInt(l -> this.writeRowsForEntity(infos, l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg)).sum();
-    }
+		// Row 0 is the Header the data starts at 1
+		AtomicInteger currentRow = new AtomicInteger(1);
+		final int writtenLines = resultLines.mapToInt(l -> this.writeRowsForEntity(infos, l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg, sheet)).sum();
 
-    /**
-     * Writes the result lines for each entity.
-     */
-    private int writeRowsForEntity(
-            List<ResultInfo> infos,
-            EntityResult internalRow,
-            Supplier<Row> externalRowSupplier,
-            PrintSettings settings) {
-        String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
+		// The result was shorter than the number of rows to track, so we auto size here explicitly
+		if (writtenLines < config.getLastRowToAutosize()){
+			setColumnWidthsAndUntrack(sheet);
+		}
 
-        int writtenLines = 0;
+		return writtenLines;
+	}
 
-        for (Object[] resultValues : internalRow.listResultLines()) {
-            Row row = externalRowSupplier.get();
-            // Write id cells
-            int currentColumn = 0;
-            for (String id : ids) {
-                Cell idCell = row.createCell(currentColumn);
-                idCell.setCellValue(id);
-                currentColumn++;
-            }
+	/**
+	 * Writes the result lines for each entity.
+	 */
+	private int writeRowsForEntity(
+			List<ResultInfo> infos,
+			EntityResult internalRow,
+			Supplier<Row> externalRowSupplier,
+			PrintSettings settings,
+			SXSSFSheet sheet) {
+		String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
 
-            // Write data cells
-            for (int i = 0; i < infos.size(); i++) {
-                ResultInfo resultInfo = infos.get(i);
-                Object resultValue = resultValues[i];
-                Cell dataCell = row.createCell(currentColumn);
-                currentColumn++;
-                if (resultValue == null) {
-                    continue;
-                }
+		int writtenLines = 0;
 
-                // Fallback to string if type is not explicitly registered
-                TypeWriter typeWriter = TYPE_WRITER_MAP.getOrDefault(resultInfo.getType().getClass(), ExcelRenderer::writeStringCell);
+		for (Object[] resultValues : internalRow.listResultLines()) {
+			Row row = externalRowSupplier.get();
+			// Write id cells
+			int currentColumn = 0;
+			for (String id : ids) {
+				Cell idCell = row.createCell(currentColumn);
+				idCell.setCellValue(id);
+				currentColumn++;
+			}
 
-                typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
-            }
-            writtenLines++;
-        }
-        return writtenLines;
-    }
+			// Write data cells
+			for (int i = 0; i < infos.size(); i++) {
+				ResultInfo resultInfo = infos.get(i);
+				Object resultValue = resultValues[i];
+				Cell dataCell = row.createCell(currentColumn);
+				currentColumn++;
+				if (resultValue == null) {
+					continue;
+				}
 
-    // Type specific cell writers
+				// Fallback to string if type is not explicitly registered
+				TypeWriter typeWriter = TYPE_WRITER_MAP.getOrDefault(resultInfo.getType().getClass(), ExcelRenderer::writeStringCell);
+
+				typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
+			}
+			writtenLines++;
+
+			if (writtenLines == config.getLastRowToAutosize()){
+				setColumnWidthsAndUntrack(sheet);
+			}
+		}
+		return writtenLines;
+	}
+
+	@SneakyThrows(IOException.class)
+	private void setColumnWidthsAndUntrack(SXSSFSheet sheet) {
+		sheet.flushRows();
+		for (Integer columnIndex : sheet.getTrackedColumnsForAutoSizing()) {
+			sheet.autoSizeColumn(columnIndex);
+
+			// Scale the widths to a 256th of a char
+			final int defaultColumnWidth = config.getDefaultColumnWidth() * CHARACTER_WIDTH_DIVISOR;
+
+			// Add a bit extra space for the drop down arrow of the auto filter (so it does not overlap with the column header name)
+			int columnWidth = sheet.getColumnWidth(columnIndex) + AUTOFILTER_SPACE_WIDTH * CHARACTER_WIDTH_DIVISOR;
+
+			// Limit the column with to the default width if it is longer
+			if (columnWidth > defaultColumnWidth){
+				columnWidth = defaultColumnWidth;
+			}
+			sheet.setColumnWidth(columnIndex, columnWidth);
+
+			// Disable auto sizing so we don't have a performance penalty
+			sheet.untrackColumnForAutoSizing(columnIndex);
+		}
+	}
+
+	// Type specific cell writers
 
     private static void writeStringCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
         cell.setCellValue(info.getType().printNullable(settings, value));

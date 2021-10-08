@@ -120,6 +120,22 @@
               ]
             },
             {
+              "id": "words",
+              "label": "Words",
+              "type": "BIG_MULTI_SELECT",
+              "allowDropFile": true,
+              "options": [
+                {
+                  "value": "GER",
+                  "label": "Germany"
+                },
+                {
+                  "value": "USA",
+                  "label": "United States (USA)"
+                }
+              ]
+            },
+            {
               "id": "budget",
               "label": "Budget",
               "type": "MONEY_RANGE",

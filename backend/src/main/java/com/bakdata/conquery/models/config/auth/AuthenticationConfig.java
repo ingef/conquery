@@ -49,7 +49,8 @@ public class AuthenticationConfig {
 				null,
 				null,
 				0,
-				false);
+				false
+		);
 	}
 
 	@JsonIgnore
