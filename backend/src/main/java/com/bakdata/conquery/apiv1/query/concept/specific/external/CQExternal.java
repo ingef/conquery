@@ -31,8 +31,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -52,7 +50,7 @@ public class CQExternal extends CQElement {
 
 	/**
 	 * Describes the format of {@code values}, how to extract data from each row:
-	 *
+	 * <p>
 	 * - Must contain at least one of {@link FrontendConfig.UploadConfig#getIds()}.
 	 * - May contain names of {@link DateFormat}s.
 	 * - Lines filled with {@code FORMAT_EXTRA} are added as extra data to output.
@@ -76,7 +74,7 @@ public class CQExternal extends CQElement {
 
 	/**
 	 * Contains the uploaded additional data for each column for each entity.
-	 *
+	 * <p>
 	 * Column -> Entity -> Value(s)
 	 *
 	 * @implNote FK: I would prefer to implement this as a guava table, but they cannot be deserialized with Jackson so we implement the Table manually.
@@ -197,6 +195,9 @@ public class CQExternal extends CQElement {
 		@JsonIgnore
 		private final Map<Integer, CDateSet> resolved;
 
+		/**
+		 * Colummn -> Entity -> Values
+		 */
 		@JsonIgnore
 		private final Map<String, Map<Integer, List<String>>> extra;
 
@@ -218,7 +219,8 @@ public class CQExternal extends CQElement {
 		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, queryUpload);
 
 		// Extract extra data from rows by Row, to be collected into by entities
-		final Table<String, Integer, String> extraDataByRow = readExtras(values, format);
+		// Row -> Column -> Value
+		final Map<Integer, Map<String, String>> extraDataByRow = readExtras(values, format);
 
 		final List<Function<String[], EntityIdMap.ExternalId>> readers = queryUpload.getIdReaders(format);
 
@@ -227,6 +229,7 @@ public class CQExternal extends CQElement {
 			return new ResolveStatistic(Collections.emptyMap(), Collections.emptyMap(), Collections.emptyList(), List.of(values));
 		}
 
+		// Column -> Entity -> Values
 		final Map<String, Map<Integer, List<String>>> extraDataByEntity = new HashMap<>();
 
 		// ignore the first row, because this is the header
@@ -250,11 +253,13 @@ public class CQExternal extends CQElement {
 			resolved.put(resolvedId, rowDates.get(rowNum));
 
 			// Entity was resolved for row so we collect the data.
-			for (Map.Entry<String, String> entry : extraDataByRow.column(rowNum).entrySet()) {
+			if (extraDataByRow.containsKey(rowNum)) {
+				for (Map.Entry<String, String> entry : extraDataByRow.get(rowNum).entrySet()) {
 
-				extraDataByEntity.computeIfAbsent(entry.getKey(), (ignored) -> new HashMap<>())
-								 .computeIfAbsent(resolvedId, (ignored) -> new ArrayList<>())
-								 .add(entry.getValue());
+					extraDataByEntity.computeIfAbsent(entry.getKey(), (ignored) -> new HashMap<>())
+									 .computeIfAbsent(resolvedId, (ignored) -> new ArrayList<>())
+									 .add(entry.getValue());
+				}
 			}
 		}
 
@@ -295,9 +300,9 @@ public class CQExternal extends CQElement {
 	/**
 	 * Try and extract Extra data from input to be returned as extra-data in output.
 	 */
-	private static Table<String, Integer, String> readExtras(String[][] values, List<String> format) {
+	private static Map<Integer, Map<String, String>> readExtras(String[][] values, List<String> format) {
 		final String[] names = values[0];
-		final Table<String, Integer, String> extrasByRow = HashBasedTable.create(values.length, 0);
+		final Map<Integer, Map<String, String>> extrasByRow = new HashMap<>();
 
 
 		for (int line = 1; line < values.length; line++) {
@@ -306,7 +311,8 @@ public class CQExternal extends CQElement {
 					continue;
 				}
 
-				extrasByRow.put(names[col], line, values[line][col]);
+				extrasByRow.computeIfAbsent(line, (ignored) -> new HashMap<>())
+						   .put(names[col], values[line][col]);
 			}
 		}
 
@@ -316,9 +322,9 @@ public class CQExternal extends CQElement {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		if(extra != null) {
+		if (extra != null) {
 			extra.keySet()
-				 .forEach(column -> collector.add(new SimpleResultInfo(column, ResultType.StringT.INSTANCE)));
+				 .forEach(column -> collector.add(new SimpleResultInfo(column, new ResultType.ListT(ResultType.StringT.INSTANCE))));
 		}
 	}
 
