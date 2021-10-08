@@ -24,8 +24,9 @@ import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -100,9 +101,20 @@ public class AdminResource {
         final MetaStorage storage = processor.getStorage();
         final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
         return storage.getAllExecutions().stream()
-                .map(t -> t.buildStatusFull(storage, currentUser, datasetRegistry, processor.getConfig()))
-                .filter(t -> t.getCreatedAt().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
-                .limit(limit.orElse(100))
-                .toArray(FullExecutionStatus[]::new);
+					.map(t -> {
+						try {
+							return t.buildStatusFull(storage, currentUser, datasetRegistry, processor.getConfig());
+						} catch (ConqueryError e) {
+							// Initialization of execution probably failed, so we construct a status based on the overview status
+							final FullExecutionStatus fullExecutionStatus = new FullExecutionStatus();
+							t.setStatusBase(currentUser, fullExecutionStatus);
+							fullExecutionStatus.setStatus(ExecutionState.FAILED);
+							fullExecutionStatus.setError(e);
+							return fullExecutionStatus;
+						}
+					})
+					.filter(t -> t.getCreatedAt().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
+					.limit(limit.orElse(100))
+					.toArray(FullExecutionStatus[]::new);
     }
 }
