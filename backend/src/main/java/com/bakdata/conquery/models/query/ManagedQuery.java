@@ -132,7 +132,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	protected void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status) {
+	public void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status) {
 		super.setStatusBase(user, status);
 		status.setNumberOfResults(lastResultCount);
 
