@@ -32,8 +32,6 @@ import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
-import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Data;
 import lombok.Getter;
@@ -115,15 +113,18 @@ public class CQExternal extends CQElement {
 	 *
 	 * @return Row -> Dates
 	 */
-	private static Int2ObjectMap<CDateSet> readDates(String[][] values, List<String> format, DateReader dateReader, FrontendConfig.UploadConfig queryUpload) {
-		Int2ObjectMap<CDateSet> out = new Int2ObjectAVLTreeMap<>();
+	private static CDateSet[] readDates(String[][] values, List<String> format, DateReader dateReader, FrontendConfig.UploadConfig queryUpload) {
+		final CDateSet[] out = new CDateSet[values.length];
 
 		List<DateFormat> dateFormats = format.stream().map(queryUpload::resolveDateFormat).collect(Collectors.toList());
 
+
+
 		// If no format provided, put empty dates into output.
 		if (dateFormats.stream().allMatch(Objects::isNull)) {
+			// Initialize empty
 			for (int row = 0; row < values.length; row++) {
-				out.put(row, CDateSet.create());
+				out[row] = CDateSet.create();
 			}
 			return out;
 		}
@@ -146,7 +147,11 @@ public class CQExternal extends CQElement {
 					continue;
 				}
 
-				out.computeIfAbsent(row, (ignored) -> CDateSet.create()).addAll(dates);
+				if (out[row] == null){
+					out[row] = CDateSet.create();
+				}
+
+				out[row].addAll(dates);
 			}
 			catch (Exception e) {
 				log.warn("Failed to parse Date from {}", row, e);
@@ -196,7 +201,7 @@ public class CQExternal extends CQElement {
 		private final Map<Integer, CDateSet> resolved;
 
 		/**
-		 * Colummn -> Entity -> Values
+		 * Column -> Entity -> Values
 		 */
 		@JsonIgnore
 		private final Map<String, Map<Integer, List<String>>> extra;
@@ -216,11 +221,11 @@ public class CQExternal extends CQElement {
 		final List<String[]> unresolvedId = new ArrayList<>();
 
 		// extract dates from rows
-		final Int2ObjectMap<CDateSet> rowDates = readDates(values, format, dateReader, queryUpload);
+		final CDateSet[] rowDates = readDates(values, format, dateReader, queryUpload);
 
 		// Extract extra data from rows by Row, to be collected into by entities
 		// Row -> Column -> Value
-		final Map<Integer, Map<String, String>> extraDataByRow = readExtras(values, format);
+		final Map<String, String>[] extraDataByRow = readExtras(values, format);
 
 		final List<Function<String[], EntityIdMap.ExternalId>> readers = queryUpload.getIdReaders(format);
 
@@ -237,7 +242,7 @@ public class CQExternal extends CQElement {
 
 			final String[] row = values[rowNum];
 
-			if (!rowDates.containsKey(rowNum)) {
+			if (rowDates[rowNum] == null) {
 				unresolvedDate.add(row);
 				continue;
 			}
@@ -250,11 +255,11 @@ public class CQExternal extends CQElement {
 			}
 
 			//read the dates from the row
-			resolved.put(resolvedId, rowDates.get(rowNum));
+			resolved.put(resolvedId, rowDates[rowNum]);
 
 			// Entity was resolved for row so we collect the data.
-			if (extraDataByRow.containsKey(rowNum)) {
-				for (Map.Entry<String, String> entry : extraDataByRow.get(rowNum).entrySet()) {
+			if (extraDataByRow[rowNum] != null) {
+				for (Map.Entry<String, String> entry : extraDataByRow[rowNum].entrySet()) {
 
 					extraDataByEntity.computeIfAbsent(entry.getKey(), (ignored) -> new HashMap<>())
 									 .computeIfAbsent(resolvedId, (ignored) -> new ArrayList<>())
@@ -299,10 +304,12 @@ public class CQExternal extends CQElement {
 
 	/**
 	 * Try and extract Extra data from input to be returned as extra-data in output.
+	 *
+	 * Line -> ( Column -> Value )
 	 */
-	private static Map<Integer, Map<String, String>> readExtras(String[][] values, List<String> format) {
+	private static Map<String, String>[] readExtras(String[][] values, List<String> format) {
 		final String[] names = values[0];
-		final Map<Integer, Map<String, String>> extrasByRow = new HashMap<>();
+		final Map<String, String>[] extrasByRow = new Map[values.length];
 
 
 		for (int line = 1; line < values.length; line++) {
@@ -311,8 +318,12 @@ public class CQExternal extends CQElement {
 					continue;
 				}
 
-				extrasByRow.computeIfAbsent(line, (ignored) -> new HashMap<>())
-						   .put(names[col], values[line][col]);
+
+				if (extrasByRow[line] == null){
+					extrasByRow[line] = new HashMap<>(names.length);
+				}
+
+				extrasByRow[line].put(names[col], values[line][col]);
 			}
 		}
 
