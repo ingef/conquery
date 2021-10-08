@@ -52,6 +52,12 @@ public class ExcelConfig {
 	private int defaultColumnWidth = 30;
 
 	/**
+	 * The name of this application to use in the xlsx meta data.
+	 */
+	@NotNull
+	private String applicationName = "Conquery";
+
+	/**
 	 * Defines the row after which the tracking for auto sizing columns stops and the final width is applied.
 	 */
 	@Min(1)
