@@ -80,7 +80,7 @@ public class Preprocessed {
 		for (int index = 0; index < input.getWidth(); index++) {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
 			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
-			columns[index].setParser(columnDescription.getType().	createParser(config));
+			columns[index].setParser(columnDescription.getType().createParser(config));
 
 			final Parser parser = columns[index].getParser();
 			values[index] = parser.createColumnValues();
