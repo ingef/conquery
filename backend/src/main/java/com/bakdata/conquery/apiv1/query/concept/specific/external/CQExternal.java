@@ -79,7 +79,7 @@ public class CQExternal extends CQElement {
 	 */
 	@InternalOnly
 	@Getter
-	private Map<String, Map<Integer, List<String>>> extra;
+	private Map<Integer, Map<String, List<String>>> extra;
 
 
 	@JsonIgnore
@@ -98,8 +98,16 @@ public class CQExternal extends CQElement {
 		}
 
 		if (extra != null) {
-			extra.keySet()
-				 .forEach(column -> extraAggregators.put(column, new ConstantValueAggregator(null, new ResultType.ListT(ResultType.StringT.INSTANCE))));
+			for (int col = 0; col < format.size(); col++) {
+				if (!format.get(col).equals(FORMAT_EXTRA)) {
+					continue;
+				}
+
+				String column = values[0][col];
+
+				extraAggregators.put(column, new ConstantValueAggregator(null, new ResultType.ListT(ResultType.StringT.INSTANCE)));
+			}
+
 
 			extraAggregators.values()
 							.forEach(plan::registerAggregator);
@@ -117,7 +125,6 @@ public class CQExternal extends CQElement {
 		final CDateSet[] out = new CDateSet[values.length];
 
 		List<DateFormat> dateFormats = format.stream().map(queryUpload::resolveDateFormat).collect(Collectors.toList());
-
 
 
 		// If no format provided, put empty dates into output.
@@ -147,7 +154,7 @@ public class CQExternal extends CQElement {
 					continue;
 				}
 
-				if (out[row] == null){
+				if (out[row] == null) {
 					out[row] = CDateSet.create();
 				}
 
@@ -201,10 +208,10 @@ public class CQExternal extends CQElement {
 		private final Map<Integer, CDateSet> resolved;
 
 		/**
-		 * Column -> Entity -> Values
+		 * Entity -> Column -> Values
 		 */
 		@JsonIgnore
-		private final Map<String, Map<Integer, List<String>>> extra;
+		private final Map<Integer, Map<String, List<String>>> extra;
 
 		private final List<String[]> unreadableDate;
 		private final List<String[]> unresolvedId;
@@ -234,8 +241,8 @@ public class CQExternal extends CQElement {
 			return new ResolveStatistic(Collections.emptyMap(), Collections.emptyMap(), Collections.emptyList(), List.of(values));
 		}
 
-		// Column -> Entity -> Values
-		final Map<String, Map<Integer, List<String>>> extraDataByEntity = new HashMap<>();
+		// Entity -> Column -> Values
+		final Map<Integer, Map<String, List<String>>> extraDataByEntity = new HashMap<>();
 
 		// ignore the first row, because this is the header
 		for (int rowNum = 1; rowNum < values.length; rowNum++) {
@@ -259,10 +266,11 @@ public class CQExternal extends CQElement {
 
 			// Entity was resolved for row so we collect the data.
 			if (extraDataByRow[rowNum] != null) {
+
 				for (Map.Entry<String, String> entry : extraDataByRow[rowNum].entrySet()) {
 
-					extraDataByEntity.computeIfAbsent(entry.getKey(), (ignored) -> new HashMap<>())
-									 .computeIfAbsent(resolvedId, (ignored) -> new ArrayList<>())
+					extraDataByEntity.computeIfAbsent(resolvedId, (ignored) -> new HashMap<>())
+									 .computeIfAbsent(entry.getKey(), (ignored) -> new ArrayList<>())
 									 .add(entry.getValue());
 				}
 			}
@@ -304,7 +312,7 @@ public class CQExternal extends CQElement {
 
 	/**
 	 * Try and extract Extra data from input to be returned as extra-data in output.
-	 *
+	 * <p>
 	 * Line -> ( Column -> Value )
 	 */
 	private static Map<String, String>[] readExtras(String[][] values, List<String> format) {
@@ -319,7 +327,7 @@ public class CQExternal extends CQElement {
 				}
 
 
-				if (extrasByRow[line] == null){
+				if (extrasByRow[line] == null) {
 					extrasByRow[line] = new HashMap<>(names.length);
 				}
 
@@ -333,9 +341,17 @@ public class CQExternal extends CQElement {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		if (extra != null) {
-			extra.keySet()
-				 .forEach(column -> collector.add(new SimpleResultInfo(column, new ResultType.ListT(ResultType.StringT.INSTANCE))));
+		if (extra == null) {
+			return;
+		}
+		for (int col = 0; col < format.size(); col++) {
+			if (!format.get(col).equals(FORMAT_EXTRA)) {
+				continue;
+			}
+
+			String column = values[0][col];
+
+			collector.add(new SimpleResultInfo(column, new ResultType.ListT(ResultType.StringT.INSTANCE)));
 		}
 	}
 

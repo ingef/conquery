@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,12 +28,12 @@ public class ExternalNode extends QPNode {
 	@NotEmpty
 	@NonNull
 	private final Map<Integer, CDateSet> includedEntities;
-	private final Map<String, Map<Integer, List<String>>> extraData;
+	private final Map<Integer, Map<String, List<String>>> extraData;
 	private final Map<String, ConstantValueAggregator> extraAggregators;
 
 	private CDateSet contained;
 
-	public ExternalNode(Table table, Map<Integer, CDateSet> includedEntities, Map<String, Map<Integer, List<String>>> extraData, Map<String, ConstantValueAggregator> extraAggregators) {
+	public ExternalNode(Table table, Map<Integer, CDateSet> includedEntities, Map<Integer, Map<String, List<String>>> extraData, Map<String, ConstantValueAggregator> extraAggregators) {
 		this.includedEntities = includedEntities;
 		this.table = table;
 		this.extraData = extraData;
@@ -47,13 +46,10 @@ public class ExternalNode extends QPNode {
 		contained = includedEntities.get(entity.getId());
 		dateUnion.init(entity, context);
 
-		for (Map.Entry<String, ConstantValueAggregator> entry : extraAggregators.entrySet()) {
-			String col = entry.getKey();
-			ConstantValueAggregator agg = entry.getValue();
-
-			final Map<Integer, List<String>> colValues = extraData.getOrDefault(col, Collections.emptyMap());
-
-			agg.setValue(colValues.get(entity.getId()));
+		if (extraData.containsKey(entity.getId())) {
+			for (Map.Entry<String, List<String>> colValues : extraData.get(entity.getId()).entrySet()) {
+				extraAggregators.get(colValues.getKey()).setValue(colValues.getValue());
+			}
 		}
 	}
 
