@@ -4,11 +4,13 @@ import { useTranslation } from "react-i18next";
 
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
+import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 
 type PropsType = {
   className?: string;
   matchingEntries?: number | null;
+  matchingEntities?: number | null;
   dateRange?: Object | null;
 };
 
@@ -43,6 +45,9 @@ const StyledFaIcon = styled(FaIcon)`
   color: ${({ theme }) => theme.col.grayMediumLight};
 `;
 
+const EntitiesIcon = styled(StyledFaIcon)`
+  padding-right: 24px;
+`;
 const StatsIcon = styled(StyledFaIcon)`
   padding-right: 15px;
 `;
@@ -85,9 +90,10 @@ const Suffix = styled("span")`
 
 const TooltipEntries = (props: PropsType) => {
   const { t } = useTranslation();
-  const { matchingEntries, dateRange } = props;
+  const { matchingEntries, matchingEntities, dateRange } = props;
 
   const isZero = props.matchingEntries === 0;
+  const isZeroEntities = props.matchingEntities === 0;
 
   const dateFormat = "yyyy-MM-dd";
   const displayDateFormat = t("inputDateRange.dateFormat");
@@ -98,7 +104,7 @@ const TooltipEntries = (props: PropsType) => {
         <StatsIcon icon="chart-bar" />
         <Info>
           <Number zero={isZero}>
-            {matchingEntries || isZero ? (
+            {exists(matchingEntries) ? (
               numberToThreeDigitArray(matchingEntries).map((threeDigits, i) => (
                 <Digits key={i}>{threeDigits}</Digits>
               ))
@@ -110,6 +116,26 @@ const TooltipEntries = (props: PropsType) => {
             {t(
               "tooltip.entriesFound",
               { count: matchingEntries || 2 }, // For pluralization
+            )}
+          </Text>
+        </Info>
+      </Row>
+      <Row>
+        <EntitiesIcon icon="id-badge" />
+        <Info>
+          <Number zero={isZeroEntities}>
+            {exists(matchingEntities) ? (
+              numberToThreeDigitArray(matchingEntities).map(
+                (threeDigits, i) => <Digits key={i}>{threeDigits}</Digits>,
+              )
+            ) : (
+              <Digits>-</Digits>
+            )}
+          </Number>
+          <Text zero={isZeroEntities}>
+            {t(
+              "tooltip.entitiesFound",
+              { count: matchingEntities || 2 }, // For pluralization
             )}
           </Text>
         </Info>

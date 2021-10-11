@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
+import type { ConceptIdT, ConceptT } from "../api/types";
 import IconButton from "../button/IconButton";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
@@ -39,11 +40,23 @@ const SxIconButton = styled(IconButton)`
   flex-shrink: 0;
 `;
 
-const ConceptEntry = AdditionalInfoHoverable(
-  ({ node, conceptId, canRemoveConcepts, onRemoveConcept }) => {
-    const { t } = useTranslation();
+interface Props {
+  node: ConceptT;
+  conceptId: ConceptIdT;
+  canRemoveConcepts?: boolean;
+  onRemoveConcept: (conceptId: ConceptIdT) => void;
+}
 
-    return (
+const ConceptEntry = ({
+  node,
+  conceptId,
+  canRemoveConcepts,
+  onRemoveConcept,
+}: Props) => {
+  const { t } = useTranslation();
+
+  return (
+    <AdditionalInfoHoverable node={node}>
       <Concept>
         <ConceptContainer>
           {!node ? (
@@ -68,8 +81,8 @@ const ConceptEntry = AdditionalInfoHoverable(
           />
         )}
       </Concept>
-    );
-  },
-);
+    </AdditionalInfoHoverable>
+  );
+};
 
 export default ConceptEntry;

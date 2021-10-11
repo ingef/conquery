@@ -135,6 +135,7 @@ export interface ConceptBaseT {
   detailsAvailable: boolean;
   codeListResolvable: boolean;
   matchingEntries: number; // TODO: Don't send with struct nodes (even sent with 0)
+  matchingEntities: number; // TODO: Don't send with struct nodes (even sent with 0)
   children?: ConceptIdT[]; // Might be an empty struct or a "virtual node"
   description?: string; // Empty array: key not defined
   additionalInfos?: InfoT[]; // Empty array: key not defined
