@@ -159,7 +159,7 @@ public class ConceptsProcessor {
 		int pageNumber = pageNumberOpt.orElse(0);
 		int itemsPerPage = itemsPerPageOpt.orElse(50);
 
-		Preconditions.checkArgument(pageNumber > 0, "Page number must be 0 or a positive integer.");
+		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
 		log.trace("Searching for for the term \"{}\". (Page = {}, Items = {})", text, pageNumber, itemsPerPage);
