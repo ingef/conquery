@@ -9,6 +9,7 @@ import {
   CurrencyConfigT,
   DatasetIdT,
   SelectOptionT,
+  SelectorResultType,
 } from "../../api/types";
 import { toUpperCaseUnderscore } from "../../common/helpers";
 import { tableIsEditable } from "../../model/table";
@@ -28,6 +29,8 @@ interface PropsT {
   fieldName: string;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
+  allowlistedSelects?: SelectorResultType[];
+  blocklistedSelects?: SelectorResultType[];
   onCloseModal: (andIdx: number, orIdx: number) => void;
   onUpdateLabel: (andIdx: number, orIdx: number, label: string) => void;
   onToggleTable: (
@@ -145,6 +148,8 @@ const FormQueryNodeEditor = (props: PropsT) => {
       showTables={showTables}
       blocklistedTables={props.blocklistedTables}
       allowlistedTables={props.allowlistedTables}
+      blocklistedSelects={props.blocklistedSelects}
+      allowlistedSelects={props.allowlistedSelects}
       currencyConfig={currencyConfig}
       onCloseModal={() => props.onCloseModal(andIdx, orIdx)}
       onUpdateLabel={(label) => props.onUpdateLabel(andIdx, orIdx, label)}
