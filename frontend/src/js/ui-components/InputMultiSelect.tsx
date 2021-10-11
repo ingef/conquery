@@ -1,3 +1,4 @@
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import Mustache from "mustache";
 import React, { FC } from "react";
@@ -25,7 +26,14 @@ const SxLabeled = styled(Labeled)`
   }
 `;
 
-const SxMarkdown = styled(Markdown)`
+const disabledStyles = css`
+  opacity: 0.4;
+`;
+const OptionLabel = styled("span")<{ disabled?: boolean }>`
+  ${({ disabled }) => disabled && disabledStyles}
+`;
+const SxMarkdown = styled(Markdown)<{ disabled?: boolean }>`
+  ${({ disabled }) => disabled && disabledStyles}
   p {
     margin: 0;
   }
@@ -157,6 +165,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       createOptionPosition="first"
       name="form-field"
       options={options}
+      isOptionDisabled={(option) => !!option.disabled}
       components={{ MultiValueLabel, MenuList }}
       value={props.input.value}
       isDisabled={props.disabled}
@@ -180,11 +189,20 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       formatCreateLabel={(inputValue: string) =>
         t("common.create") + `: "${inputValue}"`
       }
-      formatOptionLabel={({ label, optionValue, templateValues, highlight }) =>
+      formatOptionLabel={({
+        label,
+        disabled,
+        optionValue,
+        templateValues,
+        highlight,
+      }) =>
         optionValue && templateValues ? (
-          <SxMarkdown source={Mustache.render(optionValue, templateValues)} />
+          <SxMarkdown
+            disabled={disabled}
+            source={Mustache.render(optionValue, templateValues)}
+          />
         ) : (
-          label
+          <OptionLabel disabled={disabled}>{label}</OptionLabel>
         )
       }
     />
