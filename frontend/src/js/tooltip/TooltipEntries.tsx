@@ -30,7 +30,7 @@ const Date = styled("p")`
 
 const ConceptDateRangeTooltip = styled(Row)``;
 
-const Text = styled("p")`
+const Text = styled("p")<{ zero?: boolean }>`
   margin: 0 0 5px;
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.gray)};
@@ -54,7 +54,7 @@ const Info = styled("div")`
   flex-shrink: 0;
 `;
 
-const Number = styled("p")`
+const Number = styled("p")<{ zero?: boolean }>`
   margin: 0;
   font-size: ${({ theme }) => theme.font.lg};
   color: ${({ theme, zero }) => (zero ? theme.col.red : "inherit")};
