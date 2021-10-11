@@ -18,7 +18,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.Constant
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ExternalNode extends QPNode {
 
 	private final Table table;
@@ -50,6 +52,9 @@ public class ExternalNode extends QPNode {
 			for (Map.Entry<String, List<String>> colValues : extraData.get(entity.getId()).entrySet()) {
 				extraAggregators.get(colValues.getKey()).setValue(colValues.getValue());
 			}
+		}
+		else {
+			log.debug("No Extra for Entity {}", entity.getId());
 		}
 	}
 

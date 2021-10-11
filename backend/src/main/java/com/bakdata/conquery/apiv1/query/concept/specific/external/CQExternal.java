@@ -234,6 +234,8 @@ public class CQExternal extends CQElement {
 		// Row -> Column -> Value
 		final Map<String, String>[] extraDataByRow = readExtras(values, format);
 
+		log.debug("Data by row( {} )", (Object) extraDataByRow);
+
 		final List<Function<String[], EntityIdMap.ExternalId>> readers = queryUpload.getIdReaders(format);
 
 		// We will not be able to resolve anything...
@@ -268,13 +270,14 @@ public class CQExternal extends CQElement {
 			if (extraDataByRow[rowNum] != null) {
 
 				for (Map.Entry<String, String> entry : extraDataByRow[rowNum].entrySet()) {
-
 					extraDataByEntity.computeIfAbsent(resolvedId, (ignored) -> new HashMap<>())
 									 .computeIfAbsent(entry.getKey(), (ignored) -> new ArrayList<>())
 									 .add(entry.getValue());
 				}
 			}
 		}
+
+		log.debug("Extra By Entity({})", extraDataByEntity);
 
 		return new ResolveStatistic(resolved, extraDataByEntity, unresolvedDate, unresolvedId);
 	}
@@ -334,6 +337,7 @@ public class CQExternal extends CQElement {
 				extrasByRow[line].put(names[col], values[line][col]);
 			}
 		}
+
 
 		return extrasByRow;
 	}
