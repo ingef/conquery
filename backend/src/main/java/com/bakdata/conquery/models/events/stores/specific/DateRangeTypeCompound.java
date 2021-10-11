@@ -19,40 +19,52 @@ import lombok.ToString;
  */
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_COMPOUND")
 @Getter
-@Setter
+//@Setter
 @ToString(of = {"minStore", "maxStore"})
 public class DateRangeTypeCompound implements DateRangeStore {
 
-
-	final private String startColumn, endColumn;
+	@Setter
+	 private String startColumn, endColumn;
 
 	@JsonIgnore
-	private DateStore minStore;
+	@Setter
+	private DateStore startStore;
 	@JsonIgnore
-	private DateStore maxStore;
-
-	private Bucket parent;
-
-	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeCompound(String startColumn, String endColumn) {
-		this.startColumn = startColumn;
-		this.endColumn = endColumn;
-	}
+	@Setter
+	private DateStore endStore;
 
 	@JsonBackReference
+	private Bucket parent;
+
+//	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+//	public DateRangeTypeCompound(String startColumn, String endColumn) {
+//		this.startColumn = startColumn;
+//		this.endColumn = endColumn;
+//	}
+
+
 	public void setParent(Bucket parent) {
 		this.parent = parent;
-		this.minStore = (DateStore) parent.getStore(startColumn);
-		this.maxStore = (DateStore) parent.getStore(endColumn);
+		this.startStore = (DateStore) parent.getStore(startColumn);
+		this.endStore = (DateStore) parent.getStore(endColumn);
+
+		if (startStore == null) {
+			throw new NullPointerException("the given minStore is null");
+		}
+
+		if (endStore == null) {
+			throw new NullPointerException("the given maxStore is null");
+		}
 	}
 
 	@Override
 	public int getLines() {
 		// they can be unaligned, if one of them is empty.
-		return Math.max(minStore.getLines(), maxStore.getLines());
+	//	return Math.max(startStore.getLines(), endStore.getLines());
+		return 0;
 	}
 
-	// returns 0 because stores are handled by another component
+	// returns 0 because stores are handled by child nodes
 	@Override
 	public long estimateEventBits() {
 		return 0;
@@ -60,35 +72,42 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Override
 	public DateRangeTypeCompound select(int[] starts, int[] length) {
-		return new DateRangeTypeCompound(startColumn, endColumn);
+		DateRangeTypeCompound  compoundStore = new DateRangeTypeCompound();
+
+		compoundStore.setStartColumn(getStartColumn());
+		compoundStore.setEndColumn(getEndColumn());
+		return compoundStore;
 	}
+
 
 	@Override
 	public void setDateRange(int event, CDateRange raw) {
+		// this has already done by the child stores, so no need to do it again
 	}
 
 	@Override
 	public void setNull(int event) {
+		// this has already been done by the child stores, so no need to do it again
 	}
 
 	@Override
 	public CDateRange getDateRange(int event) {
-		int min = Integer.MIN_VALUE;
-		int max = Integer.MAX_VALUE;
+		int start = Integer.MIN_VALUE;
+		int end = Integer.MAX_VALUE;
 
-		if (minStore.has(event)) {
-			min = minStore.getDate(event);
+		if (startStore.has(event)) {
+			start = startStore.getDate(event);
 		}
 
-		if (maxStore.has(event)) {
-			max = maxStore.getDate(event);
+		if (endStore.has(event)) {
+			end = endStore.getDate(event);
 		}
 
-		return CDateRange.of(min, max);
+		return CDateRange.of(start, end);
 	}
 
 	@Override
 	public boolean has(int event) {
-		return minStore.has(event) || maxStore.has(event);
+		return startStore.has(event) || endStore.has(event);
 	}
 }

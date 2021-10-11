@@ -65,7 +65,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 				.filter(imp -> imp.getTable().equals(this));
 	}
 
-	public Column getColumnByName(String columnName) {
+	public Column getColumnByName(@NotNull String columnName) {
 		return Arrays.stream(columns).filter(column -> column.getName().equals(columnName)).findFirst().orElse(null);
 	}
 }

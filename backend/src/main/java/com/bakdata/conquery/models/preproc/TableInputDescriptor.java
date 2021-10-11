@@ -134,11 +134,6 @@ public class TableInputDescriptor {
 		return output[i].getColumnDescription();
 	}
 
-	public Parser createParser(int i, ConqueryConfig config) {
-		return output[i].createParser(config);
-	}
-
-
 	/**
 	 * Create a mapping from a header to it's column position.
 	 */

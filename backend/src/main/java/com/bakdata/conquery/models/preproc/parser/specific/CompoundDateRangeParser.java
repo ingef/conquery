@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
+import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
@@ -24,8 +25,13 @@ public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> 
 		this.endColumn = endColumn;
 		this.startColumn = startColumn;
 
+
 	}
 
+	@Override
+	public boolean isEmpty() {
+		return false;
+	}
 
 	@Override
 	protected CDateRange parseValue(@NotNull String value) throws ParsingException {
@@ -34,7 +40,12 @@ public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> 
 
 	@Override
 	protected DateRangeStore decideType() {
-		return null;
+
+		DateRangeTypeCompound  compoundStore = new DateRangeTypeCompound();
+
+		compoundStore.setStartColumn(this.startColumn);
+		compoundStore.setEndColumn(this.endColumn);
+		return compoundStore;
 	}
 
 
@@ -44,6 +55,6 @@ public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> 
 
 	@Override
 	public ColumnValues createColumnValues() {
-		return new ListColumnValues<>();
+		return null;
 	}
 }

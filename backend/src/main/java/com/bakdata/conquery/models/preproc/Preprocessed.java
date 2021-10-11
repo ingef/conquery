@@ -73,9 +73,7 @@ public class Preprocessed {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
 			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
 
-			//ToDo 1-)createParser aus der OutPutDescription
-
-			columns[index].setParser(input.createParser(index, config));
+			columns[index].setParser(input.getOutput()[index].createParser(config));
 
 			final Parser parser = columns[index].getParser();
 			values[index] = parser.createColumnValues();
@@ -184,7 +182,9 @@ public class Preprocessed {
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = columns[colIdx];
 			final ColumnValues columnValues = values[colIdx];
-
+			if (columnValues == null) {
+				continue;
+			}
 			final ColumnStore store = columnStores.get(ppColumn.getName());
 
 			entityStart.int2IntEntrySet()
@@ -250,6 +250,14 @@ public class Preprocessed {
 		rowEntities.add(primaryId);
 
 		for (int col = 0; col < outRow.length; col++) {
+
+			if (values[col] == null && outRow[col] != null) {
+				//TODo customize error message
+				throw new IllegalStateException(String.format("Received value from N", ""));
+			}
+			else if (values[col] == null) {
+				continue;
+			}
 			final int idx = values[col].add(outRow[col]);
 
 			if (event != idx) {

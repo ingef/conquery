@@ -34,12 +34,19 @@ import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -60,6 +67,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hpsf.Array;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -139,6 +147,117 @@ public class SerializationTests {
 				.injectables(STORAGE)
 				.registry(registry)
 				.test(group);
+	}
+
+
+	@Test
+	public void bucket() throws JSONException, IOException {
+		Dataset dataset = new Dataset();
+		dataset.setName("datasetName");
+
+		Table table = new Table();
+
+		Column startCol = new Column();
+		startCol.setLabel("startLabel");
+		startCol.setName("startCol");
+		startCol.setType(MajorTypeId.DATE);
+		startCol.setTable(table);
+
+		Column endCol = new Column();
+		endCol.setLabel("endLabel");
+		endCol.setName("endCol");
+		endCol.setType(MajorTypeId.DATE);
+		endCol.setTable(table);
+
+
+		Column compoundCol = new Column();
+		compoundCol.setLabel("compoundLabel");
+		compoundCol.setName("compoundCol");
+		compoundCol.setType(MajorTypeId.DATE_RANGE);
+		compoundCol.setTable(table);
+
+		table.setColumns(new Column[]{startCol, endCol, compoundCol});
+		table.setDataset(dataset);
+		table.setLabel("tableLabel");
+		table.setName("tableName");
+
+
+		Import imp = new Import(table);
+		DateRangeTypeCompound compoundStore = new DateRangeTypeCompound();
+		compoundStore.setStartColumn(startCol.getName());
+		compoundStore.setEndColumn(endCol.getName());
+
+		ColumnStore startStore = new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE);
+		ColumnStore endStore = new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE);
+
+		Bucket bucket = new Bucket(0, 1, 3, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
+
+		CentralRegistry registry = new CentralRegistry();
+
+		registry.register(dataset);
+		registry.register(startCol);
+		registry.register(endCol);
+		registry.register(compoundCol);
+		registry.register(table);
+		registry.register(imp);
+		registry.register(bucket);
+
+
+		final Validator validator = Validators.newValidator();
+
+		SerializationTestUtil
+				.forType(Bucket.class)
+				.registry(registry)
+				.injectables(new Injectable() {
+					@Override
+					public MutableInjectableValues inject(MutableInjectableValues values) {
+						return values.add(Validator.class, validator);
+					}
+				})
+				.test(bucket);
+
+	}
+
+
+	@Test
+	public void table() throws JSONException, IOException {
+		Dataset dataset = new Dataset();
+		dataset.setName("datasetName");
+
+		Table table = new Table();
+
+		Column column = new Column();
+		column.setLabel("colLabel");
+		column.setName("colName");
+		column.setType(MajorTypeId.STRING);
+		column.setTable(table);
+
+
+		table.setColumns(new Column[]{column});
+		table.setDataset(dataset);
+		table.setLabel("tableLabel");
+		table.setName("tableName");
+
+
+		CentralRegistry registry = new CentralRegistry();
+
+		registry.register(dataset);
+		registry.register(table);
+
+		column.setTable(null);
+
+		final Validator validator = Validators.newValidator();
+
+		SerializationTestUtil
+				.forType(Table.class)
+				.registry(registry)
+				.injectables(new Injectable() {
+					@Override
+					public MutableInjectableValues inject(MutableInjectableValues values) {
+						return values.add(Validator.class, validator);
+					}
+				})
+				.test(table);
 	}
 
 	@Test

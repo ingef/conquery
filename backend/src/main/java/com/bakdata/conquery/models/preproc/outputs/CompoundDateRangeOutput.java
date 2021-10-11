@@ -20,10 +20,11 @@ import lombok.ToString;
 @Data
 @ToString(of = {"startColumn", "endColumn"})
 @CPSType(id = "COMPOUND_DATE_RANGE", base = OutputDescription.class)
-public class CompoundDateRangeOutput extends OutputDescription  {
+public class CompoundDateRangeOutput extends OutputDescription {
 
 	@NotNull
-	private String min, max;
+	private String startColumn, endColumn;
+
 	/**
 	 * Instantiate the corresponding {@link Output} for the rows.
 	 *
@@ -48,8 +49,8 @@ public class CompoundDateRangeOutput extends OutputDescription  {
 	public MajorTypeId getResultType() {
 		return MajorTypeId.DATE_RANGE;
 	}
-	public Parser<?, ?> createParser(ConqueryConfig config) {
 
-		return new CompoundDateRangeParser(config, min, max);
+	public Parser<?, ?> createParser(ConqueryConfig config) {
+		return new CompoundDateRangeParser(config, startColumn, endColumn);
 	}
 }

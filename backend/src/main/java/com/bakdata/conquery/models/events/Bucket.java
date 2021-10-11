@@ -27,11 +27,13 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -57,6 +59,8 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	@Min(0)
 	private final int numberOfEvents;
+
+	@JsonManagedReference
 	private final ColumnStore[] stores;
 
 	private final Set<Integer> entities;
@@ -78,6 +82,8 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	public Table getTable() {
 		return imp.getTable();
 	}
+
+
 
 	@Override
 	public BucketId createId() {
@@ -195,7 +201,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return getTable().getDataset();
 	}
 
-	public ColumnStore getStore(String storeName) {
+	public ColumnStore getStore(@NotNull String storeName) {
 		return this.getStore(getTable().getColumnByName(storeName));
 	}
 }
