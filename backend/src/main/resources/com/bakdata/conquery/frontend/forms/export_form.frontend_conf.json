@@ -19,7 +19,10 @@
             },
             "validations": [
                 "NOT_EMPTY"
-            ]
+            ],
+            "tooltip": {
+                "de": "Beschreibt die versicherten Personen, für die Daten ausgegeben werden."
+            }
         },
         {
             "name": "resolution",
