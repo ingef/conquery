@@ -1,4 +1,4 @@
-import styled from "app-theme";
+import styled from "@emotion/styled";
 import { FC } from "react";
 import { useDispatch } from "react-redux";
 
