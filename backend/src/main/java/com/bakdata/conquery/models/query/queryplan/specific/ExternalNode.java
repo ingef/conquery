@@ -53,7 +53,7 @@ public class ExternalNode extends QPNode {
 				extraAggregators.get(colValues.getKey()).setValue(colValues.getValue());
 			}
 		}
-		else {
+		else if(contained != null){
 			log.debug("No Extra for Entity {}", entity.getId());
 		}
 	}
