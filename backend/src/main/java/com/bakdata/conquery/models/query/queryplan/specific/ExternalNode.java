@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,10 +25,10 @@ public class ExternalNode extends QPNode {
 	private final Table table;
 	private SpecialDateUnion dateUnion = new SpecialDateUnion();
 
-	@Getter
 	@NotEmpty
 	@NonNull
 	private final Map<Integer, CDateSet> includedEntities;
+
 	private final Map<Integer, Map<String, List<String>>> extraData;
 	private final Map<String, ConstantValueAggregator> extraAggregators;
 
@@ -49,6 +48,9 @@ public class ExternalNode extends QPNode {
 		dateUnion.init(entity, context);
 
 		if (extraData.containsKey(entity.getId())) {
+
+			log.debug("Entity {} has values ({})", entity.getId(), extraData.get(entity.getId()));
+
 			for (Map.Entry<String, List<String>> colValues : extraData.get(entity.getId()).entrySet()) {
 				extraAggregators.get(colValues.getKey()).setValue(colValues.getValue());
 			}
