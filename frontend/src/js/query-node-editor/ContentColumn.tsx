@@ -3,10 +3,15 @@ import React, { FC, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
-import { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
+import {
+  CurrencyConfigT,
+  DatasetIdT,
+  SelectOptionT,
+  SelectorResultType,
+} from "../api/types";
 import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode } from "../model/node";
-import { sortSelects } from "../model/select";
+import { sortSelects, isSelectDisabled } from "../model/select";
 import {
   ConceptQueryNodeType,
   StandardQueryNodeT,
@@ -54,6 +59,8 @@ interface PropsT {
   datasetId: DatasetIdT;
   currencyConfig: CurrencyConfigT;
   selectedTableIdx: number | null;
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
   onShowDescription: (filterIdx: number) => void;
   onSelectSelects: (value: SelectOptionT[]) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
@@ -78,6 +85,8 @@ const ContentColumn: FC<PropsT> = ({
   datasetId,
   currencyConfig,
   selectedTableIdx,
+  blocklistedSelects,
+  allowlistedSelects,
   onLoadFilterSuggestions,
   onSetDateColumn,
   onSetFilterValue,
@@ -152,6 +161,11 @@ const ContentColumn: FC<PropsT> = ({
               options={sortSelects(node.selects).map((select) => ({
                 value: select.id,
                 label: select.label,
+                disabled: isSelectDisabled(
+                  select,
+                  blocklistedSelects,
+                  allowlistedSelects,
+                ),
               }))}
             />
           </ContentCell>
@@ -175,6 +189,8 @@ const ContentColumn: FC<PropsT> = ({
               datasetId={datasetId}
               currencyConfig={currencyConfig}
               tableIdx={idx}
+              allowlistedSelects={allowlistedSelects}
+              blocklistedSelects={blocklistedSelects}
               onShowDescription={onShowDescription}
               onSelectTableSelects={onSelectTableSelects}
               onSetDateColumn={onSetDateColumn}
