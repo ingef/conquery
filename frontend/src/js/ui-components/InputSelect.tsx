@@ -70,6 +70,7 @@ const InputSelect = ({
         value={selected}
         defaultValue={defaultVal}
         options={options}
+        isOptionDisabled={(option) => !!option.disabled}
         onChange={(field: { value: string; label: string } | null) =>
           field ? input.onChange(field.value) : input.onChange(null)
         }

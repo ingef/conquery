@@ -54,13 +54,8 @@ interface PropsT {
 }
 
 const Field = ({ field, ...commonProps }: PropsT) => {
-  const {
-    formType,
-    optional,
-    locale,
-    availableDatasets,
-    getFieldValue,
-  } = commonProps;
+  const { formType, optional, locale, availableDatasets, getFieldValue } =
+    commonProps;
   const { t } = useTranslation();
 
   switch (field.type) {
@@ -246,6 +241,8 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             isSingle: field.isSingle,
             blocklistedTables: field.blocklistedConnectors,
             allowlistedTables: field.allowlistedConnectors,
+            blocklistedSelects: field.blocklistedSelects,
+            allowlistedSelects: field.allowlistedSelects,
             defaults: field.defaults,
             optional,
             isValidConcept: (item: Object) =>

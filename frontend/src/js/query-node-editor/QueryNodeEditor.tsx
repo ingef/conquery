@@ -10,6 +10,7 @@ import {
   CurrencyConfigT,
   DatasetIdT,
   SelectOptionT,
+  SelectorResultType,
 } from "../api/types";
 import TransparentButton from "../button/TransparentButton";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
@@ -104,6 +105,8 @@ export interface QueryNodeEditorPropsT {
   datasetId: DatasetIdT;
   allowlistedTables?: string[];
   blocklistedTables?: string[];
+  allowlistedSelects?: SelectorResultType[];
+  blocklistedSelects?: SelectorResultType[];
   currencyConfig: CurrencyConfigT;
 
   onCloseModal: () => void;
@@ -259,6 +262,8 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
               datasetId={props.datasetId}
               currencyConfig={props.currencyConfig}
               selectedTableIdx={selectedTableIdx}
+              allowlistedSelects={props.allowlistedSelects}
+              blocklistedSelects={props.blocklistedSelects}
               onShowDescription={onShowDescription}
               onToggleTimestamps={props.onToggleTimestamps}
               onToggleSecondaryIdExclude={props.onToggleSecondaryIdExclude}
