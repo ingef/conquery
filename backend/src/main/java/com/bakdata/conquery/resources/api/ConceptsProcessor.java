@@ -169,12 +169,7 @@ public class ConceptsProcessor {
 			fullResult = searchCache.get(Pair.of(filter, text));
 		}
 		catch (ExecutionException e) {
-			if (log.isTraceEnabled()){
-				log.trace("Failed to search for \"{}\".", text, e);
-			}
-			else {
-				log.warn("Failed to search for \"{}\".", text);
-			}
+			log.warn("Failed to search for \"{}\".", text, (Throwable) (log.isTraceEnabled()? e: null));
 			return ImmutableList.of();
 		}
 
