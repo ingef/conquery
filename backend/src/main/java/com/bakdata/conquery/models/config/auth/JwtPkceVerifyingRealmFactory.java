@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.config.auth;
 
+import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -309,7 +310,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		}
 
 		// Build the original redirect uri (the request uri without the query added by the IDP)
-		final URI redirectedUri = request.getUriInfo().getRequestUriBuilder().replaceQuery("").build();
+		final URI redirectedUri = UriBuilder.fromUri(RequestHelper.getRequestURL(request)).replaceQuery("").build();
 		log.trace("Redirect URI: {}", redirectedUri);
 
 		// Prepare code for exchange with access token
