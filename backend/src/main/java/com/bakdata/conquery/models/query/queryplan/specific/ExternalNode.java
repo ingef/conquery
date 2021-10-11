@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,16 +48,19 @@ public class ExternalNode extends QPNode {
 		contained = includedEntities.get(entity.getId());
 		dateUnion.init(entity, context);
 
-		if (extraData.containsKey(entity.getId())) {
+		log.debug("Entity {} has values ({})", entity.getId(), extraData.get(entity.getId()));
 
-			log.debug("Entity {} has values ({})", entity.getId(), extraData.get(entity.getId()));
+		for (Map.Entry<String, ConstantValueAggregator> colAndAgg : extraAggregators.entrySet()) {
+			final String col = colAndAgg.getKey();
+			final ConstantValueAggregator agg = colAndAgg.getValue();
 
-			for (Map.Entry<String, List<String>> colValues : extraData.get(entity.getId()).entrySet()) {
-				extraAggregators.get(colValues.getKey()).setValue(colValues.getValue());
+			// Clear if entity has no value for the column
+			if (!extraData.getOrDefault(entity.getId(), Collections.emptyMap()).containsKey(col)) {
+				agg.setValue(null);
+				continue;
 			}
-		}
-		else if(contained != null){
-			log.debug("No Extra for Entity {}", entity.getId());
+
+			agg.setValue(extraData.get(entity.getId()).get(col));
 		}
 	}
 
