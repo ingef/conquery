@@ -64,7 +64,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 		return 0;
 	}
 
-	// returns 0 because stores are handled by child nodes
+	// Reported as 0 because this store does not hold data of its own, but references its neighbouring stores.
 	@Override
 	public long estimateEventBits() {
 		return 0;
@@ -78,7 +78,6 @@ public class DateRangeTypeCompound implements DateRangeStore {
 		compoundStore.setEndColumn(getEndColumn());
 		return compoundStore;
 	}
-
 
 	@Override
 	public void setDateRange(int event, CDateRange raw) {
