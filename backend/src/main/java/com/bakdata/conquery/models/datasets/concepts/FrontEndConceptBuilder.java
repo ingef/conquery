@@ -205,6 +205,7 @@ public class FrontEndConceptBuilder {
 					   .id(con.getTable().getId())
 					   .connectorId(con.getId())
 					   .label(con.getLabel())
+					   .isDefault(con.isDefault())
 					   .filters(
 							   con.collectAllFilters()
 								  .stream()
