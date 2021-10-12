@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import PrimaryButton from "../../button/PrimaryButton";
-import TransparentButton from "../../button/TransparentButton";
+import { TransparentButton } from "../../button/TransparentButton";
 import { useActiveLang } from "../../localization/useActiveLang";
 import Modal from "../../modal/Modal";
 import InputCheckbox from "../../ui-components/InputCheckbox";

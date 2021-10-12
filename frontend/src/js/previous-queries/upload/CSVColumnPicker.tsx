@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
-import TransparentButton from "../../button/TransparentButton";
+import { TransparentButton } from "../../button/TransparentButton";
 import { parseCSV, toCSV } from "../../file/csv";
 import FaIcon from "../../icon/FaIcon";
 import { useActiveLang } from "../../localization/useActiveLang";

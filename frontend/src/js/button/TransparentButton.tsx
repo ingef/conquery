@@ -3,7 +3,7 @@ import React from "react";
 
 import BasicButton from "./BasicButton";
 
-const TransparentButton = styled(BasicButton)`
+export const TransparentButton = styled(BasicButton)<{ light?: boolean }>`
   color: ${({ theme, light }) => (light ? theme.col.gray : theme.col.black)};
   background-color: transparent;
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -19,5 +19,3 @@ const TransparentButton = styled(BasicButton)`
     background-color: ${({ theme }) => theme.col.grayVeryLight};
   }
 `;
-
-export default (props) => <TransparentButton {...props} />;

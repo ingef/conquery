@@ -7,7 +7,7 @@ import Markdown from "react-markdown";
 import { components, MenuListComponentProps } from "react-select";
 
 import type { FilterSuggestion, SelectOptionT } from "../api/types";
-import TransparentButton from "../button/TransparentButton";
+import { TransparentButton } from "../button/TransparentButton";
 import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
