@@ -1,6 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
+import { useIntersectionObserver } from "js/common/useIntersectionObserver";
 import { useState, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -118,7 +119,9 @@ interface Props {
     defaultValue?: SelectOptionT[];
     onChange: (value: SelectOptionT[]) => void;
   };
+  loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
+  onLoadMore?: () => void;
 }
 
 const InputMultiSelectTwo = ({
@@ -129,7 +132,9 @@ const InputMultiSelectTwo = ({
   indexPrefix,
   creatable,
   disabled,
+  loading,
   onResolve,
+  onLoadMore,
 }: Props) => {
   const { onDropFile } = useResolvableSelect({
     defaultValue: input.defaultValue,
@@ -279,6 +284,19 @@ const InputMultiSelectTwo = ({
   const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
   const labelProps = getLabelProps({});
 
+  const intersectionObserverRef = useRef<HTMLDivElement | null>(null);
+  useIntersectionObserver(
+    intersectionObserverRef,
+    useCallback(
+      (_, isIntersecting) => {
+        if (isIntersecting && !loading && onLoadMore) {
+          onLoadMore();
+        }
+      },
+      [onLoadMore, loading],
+    ),
+  );
+
   const clickOutsideRef = useRef<HTMLLabelElement>(null);
   useClickOutside(
     clickOutsideRef,
@@ -374,12 +392,23 @@ const InputMultiSelectTwo = ({
           <List>
             {!creatable && filteredOptions.length === 0 && <EmptyPlaceholder />}
             {filteredOptions.map((option, index) => {
+              const { ref: itemPropsRef, ...itemProps } = getItemProps({
+                index,
+                item: filteredOptions[index],
+              });
+
               return (
                 <ListOption
                   key={`${option.value}`}
                   active={highlightedIndex === index}
                   disabled={option.disabled}
-                  {...getItemProps({ index, item: filteredOptions[index] })}
+                  {...itemProps}
+                  ref={(instance) => {
+                    itemPropsRef(instance);
+                    if (index === filteredOptions.length - 1) {
+                      intersectionObserverRef.current = instance;
+                    }
+                  }}
                 >
                   {option.label}
                 </ListOption>

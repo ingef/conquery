@@ -44,6 +44,9 @@ const Template: Story<
     <InputMultiSelectTwo
       {...args}
       onResolve={passOnResolve ? onResolve : undefined}
+      onLoadMore={() => {
+        console.log("ON LOAD MORE");
+      }}
       creatable
       input={{
         defaultValue: [],
