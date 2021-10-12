@@ -197,6 +197,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
@@ -221,6 +222,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
@@ -243,6 +245,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
@@ -263,6 +266,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
@@ -284,6 +288,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
@@ -304,6 +309,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
@@ -324,6 +330,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
@@ -344,6 +351,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
@@ -364,6 +372,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
@@ -398,6 +407,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
@@ -422,6 +432,7 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L39) | allowDropFile | `boolean` or `null` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L41) | defaultValue | `FILTER_VALUE` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | description | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L38) | pattern | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
