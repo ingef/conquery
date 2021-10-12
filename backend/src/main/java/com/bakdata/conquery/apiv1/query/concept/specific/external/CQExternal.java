@@ -81,10 +81,6 @@ public class CQExternal extends CQElement {
 	@Getter
 	private Map<Integer, Map<String, List<String>>> extra;
 
-
-	@JsonIgnore
-	private final Map<String, ConstantValueAggregator> extraAggregators = new HashMap<>();
-
 	public CQExternal(@NotEmpty List<String> format, @NotEmpty String[][] values) {
 		this.format = format;
 		this.values = values;
@@ -97,20 +93,24 @@ public class CQExternal extends CQElement {
 			throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
 		}
 
+
+		final Map<String, ConstantValueAggregator> extraAggregators = new HashMap<>(format.size());
+
 		if (extra != null) {
 			for (int col = 0; col < format.size(); col++) {
 				if (!format.get(col).equals(FORMAT_EXTRA)) {
 					continue;
 				}
 
-				String column = values[0][col];
+				final String column = values[0][col];
 
-				extraAggregators.put(column, new ConstantValueAggregator(null, new ResultType.ListT(ResultType.StringT.INSTANCE)));
+				final ConstantValueAggregator aggregator = new ConstantValueAggregator(null, new ResultType.ListT(ResultType.StringT.INSTANCE));
+				plan.registerAggregator(aggregator);
+
+				if(extraAggregators.put(column, aggregator) != null){
+					log.error("Multiple Aggregators for same Column");
+				}
 			}
-
-
-			extraAggregators.values()
-							.forEach(plan::registerAggregator);
 		}
 
 		return new ExternalNode(context.getStorage().getDataset().getAllIdsTable(), valuesResolved, extra, extraAggregators);

@@ -50,13 +50,16 @@ public class ExternalNode extends QPNode {
 
 		log.debug("Entity {} has values ({})", entity.getId(), extraData.get(entity.getId()));
 
+		for (ConstantValueAggregator aggregator : extraAggregators.values()) {
+			aggregator.setValue(null);
+		}
+
 		for (Map.Entry<String, ConstantValueAggregator> colAndAgg : extraAggregators.entrySet()) {
 			final String col = colAndAgg.getKey();
 			final ConstantValueAggregator agg = colAndAgg.getValue();
 
 			// Clear if entity has no value for the column
 			if (!extraData.getOrDefault(entity.getId(), Collections.emptyMap()).containsKey(col)) {
-				agg.setValue(null);
 				continue;
 			}
 
