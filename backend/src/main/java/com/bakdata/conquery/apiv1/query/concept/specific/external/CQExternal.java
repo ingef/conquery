@@ -93,7 +93,7 @@ public class CQExternal extends CQElement {
 			throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
 		}
 
-
+		// Allocate at once, the maximum possible size
 		final Map<String, ConstantValueAggregator> extraAggregators = new HashMap<>(format.size());
 
 		if (extra != null) {
@@ -234,8 +234,6 @@ public class CQExternal extends CQElement {
 		// Row -> Column -> Value
 		final Map<String, String>[] extraDataByRow = readExtras(values, format);
 
-		log.debug("Data by row( {} )", (Object) extraDataByRow);
-
 		final List<Function<String[], EntityIdMap.ExternalId>> readers = queryUpload.getIdReaders(format);
 
 		// We will not be able to resolve anything...
@@ -276,8 +274,6 @@ public class CQExternal extends CQElement {
 				}
 			}
 		}
-
-		log.debug("Extra By Entity({})", extraDataByEntity);
 
 		return new ResolveStatistic(resolved, extraDataByEntity, unresolvedDate, unresolvedId);
 	}

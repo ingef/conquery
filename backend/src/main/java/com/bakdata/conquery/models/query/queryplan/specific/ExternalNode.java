@@ -48,8 +48,6 @@ public class ExternalNode extends QPNode {
 		contained = includedEntities.get(entity.getId());
 		dateUnion.init(entity, context);
 
-		log.debug("Entity {} has values ({})", entity.getId(), extraData.get(entity.getId()));
-
 		for (ConstantValueAggregator aggregator : extraAggregators.values()) {
 			aggregator.setValue(null);
 		}
