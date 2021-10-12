@@ -272,6 +272,7 @@ public class FrontEndConceptBuilder {
 					.label(select.getLabel())
 					.description(select.getDescription())
 					.resultType(select.getResultType())
+					.isDefault(select.isDefault())
 					.build();
 	}
 
