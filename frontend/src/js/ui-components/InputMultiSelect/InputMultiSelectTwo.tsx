@@ -1,12 +1,12 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useClickOutside } from "js/common/helpers/useClickOutside";
 import { useState, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
+import { useClickOutside } from "../../common/helpers/useClickOutside";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
 import Labeled from "../Labeled";
@@ -167,13 +167,21 @@ const InputMultiSelectTwo = ({
           ]
         : [];
 
+    const stillSelectable = (option: SelectOptionT) =>
+      selectedItems.indexOf(option) < 0;
+
+    const matchesQuery = (option: SelectOptionT) => {
+      const lowerInputValue = inputValue.toLowerCase();
+      const lowerLabel = option.label.toLowerCase();
+
+      return (
+        lowerLabel.includes(lowerInputValue) ||
+        String(option.value).toLowerCase().includes(lowerInputValue)
+      );
+    };
+
     const regularOptions = options.filter(
-      (option) =>
-        selectedItems.indexOf(option) < 0 &&
-        (option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
-          String(option.value)
-            .toLowerCase()
-            .includes(inputValue.toLowerCase())),
+      (option) => stillSelectable(option) && matchesQuery(option),
     );
 
     return [...creatableOption, ...regularOptions];
