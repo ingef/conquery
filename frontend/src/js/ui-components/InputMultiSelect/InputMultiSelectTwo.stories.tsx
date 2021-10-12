@@ -16,7 +16,9 @@ export default {
   },
 } as ComponentMeta<typeof InputMultiSelectTwo>;
 
-const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
+const Template: Story<
+  ComponentProps<typeof InputMultiSelectTwo> & { passOnResolve?: boolean }
+> = ({ passOnResolve, ...args }) => {
   const [options, setOptions] = useState<SelectOptionT[]>(
     wl.map((w) => ({ label: w, value: w, disabled: Math.random() < 0.1 })),
   );
@@ -34,15 +36,15 @@ const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
     );
   };
 
+  const onResolve = (csvLines: any) => {
+    console.log(csvLines);
+  };
+
   return (
     <InputMultiSelectTwo
-      label="This is a nice label"
+      {...args}
+      onResolve={passOnResolve ? onResolve : undefined}
       creatable
-      onResolve={(csvLines) => {
-        console.log(csvLines);
-      }}
-      tooltip="And here goes some tooltip that really helps the user understand what's going on"
-      indexPrefix={5}
       input={{
         defaultValue: [],
         value: value || [],
@@ -54,3 +56,19 @@ const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
 };
 
 export const Default = Template.bind({});
+Default.args = {
+  indexPrefix: 5,
+  label: "This is a nice label",
+  tooltip:
+    "And here goes some tooltip that really helps the user understand what's going on",
+  disabled: false,
+  passOnResolve: true,
+};
+Default.argTypes = {
+  passOnResolve: {
+    type: { name: "boolean" },
+  },
+  indexPrefix: {
+    type: { name: "number", required: false },
+  },
+};

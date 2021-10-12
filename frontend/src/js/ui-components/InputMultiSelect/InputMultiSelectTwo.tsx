@@ -1,3 +1,4 @@
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
 import { useClickOutside } from "js/common/helpers/useClickOutside";
@@ -16,7 +17,7 @@ import MenuActionBar from "./MenuActionBar";
 import SelectedItem from "./SelectedItem";
 import { useResolvableSelect } from "./useResolvableSelect";
 
-const Control = styled("div")`
+const Control = styled("div")<{ disabled?: boolean }>`
   border: 1px solid ${({ theme }) => theme.col.gray};
   border-radius: 4px;
   display: flex;
@@ -24,6 +25,11 @@ const Control = styled("div")`
   overflow: hidden;
   padding: 3px 3px 3px 8px;
   background-color: white;
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      cursor: not-allowed;
+    `}
 
   &:focus {
     outline: 1px solid black;
@@ -65,6 +71,15 @@ const Input = styled("input")`
   outline: none;
   flex-grow: 1;
   flex-basis: 30px;
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      cursor: not-allowed;
+      pointer-events: none;
+      &:placehoder {
+        opacity: 0.5;
+      }
+    `}
 `;
 
 const SxLabeled = styled(Labeled)`
@@ -113,6 +128,7 @@ const InputMultiSelectTwo = ({
   tooltip,
   indexPrefix,
   creatable,
+  disabled,
   onResolve,
 }: Props) => {
   const { onDropFile } = useResolvableSelect({
@@ -269,6 +285,7 @@ const InputMultiSelectTwo = ({
     <SelectContainer>
       <Control
         {...comboboxProps}
+        disabled={disabled}
         ref={(instance) => {
           comboboxRef(instance);
         }}
@@ -285,6 +302,7 @@ const InputMultiSelectTwo = ({
                 key={`${option.value}${index}`}
                 option={option}
                 active={index === activeIndex}
+                disabled={disabled}
                 {...selectedItemProps}
                 onRemoveClick={() => removeSelectedItem(option)}
               />
@@ -294,6 +312,7 @@ const InputMultiSelectTwo = ({
             type="text"
             value={inputValue}
             {...inputProps}
+            disabled={disabled}
             placeholder={
               onResolve
                 ? t("inputMultiSelect.dndPlaceholder")
@@ -316,6 +335,7 @@ const InputMultiSelectTwo = ({
         {(inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
             icon="times"
+            disabled={disabled}
             onClick={() => {
               setInputValue("");
               resetMultiSelectState();
@@ -324,7 +344,11 @@ const InputMultiSelectTwo = ({
           />
         )}
         <VerticalSeparator />
-        <DropdownToggleButton icon="chevron-down" {...getToggleButtonProps()} />
+        <DropdownToggleButton
+          disabled={disabled}
+          icon="chevron-down"
+          {...getToggleButtonProps()}
+        />
       </Control>
       {isOpen ? (
         <Menu
@@ -376,7 +400,7 @@ const InputMultiSelectTwo = ({
     >
       {!onResolve && Select}
       {onResolve && onDropFile && (
-        <SxInputMultiSelectDropzone onDropFile={onDropFile}>
+        <SxInputMultiSelectDropzone disabled={disabled} onDropFile={onDropFile}>
           {() => Select}
         </SxInputMultiSelectDropzone>
       )}

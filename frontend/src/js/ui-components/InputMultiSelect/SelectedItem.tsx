@@ -22,14 +22,15 @@ const SelectedItem = forwardRef<
   HTMLDivElement,
   {
     active?: boolean;
+    disabled?: boolean;
     option: SelectOptionT;
     onRemoveClick: () => void;
   }
->(({ option, active, onRemoveClick, ...rest }, ref) => {
+>(({ option, disabled, onRemoveClick, ...rest }, ref) => {
   return (
-    <Container ref={ref} active={active} {...rest}>
+    <Container ref={ref} {...rest}>
       <span>{option.label}</span>
-      <SxIconButton icon="times" onClick={onRemoveClick} />
+      <SxIconButton icon="times" disabled={disabled} onClick={onRemoveClick} />
     </Container>
   );
 });
