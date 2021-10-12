@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useState, useMemo } from "react";
+import { useClickOutside } from "js/common/helpers/useClickOutside";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
@@ -145,6 +146,7 @@ const InputMultiSelectTwo = ({
             {
               label: `${t("common.create")}: "${inputValue}"`,
               value: inputValue,
+              disabled: false,
             },
           ]
         : [];
@@ -185,6 +187,10 @@ const InputMultiSelectTwo = ({
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur:
         case useCombobox.stateChangeTypes.ItemClick:
+          if (changes.selectedItem?.disabled) {
+            return state;
+          }
+
           const stayAlmostAtTheSamePositionIndex =
             state.highlightedIndex === filteredOptions.length - 1
               ? state.highlightedIndex - 1
@@ -247,6 +253,17 @@ const InputMultiSelectTwo = ({
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
   const inputProps = getInputProps(getDropdownProps());
   const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
+  const labelProps = getLabelProps({});
+
+  const clickOutsideRef = useRef<HTMLLabelElement>(null);
+  useClickOutside(
+    clickOutsideRef,
+    useCallback(() => {
+      if (isOpen) {
+        toggleMenu();
+      }
+    }, [isOpen, toggleMenu]),
+  );
 
   const Select = (
     <SelectContainer>
@@ -329,6 +346,7 @@ const InputMultiSelectTwo = ({
                 <ListOption
                   key={`${option.value}`}
                   active={highlightedIndex === index}
+                  disabled={option.disabled}
                   {...getItemProps({ index, item: filteredOptions[index] })}
                 >
                   {option.label}
@@ -345,7 +363,8 @@ const InputMultiSelectTwo = ({
 
   return (
     <SxLabeled
-      {...getLabelProps({})}
+      {...labelProps}
+      ref={clickOutsideRef}
       htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
       label={
         <>

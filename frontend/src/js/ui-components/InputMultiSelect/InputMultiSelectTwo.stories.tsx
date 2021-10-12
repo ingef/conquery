@@ -18,7 +18,7 @@ export default {
 
 const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
   const [options, setOptions] = useState<SelectOptionT[]>(
-    wl.map((w) => ({ label: w, value: w })),
+    wl.map((w) => ({ label: w, value: w, disabled: Math.random() < 0.1 })),
   );
   const [value, setValue] = useState<SelectOptionT[] | null>([
     {
