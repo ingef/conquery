@@ -100,7 +100,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 
-		final ObjectMapper binaryMapper = config.configureObjectMapper(Jackson.BINARY_MAPPER);
+		final ObjectMapper binaryMapper = config.configureObjectMapper(Jackson.BINARY_MAPPER.copy());
 		((MutableInjectableValues) binaryMapper.getInjectableValues()).add(Validator.class, environment.getValidator());
 
 		workers = new Workers(
