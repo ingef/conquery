@@ -43,10 +43,9 @@ public abstract class QPParentNode extends QPNode {
 		this.children = children;
 		this.childMap = children.stream()
 								.flatMap(
-										c -> c
-													 .collectRequiredTables()
-													 .stream()
-													 .map(t -> Pair.of(t, c))
+										c -> c.collectRequiredTables()
+											  .stream()
+											  .map(t -> Pair.of(t, c))
 								)
 								.collect(ImmutableListMultimap
 												 .toImmutableListMultimap(Pair::getLeft, Pair::getRight)
@@ -54,10 +53,10 @@ public abstract class QPParentNode extends QPNode {
 
 		// Save action for debugging
 		this.action = action;
-		this.dateAggregator = new DateAggregator(action);
+		dateAggregator = new DateAggregator(action);
 
 		for (QPNode child : children) {
-			this.dateAggregator.registerAll(child.getDateAggregators());
+			dateAggregator.registerAll(child.getDateAggregators());
 		}
 	}
 

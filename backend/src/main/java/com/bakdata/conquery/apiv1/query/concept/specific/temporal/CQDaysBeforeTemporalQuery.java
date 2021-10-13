@@ -31,8 +31,13 @@ public class CQDaysBeforeTemporalQuery extends CQAbstractTemporalQuery {
 		plan.getDateAggregator().register(dateAggregator);
 
 		return new TemporalQueryNode(
-				index.createQueryPlan(ctx),
-				preceding.createQueryPlan(ctx),
+
+				index.getChild().createQueryPlan(ctx, plan),
+				index.getSampler(),
+
+				preceding.getChild().createQueryPlan(ctx, plan),
+				preceding.getSampler(),
+
 				new DaysBeforePrecedenceMatcher(days),
 				dateAggregator
 		);

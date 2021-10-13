@@ -36,8 +36,8 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	
 	@Override
 	public void resolve(QueryResolveContext context) {
-		index.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
-		preceding.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
+		index.getChild().resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
+		preceding.getChild().resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 	}
 	
 	@Override
