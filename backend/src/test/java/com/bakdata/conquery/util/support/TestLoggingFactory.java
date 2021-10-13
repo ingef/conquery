@@ -176,7 +176,6 @@ public class TestLoggingFactory implements LoggingFactory {
 		root.setLevel(Level.WARN);
 
 		loggerContext.getLogger("com.bakdata").setLevel(Level.DEBUG);
-		loggerContext.getLogger("com.bakdata.conquery.io.storage.xodus.stores").setLevel(Level.DEBUG);
 
 		return root;
 	}

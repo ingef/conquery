@@ -27,6 +27,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
+/**
+ * Storage for immutable token data (the counter part to the {@link ApiToken}/{@link ApiTokenHash} that is presented to the user once) and
+ * the token meta data (which is updated on each usage of the token).
+ *
+ * @implNote While this has the two store layout resembles a {@link com.bakdata.conquery.io.storage.xodus.stores.BigStore}, a BigStore's meta store
+ * exists to hide a 1-n relationship (1 entry in meta, n entries in data) between a key an the chunks of its value. This store has a 1-1 relation ship between
+ * meta and data. The meta store is not used to store structural information but actual meta data about the token in the data store.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class TokenStorage implements Managed {

@@ -11,6 +11,8 @@ import java.util.*;
 
 /**
  * Principal collection that carries a ready to use {@link Subject} object.
+ *
+ * @implNote This class exists mainly to have a better typing for the principal.
  */
 @EqualsAndHashCode
 public class SubjectPrincipalCollection implements PrincipalCollection {
