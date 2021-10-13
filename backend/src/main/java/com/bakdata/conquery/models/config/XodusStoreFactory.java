@@ -158,7 +158,7 @@ public class XodusStoreFactory implements StoreFactory {
 	private transient Validator validator;
 
 	@JsonIgnore
-	private transient ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
+	private transient final ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
 
 	@JsonIgnore
 	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
@@ -171,17 +171,18 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public void init(ManagerNode managerNode) {
 		validator = managerNode.getValidator();
-		objectMapper = managerNode.getEnvironment().getObjectMapper();
 		configureMapper(managerNode.getConfig());
 	}
 
 	@Override
 	public void init(ShardNode shardNode) {
 		validator = shardNode.getValidator();
-		objectMapper = shardNode.getEnvironment().getObjectMapper();
 		configureMapper(shardNode.getConfig());
 	}
 
+	/**
+	 * Configures the XodusStorage Smile ObjectMapper with the defaults from the configuration.
+	 */
 	private void configureMapper(ConqueryConfig config) {
 		config.configureObjectMapper(objectMapper);
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
