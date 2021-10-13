@@ -12,11 +12,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class FormProcessor {
 
-	public Collection<JsonNode> getFormsForUser(Subject user) {
+	public Collection<JsonNode> getFormsForUser(Subject subject) {
 		List<JsonNode> allowedForms = new ArrayList<>();
 
 		for (FormType formMapping : FRONTEND_FORM_CONFIGS.values()) {
-			if (!user.isPermitted(formMapping, Ability.CREATE)) {
+			if (!subject.isPermitted(formMapping, Ability.CREATE)) {
 				continue;
 			}
 

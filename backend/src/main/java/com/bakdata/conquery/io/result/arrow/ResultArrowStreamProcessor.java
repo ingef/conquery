@@ -26,10 +26,10 @@ public class ResultArrowStreamProcessor {
 	private final ConqueryConfig config;
 
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getArrowStreamResult(Subject user, E exec, Dataset dataset, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getArrowStreamResult(Subject subject, E exec, Dataset dataset, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
-				user,
+				subject,
 				exec,
 				dataset,
 				datasetRegistry,

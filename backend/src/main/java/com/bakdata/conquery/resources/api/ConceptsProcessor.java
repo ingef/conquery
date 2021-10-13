@@ -85,9 +85,9 @@ public class ConceptsProcessor {
 
 						});
 
-	public FERoot getRoot(NamespaceStorage storage, Subject user) {
+	public FERoot getRoot(NamespaceStorage storage, Subject subject) {
 
-		return FrontEndConceptBuilder.createRoot(storage, user);
+		return FrontEndConceptBuilder.createRoot(storage, subject);
 	}
 
 	public FEList getNode(Concept<?> concept) {
@@ -99,10 +99,10 @@ public class ConceptsProcessor {
 		}
 	}
 
-	public List<IdLabel<DatasetId>> getDatasets(Subject user) {
+	public List<IdLabel<DatasetId>> getDatasets(Subject subject) {
 		return namespaces.getAllDatasets()
 						 .stream()
-						 .filter(d -> user.isPermitted(d, Ability.READ))
+						 .filter(d -> subject.isPermitted(d, Ability.READ))
 						 .sorted(Comparator.comparing(Dataset::getWeight)
 										   .thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))

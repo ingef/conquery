@@ -93,7 +93,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 * Provides an overview (meta data) of this form configuration without the
 	 * actual form field values.
 	 */
-	public FormConfigOverviewRepresentation overview(Subject user) {
+	public FormConfigOverviewRepresentation overview(Subject subject) {
 		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
 
 		return FormConfigOverviewRepresentation.builder()
@@ -102,7 +102,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			.label(label)
 			.tags(tags)
 			.ownerName(ownerName)
-			.own(user.isOwner(this))
+			.own(subject.isOwner(this))
 			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.shared(shared)
 			// system?

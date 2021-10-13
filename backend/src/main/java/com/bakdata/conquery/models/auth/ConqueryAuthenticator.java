@@ -29,14 +29,14 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 		ConqueryAuthenticationInfo info = (ConqueryAuthenticationInfo) SecurityUtils.getSecurityManager().authenticate(token);
 
 		// Extract
-		Subject user = info.getPrincipals().oneByType(Subject.class);
+		Subject subject = info.getPrincipals().oneByType(Subject.class);
 
 
-		// If the user was present, all further authorization can now be performed on the user object
-		log.trace("Using user {} for further authorization", user);
-		ConqueryMDC.setLocation(user.getId().toString());
-		user.setAuthenticationInfo(info);
-		return Optional.of(user);
+		// If the subject was present, all further authorization can now be performed on the subject object
+		log.trace("Using subject {} for further authorization", subject);
+		ConqueryMDC.setLocation(subject.getId().toString());
+		subject.setAuthenticationInfo(info);
+		return Optional.of(subject);
 	}
 
 }

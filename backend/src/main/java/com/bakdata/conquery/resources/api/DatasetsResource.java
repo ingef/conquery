@@ -25,6 +25,6 @@ public class DatasetsResource extends HAuthorized {
 	
 	@GET
 	public List<IdLabel<DatasetId>> getDatasets() {
-		return processor.getDatasets(user);
+		return processor.getDatasets(subject);
 	}
 }

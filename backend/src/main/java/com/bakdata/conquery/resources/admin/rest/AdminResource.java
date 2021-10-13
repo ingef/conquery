@@ -49,7 +49,7 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public String executeScript(@Auth Subject user, String script) {
+    public String executeScript(@Auth Subject subject, String script) {
         return Objects.toString(processor.executeScript(script));
     }
 
@@ -61,7 +61,7 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public Object executeScriptJson(@Auth Subject user, String script) {
+    public Object executeScriptJson(@Auth Subject subject, String script) {
         return processor.executeScript(script);
     }
 
@@ -95,11 +95,11 @@ public class AdminResource {
 
     @GET
     @Path("/queries")
-    public FullExecutionStatus[] getQueries(@Auth Subject currentUser, @QueryParam("limit") OptionalLong limit, @QueryParam("since") Optional<String> since) {
+    public FullExecutionStatus[] getQueries(@Auth Subject subject, @QueryParam("limit") OptionalLong limit, @QueryParam("since") Optional<String> since) {
         final MetaStorage storage = processor.getStorage();
         final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
         return storage.getAllExecutions().stream()
-                .map(t -> t.buildStatusFull(storage, currentUser, datasetRegistry, processor.getConfig()))
+                .map(t -> t.buildStatusFull(storage, subject, datasetRegistry, processor.getConfig()))
                 .filter(t -> t.getCreatedAt().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
                 .limit(limit.orElse(100))
                 .toArray(FullExecutionStatus[]::new);

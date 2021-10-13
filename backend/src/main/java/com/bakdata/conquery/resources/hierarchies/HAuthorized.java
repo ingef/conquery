@@ -17,7 +17,7 @@ import org.glassfish.jersey.server.ContainerRequest;
 @Setter
 public abstract class HAuthorized {
 
-	protected Subject user;
+	protected Subject subject;
 	@Context
 	protected ContainerRequest request;
 	@Context 
@@ -29,8 +29,8 @@ public abstract class HAuthorized {
 		 *  We need to extract the user ourself here because @Auth does not work anymore on fields.
 		 *  See https://github.com/dropwizard/dropwizard/issues/3407
 		 */
-		user = provide();
-		if(user == null) {
+		subject = provide();
+		if(subject == null) {
 			throw new WebApplicationException(Status.UNAUTHORIZED);
 		}
 	}

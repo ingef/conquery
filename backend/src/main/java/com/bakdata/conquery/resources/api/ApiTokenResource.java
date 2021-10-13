@@ -27,34 +27,34 @@ public class ApiTokenResource {
 
 
 	@POST
-	public ApiToken createToken(@Auth Subject user, @Valid ApiTokenDataRepresentation.Request tokenData){
+	public ApiToken createToken(@Auth Subject subject, @Valid ApiTokenDataRepresentation.Request tokenData){
 
-		checkRealUser(user);
+		checkRealUser(subject);
 
-		return realm.createApiToken(user.getUser(), tokenData);
+		return realm.createApiToken(subject.getUser(), tokenData);
 	}
 
 	@GET
-	public List<ApiTokenDataRepresentation.Response> listUserTokens(@Auth Subject user) {
+	public List<ApiTokenDataRepresentation.Response> listUserTokens(@Auth Subject subject) {
 
-		checkRealUser(user);
+		checkRealUser(subject);
 
-		return realm.listUserToken(user);
+		return realm.listUserToken(subject);
 	}
 
 	@DELETE
 	@Path("{" + TOKEN + "}")
-	public Response deleteToken(@Auth Subject user, @PathParam(TOKEN) UUID id) {
+	public Response deleteToken(@Auth Subject subject, @PathParam(TOKEN) UUID id) {
 
-		checkRealUser(user);
+		checkRealUser(subject);
 
-		realm.deleteToken(user, id);
+		realm.deleteToken(subject, id);
 
 		return Response.ok().build();
 	}
 
-	private static void checkRealUser(Subject user) {
-		if (!(user instanceof User)){
+	private static void checkRealUser(Subject subject) {
+		if (!(subject instanceof User)){
 			throw new ForbiddenException("Only real users can request API-tokens");
 		}
 	}

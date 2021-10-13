@@ -33,7 +33,7 @@ public interface  Shareable extends Authorized {
 	
 	default  <ID extends IId<?>, S extends Identifiable<? extends ID> & Shareable & Authorized> Consumer<ShareInformation> sharer(
 		MetaStorage storage,
-		Subject user) {
+		Subject subject) {
 		if(!(this instanceof Identifiable<?>)) {
 			log.warn("Cannot share {} ({}) because it does not implement Identifiable", this.getClass(), this.toString());
 			return QueryUtils.getNoOpEntryPoint();
@@ -47,7 +47,7 @@ public interface  Shareable extends Authorized {
 						continue;
 					}
 
-					log.trace("User {} unshares instance {} ({}) from owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), group1);
+					log.trace("User {} unshares instance {} ({}) from owner {}.", subject, shareable.getClass().getSimpleName(), shareable.getId(), group1);
 
 					group1.removePermission(shareable.createPermission(AbilitySets.SHAREHOLDER));
 				}
@@ -61,7 +61,7 @@ public interface  Shareable extends Authorized {
 						ConqueryPermission sharePermission = shareable.createPermission(AbilitySets.SHAREHOLDER);
 						group.addPermission(sharePermission);
 
-						log.trace("User {} shares instance {} ({}). Adding permission {} to owner {}.", user, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, group);
+						log.trace("User {} shares instance {} ({}). Adding permission {} to owner {}.", subject, shareable.getClass().getSimpleName(), shareable.getId(), sharePermission, group);
 					}
 				}
 

@@ -40,13 +40,13 @@ public class ResultExcelResource {
 	@Path("{" + QUERY + "}.xlsx")
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response get(
-		@Auth Subject user,
+		@Auth Subject subject,
 		@PathParam(DATASET) DatasetId datasetId,
 		@PathParam(QUERY) ManagedExecution<?> execution,
 		@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by user {} ({}).", execution.getId(), datasetId, user.getId(), user.getName());
-		return processor.getExcelResult(user, (ManagedExecution<?> & SingleTableResult) execution, datasetId, pretty.orElse(true));
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), datasetId, subject.getId(), subject.getName());
+		return processor.getExcelResult(subject, (ManagedExecution<?> & SingleTableResult) execution, datasetId, pretty.orElse(true));
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

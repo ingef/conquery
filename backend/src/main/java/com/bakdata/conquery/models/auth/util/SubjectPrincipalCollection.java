@@ -13,14 +13,14 @@ import java.util.*;
  * Principal collection that carries a ready to use {@link Subject} object.
  */
 @EqualsAndHashCode
-public class UserLikePrincipalCollection implements PrincipalCollection {
+public class SubjectPrincipalCollection implements PrincipalCollection {
 
 	private static final long serialVersionUID = -1801050265305362978L;
 
 	private final Subject principal;
 	private final ConqueryAuthenticationRealm realm;
 
-	public UserLikePrincipalCollection(@NonNull Subject subject, ConqueryAuthenticationRealm realm) {
+	public SubjectPrincipalCollection(@NonNull Subject subject, ConqueryAuthenticationRealm realm) {
 		this.principal = subject;
 		this.realm = realm;
 	}

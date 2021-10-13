@@ -31,10 +31,10 @@ public abstract class Form implements QueryDescription {
 
 
 	@Override
-	public void authorize(Subject user, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors) {
-		QueryDescription.super.authorize(user, submittedDataset, visitors);
-		// Check if user is allowed to create this form
-		user.authorize(FormScanner.FRONTEND_FORM_CONFIGS.get(getFormType()), Ability.CREATE);
+	public void authorize(Subject subject, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors) {
+		QueryDescription.super.authorize(subject, submittedDataset, visitors);
+		// Check if subject is allowed to create this form
+		subject.authorize(FormScanner.FRONTEND_FORM_CONFIGS.get(getFormType()), Ability.CREATE);
 	}
 
 

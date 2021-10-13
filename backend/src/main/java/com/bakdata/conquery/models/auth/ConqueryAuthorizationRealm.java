@@ -43,10 +43,10 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		Objects.requireNonNull(principals, "No principal info was provided");
-		Subject user = principals.oneByType(Subject.class);
+		Subject subject = principals.oneByType(Subject.class);
 		SimpleAuthorizationInfo info = new ConqueryAuthorizationInfo();
 
-		info.addObjectPermissions(Collections.unmodifiableSet(user.getUser().getEffectivePermissions()));
+		info.addObjectPermissions(Collections.unmodifiableSet(subject.getUser().getEffectivePermissions()));
 		
 		return info;
 	}

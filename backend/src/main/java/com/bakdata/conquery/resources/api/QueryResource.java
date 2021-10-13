@@ -59,83 +59,83 @@ public class QueryResource {
 	private Dataset dataset;
 
 	@GET
-	public List<ExecutionStatus> getAllQueries(@Auth Subject user, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public List<ExecutionStatus> getAllQueries(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 
-		user.authorize(dataset, Ability.READ);
+		subject.authorize(dataset, Ability.READ);
 
-		return processor.getAllQueries(dataset, servletRequest, user, allProviders.orElse(false))
+		return processor.getAllQueries(dataset, servletRequest, subject, allProviders.orElse(false))
 						.collect(Collectors.toList());
 	}
 
 	@POST
-	public Response postQuery(@Auth Subject user, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
+	public Response postQuery(@Auth Subject subject, @QueryParam("all-providers") Optional<Boolean> allProviders, @NotNull @Valid QueryDescription query) {
 
-		user.authorize(dataset, Ability.READ);
+		subject.authorize(dataset, Ability.READ);
 
-		ManagedExecution<?> execution = processor.postQuery(dataset, query, user);
+		ManagedExecution<?> execution = processor.postQuery(dataset, query, subject);
 
-		return Response.ok(processor.getQueryFullStatus(execution, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false)))
+		return Response.ok(processor.getQueryFullStatus(execution, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false)))
 					   .status(Status.CREATED)
 					   .build();
 	}
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getStatus(@Auth Subject user, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders)
+	public FullExecutionStatus getStatus(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders)
 			throws InterruptedException {
 
-		user.authorize(dataset, Ability.READ);
-		user.authorize(query, Ability.READ);
+		subject.authorize(dataset, Ability.READ);
+		subject.authorize(query, Ability.READ);
 
 		query.awaitDone(1, TimeUnit.SECONDS);
 
-		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
+		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
 	}
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus patchQuery(@Auth Subject user, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders, MetaDataPatch patch)
+	public FullExecutionStatus patchQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders, MetaDataPatch patch)
 			throws JSONException {
-		user.authorize(dataset, Ability.READ);
-		user.authorize(query, Ability.READ);
+		subject.authorize(dataset, Ability.READ);
+		subject.authorize(query, Ability.READ);
 
-		processor.patchQuery(user, query, patch);
+		processor.patchQuery(subject, query, patch);
 
-		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
+		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
 	}
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public void deleteQuery(@Auth Subject user, @PathParam(QUERY) ManagedExecution<?> query) {
-		user.authorize(dataset, Ability.READ);
-		user.authorize(query, Ability.DELETE);
+	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query) {
+		subject.authorize(dataset, Ability.READ);
+		subject.authorize(query, Ability.DELETE);
 
-		processor.deleteQuery(user, query);
+		processor.deleteQuery(subject, query);
 	}
 
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
-	public FullExecutionStatus reexecute(@Auth Subject user, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
-		user.authorize(dataset, Ability.READ);
-		user.authorize(query, Ability.READ);
+	public FullExecutionStatus reexecute(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+		subject.authorize(dataset, Ability.READ);
+		subject.authorize(query, Ability.READ);
 
-		processor.reexecute(user, query);
-		return processor.getQueryFullStatus(query, user, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
+		processor.reexecute(subject, query);
+		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false));
 	}
 
 	@POST
 	@Path("{" + QUERY + "}/cancel")
-	public void cancel(@Auth Subject user, @PathParam(QUERY) ManagedExecution<?> query) {
+	public void cancel(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query) {
 
-		user.authorize(dataset, Ability.READ);
-		user.authorize(query, Ability.CANCEL);
+		subject.authorize(dataset, Ability.READ);
+		subject.authorize(query, Ability.CANCEL);
 
-		processor.cancel(user, dataset, query);
+		processor.cancel(subject, dataset, query);
 	}
 
 	@POST
 	@Path("/upload")
-	public ExternalUploadResult upload(@Auth Subject user, @Valid ExternalUpload upload) {
-		return processor.uploadEntities(user, dataset, upload);
+	public ExternalUploadResult upload(@Auth Subject subject, @Valid ExternalUpload upload) {
+		return processor.uploadEntities(subject, dataset, upload);
 	}
 }

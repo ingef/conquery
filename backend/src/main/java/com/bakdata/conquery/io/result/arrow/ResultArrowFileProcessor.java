@@ -26,10 +26,10 @@ public class ResultArrowFileProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getArrowFileResult(Subject user, E exec, Dataset dataset, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getArrowFileResult(Subject subject, E exec, Dataset dataset, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
-				user,
+				subject,
 				exec,
 				dataset,
 				datasetRegistry,

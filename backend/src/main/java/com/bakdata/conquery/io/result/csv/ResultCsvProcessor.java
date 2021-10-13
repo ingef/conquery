@@ -39,19 +39,19 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getResult(Subject user, Dataset dataset, E exec, String userAgent, String queryCharset, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getResult(Subject subject, Dataset dataset, E exec, String userAgent, String queryCharset, boolean pretty) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		ConqueryMDC.setLocation(user.getName());
+		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
-		user.authorize(namespace.getDataset(), Ability.READ);
-		user.authorize(namespace.getDataset(), Ability.DOWNLOAD);
+		subject.authorize(namespace.getDataset(), Ability.READ);
+		subject.authorize(namespace.getDataset(), Ability.DOWNLOAD);
 
-		user.authorize(exec, Ability.READ);
+		subject.authorize(exec, Ability.READ);
 
-		// Check if user is permitted to download on all datasets that were referenced by the query
-		authorizeDownloadDatasets(user, exec);
+		// Check if subject is permitted to download on all datasets that were referenced by the query
+		authorizeDownloadDatasets(subject, exec);
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user, exec, namespace);
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
 
 
 		// Get the locale extracted by the LocaleFilter

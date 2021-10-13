@@ -43,31 +43,31 @@ public class FormConfigResource {
 	private FormConfigProcessor processor;
 
 	@POST
-	public Response postConfig(@Auth Subject user, @Valid FormConfigAPI config) {
-		return Response.ok(new PostResponse(processor.addConfig(user, dataset, config).getId())).status(Status.CREATED).build();
+	public Response postConfig(@Auth Subject subject, @Valid FormConfigAPI config) {
+		return Response.ok(new PostResponse(processor.addConfig(subject, dataset, config).getId())).status(Status.CREATED).build();
 	}
 	
 	@GET
-	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth Subject user, @QueryParam("formType") Set<String> formType) {
-		return processor.getConfigsByFormType(user, dataset, formType);
+	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth Subject subject, @QueryParam("formType") Set<String> formType) {
+		return processor.getConfigsByFormType(subject, dataset, formType);
 	}
 
 	@GET
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation getConfig(@Auth Subject user, @PathParam(FORM_CONFIG) FormConfig form) {
-		return processor.getConfig(user, form);
+	public FormConfigFullRepresentation getConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfig form) {
+		return processor.getConfig(subject, form);
 	}
 	
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation patchConfig(@Auth Subject user, @PathParam(FORM_CONFIG) FormConfig form, FormConfigPatch patch ) {
-		return processor.patchConfig(user, form, patch);
+	public FormConfigFullRepresentation patchConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfig form, FormConfigPatch patch ) {
+		return processor.patchConfig(subject, form, patch);
 	}
 	
 	@DELETE
 	@Path("{" + FORM_CONFIG + "}")
-	public Response deleteConfig(@Auth Subject user, @PathParam(FORM_CONFIG) FormConfig form) {
-		processor.deleteConfig(user, form);
+	public Response deleteConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfig form) {
+		processor.deleteConfig(subject, form);
 		return Response.ok().build();
 	}
 	

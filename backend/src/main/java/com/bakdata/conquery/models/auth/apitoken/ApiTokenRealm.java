@@ -110,14 +110,14 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		return token;
 	}
 
-	public List<ApiTokenDataRepresentation.Response> listUserToken(Subject user) {
+	public List<ApiTokenDataRepresentation.Response> listUserToken(Subject subject) {
 		ArrayList<ApiTokenDataRepresentation.Response> summary = new ArrayList<>();
 
 		for (Iterator<Pair<ApiTokenData, ApiTokenData.MetaData>> it = tokenStorage.getAll(); it.hasNext(); ) {
 			Pair<ApiTokenData, ApiTokenData.MetaData> apiToken = it.next();
 			// Find all token data belonging to a user
 			final ApiTokenData data = apiToken.getKey();
-			if (!user.isOwner(data)){
+			if (!subject.isOwner(data)){
 				continue;
 			}
 
@@ -139,7 +139,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		return summary;
 	}
 
-	public void deleteToken(@NotNull Subject user, @NonNull UUID tokenId) {
+	public void deleteToken(@NotNull Subject subject, @NonNull UUID tokenId) {
 
 		Optional<ApiTokenData> tokenOpt = tokenStorage.getByUUID(tokenId);
 
@@ -151,8 +151,8 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 
 		final ApiTokenData token = tokenOpt.get();
 
-		// Only the Owner or a user with admin capabilities can delete a token
-		user.authorize(token, Ability.DELETE);
+		// Only the Owner or a subject with admin capabilities can delete a token
+		subject.authorize(token, Ability.DELETE);
 
 		tokenStorage.deleteToken(token);
 	}

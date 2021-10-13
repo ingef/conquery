@@ -33,8 +33,8 @@ public class FormResource {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Collection<JsonNode> getFormFEConfigs(@Auth Subject user) {
-		return processor.getFormsForUser(user);
+	public Collection<JsonNode> getFormFEConfigs(@Auth Subject subject) {
+		return processor.getFormsForUser(subject);
 	}
 
 }

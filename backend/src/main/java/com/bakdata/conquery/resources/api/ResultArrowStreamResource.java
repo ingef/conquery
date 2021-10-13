@@ -49,13 +49,13 @@ public class ResultArrowStreamResource {
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_STREAM)
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response get(
-		@Auth Subject user,
+		@Auth Subject subject,
 		@PathParam(DATASET) Dataset dataset,
 		@PathParam(QUERY) ManagedExecution<?> execution,
 		@QueryParam("pretty") Optional<Boolean> pretty)
 	{
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by user {} ({}).", execution, dataset, user.getId(), user.getName());
-		return processor.getArrowStreamResult(user, (ManagedExecution<?> & SingleTableResult)execution, dataset, pretty.orElse(false));
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());
+		return processor.getArrowStreamResult(subject, (ManagedExecution<?> & SingleTableResult)execution, dataset, pretty.orElse(false));
 	}
 }

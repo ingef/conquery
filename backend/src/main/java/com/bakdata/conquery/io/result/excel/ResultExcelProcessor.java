@@ -33,16 +33,16 @@ public class ResultExcelProcessor {
 	private final ConqueryConfig config;
 
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getExcelResult(Subject user, E exec, DatasetId datasetId, boolean pretty) {
-		ConqueryMDC.setLocation(user.getName());
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getExcelResult(Subject subject, E exec, DatasetId datasetId, boolean pretty) {
+		ConqueryMDC.setLocation(subject.getName());
 		final Namespace namespace = datasetRegistry.get(datasetId);
 		Dataset dataset = namespace.getDataset();
 
-		user.authorize(dataset, Ability.READ);
-		user.authorize(dataset, Ability.DOWNLOAD);
-		user.authorize(exec, Ability.READ);
+		subject.authorize(dataset, Ability.READ);
+		subject.authorize(dataset, Ability.DOWNLOAD);
+		subject.authorize(exec, Ability.READ);
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user,exec,namespace);
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject,exec,namespace);
 
 		final Locale locale = I18n.LOCALE.get();
 		PrintSettings settings = new PrintSettings(

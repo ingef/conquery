@@ -40,7 +40,7 @@ public class ResultArrowProcessor {
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> Response getArrowResult(
 			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
-			Subject user,
+			Subject subject,
 			E exec,
 			Dataset dataset,
 			DatasetRegistry datasetRegistry,
@@ -51,16 +51,16 @@ public class ResultArrowProcessor {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
-		ConqueryMDC.setLocation(user.getName());
+		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
-		user.authorize(dataset, Ability.READ);
-		user.authorize(dataset, Ability.DOWNLOAD);
+		subject.authorize(dataset, Ability.READ);
+		subject.authorize(dataset, Ability.DOWNLOAD);
 
 
-		user.authorize(exec, Ability.READ);
+		subject.authorize(exec, Ability.READ);
 
-		// Check if user is permitted to download on all datasets that were referenced by the query
-		authorizeDownloadDatasets(user, exec);
+		// Check if subject is permitted to download on all datasets that were referenced by the query
+		authorizeDownloadDatasets(subject, exec);
 
 		if (!(exec instanceof ManagedQuery || (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1))) {
 			return Response.status(HttpStatus.SC_UNPROCESSABLE_ENTITY, "Execution result is not a single Table").build();
@@ -69,7 +69,7 @@ public class ResultArrowProcessor {
 		// Get the locale extracted by the LocaleFilter
 
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user, exec, namespace);
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
 		final Locale locale = I18n.LOCALE.get();
 		PrintSettings settings = new PrintSettings(
 				pretty,

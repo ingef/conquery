@@ -69,9 +69,9 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject user) {
+	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject subject) {
 
-		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), user.getId());
+		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), subject.getId());
 
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
@@ -83,7 +83,7 @@ public class QueryProcessor {
 		visitors.putInstance(QueryUtils.OnlyReusingChecker.class, new QueryUtils.OnlyReusingChecker());
 		visitors.putInstance(NamespacedIdentifiableCollector.class, new NamespacedIdentifiableCollector());
 
-		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(user, storage).map(Group::getName).orElse("none");
+		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(subject, storage).map(Group::getName).orElse("none");
 
 		visitors.putInstance(ExecutionMetrics.QueryMetricsReporter.class, new ExecutionMetrics.QueryMetricsReporter(primaryGroupName));
 
@@ -98,8 +98,8 @@ public class QueryProcessor {
 		query.visit(consumerChain);
 
 
-		query.authorize(user, dataset, visitors);
-		// After all authorization checks we can now use the actual user to invoke the query and do not to bubble down the Userish in methods
+		query.authorize(subject, dataset, visitors);
+		// After all authorization checks we can now use the actual subject to invoke the query and do not to bubble down the Userish in methods
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdentifiableCollector.class).getIdentifiables(), primaryGroupName);
 
@@ -113,7 +113,7 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, user.getUser()));
+			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, subject.getUser()));
 
 			if (execution.isPresent()) {
 				return execution.get();
@@ -121,7 +121,7 @@ public class QueryProcessor {
 		}
 
 		// Execute the query
-		return executionManager.runQuery(datasetRegistry, query, user.getUser(), dataset, config);
+		return executionManager.runQuery(datasetRegistry, query, subject.getUser(), dataset, config);
 	}
 
 	/**
@@ -175,14 +175,14 @@ public class QueryProcessor {
 	}
 
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject user, boolean allProviders) {
+	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
-		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), user, allQueries, allProviders);
+		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject user, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
-		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
+	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
+		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
 
 		return allQueries.stream()
 						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
@@ -191,13 +191,13 @@ public class QueryProcessor {
 						 // to exclude subtypes from somewhere else
 						 .filter(QueryProcessor::canFrontendRender)
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
-						 // We decide, that if a user owns an execution it is permitted to see it, which saves us a lot of permissions
+						 // We decide, that if a subject owns an execution it is permitted to see it, which saves us a lot of permissions
 						 // However, for other executions we check because those are probably shared.
-						 .filter(q -> user.isPermitted(q, Ability.READ))
+						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
 							 OverviewExecutionStatus status = mq.buildStatusOverview(
 									 uriBuilder.clone(),
-									 user
+									 subject
 							 );
 							 if (mq.isReadyToDownload(datasetAbilities)) {
 								 setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder, allProviders);
@@ -264,14 +264,14 @@ public class QueryProcessor {
 	/**
 	 * Cancel a running query: Sending cancellation to shards, which will cause them to stop executing them, results are not sent back, and incoming results will be discarded.
 	 */
-	public void cancel(Subject user, Dataset dataset, ManagedExecution<?> query) {
+	public void cancel(Subject subject, Dataset dataset, ManagedExecution<?> query) {
 
 		// Does not make sense to cancel a query that isn't running.
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			return;
 		}
 
-		log.info("{} cancelled Query[{}]", user, query.getId());
+		log.info("{} cancelled Query[{}]", subject, query.getId());
 
 		final Namespace namespace = getDatasetRegistry().get(dataset.getId());
 
@@ -280,11 +280,11 @@ public class QueryProcessor {
 		namespace.sendToAll(new CancelQuery(query.getId()));
 	}
 
-	public void patchQuery(Subject user, ManagedExecution<?> execution, MetaDataPatch patch) {
+	public void patchQuery(Subject subject, ManagedExecution<?> execution, MetaDataPatch patch) {
 
 		log.info("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 
-		patch.applyTo(execution, storage, user);
+		patch.applyTo(execution, storage, subject);
 		storage.updateExecution(execution);
 
 		// Patch this query in other datasets
@@ -298,13 +298,13 @@ public class QueryProcessor {
 				continue;
 			}
 			log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), id, patch);
-			patch.applyTo(otherExecution, storage, user);
+			patch.applyTo(otherExecution, storage, subject);
 			storage.updateExecution(execution);
 		}
 	}
 
-	public void reexecute(Subject user, ManagedExecution<?> query) {
-		log.info("User[{}] reexecuted Query[{}]", user, query);
+	public void reexecute(Subject subject, ManagedExecution<?> query) {
+		log.info("User[{}] reexecuted Query[{}]", subject, query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			datasetRegistry.get(query.getDataset().getId())
@@ -314,8 +314,8 @@ public class QueryProcessor {
 	}
 
 
-	public void deleteQuery(Subject user, ManagedExecution<?> execution) {
-		log.info("User[{}] deleted Query[{}]", user.getId(), execution.getId());
+	public void deleteQuery(Subject subject, ManagedExecution<?> execution) {
+		log.info("User[{}] deleted Query[{}]", subject.getId(), execution.getId());
 
 		datasetRegistry.get(execution.getDataset().getId())
 					   .getExecutionManager() // Don't go over execution#getExecutionManager() as that's only set when query is initialized
@@ -324,12 +324,12 @@ public class QueryProcessor {
 		storage.removeExecution(execution.getId());
 	}
 
-	public FullExecutionStatus getQueryFullStatus(ManagedExecution<?> query, Subject user, UriBuilder url, Boolean allProviders) {
+	public FullExecutionStatus getQueryFullStatus(ManagedExecution<?> query, Subject subject, UriBuilder url, Boolean allProviders) {
 
 		query.initExecutable(datasetRegistry, config);
 
-		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(user, datasetRegistry);
-		final FullExecutionStatus status = query.buildStatusFull(storage, user, datasetRegistry, config);
+		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
+		final FullExecutionStatus status = query.buildStatusFull(storage, subject, datasetRegistry, config);
 
 		if (query.isReadyToDownload(datasetAbilities)) {
 			setDownloadUrls(status, config.getResultProviders(), query, url, allProviders);
@@ -338,9 +338,9 @@ public class QueryProcessor {
 	}
 
 	/**
-	 * Try to resolve the external upload, if successful, create query for the user and return id and statistics for that.
+	 * Try to resolve the external upload, if successful, create query for the subject and return id and statistics for that.
 	 */
-	public ExternalUploadResult uploadEntities(Subject user, Dataset dataset, ExternalUpload upload) {
+	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
 		final CQExternal.ResolveStatistic statistic =
 				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
@@ -361,7 +361,7 @@ public class QueryProcessor {
 		// We only create the Query, really no need to execute it as it's only useful for composition.
 		final ManagedQuery execution =
 				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
-											   .createExecution(datasetRegistry, query, user.getUser(), dataset));
+											   .createExecution(datasetRegistry, query, subject.getUser(), dataset));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 
