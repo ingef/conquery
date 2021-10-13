@@ -160,7 +160,7 @@ public class XodusStoreFactory implements StoreFactory {
 	private transient Validator validator;
 
 	@JsonIgnore
-	private transient final ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
+	private transient final ObjectMapper objectMapper = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
 
 	@JsonIgnore
 	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
