@@ -383,18 +383,18 @@ public class XodusStoreFactory implements StoreFactory {
 
 	@Override
 	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER, storage.injectInto(objectMapper)), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE, storage.injectInto(objectMapper)), centralRegistry);
 	}
 
 
 	@Override
 	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP, storage.injectIntoNew(objectMapper)), centralRegistry);
 	}
 
 	@Override
