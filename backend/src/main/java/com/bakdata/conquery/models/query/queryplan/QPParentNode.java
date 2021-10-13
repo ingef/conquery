@@ -41,15 +41,15 @@ public abstract class QPParentNode extends QPNode {
 			throw new IllegalArgumentException("A ParentAggregator needs at least one child.");
 		}
 		this.children = children;
-		this.childMap = children.stream()
-								.flatMap(
-										c -> c.collectRequiredTables()
-											  .stream()
-											  .map(t -> Pair.of(t, c))
-								)
-								.collect(ImmutableListMultimap
-												 .toImmutableListMultimap(Pair::getLeft, Pair::getRight)
-								);
+		childMap = children.stream()
+						   .flatMap(
+								   c -> c.collectRequiredTables()
+										 .stream()
+										 .map(t -> Pair.of(t, c))
+						   )
+						   .collect(ImmutableListMultimap
+											.toImmutableListMultimap(Pair::getLeft, Pair::getRight)
+						   );
 
 		// Save action for debugging
 		this.action = action;

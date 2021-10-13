@@ -50,6 +50,7 @@ public class TemporalQueryNode extends QPParentNode {
 	private final DateAggregationAction dateAggregationAction = DateAggregationAction.MERGE;
 
 	public TemporalQueryNode(QPNode reference, TemporalSampler referenceSampler, QPNode preceding, TemporalSampler precedingSampler, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
+		// We BLOCK because we are overriding the logic down below.
 		super(List.of(reference, preceding), DateAggregationAction.BLOCK);
 
 		this.reference = reference;
@@ -57,7 +58,6 @@ public class TemporalQueryNode extends QPParentNode {
 
 		this.preceding = preceding;
 		this.precedingSampler = precedingSampler;
-
 
 		this.matcher = matcher;
 		this.dateUnion = dateUnion;
@@ -78,16 +78,14 @@ public class TemporalQueryNode extends QPParentNode {
 		}
 
 
-		CDateSet
-				referenceDurations =
+		CDateSet referenceDurations =
 				dateAggregationAction.aggregate(getReference().getDateAggregators()
 															  .stream()
 															  .map(Aggregator::createAggregationResult)
 															  .collect(Collectors.toSet()));
 
 		// Create copy as we are mutating the set
-		CDateSet
-				precedingDurations =
+		CDateSet precedingDurations =
 				dateAggregationAction.aggregate(getPreceding().getDateAggregators()
 															  .stream()
 															  .map(Aggregator::createAggregationResult)

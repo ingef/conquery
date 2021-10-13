@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * This class represents a wrapper around any type of {@link CQElement} but also
- * holds a sampler to select a single day from the child elements result.
+ * Simple container class to structure JSON to couple child and sample tightly.
  */
 @AllArgsConstructor @NoArgsConstructor
 @Getter @Setter
