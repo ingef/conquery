@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import * as React from "react";
+import React from "react";
 
 import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
 
@@ -20,7 +20,10 @@ const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
     hasChildren ? (tight ? "5px" : "10px") : "0"};
 `;
 
-const SxButton = styled(BasicButton)<{ frame?: boolean }>`
+const SxBasicButton = styled(BasicButton)<{
+  frame?: boolean;
+  active?: boolean;
+}>`
   background-color: transparent;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.black};
@@ -57,35 +60,40 @@ export interface IconButtonPropsT extends BasicButtonProps {
 }
 
 // A button that is prefixed by an icon
-const IconButton: React.FC<IconButtonPropsT> = ({
-  icon,
-  active,
-  red,
-  large,
-  regular,
-  left,
-  children,
-  tight,
-  iconProps,
-  small,
-  ...restProps
-}) => (
-  <SxButton active={active} {...restProps}>
-    <SxFaIcon
-      main
-      left={left}
-      regular={regular}
-      large={large}
-      active={active}
-      red={red}
-      icon={icon}
-      hasChildren={!!children}
-      tight={tight}
-      small={small}
-      {...iconProps}
-    />
-    {children}
-  </SxButton>
+const IconButton = React.forwardRef<HTMLButtonElement, IconButtonPropsT>(
+  (
+    {
+      icon,
+      active,
+      red,
+      large,
+      regular,
+      left,
+      children,
+      tight,
+      iconProps,
+      small,
+      ...restProps
+    },
+    ref,
+  ) => (
+    <SxBasicButton active={active} {...restProps} ref={ref}>
+      <SxFaIcon
+        main
+        left={left}
+        regular={regular}
+        large={large}
+        active={active}
+        red={red}
+        icon={icon}
+        hasChildren={!!children}
+        tight={tight}
+        small={small}
+        {...iconProps}
+      />
+      {children}
+    </SxBasicButton>
+  ),
 );
 
 export default IconButton;

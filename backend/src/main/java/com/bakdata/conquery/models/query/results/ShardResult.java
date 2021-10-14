@@ -73,6 +73,8 @@ public class ShardResult {
 
 		this.results = results;
 
+		log.trace("Sending collected Results\n{}", results);
+
 		worker.send(new CollectQueryResult(this));
 	}
 

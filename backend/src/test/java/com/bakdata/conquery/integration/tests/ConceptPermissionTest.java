@@ -32,8 +32,8 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		final Dataset dataset = conquery.getDataset();
 		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset.getId(), testJson);
-		final QueryProcessor processor = new QueryProcessor(storage.getDatasetRegistry(), storage, conquery.getConfig());
-		final User user  = new User("testUser", "testUserLabel");
+		final QueryProcessor processor = new QueryProcessor(conquery.getDatasetRegistry(), storage, conquery.getConfig());
+		final User user  = new User("testUser", "testUserLabel", storage);
 
 		// Manually import data, so we can do our own work.
 		{
@@ -52,7 +52,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 			conquery.waitUntilWorkDone();
 
 			storage.addUser(user);
-			user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, dataset.getId()));
+			user.addPermission(DatasetPermission.onInstance(Ability.READ, dataset.getId()));
 		}
 
 		// Query cannot be deserialized without Namespace set up
@@ -68,7 +68,7 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		{
 			final ConqueryPermission permission = conceptId.createPermission(Ability.READ.asSet());
 			log.info("Adding the Permission[{}] to User[{}]", permission, user);
-			AuthorizationHelper.addPermission(user, permission, storage);
+			user.addPermission(permission);
 		}
 
 		// Only assert permissions

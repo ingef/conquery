@@ -45,7 +45,7 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 		UserId userId = (UserId) principals.getPrimaryPrincipal();
 		SimpleAuthorizationInfo info = new ConqueryAuthorizationInfo();
 
-		info.addObjectPermissions(Collections.unmodifiableSet(AuthorizationHelper.getEffectiveUserPermissions(storage.getUser(userId), storage)));
+		info.addObjectPermissions(Collections.unmodifiableSet(storage.getUser(userId).getEffectivePermissions()));
 		
 		return info;
 	}

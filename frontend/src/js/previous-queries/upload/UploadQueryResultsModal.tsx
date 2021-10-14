@@ -3,10 +3,10 @@ import React, { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
-import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
 import FaIcon from "../../icon/FaIcon";
 import Modal from "../../modal/Modal";
 import InfoTooltip from "../../tooltip/InfoTooltip";
+import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
 
 import CSVColumnPicker, { QueryToUploadT } from "./CSVColumnPicker";
 
@@ -28,7 +28,7 @@ const SuccessMsg = styled("p")`
 `;
 
 const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
-  padding: 40px;
+  padding: 180px 250px;
   width: 100%;
   cursor: pointer;
 `;
@@ -67,7 +67,10 @@ const UploadQueryResultsModal: FC<PropsT> = ({
       headline={
         <>
           {t("uploadQueryResultsModal.headline")}
-          <InfoTooltip text={t("uploadQueryResultsModal.formatInfo.text")} />
+          <InfoTooltip
+            wide
+            text={t("uploadQueryResultsModal.formatInfo.text")}
+          />
         </>
       }
     >

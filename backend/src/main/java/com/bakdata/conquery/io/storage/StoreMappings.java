@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.storage;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
+import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -34,7 +35,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -50,7 +50,7 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @Getter
 @ToString(of = {"name", "keyType", "valueType"})
-public enum StoreInfo implements IStoreInfo {
+public enum StoreMappings {
 	DATASET(Dataset.class, Boolean.class),
 	ID_MAPPING(EntityIdMap.class, Boolean.class),
 	NAMESPACES(DatasetRegistry.class, Boolean.class),
@@ -74,38 +74,28 @@ public enum StoreInfo implements IStoreInfo {
 	private final Class<?> valueType;
 	private final Class<?> keyType;
 
-	/**
-	 * Store for identifiable values, with injectors. Store is also cached.
-	 */
-	public <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry, Injectable... injectables) {
-
-		for (Injectable injectable : injectables) {
-			baseStore.inject(injectable);
-		}
-
-		baseStore.inject(centralRegistry);
-
-		return new DirectIdentifiableStore<>(centralRegistry, baseStore);
+	public <KEY,VALUE, CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> StoreInfo<KEY,VALUE> storeInfo(){
+		return new StoreInfo<KEY,VALUE>(getName(), (CLASS_K) getKeyType(), (CLASS_V) getValueType());
 	}
 
 	/**
-	 * Store for identifiable values, without injectors. Store is also cached.
+	 * Store for identifiable values, with injectors. Store is also cached.
 	 */
-	public <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry) {
-		return identifiable(baseStore, centralRegistry, new SingletonNamespaceCollection(centralRegistry));
+	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry) {
+		return new DirectIdentifiableStore<>(centralRegistry, baseStore);
 	}
 
 	/**
 	 * General Key-Value store with caching.
 	 */
-	public <KEY, VALUE> CachedStore<KEY, VALUE> cached(Store<KEY, VALUE> baseStore) {
+	public static <KEY, VALUE> CachedStore<KEY, VALUE> cached(Store<KEY, VALUE> baseStore) {
 		return new CachedStore<>(baseStore);
 	}
 
 	/**
 	 * Identifiable store, that lazy registers items in the central registry.
 	 */
-	public <T extends Identifiable<?>> IdentifiableCachedStore<T> identifiableCachedStore(Store baseStore, CentralRegistry centralRegistry) {
+	public static <T extends Identifiable<?>> IdentifiableCachedStore<T> identifiableCachedStore(Store<IId<T>,T> baseStore, CentralRegistry centralRegistry) {
 		return new IdentifiableCachedStore<T>(centralRegistry, baseStore);
 	}
 
@@ -113,12 +103,11 @@ public enum StoreInfo implements IStoreInfo {
 	/**
 	 * Store holding a single value.
 	 */
-	public <VALUE> SingletonStore<VALUE> singleton(Store<Boolean, VALUE> baseStore, Injectable... injectables) {
-		return new SingletonStore<>(baseStore, injectables);
+	public static <VALUE> SingletonStore<VALUE> singleton(Store<Boolean, VALUE> baseStore) {
+		return new SingletonStore<>(baseStore);
 	}
 
-	@Override
-	public String getName() {
+	private String getName() {
 		return name();
 	}
 }

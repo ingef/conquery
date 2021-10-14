@@ -10,18 +10,19 @@ interface PropsT {
   html?: ReactElement;
   className?: string;
   noIcon?: boolean;
+  wide?: boolean;
 }
 
-const Root = styled(WithTooltip)`
+const SxWithTooltip = styled(WithTooltip)`
   display: inline-block;
   padding: 0 7px;
 `;
 
-const InfoTooltip: FC<PropsT> = ({ className, text, html, noIcon }) => {
+const InfoTooltip: FC<PropsT> = ({ className, text, html, noIcon, wide }) => {
   return (
-    <Root className={className} text={text} html={html}>
+    <SxWithTooltip className={className} text={text} html={html} wide={wide}>
       {!noIcon && <FaIcon regular icon="question-circle" />}
-    </Root>
+    </SxWithTooltip>
   );
 };
 

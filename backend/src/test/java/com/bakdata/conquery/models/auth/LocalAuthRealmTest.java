@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.auth0.jwt.JWT;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
@@ -15,6 +16,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.util.Duration;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -37,29 +39,28 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 @TestInstance(Lifecycle.PER_CLASS)
 public class LocalAuthRealmTest {
 
+	private final  MetaStorage storage = new NonPersistentStoreFactory().createMetaStorage();
 	private File tmpDir;
 	private LocalAuthenticationRealm realm;
-	private MetaStorage storage;
 	private User user1;
 	private ConqueryTokenRealm conqueryTokenRealm;
 
 	@BeforeAll
 	public void setupAll() throws Exception {
-		storage =  new NonPersistentStoreFactory().createMetaStorage();
 		tmpDir = Files.createTempDirectory(LocalAuthRealmTest.class.getName()).toFile();
 
 		assert tmpDir.exists();
 
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 
-		realm = new LocalAuthenticationRealm(conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig(), Duration.hours(1));
+		realm = new LocalAuthenticationRealm(Validators.newValidator(), Jackson.BINARY_MAPPER, conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig(), Duration.hours(1));
 		LifecycleUtils.init(realm);
 	}
 
 	@BeforeEach
 	public void setupEach() {
 		// Create User in Realm
-		user1 = new User("TestUser", "Test User");
+		user1 = new User("TestUser", "Test User", storage);
 		PasswordCredential user1Password = new PasswordCredential("testPassword".toCharArray());
 		storage.addUser(user1);
 		realm.addUser(user1, List.of(user1Password));

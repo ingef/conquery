@@ -71,7 +71,7 @@ public class LoadingUtil {
 			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
 												 .createQuery(support.getNamespace().getNamespaces(),q, queryId, user, support.getNamespace().getDataset());
 
-			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
 			if (managed.getState() == ExecutionState.FAILED) {
 				fail("Query failed");
@@ -79,13 +79,13 @@ public class LoadingUtil {
 		}
 
 		for (JsonNode queryNode : content.getPreviousQueries()) {
-			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectInto(Jackson.MAPPER);
-			mapper = support.getDataset().injectInto(mapper);
+			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectIntoNew(Jackson.MAPPER);
+			mapper = support.getDataset().injectIntoNew(mapper);
 			Query query = mapper.readerFor(Query.class).readValue(queryNode);
 			UUID queryId = new UUID(0L, id++);
 
 			ManagedExecution<?> managed = support.getNamespace().getExecutionManager().createQuery(support.getNamespace().getNamespaces(),query, queryId, user, support.getNamespace().getDataset());
-			user.addPermission(support.getMetaStorage(), ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
+			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
 				fail("Query failed");

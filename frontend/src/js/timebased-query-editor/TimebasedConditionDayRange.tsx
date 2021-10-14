@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
-import InputPlain from "../form-components/InputPlain";
+import InputPlain from "../ui-components/InputPlain";
 
 const Container = styled("div")`
   width: 100%;

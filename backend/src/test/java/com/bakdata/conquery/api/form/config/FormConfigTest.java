@@ -86,6 +86,7 @@ public class FormConfigTest {
 	private DatasetId datasetId;
 	private DatasetId datasetId1;
 	private ExportForm form;
+	private User user;
 	
 	@BeforeAll
 	public void setupTestClass() throws Exception{
@@ -113,15 +114,14 @@ public class FormConfigTest {
 			return namespaceMock;
 		}).when(namespacesMock).get(any(DatasetId.class));
 		when(namespacesMock.getAllDatasets()).thenReturn(List.of(dataset,dataset1));
-		when(namespacesMock.injectInto(any(ObjectMapper.class))).thenCallRealMethod();
+		when(namespacesMock.injectIntoNew(any(ObjectMapper.class))).thenCallRealMethod();
 		when(namespacesMock.inject(any(MutableInjectableValues.class))).thenCallRealMethod();
 
-		storage = new MetaStorage(null, new NonPersistentStoreFactory(),  namespacesMock);
-
+		storage = new NonPersistentStoreFactory().createMetaStorage();
 
 		((MutableInjectableValues)FormConfigProcessor.getMAPPER().getInjectableValues())
 		.add(IdResolveContext.class, namespacesMock);
-		processor = new FormConfigProcessor(validator, storage);
+		processor = new FormConfigProcessor(validator, storage, namespacesMock);
 		controller = new AuthorizationController(storage, new DevelopmentAuthorizationConfig());
 		controller.start();
 	}
@@ -138,6 +138,10 @@ public class FormConfigTest {
 		form.setQueryGroupId(managedQuery.getId());
 		mode.setForm(form);
 		mode.setFeatures(List.of(new CQConcept()));
+
+
+		user = new User("test","test", storage);
+		storage.addUser(user);
 	}
 
 	@AfterEach
@@ -147,9 +151,7 @@ public class FormConfigTest {
 	
 	@Test
 	public void addConfigWithoutTranslation() {
-		User user = new User("test","test");
-		storage.addUser(user);
-		user.addPermission(storage, dataset.createPermission(Ability.READ.asSet()));
+		user.addPermission(dataset.createPermission(Ability.READ.asSet()));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfigAPI formConfig = FormConfigAPI.builder()
@@ -165,15 +167,13 @@ public class FormConfigTest {
 	@Test
 	public void deleteConfig() {
 		// PREPARE
-		User user = new User("test","test");
-		storage.addUser(user);
-		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
+		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), mapper.valueToTree(form));
 		formConfig.setDataset(dataset);
 
-		user.addPermission(storage, formConfig.createPermission(AbilitySets.FORM_CONFIG_CREATOR));
+		user.addPermission(formConfig.createPermission(AbilitySets.FORM_CONFIG_CREATOR));
 		storage.addFormConfig(formConfig);
 		
 		// EXECUTE
@@ -182,22 +182,20 @@ public class FormConfigTest {
 		// CHECK
 		assertThat(storage.getAllFormConfigs()).doesNotContain(formConfig);
 		
-		assertThat(storage.getUser(user.getId()).getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
+		assertThat(user.getPermissions()).doesNotContain(FormConfigPermission.onInstance(AbilitySets.FORM_CONFIG_CREATOR, formConfig.getId()));
 	}
 	
 	@Test
 	public void getConfig() {
 		// PREPARE
-		User user = new User("test","test");
-		storage.addUser(user);
-		user.addPermission(storage, dataset.createPermission(Ability.READ.asSet()));
+		user.addPermission(dataset.createPermission(Ability.READ.asSet()));
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
 		FormConfig formConfig = new FormConfig(form.getClass().getAnnotation(CPSType.class).id(), values);
 		formConfig.setDataset(dataset);
 		formConfig.setOwner(user);
-		user.addPermission(storage, formConfig.createPermission(Ability.READ.asSet()));
+		user.addPermission(formConfig.createPermission(Ability.READ.asSet()));
 		storage.addFormConfig(formConfig);
 		
 		// EXECUTE
@@ -262,11 +260,8 @@ public class FormConfigTest {
 	@Test
 	public void getConfigs() {
 		// PREPARE
-
-		User user = new User("test","test");
-		storage.addUser(user);
-		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
-		user.addPermission(storage, FormPermission.onInstance(Ability.CREATE, form.getFormType()));
+		user.addPermission(dataset.createPermission(Ability.READ.asSet()));
+		user.addPermission(FormPermission.onInstance(Ability.CREATE, form.getFormType()));
 		
 		ExportForm form2 = new ExportForm();
 		RelativeMode mode3 = new RelativeMode();
@@ -330,16 +325,14 @@ public class FormConfigTest {
 	@Test
 	public void patchConfig() {
 		// PREPARE
-		User user = new User("test","test");
-		storage.addUser(user);
-		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, datasetId));
-		Group group1 = new Group("test1","test1");
+		user.addPermission(DatasetPermission.onInstance(Ability.READ, datasetId));
+		Group group1 = new Group("test1","test1", storage);
 		storage.addGroup(group1);
-		Group group2 = new Group("test2","test2");
+		Group group2 = new Group("test2","test2", storage);
 		storage.addGroup(group2);
 		
-		group1.addMember(storage, user);
-		group2.addMember(storage, user);
+		group1.addMember(user);
+		group2.addMember(user);
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);

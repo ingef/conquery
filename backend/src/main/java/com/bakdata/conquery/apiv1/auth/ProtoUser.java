@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.auth;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -13,12 +14,15 @@ import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
- * Container class for holding information about initial users.
+ * Factory class to create configured initial users.
+
  */
 @Getter
 @Builder
@@ -45,39 +49,21 @@ public class ProtoUser {
 	@NotNull
 	@Valid
 	private List<CredentialType> credentials = Collections.emptyList();
-	
-	@JsonIgnore
-	// Let this be ignored by the builder
-	private User user = null;
 
-	public User getUser() {
-		if(user != null) {
-			return user;
-		}
+	public User createOrOverwriteUser(@NonNull MetaStorage storage) {
 		if (label == null) {
 			label = name;
 		}
-		user = new User(name, label);
+		User user = new User(name, label, storage);
+		storage.updateUser(user);
+		for (String sPermission : permissions) {
+			user.addPermission(new WildcardPermission(sPermission));
+		}
 		return user;
 	}
 
-	public void registerForAuthorization(MetaStorage storage, boolean override) {
-		User user = this.getUser();
-		if(override) {			
-			storage.updateUser(user);
-		} else {
-			// Should throw an exception, if the user already existed
-			storage.addUser(user);
-		}
-		for (String sPermission : permissions) {
-			user.addPermission(storage, new WildcardPermission(sPermission));
-		}
-	}
-	
-	public boolean registerForAuthentication(UserManageable userManager, boolean override) {
-		if(override) {			
-			return userManager.updateUser(getUser(), credentials);
-		}
-		return userManager.addUser(getUser(), credentials);
+	@JsonIgnore
+	public UserId createId() {
+		return new UserId(name);
 	}
 }

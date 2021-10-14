@@ -140,7 +140,6 @@
     "timeUnitDays": "Tage",
     "title": "Titel",
     "description": "Beschreibung",
-    "clearAll": "Alle entfernen",
     "clearValue": "Wert entfernen",
     "closeEsc": "Schließen (ESC)",
     "close": "Schließen",
@@ -161,6 +160,8 @@
   "tooltip": {
     "headline": "Info",
     "placeholder": "Weitere Informationen zu Konzepten ...",
+    "entitiesFound": "Entität",
+    "entitiesFound_plural": "Entitäten",
     "entriesFound": "Eintrag",
     "entriesFound_plural": "Einträge",
     "date": {
@@ -168,18 +169,6 @@
       "from": "Von",
       "to": "Bis"
     }
-  },
-  "reactSelect": {
-    "placeholder": "Auswählen ...",
-    "tagPlaceholder": "Ordner ...",
-    "searchPlaceholder": "Suchen ...",
-    "dndPlaceholder": "Auswählen oder Datei hochladen ...",
-    "backspaceToRemove": "Backspace zum Entfernen drücken",
-    "noResults": "Keine Werte gefunden",
-    "createTag": "Zu Ordner hinzufügen: {{label}}",
-    "searchFor": "Suchen nach: {{label}}",
-    "clearAll": "Alle entfernen",
-    "clearValue": "Wert entfernen"
   },
   "inputRange": {
     "range": "Bereich",
@@ -198,10 +187,18 @@
       "possiblePattern": "Folgende Abkürzungen sind erlaubt: <br/> Eingabe: j2020/j.2020 wird zu: Von 01.01.2020; Bis 31.12.2020 <br/> Eingabe: q2.2020 wird zu: Von 01.04.2020; Bis 30.06.2020 <br/> Eingabe: m8.2020 wird zu: Von 01.08.2020; Bis 31.08.2020"
     }
   },
+  "inputSelect": {
+    "placeholder": "Auswählen ...",
+    "searchPlaceholder": "Suchen ...",
+    "empty": "Keine Werte gefunden"
+  },
   "inputMultiSelect": {
+    "dndPlaceholder": "Auswählen oder Datei hochladen ...",
     "openFileDialog": "Datei auswählen",
     "insertAll": "Alle einfügen",
-    "options": "Werte"
+    "options": "Werte",
+    "tagPlaceholder": "Ordner ...",
+    "createTag": "Zu Ordner hinzufügen: {{label}}"
   },
   "previousQueries": {
     "loading": "Lade Anfragen",
@@ -328,6 +325,7 @@
     "dateSet": "Datumswerte",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
+    "extra": "Zusatzspalte",
     "ignore": "Ignorieren",
     "partialSuccess": "Hochladen teilweise erfolgreich.",
     "resolved": "1 Zeile aufgelöst.",

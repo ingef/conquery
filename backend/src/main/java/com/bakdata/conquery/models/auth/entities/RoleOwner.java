@@ -8,9 +8,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface RoleOwner {
 
-	void addRole(MetaStorage storage, Role role);
+	void addRole(Role role);
 
-	void removeRole(MetaStorage storage, Role role);
+	void removeRole(Role role);
 
 	/**
 	 * Return a copy of the roles hold by the owner.

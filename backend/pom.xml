@@ -184,7 +184,7 @@
         <dependency>
             <groupId>org.apache.shiro</groupId>
             <artifactId>shiro-core</artifactId>
-            <version>1.7.0</version>
+            <version>1.8.0</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>
@@ -213,11 +213,6 @@
             <groupId>com.zigurs.karlis.utils</groupId>
             <artifactId>magicsort</artifactId>
             <version>0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.tuckey</groupId>
-            <artifactId>urlrewritefilter</artifactId>
-            <version>4.0.4</version>
         </dependency>
         <dependency>
             <groupId>com.jakewharton.byteunits</groupId>

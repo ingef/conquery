@@ -99,6 +99,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	public void addResult(@NonNull MetaStorage storage, ShardResult result) {
 		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 
+		log.trace("Received Result\n{}", result.getResults());
+
 		if (result.getError().isPresent()) {
 			fail(storage, result.getError().get());
 			return;
@@ -132,7 +134,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	protected void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status) {
+	public void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status) {
 		super.setStatusBase(user, status);
 		status.setNumberOfResults(lastResultCount);
 

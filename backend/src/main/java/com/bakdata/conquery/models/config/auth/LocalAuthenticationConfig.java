@@ -13,6 +13,7 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
@@ -76,11 +77,14 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 
 
 		LocalAuthenticationRealm realm = new LocalAuthenticationRealm(
+				manager.getValidator(),
+				Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER),
 				manager.getAuthController().getConqueryTokenRealm(),
 				storeName,
 				directory,
 				passwordStoreConfig,
-				jwtDuration);
+				jwtDuration
+		);
 		UserAuthenticationManagementProcessor processor = new UserAuthenticationManagementProcessor(realm, manager.getStorage());
 
 		// Register resources for users to exchange username and password for an access token
@@ -98,11 +102,10 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 
 	private Function<ContainerRequestContext,URI> loginProvider(DropwizardResourceConfig unprotectedAuthAdmin) {
 		return (ContainerRequestContext request) -> {
-			URI uri = UriBuilder.fromPath(unprotectedAuthAdmin.getUrlPattern())
-					.path(LoginResource.class)
-					.queryParam(REDIRECT_URI, UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
-					.build();
-			return uri;
+			return UriBuilder.fromPath(unprotectedAuthAdmin.getUrlPattern())
+							 .path(LoginResource.class)
+							 .queryParam(REDIRECT_URI, UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
+							 .build();
 		};
 
 	}

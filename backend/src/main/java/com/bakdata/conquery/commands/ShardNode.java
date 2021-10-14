@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -98,11 +99,14 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
+
+		final ObjectMapper binaryMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+		((MutableInjectableValues) binaryMapper.getInjectableValues()).add(Validator.class, environment.getValidator());
+
 		workers = new Workers(
 				getConfig().getQueries().getExecutionPool(),
-				config.configureObjectMapper(Jackson.MAPPER),
-				config.configureObjectMapper(Jackson.BINARY_MAPPER)
-				, getConfig().getCluster().getEntityBucketSize()
+				binaryMapper,
+				getConfig().getCluster().getEntityBucketSize()
 		);
 
 		final Collection<WorkerStorage> workerStorages = config.getStorage().loadWorkerStorages();
@@ -198,7 +202,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
-		ObjectMapper om = Jackson.BINARY_MAPPER.copy();
+		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
 		config.configureObjectMapper(om);
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);

@@ -49,7 +49,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
-import net.sourceforge.argparse4j.impl.Arguments;
 
 
 @Slf4j
@@ -220,10 +219,10 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				reused.setSecondaryId(query.getSecondaryId());
 
-				User shareHolder = new User("shareholder", "ShareHolder");
+				User shareHolder = new User("shareholder", "ShareHolder", conquery.getMetaStorage());
 				conquery.getMetaProcessor().addUser(shareHolder);
 
-				shareHolder.addPermissions(metaStorage, Set.of(
+				shareHolder.addPermissions(Set.of(
 						dataset.createPermission(Set.of(Ability.READ)),
 						execution.createPermission(Set.of(Ability.READ))
 				));

@@ -1,13 +1,14 @@
 package com.bakdata.conquery.io.result.excel;
 
-import com.bakdata.conquery.io.result.ResultUtil;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
 import java.util.Locale;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -22,12 +23,6 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import lombok.RequiredArgsConstructor;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-
-import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
 @RequiredArgsConstructor
 public class ResultExcelProcessor {

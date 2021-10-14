@@ -1,4 +1,4 @@
-import type { SelectorT } from "../api/types";
+import type { SelectorResultType, SelectorT } from "../api/types";
 import type {
   ConceptQueryNodeType,
   SelectedSelectorT,
@@ -33,3 +33,36 @@ const withDefaultSelect = (select: SelectorT) => ({
 export const selectsWithDefaults = (
   selects?: SelectorT[],
 ): SelectedSelectorT[] => (selects ? selects.map(withDefaultSelect) : []);
+
+function selectTypesMatch(
+  resultType1: SelectorResultType,
+  resultType2: SelectorResultType,
+) {
+  if (
+    resultType1.type === "LIST" &&
+    resultType2.type === "LIST" &&
+    !!resultType1.elementType &&
+    !!resultType2.elementType
+  ) {
+    return resultType1.elementType.type === resultType2.elementType.type;
+  }
+
+  return resultType1.type === resultType2.type;
+}
+
+export function selectIsWithinTypes(
+  select: SelectorT,
+  types: SelectorResultType[],
+) {
+  return types.some((selectType) =>
+    selectTypesMatch(selectType, select.resultType),
+  );
+}
+
+export const isSelectDisabled = (
+  select: SelectorT,
+  blocklistedSelects?: SelectorResultType[],
+  allowlistedSelects?: SelectorResultType[],
+) =>
+  (!!allowlistedSelects && !selectIsWithinTypes(select, allowlistedSelects)) ||
+  (!!blocklistedSelects && selectIsWithinTypes(select, blocklistedSelects));

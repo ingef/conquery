@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.storage;
 
+import java.io.IOException;
+
 import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -30,7 +32,6 @@ public abstract class IdentifiableStore<VALUE extends Identifiable<?>> extends K
 
     public IdentifiableStore(Store<IId<VALUE>, VALUE> store, CentralRegistry centralRegistry) {
         super(store);
-        store.inject(centralRegistry);
         this.centralRegistry = centralRegistry;
     }
 

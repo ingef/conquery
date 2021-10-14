@@ -6,10 +6,10 @@ import { useSelector } from "react-redux";
 
 import PrimaryButton from "../../button/PrimaryButton";
 import TransparentButton from "../../button/TransparentButton";
-import InputCheckbox from "../../form-components/InputCheckbox";
-import InputSelect from "../../form-components/InputSelect";
 import { useActiveLang } from "../../localization/useActiveLang";
 import Modal from "../../modal/Modal";
+import InputCheckbox from "../../ui-components/InputCheckbox";
+import InputSelect from "../../ui-components/InputSelect";
 import {
   selectActiveFormValues,
   useVisibleConceptListFields,

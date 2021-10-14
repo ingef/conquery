@@ -13,7 +13,6 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -33,7 +32,6 @@ import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
@@ -46,6 +44,7 @@ import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -102,18 +101,22 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
+		this.environment = environment;
+		validator = environment.getValidator();
+
 		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
 				.build(getName());
-		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
 
-		//inject datasets into the objectmapper
-		((MutableInjectableValues) environment.getObjectMapper().getInjectableValues())
-				.add(IdResolveContext.class, datasetRegistry);
+		// Instantiate DatasetRegistry and MetaStorage so they are ready for injection into the object mapper (API + Storage)
+		// The validator is already injected at this point see Conquery.java
+		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
+		storage = new MetaStorage(datasetRegistry);
+
+		datasetRegistry.injectInto(environment.getObjectMapper());
+		storage.injectInto(environment.getObjectMapper());
 
 
 		jobManager = new JobManager("ManagerNode", config.isFailOnError());
-		this.environment = environment;
-		validator = environment.getValidator();
 		formScanner = new FormScanner();
 		this.config = config;
 
@@ -183,8 +186,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	private void loadMetaStorage() {
-		log.info("Started meta storage");
-		storage = new MetaStorage(validator, config.getStorage(), datasetRegistry);
+		log.info("Opening MetaStorage");
+		storage.openStores(config.getStorage());
+		log.info("Loading MetaStorage");
 		storage.loadData();
 		log.info("MetaStorage loaded {}", storage);
 
@@ -197,8 +201,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void loadNamespaces() {
 		final Collection<NamespaceStorage > storages =
 				config.getStorage().loadNamespaceStorages();
+		final ObjectWriter objectWriter = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
 		for(NamespaceStorage namespaceStorage : storages) {
-			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER).writerWithView(InternalOnly.class));
+			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), objectWriter);
 			datasetRegistry.add(ns);
 		}
 	}
@@ -250,7 +255,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		ObjectMapper om = Jackson.BINARY_MAPPER.copy();
+		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
 		config.configureObjectMapper(om);
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));

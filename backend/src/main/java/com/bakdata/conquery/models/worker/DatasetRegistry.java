@@ -2,18 +2,17 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.net.SocketAddress;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -124,5 +123,12 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 				log.error("Unable to close namespace {}", namespace, e);
 			}
 		}
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		// Make this class also availiable under DatasetRegistry
+		return super.inject(values)
+			 .add(DatasetRegistry.class, this);
 	}
 }

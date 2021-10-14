@@ -6,9 +6,9 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import { exists } from "../common/helpers/exists";
-import ReactSelect from "../form-components/ReactSelect";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import WithTooltip from "../tooltip/WithTooltip";
+import ReactSelect from "../ui-components/ReactSelect";
 
 import { useSelectDataset } from "./actions";
 import { DatasetT } from "./reducer";
@@ -66,7 +66,7 @@ const DatasetSelector: FC = () => {
             exists(value) ? onSelectDataset(value.value) : onSelectDataset(null)
           }
           placeholder={
-            error ? t("datasetSelector.error") : t("reactSelect.placeholder")
+            error ? t("datasetSelector.error") : t("inputSelect.placeholder")
           }
           isDisabled={!!error}
           options={options}

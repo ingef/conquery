@@ -18,11 +18,8 @@ import java.util.function.Function;
 @Accessors(fluent=true) @Setter @Getter
 public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends IdentifiableStore<VALUE> {
 
-	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store, Injectable... injectables) {
+	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store) {
 		super(store, centralRegistry);
-		for(Injectable injectable : injectables) {
-			store.inject(injectable);
-		}
 	}
 
 	@Override

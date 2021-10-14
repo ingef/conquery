@@ -1,19 +1,33 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.validation.Validator;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.*;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
-import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -25,9 +39,15 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.*;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveSecondaryId;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveTable;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryId;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
-import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
@@ -37,16 +57,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-
-import javax.validation.Validator;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -76,14 +86,19 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		NamespaceStorage datasetStorage = new NamespaceStorage(validator, config.getStorage(), "dataset_" + name);
+		NamespaceStorage datasetStorage = new NamespaceStorage(validator, "dataset_" + name);
 
+		datasetStorage.openStores(config.getStorage());
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
 
-		Namespace ns = new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy()).writerWithView(InternalOnly.class));
+		Namespace ns = new Namespace(
+				datasetStorage,
+				config.isFailOnError(),
+				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class)
+		);
 
 		datasetRegistry.add(ns);
 
@@ -114,9 +129,7 @@ public class AdminDatasetProcessor {
 					Response.Status.CONFLICT);
 		}
 
-		namespace.close();
 		datasetRegistry.removeNamespace(dataset.getId());
-		datasetRegistry.getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(dataset)));
 
 	}
 
@@ -203,47 +216,10 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 		}
 
-		addAutomaticSelect(concept);
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
 		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
-	}
-
-	/**
-	 * Adds some selects to the concept on all levels for convenience.
-	 */
-	private static void addAutomaticSelect(@NotNull Concept<?> concept) {
-		if (!(concept instanceof TreeConcept)) {
-			return;
-		}
-
-		// Add to concept
-		TreeConcept treeConcept = (TreeConcept) concept;
-
-		// Don't add event_duration_sum if Concept has no date-columns
-		if (treeConcept.getConnectors().stream()
-					   .map(Connector::getValidityDates)
-					   .allMatch(Collection::isEmpty)) {
-			return;
-		}
-
-		final UniversalSelect select = EventDurationSumSelect.create("event_duration_sum");
-		select.setHolder(treeConcept);
-		treeConcept.getSelects().add(select);
-
-
-		// Add to connectors if they have dates
-		for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
-
-			if(connector.getValidityDates().isEmpty()){
-				continue;
-			}
-
-			final UniversalSelect connectorSelect = EventDurationSumSelect.create("event_duration_sum");
-			connectorSelect.setHolder(connector);
-			connector.getSelects().add(connectorSelect);
-		}
 	}
 
 	/**

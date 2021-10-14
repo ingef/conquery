@@ -1,9 +1,10 @@
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import Mustache from "mustache";
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
-import { components } from "react-select";
+import { components, MenuListComponentProps } from "react-select";
 
 import type { FilterSuggestion, SelectOptionT } from "../api/types";
 import TransparentButton from "../button/TransparentButton";
@@ -25,7 +26,14 @@ const SxLabeled = styled(Labeled)`
   }
 `;
 
-const SxMarkdown = styled(Markdown)`
+const disabledStyles = css`
+  opacity: 0.4;
+`;
+const OptionLabel = styled("span")<{ disabled?: boolean }>`
+  ${({ disabled }) => disabled && disabledStyles}
+`;
+const SxMarkdown = styled(Markdown)<{ disabled?: boolean }>`
+  ${({ disabled }) => disabled && disabledStyles}
   p {
     margin: 0;
   }
@@ -48,7 +56,7 @@ const InfoText = styled("p")`
 
 // Arbitrary number that has been set in the backend as well
 // TODO: Unlimited here + paginated backend vs
-const OPTIONS_LIMIT = 50;
+const OPTIONS_LIMIT = 500;
 
 const MultiValueLabel = (params: any) => {
   const label = params.data.optionLabel || params.data.label || params.data;
@@ -117,7 +125,10 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
     optionLabel: option.label,
   }));
 
-  const MenuList: FC = ({ children, ...ownProps }) => {
+  const MenuList = ({
+    children,
+    ...ownProps
+  }: MenuListComponentProps<SelectOptionT, true>) => {
     return (
       <>
         <Row>
@@ -133,7 +144,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
                 optionContainsStr(ownProps.selectProps.inputValue),
               );
 
-              ownProps.setValue(visibleOptions);
+              ownProps.setValue(visibleOptions, "select-option");
             }}
           >
             {t("inputMultiSelect.insertAll")}
@@ -154,18 +165,20 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       createOptionPosition="first"
       name="form-field"
       options={options}
+      isOptionDisabled={(option) => !!option.disabled}
       components={{ MultiValueLabel, MenuList }}
       value={props.input.value}
       isDisabled={props.disabled}
       isLoading={!!props.isLoading}
       classNamePrefix={"react-select"}
+      maxMenuHeight={300}
       closeMenuOnSelect={!!props.closeMenuOnSelect}
       placeholder={
         allowDropFile
-          ? t("reactSelect.dndPlaceholder")
-          : t("reactSelect.placeholder")
+          ? t("inputMultiSelect.dndPlaceholder")
+          : t("inputSelect.placeholder")
       }
-      noOptionsMessage={() => t("reactSelect.noResults")}
+      noOptionsMessage={() => t("inputSelect.empty")}
       onChange={props.input.onChange}
       onInputChange={
         props.onInputChange || // To allow for async option loading
@@ -176,11 +189,20 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       formatCreateLabel={(inputValue: string) =>
         t("common.create") + `: "${inputValue}"`
       }
-      formatOptionLabel={({ label, optionValue, templateValues, highlight }) =>
+      formatOptionLabel={({
+        label,
+        disabled,
+        optionValue,
+        templateValues,
+        highlight,
+      }) =>
         optionValue && templateValues ? (
-          <SxMarkdown source={Mustache.render(optionValue, templateValues)} />
+          <SxMarkdown
+            disabled={disabled}
+            source={Mustache.render(optionValue, templateValues)}
+          />
         ) : (
-          label
+          <OptionLabel disabled={disabled}>{label}</OptionLabel>
         )
       }
     />
@@ -205,7 +227,7 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
     >
       {hasTooManyValues && (
         <TooManyValues
-          value={props.input.value}
+          count={props.input.value.length}
           onClear={() => props.input.onChange(null)}
         />
       )}

@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -41,15 +40,16 @@ public class AuthenticationConfig {
 		);
 	}
 
-	public static NewCookie expireAuthCookie() {
+	public static NewCookie expireCookie(String cookieName) {
 		return new NewCookie(
-				AuthCookieFilter.ACCESS_TOKEN,
+				cookieName,
 				null,
 				"/",
 				null,
 				null,
 				0,
-				false);
+				false
+		);
 	}
 
 	@JsonIgnore
