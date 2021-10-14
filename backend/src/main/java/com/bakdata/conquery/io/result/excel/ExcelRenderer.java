@@ -104,7 +104,7 @@ public class ExcelRenderer {
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
 		final User owner = exec.getOwner();
-		coreProperties.setCreator(owner != null ? owner.getName() : config.getApplicationName());
+		coreProperties.setCreator(owner != null ? owner.getLabel() : config.getApplicationName());
 		coreProperties.setKeywords(String.join(" ", exec.getTags()));
 		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();
 		extendedProperties.setApplication(config.getApplicationName());

@@ -17,24 +17,25 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ExternalNode extends QPNode {
 
 	private final Table table;
 	private SpecialDateUnion dateUnion = new SpecialDateUnion();
 
-	@Getter
 	@NotEmpty
 	@NonNull
 	private final Map<Integer, CDateSet> includedEntities;
-	private final Map<String, Map<Integer, List<String>>> extraData;
+
+	private final Map<Integer, Map<String, List<String>>> extraData;
 	private final Map<String, ConstantValueAggregator> extraAggregators;
 
 	private CDateSet contained;
 
-	public ExternalNode(Table table, Map<Integer, CDateSet> includedEntities, Map<String, Map<Integer, List<String>>> extraData, Map<String, ConstantValueAggregator> extraAggregators) {
+	public ExternalNode(Table table, Map<Integer, CDateSet> includedEntities, Map<Integer, Map<String, List<String>>> extraData, Map<String, ConstantValueAggregator> extraAggregators) {
 		this.includedEntities = includedEntities;
 		this.table = table;
 		this.extraData = extraData;
@@ -47,13 +48,20 @@ public class ExternalNode extends QPNode {
 		contained = includedEntities.get(entity.getId());
 		dateUnion.init(entity, context);
 
-		for (Map.Entry<String, ConstantValueAggregator> entry : extraAggregators.entrySet()) {
-			String col = entry.getKey();
-			ConstantValueAggregator agg = entry.getValue();
+		for (ConstantValueAggregator aggregator : extraAggregators.values()) {
+			aggregator.setValue(null);
+		}
 
-			final Map<Integer, List<String>> colValues = extraData.getOrDefault(col, Collections.emptyMap());
+		for (Map.Entry<String, ConstantValueAggregator> colAndAgg : extraAggregators.entrySet()) {
+			final String col = colAndAgg.getKey();
+			final ConstantValueAggregator agg = colAndAgg.getValue();
 
-			agg.setValue(colValues.get(entity.getId()));
+			// Clear if entity has no value for the column
+			if (!extraData.getOrDefault(entity.getId(), Collections.emptyMap()).containsKey(col)) {
+				continue;
+			}
+
+			agg.setValue(extraData.get(entity.getId()).get(col));
 		}
 	}
 

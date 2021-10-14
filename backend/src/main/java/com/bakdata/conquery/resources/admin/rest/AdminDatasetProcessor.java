@@ -96,8 +96,12 @@ public class AdminDatasetProcessor {
 		datasetStorage.updateIdMapping(new EntityIdMap());
 
 		Namespace ns =
-				new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy())
-																			.writerWithView(InternalOnly.class));
+				new Namespace(
+				datasetStorage,
+				config.isFailOnError(),
+				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
+																			.writerWithView(InternalOnly.class)
+		);
 
 		datasetRegistry.add(ns);
 
