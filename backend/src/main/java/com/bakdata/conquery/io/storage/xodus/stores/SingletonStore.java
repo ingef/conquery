@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
 import lombok.Getter;

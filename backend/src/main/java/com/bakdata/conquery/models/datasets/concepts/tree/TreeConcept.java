@@ -13,10 +13,10 @@ import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;

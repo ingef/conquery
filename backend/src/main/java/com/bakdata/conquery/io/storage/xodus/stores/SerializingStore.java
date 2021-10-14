@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.Store;

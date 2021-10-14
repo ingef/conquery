@@ -33,13 +33,14 @@ import lombok.Setter;
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 
-@Getter @Setter
+@Getter
+@Setter
 @Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
 public class AdminTablesResource extends HAdmin {
 
 	@Inject
 	private AdminDatasetProcessor processor;
-	
+
 	@PathParam(DATASET)
 	protected Dataset dataset;
 	protected Namespace namespace;
@@ -58,8 +59,10 @@ public class AdminTablesResource extends HAdmin {
 		return table;
 	}
 
+
 	/**
 	 * Try to delete a table and all it's imports. Fails if it still has dependencies (unless force is used).
+	 *
 	 * @param force Force deletion of dependent concepts.
 	 * @return List of dependent concepts.
 	 */
@@ -74,8 +77,8 @@ public class AdminTablesResource extends HAdmin {
 		}
 
 		return Response.ok()
-				.entity(dependents)
-				.build();
+					   .entity(dependents)
+					   .build();
 	}
 
 	@GET
@@ -91,16 +94,19 @@ public class AdminTablesResource extends HAdmin {
 	}
 
 	@DELETE
-	@Path("imports/{"+IMPORT_ID+"}")
+	@Path("imports/{" + IMPORT_ID + "}")
 	public void deleteImport(@PathParam(IMPORT_ID) Import imp) {
 		processor.deleteImport(imp);
 	}
 
 
 	@GET
-	@Path("imports/{"+IMPORT_ID+"}")
+	@Path("imports/{" + IMPORT_ID + "}")
 	public Import getImport(@PathParam(IMPORT_ID) Import imp) {
 		return imp;
 	}
+
+
+
 
 }

@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.io.Files;
 import io.dropwizard.jersey.validation.Validators;

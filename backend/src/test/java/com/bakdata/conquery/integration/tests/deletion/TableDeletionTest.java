@@ -67,7 +67,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -194,7 +194,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables().stream()
 																 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
-																 .collect(Collectors.toList()), conquery.getDataset());
+																 .collect(Collectors.toList()));
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
