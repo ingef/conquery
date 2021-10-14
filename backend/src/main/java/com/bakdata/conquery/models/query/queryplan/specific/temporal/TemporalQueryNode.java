@@ -47,6 +47,10 @@ public class TemporalQueryNode extends QPParentNode {
 	 * The {@link SpecialDateUnion} to be fed with the included dataset.
 	 */
 	private final SpecialDateUnion dateUnion;
+
+	/**
+	 * We will always merge our nodes, but keep this as an option if we want to expand our functionality.
+	 */
 	private final DateAggregationAction dateAggregationAction = DateAggregationAction.MERGE;
 
 	public TemporalQueryNode(QPNode reference, TemporalSampler referenceSampler, QPNode preceding, TemporalSampler precedingSampler, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
