@@ -44,6 +44,7 @@ import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -100,10 +101,14 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
+		this.environment = environment;
+		validator = environment.getValidator();
+
 		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
 				.build(getName());
 
 		// Instantiate DatasetRegistry and MetaStorage so they are ready for injection into the object mapper (API + Storage)
+		// The validator is already injected at this point see Conquery.java
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
 		storage = new MetaStorage(datasetRegistry);
 
@@ -112,8 +117,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 
 		jobManager = new JobManager("ManagerNode", config.isFailOnError());
-		this.environment = environment;
-		validator = environment.getValidator();
 		formScanner = new FormScanner();
 		this.config = config;
 
@@ -198,8 +201,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void loadNamespaces() {
 		final Collection<NamespaceStorage > storages =
 				config.getStorage().loadNamespaceStorages();
+		final ObjectWriter objectWriter = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
 		for(NamespaceStorage namespaceStorage : storages) {
-			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER).writerWithView(InternalOnly.class));
+			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), objectWriter);
 			datasetRegistry.add(ns);
 		}
 	}
@@ -251,7 +255,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		ObjectMapper om = Jackson.BINARY_MAPPER.copy();
+		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
 		config.configureObjectMapper(om);
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));

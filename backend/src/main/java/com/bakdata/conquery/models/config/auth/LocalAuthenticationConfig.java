@@ -78,7 +78,7 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 
 		LocalAuthenticationRealm realm = new LocalAuthenticationRealm(
 				manager.getValidator(),
-				Jackson.BINARY_MAPPER.copy(),
+				Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER),
 				manager.getAuthController().getConqueryTokenRealm(),
 				storeName,
 				directory,

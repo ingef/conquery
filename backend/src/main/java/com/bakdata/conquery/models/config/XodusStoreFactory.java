@@ -26,8 +26,10 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -158,7 +160,7 @@ public class XodusStoreFactory implements StoreFactory {
 	private transient Validator validator;
 
 	@JsonIgnore
-	private transient final ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
+	private transient final ObjectMapper objectMapper = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
 
 	@JsonIgnore
 	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
@@ -171,21 +173,24 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public void init(ManagerNode managerNode) {
 		validator = managerNode.getValidator();
-		configureMapper(managerNode.getConfig());
+		configureMapper(managerNode.getConfig(), this.validator);
 		managerNode.getStorage().injectInto(objectMapper);
 	}
 
 	@Override
 	public void init(ShardNode shardNode) {
 		validator = shardNode.getValidator();
-		configureMapper(shardNode.getConfig());
+		configureMapper(shardNode.getConfig(), this.validator);
 	}
 
 	/**
 	 * Configures the XodusStorage Smile ObjectMapper with the defaults from the configuration.
 	 */
-	private void configureMapper(ConqueryConfig config) {
+	private void configureMapper(ConqueryConfig config, Validator validator) {
 		config.configureObjectMapper(objectMapper);
+
+		((MutableInjectableValues)objectMapper.getInjectableValues()).add(Validator.class, validator);
+
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
 	}
