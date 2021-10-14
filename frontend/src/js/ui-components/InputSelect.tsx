@@ -1,3 +1,5 @@
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
 import React from "react";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +9,13 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 
 import Labeled from "./Labeled";
 import ReactSelect from "./ReactSelect";
+
+const disabledStyles = css`
+  opacity: 0.4;
+`;
+const OptionLabel = styled("span")<{ disabled?: boolean }>`
+  ${({ disabled }) => disabled && disabledStyles}
+`;
 
 interface PropsT {
   className?: string;
@@ -70,6 +79,7 @@ const InputSelect = ({
         value={selected}
         defaultValue={defaultVal}
         options={options}
+        isOptionDisabled={(option) => !!option.disabled}
         onChange={(field: { value: string; label: string } | null) =>
           field ? input.onChange(field.value) : input.onChange(null)
         }
@@ -78,6 +88,9 @@ const InputSelect = ({
         isDisabled={!!disabled}
         placeholder={t("inputSelect.placeholder")}
         noOptionsMessage={() => t("inputSelect.empty")}
+        formatOptionLabel={({ label, disabled }) => (
+          <OptionLabel disabled={disabled}>{label}</OptionLabel>
+        )}
         {...selectProps}
       />
     </Labeled>

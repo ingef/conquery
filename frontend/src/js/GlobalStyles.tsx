@@ -80,11 +80,10 @@ const splitPaneStyles = (theme: Theme) => css`
     .Pane2 {
       overflow: hidden;
     }
-
-    .SplitPane--tooltip-fixed {
-      > .Pane1 {
-        width: 30px !important; // Because SplitPane sets an element style after the first drag
-      }
+  }
+  .SplitPane--tooltip-fixed {
+    > .Pane1 {
+      width: 30px !important; // Because SplitPane sets an element style after the first drag
     }
   }
 

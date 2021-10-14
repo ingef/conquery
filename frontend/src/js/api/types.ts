@@ -13,6 +13,7 @@ export interface DatasetT {
 export interface SelectOptionT {
   label: string;
   value: number | string;
+  disabled?: boolean;
 }
 
 // Example: { min: "2019-01-01", max: "2019-12-31" }
@@ -114,12 +115,26 @@ export interface TableT {
   supportedSecondaryIds?: string[];
 }
 
+export type SelectorResultDataType =
+  | "NUMERIC"
+  | "INTEGER"
+  | "MONEY"
+  | "BOOLEAN"
+  | "STRING"
+  | "LIST";
+export interface SelectorResultType {
+  type: SelectorResultDataType;
+  elementType?: {
+    type: Omit<SelectorResultDataType, "LIST">;
+  };
+}
 export type SelectorIdT = string;
 export interface SelectorT {
   id: SelectorIdT;
   label: string;
   description: string;
   default?: boolean;
+  resultType: SelectorResultType;
 }
 
 export interface InfoT {
@@ -135,6 +150,7 @@ export interface ConceptBaseT {
   detailsAvailable: boolean;
   codeListResolvable: boolean;
   matchingEntries: number; // TODO: Don't send with struct nodes (even sent with 0)
+  matchingEntities: number; // TODO: Don't send with struct nodes (even sent with 0)
   children?: ConceptIdT[]; // Might be an empty struct or a "virtual node"
   description?: string; // Empty array: key not defined
   additionalInfos?: InfoT[]; // Empty array: key not defined

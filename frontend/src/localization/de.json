@@ -160,6 +160,8 @@
   "tooltip": {
     "headline": "Info",
     "placeholder": "Weitere Informationen zu Konzepten ...",
+    "entitiesFound": "Entität",
+    "entitiesFound_plural": "Entitäten",
     "entriesFound": "Eintrag",
     "entriesFound_plural": "Einträge",
     "date": {
@@ -323,7 +325,7 @@
     "dateSet": "Datumswerte",
     "startDate": "Startdatum",
     "endDate": "Enddatum",
-    "extra" : "Zusatzspalte",
+    "extra": "Zusatzspalte",
     "ignore": "Ignorieren",
     "partialSuccess": "Hochladen teilweise erfolgreich.",
     "resolved": "1 Zeile aufgelöst.",

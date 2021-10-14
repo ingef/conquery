@@ -208,8 +208,8 @@ public class ExcelRenderer {
 			Stream<EntityResult> resultLines) {
 
 		// Row 0 is the Header the data starts at 1
-		AtomicInteger currentRow = new AtomicInteger(1);
-		final int writtenLines = resultLines.mapToInt(l -> this.writeRowsForEntity(infos, l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg, sheet)).sum();
+		final AtomicInteger currentRow = new AtomicInteger(1);
+		final int writtenLines = resultLines.mapToInt(l -> this.writeRowsForEntity(infos, l, currentRow, cfg, sheet)).sum();
 
 		// The result was shorter than the number of rows to track, so we auto size here explicitly
 		if (writtenLines < config.getLastRowToAutosize()){
@@ -225,7 +225,7 @@ public class ExcelRenderer {
 	private int writeRowsForEntity(
 			List<ResultInfo> infos,
 			EntityResult internalRow,
-			Supplier<Row> externalRowSupplier,
+			final AtomicInteger currentRow,
 			PrintSettings settings,
 			SXSSFSheet sheet) {
 		String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
@@ -233,7 +233,8 @@ public class ExcelRenderer {
 		int writtenLines = 0;
 
 		for (Object[] resultValues : internalRow.listResultLines()) {
-			Row row = externalRowSupplier.get();
+			final int thisRow = currentRow.getAndIncrement();
+			Row row = sheet.createRow(thisRow);
 			// Write id cells
 			int currentColumn = 0;
 			for (String id : ids) {
@@ -257,11 +258,12 @@ public class ExcelRenderer {
 
 				typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
 			}
-			writtenLines++;
 
-			if (writtenLines == config.getLastRowToAutosize()){
+			if (thisRow == config.getLastRowToAutosize()){
+				// Last row rows to track for auto sizing the column width is reached. Untrack to remove the performance penalty.
 				setColumnWidthsAndUntrack(sheet);
 			}
+			writtenLines++;
 		}
 		return writtenLines;
 	}

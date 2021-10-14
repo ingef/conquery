@@ -11,6 +11,7 @@ const Container = styled("div")<{ active?: boolean }>`
   background-color: ${({ theme }) => theme.col.grayVeryLight};
   padding: 1px 5px;
   font-size: ${({ theme }) => theme.font.sm};
+  color: ${({ theme }) => theme.col.black};
 `;
 
 const SxIconButton = styled(IconButton)`

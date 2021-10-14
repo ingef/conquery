@@ -18,7 +18,9 @@ const Template: Story<ComponentProps<typeof MultiSelectWithFileSupport>> = (
   args,
 ) => {
   const [options, setOptions] = useState<SelectOptionT[]>(
-    wordslist.map((w) => ({ label: w, value: w })),
+    wordslist
+      .slice(0, 100)
+      .map((w) => ({ label: w, value: w, disabled: Math.random() < 0.5 })),
   );
   const [value, setValue] = useState<SelectOptionT[] | null>([
     {

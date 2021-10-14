@@ -48,6 +48,10 @@
         "validityDates": {
           "name": "datum",
           "column": "table1.datum"
+        },
+        "selects": {
+          "type": "EVENT_DURATION_SUM",
+          "name": "event_duration_sum"
         }
       },
       "children": [

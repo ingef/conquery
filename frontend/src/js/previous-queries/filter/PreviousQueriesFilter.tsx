@@ -16,12 +16,12 @@ const PreviousQueriesFilter: FC<Props> = ({ className }) => {
   const { t } = useTranslation();
   const OPTIONS: { value: PreviousQueriesFilterStateT; label: string }[] = [
     {
-      value: "all",
-      label: t("previousQueriesFilter.all") as string,
-    },
-    {
       value: "own",
       label: t("previousQueriesFilter.own") as string,
+    },
+    {
+      value: "all",
+      label: t("previousQueriesFilter.all") as string,
     },
     {
       value: "shared",

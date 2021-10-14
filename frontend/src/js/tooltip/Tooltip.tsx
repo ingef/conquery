@@ -163,6 +163,7 @@ const Tooltip = () => {
     isFolder,
     infos,
     matchingEntries,
+    matchingEntities,
     dateRange,
   } = additionalInfos;
 
@@ -187,6 +188,7 @@ const Tooltip = () => {
       <Content>
         <TooltipEntries
           matchingEntries={matchingEntries}
+          matchingEntities={matchingEntities}
           dateRange={dateRange}
         />
         <Head>
