@@ -188,13 +188,9 @@ public class XodusStoreFactory implements StoreFactory {
 	 */
 	private void configureMapper(ConqueryConfig config, Validator validator) {
 		config.configureObjectMapper(objectMapper);
-		new Injectable(){
 
-			@Override
-			public MutableInjectableValues inject(MutableInjectableValues values) {
-				return values.add(Validator.class, validator);
-			}
-		}.injectInto(objectMapper);
+		((MutableInjectableValues)objectMapper.getInjectableValues()).add(Validator.class, validator);
+
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
 	}
