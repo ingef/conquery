@@ -24,6 +24,11 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * {@link com.bakdata.conquery.commands.ShardNode} container of {@link Worker}.
+ *
+ * Each Shard contains one {@link Worker} per {@link Dataset}.
+ */
 @Slf4j
 public class Workers extends IdResolveContext {
 	@Getter @Setter
@@ -32,7 +37,10 @@ public class Workers extends IdResolveContext {
 	private ConcurrentHashMap<WorkerId, Worker> workers = new ConcurrentHashMap<>();
 	@JsonIgnore
 	private transient Map<DatasetId, Worker> dataset2Worker = new HashMap<>();
-	
+
+	/**
+	 * Shared ExecutorService among Workers for Jobs.
+	 */
 	private final ThreadPoolExecutor jobsThreadPool;
 	private final ThreadPoolDefinition queryThreadPoolDefinition;
 
