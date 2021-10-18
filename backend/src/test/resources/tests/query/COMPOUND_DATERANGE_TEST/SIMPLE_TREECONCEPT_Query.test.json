@@ -1,0 +1,69 @@
+{
+  "type": "QUERY_TEST",
+  "label": "COMPOUND_DATERANGE Test",
+  "expectedCsv": "tests/query/COMPOUND_DATERANGE_TEST/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "test_tree"
+      ],
+      "tables": [
+        {
+          "id": "test_tree.test_column",
+          "filters": []
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "tree_label",
+          "name": "test_column",
+          "table": "test_table",
+          "validityDates": {
+            "label": "behandlung",
+            "column": "test_table.behandlung"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/COMPOUND_DATERANGE_TEST/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "behandlung_start",
+            "type": "DATE"
+          },
+          {
+            "name": "behandlung_ende",
+            "type": "DATE"
+          },
+          {
+            "name": "behandlung",
+            "type": "DATE_RANGE",
+            "outputDescription": {
+              "startColumn": "behandlung_start",
+              "endColumn": "behandlung_ende",
+              "name": "behandlung",
+              "operation": "COMPOUND_DATE_RANGE"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
