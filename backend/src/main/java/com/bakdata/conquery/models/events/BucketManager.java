@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.IdMutex.Locked;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
@@ -32,6 +32,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * Helper class to compute simple caches used in QueryEngine.
+ *
  * @implNote This class is only used per {@link Worker}. And NOT in the ManagerNode.
  */
 @Slf4j
@@ -41,7 +43,7 @@ public class BucketManager {
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;
 	private final WorkerStorage storage;
-	//Backreference
+
 	private final Worker worker;
 	@Getter
 	private final Int2ObjectMap<Entity> entities;
@@ -113,7 +115,7 @@ public class BucketManager {
 
 	@SneakyThrows
 	public void fullUpdate() {
-		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getExecutorService());
+		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
 		for (Concept<?> c : storage.getAllConcepts()) {
 			if (!(c instanceof TreeConcept)) {
@@ -152,7 +154,7 @@ public class BucketManager {
 		storage.addBucket(bucket);
 		registerBucket(bucket, entities, tableToBuckets);
 
-		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getExecutorService());
+		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
 		for (Concept<?> concept : storage.getAllConcepts()) {
 			if (!(concept instanceof TreeConcept)) {
@@ -185,7 +187,7 @@ public class BucketManager {
 			return;
 		}
 
-		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getExecutorService());
+		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
 		for (ConceptTreeConnector connector : ((TreeConcept)concept).getConnectors()) {
 
