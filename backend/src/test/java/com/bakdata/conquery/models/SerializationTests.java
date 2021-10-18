@@ -243,8 +243,7 @@ public class SerializationTests {
 
 		registry.register(dataset);
 		registry.register(table);
-
-		column.setTable(null);
+		registry.register(column);
 
 		final Validator validator = Validators.newValidator();
 
