@@ -5,7 +5,10 @@ import { useDispatch } from "react-redux";
 import type { WrappedFieldProps } from "redux-form";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
-import { PostFilterSuggestionsResponseT } from "../../api/types";
+import {
+  PostFilterSuggestionsResponseT,
+  SelectorResultType,
+} from "../../api/types";
 import TransparentButton from "../../button/TransparentButton";
 import {
   CONCEPT_TREE_NODE,
@@ -19,13 +22,13 @@ import {
   getConceptsByIdsWithTablesAndSelects,
   hasConceptChildren,
 } from "../../concept-trees/globalTreeStoreHelper";
-import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
-import ToggleButton from "../../form-components/ToggleButton";
 import { nodeHasActiveFilters } from "../../model/node";
 import { selectsWithDefaults } from "../../model/select";
 import { resetAllFiltersInTables } from "../../model/table";
 import { tablesWithDefaults } from "../../model/table";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
+import ToggleButton from "../../ui-components/ToggleButton";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import {
   initUploadConceptListModal,
@@ -57,6 +60,8 @@ interface Props extends WrappedFieldProps {
   disallowMultipleColumns?: boolean;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
   defaults: ConceptListDefaultsType;
   isValidConcept?: Function;
 }
@@ -697,6 +702,8 @@ const FormConceptGroup = (props: Props) => {
         fieldName={props.input.name}
         blocklistedTables={props.blocklistedTables}
         allowlistedTables={props.allowlistedTables}
+        blocklistedSelects={props.blocklistedSelects}
+        allowlistedSelects={props.allowlistedSelects}
         onCloseModal={(valueIdx, conceptIdx) =>
           props.input.onChange(
             setConceptProperties(props.input.value, valueIdx, conceptIdx, {

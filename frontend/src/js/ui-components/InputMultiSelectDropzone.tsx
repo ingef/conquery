@@ -38,7 +38,11 @@ interface PropsT {
   children: () => ReactNode;
 }
 
-const InputMultiSelectDropzone: FC<PropsT> = ({ onDropFile, children }) => {
+const InputMultiSelectDropzone: FC<PropsT> = ({
+  className,
+  onDropFile,
+  children,
+}) => {
   const { t } = useTranslation();
   const fileInputRef = useRef(null);
 
@@ -47,7 +51,7 @@ const InputMultiSelectDropzone: FC<PropsT> = ({ onDropFile, children }) => {
   }
 
   return (
-    <Root>
+    <Root className={className}>
       <SxDropzone<DragItemFile>
         acceptedDropTypes={[NativeTypes.FILE]}
         onDrop={(item) => {

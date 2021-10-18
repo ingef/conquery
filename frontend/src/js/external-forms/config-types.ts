@@ -1,5 +1,9 @@
+import { SelectorResultType } from "../api/types";
+
 /* ------------------------------ */
+
 /* COMMON, FORMS, TABS */
+
 /* ------------------------------ */
 interface TranslatableString {
   de: string;
@@ -192,6 +196,9 @@ type ConceptListField = CommonField & {
   // EITHER USE BLOCKLISTING OR ALLOWLISTING OR NONE OF THE TWO:
   blocklistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
   allowlistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
+  // EITHER USE BLOCKLISTING OR ALLOWLISTING OR NONE OF THE TWO:
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
 };
 
 /* ------------------------------ */

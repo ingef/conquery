@@ -10,17 +10,18 @@ import {
   CurrencyConfigT,
   DatasetIdT,
   SelectOptionT,
+  SelectorResultType,
 } from "../api/types";
 import TransparentButton from "../button/TransparentButton";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
-import EditableText from "../form-components/EditableText";
-import type { ModeT } from "../form-components/InputRange";
 import { nodeHasActiveFilters, nodeIsConceptQueryNode } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
+import EditableText from "../ui-components/EditableText";
+import type { ModeT } from "../ui-components/InputRange";
 
 import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
@@ -104,6 +105,8 @@ export interface QueryNodeEditorPropsT {
   datasetId: DatasetIdT;
   allowlistedTables?: string[];
   blocklistedTables?: string[];
+  allowlistedSelects?: SelectorResultType[];
+  blocklistedSelects?: SelectorResultType[];
   currencyConfig: CurrencyConfigT;
 
   onCloseModal: () => void;
@@ -259,6 +262,8 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
               datasetId={props.datasetId}
               currencyConfig={props.currencyConfig}
               selectedTableIdx={selectedTableIdx}
+              allowlistedSelects={props.allowlistedSelects}
+              blocklistedSelects={props.blocklistedSelects}
               onShowDescription={onShowDescription}
               onToggleTimestamps={props.onToggleTimestamps}
               onToggleSecondaryIdExclude={props.onToggleSecondaryIdExclude}

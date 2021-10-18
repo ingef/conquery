@@ -1,12 +1,18 @@
 import React from "react";
 
-import type { FilterSuggestion, SelectOptionT } from "../api/types";
-import InputMultiSelect from "../form-components/InputMultiSelect";
-import { sortSelects } from "../model/select";
+import type {
+  FilterSuggestion,
+  SelectOptionT,
+  SelectorResultType,
+} from "../api/types";
+import { isSelectDisabled, sortSelects } from "../model/select";
 import { SelectedSelectorT } from "../standard-query-editor/types";
+import InputMultiSelect from "../ui-components/InputMultiSelect";
 
 interface PropsT {
   selects: SelectedSelectorT[];
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
   onSelectTableSelects: (
     value: SelectOptionT[] | FilterSuggestion[] | null,
   ) => void;
@@ -15,6 +21,8 @@ interface PropsT {
 
 const TableSelects = ({
   selects,
+  blocklistedSelects,
+  allowlistedSelects,
   onSelectTableSelects,
   excludeTable,
 }: PropsT) => {
@@ -30,6 +38,11 @@ const TableSelects = ({
         options={sortSelects(selects).map((select) => ({
           value: select.id,
           label: select.label,
+          disabled: isSelectDisabled(
+            select,
+            blocklistedSelects,
+            allowlistedSelects,
+          ),
         }))}
         disabled={excludeTable}
       />

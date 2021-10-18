@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 import { Field as RxFormField } from "redux-form";
 
 import type { SelectOptionT } from "../../api/types";
-import InputCheckbox from "../../form-components/InputCheckbox";
-import InputDateRange from "../../form-components/InputDateRange";
-import InputPlain from "../../form-components/InputPlain";
-import InputSelect from "../../form-components/InputSelect";
-import ToggleButton from "../../form-components/ToggleButton";
 import { nodeIsInvalid } from "../../model/node";
+import InputCheckbox from "../../ui-components/InputCheckbox";
+import InputDateRange from "../../ui-components/InputDateRange";
+import InputPlain from "../../ui-components/InputPlain";
+import InputSelect from "../../ui-components/InputSelect";
+import ToggleButton from "../../ui-components/ToggleButton";
 import FormField from "../common/FormField";
 import type { GeneralField } from "../config-types";
 import { Description } from "../form-components/Description";
@@ -54,13 +54,8 @@ interface PropsT {
 }
 
 const Field = ({ field, ...commonProps }: PropsT) => {
-  const {
-    formType,
-    optional,
-    locale,
-    availableDatasets,
-    getFieldValue,
-  } = commonProps;
+  const { formType, optional, locale, availableDatasets, getFieldValue } =
+    commonProps;
   const { t } = useTranslation();
 
   switch (field.type) {
@@ -246,6 +241,8 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             isSingle: field.isSingle,
             blocklistedTables: field.blocklistedConnectors,
             allowlistedTables: field.allowlistedConnectors,
+            blocklistedSelects: field.blocklistedSelects,
+            allowlistedSelects: field.allowlistedSelects,
             defaults: field.defaults,
             optional,
             isValidConcept: (item: Object) =>

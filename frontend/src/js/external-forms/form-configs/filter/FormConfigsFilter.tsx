@@ -17,16 +17,16 @@ const FormConfigsFilter: FC = () => {
   const { t } = useTranslation();
   const OPTIONS = [
     {
+      value: "own",
+      label: t("previousQueriesFilter.own") as string,
+    },
+    {
       value: "all",
       label: t("previousQueriesFilter.all") as string,
     },
     {
       value: "activeForm",
       label: t("formConfigsFilter.activeForm") as string,
-    },
-    {
-      value: "own",
-      label: t("previousQueriesFilter.own") as string,
     },
     {
       value: "system",

@@ -15,14 +15,6 @@ import type {
   InfoT,
 } from "../api/types";
 
-// A concept that is part of a query node in the editor
-export interface ConceptType {
-  id: string;
-  label: string;
-  description?: string;
-  matchingEntries?: number;
-}
-
 export interface InfoType {
   key: string;
   value: string;
@@ -121,6 +113,7 @@ export interface ConceptQueryNodeType {
   description?: string;
   additionalInfos?: InfoT[];
   matchingEntries?: number;
+  matchingEntities?: number;
   dateRange?: DateRangeT;
 
   label: string;

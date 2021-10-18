@@ -9,6 +9,7 @@ import java.util.OptionalInt;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -51,7 +52,11 @@ public class FilterResource extends HFilters {
 		}
 
 
-		return processor.autocompleteTextFilter((AbstractSelectFilter<?>) filter, Objects.requireNonNullElse(text.getText(), ""), pageNumberOpt, itemsPerPageOpt);
+		try {
+			return processor.autocompleteTextFilter((AbstractSelectFilter<?>) filter, Objects.requireNonNullElse(text.getText(), ""), pageNumberOpt, itemsPerPageOpt);
+		}catch (IllegalArgumentException e) {
+			throw new BadRequestException(e);
+		}
 	}
 
 	@Data

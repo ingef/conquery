@@ -9,9 +9,9 @@ import {
   PREVIOUS_QUERY,
   PREVIOUS_SECONDARY_ID_QUERY,
 } from "../../common/constants/dndTypes";
-import Dropzone, { DropzoneProps } from "../../form-components/Dropzone";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
+import Dropzone, { DropzoneProps } from "../../ui-components/Dropzone";
 import {
   removeFolderFromFilter,
   setFolderFilter,

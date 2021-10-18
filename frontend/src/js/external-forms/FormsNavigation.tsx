@@ -6,9 +6,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { reset } from "redux-form";
 
 import IconButton from "../button/IconButton";
-import InputSelect from "../form-components/InputSelect";
 import { useActiveLang } from "../localization/useActiveLang";
 import WithTooltip from "../tooltip/WithTooltip";
+import InputSelect from "../ui-components/InputSelect";
 
 import { setExternalForm } from "./actions";
 import { Form } from "./config-types";

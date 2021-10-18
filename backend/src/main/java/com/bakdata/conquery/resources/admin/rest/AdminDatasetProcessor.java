@@ -1,31 +1,54 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.validation.Validator;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.*;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
-import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.EventDurationSumSelect;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.*;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveSecondaryId;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveTable;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryId;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -36,23 +59,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-
-import javax.validation.Validator;
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Slf4j
 @RequiredArgsConstructor
 @Getter
 public class AdminDatasetProcessor {
-
 
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
@@ -83,7 +95,9 @@ public class AdminDatasetProcessor {
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
 
-		Namespace ns = new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy()).writerWithView(InternalOnly.class));
+		Namespace ns =
+				new Namespace(datasetStorage, config.isFailOnError(), config.configureObjectMapper(Jackson.BINARY_MAPPER.copy())
+																			.writerWithView(InternalOnly.class));
 
 		datasetRegistry.add(ns);
 
@@ -107,11 +121,12 @@ public class AdminDatasetProcessor {
 							"Cannot delete dataset `%s`, because it still has tables: `%s`",
 							dataset.getId(),
 							namespace.getStorage().getTables().stream()
-									.map(Table::getId)
-									.map(Objects::toString)
-									.collect(Collectors.joining(","))
+									 .map(Table::getId)
+									 .map(Objects::toString)
+									 .collect(Collectors.joining(","))
 					),
-					Response.Status.CONFLICT);
+					Response.Status.CONFLICT
+			);
 		}
 
 		datasetRegistry.removeNamespace(dataset.getId());
@@ -144,9 +159,9 @@ public class AdminDatasetProcessor {
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents = namespace.getStorage().getTables().stream()
-				.map(Table::getColumns).flatMap(Arrays::stream)
-				.filter(column -> secondaryId.equals(column.getSecondaryId()))
-				.collect(Collectors.toList());
+												 .map(Table::getColumns).flatMap(Arrays::stream)
+												 .filter(column -> secondaryId.equals(column.getSecondaryId()))
+												 .collect(Collectors.toList());
 
 		if (!dependents.isEmpty()) {
 			final Set<TableId> tables = dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet());
@@ -201,47 +216,10 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 		}
 
-		addAutomaticSelect(concept);
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
 		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
-	}
-
-	/**
-	 * Adds some selects to the concept on all levels for convenience.
-	 */
-	private static void addAutomaticSelect(@NotNull Concept<?> concept) {
-		if (!(concept instanceof TreeConcept)) {
-			return;
-		}
-
-		// Add to concept
-		TreeConcept treeConcept = (TreeConcept) concept;
-
-		// Don't add event_duration_sum if Concept has no date-columns
-		if (treeConcept.getConnectors().stream()
-					   .map(Connector::getValidityDates)
-					   .allMatch(Collection::isEmpty)) {
-			return;
-		}
-
-		final UniversalSelect select = EventDurationSumSelect.create("event_duration_sum");
-		select.setHolder(treeConcept);
-		treeConcept.getSelects().add(select);
-
-
-		// Add to connectors if they have dates
-		for (ConceptTreeConnector connector : treeConcept.getConnectors()) {
-
-			if(connector.getValidityDates().isEmpty()){
-				continue;
-			}
-
-			final UniversalSelect connectorSelect = EventDurationSumSelect.create("event_duration_sum");
-			connectorSelect.setHolder(connector);
-			connector.getSelects().add(connectorSelect);
-		}
 	}
 
 	/**
@@ -284,8 +262,17 @@ public class AdminDatasetProcessor {
 	@SneakyThrows
 	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config);
+		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, false);
+		namespace.getJobManager().addSlowJob(job);
+	}
 
+	/**
+	 * Reads an Import partially Importing it if it is present, then submitting it for full import [Update of an import].
+	 */
+	@SneakyThrows
+	public void updateImport(Namespace namespace, InputStream inputStream) throws IOException {
+
+		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, true);
 		namespace.getJobManager().addSlowJob(job);
 	}
 
@@ -294,7 +281,7 @@ public class AdminDatasetProcessor {
 	 */
 	public synchronized void deleteImport(Import imp) {
 		final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
-		
+
 		namespace.getStorage().removeImport(imp.getId());
 		namespace.sendToAll(new RemoveImportJob(imp));
 
@@ -309,9 +296,9 @@ public class AdminDatasetProcessor {
 		final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
 
 		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-				.filter(con -> con.getTable().equals(table))
-				.map(Connector::getConcept)
-				.collect(Collectors.toList());
+															.filter(con -> con.getTable().equals(table))
+															.map(Connector::getConcept)
+															.collect(Collectors.toList());
 
 		if (force || dependentConcepts.isEmpty()) {
 			for (Concept<?> concept : dependentConcepts) {
@@ -319,8 +306,8 @@ public class AdminDatasetProcessor {
 			}
 
 			namespace.getStorage().getAllImports().stream()
-					.filter(imp -> imp.getTable().equals(table))
-					.forEach(this::deleteImport);
+					 .filter(imp -> imp.getTable().equals(table))
+					 .forEach(this::deleteImport);
 
 			namespace.getStorage().removeTable(table.getId());
 			namespace.sendToAll(new RemoveTable(table));
@@ -342,12 +329,14 @@ public class AdminDatasetProcessor {
 
 	/**
 	 * Issues all Shards to do an UpdateMatchingStats.
+	 *
 	 * @implNote This intentionally submits a SlowJob so that it will be queued after all jobs that are already in the queue (usually import jobs).
 	 */
 	public void updateMatchingStats(Dataset dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset.getId());
 
-		ns.getJobManager().addSlowJob(new SimpleJob("Initiate Update Matching Stats and FilterSearch",
+		ns.getJobManager().addSlowJob(new SimpleJob(
+				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
 					ns.sendToAll(new UpdateMatchingStatsMessage());
 					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());

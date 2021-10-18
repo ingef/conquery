@@ -140,7 +140,6 @@
     "timeUnitDays": "days",
     "title": "Title",
     "description": "Description",
-    "clearAll": "Clear all",
     "clearValue": "Clear value",
     "closeEsc": "Close (ESC)",
     "close": "Close",
@@ -161,6 +160,8 @@
   "tooltip": {
     "headline": "Info",
     "placeholder": "More information on a concept ...",
+    "entitiesFound": "entity",
+    "entitiesFound_plural": "entities",
     "entriesFound": "entry",
     "entriesFound_plural": "entries",
     "date": {
@@ -168,18 +169,6 @@
       "from": "From",
       "to": "To"
     }
-  },
-  "reactSelect": {
-    "placeholder": "Choose ...",
-    "tagPlaceholder": "Folder ...",
-    "searchPlaceholder": "Search ...",
-    "dndPlaceholder": "Choose or drop file ...",
-    "backspaceToRemove": "Press Backspace to remove",
-    "noResults": "No values found",
-    "createTag": "Create folder: {{label}}",
-    "searchFor": "Search for: {{label}}",
-    "clearAll": "Clear all",
-    "clearValue": "Clear value"
   },
   "inputRange": {
     "range": "Range",
@@ -198,10 +187,18 @@
       "possiblePattern": "y2000 => from: 01/01/2000 to: 01/31/2000 <br/> q2.2000 => from: 04/01/2000 to: 06/30/2000 <br/> m3.2000 => from: 03/01/2000 to: 03/31/2000"
     }
   },
+  "inputSelect": {
+    "placeholder": "Choose ...",
+    "searchPlaceholder": "Search ...",
+    "empty": "No values found"
+  },
   "inputMultiSelect": {
+    "dndPlaceholder": "Choose or drop file ...",
     "openFileDialog": "Select file",
     "insertAll": "Insert all",
-    "options": "options"
+    "options": "options",
+    "tagPlaceholder": "Folder ...",
+    "createTag": "Create folder: {{label}}"
   },
   "previousQueries": {
     "loading": "Loading queries",
@@ -328,6 +325,7 @@
     "dateSet": "Date set",
     "startDate": "Start date",
     "endDate": "End date",
+    "extra": "Additional Column",
     "ignore": "IGNORE",
     "partialSuccess": "Upload partially successful.",
     "resolved": "1 line resolved.",

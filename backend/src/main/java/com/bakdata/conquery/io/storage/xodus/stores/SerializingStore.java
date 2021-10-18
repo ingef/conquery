@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.Store;
@@ -124,7 +123,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		unreadableValuesDumpDir = unreadableDataDumpDirectory;
 		if(unreadableValuesDumpDir != null) {
-			if(!unreadableValuesDumpDir.exists() && unreadableValuesDumpDir.mkdirs()) {
+			if(!unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.mkdirs()) {
 				throw new IllegalStateException("Could not create dump directory: " + unreadableValuesDumpDir);
 			}
 			else if(!unreadableValuesDumpDir.isDirectory()) {
