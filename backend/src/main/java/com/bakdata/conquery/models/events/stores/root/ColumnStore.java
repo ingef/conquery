@@ -3,7 +3,9 @@ package com.bakdata.conquery.models.events.stores.root;
 import java.util.Arrays;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
@@ -12,14 +14,21 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
  * Base-class representing the data of a single {@link com.bakdata.conquery.models.datasets.Column} of a {@link com.bakdata.conquery.models.events.Bucket}.
  * <p>
  * Internal representation of data is completely transparent to the caller. get may only be called if has is true.
- *
+ * <p>
  * This class has subclasses per storage-type and cannot get/set itself for type-safety reasons.
- *
+ * <p>
  * Every root class must have an associated {@link MajorTypeId} and {@link com.bakdata.conquery.models.preproc.parser.Parser}.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public interface ColumnStore {
+
+
+	@JsonBackReference
+	default void addParent(Bucket bucket) {
+
+	}
+
 
 	/**
 	 * Helper method to select partitions of an array. Resulting array is of length sum(lengths). Incoming type T has to be of ArrayType or this will fail.

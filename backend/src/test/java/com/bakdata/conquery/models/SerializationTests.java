@@ -42,10 +42,9 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -67,8 +66,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.hpsf.Array;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
@@ -183,14 +180,17 @@ public class SerializationTests {
 
 
 		Import imp = new Import(table);
-		DateRangeTypeCompound compoundStore = new DateRangeTypeCompound();
-		compoundStore.setStartColumn(startCol.getName());
-		compoundStore.setEndColumn(endCol.getName());
+		imp.setName("importTest");
 
-		ColumnStore startStore = new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE);
-		ColumnStore endStore = new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE);
+		DateRangeTypeCompound compoundStore = new DateRangeTypeCompound(startCol.getName(), endCol.getName());
 
-		Bucket bucket = new Bucket(0, 1, 3, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
+		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
+		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
+
+		Bucket bucket =  Bucket.create(0, 1, 3, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
+
+		compoundStore.addParent(bucket);
+
 
 		CentralRegistry registry = new CentralRegistry();
 

@@ -40,7 +40,7 @@ class CBlockTest {
 		final Import imp = new Import(table);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 0, 10, new ColumnStore[0], Collections.emptySet(),new int[10], new int[10], imp);
+		final Bucket bucket =   Bucket.create(0, 0, 10, new ColumnStore[0], Collections.emptySet(),new int[10], new int[10], imp);
 
 
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);

@@ -1,15 +1,16 @@
 package com.bakdata.conquery.models.events.stores.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -19,48 +20,55 @@ import lombok.ToString;
  */
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_COMPOUND")
 @Getter
-//@Setter
+@Setter
 @ToString(of = {"minStore", "maxStore"})
 public class DateRangeTypeCompound implements DateRangeStore {
 
-	@Setter
-	 private String startColumn, endColumn;
+
+	private String startColumn, endColumn;
 
 	@JsonIgnore
-	@Setter
 	private DateStore startStore;
+
 	@JsonIgnore
-	@Setter
 	private DateStore endStore;
 
-	@JsonBackReference
+
+	@Setter(AccessLevel.PROTECTED)
+	@JsonIgnore
 	private Bucket parent;
 
-//	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-//	public DateRangeTypeCompound(String startColumn, String endColumn) {
-//		this.startColumn = startColumn;
-//		this.endColumn = endColumn;
-//	}
+	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+	public DateRangeTypeCompound(String startColumn, String endColumn) {
+		this.startColumn = startColumn;
+		this.endColumn = endColumn;
+	}
 
-
-	public void setParent(Bucket parent) {
-		this.parent = parent;
-		this.startStore = (DateStore) parent.getStore(startColumn);
-		this.endStore = (DateStore) parent.getStore(endColumn);
-
+	@JsonIgnore
+	public DateStore getStartStore() {
 		if (startStore == null) {
-			throw new NullPointerException("the given minStore is null");
+			this.startStore = (DateStore) parent.getStore(startColumn);
 		}
+		return startStore;
+	}
 
+	@JsonIgnore
+	public DateStore getEndStore() {
 		if (endStore == null) {
-			throw new NullPointerException("the given maxStore is null");
+			this.endStore = (DateStore) parent.getStore(endColumn);
 		}
+		return endStore;
+	}
+
+	@Override
+	public void addParent(Bucket bucket) {
+		this.parent = bucket;
 	}
 
 	@Override
 	public int getLines() {
 		// they can be unaligned, if one of them is empty.
-	//	return Math.max(startStore.getLines(), endStore.getLines());
+		//	return Math.max(startStore.getLines(), endStore.getLines());
 		return 0;
 	}
 
@@ -72,11 +80,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Override
 	public DateRangeTypeCompound select(int[] starts, int[] length) {
-		DateRangeTypeCompound  compoundStore = new DateRangeTypeCompound();
-
-		compoundStore.setStartColumn(getStartColumn());
-		compoundStore.setEndColumn(getEndColumn());
-		return compoundStore;
+		return new DateRangeTypeCompound(getStartColumn(), getEndColumn());
 	}
 
 	@Override
@@ -94,12 +98,12 @@ public class DateRangeTypeCompound implements DateRangeStore {
 		int start = Integer.MIN_VALUE;
 		int end = Integer.MAX_VALUE;
 
-		if (startStore.has(event)) {
-			start = startStore.getDate(event);
+		if (getStartStore().has(event)) {
+			start = getStartStore().getDate(event);
 		}
 
-		if (endStore.has(event)) {
-			end = endStore.getDate(event);
+		if (getEndStore().has(event)) {
+			end = getEndStore().getDate(event);
 		}
 
 		return CDateRange.of(start, end);
@@ -107,6 +111,6 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Override
 	public boolean has(int event) {
-		return startStore.has(event) || endStore.has(event);
+		return getStartStore().has(event) || getEndStore().has(event);
 	}
 }

@@ -20,12 +20,9 @@ public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> 
 
 
 	public CompoundDateRangeParser(ConqueryConfig config, String startColumn, String endColumn) {
-
 		super(config);
 		this.endColumn = endColumn;
 		this.startColumn = startColumn;
-
-
 	}
 
 	@Override
@@ -40,12 +37,7 @@ public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> 
 
 	@Override
 	protected DateRangeStore decideType() {
-
-		DateRangeTypeCompound  compoundStore = new DateRangeTypeCompound();
-
-		compoundStore.setStartColumn(this.startColumn);
-		compoundStore.setEndColumn(this.endColumn);
-		return compoundStore;
+		return new DateRangeTypeCompound(this.startColumn, this.endColumn);
 	}
 
 

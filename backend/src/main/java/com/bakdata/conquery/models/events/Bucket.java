@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,13 +26,15 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -49,7 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
-@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator}, access = AccessLevel.PROTECTED)
 public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
 
 	@Min(0)
@@ -60,8 +61,10 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@Min(0)
 	private final int numberOfEvents;
 
+
 	@JsonManagedReference
-	private final ColumnStore[] stores;
+	@Setter(AccessLevel.PROTECTED)
+	private ColumnStore[] stores;
 
 	private final Set<Integer> entities;
 
@@ -83,6 +86,20 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return imp.getTable();
 	}
 
+
+	public static Bucket create(int bucket, int root, int numberOfEvents, ColumnStore[] stores, Set<Integer> entities, int[] ends, int[] start, @NsIdRef Import imp) {
+		Bucket newBucket = new Bucket(
+				bucket,
+				root,
+				numberOfEvents,
+				entities,
+				ends,
+				start,
+				imp
+		);
+		newBucket.setStores(stores);
+		return newBucket;
+	}
 
 
 	@Override
