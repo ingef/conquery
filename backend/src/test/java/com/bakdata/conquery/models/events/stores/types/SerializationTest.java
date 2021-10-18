@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
@@ -92,7 +93,8 @@ public class SerializationTest {
 				DoubleArrayStore.create(10),
 				BitSetStore.create(10),
 				EmptyStore.INSTANCE,
-				new RebasingStore(10, 10, IntArrayStore.create(10))
+				new RebasingStore(10, 10, IntArrayStore.create(10)),
+				new DateRangeTypeCompound("", "")
 		);
 	}
 
