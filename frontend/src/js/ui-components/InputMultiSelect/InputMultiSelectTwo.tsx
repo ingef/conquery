@@ -44,11 +44,9 @@ interface Props {
   tooltip?: string;
   indexPrefix?: number;
   creatable?: boolean;
-  input: {
-    value: SelectOptionT[];
-    defaultValue?: SelectOptionT[];
-    onChange: (value: SelectOptionT[]) => void;
-  };
+  value: SelectOptionT[];
+  defaultValue?: SelectOptionT[];
+  onChange: (value: SelectOptionT[]) => void;
   loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
   onLoadMore?: (inputValue: string) => void;
@@ -56,18 +54,20 @@ interface Props {
 
 const InputMultiSelectTwo = ({
   options,
-  input,
   label,
   tooltip,
   indexPrefix,
   creatable,
   disabled,
+  value,
+  defaultValue,
+  onChange,
   loading,
   onResolve,
   onLoadMore,
 }: Props) => {
   const { onDropFile } = useResolvableSelect({
-    defaultValue: input.defaultValue,
+    defaultValue,
     onResolve,
   });
 
@@ -84,10 +84,10 @@ const InputMultiSelectTwo = ({
     setSelectedItems,
     activeIndex,
   } = useMultipleSelection<SelectOptionT>({
-    initialSelectedItems: input.defaultValue,
+    initialSelectedItems: defaultValue,
     onSelectedItemsChange: (changes) => {
       if (changes.selectedItems) {
-        input.onChange(changes.selectedItems);
+        onChange(changes.selectedItems);
       }
     },
   });
@@ -194,7 +194,7 @@ const InputMultiSelectTwo = ({
   const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
 
   useSyncWithValueFromAbove({
-    inputValueFromAbove: input.value,
+    inputValueFromAbove: value,
     selectedItems,
     setSelectedItems,
   });
@@ -331,11 +331,8 @@ const InputMultiSelectTwo = ({
       }
       indexPrefix={indexPrefix}
     >
-      {hasTooManyValues && input.value.length > 0 && (
-        <TooManyValues
-          count={input.value.length}
-          onClear={() => input.onChange([])}
-        />
+      {hasTooManyValues && value.length > 0 && (
+        <TooManyValues count={value.length} onClear={() => onChange([])} />
       )}
       {!hasTooManyValues && !onResolve && Select}
       {!hasTooManyValues && !!onResolve && onDropFile && (

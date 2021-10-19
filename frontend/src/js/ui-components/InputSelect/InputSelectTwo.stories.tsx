@@ -1,5 +1,5 @@
 import { ComponentMeta, Story } from "@storybook/react";
-import React, { ComponentProps, useState } from "react";
+import { ComponentProps, useState } from "react";
 
 import wordslist from "../../../fixtures/words.json";
 import { SelectOptionT } from "../../api/types";
@@ -25,13 +25,13 @@ const Template: Story<ComponentProps<typeof InputSelect>> = (args) => {
     value: "yes",
   });
 
+  console.log(value);
+
   return (
     <InputSelect
       {...args}
-      input={{
-        value: value || null,
-        onChange: (v) => setValue(v),
-      }}
+      value={value || null}
+      onChange={(v) => setValue(v)}
       options={options}
     />
   );

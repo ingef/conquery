@@ -59,15 +59,13 @@ const Template: Story<
   return (
     <InputMultiSelectTwo
       {...args}
+      options={options}
+      value={value || []}
+      defaultValue={[]}
+      onChange={(v) => setValue(v)}
+      loading={loading}
       onResolve={passOnResolve ? onResolve : undefined}
       onLoadMore={onLoad}
-      loading={loading}
-      input={{
-        defaultValue: [],
-        value: value || [],
-        onChange: (v) => setValue(v),
-      }}
-      options={options}
     />
   );
 };

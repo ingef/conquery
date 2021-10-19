@@ -31,37 +31,38 @@ interface Props {
   indexPrefix?: number;
   placeholder?: string;
   loading?: boolean;
-  input: {
-    value: SelectOptionT | null;
-    defaultValue?: SelectOptionT["value"] | null;
-    onChange: (value: SelectOptionT | null) => void;
-  };
+  clearable?: boolean;
+  value: SelectOptionT | null;
+  defaultValue?: SelectOptionT["value"] | null;
+  onChange: (value: SelectOptionT | null) => void;
 }
 
 const InputSelectTwo = ({
   options,
   placeholder,
-  input,
   label,
   tooltip,
   indexPrefix,
   disabled,
+  clearable,
+  value,
+  defaultValue,
+  onChange,
 }: Props) => {
   const { t } = useTranslation();
-  const previousInputValue = usePrevious(input.value);
+  const previousInputValue = usePrevious(value);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [filteredOptions, setFilteredOptions] = useState(() => {
-    if (!input.value) return options;
+    if (!value) return options;
 
-    return options.some((option) => option.value === input.value?.value)
+    return options.some((option) => option.value === value?.value)
       ? options
-      : [input.value, ...options];
+      : [value, ...options];
   });
 
   const defaultOption =
-    input.value ||
-    filteredOptions.find((option) => option.value === input.defaultValue);
+    value || filteredOptions.find((option) => option.value === defaultValue);
 
   const {
     isOpen,
@@ -90,11 +91,14 @@ const InputSelectTwo = ({
       // in that way
       // - the default behavior may be adjusted
       // - including the `onStateChange` reactions that diverge from default behavior (see below)
+      console.log(type);
       switch (type) {
         case useCombobox.stateChangeTypes.FunctionReset:
           return {
             ...changes,
-            selectedItem: null, // Because for some reason, changes doesn't have selectedItem === null
+            // For some reason, changes doesn't have selectedItem === null
+            // so we need to explicitly set null here if clearable
+            selectedItem: clearable ? null : state.selectedItem,
           };
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.ItemClick:
@@ -109,7 +113,9 @@ const InputSelectTwo = ({
 
           return {
             ...changes,
-            inputValue: String(changes.selectedItem?.label || ""),
+            inputValue: String(
+              changes.selectedItem?.label || state.selectedItem?.label || "",
+            ),
           };
         default:
           return changes;
@@ -151,7 +157,7 @@ const InputSelectTwo = ({
           setFilteredOptions(options);
 
           if (changes.selectedItem) {
-            input.onChange(changes.selectedItem);
+            onChange(changes.selectedItem);
           }
           break;
         default:
@@ -184,13 +190,13 @@ const InputSelectTwo = ({
 
   useEffect(() => {
     if (
-      exists(input.value) &&
-      previousInputValue !== input.value &&
-      input.value.value !== selectedItem?.value
+      exists(value) &&
+      previousInputValue !== value &&
+      value.value !== selectedItem?.value
     ) {
-      selectItem(input.value);
+      selectItem(value);
     }
-  }, [previousInputValue, selectedItem, selectItem, input.value]);
+  }, [previousInputValue, selectedItem, selectItem, value]);
 
   return (
     <SxLabeled
@@ -216,6 +222,10 @@ const InputSelectTwo = ({
           <ItemsInputContainer>
             <Input
               {...inputProps}
+              onBlur={(e) => {
+                inputProps.onBlur(e);
+                handleBlur(); // Because sometimes inputProps.onBlur doesn't trigger InputBlur action
+              }}
               ref={(instance) => {
                 inputPropsRef(instance);
                 inputRef.current = instance;
@@ -237,13 +247,15 @@ const InputSelectTwo = ({
               }}
             />
           </ItemsInputContainer>
-          {(inputValue.length > 0 || exists(selectedItem)) && (
+          {clearable && (inputValue.length > 0 || exists(selectedItem)) && (
             <ResetButton
               icon="times"
               disabled={disabled}
               onClick={() => {
                 resetComboboxState();
-                input.onChange(null);
+                if (clearable) {
+                  onChange(null);
+                }
               }}
             />
           )}
