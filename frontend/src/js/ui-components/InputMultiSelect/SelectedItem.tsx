@@ -12,6 +12,7 @@ const Container = styled("div")<{ active?: boolean }>`
   padding: 1px 5px;
   font-size: ${({ theme }) => theme.font.sm};
   color: ${({ theme }) => theme.col.black};
+  box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.8);
 `;
 
 const SxIconButton = styled(IconButton)`

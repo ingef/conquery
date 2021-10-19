@@ -32,7 +32,7 @@ export const ItemsInputContainer = styled("div")`
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 4px;
   width: 100%;
 `;
 
