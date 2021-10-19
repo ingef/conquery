@@ -84,7 +84,7 @@ export const ResetButton = styled(IconButton)`
 export const VerticalSeparator = styled("div")`
   width: 1px;
   margin: 3px 0;
-  background-color: ${({ theme }) => theme.col.grayVeryLight};
+  background-color: ${({ theme }) => theme.col.grayLight};
   align-self: stretch;
   flex-shrink: 0;
 `;
