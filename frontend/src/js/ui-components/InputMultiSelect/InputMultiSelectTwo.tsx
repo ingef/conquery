@@ -17,10 +17,10 @@ import {
   ResetButton,
   SelectContainer,
   SxLabeled,
+  SxSelectListOption,
   VerticalSeparator,
 } from "../InputSelect/InputSelectComponents";
 import EmptyPlaceholder from "../SelectEmptyPlaceholder";
-import SelectListOption from "../SelectListOption";
 import TooManyValues from "../TooManyValues";
 
 import LoadMoreSentinel from "./LoadMoreSentinel";
@@ -292,7 +292,7 @@ const InputMultiSelectTwo = ({
               });
 
               return (
-                <SelectListOption
+                <SxSelectListOption
                   key={`${option.value}`}
                   active={highlightedIndex === index}
                   disabled={option.disabled}
@@ -300,7 +300,7 @@ const InputMultiSelectTwo = ({
                   ref={itemPropsRef}
                 >
                   {option.label}
-                </SelectListOption>
+                </SxSelectListOption>
               );
             })}
             <LoadMoreSentinel

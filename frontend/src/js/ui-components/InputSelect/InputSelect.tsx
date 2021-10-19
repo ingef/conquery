@@ -8,7 +8,6 @@ import { useClickOutside } from "../../common/helpers/useClickOutside";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import SelectEmptyPlaceholder from "../SelectEmptyPlaceholder";
-import SelectListOption from "../SelectListOption";
 
 import {
   Control,
@@ -20,6 +19,7 @@ import {
   ResetButton,
   SelectContainer,
   SxLabeled,
+  SxSelectListOption,
   VerticalSeparator,
 } from "./InputSelectComponents";
 
@@ -271,7 +271,7 @@ const InputSelect = ({
               });
 
               return (
-                <SelectListOption
+                <SxSelectListOption
                   key={`${option.value}`}
                   active={
                     highlightedIndex === index ||
@@ -284,7 +284,7 @@ const InputSelect = ({
                   }}
                 >
                   {option.label}
-                </SelectListOption>
+                </SxSelectListOption>
               );
             })}
           </List>

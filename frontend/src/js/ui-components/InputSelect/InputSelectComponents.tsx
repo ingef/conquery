@@ -3,6 +3,7 @@ import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
 import Labeled from "../Labeled";
+import SelectListOption from "../SelectListOption";
 
 export const Control = styled("div")<{ disabled?: boolean }>`
   border: 1px solid ${({ theme }) => theme.col.gray};
@@ -47,7 +48,7 @@ export const Menu = styled("div")`
 
 export const List = styled("div")`
   padding: 3px;
-  max-height: 300px;
+  max-height: 304px; /* matches 11 items including the spacing in between items */
   overflow-y: auto;
   --webkit-overflow-scrolling: touch;
 `;
@@ -87,4 +88,8 @@ export const VerticalSeparator = styled("div")`
   background-color: ${({ theme }) => theme.col.grayLight};
   align-self: stretch;
   flex-shrink: 0;
+`;
+
+export const SxSelectListOption = styled(SelectListOption)`
+  margin-bottom: 2px;
 `;
