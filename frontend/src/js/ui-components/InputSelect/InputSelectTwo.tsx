@@ -93,7 +93,6 @@ const InputSelectTwo = ({
       // in that way
       // - the default behavior may be adjusted
       // - including the `onStateChange` reactions that diverge from default behavior (see below)
-      console.log(type);
       switch (type) {
         case useCombobox.stateChangeTypes.FunctionReset:
           return {
