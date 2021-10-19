@@ -8,9 +8,9 @@ export const Control = styled("div")<{ disabled?: boolean }>`
   border: 1px solid ${({ theme }) => theme.col.gray};
   border-radius: 4px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   overflow: hidden;
-  padding: 3px 3px 3px 8px;
+  padding: 4px 3px 4px 8px;
   background-color: white;
   ${({ disabled }) =>
     disabled &&
@@ -74,11 +74,11 @@ export const SxLabeled = styled(Labeled)`
 `;
 
 export const DropdownToggleButton = styled(IconButton)`
-  padding: 3px 6px;
+  padding: 2px 6px;
 `;
 
 export const ResetButton = styled(IconButton)`
-  padding: 3px 8px;
+  padding: 2px 8px;
 `;
 
 export const VerticalSeparator = styled("div")`
