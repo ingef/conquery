@@ -8,7 +8,7 @@ import { reset } from "redux-form";
 import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
 import WithTooltip from "../tooltip/WithTooltip";
-import InputSelect from "../ui-components/InputSelect";
+import InputSelect from "../ui-components/InputSelectOld";
 
 import { setExternalForm } from "./actions";
 import { Form } from "./config-types";

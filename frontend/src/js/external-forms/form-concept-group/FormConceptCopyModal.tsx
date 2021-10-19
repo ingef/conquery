@@ -9,7 +9,7 @@ import { TransparentButton } from "../../button/TransparentButton";
 import { useActiveLang } from "../../localization/useActiveLang";
 import Modal from "../../modal/Modal";
 import InputCheckbox from "../../ui-components/InputCheckbox";
-import InputSelect from "../../ui-components/InputSelect";
+import InputSelect from "../../ui-components/InputSelectOld";
 import {
   selectActiveFormValues,
   useVisibleConceptListFields,

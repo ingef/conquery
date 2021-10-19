@@ -11,7 +11,7 @@ import type {
 import type { FilterWithValueType } from "../standard-query-editor/types";
 import InputPlain from "../ui-components/InputPlain";
 import InputRange, { ModeT } from "../ui-components/InputRange";
-import InputSelect from "../ui-components/InputSelect";
+import InputSelect from "../ui-components/InputSelectOld";
 
 import FilterListMultiSelect from "./FilterListMultiSelect";
 

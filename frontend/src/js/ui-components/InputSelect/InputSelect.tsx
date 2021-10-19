@@ -38,7 +38,7 @@ interface Props {
   onChange: (value: SelectOptionT | null) => void;
 }
 
-const InputSelectTwo = ({
+const InputSelect = ({
   options,
   placeholder,
   label,
@@ -200,7 +200,7 @@ const InputSelectTwo = ({
   }, [previousInputValue, selectedItem, selectItem, value]);
 
   const Select = (
-    <SelectContainer className={exists(label) ? className : undefined}>
+    <SelectContainer className={exists(label) ? undefined : className}>
       <Control
         {...comboboxProps}
         disabled={disabled}
@@ -273,7 +273,10 @@ const InputSelectTwo = ({
               return (
                 <SelectListOption
                   key={`${option.value}`}
-                  active={highlightedIndex === index}
+                  active={
+                    highlightedIndex === index ||
+                    selectedItem?.value === option.value
+                  }
                   disabled={option.disabled}
                   {...itemProps}
                   ref={(instance) => {
@@ -313,4 +316,4 @@ const InputSelectTwo = ({
   );
 };
 
-export default InputSelectTwo;
+export default InputSelect;

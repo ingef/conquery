@@ -24,8 +24,8 @@ const Template: Story<ComponentProps<typeof MultiSelectWithFileSupport>> = (
   );
   const [value, setValue] = useState<SelectOptionT[] | null>([
     {
-      label: "lol",
-      value: "yes",
+      label: "Option 1",
+      value: "option1",
     },
   ]);
   const onLoad = (str: string) => {

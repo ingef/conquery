@@ -26,8 +26,8 @@ const Template: Story<
   );
   const [value, setValue] = useState<SelectOptionT[] | null>([
     {
-      label: "lol",
-      value: "yes",
+      label: "Option 1",
+      value: "option1",
     },
   ]);
   const onLoad = (str: string) => {

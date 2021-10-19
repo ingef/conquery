@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 import { exists } from "../common/helpers/exists";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import WithTooltip from "../tooltip/WithTooltip";
-import ReactSelect from "../ui-components/ReactSelect";
+import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import { useSelectDataset } from "./actions";
 import { DatasetT } from "./reducer";
@@ -28,7 +28,7 @@ const Root = styled("label")`
 
 const Headline = styled("span")`
   font-size: ${({ theme }) => theme.col.grayLight};
-  padding-right: 20px;
+  padding-right: 12px;
 `;
 
 const DatasetSelector: FC = () => {
@@ -59,16 +59,17 @@ const DatasetSelector: FC = () => {
     <WithTooltip text={t("help.datasetSelector")} lazy>
       <Root>
         <Headline>{t("datasetSelector.label")}</Headline>
-        <ReactSelect<false>
-          name="dataset-selector"
-          value={error ? null : selected}
+        <InputSelect
+          value={selected || null}
           onChange={(value) =>
-            exists(value) ? onSelectDataset(value.value) : onSelectDataset(null)
+            exists(value)
+              ? onSelectDataset(value.value as string)
+              : onSelectDataset(null)
           }
           placeholder={
             error ? t("datasetSelector.error") : t("inputSelect.placeholder")
           }
-          isDisabled={!!error}
+          disabled={exists(error)}
           options={options}
         />
       </Root>

@@ -13,8 +13,7 @@ import FaIcon from "../../icon/FaIcon";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
 import WithTooltip from "../../tooltip/WithTooltip";
-import InputSelect from "../../ui-components/InputSelect";
-import ReactSelect from "../../ui-components/ReactSelect";
+import InputSelect from "../../ui-components/InputSelect/InputSelect";
 
 const Row = styled("div")`
   display: flex;
@@ -31,6 +30,7 @@ const Grow = styled("div")`
 const HorizontalScrollContainer = styled("div")`
   overflow-x: auto;
   width: 100%;
+  min-height: 300px;
 `;
 const Table = styled("table")`
   margin: 10px 0;
@@ -282,12 +282,13 @@ const CSVColumnPicker: FC<PropsT> = ({
         {csv.length > 0 && (
           <SxInputSelect
             label={t("csvColumnPicker.delimiter")}
-            input={{
-              onChange: (val) => {
-                if (val) setDelimiter(val);
-              },
-              value: delimiter,
+            onChange={(val) => {
+              if (val) setDelimiter(val.value as string);
             }}
+            value={
+              DELIMITER_OPTIONS.find((option) => option.value === delimiter) ||
+              null
+            }
             options={DELIMITER_OPTIONS}
           />
         )}
@@ -305,9 +306,7 @@ const CSVColumnPicker: FC<PropsT> = ({
                 <tr key={j}>
                   {row.map((cell, i) => (
                     <Th key={cell + i}>
-                      <ReactSelect<false>
-                        small
-                        maxMenuHeight={200}
+                      <InputSelect
                         options={SELECT_OPTIONS}
                         value={
                           SELECT_OPTIONS.find(

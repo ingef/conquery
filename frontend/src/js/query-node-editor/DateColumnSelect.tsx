@@ -2,7 +2,7 @@ import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectedDateColumnT } from "../standard-query-editor/types";
-import InputSelect from "../ui-components/InputSelect";
+import InputSelect from "../ui-components/InputSelectOld";
 
 interface PropsT {
   dateColumn: SelectedDateColumnT;

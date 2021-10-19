@@ -11,7 +11,7 @@ import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import InputPlain from "../ui-components/InputPlain";
-import InputSelect from "../ui-components/InputSelect";
+import InputSelect from "../ui-components/InputSelectOld";
 
 import { useSelectConceptRootNodeAndResolveCodes } from "./actions";
 import { UploadConceptListModalStateT } from "./reducer";
@@ -133,7 +133,8 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
     }
   }, [filename]);
 
-  const selectConceptRootNodeAndResolveCode = useSelectConceptRootNodeAndResolveCodes();
+  const selectConceptRootNodeAndResolveCode =
+    useSelectConceptRootNodeAndResolveCodes();
 
   if (!conceptCodesFromFile || conceptCodesFromFile.length === 0) {
     onClose();
