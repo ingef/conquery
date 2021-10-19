@@ -17,7 +17,7 @@ export default {
 } as ComponentMeta<typeof InputSelect>;
 
 const Template: Story<ComponentProps<typeof InputSelect>> = (args) => {
-  const [options, setOptions] = useState<SelectOptionT[]>(
+  const [options] = useState<SelectOptionT[]>(
     wl.map((w) => ({ label: w, value: w, disabled: Math.random() < 0.1 })),
   );
   const [value, setValue] = useState<SelectOptionT | null>({

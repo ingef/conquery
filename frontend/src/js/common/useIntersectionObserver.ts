@@ -35,6 +35,7 @@ export function useIntersectionObserver<T extends Element>(
   useLayoutEffect(() => {
     const currentDomNodeRef = domNodeRef.current;
 
+    // Only works if currentDomNodeRef already exists when this effect is being called
     if (currentDomNodeRef && observer.current) {
       observer.current.observe(currentDomNodeRef);
     }

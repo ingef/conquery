@@ -7,6 +7,7 @@ import { SelectOptionT } from "../../api/types";
 import InputMultiSelectTwo from "./InputMultiSelectTwo";
 
 const wl = wordslist.slice(0, 100);
+let offset = 100;
 
 export default {
   title: "FormComponents/InputMultiSelectTwo",
@@ -19,6 +20,7 @@ export default {
 const Template: Story<
   ComponentProps<typeof InputMultiSelectTwo> & { passOnResolve?: boolean }
 > = ({ passOnResolve, ...args }) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const [options, setOptions] = useState<SelectOptionT[]>(
     wl.map((w) => ({ label: w, value: w, disabled: Math.random() < 0.1 })),
   );
@@ -29,24 +31,37 @@ const Template: Story<
     },
   ]);
   const onLoad = (str: string) => {
-    setOptions(
-      wordslist
-        .filter((w) => w.startsWith(str))
-        .map((w) => ({ label: w, value: w })),
-    );
+    console.log("ONLOAD MORE WITH ", str);
+    setLoading(true);
+    setTimeout(() => {
+      setOptions((opts) => {
+        const next = Array.from(
+          new Set([
+            ...opts.map((v) => v.value),
+            ...wordslist
+              .slice(offset, offset + 100)
+              .filter((w) => w.startsWith(str)),
+          ]),
+        );
+
+        return next.map((w) => ({ label: String(w), value: w }));
+      });
+      offset += 100;
+      setLoading(false);
+    }, 500);
   };
 
-  const onResolve = (csvLines: any) => {
+  const onResolve = (csvLines: string[]) => {
     console.log(csvLines);
+    setValue(csvLines.map((line) => ({ value: line, label: line })));
   };
 
   return (
     <InputMultiSelectTwo
       {...args}
       onResolve={passOnResolve ? onResolve : undefined}
-      onLoadMore={() => {
-        console.log("ON LOAD MORE");
-      }}
+      onLoadMore={onLoad}
+      loading={loading}
       input={{
         defaultValue: [],
         value: value || [],

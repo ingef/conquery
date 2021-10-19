@@ -1,107 +1,37 @@
-import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useIntersectionObserver } from "js/common/useIntersectionObserver";
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
-import IconButton from "../../button/IconButton";
-import { useClickOutside } from "../../common/helpers/useClickOutside";
+import { exists } from "../../common/helpers/exists";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
-import Labeled from "../Labeled";
+import {
+  Control,
+  DropdownToggleButton,
+  Input,
+  ItemsInputContainer,
+  List,
+  Menu,
+  ResetButton,
+  SelectContainer,
+  SxLabeled,
+  VerticalSeparator,
+} from "../InputSelect/InputSelectComponents";
 import EmptyPlaceholder from "../SelectEmptyPlaceholder";
 import SelectListOption from "../SelectListOption";
+import TooManyValues from "../TooManyValues";
 
+import LoadMoreSentinel from "./LoadMoreSentinel";
 import MenuActionBar from "./MenuActionBar";
 import SelectedItem from "./SelectedItem";
+import { useCloseOnClickOutside } from "./useCloseOnClickOutside";
+import { useFilteredOptions } from "./useFilteredOptions";
 import { useResolvableSelect } from "./useResolvableSelect";
+import { useSyncWithValueFromAbove } from "./useSyncWithValueFromAbove";
 
-const Control = styled("div")<{ disabled?: boolean }>`
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  padding: 3px 3px 3px 8px;
-  background-color: white;
-  ${({ disabled }) =>
-    disabled &&
-    css`
-      cursor: not-allowed;
-    `}
-
-  &:focus {
-    outline: 1px solid black;
-  }
-`;
-
-const SelectContainer = styled("div")`
-  width: 100%;
-  position: relative;
-`;
-
-const ItemsInputContainer = styled("div")`
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 3px;
-  width: 100%;
-`;
-
-const Menu = styled("div")`
-  position: absolute;
-  width: 100%;
-  border-radius: 4px;
-  box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 10%), 0 4px 11px hsl(0deg 0% 0% / 10%);
-  background-color: ${({ theme }) => theme.col.bg};
-  z-index: 2;
-`;
-
-const List = styled("div")`
-  padding: 3px;
-  max-height: 300px;
-  overflow-y: auto;
-  --webkit-overflow-scrolling: touch;
-`;
-
-const Input = styled("input")`
-  border: 0;
-  height: 20px;
-  outline: none;
-  flex-grow: 1;
-  flex-basis: 30px;
-  ${({ disabled }) =>
-    disabled &&
-    css`
-      cursor: not-allowed;
-      pointer-events: none;
-      &:placehoder {
-        opacity: 0.5;
-      }
-    `}
-`;
-
-const SxLabeled = styled(Labeled)`
-  padding: 2px;
-`;
-
-const DropdownToggleButton = styled(IconButton)`
-  padding: 3px 6px;
-`;
-
-const ResetButton = styled(IconButton)`
-  padding: 3px 8px;
-`;
-
-const VerticalSeparator = styled("div")`
-  width: 1px;
-  margin: 3px 0;
-  background-color: ${({ theme }) => theme.col.grayVeryLight};
-  align-self: stretch;
-  flex-shrink: 0;
-`;
+const MAX_VALUES_LIMIT = 200;
 
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
@@ -121,7 +51,7 @@ interface Props {
   };
   loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
-  onLoadMore?: () => void;
+  onLoadMore?: (inputValue: string) => void;
 }
 
 const InputMultiSelectTwo = ({
@@ -140,8 +70,10 @@ const InputMultiSelectTwo = ({
     defaultValue: input.defaultValue,
     onResolve,
   });
+
   const [inputValue, setInputValue] = useState("");
   const { t } = useTranslation();
+
   const {
     getSelectedItemProps,
     getDropdownProps,
@@ -160,37 +92,12 @@ const InputMultiSelectTwo = ({
     },
   });
 
-  const filteredOptions = useMemo(() => {
-    const creatableOption =
-      creatable && inputValue.length > 0
-        ? [
-            {
-              label: `${t("common.create")}: "${inputValue}"`,
-              value: inputValue,
-              disabled: false,
-            },
-          ]
-        : [];
-
-    const stillSelectable = (option: SelectOptionT) =>
-      selectedItems.indexOf(option) < 0;
-
-    const matchesQuery = (option: SelectOptionT) => {
-      const lowerInputValue = inputValue.toLowerCase();
-      const lowerLabel = option.label.toLowerCase();
-
-      return (
-        lowerLabel.includes(lowerInputValue) ||
-        String(option.value).toLowerCase().includes(lowerInputValue)
-      );
-    };
-
-    const regularOptions = options.filter(
-      (option) => stillSelectable(option) && matchesQuery(option),
-    );
-
-    return [...creatableOption, ...regularOptions];
-  }, [options, selectedItems, inputValue, creatable, t]);
+  const filteredOptions = useFilteredOptions({
+    options,
+    selectedItems,
+    inputValue,
+    creatable,
+  });
 
   const {
     isOpen,
@@ -284,28 +191,13 @@ const InputMultiSelectTwo = ({
   const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
   const labelProps = getLabelProps({});
 
-  const intersectionObserverRef = useRef<HTMLDivElement | null>(null);
-  useIntersectionObserver(
-    intersectionObserverRef,
-    useCallback(
-      (_, isIntersecting) => {
-        if (isIntersecting && !loading && onLoadMore) {
-          onLoadMore();
-        }
-      },
-      [onLoadMore, loading],
-    ),
-  );
+  const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
 
-  const clickOutsideRef = useRef<HTMLLabelElement>(null);
-  useClickOutside(
-    clickOutsideRef,
-    useCallback(() => {
-      if (isOpen) {
-        toggleMenu();
-      }
-    }, [isOpen, toggleMenu]),
-  );
+  useSyncWithValueFromAbove({
+    inputValueFromAbove: input.value,
+    selectedItems,
+    setSelectedItems,
+  });
 
   const Select = (
     <SelectContainer>
@@ -403,17 +295,19 @@ const InputMultiSelectTwo = ({
                   active={highlightedIndex === index}
                   disabled={option.disabled}
                   {...itemProps}
-                  ref={(instance) => {
-                    itemPropsRef(instance);
-                    if (index === filteredOptions.length - 1) {
-                      intersectionObserverRef.current = instance;
-                    }
-                  }}
+                  ref={itemPropsRef}
                 >
                   {option.label}
                 </SelectListOption>
               );
             })}
+            <LoadMoreSentinel
+              onLoadMore={() => {
+                if (exists(onLoadMore) && !loading) {
+                  onLoadMore(inputValue);
+                }
+              }}
+            />
           </List>
         </Menu>
       ) : (
@@ -421,6 +315,8 @@ const InputMultiSelectTwo = ({
       )}
     </SelectContainer>
   );
+
+  const hasTooManyValues = selectedItems.length > MAX_VALUES_LIMIT;
 
   return (
     <SxLabeled
@@ -435,8 +331,14 @@ const InputMultiSelectTwo = ({
       }
       indexPrefix={indexPrefix}
     >
-      {!onResolve && Select}
-      {onResolve && onDropFile && (
+      {hasTooManyValues && input.value.length > 0 && (
+        <TooManyValues
+          count={input.value.length}
+          onClear={() => input.onChange([])}
+        />
+      )}
+      {!hasTooManyValues && !onResolve && Select}
+      {!hasTooManyValues && !!onResolve && onDropFile && (
         <SxInputMultiSelectDropzone disabled={disabled} onDropFile={onDropFile}>
           {() => Select}
         </SxInputMultiSelectDropzone>
