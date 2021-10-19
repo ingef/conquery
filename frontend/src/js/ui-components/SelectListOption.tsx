@@ -27,8 +27,8 @@ const Container = styled("div")<Props>`
     `};
 `;
 
-const ListOption = forwardRef<HTMLDivElement, Props>((props, ref) => {
+const SelectListOption = forwardRef<HTMLDivElement, Props>((props, ref) => {
   return <Container {...props} ref={ref} />;
 });
 
-export default ListOption;
+export default SelectListOption;

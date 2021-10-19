@@ -47,7 +47,6 @@ const Template: Story<
       onLoadMore={() => {
         console.log("ON LOAD MORE");
       }}
-      creatable
       input={{
         defaultValue: [],
         value: value || [],
@@ -66,6 +65,7 @@ Default.args = {
     "And here goes some tooltip that really helps the user understand what's going on",
   disabled: false,
   passOnResolve: true,
+  creatable: true,
 };
 Default.argTypes = {
   passOnResolve: {

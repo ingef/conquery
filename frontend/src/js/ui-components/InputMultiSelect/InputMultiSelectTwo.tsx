@@ -11,9 +11,9 @@ import { useClickOutside } from "../../common/helpers/useClickOutside";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
 import Labeled from "../Labeled";
+import EmptyPlaceholder from "../SelectEmptyPlaceholder";
+import SelectListOption from "../SelectListOption";
 
-import EmptyPlaceholder from "./EmptyPlaceholder";
-import ListOption from "./ListOption";
 import MenuActionBar from "./MenuActionBar";
 import SelectedItem from "./SelectedItem";
 import { useResolvableSelect } from "./useResolvableSelect";
@@ -68,7 +68,7 @@ const List = styled("div")`
 
 const Input = styled("input")`
   border: 0;
-  height: 24px;
+  height: 20px;
   outline: none;
   flex-grow: 1;
   flex-basis: 30px;
@@ -88,11 +88,11 @@ const SxLabeled = styled(Labeled)`
 `;
 
 const DropdownToggleButton = styled(IconButton)`
-  padding: 5px 6px;
+  padding: 3px 6px;
 `;
 
 const ResetButton = styled(IconButton)`
-  padding: 5px 8px;
+  padding: 3px 8px;
 `;
 
 const VerticalSeparator = styled("div")`
@@ -398,7 +398,7 @@ const InputMultiSelectTwo = ({
               });
 
               return (
-                <ListOption
+                <SelectListOption
                   key={`${option.value}`}
                   active={highlightedIndex === index}
                   disabled={option.disabled}
@@ -411,7 +411,7 @@ const InputMultiSelectTwo = ({
                   }}
                 >
                   {option.label}
-                </ListOption>
+                </SelectListOption>
               );
             })}
           </List>
