@@ -4,7 +4,7 @@ const INTERSECTION_THRESHOLD = 0.5;
 
 export function useIntersectionObserver<T extends Element>(
   domNodeRef: RefObject<T | null>,
-  onChange: (domNode: T | null, intersecting: boolean) => void,
+  onChange: (domNode: T | null, isIntersecting: boolean) => void,
 ) {
   const intersecting = useRef(false);
   const observer = useRef<IntersectionObserver | null>(
