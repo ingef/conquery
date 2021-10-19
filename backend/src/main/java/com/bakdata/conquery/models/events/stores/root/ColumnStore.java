@@ -24,7 +24,12 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 public interface ColumnStore {
 
 
-	@JsonBackReference
+	/**
+	 * If necessary the given bucket will be set in store as parent
+	 *
+	 * @param bucket bucket that should be set as parent
+	 */
+	@JsonBackReference // BackReference set here because Jackson does not support the
 	default void addParent(Bucket bucket) {
 
 	}

@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.events.stores.specific;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
@@ -25,6 +27,8 @@ import lombok.ToString;
 public class DateRangeTypeCompound implements DateRangeStore {
 
 
+	@NotNull
+	@NotEmpty
 	private String startColumn, endColumn;
 
 	@JsonIgnore
@@ -68,8 +72,8 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	@Override
 	public int getLines() {
 		// they can be unaligned, if one of them is empty.
-		//	return Math.max(startStore.getLines(), endStore.getLines());
-		return 0;
+		return Math.max(startStore.getLines(), endStore.getLines());
+
 	}
 
 	// Reported as 0 because this store does not hold data of its own, but references its neighbouring stores.
