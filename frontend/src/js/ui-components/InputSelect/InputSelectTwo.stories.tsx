@@ -39,11 +39,11 @@ const Template: Story<ComponentProps<typeof InputSelect>> = (args) => {
 
 export const Default = Template.bind({});
 Default.args = {
-  indexPrefix: 5,
   label: "This is a nice label",
   tooltip:
     "And here goes some tooltip that really helps the user understand what's going on",
   disabled: false,
+  indexPrefix: 5,
 };
 Default.argTypes = {
   indexPrefix: {
