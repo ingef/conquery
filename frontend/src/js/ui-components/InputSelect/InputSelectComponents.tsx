@@ -57,7 +57,7 @@ export const Input = styled("input")`
   height: 20px;
   outline: none;
   flex-grow: 1;
-  flex-basis: 30px;
+  width: 0; /* to fix default width */
   ${({ disabled }) =>
     disabled &&
     css`

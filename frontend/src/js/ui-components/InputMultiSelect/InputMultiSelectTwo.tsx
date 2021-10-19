@@ -232,7 +232,9 @@ const InputMultiSelectTwo = ({
             {...inputProps}
             disabled={disabled}
             placeholder={
-              onResolve
+              selectedItems.length > 0
+                ? null
+                : onResolve
                 ? t("inputMultiSelect.dndPlaceholder")
                 : t("inputSelect.placeholder")
             }

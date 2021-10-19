@@ -223,8 +223,8 @@ const InputSelectTwo = ({
             <Input
               {...inputProps}
               onBlur={(e) => {
-                inputProps.onBlur(e);
                 handleBlur(); // Because sometimes inputProps.onBlur doesn't trigger InputBlur action
+                inputProps.onBlur(e);
               }}
               ref={(instance) => {
                 inputPropsRef(instance);
