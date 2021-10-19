@@ -11,9 +11,9 @@ const Container = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-const EmptyPlaceholder = () => {
+const SelectEmptyPlaceholder = () => {
   const { t } = useTranslation();
   return <Container>{t("inputSelect.empty")}</Container>;
 };
 
-export default EmptyPlaceholder;
+export default SelectEmptyPlaceholder;

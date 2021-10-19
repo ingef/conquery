@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { usePatchQuery } from "../../api/api";
 import type { DatasetIdT, UserGroupT } from "../../api/types";
 import PrimaryButton from "../../button/PrimaryButton";
-import TransparentButton from "../../button/TransparentButton";
+import { TransparentButton } from "../../button/TransparentButton";
 import { exists } from "../../common/helpers/exists";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import Modal from "../../modal/Modal";

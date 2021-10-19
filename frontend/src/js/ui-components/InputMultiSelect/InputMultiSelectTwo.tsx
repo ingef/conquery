@@ -1,90 +1,37 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
-import IconButton from "../../button/IconButton";
+import { exists } from "../../common/helpers/exists";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
-import Labeled from "../Labeled";
+import {
+  Control,
+  DropdownToggleButton,
+  Input,
+  ItemsInputContainer,
+  List,
+  Menu,
+  ResetButton,
+  SelectContainer,
+  SxLabeled,
+  VerticalSeparator,
+} from "../InputSelect/InputSelectComponents";
+import EmptyPlaceholder from "../SelectEmptyPlaceholder";
+import SelectListOption from "../SelectListOption";
+import TooManyValues from "../TooManyValues";
 
-import EmptyPlaceholder from "./EmptyPlaceholder";
-import ListOption from "./ListOption";
+import LoadMoreSentinel from "./LoadMoreSentinel";
 import MenuActionBar from "./MenuActionBar";
 import SelectedItem from "./SelectedItem";
+import { useCloseOnClickOutside } from "./useCloseOnClickOutside";
+import { useFilteredOptions } from "./useFilteredOptions";
 import { useResolvableSelect } from "./useResolvableSelect";
+import { useSyncWithValueFromAbove } from "./useSyncWithValueFromAbove";
 
-const Control = styled("div")`
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  padding: 3px 3px 3px 8px;
-  background-color: white;
-
-  &:focus {
-    outline: 1px solid black;
-  }
-`;
-
-const SelectContainer = styled("div")`
-  width: 100%;
-  position: relative;
-`;
-
-const ItemsInputContainer = styled("div")`
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 3px;
-  width: 100%;
-`;
-
-const Menu = styled("div")`
-  position: absolute;
-  width: 100%;
-  border-radius: 4px;
-  box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 10%), 0 4px 11px hsl(0deg 0% 0% / 10%);
-  background-color: ${({ theme }) => theme.col.bg};
-  z-index: 2;
-`;
-
-const List = styled("div")`
-  padding: 3px;
-  max-height: 300px;
-  overflow-y: auto;
-  --webkit-overflow-scrolling: touch;
-`;
-
-const Input = styled("input")`
-  border: 0;
-  height: 24px;
-  outline: none;
-  flex-grow: 1;
-  flex-basis: 30px;
-`;
-
-const SxLabeled = styled(Labeled)`
-  padding: 2px;
-`;
-
-const DropdownToggleButton = styled(IconButton)`
-  padding: 5px 6px;
-`;
-
-const ResetButton = styled(IconButton)`
-  padding: 5px 8px;
-`;
-
-const VerticalSeparator = styled("div")`
-  width: 1px;
-  margin: 3px 0;
-  background-color: ${({ theme }) => theme.col.grayVeryLight};
-  align-self: stretch;
-  flex-shrink: 0;
-`;
+const MAX_VALUES_LIMIT = 200;
 
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
@@ -97,29 +44,36 @@ interface Props {
   tooltip?: string;
   indexPrefix?: number;
   creatable?: boolean;
-  input: {
-    value: SelectOptionT[];
-    defaultValue?: SelectOptionT[];
-    onChange: (value: SelectOptionT[]) => void;
-  };
+  value: SelectOptionT[];
+  defaultValue?: SelectOptionT[];
+  onChange: (value: SelectOptionT[]) => void;
+  loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
+  onLoadMore?: (inputValue: string) => void;
 }
 
 const InputMultiSelectTwo = ({
   options,
-  input,
   label,
   tooltip,
   indexPrefix,
   creatable,
+  disabled,
+  value,
+  defaultValue,
+  onChange,
+  loading,
   onResolve,
+  onLoadMore,
 }: Props) => {
   const { onDropFile } = useResolvableSelect({
-    defaultValue: input.defaultValue,
+    defaultValue,
     onResolve,
   });
+
   const [inputValue, setInputValue] = useState("");
   const { t } = useTranslation();
+
   const {
     getSelectedItemProps,
     getDropdownProps,
@@ -130,36 +84,20 @@ const InputMultiSelectTwo = ({
     setSelectedItems,
     activeIndex,
   } = useMultipleSelection<SelectOptionT>({
-    initialSelectedItems: input.defaultValue,
+    initialSelectedItems: defaultValue,
     onSelectedItemsChange: (changes) => {
       if (changes.selectedItems) {
-        input.onChange(changes.selectedItems);
+        onChange(changes.selectedItems);
       }
     },
   });
 
-  const filteredOptions = useMemo(() => {
-    const creatableOption =
-      creatable && inputValue.length > 0
-        ? [
-            {
-              label: `${t("common.create")}: "${inputValue}"`,
-              value: inputValue,
-            },
-          ]
-        : [];
-
-    const regularOptions = options.filter(
-      (option) =>
-        selectedItems.indexOf(option) < 0 &&
-        (option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
-          String(option.value)
-            .toLowerCase()
-            .includes(inputValue.toLowerCase())),
-    );
-
-    return [...creatableOption, ...regularOptions];
-  }, [options, selectedItems, inputValue, creatable, t]);
+  const filteredOptions = useFilteredOptions({
+    options,
+    selectedItems,
+    inputValue,
+    creatable,
+  });
 
   const {
     isOpen,
@@ -185,6 +123,10 @@ const InputMultiSelectTwo = ({
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur:
         case useCombobox.stateChangeTypes.ItemClick:
+          if (changes.selectedItem?.disabled) {
+            return state;
+          }
+
           const stayAlmostAtTheSamePositionIndex =
             state.highlightedIndex === filteredOptions.length - 1
               ? state.highlightedIndex - 1
@@ -247,11 +189,21 @@ const InputMultiSelectTwo = ({
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
   const inputProps = getInputProps(getDropdownProps());
   const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
+  const labelProps = getLabelProps({});
+
+  const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
+
+  useSyncWithValueFromAbove({
+    inputValueFromAbove: value,
+    selectedItems,
+    setSelectedItems,
+  });
 
   const Select = (
     <SelectContainer>
       <Control
         {...comboboxProps}
+        disabled={disabled}
         ref={(instance) => {
           comboboxRef(instance);
         }}
@@ -268,6 +220,7 @@ const InputMultiSelectTwo = ({
                 key={`${option.value}${index}`}
                 option={option}
                 active={index === activeIndex}
+                disabled={disabled}
                 {...selectedItemProps}
                 onRemoveClick={() => removeSelectedItem(option)}
               />
@@ -277,8 +230,11 @@ const InputMultiSelectTwo = ({
             type="text"
             value={inputValue}
             {...inputProps}
+            disabled={disabled}
             placeholder={
-              onResolve
+              selectedItems.length > 0
+                ? null
+                : onResolve
                 ? t("inputMultiSelect.dndPlaceholder")
                 : t("inputSelect.placeholder")
             }
@@ -299,6 +255,7 @@ const InputMultiSelectTwo = ({
         {(inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
             icon="times"
+            disabled={disabled}
             onClick={() => {
               setInputValue("");
               resetMultiSelectState();
@@ -307,7 +264,11 @@ const InputMultiSelectTwo = ({
           />
         )}
         <VerticalSeparator />
-        <DropdownToggleButton icon="chevron-down" {...getToggleButtonProps()} />
+        <DropdownToggleButton
+          disabled={disabled}
+          icon="chevron-down"
+          {...getToggleButtonProps()}
+        />
       </Control>
       {isOpen ? (
         <Menu
@@ -325,16 +286,30 @@ const InputMultiSelectTwo = ({
           <List>
             {!creatable && filteredOptions.length === 0 && <EmptyPlaceholder />}
             {filteredOptions.map((option, index) => {
+              const { ref: itemPropsRef, ...itemProps } = getItemProps({
+                index,
+                item: filteredOptions[index],
+              });
+
               return (
-                <ListOption
+                <SelectListOption
                   key={`${option.value}`}
                   active={highlightedIndex === index}
-                  {...getItemProps({ index, item: filteredOptions[index] })}
+                  disabled={option.disabled}
+                  {...itemProps}
+                  ref={itemPropsRef}
                 >
                   {option.label}
-                </ListOption>
+                </SelectListOption>
               );
             })}
+            <LoadMoreSentinel
+              onLoadMore={() => {
+                if (exists(onLoadMore) && !loading) {
+                  onLoadMore(inputValue);
+                }
+              }}
+            />
           </List>
         </Menu>
       ) : (
@@ -343,9 +318,12 @@ const InputMultiSelectTwo = ({
     </SelectContainer>
   );
 
+  const hasTooManyValues = selectedItems.length > MAX_VALUES_LIMIT;
+
   return (
     <SxLabeled
-      {...getLabelProps({})}
+      {...labelProps}
+      ref={clickOutsideRef}
       htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
       label={
         <>
@@ -355,9 +333,12 @@ const InputMultiSelectTwo = ({
       }
       indexPrefix={indexPrefix}
     >
-      {!onResolve && Select}
-      {onResolve && onDropFile && (
-        <SxInputMultiSelectDropzone onDropFile={onDropFile}>
+      {hasTooManyValues && value.length > 0 && (
+        <TooManyValues count={value.length} onClear={() => onChange([])} />
+      )}
+      {!hasTooManyValues && !onResolve && Select}
+      {!hasTooManyValues && !!onResolve && onDropFile && (
+        <SxInputMultiSelectDropzone disabled={disabled} onDropFile={onDropFile}>
           {() => Select}
         </SxInputMultiSelectDropzone>
       )}
