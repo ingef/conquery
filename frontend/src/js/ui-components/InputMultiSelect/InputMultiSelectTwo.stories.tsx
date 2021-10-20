@@ -7,6 +7,7 @@ import { SelectOptionT } from "../../api/types";
 import InputMultiSelectTwo from "./InputMultiSelectTwo";
 
 const wl = wordslist.slice(0, 100);
+let offset = 100;
 
 export default {
   title: "FormComponents/InputMultiSelectTwo",
@@ -16,9 +17,12 @@ export default {
   },
 } as ComponentMeta<typeof InputMultiSelectTwo>;
 
-const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
+const Template: Story<
+  ComponentProps<typeof InputMultiSelectTwo> & { passOnResolve?: boolean }
+> = ({ passOnResolve, ...args }) => {
+  const [loading, setLoading] = useState<boolean>(false);
   const [options, setOptions] = useState<SelectOptionT[]>(
-    wl.map((w) => ({ label: w, value: w })),
+    wl.map((w) => ({ label: w, value: w, disabled: Math.random() < 0.1 })),
   );
   const [value, setValue] = useState<SelectOptionT[] | null>([
     {
@@ -27,30 +31,60 @@ const Template: Story<ComponentProps<typeof InputMultiSelectTwo>> = () => {
     },
   ]);
   const onLoad = (str: string) => {
-    setOptions(
-      wordslist
-        .filter((w) => w.startsWith(str))
-        .map((w) => ({ label: w, value: w })),
-    );
+    console.log("ONLOAD MORE WITH ", str);
+    setLoading(true);
+    setTimeout(() => {
+      setOptions((opts) => {
+        const next = Array.from(
+          new Set([
+            ...opts.map((v) => v.value),
+            ...wordslist
+              .slice(offset, offset + 100)
+              .filter((w) => w.startsWith(str)),
+          ]),
+        );
+
+        return next.map((w) => ({ label: String(w), value: w }));
+      });
+      offset += 100;
+      setLoading(false);
+    }, 500);
+  };
+
+  const onResolve = (csvLines: string[]) => {
+    console.log(csvLines);
+    setValue(csvLines.map((line) => ({ value: line, label: line })));
   };
 
   return (
     <InputMultiSelectTwo
-      label="This is a nice label"
-      creatable
-      onResolve={(csvLines) => {
-        console.log(csvLines);
-      }}
-      tooltip="And here goes some tooltip that really helps the user understand what's going on"
-      indexPrefix={5}
-      input={{
-        defaultValue: [],
-        value: value || [],
-        onChange: (v) => setValue(v),
-      }}
+      {...args}
       options={options}
+      value={value || []}
+      defaultValue={[]}
+      onChange={(v) => setValue(v)}
+      loading={loading}
+      onResolve={passOnResolve ? onResolve : undefined}
+      onLoadMore={onLoad}
     />
   );
 };
 
 export const Default = Template.bind({});
+Default.args = {
+  indexPrefix: 5,
+  label: "This is a nice label",
+  tooltip:
+    "And here goes some tooltip that really helps the user understand what's going on",
+  disabled: false,
+  passOnResolve: true,
+  creatable: true,
+};
+Default.argTypes = {
+  passOnResolve: {
+    type: { name: "boolean" },
+  },
+  indexPrefix: {
+    type: { name: "number", required: false },
+  },
+};

@@ -3,7 +3,7 @@ import React, { useRef, FC, ReactNode } from "react";
 import Hotkeys from "react-hot-keys";
 import { useTranslation } from "react-i18next";
 
-import TransparentButton from "../button/TransparentButton";
+import { TransparentButton } from "../button/TransparentButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";

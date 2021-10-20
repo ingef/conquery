@@ -4,6 +4,8 @@ import { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 
+import { SelectFileButton } from "../button/SelectFileButton";
+
 import Dropzone, {
   ChildArgs,
   DropzoneProps,
@@ -29,18 +31,10 @@ const SxDropzone = styled(Dropzone)<{ isInitial?: boolean }>`
   }
 `;
 
-const TopRight = styled("p")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.tiny};
-  color: ${({ theme }) => theme.col.gray};
+const SxSelectFileButton = styled(SelectFileButton)`
   position: absolute;
   top: 5px;
   right: 10px;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
 `;
 
 interface PropsT<DroppableObject> {
@@ -66,7 +60,7 @@ interface PropsT<DroppableObject> {
   => The "onDrop"-prop needs to handle the file drop itself, though!
 */
 const DropzoneWithFileInput = <
-  DroppableObject extends PossibleDroppableObject = DragItemFile
+  DroppableObject extends PossibleDroppableObject = DragItemFile,
 >({
   onSelectFile,
   acceptedDropTypes,
@@ -110,9 +104,9 @@ const DropzoneWithFileInput = <
       {(args: ChildArgs) => (
         <>
           {showFileSelectButton && (
-            <TopRight onClick={onOpenFileDialog}>
+            <SxSelectFileButton onClick={onOpenFileDialog}>
               {t("inputMultiSelect.openFileDialog")}
-            </TopRight>
+            </SxSelectFileButton>
           )}
           <FileInput
             ref={fileInputRef}

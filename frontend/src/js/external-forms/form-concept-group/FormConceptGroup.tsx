@@ -9,7 +9,7 @@ import {
   PostFilterSuggestionsResponseT,
   SelectorResultType,
 } from "../../api/types";
-import TransparentButton from "../../button/TransparentButton";
+import { TransparentButton } from "../../button/TransparentButton";
 import {
   CONCEPT_TREE_NODE,
   FORM_CONCEPT_NODE,

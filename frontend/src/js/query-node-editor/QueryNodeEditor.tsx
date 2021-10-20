@@ -12,7 +12,7 @@ import {
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
-import TransparentButton from "../button/TransparentButton";
+import { TransparentButton } from "../button/TransparentButton";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import { nodeHasActiveFilters, nodeIsConceptQueryNode } from "../model/node";
 import type {

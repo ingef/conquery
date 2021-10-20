@@ -33,29 +33,39 @@ interface Props {
   htmlFor?: string;
 }
 
-const Labeled = ({
-  indexPrefix,
-  className,
-  fullWidth,
-  label,
-  tinyLabel,
-  largeLabel,
-  tooltip,
-  optional,
-  htmlFor,
-  children,
-}: Props) => {
-  return (
-    <Root className={className} fullWidth={fullWidth} htmlFor={htmlFor}>
-      <Label fullWidth={fullWidth} tiny={tinyLabel} large={largeLabel}>
-        {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
-        {optional && <Optional />}
-        {label}
-        {exists(tooltip) && <InfoTooltip text={tooltip} />}
-      </Label>
-      {children}
-    </Root>
-  );
-};
+const Labeled = React.forwardRef<HTMLLabelElement, Props>(
+  (
+    {
+      indexPrefix,
+      className,
+      fullWidth,
+      label,
+      tinyLabel,
+      largeLabel,
+      tooltip,
+      optional,
+      htmlFor,
+      children,
+    },
+    ref,
+  ) => {
+    return (
+      <Root
+        ref={ref}
+        className={className}
+        fullWidth={fullWidth}
+        htmlFor={htmlFor}
+      >
+        <Label fullWidth={fullWidth} tiny={tinyLabel} large={largeLabel}>
+          {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
+          {optional && <Optional />}
+          {label}
+          {exists(tooltip) && <InfoTooltip text={tooltip} />}
+        </Label>
+        {children}
+      </Root>
+    );
+  },
+);
 
 export default Labeled;

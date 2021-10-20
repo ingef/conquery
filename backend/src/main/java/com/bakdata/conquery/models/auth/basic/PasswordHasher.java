@@ -79,24 +79,6 @@ public class PasswordHasher {
 	public static class HashedEntry {
 		byte[] hash;
 		byte[] salt;
-		
-		public static ByteIterable asByteIterable(HashedEntry entry) {
-			try {
-				return new ArrayByteIterable(Jackson.BINARY_MAPPER.writeValueAsBytes(entry));
-			}
-			catch (JsonProcessingException e) {
-				throw new IllegalStateException("Could not serialize the hashed password.");
-			}
-		}
-		
-		public static HashedEntry fromByteIterable(ByteIterable iterable) {
-			try {
-				return Jackson.BINARY_MAPPER.readerFor(HashedEntry.class).readValue(iterable.getBytesUnsafe());
-			}
-			catch (IOException e) {
-				throw new IllegalStateException("Could not deserialize the hashed password entry.");
-			}
-		}
 	}
 
 }
