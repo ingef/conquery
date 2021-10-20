@@ -183,7 +183,7 @@ public class FormTest extends ConqueryTestSpec {
 		);
 
 		for (Concept<?> concept : concepts) {
-			support.getDatasetsProcessor().addConcept(dataset, concept);
+			support.getDatasetsProcessor().addOrUpdateConcept(dataset, concept, false);
 		}
 	}
 

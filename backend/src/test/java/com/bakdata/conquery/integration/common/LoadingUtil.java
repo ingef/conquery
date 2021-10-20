@@ -49,6 +49,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
+import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -211,10 +212,55 @@ public class LoadingUtil {
 
 		for (Concept<?> concept : concepts) {
 
-			support.getDatasetsProcessor().addConcept(dataset, concept);
+			support.getDatasetsProcessor().addOrUpdateConcept(dataset, concept, false);
 		}
 	}
 
+	public static void addOrUpdateConcepts(StandaloneSupport support, ArrayNode rawConcepts, boolean update, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason)
+			throws JSONException, IOException {
+		List<Concept<?>> concepts = ConqueryTestSpec.parseSubTreeList(
+				support,
+				rawConcepts,
+				Concept.class,
+				c -> c.setDataset(support.getDataset())
+		);
+
+		for (Concept<?> concept : concepts) {
+			if (update) {
+				updateConcept(support, concept, expectedResponseFamily, expectedReason);
+			}
+			else {
+				addConcept(support, concept, expectedResponseFamily, expectedReason);
+			}
+		}
+	}
+
+	public static void addConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason) {
+		final URI addConcept = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
+											  .buildFromMap(Map.of(
+													  ResourceConstants.DATASET, support.getDataset().getId()
+											  ));
+		final Response response = support.getClient()
+										 .target(addConcept)
+										 .request(MediaType.APPLICATION_JSON)
+										 .put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
+		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
+		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
+	}
+
+
+	public static void updateConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason) {
+		final URI addConcept = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "updateConcept")
+											  .buildFromMap(Map.of(
+													  ResourceConstants.DATASET, support.getDataset().getId()
+											  ));
+		final Response response = support.getClient()
+										 .target(addConcept)
+										 .request(MediaType.APPLICATION_JSON)
+										 .put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
+		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
+		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
+	}
 
 	public static void importIdMapping(StandaloneSupport support, RequiredData content) throws JSONException, IOException {
 		if (content.getIdMapping() == null) {

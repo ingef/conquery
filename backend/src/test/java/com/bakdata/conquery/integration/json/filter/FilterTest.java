@@ -108,7 +108,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		);
 
 		concept.setConnectors(Collections.singletonList((ConceptTreeConnector) connector));
-		support.getDatasetsProcessor().addConcept(dataset, concept);
+		support.getDatasetsProcessor().addOrUpdateConcept(dataset, concept, false);
 	}
 
 	private Query parseQuery(StandaloneSupport support) throws JSONException, IOException {

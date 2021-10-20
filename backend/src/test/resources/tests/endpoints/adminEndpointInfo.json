@@ -30,6 +30,11 @@
     "clazz": "AdminDatasetResource"
   },
   {
+    "method": "PUT",
+    "path": "/datasets/{dataset}/concepts",
+    "clazz": "AdminDatasetResource"
+  },
+  {
     "method": "DELETE",
     "path": "/datasets/{dataset}/concepts/{concept}",
     "clazz": "AdminConceptsResource"
