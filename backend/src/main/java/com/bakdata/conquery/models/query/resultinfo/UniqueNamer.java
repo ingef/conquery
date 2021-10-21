@@ -13,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Helper class to generate unique column names from {@link ResultInfo}s for {@link com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider} and their renderer.
+ * Helper class to generate unique column names from {@link ResultInfo}s for {@link com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider}
+ * and their renderer.
+ *
+ * @implNote Use an instance only once per {@link ResultInfo} since it does only tracks the generated names from the infos not the seen infos themselves.
  */
 @RequiredArgsConstructor
 @Slf4j
