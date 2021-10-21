@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Validator;
 
@@ -96,7 +97,7 @@ public class SerializationTestUtil<T> {
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
 												   .as("Unequal after copy.")
-												   .usingRecursiveComparison();
+												   .usingRecursiveComparison().ignoringFieldsOfTypes(AtomicInteger.class);
 
 
 		ass.isEqualTo(expected);
