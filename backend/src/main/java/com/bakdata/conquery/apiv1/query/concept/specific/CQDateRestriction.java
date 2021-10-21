@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1.query.concept.specific;
 import java.time.LocalDate;
 import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.List;
 import java.util.Queue;
 import java.util.function.Consumer;
 
@@ -22,7 +23,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -71,7 +72,7 @@ public class CQDateRestriction extends CQElement {
     }
 
     @Override
-    public void collectResultInfos(ResultInfoCollector collector) {
+    public void collectResultInfos(List<ResultInfo> collector) {
         child.collectResultInfos(collector);
     }
 

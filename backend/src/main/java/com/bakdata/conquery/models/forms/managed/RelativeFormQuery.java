@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -75,7 +74,7 @@ public class RelativeFormQuery extends Query {
 	}
 	
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public void collectResultInfos(List<ResultInfo> collector) {
 		// resolution
 		collector.add(ConqueryConstants.RESOLUTION_INFO);
 		// index
@@ -83,8 +82,8 @@ public class RelativeFormQuery extends Query {
 		// event date
 		collector.add(ConqueryConstants.EVENT_DATE_INFO);
 
-		final List<ResultInfo> featureInfos = features.collectResultInfos().getInfos();
-		final List<ResultInfo> outcomeInfos = outcomes.collectResultInfos().getInfos();
+		final List<ResultInfo> featureInfos = features.getResultInfos();
+		final List<ResultInfo> outcomeInfos = outcomes.getResultInfos();
 
 		//date ranges
 		if (!featureInfos.isEmpty()){

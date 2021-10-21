@@ -11,9 +11,9 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
-import io.dropwizard.util.Strings;
 import org.apache.poi.ooxml.POIXMLProperties;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Cell;
@@ -33,10 +33,10 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 public class ExcelRenderer {
@@ -69,10 +69,11 @@ public class ExcelRenderer {
     }
 
     public <E extends ManagedExecution<?> & SingleTableResult> void renderToStream(
-            List<String> idHeaders,
+            List<ResultInfo> idHeaders,
             E exec,
             OutputStream outputStream) throws IOException {
-        List<ResultInfo> info = exec.getResultInfo();
+		final ArrayList<ResultInfo> resultInfosExec = new ArrayList<>();
+		exec.collectResultInfos(resultInfosExec);
 
 		setMetaData(exec);
 
@@ -83,11 +84,11 @@ public class ExcelRenderer {
             // Create a table environment inside the excel sheet
             XSSFTable table = createTableEnvironment(exec, sheet);
 
-            writeHeader(sheet, idHeaders, info, cfg, table);
+            writeHeader(sheet, idHeaders, resultInfosExec, table);
 
-            int writtenLines = writeBody(sheet, info, cfg, exec.streamResults());
+            int writtenLines = writeBody(sheet, resultInfosExec, exec.streamResults());
 
-            postProcessTable(idHeaders, sheet, table, writtenLines);
+            postProcessTable(sheet, table, writtenLines, idHeaders.size());
 
             workbook.write(outputStream);
         } finally {
@@ -116,7 +117,7 @@ public class ExcelRenderer {
      * - Freeze the id columns
      * - Add autofilters (not for now)
      */
-    private void postProcessTable(List<String> idHeaders, SXSSFSheet sheet, XSSFTable table, int writtenLines) {
+    private void postProcessTable(SXSSFSheet sheet, XSSFTable table, int writtenLines, int size) {
         // Extend the table area to the added data
         CellReference topLeft = new CellReference(0, 0);
 
@@ -129,7 +130,7 @@ public class ExcelRenderer {
         table.getCTTable().addNewAutoFilter();
 
         // Freeze Header and id columns
-        sheet.createFreezePane(idHeaders.size(), 1);
+        sheet.createFreezePane(size, 1);
     }
 
     /**
@@ -156,27 +157,28 @@ public class ExcelRenderer {
      * Also autosize the columns according to the header width.
      */
     private void writeHeader(
-            SXSSFSheet sheet,
-            List<String> idHeaders,
-            List<ResultInfo> infos,
-            PrintSettings cfg,
-            XSSFTable table) {
+			SXSSFSheet sheet,
+			List<ResultInfo> idHeaders,
+			List<ResultInfo> infos,
+			XSSFTable table) {
 
         CTTableColumns columns = table.getCTTable().addNewTableColumns();
         columns.setCount(idHeaders.size() + infos.size());
+		UniqueNamer uniqueNamer = new UniqueNamer(cfg);
 
         {
             Row header = sheet.createRow(0);
             // First to create the columns and track them for auto size before the first row is written
             int currentColumn = 0;
-            for (String idHeader : idHeaders) {
+            for (ResultInfo idHeader : idHeaders) {
                 CTTableColumn column = columns.addNewTableColumn();
                 // Table column ids MUST be set and MUST start at 1, excel will fail otherwise
                 column.setId(currentColumn + 1);
-                column.setName(idHeader);
+				final String uniqueName = uniqueNamer.getUniqueName(idHeader);
+				column.setName(uniqueName);
 
                 Cell headerCell = header.createCell(currentColumn);
-                headerCell.setCellValue(idHeader);
+                headerCell.setCellValue(uniqueName);
 
 				// Track column explicitly, because sheet.trackAllColumnsForAutoSizing() does not work with
 				// sheet.getTrackedColumnsForAutoSizing(), if no flush has happened
@@ -186,7 +188,7 @@ public class ExcelRenderer {
             }
 
             for (ResultInfo info : infos) {
-                final String columnName = info.getUniqueName(cfg);
+                final String columnName = uniqueNamer.getUniqueName(info);
                 CTTableColumn column = columns.addNewTableColumn();
                 column.setId(currentColumn + 1);
                 column.setName(columnName);
@@ -204,7 +206,6 @@ public class ExcelRenderer {
 	private int writeBody(
 			SXSSFSheet sheet,
 			List<ResultInfo> infos,
-			PrintSettings cfg,
 			Stream<EntityResult> resultLines) {
 
 		// Row 0 is the Header the data starts at 1

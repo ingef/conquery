@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.StringJoiner;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,7 +29,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.NonNull;
@@ -53,12 +52,14 @@ public class ArrowResultGenerationTest {
 
     private static final int BATCH_SIZE = 2;
     public static final ConqueryConfig CONFIG = new ConqueryConfig();
-    List<String> printIdFields = List.of("id1", "id2");
+	public static final UniqueNamer
+			UNIQUE_NAMER =
+			new UniqueNamer(new PrintSettings(false, Locale.ROOT, null, CONFIG, null, (selectInfo) -> selectInfo.getSelect().getLabel()));
 
     @Test
     void generateFieldsIdMapping() {
 
-        List<Field> fields = generateFieldsFromIdMapping(printIdFields);
+        List<Field> fields = generateFields(ResultTestUtil.ID_FIELDS, UNIQUE_NAMER);
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -72,10 +73,11 @@ public class ArrowResultGenerationTest {
         List<ResultInfo> resultInfos = getResultTypes().stream().map(ResultTestUtil.TypedSelectDummy::new)
                 .map(select -> new SelectResultInfo(select, new CQConcept())).collect(Collectors.toList());
 
-        List<Field> fields = generateFieldsFromResultType(
+		List<Field> fields = generateFields(
                 resultInfos,
                 // Custom column namer so we don't require a dataset registry
-                new PrintSettings(false, Locale.ROOT, null, CONFIG, null,(selectInfo) -> selectInfo.getSelect().getLabel()));
+				UNIQUE_NAMER
+		);
 
         assertThat(fields).containsExactlyElementsOf(
                 List.of(
@@ -124,13 +126,11 @@ public class ArrowResultGenerationTest {
         List<EntityResult> results = getTestEntityResults();
 
         ManagedQuery mquery = new ManagedQuery(null, null, null) {
-            public List<ResultInfo> getResultInfo() {
-                ResultInfoCollector coll = new ResultInfoCollector();
-                coll.addAll(getResultTypes().stream()
+            public void collectResultInfos(List<ResultInfo> collector) {
+				collector.addAll(getResultTypes().stream()
                         .map(ResultTestUtil.TypedSelectDummy::new)
                         .map(select -> new SelectResultInfo(select, new CQConcept()))
                         .collect(Collectors.toList()));
-                return coll.getInfos();
             }
 
 			@Override
@@ -145,8 +145,8 @@ public class ArrowResultGenerationTest {
         renderToStream((root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
                 printSettings,
                 BATCH_SIZE,
-                printIdFields,
-                mquery.getResultInfo(),
+                ResultTestUtil.ID_FIELDS,
+                mquery.getResultInfos(),
                 mquery.streamResults());
 
         InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
@@ -154,7 +154,7 @@ public class ArrowResultGenerationTest {
         String computed = readTSV(inputStream);
 
         assertThat(computed).isNotBlank();
-        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfo(), printSettings));
+        assertThat(computed).isEqualTo(generateExpectedTSV(results, mquery.getResultInfos(), printSettings));
 
     }
 
@@ -202,8 +202,13 @@ public class ArrowResultGenerationTest {
                 })
                 .collect(Collectors.joining("\n"));
 
-        return String.join("\t", printIdFields) + "\t" +
-                getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining("\t")) + "\n" + expected + "\n";
+        return Stream.concat(
+						// Id column headers
+						ResultTestUtil.ID_FIELDS.stream().map(i -> i.defaultColumnName(settings)),
+						// result column headers
+						getResultTypes().stream().map(ResultType::typeInfo)
+				).collect(Collectors.joining("\t"))
+			   + "\n" + expected + "\n";
     }
 
     private static String getPrintValue(Object obj, ResultType type, PrintSettings settings) {

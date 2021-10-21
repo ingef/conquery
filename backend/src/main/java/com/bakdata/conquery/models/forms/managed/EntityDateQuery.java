@@ -22,7 +22,7 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -84,12 +84,12 @@ public class EntityDateQuery extends Query {
     }
 
     @Override
-    public void collectResultInfos(ResultInfoCollector collector) {
+    public void collectResultInfos(List<ResultInfo> collector) {
         features.collectResultInfos(collector);
 
-        collector.getInfos().add(0, ConqueryConstants.RESOLUTION_INFO);
-        collector.getInfos().add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
-        collector.getInfos().add(2, ConqueryConstants.DATE_RANGE_INFO);
+        collector.add(0, ConqueryConstants.RESOLUTION_INFO);
+        collector.add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
+        collector.add(2, ConqueryConstants.DATE_RANGE_INFO);
     }
 
     @Override

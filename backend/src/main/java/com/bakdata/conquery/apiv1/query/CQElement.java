@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.query;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -13,13 +14,12 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
@@ -73,14 +73,8 @@ public abstract class CQElement implements Visitable {
 		this.collectRequiredQueries(set);
 		return set;
 	}
-
-	public ResultInfoCollector collectResultInfos(PrintSettings cfg) {
-		ResultInfoCollector collector = new ResultInfoCollector();
-		collectResultInfos(collector);
-		return collector;
-	}
 	
-	public abstract void collectResultInfos(ResultInfoCollector collector);
+	public abstract void collectResultInfos(List<ResultInfo> collector);
 
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);

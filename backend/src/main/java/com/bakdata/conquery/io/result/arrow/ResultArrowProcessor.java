@@ -5,6 +5,7 @@ import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.function.Function;
 
@@ -24,6 +25,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -80,12 +82,17 @@ public class ResultArrowProcessor {
 		);
 
 
+		final ArrayList<ResultInfo> resultInfosId = new ArrayList<>();
+		config.getFrontend().getQueryUpload().getIdResultInfos();
+		final ArrayList<ResultInfo> resultInfosExec = new ArrayList<>();
+		exec.collectResultInfos(resultInfosExec);
+
 		StreamingOutput out = output -> renderToStream(
 				writerProducer.apply(output),
 				settings,
 				config.getArrow().getBatchSize(),
-				config.getFrontend().getQueryUpload().getPrintIdFields(locale),
-				exec.getResultInfo(),
+				resultInfosId,
+				resultInfosExec,
 				exec.streamResults()
 		);
 

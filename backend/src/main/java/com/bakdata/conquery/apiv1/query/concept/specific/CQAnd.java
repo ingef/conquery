@@ -27,7 +27,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.util.QueryUtils;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
@@ -106,7 +106,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public void collectResultInfos(List<ResultInfo> collector) {
 		for (CQElement c : children) {
 			c.collectResultInfos(collector);
 		}

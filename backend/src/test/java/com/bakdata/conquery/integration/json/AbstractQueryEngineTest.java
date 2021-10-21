@@ -61,7 +61,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		final ManagedQuery execution = (ManagedQuery) standaloneSupport.getMetaStorage().getExecution(executionId);
 
 		//check result info size
-		List<ResultInfo> resultInfos = execution.getResultInfo();
+		List<ResultInfo> resultInfos = execution.getResultInfos();
 
 		assertThat(
 				execution.streamResults()

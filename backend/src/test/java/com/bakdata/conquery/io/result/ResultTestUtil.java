@@ -9,6 +9,8 @@ import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
@@ -16,6 +18,7 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class ResultTestUtil {
@@ -38,6 +41,9 @@ public class ResultTestUtil {
 				new ResultType.ListT(ResultType.StringT.INSTANCE)
 		);
 	}
+
+
+	public static List<ResultInfo> ID_FIELDS = List.of("id1", "id2").stream().map(n  -> new SimpleResultInfo(n, ResultType.IdT.getINSTANCE())).collect(Collectors.toList());
 
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {

@@ -26,7 +26,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.Getter;
@@ -141,7 +141,7 @@ public class SecondaryIdQuery extends Query {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public void collectResultInfos(List<ResultInfo> collector) {
 		collector.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IdT.INSTANCE));
 		query.collectResultInfos(collector);
 	}

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -13,7 +14,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.AllArgsConstructor;
@@ -40,11 +41,10 @@ public class ResultInfoDecorator extends CQElement {
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
-		int index = collector.getInfos().size();
+	public void collectResultInfos(List<ResultInfo> collector) {
+		int index = collector.size();
 		child.collectResultInfos(collector);
-		collector.getInfos()
-				 .listIterator(index)
+		collector.listIterator(index)
 				 .forEachRemaining(sd -> {
 					 for (Class entry : values.keySet()) {
 						 sd.addAppendix(entry, values.getInstance(entry));

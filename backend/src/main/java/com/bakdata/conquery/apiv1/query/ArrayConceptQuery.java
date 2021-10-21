@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -94,20 +93,19 @@ public class ArrayConceptQuery extends Query {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
-		List<ResultInfo> infos = collector.getInfos();
-		int lastIndex = Math.max(0,infos.size()-1);
+	public void collectResultInfos(List<ResultInfo> collector) {
+		int lastIndex = Math.max(0,collector.size()-1);
 		childQueries.forEach(q -> q.collectResultInfos(collector));
 		ResultInfo dateInfo = ConqueryConstants.DATES_INFO;
 		
-		if(!infos.isEmpty()) {
+		if(!collector.isEmpty()) {
 			// Remove DateInfo from each childQuery			
-			infos.subList(lastIndex, infos.size()).removeAll(List.of(dateInfo));
+			collector.subList(lastIndex, collector.size()).removeAll(List.of(dateInfo));
 		}
 
 		if(!DateAggregationMode.NONE.equals(getResolvedDateAggregationMode())){
 			// Add one DateInfo for the whole Query
-			collector.getInfos().add(0, dateInfo);
+			collector.add(0, dateInfo);
 		}
 	}
 
