@@ -2,7 +2,6 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
-import Labeled from "../Labeled";
 import SelectListOption from "../SelectListOption";
 
 export const Control = styled("div")<{ disabled?: boolean }>`
@@ -70,12 +69,8 @@ export const Input = styled("input")`
     `}
 `;
 
-export const SxLabeled = styled(Labeled)`
-  padding: 2px;
-`;
-
 export const DropdownToggleButton = styled(IconButton)`
-  padding: 2px 6px;
+  padding: 2px 4px 2px 6px;
 `;
 
 export const ResetButton = styled(IconButton)`

@@ -7,6 +7,7 @@ import { exists } from "../../common/helpers/exists";
 import { useClickOutside } from "../../common/helpers/useClickOutside";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import InfoTooltip from "../../tooltip/InfoTooltip";
+import Labeled from "../Labeled";
 import SelectEmptyPlaceholder from "../SelectEmptyPlaceholder";
 
 import {
@@ -18,7 +19,6 @@ import {
   Menu,
   ResetButton,
   SelectContainer,
-  SxLabeled,
   SxSelectListOption,
   VerticalSeparator,
 } from "./InputSelectComponents";
@@ -296,7 +296,7 @@ const InputSelect = ({
   );
 
   return label ? (
-    <SxLabeled
+    <Labeled
       {...labelProps}
       ref={clickOutsideRef}
       htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
@@ -310,7 +310,7 @@ const InputSelect = ({
       className={className}
     >
       {Select}
-    </SxLabeled>
+    </Labeled>
   ) : (
     Select
   );
