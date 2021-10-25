@@ -53,12 +53,16 @@ const Checkmark = styled("div")`
   }
 `;
 
-interface PropsType extends WrappedFieldProps {
+interface PropsType {
   label: string;
   className?: string;
   tooltip?: string;
   tooltipLazy?: boolean;
   infoTooltip?: string;
+  input: {
+    value?: boolean;
+    onChange: (checked: boolean) => void;
+  };
 }
 
 const InputCheckbox = (props: PropsType) => (
