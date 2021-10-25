@@ -23,6 +23,18 @@ import {
   VerticalSeparator,
 } from "./InputSelectComponents";
 
+const optionIncludedInSearch = (search: string) => (option: SelectOptionT) => {
+  if (!search) return true;
+
+  const lowerInputValue = search.toLowerCase();
+  const lowerLabel = option.label.toLowerCase();
+
+  return (
+    lowerLabel.includes(lowerInputValue) ||
+    String(option.value).toLowerCase().includes(lowerInputValue)
+  );
+};
+
 interface Props {
   label?: string;
   disabled?: boolean;
@@ -53,6 +65,7 @@ const InputSelect = ({
 }: Props) => {
   const { t } = useTranslation();
   const previousInputValue = usePrevious(value);
+  const previousOptions = usePrevious(options);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [filteredOptions, setFilteredOptions] = useState(() => {
@@ -127,23 +140,11 @@ const InputSelect = ({
         setHighlightedIndex(0);
       }
 
-      if (!exists(changes.inputValue)) {
-        return;
+      if (exists(changes.inputValue) && changes.inputValue !== value?.label) {
+        setFilteredOptions(
+          options.filter(optionIncludedInSearch(changes.inputValue)),
+        );
       }
-
-      setFilteredOptions(
-        options.filter((option) => {
-          if (!changes.inputValue) return true;
-
-          const lowerInputValue = changes.inputValue.toLowerCase();
-          const lowerLabel = option.label.toLowerCase();
-
-          return (
-            lowerLabel.includes(lowerInputValue) ||
-            String(option.value).toLowerCase().includes(lowerInputValue)
-          );
-        }),
-      );
     },
     onStateChange: ({ type, ...changes }) => {
       // This only modifies the behavior of some of the actions, after the state has been changed
@@ -189,15 +190,37 @@ const InputSelect = ({
     }, [isOpen, toggleMenu, handleBlur]),
   );
 
-  useEffect(() => {
-    if (
-      exists(value) &&
-      previousInputValue !== value &&
-      value.value !== selectedItem?.value
-    ) {
-      selectItem(value);
-    }
-  }, [previousInputValue, selectedItem, selectItem, value]);
+  useEffect(
+    function takeValueFromAbove() {
+      if (
+        exists(value) &&
+        previousInputValue !== value &&
+        value.value !== selectedItem?.value
+      ) {
+        selectItem(value);
+      }
+    },
+    [previousInputValue, selectedItem, selectItem, value],
+  );
+
+  useEffect(
+    function takeOptionsFromAbove() {
+      const previousOptionsLength = previousOptions
+        ? previousOptions.length
+        : 0;
+
+      if (options.length !== previousOptionsLength) {
+        if (inputValue === value?.label) {
+          setFilteredOptions(options);
+        } else {
+          setFilteredOptions(
+            options.filter(optionIncludedInSearch(inputValue)),
+          );
+        }
+      }
+    },
+    [inputValue, value, options, previousOptions],
+  );
 
   const Select = (
     <SelectContainer className={exists(label) ? undefined : className}>

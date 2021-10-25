@@ -42,7 +42,7 @@ const StandardQueryNodeEditor = ({ editedNode, setEditedNode }: Props) => {
   );
   const node = useSelector<StateT, StandardQueryNodeT | null>((state) =>
     editedNode
-      ? state.queryEditor.query[editedNode.andIdx].elements[editedNode.orIdx]
+      ? state.queryEditor.query[editedNode.andIdx]?.elements[editedNode.orIdx]
       : null,
   );
   const showTables =

@@ -30,7 +30,7 @@ const Grow = styled("div")`
 const HorizontalScrollContainer = styled("div")`
   overflow-x: auto;
   width: 100%;
-  min-height: 250px;
+  min-height: 260px;
 `;
 const Table = styled("table")`
   margin: 10px 0;

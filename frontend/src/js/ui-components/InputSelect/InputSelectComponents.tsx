@@ -43,6 +43,7 @@ export const Menu = styled("div")`
   box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 10%), 0 4px 11px hsl(0deg 0% 0% / 10%);
   background-color: ${({ theme }) => theme.col.bg};
   z-index: 2;
+  margin-top: 3px;
 `;
 
 export const List = styled("div")`

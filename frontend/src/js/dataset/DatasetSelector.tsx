@@ -12,7 +12,7 @@ import InputSelect from "../ui-components/InputSelect/InputSelect";
 import { useSelectDataset } from "./actions";
 import { DatasetT } from "./reducer";
 
-const Root = styled("label")`
+const Root = styled("div")`
   color: ${({ theme }) => theme.col.black};
   display: flex;
   align-items: center;
