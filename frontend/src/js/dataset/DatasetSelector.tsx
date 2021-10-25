@@ -13,22 +13,20 @@ import InputSelect from "../ui-components/InputSelect/InputSelect";
 import { useSelectDataset } from "./actions";
 import { DatasetT } from "./reducer";
 
-const becauseWeCantStyleReactSelectWithGenericProps = css`
-  > div {
-    min-width: 300px;
-  }
-`;
 const Root = styled("label")`
   color: ${({ theme }) => theme.col.black};
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  ${becauseWeCantStyleReactSelectWithGenericProps};
 `;
 
 const Headline = styled("span")`
   font-size: ${({ theme }) => theme.col.grayLight};
   padding-right: 12px;
+`;
+
+const SxInputSelect = styled(InputSelect)`
+  min-width: 300px;
 `;
 
 const DatasetSelector: FC = () => {
@@ -59,7 +57,7 @@ const DatasetSelector: FC = () => {
     <WithTooltip text={t("help.datasetSelector")} lazy>
       <Root>
         <Headline>{t("datasetSelector.label")}</Headline>
-        <InputSelect
+        <SxInputSelect
           value={selected || null}
           onChange={(value) =>
             exists(value)
