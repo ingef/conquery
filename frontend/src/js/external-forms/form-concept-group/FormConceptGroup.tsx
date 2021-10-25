@@ -415,6 +415,7 @@ const Row = styled("div")`
 
 const SxTransparentButton = styled(TransparentButton)`
   margin-left: 10px;
+  flex-shrink: 0;
 `;
 
 const SxDescription = styled(Description)`

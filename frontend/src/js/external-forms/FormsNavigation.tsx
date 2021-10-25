@@ -8,7 +8,7 @@ import { reset } from "redux-form";
 import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
 import WithTooltip from "../tooltip/WithTooltip";
-import InputSelect from "../ui-components/InputSelect";
+import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import { setExternalForm } from "./actions";
 import { Form } from "./config-types";
@@ -75,14 +75,11 @@ const FormsNavigation: FC = () => {
       <SxInputSelect
         label={t("externalForms.forms")}
         options={options}
-        input={{
-          value: activeForm,
-          onChange: (value: string) => onItemClick(value),
-        }}
-        selectProps={{
-          clearable: false,
-          autosize: true,
-          searchable: false,
+        value={options.find((o) => o.value === activeForm) || null}
+        onChange={(value) => {
+          if (value) {
+            onItemClick(value.value as string);
+          }
         }}
       />
       <WithTooltip text={t("externalForms.common.clear")}>

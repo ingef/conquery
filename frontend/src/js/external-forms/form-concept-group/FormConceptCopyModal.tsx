@@ -4,12 +4,14 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import type { SelectOptionT } from "../../api/types";
 import PrimaryButton from "../../button/PrimaryButton";
 import { TransparentButton } from "../../button/TransparentButton";
+import { exists } from "../../common/helpers/exists";
 import { useActiveLang } from "../../localization/useActiveLang";
 import Modal from "../../modal/Modal";
 import InputCheckbox from "../../ui-components/InputCheckbox";
-import InputSelect from "../../ui-components/InputSelect";
+import InputSelect from "../../ui-components/InputSelect/InputSelect";
 import {
   selectActiveFormValues,
   useVisibleConceptListFields,
@@ -38,11 +40,11 @@ const SxInputCheckbox = styled(InputCheckbox)`
   margin: 5px 0;
 `;
 
-type PropsT = {
+interface PropsT {
   targetFieldname: string;
   onAccept: (selectedNodes: Object[]) => void;
   onClose: () => void;
-};
+}
 
 const FormConceptCopyModal = ({
   targetFieldname,
@@ -59,26 +61,29 @@ const FormConceptCopyModal = ({
   const conceptListFieldOptions = visibleConceptListFields
     .filter((field) => field.name !== targetFieldname)
     .map((field) => ({
-      label: field.label[activeLang],
+      label: field.label[activeLang] || "-",
       value: field.name,
     }));
 
   // Since the modal is only rendered when there exists more than one concept list field
   // we can assume that `conceptListFieldOptions` still has length >= 1
-  const [selectedOption, setSelectedOption] = useState<string>(
-    conceptListFieldOptions[0].value,
+  const [selectedOption, setSelectedOption] = useState<SelectOptionT>(
+    conceptListFieldOptions[0],
   );
 
   const [valuesChecked, setValuesChecked] = useState<{
-    [key: number]: boolean;
+    [key: string]: boolean;
   }>({});
 
   useEffect(() => {
-    const values = formValues[selectedOption];
-    const initiallyChecked = values.reduce((checkedValues, value, i) => {
-      checkedValues[i] = false;
-      return checkedValues;
-    }, {});
+    const values = formValues[selectedOption.value] as unknown[];
+    const initiallyChecked = values.reduce<{ [key: string]: boolean }>(
+      (checkedValues, _, i) => {
+        checkedValues[String(i)] = false;
+        return checkedValues;
+      },
+      {},
+    );
 
     setValuesChecked(initiallyChecked);
   }, [selectedOption]);
@@ -91,16 +96,16 @@ const FormConceptCopyModal = ({
     (key) => !valuesChecked[key],
   );
 
-  function idxHasConcepts(idx: number) {
-    const values = formValues[selectedOption];
-    const concepts = values[idx].concepts.filter((cpt) => !!cpt);
+  function idxHasConcepts(idx: string) {
+    const values = formValues[selectedOption.value];
+    const concepts = values[idx].concepts.filter(exists);
 
     return concepts.length > 0;
   }
 
-  function getLabelFromIdx(idx: number) {
-    const values = formValues[selectedOption];
-    const concepts = values[idx].concepts.filter((cpt) => !!cpt);
+  function getLabelFromIdx(idx: string) {
+    const values = formValues[selectedOption.value];
+    const concepts = values[idx].concepts.filter(exists);
 
     if (concepts.length === 0) return "-";
 
@@ -110,17 +115,18 @@ const FormConceptCopyModal = ({
     );
   }
 
-  function onToggleAllConcepts(checked: boolean) {
-    const allChecked = Object.keys(valuesChecked).reduce((all, key) => {
-      all[key] = allConceptsSelected ? false : true;
-
-      return all;
-    }, {});
+  function onToggleAllConcepts() {
+    const allChecked = Object.fromEntries(
+      Object.entries(valuesChecked).map(([key]) => [
+        key,
+        allConceptsSelected ? false : true,
+      ]),
+    );
 
     setValuesChecked(allChecked);
   }
 
-  function onToggleConcept(idx: number, checked: boolean) {
+  function onToggleConcept(idx: string, checked: boolean) {
     const nextValues = {
       ...valuesChecked,
       [idx]: checked,
@@ -132,7 +138,7 @@ const FormConceptCopyModal = ({
   function onSubmit() {
     const selectedValues = Object.keys(valuesChecked)
       .filter((key) => valuesChecked[key])
-      .map((key) => formValues[selectedOption][key]);
+      .map((key) => formValues[selectedOption.value][key]);
 
     onAccept(selectedValues);
     onClose();
@@ -147,15 +153,18 @@ const FormConceptCopyModal = ({
       <InputSelect
         label={t("externalForms.copyModal.selectLabel")}
         options={conceptListFieldOptions}
-        input={{ onChange: setSelectedOption, value: selectedOption }}
+        onChange={(val) => {
+          if (val) setSelectedOption(val);
+        }}
+        value={selectedOption}
       />
       <SelectAllCheckbox
         label={t("externalForms.copyModal.selectAll")}
         input={{ value: allConceptsSelected, onChange: onToggleAllConcepts }}
       />
       <Options>
-        {Object.keys(valuesChecked).map((idx, i) =>
-          idxHasConcepts ? (
+        {Object.keys(valuesChecked).map((idx) =>
+          idxHasConcepts(idx) ? (
             <SxInputCheckbox
               key={idx}
               label={getLabelFromIdx(idx)}

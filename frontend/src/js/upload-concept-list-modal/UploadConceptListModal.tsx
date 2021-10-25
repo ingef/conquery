@@ -4,14 +4,14 @@ import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import type { ConceptIdT, ConceptT } from "../api/types";
+import type { ConceptIdT, SelectOptionT } from "../api/types";
 import PrimaryButton from "../button/PrimaryButton";
 import type { TreesT } from "../concept-trees/reducer";
 import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import InputPlain from "../ui-components/InputPlain";
-import InputSelect from "../ui-components/InputSelect";
+import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import { useSelectConceptRootNodeAndResolveCodes } from "./actions";
 import { UploadConceptListModalStateT } from "./reducer";
@@ -72,17 +72,20 @@ const selectResolvedItemsCount = (state: StateT) => {
     : 0;
 };
 
-const selectAvailableConceptRootNodes = (state: StateT) => {
+const selectAvailableConceptRootNodes = (state: StateT): SelectOptionT[] => {
   const { trees } = state.conceptTrees;
 
   if (!trees) return [];
 
   return Object.entries(trees)
-    .map(([key, value]) => ({ key, value }))
-    .filter(({ value }) => value.codeListResolvable)
+    .map(([treeId, concept]) => ({ value: treeId, concept }))
+    .filter(({ concept }) => concept.codeListResolvable)
     .sort((a, b) =>
-      a.value.label.toLowerCase().localeCompare(b.value.label.toLowerCase()),
-    );
+      a.concept.label
+        .toLowerCase()
+        .localeCompare(b.concept.label.toLowerCase()),
+    )
+    .map(({ value, concept }) => ({ value, label: concept.label }));
 };
 
 interface PropsT {
@@ -92,11 +95,6 @@ interface PropsT {
     resolvedConcepts: ConceptIdT[],
   ) => void;
   onClose: () => void;
-}
-
-interface ConceptRootNodeByKey {
-  key: string;
-  value: ConceptT;
 }
 
 const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
@@ -112,7 +110,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
     (state) => state.uploadConceptListModal,
   );
 
-  const availableConceptRootNodes = useSelector<StateT, ConceptRootNodeByKey[]>(
+  const availableConceptRootNodes = useSelector<StateT, SelectOptionT[]>(
     (state) => selectAvailableConceptRootNodes(state),
   );
   const rootConcepts = useSelector<StateT, TreesT>(
@@ -133,7 +131,8 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
     }
   }, [filename]);
 
-  const selectConceptRootNodeAndResolveCode = useSelectConceptRootNodeAndResolveCodes();
+  const selectConceptRootNodeAndResolveCode =
+    useSelectConceptRootNodeAndResolveCodes();
 
   if (!conceptCodesFromFile || conceptCodesFromFile.length === 0) {
     onClose();
@@ -160,19 +159,18 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
       <Root>
         <InputSelect
           label={t("uploadConceptListModal.selectConceptRootNode")}
-          input={{
-            value: selectedConceptRootNode,
-            onChange: (value) =>
-              selectConceptRootNodeAndResolveCode(value, conceptCodesFromFile),
-          }}
-          options={availableConceptRootNodes.map((x) => ({
-            value: x.key,
-            label: x.value.label,
-          }))}
-          selectProps={{
-            isSearchable: true,
-            autoFocus: true,
-          }}
+          value={
+            availableConceptRootNodes.find(
+              (node) => node.value === selectedConceptRootNode,
+            ) || null
+          }
+          onChange={(value) =>
+            selectConceptRootNodeAndResolveCode(
+              (value?.value as string) || null,
+              conceptCodesFromFile,
+            )
+          }
+          options={availableConceptRootNodes}
         />
         {!!resolved && !hasResolvedItems && !hasUnresolvedItems && (
           <Section>

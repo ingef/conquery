@@ -11,7 +11,7 @@ import type {
 import type { FilterWithValueType } from "../standard-query-editor/types";
 import InputPlain from "../ui-components/InputPlain";
 import InputRange, { ModeT } from "../ui-components/InputRange";
-import InputSelect from "../ui-components/InputSelect";
+import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import FilterListMultiSelect from "./FilterListMultiSelect";
 
@@ -27,7 +27,7 @@ interface PropsT {
   filters: FilterWithValueType[] | null;
   excludeTable?: boolean;
   onSwitchFilterMode: (filterIdx: number, mode: ModeT) => void;
-  onSetFilterValue: Function;
+  onSetFilterValue: (filterIdx: number, value: unknown) => void;
   onLoadFilterSuggestions: (
     tableIdx: number,
     filterId: FilterIdT,
@@ -53,13 +53,13 @@ const TableFilters = (props: PropsT) => {
               return (
                 <InputSelect
                   indexPrefix={filterIdx + 1}
-                  input={{
-                    clearable: filter.value !== filter.defaultValue,
-                    defaultValue: filter.defaultValue,
-                    value: filter.value,
-                    onChange: (value) =>
-                      props.onSetFilterValue(filterIdx, value),
-                  }}
+                  defaultValue={filter.defaultValue}
+                  value={
+                    filter.options.find((o) => o.value === filter.value) || null
+                  }
+                  onChange={(value) =>
+                    props.onSetFilterValue(filterIdx, value?.value || null)
+                  }
                   label={filter.label}
                   options={filter.options}
                   disabled={props.excludeTable}

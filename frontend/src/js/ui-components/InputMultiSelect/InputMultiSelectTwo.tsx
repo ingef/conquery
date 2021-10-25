@@ -16,11 +16,11 @@ import {
   Menu,
   ResetButton,
   SelectContainer,
-  SxLabeled,
+  SxSelectListOption,
   VerticalSeparator,
 } from "../InputSelect/InputSelectComponents";
+import Labeled from "../Labeled";
 import EmptyPlaceholder from "../SelectEmptyPlaceholder";
-import SelectListOption from "../SelectListOption";
 import TooManyValues from "../TooManyValues";
 
 import LoadMoreSentinel from "./LoadMoreSentinel";
@@ -292,7 +292,7 @@ const InputMultiSelectTwo = ({
               });
 
               return (
-                <SelectListOption
+                <SxSelectListOption
                   key={`${option.value}`}
                   active={highlightedIndex === index}
                   disabled={option.disabled}
@@ -300,7 +300,7 @@ const InputMultiSelectTwo = ({
                   ref={itemPropsRef}
                 >
                   {option.label}
-                </SelectListOption>
+                </SxSelectListOption>
               );
             })}
             <LoadMoreSentinel
@@ -321,7 +321,7 @@ const InputMultiSelectTwo = ({
   const hasTooManyValues = selectedItems.length > MAX_VALUES_LIMIT;
 
   return (
-    <SxLabeled
+    <Labeled
       {...labelProps}
       ref={clickOutsideRef}
       htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
@@ -342,7 +342,7 @@ const InputMultiSelectTwo = ({
           {() => Select}
         </SxInputMultiSelectDropzone>
       )}
-    </SxLabeled>
+    </Labeled>
   );
 };
 

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 const Container = styled("div")`
   width: 100%;
-  padding: 10px 0;
+  padding: 6px 0;
   display: flex;
   align-items: center;
   justify-content: center;

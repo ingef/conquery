@@ -36,7 +36,7 @@ interface PropsT {
   };
 }
 
-const InputSelect = ({
+const InputSelectOld = ({
   className,
   small,
   input,
@@ -97,4 +97,4 @@ const InputSelect = ({
   );
 };
 
-export default InputSelect;
+export default InputSelectOld;
