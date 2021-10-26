@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import React from "react";
 import { useDispatch } from "react-redux";
 
 import IconButton from "../button/IconButton";

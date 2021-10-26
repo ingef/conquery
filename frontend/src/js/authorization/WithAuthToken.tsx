@@ -1,5 +1,5 @@
 import { useKeycloak } from "@react-keycloak/web";
-import React, { FC, useContext } from "react";
+import { FC, useContext } from "react";
 import { useHistory } from "react-router-dom";
 
 import { isLoginDisabled, isIDPEnabled } from "../environment";

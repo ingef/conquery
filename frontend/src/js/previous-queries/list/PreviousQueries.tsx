@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useRef, useState, useCallback, useLayoutEffect } from "react";
+import { useRef, useState, useCallback, useLayoutEffect, FC } from "react";
 import { FixedSizeList } from "react-window";
 
 import { DatasetIdT } from "../../api/types";
@@ -26,17 +26,15 @@ const Root = styled("div")`
 `;
 const Container = styled("div")``;
 
-const PreviousQueries: React.FC<PropsT> = ({ datasetId, queries }) => {
+const PreviousQueries: FC<PropsT> = ({ datasetId, queries }) => {
   const [previousQueryToDelete, setPreviousQueryToDelete] = useState<
     string | null
   >(null);
   const [previousQueryToShare, setPreviousQueryToShare] = useState<
     string | null
   >(null);
-  const [
-    previousQueryToEditFolders,
-    setPreviousQueryToEditFolders,
-  ] = useState<PreviousQueryT | null>(null);
+  const [previousQueryToEditFolders, setPreviousQueryToEditFolders] =
+    useState<PreviousQueryT | null>(null);
 
   const onCloseDeleteModal = () => setPreviousQueryToDelete(null);
   const onCloseShareModal = () => setPreviousQueryToShare(null);

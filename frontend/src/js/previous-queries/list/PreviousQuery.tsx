@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
 import { parseISO } from "date-fns";
-import React, { useState } from "react";
+import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -115,7 +115,7 @@ interface PropsT {
   onIndicateEditFolders: () => void;
 }
 
-const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
+const PreviousQuery = forwardRef<HTMLDivElement, PropsT>(
   function PreviousQueryComponent(
     {
       query,

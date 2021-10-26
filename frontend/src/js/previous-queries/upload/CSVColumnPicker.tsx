@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import format from "date-fns/format";
 import { saveAs } from "file-saver";
-import React, { useState, useEffect, FC } from "react";
+import { useState, useEffect, FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";

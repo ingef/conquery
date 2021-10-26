@@ -1,5 +1,5 @@
 import { ComponentMeta, Story } from "@storybook/react";
-import React, { ComponentProps, useState } from "react";
+import { ComponentProps, useState } from "react";
 
 import wordslist from "../../fixtures/words.json";
 

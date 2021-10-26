@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { ReactNode, FC, useContext } from "react";
+import { ReactNode, FC, useContext } from "react";
 
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 

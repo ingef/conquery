@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { ReactNode, FC } from "react";
+import { ReactNode, FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";

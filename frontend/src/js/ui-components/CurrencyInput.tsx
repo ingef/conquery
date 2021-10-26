@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect } from "react";
 import NumberFormat from "react-number-format";
 
 import type { CurrencyConfigT } from "../api/types";

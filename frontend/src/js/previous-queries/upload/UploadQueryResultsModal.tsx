@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";

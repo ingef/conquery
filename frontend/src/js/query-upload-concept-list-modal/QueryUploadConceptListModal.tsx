@@ -1,5 +1,5 @@
 import { StateT } from "app-types";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { TreesT } from "../concept-trees/reducer";

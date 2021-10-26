@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import Mustache from "mustache";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import { components, MenuListComponentProps } from "react-select";

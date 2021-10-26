@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from "react";
+import { FC, useEffect } from "react";
 
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import { usePrevious } from "../common/helpers/usePrevious";

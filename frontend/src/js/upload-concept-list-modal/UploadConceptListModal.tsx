@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
-import React, { useState, useEffect } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -141,7 +141,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
   const hasUnresolvedItems = unresolvedItemsCount > 0;
   const hasResolvedItems = resolvedItemsCount > 0;
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (label && resolved.resolvedConcepts) {
