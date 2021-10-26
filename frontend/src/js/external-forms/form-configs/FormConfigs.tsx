@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useState } from "react";
+import { FC, useState } from "react";
 import ReactList from "react-list";
 import { useDispatch } from "react-redux";
 
@@ -25,7 +25,7 @@ const Container = styled("div")`
   margin: 4px 0;
 `;
 
-const FormConfigs: React.FC<PropsT> = ({ formConfigs }) => {
+const FormConfigs: FC<PropsT> = ({ formConfigs }) => {
   const [formConfigToDelete, setFormConfigToDelete] = useState<string | null>(
     null,
   );

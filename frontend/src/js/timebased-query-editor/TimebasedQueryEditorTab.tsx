@@ -1,5 +1,3 @@
-import React from "react";
-
 import TimebasedQueryClearButton from "./TimebasedQueryClearButton";
 import TimebasedQueryEditor from "./TimebasedQueryEditor";
 import TimebasedQueryRunner from "./TimebasedQueryRunner";

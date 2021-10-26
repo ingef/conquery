@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC, ReactNode, useRef } from "react";
+import { FC, ReactNode, useRef } from "react";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 

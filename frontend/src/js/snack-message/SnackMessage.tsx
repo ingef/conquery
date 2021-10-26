@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { useRef, memo, FC } from "react";
+import { useRef, memo, FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
 import { useClickOutside } from "../common/helpers/useClickOutside";

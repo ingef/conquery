@@ -1,5 +1,4 @@
 import { StateT } from "app-types";
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ConceptIdT, CurrencyConfigT, DatasetIdT } from "../api/types";

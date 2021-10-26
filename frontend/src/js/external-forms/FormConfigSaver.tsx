@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -232,4 +232,4 @@ const FormConfigSaver: FC = () => {
   );
 };
 
-export default React.memo(FormConfigSaver);
+export default memo(FormConfigSaver);

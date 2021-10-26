@@ -1,12 +1,8 @@
 import styled from "@emotion/styled";
-import React from "react";
-import type { WrappedFieldProps } from "redux-form";
 
 import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
-
-import Optional from "./Optional";
 
 const Row = styled("div")`
   display: flex;

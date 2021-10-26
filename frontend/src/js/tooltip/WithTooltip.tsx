@@ -1,6 +1,6 @@
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import React, { FC, ReactElement } from "react";
+import { FC, ReactElement } from "react";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css";
 
@@ -58,7 +58,7 @@ const WithTooltip: FC<PropsT> = ({
     // to get the hide delay to work. The types seem to be outdated.
     // Check this for further info:
     // https://github.com/tvkhoa/react-tippy/issues/52#issuecomment-406419701
-    delay: lazy ? (([1000, 0] as unknown) as number) : 0,
+    delay: lazy ? ([1000, 0] as unknown as number) : 0,
     // So this doesn't work, but let's supply it anyways:
     hideDelay: 0,
   };
