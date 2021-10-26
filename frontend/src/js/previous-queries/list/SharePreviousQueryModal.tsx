@@ -5,14 +5,14 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { usePatchQuery } from "../../api/api";
-import type { DatasetIdT, UserGroupT } from "../../api/types";
+import type { DatasetIdT, SelectOptionT, UserGroupT } from "../../api/types";
 import PrimaryButton from "../../button/PrimaryButton";
 import { TransparentButton } from "../../button/TransparentButton";
 import { exists } from "../../common/helpers/exists";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import Modal from "../../modal/Modal";
 import { setMessage } from "../../snack-message/actions";
-import InputMultiSelect from "../../ui-components/InputMultiSelect";
+import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
 
 import { useLoadQuery, shareQuerySuccess } from "./actions";
 import { PreviousQueryT } from "./reducer";
@@ -36,11 +36,6 @@ const SxInputMultiSelect = styled(InputMultiSelect)`
 const QueryName = styled("p")`
   margin: -15px 0 20px;
 `;
-
-interface SelectValueT {
-  label: string;
-  value: string;
-}
 
 interface PropsT {
   previousQueryId: string;
@@ -82,7 +77,7 @@ const SharePreviousQueryModal = ({
   );
   const initialUserGroupsValue = getUserGroupsValue(userGroups, previousQuery);
 
-  const [userGroupsValue, setUserGroupsValue] = useState<SelectValueT[]>(
+  const [userGroupsValue, setUserGroupsValue] = useState<SelectOptionT[]>(
     initialUserGroupsValue,
   );
 
@@ -107,7 +102,7 @@ const SharePreviousQueryModal = ({
     setUserGroupsValue(getUserGroupsValue(userGroups, previousQuery));
   }, [userGroups, previousQuery]);
 
-  const onSetUserGroupsValue = (value: SelectValueT[] | null) => {
+  const onSetUserGroupsValue = (value: SelectOptionT[] | null) => {
     setUserGroupsValue(value ? value : []);
   };
 
@@ -123,7 +118,9 @@ const SharePreviousQueryModal = ({
   async function onShareClicked() {
     if (!datasetId) return;
 
-    const userGroupsToShare = userGroupsValue.map((group) => group.value);
+    const userGroupsToShare = userGroupsValue.map(
+      (group) => group.value as string,
+    );
 
     try {
       await patchQuery(datasetId, previousQueryId, {
@@ -147,10 +144,10 @@ const SharePreviousQueryModal = ({
     <Modal onClose={onClose} headline={t("sharePreviousQueryModal.headline")}>
       <QueryName>{previousQuery.label}</QueryName>
       <SxInputMultiSelect
-        input={{ value: userGroupsValue, onChange: onSetUserGroupsValue }}
+        value={userGroupsValue}
+        onChange={onSetUserGroupsValue}
         label={t("sharePreviousQueryModal.groupsLabel")}
         options={userGroupOptions}
-        closeMenuOnSelect
       />
       <Buttons>
         <TransparentButton onClick={onClose}>
