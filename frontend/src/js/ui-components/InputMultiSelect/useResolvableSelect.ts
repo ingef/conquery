@@ -9,7 +9,10 @@ export const useResolvableSelect = ({
   onResolve,
 }: {
   defaultValue?: SelectOptionT[];
-  onResolve?: (csvFileLines: string[]) => void;
+  onResolve?: (
+    csvFileLines: string[],
+    options?: { showModal?: boolean },
+  ) => Promise<void>;
 }) => {
   const previousDefaultValue = usePrevious(defaultValue);
 
@@ -25,7 +28,10 @@ export const useResolvableSelect = ({
         JSON.stringify(defaultValue) !== JSON.stringify(previousDefaultValue);
 
       if (hasDefaultValueToLoad) {
-        onResolve(defaultValue.map((v) => String(v.value)));
+        onResolve(
+          defaultValue.map((v) => String(v.value)),
+          { showModal: false },
+        );
       }
     },
     [onResolve, previousDefaultValue, defaultValue],
@@ -35,7 +41,7 @@ export const useResolvableSelect = ({
     const rows = await getUniqueFileRows(file);
 
     if (onResolve) {
-      onResolve(rows);
+      onResolve(rows, { showModal: true });
     }
   };
 

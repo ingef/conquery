@@ -51,7 +51,10 @@ interface Props {
   autoFocus?: boolean;
   onChange: (value: SelectOptionT[]) => void;
   loading?: boolean;
-  onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
+  onResolve?: (
+    csvFileLines: string[],
+    options?: { showModal?: boolean },
+  ) => Promise<void>; // The assumption is that this will somehow update `options`
   onLoadMore?: (inputValue: string) => void;
 }
 
@@ -162,6 +165,9 @@ const InputMultiSelect = ({
         case useCombobox.stateChangeTypes.InputChange:
           if (action.highlightedIndex !== 0) {
             setHighlightedIndex(0);
+          }
+          if (onLoadMore && action.inputValue && action.inputValue.length > 1) {
+            onLoadMore(action.inputValue);
           }
           break;
         case useCombobox.stateChangeTypes.InputKeyDownEscape:

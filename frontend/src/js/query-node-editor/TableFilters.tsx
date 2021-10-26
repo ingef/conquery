@@ -69,12 +69,11 @@ const TableFilters = (props: PropsT) => {
                 <FilterListMultiSelect
                   context={{ ...props.context, filterId: filter.id }}
                   indexPrefix={filterIdx + 1}
-                  input={{
-                    value: filter.value,
-                    defaultValue: filter.defaultValue,
-                    onChange: (value: string[]) =>
-                      props.onSetFilterValue(filterIdx, value),
-                  }}
+                  value={filter.value || []}
+                  defaultValue={filter.defaultValue}
+                  onChange={(value: string[]) =>
+                    props.onSetFilterValue(filterIdx, value)
+                  }
                   label={filter.label}
                   options={filter.options}
                   disabled={props.excludeTable}
@@ -86,12 +85,9 @@ const TableFilters = (props: PropsT) => {
                 <FilterListMultiSelect
                   indexPrefix={filterIdx + 1}
                   context={{ ...props.context, filterId: filter.id }}
-                  input={{
-                    value: filter.value || [],
-                    defaultValue: filter.defaultValue || [],
-                    onChange: (value) =>
-                      props.onSetFilterValue(filterIdx, value),
-                  }}
+                  value={filter.value || []}
+                  defaultValue={filter.defaultValue || []}
+                  onChange={(value) => props.onSetFilterValue(filterIdx, value)}
                   label={filter.label}
                   options={filter.options}
                   disabled={!!props.excludeTable}

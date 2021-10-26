@@ -1,17 +1,13 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 import { usePostFilterValuesResolve } from "../api/api";
 import type {
   FilterIdT,
+  FilterSuggestion,
   PostFilterResolveResponseT,
   SelectOptionT,
 } from "../api/types";
-import { getUniqueFileRows } from "../common/helpers/fileHelper";
-import { usePrevious } from "../common/helpers/usePrevious";
-import AsyncInputMultiSelect from "../ui-components/AsyncInputMultiSelect";
-import InputMultiSelectOld, {
-  MultiSelectInputProps,
-} from "../ui-components/InputMultiSelectOld";
+import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
 import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
@@ -33,12 +29,16 @@ interface PropsT {
   isLoading?: boolean;
   onLoad?: (prefix: string) => void;
 
-  input: MultiSelectInputProps;
+  defaultValue?: string[];
+  value: SelectOptionT[] | FilterSuggestion[];
+  onChange: (value: SelectOptionT[] | FilterSuggestion[] | null) => void;
 }
 
 const FilterListMultiSelect: FC<PropsT> = ({
   context,
-  input,
+  value,
+  defaultValue,
+  onChange,
   label,
   indexPrefix,
   options,
@@ -56,15 +56,11 @@ const FilterListMultiSelect: FC<PropsT> = ({
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const postFilterValuesResolve = usePostFilterValuesResolve();
 
-  const previousDefaultValue = usePrevious(input.defaultValue);
-
-  // Can be both, an auto-completable (async) multi select or a regular one
-  const Component = !!onLoad ? AsyncInputMultiSelect : InputMultiSelectOld;
-
-  const onDropFile = async (file: File) => {
+  const onResolve = async (
+    csvLines: string[],
+    options: { showModal?: boolean } = {},
+  ) => {
     setLoading(true);
-
-    const rows = await getUniqueFileRows(file);
 
     try {
       const r = await postFilterValuesResolve(
@@ -72,18 +68,20 @@ const FilterListMultiSelect: FC<PropsT> = ({
         context.treeId,
         context.tableId,
         context.filterId,
-        rows,
+        csvLines,
       );
 
-      setResolved(r);
-      setIsModalOpen(!!r.unknownCodes && r.unknownCodes.length > 0);
+      if (options.showModal) {
+        setResolved(r);
+        setIsModalOpen(!!r.unknownCodes && r.unknownCodes.length > 0);
+      }
 
       if (
         r.resolvedFilter &&
         r.resolvedFilter.value &&
         r.resolvedFilter.value.length > 0
       ) {
-        input.onChange(r.resolvedFilter.value);
+        onChange(r.resolvedFilter.value);
       }
     } catch (e) {
       setError(true);
@@ -91,43 +89,6 @@ const FilterListMultiSelect: FC<PropsT> = ({
 
     setLoading(false);
   };
-
-  useEffect(() => {
-    async function resolveDefaultValue() {
-      const hasDefaultValueToLoad =
-        input.defaultValue &&
-        input.defaultValue.length > 0 &&
-        JSON.stringify(input.defaultValue) !==
-          JSON.stringify(previousDefaultValue);
-
-      if (hasDefaultValueToLoad) {
-        const r = await postFilterValuesResolve(
-          context.datasetId,
-          context.treeId,
-          context.tableId,
-          context.filterId,
-          input.defaultValue as string[],
-        );
-
-        if (
-          r.resolvedFilter &&
-          r.resolvedFilter.value &&
-          r.resolvedFilter.value.length > 0
-        ) {
-          input.onChange(r.resolvedFilter.value);
-        }
-      }
-    }
-    resolveDefaultValue();
-  }, [
-    context.datasetId,
-    context.filterId,
-    context.tableId,
-    context.treeId,
-    previousDefaultValue,
-    input,
-    postFilterValuesResolve,
-  ]);
 
   return (
     <>
@@ -139,16 +100,19 @@ const FilterListMultiSelect: FC<PropsT> = ({
           onClose={() => setIsModalOpen(false)}
         />
       )}
-      <Component
-        input={input}
+      <InputMultiSelect
+        value={value}
+        defaultValue={
+          defaultValue?.map((s) => ({ value: s, label: s })) || undefined
+        }
+        onChange={onChange}
         label={label}
         options={options}
-        isLoading={isLoading || loading}
+        loading={isLoading || loading}
         disabled={disabled}
         indexPrefix={indexPrefix}
-        onLoad={onLoad}
-        onDropFile={onDropFile}
-        allowDropFile={allowDropFile}
+        onLoadMore={onLoad}
+        onResolve={allowDropFile ? onResolve : undefined}
       />
     </>
   );

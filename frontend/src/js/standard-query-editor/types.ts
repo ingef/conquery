@@ -13,6 +13,7 @@ import type {
   QueryT,
   BigMultiSelectFilterT,
   InfoT,
+  StringFilterT,
 } from "../api/types";
 
 export interface InfoType {
@@ -38,7 +39,8 @@ export type FilterWithValueType =
   | SelectFilterWithValueType
   | MultiSelectFilterWithValueType
   | BigMultiSelectFilterWithValueType
-  | RangeFilterWithValueType;
+  | RangeFilterWithValueType
+  | StringFilterT;
 
 export interface SelectedSelectorT extends SelectorT {
   selected?: boolean;
