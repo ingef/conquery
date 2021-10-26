@@ -100,7 +100,7 @@ const UploadFilterListModal: FC<PropsT> = ({
                   <span
                     dangerouslySetInnerHTML={{
                       __html: t("uploadConceptListModal.unknownCodes", {
-                        context: unresolvedItemsCount,
+                        count: unresolvedItemsCount,
                       }),
                     }}
                   />
