@@ -1,4 +1,6 @@
-import InputMultiSelect, { InputMultiSelectProps } from "./InputMultiSelect";
+import InputMultiSelectOld, {
+  InputMultiSelectProps,
+} from "./InputMultiSelectOld";
 
 interface PropsType extends InputMultiSelectProps {
   startLoadingThreshold?: number;
@@ -10,7 +12,7 @@ const AsyncInputMultiSelect = ({
   onLoad,
   ...props
 }: PropsType) => (
-  <InputMultiSelect
+  <InputMultiSelectOld
     {...props}
     onInputChange={(value) => {
       if (value.length >= startLoadingThreshold) onLoad(value);

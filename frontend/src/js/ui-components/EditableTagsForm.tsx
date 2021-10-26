@@ -2,24 +2,20 @@ import styled from "@emotion/styled";
 import React, { FC, useState, useRef, FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 
+import type { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import WithTooltip from "../tooltip/WithTooltip";
 
-import ReactSelect from "./ReactSelect";
+import InputMultiSelect from "./InputMultiSelect/InputMultiSelect";
 
 interface PropsT {
   className?: string;
   tags?: string[];
   loading?: boolean;
   onSubmit: (tags: string[]) => void;
-  onCancel: () => void;
+  onCancel?: () => void;
   availableTags: string[];
-}
-
-interface ValueT {
-  label: string;
-  value: string;
 }
 
 const Form = styled("form")`
@@ -28,11 +24,11 @@ const Form = styled("form")`
 `;
 
 const SxIconButton = styled(IconButton)`
-  padding: 10px 10px;
+  padding: 6px 10px;
   margin-left: 3px;
 `;
 
-const SxReactSelect = styled(ReactSelect)`
+const SxInputMultiSelect = styled(InputMultiSelect)`
   z-index: 2;
   flex-grow: 1;
 `;
@@ -47,36 +43,33 @@ const EditableTagsForm: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
   const ref = useRef(null);
-  const [values, setValues] = useState<ValueT[]>(
+  const [values, setValues] = useState<SelectOptionT[]>(
     tags ? tags.map((t) => ({ label: t, value: t })) : [],
   );
-  useClickOutside(ref, onCancel);
+  useClickOutside(ref, () => {
+    if (onCancel) {
+      onCancel();
+    }
+  });
 
   function submit(e: FormEvent) {
     e.preventDefault();
 
-    onSubmit(values ? values.map((v) => v.value) : []);
+    onSubmit(values ? values.map((v) => v.value as string) : []);
   }
 
   return (
     <Form ref={ref} className={className} onSubmit={submit}>
-      <SxReactSelect
+      <SxInputMultiSelect
         creatable
-        name="input"
+        autoFocus
         value={values}
         options={availableTags.map((t) => ({
           label: t,
           value: t,
         }))}
         onChange={setValues}
-        isMulti
-        isClearable
-        autoFocus={true}
         placeholder={t("inputMultiSelect.tagPlaceholder")}
-        noOptionsMessage={() => t("inputSelect.empty")}
-        formatCreateLabel={(inputValue: string) =>
-          t("common.create") + `: "${inputValue}"`
-        }
       />
       <WithTooltip text={t("common.save")}>
         <SxIconButton

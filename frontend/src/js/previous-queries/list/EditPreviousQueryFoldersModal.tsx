@@ -45,7 +45,6 @@ const EditPreviousQueryFoldersModal: FC<PropsT> = ({
             onEditSuccess();
           } catch (e) {}
         }}
-        onCancel={onClose}
         availableTags={folders}
       />
     </Modal>

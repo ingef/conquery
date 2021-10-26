@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
+import { exists } from "../../common/helpers/exists";
 
 export const useFilteredOptions = ({
   options,
@@ -29,7 +30,7 @@ export const useFilteredOptions = ({
         : [];
 
     const stillSelectable = (option: SelectOptionT) =>
-      selectedItems.indexOf(option) < 0;
+      !exists(selectedItems.find((item) => item.value === option.value));
 
     const matchesQuery = (option: SelectOptionT) => {
       const lowerInputValue = inputValue.toLowerCase();

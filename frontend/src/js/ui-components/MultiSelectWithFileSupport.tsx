@@ -4,7 +4,9 @@ import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import { usePrevious } from "../common/helpers/usePrevious";
 
 import AsyncInputMultiSelect from "./AsyncInputMultiSelect";
-import InputMultiSelect, { InputMultiSelectProps } from "./InputMultiSelect";
+import InputMultiSelectOld, {
+  InputMultiSelectProps,
+} from "./InputMultiSelectOld";
 
 interface PropsT extends InputMultiSelectProps {
   onLoad?: (prefix: string) => void;
@@ -52,7 +54,7 @@ const MultiSelectWithFileSupport: FC<PropsT> = ({
   return onLoad ? (
     <AsyncInputMultiSelect {...commonProps} {...props} onLoad={onLoad} />
   ) : (
-    <InputMultiSelect {...commonProps} {...props} />
+    <InputMultiSelectOld {...commonProps} {...props} />
   );
 };
 
