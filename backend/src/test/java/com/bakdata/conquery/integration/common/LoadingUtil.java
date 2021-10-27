@@ -211,56 +211,49 @@ public class LoadingUtil {
 		);
 
 		for (Concept<?> concept : concepts) {
-
-			support.getDatasetsProcessor().addOrUpdateConcept(dataset, concept, false);
+			support.getDatasetsProcessor().addConcept(dataset, concept);
 		}
 	}
 
-	public static void addOrUpdateConcepts(StandaloneSupport support, ArrayNode rawConcepts, boolean update, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason)
-			throws JSONException, IOException {
-		List<Concept<?>> concepts = ConqueryTestSpec.parseSubTreeList(
+
+	private static List<Concept<?>> getConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
+		return ConqueryTestSpec.parseSubTreeList(
 				support,
 				rawConcepts,
 				Concept.class,
 				c -> c.setDataset(support.getDataset())
 		);
-
+	}
+	public static void addConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason)
+			throws JSONException, IOException {
+		List<Concept<?>> concepts = getConcepts(support, rawConcepts);
 		for (Concept<?> concept : concepts) {
-			if (update) {
-				updateConcept(support, concept, expectedResponseFamily, expectedReason);
-			}
-			else {
-				addConcept(support, concept, expectedResponseFamily, expectedReason);
-			}
+			addOrUpdateConcept(support, concept, expectedResponseFamily, expectedReason, false);
 		}
 	}
 
-	public static void addConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason) {
-		final URI addConcept = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
-											  .buildFromMap(Map.of(
-													  ResourceConstants.DATASET, support.getDataset().getId()
-											  ));
+	public static void updateConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason)
+			throws JSONException, IOException {
+		List<Concept<?>> concepts = getConcepts(support, rawConcepts);
+		for (Concept<?> concept : concepts) {
+			addOrUpdateConcept(support, concept, expectedResponseFamily, expectedReason, true);
+		}
+	}
+	private static void addOrUpdateConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason, boolean update) {
+		final URI
+				conceptURI =
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, update ? "updateConcept" : "addConcept")
+							   .buildFromMap(Map.of(
+									   ResourceConstants.DATASET, support.getDataset().getId()
+							   ));
 		final Response response = support.getClient()
-										 .target(addConcept)
+										 .target(conceptURI)
 										 .request(MediaType.APPLICATION_JSON)
 										 .put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
 		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
 		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
 	}
 
-
-	public static void updateConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason) {
-		final URI addConcept = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "updateConcept")
-											  .buildFromMap(Map.of(
-													  ResourceConstants.DATASET, support.getDataset().getId()
-											  ));
-		final Response response = support.getClient()
-										 .target(addConcept)
-										 .request(MediaType.APPLICATION_JSON)
-										 .put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
-		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
-	}
 
 	public static void importIdMapping(StandaloneSupport support, RequiredData content) throws JSONException, IOException {
 		if (content.getIdMapping() == null) {

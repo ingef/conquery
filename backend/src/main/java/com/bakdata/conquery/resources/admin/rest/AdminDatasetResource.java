@@ -146,13 +146,13 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Path("concepts")
 	public void addConcept(Concept<?> concept) {
-		processor.addOrUpdateConcept(namespace.getDataset(), concept, false);
+		processor.addConcept(namespace.getDataset(), concept);
 	}
 
 	@PUT
 	@Path("concepts")
 	public void updateConcept(Concept<?> concept) {
-		processor.addOrUpdateConcept(namespace.getDataset(), concept, true);
+		processor.updateConcept(namespace.getDataset(), concept);
 	}
 
 	@POST

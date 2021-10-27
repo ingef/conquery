@@ -208,7 +208,7 @@ public class AdminDatasetProcessor {
 	/**
 	 * Add the concept to the dataset if it does not exist yet.
 	 */
-	private synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
+	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
 		concept.setDataset(dataset);
 		ValidatorHelper.failOnError(log, validator.validate(concept));
 
@@ -223,15 +223,18 @@ public class AdminDatasetProcessor {
 	}
 
 	/**
-	 * create or update a concept to the given dataset
+	 * update a concept to the given
+	 * dataset
 	 */
-	public synchronized void addOrUpdateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept, boolean update) {
-		if (update) {
-			if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
-				throw new WebApplicationException("Can't find the concept in the dataset " + concept.getId(), Response.Status.NOT_FOUND);
-			}
-			deleteConcept(concept);
+	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
+
+		if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+			throw new WebApplicationException("Can't find the concept in the dataset " + concept.getId(), Response.Status.NOT_FOUND);
 		}
+		//deletes the old content of the concept using his id
+		deleteConcept(concept);
+
+		//adds new content of the content
 		addConcept(dataset, concept);
 	}
 
