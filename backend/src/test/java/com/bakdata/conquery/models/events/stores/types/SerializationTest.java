@@ -94,7 +94,7 @@ public class SerializationTest {
 				BitSetStore.create(10),
 				EmptyStore.INSTANCE,
 				new RebasingStore(10, 10, IntArrayStore.create(10)),
-				new DateRangeTypeCompound("", "")
+				new DateRangeTypeCompound("startColTest", "endColTest")
 		);
 	}
 

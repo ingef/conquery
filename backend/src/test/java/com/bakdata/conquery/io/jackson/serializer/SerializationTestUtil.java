@@ -97,7 +97,7 @@ public class SerializationTestUtil<T> {
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
 												   .as("Unequal after copy.")
-												   .usingRecursiveComparison().ignoringFieldsOfTypes(AtomicInteger.class);
+												   .usingRecursiveComparison();
 
 
 		ass.isEqualTo(expected);
