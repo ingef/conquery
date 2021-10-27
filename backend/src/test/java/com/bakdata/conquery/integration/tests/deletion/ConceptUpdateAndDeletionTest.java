@@ -118,8 +118,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		// To perform the update, the old concept will be deleted first and the new concept will be added. That means the deletion of concept is also covered here
 		{
 			LoadingUtil.updateConcepts(conquery, test2.getRawConcepts(), Response.Status.Family.SUCCESSFUL, "No Content");
-			conquery.waitUntilWorkDone();
 		}
+		conquery.waitUntilWorkDone();
 
 		// Check state after update.
 		{
@@ -158,10 +158,11 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			conquery.waitUntilWorkDone();
 		}
 
+
+
 		// Restart conquery and assert again, that the data is correct.
 		{
 			testConquery.shutdown();
-
 			//restart
 			testConquery.beforeAll();
 
@@ -203,8 +204,6 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		}
 
 
-
-
 		// Delete the Concept.
 		{
 			log.info("Issuing deletion of import {}", conceptId);
@@ -238,7 +237,6 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
 															 .stream()
 															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
-
 
 
 			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
