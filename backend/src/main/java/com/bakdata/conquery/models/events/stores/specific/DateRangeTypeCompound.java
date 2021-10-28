@@ -23,7 +23,7 @@ import lombok.ToString;
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_COMPOUND")
 @Getter
 @Setter
-@ToString(of = {"minStore", "maxStore"})
+@ToString(of = {"startStore", "endStore"})
 public class DateRangeTypeCompound implements DateRangeStore {
 
 
@@ -40,7 +40,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Setter(AccessLevel.PROTECTED)
 	@JsonIgnore
-	private Bucket parent;
+	private Bucket parent; // this parent will be set after all the stuff has been preprocessed
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 	public DateRangeTypeCompound(String startColumn, String endColumn) {
@@ -71,6 +71,12 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Override
 	public int getLines() {
+		if (startStore == null && endStore == null) {
+			return 0;
+		}
+		if (startStore == null || endStore == null) {
+			throw new IllegalStateException(String.format("DateRangeTypeCompound[%s] has one null store.", this));
+		}
 		// they can be unaligned, if one of them is empty.
 		return Math.max(startStore.getLines(), endStore.getLines());
 
