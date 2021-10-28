@@ -235,7 +235,23 @@ public class AdminDatasetProcessor {
 		deleteConcept(concept);
 
 		//adds new content of the content
-		addConcept(dataset, concept);
+		//addConcept(dataset, concept);
+		addConceptSlow(dataset, concept);
+	}
+
+	public synchronized void addConceptSlow(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
+		concept.setDataset(dataset);
+		ValidatorHelper.failOnError(log, validator.validate(concept));
+
+		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
+		}
+		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
+
+
+		// Register the Concept in the ManagerNode and Workers
+		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
+		getJobManager().addSlowJob(new SimpleJob(String.format("sendToAll : Add %s ", concept.getId()),()->namespace.sendToAll(new UpdateConcept(concept))));
 	}
 
 	/**
