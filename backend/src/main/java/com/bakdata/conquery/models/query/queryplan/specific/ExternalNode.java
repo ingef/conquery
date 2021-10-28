@@ -8,9 +8,11 @@ import java.util.Set;
 
 import javax.validation.constraints.NotEmpty;
 
+import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -24,18 +26,18 @@ import lombok.extern.slf4j.Slf4j;
 public class ExternalNode extends QPNode {
 
 	private final Table table;
-	private SpecialDateUnion dateUnion = new SpecialDateUnion();
+	private CDateSet dateUnion = CDateSet.create();
 
 	@NotEmpty
 	@NonNull
 	private final Map<Integer, CDateSet> includedEntities;
 
 	private final Map<Integer, Map<String, List<String>>> extraData;
-	private final Map<String, ConstantValueAggregator> extraAggregators;
+	private final Map<String, ConstantValueAggregator<List<String>>> extraAggregators;
 
 	private CDateSet contained;
 
-	public ExternalNode(Table table, Map<Integer, CDateSet> includedEntities, Map<Integer, Map<String, List<String>>> extraData, Map<String, ConstantValueAggregator> extraAggregators) {
+	public ExternalNode(Table table, Map<Integer, CDateSet> includedEntities, Map<Integer, Map<String, List<String>>> extraData, Map<String, ConstantValueAggregator<List<String>>> extraAggregators) {
 		this.includedEntities = includedEntities;
 		this.table = table;
 		this.extraData = extraData;
@@ -46,15 +48,15 @@ public class ExternalNode extends QPNode {
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
 		contained = includedEntities.get(entity.getId());
-		dateUnion.init(entity, context);
+		dateUnion.clear();
 
-		for (ConstantValueAggregator aggregator : extraAggregators.values()) {
+		for (ConstantValueAggregator<?> aggregator : extraAggregators.values()) {
 			aggregator.setValue(null);
 		}
 
-		for (Map.Entry<String, ConstantValueAggregator> colAndAgg : extraAggregators.entrySet()) {
+		for (Map.Entry<String, ConstantValueAggregator<List<String>>> colAndAgg : extraAggregators.entrySet()) {
 			final String col = colAndAgg.getKey();
-			final ConstantValueAggregator agg = colAndAgg.getValue();
+			final ConstantValueAggregator<List<String>> agg = colAndAgg.getValue();
 
 			// Clear if entity has no value for the column
 			if (!extraData.getOrDefault(entity.getId(), Collections.emptyMap()).containsKey(col)) {
@@ -67,21 +69,17 @@ public class ExternalNode extends QPNode {
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
-		if (contained != null) {
-			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
-			newSet.retainAll(contained);
-			ctx = ctx.withDateRestriction(newSet);
-		}
-
 		super.nextTable(ctx, currentTable);
-		dateUnion.nextTable(getContext(), currentTable);
+
+		if (table.equals(currentTable) && contained != null){
+			dateUnion.addAll(contained);
+			dateUnion.retainAll(ctx.getDateRestriction());
+		}
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (contained != null) {
-			dateUnion.acceptEvent(bucket, event);
-		}
+		// Nothing to do
 	}
 
 	@Override
@@ -91,7 +89,7 @@ public class ExternalNode extends QPNode {
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		return Set.of(dateUnion);
+		return Set.of(new ConstantValueAggregator<>(dateUnion, new ResultType.ListT(ResultType.DateRangeT.INSTANCE)));
 	}
 
 	@Override

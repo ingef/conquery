@@ -1,0 +1,114 @@
+{
+	"type": "QUERY_TEST",
+	"label": "SECONDARY_ID Test",
+	"expectedCsv": "tests/query/SECONDARY_ID_EXTERNAL_LOGICAL/expected.csv",
+	"query": {
+		"type": "SECONDARY_ID_QUERY",
+		"root": {
+			"type": "AND",
+			"children": [
+				{
+					"type": "EXTERNAL",
+					"format": [
+						"ID",
+						"START_DATE",
+						"END_DATE"
+					],
+					"values": [
+						[
+							"pid",
+							"START_DATUM",
+							"END_DATUM"
+						],
+						[
+							"a",
+							"01.01.2016",
+							"30.06.2016"
+						]
+					]
+				},
+				{
+					"ids": [
+						"number"
+					],
+					"type": "CONCEPT",
+					"excludeFromSecondaryIdQuery": false,
+					"tables": [
+						{
+							"id": "number.number_connector",
+							"filters": [
+								{
+									"filter": "number.number_connector.value",
+									"type": "REAL_RANGE",
+									"value": {
+										"min": 1,
+										"max": 1
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+    "dateAggregationMode": "LOGICAL",
+    "secondaryId": "secondary"
+	},
+	"concepts": [
+		{
+			"label": "number",
+			"type": "TREE",
+			"connectors": [
+				{
+					"label": "number_connector",
+					"table": "table1",
+					"validityDates": {
+						"label": "datum",
+						"column": "table1.datum"
+					},
+					"filters": {
+						"label": "value",
+						"description": "xy",
+						"column": "table1.value",
+						"type": "NUMBER"
+					}
+				}
+			]
+		}
+	],
+	"content": {
+		"secondaryIds": [
+			{
+				"name": "secondary"
+			},
+			{
+				"name": "ignored"
+			}
+		],
+		"tables": [
+			{
+				"csv": "tests/query/SECONDARY_ID_EXTERNAL_LOGICAL/content.csv",
+				"name": "table1",
+				"primaryColumn": {
+					"name": "pid",
+					"type": "STRING"
+				},
+				"columns": [
+					{
+						"name": "sid",
+						"type": "STRING",
+						"secondaryId": "secondary"
+					},
+					{
+						"name": "value",
+						"type": "REAL"
+					},
+					{
+						"name": "datum",
+						"type": "DATE_RANGE"
+					}
+				]
+			}
+		]
+	}
+}
