@@ -66,6 +66,10 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {
-		return Arrays.stream(columns).filter(column -> column.getName().equals(columnName)).findFirst().orElse(null);
+		Column foundColumn = Arrays.stream(columns).filter(column -> column.getName().equals(columnName)).findFirst().orElse(null);
+		if (foundColumn == null) {
+			throw new IllegalStateException(String.format("Column %s not found", columnName));
+		}
+		return foundColumn;
 	}
 }
