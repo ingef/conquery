@@ -62,6 +62,8 @@ public class Preprocessed {
 		this.descriptor = preprocessingJob.getDescriptor();
 		this.name = this.descriptor.getName();
 
+
+		//TODO this may cause an error if the structure of the first input is different to the others, so maybe it is better to consider other inputs too
 		TableInputDescriptor input = this.descriptor.getInputs()[0];
 		columns = new PPColumn[input.getWidth()];
 
