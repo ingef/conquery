@@ -224,6 +224,7 @@ public class LoadingUtil {
 				c -> c.setDataset(support.getDataset())
 		);
 	}
+
 	public static void addConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason)
 			throws JSONException, IOException {
 		List<Concept<?>> concepts = getConcepts(support, rawConcepts);
@@ -239,6 +240,7 @@ public class LoadingUtil {
 			addOrUpdateConcept(support, concept, expectedResponseFamily, expectedReason, true);
 		}
 	}
+
 	private static void addOrUpdateConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason, boolean update) {
 		final URI
 				conceptURI =
@@ -250,6 +252,10 @@ public class LoadingUtil {
 										 .target(conceptURI)
 										 .request(MediaType.APPLICATION_JSON)
 										 .put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
+		JsonNode responseEntity = response.readEntity(JsonNode.class);
+		if (responseEntity != null) {
+			log.info(String.format("addOrUpdateConcept-response-entity : %s", responseEntity.toPrettyString()));
+		}
 		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
 		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
 	}

@@ -235,10 +235,12 @@ public class AdminDatasetProcessor {
 		deleteConcept(concept);
 
 		//adds new content of the content
-		//addConcept(dataset, concept);
 		addConceptSlow(dataset, concept);
 	}
 
+	/**
+	 * Add the concept to the dataset if it does not exist yet (with SlowJob)
+	 */
 	public synchronized void addConceptSlow(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
 		concept.setDataset(dataset);
 		ValidatorHelper.failOnError(log, validator.validate(concept));
