@@ -473,6 +473,7 @@ module.exports = function (app, port) {
         },
       },
       groups: [],
+      hideLogoutButton: false,
     });
   });
 

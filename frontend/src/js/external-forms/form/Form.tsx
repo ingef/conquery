@@ -144,7 +144,7 @@ const Form = memo(({ config, availableDatasets }: Props) => {
   const activeLang = useActiveLang();
 
   return (
-    <form>
+    <div>
       {config.description && config.description[activeLang] && (
         <SxFormHeader description={config.description[activeLang]!} />
       )}
@@ -167,7 +167,7 @@ const Form = memo(({ config, availableDatasets }: Props) => {
           />
         );
       })}
-    </form>
+    </div>
   );
 });
 
