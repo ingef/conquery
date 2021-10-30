@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 
@@ -9,7 +9,7 @@ import ErrorMessage from "../error-message/ErrorMessage";
 import FaIcon from "../icon/FaIcon";
 import InputPlain from "../ui-components/InputPlain";
 
-import { storeAuthToken } from "./helper";
+import { AuthTokenContext } from "./AuthTokenProvider";
 
 const Root = styled("div")`
   display: flex;
@@ -54,7 +54,7 @@ const Form = styled("form")`
 `;
 
 const SxInputPlain = styled(InputPlain)`
-  padding: 10px 0;
+  padding: 5px 0;
 `;
 
 const SxPrimaryButton = styled(PrimaryButton)`
@@ -81,6 +81,7 @@ const LoginPage = () => {
   const history = useHistory();
   const postLogin = usePostLogin();
   const { t } = useTranslation();
+  const { setAuthToken } = useContext(AuthTokenContext);
 
   async function onSubmit(e: any) {
     e.preventDefault();
@@ -91,7 +92,7 @@ const LoginPage = () => {
       const result = await postLogin(user, password);
 
       if (result.access_token) {
-        storeAuthToken(result.access_token);
+        setAuthToken(result.access_token);
         history.push("/");
 
         return;
