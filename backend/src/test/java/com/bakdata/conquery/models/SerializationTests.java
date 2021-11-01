@@ -148,14 +148,13 @@ public class SerializationTests {
 
 
 	@Test
-	public void bucket() throws JSONException, IOException {
+	public void bucketCompoundDateRange() throws JSONException, IOException {
 		Dataset dataset = new Dataset();
 		dataset.setName("datasetName");
 
 		Table table = new Table();
 
 		Column startCol = new Column();
-		startCol.setLabel("startLabel");
 		startCol.setName("startCol");
 		startCol.setType(MajorTypeId.DATE);
 		startCol.setTable(table);
@@ -168,14 +167,12 @@ public class SerializationTests {
 
 
 		Column compoundCol = new Column();
-		compoundCol.setLabel("compoundLabel");
 		compoundCol.setName("compoundCol");
 		compoundCol.setType(MajorTypeId.DATE_RANGE);
 		compoundCol.setTable(table);
 
 		table.setColumns(new Column[]{startCol, endCol, compoundCol});
 		table.setDataset(dataset);
-		table.setLabel("tableLabel");
 		table.setName("tableName");
 
 
@@ -189,7 +186,7 @@ public class SerializationTests {
 
 		Bucket bucket =  Bucket.create(0, 1, 3, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
 
-		compoundStore.addParent(bucket);
+		compoundStore.setParent(bucket);
 
 
 		CentralRegistry registry = new CentralRegistry();

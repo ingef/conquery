@@ -74,7 +74,7 @@ public class ColumnStoreSerializationTests {
 								EXCLUDING
 						)
 				)
-		.doesNotContainAnyElementsOf(EXCLUDING);
+				.doesNotContainAnyElementsOf(EXCLUDING);
 	}
 
 	public static List<ColumnStore> createCTypes() {

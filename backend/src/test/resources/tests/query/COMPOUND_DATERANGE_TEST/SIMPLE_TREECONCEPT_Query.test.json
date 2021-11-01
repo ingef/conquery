@@ -19,7 +19,7 @@
   },
   "concepts": [
     {
-      "label": "test_tree",
+      "name": "test_tree",
       "type": "TREE",
       "connectors": [
         {
@@ -27,7 +27,7 @@
           "name": "test_column",
           "table": "test_table",
           "validityDates": {
-            "label": "behandlung",
+            "name": "behandlung",
             "column": "test_table.behandlung"
           }
         }

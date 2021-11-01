@@ -19,7 +19,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Stores {@link CDateRange} as pair of two {@link IntegerDateStore}s.
+ * Stores {@link CDateRange} by storing only the references of the start and end of the {@link CDateRange}.
+ * After the deserialisation, stores are instantiated as {@link DateStore}s using the references to the columns.
  */
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_COMPOUND")
 @Getter
@@ -66,7 +67,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	}
 
 	@Override
-	public void addParent(@NonNull Bucket bucket) {
+	public void setParent(@NonNull Bucket bucket) {
 		parent = bucket;
 	}
 

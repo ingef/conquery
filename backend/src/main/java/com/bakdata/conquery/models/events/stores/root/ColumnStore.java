@@ -31,7 +31,7 @@ public interface ColumnStore {
 	 */
 	// BackReference set here because Jackson does not support for fields in interface see also https://github.com/FasterXML/jackson-databind/issues/3304
 	@JsonBackReference
-	default void addParent(Bucket bucket) {
+	default void setParent(Bucket bucket) {
 
 	}
 
