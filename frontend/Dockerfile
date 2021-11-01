@@ -24,7 +24,6 @@ ENV REACT_APP_IDP_ENABLE=$REACT_APP_IDP_ENABLE
 ENV REACT_APP_IDP_URL=$REACT_APP_IDP_URL
 ENV REACT_APP_IDP_REALM=$REACT_APP_IDP_REALM
 ENV REACT_APP_IDP_CLIENT_ID=$REACT_APP_IDP_CLIENT_ID
-ENV PORT=${PORT:-80}
 
 # Copy the build artifacts from the builder phase
 COPY --from=builder /app/build /usr/share/nginx/html
@@ -35,5 +34,5 @@ COPY ./scripts/replace-env-at-runtime.sh /
 CMD [ "/bin/sh", "-c", "/replace-env-at-runtime.sh /usr/share/nginx/html/index.html && nginx -g \"daemon off;\""]
 
 
-EXPOSE $PORT
+EXPOSE 80
 
