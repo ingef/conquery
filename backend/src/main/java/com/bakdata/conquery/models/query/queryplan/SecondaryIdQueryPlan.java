@@ -72,14 +72,17 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 			return Optional.empty();
 		}
 
-		//first execute only tables with secondaryIds, creating all sub-queries
+		// First execute only tables with secondaryIds, creating all sub-queries
 		for (Column entry : tablesWithSecondaryId) {
 			executeQueriesWithSecondaryId(ctx, entity, entry);
 		}
-		//afterwards the remaining tables, since we now spawned all children
+		// Afterwards the remaining tables, since we now spawned all children
 		for (Table currentTable : tablesWithoutSecondaryId) {
 			executeQueriesWithoutSecondaryId(ctx, entity, currentTable);
 		}
+
+		// Do a last run with the ALL_IDS Table to trigger ExternalNodes
+		executeQueriesWithoutSecondaryId(ctx, entity, ctx.getStorage().getDataset().getAllIdsTable());
 
 		return createResult(entity);
 	}
@@ -116,7 +119,6 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	@Override
 	public void init(QueryExecutionContext ctx, Entity entity) {
 		queryPlan.init(ctx, entity);
-
 
 		// Dump the created children into reuse-pool
 		childPlanReusePool.addAll(childPerKey.values());
