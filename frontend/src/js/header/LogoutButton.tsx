@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useKeycloak } from "@react-keycloak/web";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 

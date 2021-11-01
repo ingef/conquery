@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { useMemo, useCallback } from "react";
+import { memo, useMemo, useCallback } from "react";
 import { TFunction, useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { reduxForm, formValueSelector } from "redux-form";
@@ -124,7 +124,7 @@ interface Props {
   availableDatasets: SelectOptionT[];
 }
 
-const Form = React.memo(({ config, availableDatasets }: Props) => {
+const Form = memo(({ config, availableDatasets }: Props) => {
   // TODO: THIS REALLY ISN'T IDEAL,
   // AS THE WHOLE FORM HAS TO RERENDER ON EVERY STATE CHANGE
   // WE WILL NEED TO MIGRATE AWAY FROM REDUX-FORM SOON
@@ -144,7 +144,7 @@ const Form = React.memo(({ config, availableDatasets }: Props) => {
   const activeLang = useActiveLang();
 
   return (
-    <form>
+    <div>
       {config.description && config.description[activeLang] && (
         <SxFormHeader description={config.description[activeLang]!} />
       )}
@@ -167,7 +167,7 @@ const Form = React.memo(({ config, availableDatasets }: Props) => {
           />
         );
       })}
-    </form>
+    </div>
   );
 });
 

@@ -1,5 +1,4 @@
 import { StateT } from "app-types";
-import React from "react";
 import { useSelector } from "react-redux";
 import { FormStateMap } from "redux-form";
 

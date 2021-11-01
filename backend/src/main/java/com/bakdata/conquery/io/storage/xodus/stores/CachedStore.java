@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;

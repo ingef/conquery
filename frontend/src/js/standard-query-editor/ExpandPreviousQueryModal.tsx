@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import PrimaryButton from "../button/PrimaryButton";
-import TransparentButton from "../button/TransparentButton";
+import { TransparentButton } from "../button/TransparentButton";
 import Modal from "../modal/Modal";
 
 const Description = styled.p`

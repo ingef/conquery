@@ -26,8 +26,10 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -158,7 +160,7 @@ public class XodusStoreFactory implements StoreFactory {
 	private transient Validator validator;
 
 	@JsonIgnore
-	private transient ObjectMapper objectMapper = Jackson.BINARY_MAPPER.copy();
+	private transient final ObjectMapper objectMapper = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
 
 	@JsonIgnore
 	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
@@ -171,19 +173,24 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public void init(ManagerNode managerNode) {
 		validator = managerNode.getValidator();
-		objectMapper = managerNode.getEnvironment().getObjectMapper();
-		configureMapper(managerNode.getConfig());
+		configureMapper(managerNode.getConfig(), this.validator);
+		managerNode.getStorage().injectInto(objectMapper);
 	}
 
 	@Override
 	public void init(ShardNode shardNode) {
 		validator = shardNode.getValidator();
-		objectMapper = shardNode.getEnvironment().getObjectMapper();
-		configureMapper(shardNode.getConfig());
+		configureMapper(shardNode.getConfig(), this.validator);
 	}
 
-	private void configureMapper(ConqueryConfig config) {
+	/**
+	 * Configures the XodusStorage Smile ObjectMapper with the defaults from the configuration.
+	 */
+	private void configureMapper(ConqueryConfig config, Validator validator) {
 		config.configureObjectMapper(objectMapper);
+
+		((MutableInjectableValues)objectMapper.getInjectableValues()).add(Validator.class, validator);
+
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
 	}
@@ -382,18 +389,18 @@ public class XodusStoreFactory implements StoreFactory {
 
 	@Override
 	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER, objectMapper), centralRegistry);
 	}
 
 	@Override
 	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE, objectMapper), centralRegistry);
 	}
 
 
 	@Override
 	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
-		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP, objectMapper), centralRegistry);
 	}
 
 	@Override

@@ -196,7 +196,8 @@
     "dndPlaceholder": "Choose or drop file ...",
     "openFileDialog": "Select file",
     "insertAll": "Insert all",
-    "options": "options",
+    "options": "1 Option",
+    "options_plural": "{{count}} Options",
     "tagPlaceholder": "Folder ...",
     "createTag": "Create folder: {{label}}"
   },

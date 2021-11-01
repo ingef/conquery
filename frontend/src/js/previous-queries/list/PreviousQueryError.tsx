@@ -1,12 +1,10 @@
-import React from "react";
-
-type PropsType = {
+interface Props {
   query: {
     error: string;
   };
-};
+}
 
-const PreviousQueryError = (props: PropsType) => {
+const PreviousQueryError = (props: Props) => {
   return (
     !!props.query.error && (
       <div className="previous-query-error">{props.query.error}</div>

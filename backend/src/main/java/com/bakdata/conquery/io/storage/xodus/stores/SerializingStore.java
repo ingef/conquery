@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.Store;
@@ -248,12 +247,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			if(unreadableValuesDumpDir != null) {
 				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), unreadableValuesDumpDir, store.getName(), objectMapper);
 			}
-			if(log.isTraceEnabled()){
-				// With trace also print the stacktrace
-				log.trace(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
-			} else {
-				log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
-			}
+			// With trace also print the stacktrace
+			log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), (Throwable) (log.isTraceEnabled()? e : null));
 		}
 		return null;
 	}

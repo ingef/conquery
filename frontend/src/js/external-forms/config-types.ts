@@ -24,7 +24,7 @@ export interface Form {
   description?: TranslatableString; // Displayed
 }
 
-interface Tabs {
+export interface Tabs {
   name: string; // Sent to backend API
   type: "TABS";
   tabs: Tab[];
@@ -181,7 +181,7 @@ export interface ConceptListDefaults {
   connectors?: ConnectorDefault[];
 }
 type ConceptListFieldValidation = NOT_EMPTY_VALIDATION;
-type ConceptListField = CommonField & {
+export type ConceptListField = CommonField & {
   type: "CONCEPT_LIST";
   conceptDropzoneLabel?: TranslatableString;
   conceptColumnDropzoneLabel?: TranslatableString;

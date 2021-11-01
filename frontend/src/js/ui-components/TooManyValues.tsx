@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
@@ -8,11 +8,14 @@ const Root = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 6px 0px 3px;
+  padding: 3px 10px;
+  border: 1px solid ${({ theme }) => theme.col.gray};
+  border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
 const Text = styled("p")`
   margin: 0;
+  line-height: 1;
 `;
 
 interface Props {
@@ -28,6 +31,7 @@ const TooManyValues: FC<Props> = ({ count, onClear }) => {
       <Text>{t("queryNodeEditor.tooManyValues", { count })}</Text>
       <IconButton
         icon="times"
+        tiny
         title={t("common.clearValue")}
         aria-label={t("common.clearValue")}
         onClick={onClear}

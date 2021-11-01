@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -82,7 +81,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		
 		query = parseQuery(support);
 
-		LoadingUtil.importTableContents(support, content.getTables(), support.getDataset());
+		LoadingUtil.importTableContents(support, content.getTables());
 	}
 
 

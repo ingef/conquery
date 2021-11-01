@@ -99,6 +99,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	public void addResult(@NonNull MetaStorage storage, ShardResult result) {
 		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 
+		log.trace("Received Result\n{}", result.getResults());
+
 		if (result.getError().isPresent()) {
 			fail(storage, result.getError().get());
 			return;

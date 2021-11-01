@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { useDatasetId } from "../dataset/selectors";
 import QueryUploadConceptListModal from "../query-upload-concept-list-modal/QueryUploadConceptListModal";
 
 import Query from "./Query";
@@ -18,6 +19,12 @@ export const QueryEditor = () => {
     andIdx: number;
     orIdx: number;
   } | null>(null);
+
+  const datasetId = useDatasetId();
+
+  useEffect(() => {
+    setEditedNode(null);
+  }, [datasetId]);
 
   return (
     <Root>

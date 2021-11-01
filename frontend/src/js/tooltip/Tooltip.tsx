@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown/with-html";

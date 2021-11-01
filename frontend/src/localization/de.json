@@ -196,7 +196,8 @@
     "dndPlaceholder": "Auswählen oder Datei hochladen ...",
     "openFileDialog": "Datei auswählen",
     "insertAll": "Alle einfügen",
-    "options": "Werte",
+    "options": "1 Wert",
+    "options_plural": "{{count}} Werte",
     "tagPlaceholder": "Ordner ...",
     "createTag": "Zu Ordner hinzufügen: {{label}}"
   },

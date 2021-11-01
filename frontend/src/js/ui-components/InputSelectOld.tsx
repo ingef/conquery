@@ -1,6 +1,5 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import React from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../api/types";
@@ -36,7 +35,7 @@ interface PropsT {
   };
 }
 
-const InputSelect = ({
+const InputSelectOld = ({
   className,
   small,
   input,
@@ -97,4 +96,4 @@ const InputSelect = ({
   );
 };
 
-export default InputSelect;
+export default InputSelectOld;

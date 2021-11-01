@@ -100,7 +100,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 
-		final ObjectMapper binaryMapper = config.configureObjectMapper(Jackson.BINARY_MAPPER);
+		final ObjectMapper binaryMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 		((MutableInjectableValues) binaryMapper.getInjectableValues()).add(Validator.class, environment.getValidator());
 
 		workers = new Workers(
@@ -121,22 +121,21 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		setLocation(session);
-		if (message instanceof MessageToShardNode) {
-			MessageToShardNode srm = (MessageToShardNode) message;
-			log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MessageToShardNode, NetworkMessageContext.ShardNodeNetworkContext> job = new ReactingJob<>(srm, context);
-
-			if (((Message) message).isSlowMessage()) {
-				((SlowMessage) message).setProgressReporter(job.getProgressReporter());
-				jobManager.addSlowJob(job);
-			}
-			else {
-				jobManager.addFastJob(job);
-			}
-		}
-		else {
+		if (!(message instanceof MessageToShardNode)) {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 			return;
+		}
+
+		MessageToShardNode srm = (MessageToShardNode) message;
+		log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
+		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>(srm, context);
+
+		if (((Message) message).isSlowMessage()) {
+			((SlowMessage) message).setProgressReporter(job.getProgressReporter());
+			jobManager.addSlowJob(job);
+		}
+		else {
+			jobManager.addFastJob(job);
 		}
 	}
 
@@ -202,7 +201,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
-		ObjectMapper om = Jackson.BINARY_MAPPER.copy();
+		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
 		config.configureObjectMapper(om);
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);

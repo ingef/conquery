@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Hotkeys from "react-hot-keys";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -12,7 +12,7 @@ import {
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
-import TransparentButton from "../button/TransparentButton";
+import { TransparentButton } from "../button/TransparentButton";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import { nodeHasActiveFilters, nodeIsConceptQueryNode } from "../model/node";
 import type {

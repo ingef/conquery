@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import React from "react";
 import { useTranslation } from "react-i18next";
 import { Field as RxFormField } from "redux-form";
 
@@ -8,7 +7,7 @@ import { nodeIsInvalid } from "../../model/node";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputDateRange from "../../ui-components/InputDateRange";
 import InputPlain from "../../ui-components/InputPlain";
-import InputSelect from "../../ui-components/InputSelect";
+import InputSelect from "../../ui-components/InputSelectOld";
 import ToggleButton from "../../ui-components/ToggleButton";
 import FormField from "../common/FormField";
 import type { GeneralField } from "../config-types";

@@ -8,33 +8,36 @@ import java.util.Set;
 
 import javax.validation.constraints.NotEmpty;
 
+import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class ExternalNode extends QPNode {
 
 	private final Table table;
-	private SpecialDateUnion dateUnion = new SpecialDateUnion();
+	private CDateSet dateUnion = CDateSet.create();
 
-	@Getter
 	@NotEmpty
 	@NonNull
 	private final Map<Integer, CDateSet> includedEntities;
-	private final Map<String, Map<Integer, List<String>>> extraData;
-	private final Map<String, ConstantValueAggregator> extraAggregators;
+
+	private final Map<Integer, Map<String, List<String>>> extraData;
+	private final Map<String, ConstantValueAggregator<List<String>>> extraAggregators;
 
 	private CDateSet contained;
 
-	public ExternalNode(Table table, Map<Integer, CDateSet> includedEntities, Map<String, Map<Integer, List<String>>> extraData, Map<String, ConstantValueAggregator> extraAggregators) {
+	public ExternalNode(Table table, Map<Integer, CDateSet> includedEntities, Map<Integer, Map<String, List<String>>> extraData, Map<String, ConstantValueAggregator<List<String>>> extraAggregators) {
 		this.includedEntities = includedEntities;
 		this.table = table;
 		this.extraData = extraData;
@@ -45,35 +48,38 @@ public class ExternalNode extends QPNode {
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
 		contained = includedEntities.get(entity.getId());
-		dateUnion.init(entity, context);
+		dateUnion.clear();
 
-		for (Map.Entry<String, ConstantValueAggregator> entry : extraAggregators.entrySet()) {
-			String col = entry.getKey();
-			ConstantValueAggregator agg = entry.getValue();
+		for (ConstantValueAggregator<?> aggregator : extraAggregators.values()) {
+			aggregator.setValue(null);
+		}
 
-			final Map<Integer, List<String>> colValues = extraData.getOrDefault(col, Collections.emptyMap());
+		for (Map.Entry<String, ConstantValueAggregator<List<String>>> colAndAgg : extraAggregators.entrySet()) {
+			final String col = colAndAgg.getKey();
+			final ConstantValueAggregator<List<String>> agg = colAndAgg.getValue();
 
-			agg.setValue(colValues.get(entity.getId()));
+			// Clear if entity has no value for the column
+			if (!extraData.getOrDefault(entity.getId(), Collections.emptyMap()).containsKey(col)) {
+				continue;
+			}
+
+			agg.setValue(extraData.get(entity.getId()).get(col));
 		}
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
-		if (contained != null) {
-			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
-			newSet.retainAll(contained);
-			ctx = ctx.withDateRestriction(newSet);
-		}
-
 		super.nextTable(ctx, currentTable);
-		dateUnion.nextTable(getContext(), currentTable);
+
+		if (table.equals(currentTable) && contained != null){
+			dateUnion.addAll(contained);
+			dateUnion.retainAll(ctx.getDateRestriction());
+		}
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (contained != null) {
-			dateUnion.acceptEvent(bucket, event);
-		}
+		// Nothing to do
 	}
 
 	@Override
@@ -83,7 +89,7 @@ public class ExternalNode extends QPNode {
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		return Set.of(dateUnion);
+		return Set.of(new ConstantValueAggregator<>(dateUnion, new ResultType.ListT(ResultType.DateRangeT.INSTANCE)));
 	}
 
 	@Override

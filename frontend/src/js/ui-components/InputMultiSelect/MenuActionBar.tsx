@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 
-import TransparentButton from "../../button/TransparentButton";
+import { TransparentButton } from "../../button/TransparentButton";
 
 const Row = styled("div")`
   display: flex;
@@ -28,7 +28,7 @@ const MenuActionBar = ({ optionsCount, onInsertAllClick }: Props) => {
   return (
     <Row>
       <InfoText>
-        {optionsCount} {t("inputMultiSelect.options")}
+        {t("inputMultiSelect.options", { count: optionsCount })}
       </InfoText>
       <TransparentButton
         tiny

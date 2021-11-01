@@ -1,12 +1,12 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import * as React from "react";
+import { forwardRef } from "react";
 import Highlighter from "react-highlight-words";
 
 import FaIcon from "../icon/FaIcon";
 
 // Root with transparent background
-const Root = styled("div")`
+const Root = styled("div")<{ depth: number }>`
   position: relative; // Needed to fix a drag & drop issue in Safari
   cursor: pointer;
   padding: 0 15px 0 15px;
@@ -15,7 +15,11 @@ const Root = styled("div")`
   display: flex;
 `;
 
-const Text = styled("p")`
+const Text = styled("p")<{
+  red?: boolean;
+  disabled?: boolean;
+  isOpen?: boolean;
+}>`
   user-select: none;
   border-radius: ${({ theme }) => theme.borderRadius};
   margin: 0;
@@ -98,7 +102,7 @@ interface PropsT {
   onClick?: () => void;
 }
 
-export default React.forwardRef<HTMLDivElement, PropsT>(
+export default forwardRef<HTMLDivElement, PropsT>(
   (
     {
       label,

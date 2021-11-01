@@ -51,7 +51,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	 * Pool that can be used in Jobs to execute a job in parallel.
 	 */
 	@Getter
-	private final ExecutorService executorService;
+	private final ExecutorService jobsExecutorService;
 	@Getter 
 	private final BucketManager bucketManager;
 	
@@ -59,15 +59,16 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private Worker(
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull WorkerStorage storage,
-			@NonNull ExecutorService executorService,
+			@NonNull ExecutorService jobsExecutorService,
 			boolean failOnError,
 			int entityBucketSize
 	) {
-		this.jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		this.storage = storage;
-		this.queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"));
-		this.executorService = executorService;
-		this.bucketManager = BucketManager.create(this, storage, entityBucketSize);
+		this.jobsExecutorService = jobsExecutorService;
+
+		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
+		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"));
+		bucketManager = BucketManager.create(this, storage, entityBucketSize);
 	}
 
 	public static Worker newWorker(
@@ -83,7 +84,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	public static Worker newWorker(
 			@NonNull Dataset dataset,
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-			@NonNull ExecutorService executorService,
+			@NonNull ExecutorService jobsExecutorService,
 			@NonNull StoreFactory config,
 			@NonNull String directory,
 			@NonNull Validator validator,
@@ -103,7 +104,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, executorService, failOnError, entityBucketSize);
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize);
 	}
 	
 	public ModificationShieldedWorkerStorage getStorage() {

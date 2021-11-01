@@ -1,9 +1,25 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
-import com.bakdata.conquery.models.auth.entities.*;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.RoleOwner;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -23,12 +39,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
-
-import javax.validation.Validator;
-import java.io.StringWriter;
-import java.util.*;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
 
 /**
  * This class holds the logic for several admin http endpoints.

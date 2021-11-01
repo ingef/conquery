@@ -1,8 +1,8 @@
-import { createContext, useState } from "react";
+import { createContext, useCallback, useState } from "react";
 
 import { isIDPEnabled } from "../environment";
 
-import { getStoredAuthToken } from "./helper";
+import { getStoredAuthToken, storeAuthToken } from "./helper";
 
 export interface AuthTokenContextValue {
   authToken: string;
@@ -15,9 +15,14 @@ export const AuthTokenContext = createContext<AuthTokenContextValue>({
 });
 
 export const useAuthTokenContextValue = (): AuthTokenContextValue => {
-  const [authToken, setAuthToken] = useState<string>(
+  const [authToken, internalSetAuthToken] = useState<string>(
     isIDPEnabled ? "" : getStoredAuthToken() || "",
   );
+
+  const setAuthToken = useCallback((token: string) => {
+    storeAuthToken(token);
+    internalSetAuthToken(token);
+  }, []);
 
   return { authToken, setAuthToken };
 };

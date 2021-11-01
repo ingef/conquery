@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import React from "react";
 
 import Header from "../header/Header";
 import SnackMessage from "../snack-message/SnackMessage";
