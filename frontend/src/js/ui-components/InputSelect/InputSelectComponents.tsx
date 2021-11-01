@@ -46,9 +46,12 @@ export const Menu = styled("div")`
   margin-top: 3px;
 `;
 
-export const List = styled("div")`
+export const List = styled("div")<{ small?: boolean }>`
   padding: 3px;
-  max-height: 304px; /* matches 11 items including the spacing in between items */
+  max-height: ${({ small }) =>
+    small
+      ? "140px"
+      : "300px"}; /* remove this once we use usePopper / portals for this */
   overflow-y: auto;
   --webkit-overflow-scrolling: touch;
 `;
