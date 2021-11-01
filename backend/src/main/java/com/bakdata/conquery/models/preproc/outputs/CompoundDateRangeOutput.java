@@ -25,13 +25,6 @@ public class CompoundDateRangeOutput extends OutputDescription {
 	@NotNull
 	private String startColumn, endColumn;
 
-	/**
-	 * Instantiate the corresponding {@link Output} for the rows.
-	 *
-	 * @param headers    A map from column names to column indices.
-	 * @param dateReader
-	 * @return the output for the specific headers.
-	 */
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
 		return new Output() {
