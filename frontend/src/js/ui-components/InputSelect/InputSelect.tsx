@@ -44,6 +44,7 @@ interface Props {
   placeholder?: string;
   loading?: boolean;
   clearable?: boolean;
+  smallMenu?: boolean;
   className?: string;
   value: SelectOptionT | null;
   defaultValue?: SelectOptionT["value"] | null;
@@ -61,6 +62,7 @@ const InputSelect = ({
   className,
   value,
   defaultValue,
+  smallMenu,
   onChange,
 }: Props) => {
   const { t } = useTranslation();
@@ -285,7 +287,7 @@ const InputSelect = ({
             menuPropsRef(instance);
           }}
         >
-          <List>
+          <List small={smallMenu}>
             {filteredOptions.length === 0 && <SelectEmptyPlaceholder />}
             {filteredOptions.map((option, index) => {
               const { ref: itemPropsRef, ...itemProps } = getItemProps({
