@@ -202,7 +202,8 @@ const PreviousQuery = forwardRef<HTMLDivElement, PropsT>(
                 text={isShared ? t("common.shared") : t("common.share")}
               >
                 <IconButton
-                  icon={isShared ? "user-friends" : "upload"}
+                  icon="user-friends"
+                  active={isShared}
                   bare
                   onClick={onIndicateShare}
                 />
