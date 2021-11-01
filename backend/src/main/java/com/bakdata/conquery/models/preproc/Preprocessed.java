@@ -257,7 +257,8 @@ public class Preprocessed {
 				//TODo customize error message
 				throw new IllegalStateException(String.format("Received value from N", ""));
 			}
-			else if (values[col] == null) {
+
+			if (values[col] == null) {
 				continue;
 			}
 			final int idx = values[col].add(outRow[col]);
