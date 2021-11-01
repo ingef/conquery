@@ -63,7 +63,6 @@ public class Preprocessed {
 		this.name = this.descriptor.getName();
 
 
-		//TODO this may cause an error if the structure of the first input is different to the others, so maybe it is better to consider other inputs too
 		TableInputDescriptor input = this.descriptor.getInputs()[0];
 		columns = new PPColumn[input.getWidth()];
 
@@ -184,6 +183,8 @@ public class Preprocessed {
 		for (int colIdx = 0; colIdx < columns.length; colIdx++) {
 			final PPColumn ppColumn = columns[colIdx];
 			final ColumnValues columnValues = values[colIdx];
+
+			//No need to preprocess the column further more, if it does not contain values
 			if (columnValues == null) {
 				continue;
 			}

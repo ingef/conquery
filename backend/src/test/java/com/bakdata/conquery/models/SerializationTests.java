@@ -184,7 +184,7 @@ public class SerializationTests {
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket =  Bucket.create(0, 1, 3, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
+		Bucket bucket = new Bucket(0, 1, 3, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
 
 		compoundStore.setParent(bucket);
 

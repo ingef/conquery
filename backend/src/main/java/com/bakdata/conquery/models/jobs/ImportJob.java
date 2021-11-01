@@ -398,7 +398,7 @@ public class ImportJob extends Job {
 					  .map(store -> store.select(selectionStart.toIntArray(), selectionLength.toIntArray()))
 					  .toArray(ColumnStore[]::new);
 
-		return Bucket.create(
+		return new Bucket(
 				bucketId,
 				root,
 				selectionLength.intStream().sum(),

@@ -11,7 +11,10 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
-//CompoundDateRangeParser does not have an implementation logic. It only creates his parser and ignores his input values
+/**
+ * CompoundDateRangeParser is the Parser of {@link CDateRange} whose start and end should be saved as references
+ * It does not have an implementation logic. It only creates his parser and ignores his input values
+ */
 @Slf4j
 @ToString(callSuper = true)
 public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> {

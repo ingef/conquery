@@ -33,27 +33,33 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	@NotEmpty
 	private String startColumn, endColumn;
 
+	// does not have to be serialized because will be lazy-loaded after the deserialization of DateRangeTypeCompound
 	@JsonIgnore
 	private DateStore startStore;
 
+	// does not have to be serialized because will be lazy-loaded after the deserialization of DateRangeTypeCompound
 	@JsonIgnore
 	private DateStore endStore;
 
 
+	/**
+	 * Represents the bucket from where this will be saved
+	 * This bucket will be set after the deserialization
+	 */
 	@Setter(AccessLevel.PROTECTED)
 	@JsonIgnore
-	private Bucket parent; // this parent will be set after all the stuff has been preprocessed
+	private Bucket parent;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 	public DateRangeTypeCompound(String startColumn, String endColumn) {
-		this.startColumn = startColumn;
-		this.endColumn = endColumn;
+		setStartColumn(startColumn);
+		setEndColumn(endColumn);
 	}
 
 	@JsonIgnore
 	public DateStore getStartStore() {
 		if (startStore == null) {
-			startStore = (DateStore) parent.getStore(startColumn);
+			startStore = (DateStore) parent.getStore(getStartColumn());
 		}
 		return startStore;
 	}
@@ -61,7 +67,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	@JsonIgnore
 	public DateStore getEndStore() {
 		if (endStore == null) {
-			endStore = (DateStore) parent.getStore(endColumn);
+			endStore = (DateStore) parent.getStore(getEndColumn());
 		}
 		return endStore;
 	}
@@ -73,14 +79,14 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Override
 	public int getLines() {
-		if (startStore == null && endStore == null) {
+		if (getStartStore() == null && getEndStore() == null) {
 			return 0;
 		}
-		if (startStore == null || endStore == null) {
+		if (getStartStore() == null || getEndStore() == null) {
 			throw new IllegalStateException(String.format("DateRangeTypeCompound[%s] has one null store.", this));
 		}
 		// they can be unaligned, if one of them is empty.
-		return Math.max(startStore.getLines(), endStore.getLines());
+		return Math.max(getStartStore().getLines(), getEndStore().getLines());
 
 	}
 

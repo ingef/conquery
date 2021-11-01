@@ -50,6 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
+@AllArgsConstructor(access = AccessLevel.PUBLIC)
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator}, access = AccessLevel.PROTECTED)
 public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
 
@@ -85,22 +86,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	public Table getTable() {
 		return imp.getTable();
 	}
-
-
-	public static Bucket create(int bucket, int root, int numberOfEvents, ColumnStore[] stores, Set<Integer> entities, int[] ends, int[] start, @NsIdRef Import imp) {
-		Bucket newBucket = new Bucket(
-				bucket,
-				root,
-				numberOfEvents,
-				entities,
-				ends,
-				start,
-				imp
-		);
-		newBucket.setStores(stores);
-		return newBucket;
-	}
-
 
 	@Override
 	public BucketId createId() {
