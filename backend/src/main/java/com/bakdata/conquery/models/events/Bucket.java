@@ -219,6 +219,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public ColumnStore getStore(@NotNull String storeName) {
-		return this.getStore(getTable().getColumnByName(storeName));
+		return getStore(getTable().getColumnByName(storeName));
 	}
 }
