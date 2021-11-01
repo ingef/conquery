@@ -39,18 +39,21 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefi
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class SerializationTest {
+public class ColumnStoreSerializationTests {
+
+	private static final Set<Class<? extends ColumnStore>> EXCLUDING = Set.of(DateRangeTypeCompound.class);
 
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
-	private static final Dictionary DICTIONARY = new MapDictionary(Dataset.PLACEHOLDER,"dictionary");
+	private static final Dictionary DICTIONARY = new MapDictionary(Dataset.PLACEHOLDER, "dictionary");
 
 	@BeforeAll
-	public static void setupRegistry(){
+	public static void setupRegistry() {
 		CENTRAL_REGISTRY.register(Dataset.PLACEHOLDER);
 		CENTRAL_REGISTRY.register(DICTIONARY);
 	}
@@ -63,10 +66,15 @@ public class SerializationTest {
 						.stream()
 						.map(Object::getClass)
 						.collect(Collectors.toSet())
+
 		)
 				.containsAll(
-						(Set) CPSTypeIdResolver.listImplementations(ColumnStore.class)
-				);
+						Sets.difference(
+								(Set) CPSTypeIdResolver.listImplementations(ColumnStore.class),
+								EXCLUDING
+						)
+				)
+		.doesNotContainAnyElementsOf(EXCLUDING);
 	}
 
 	public static List<ColumnStore> createCTypes() {
@@ -93,8 +101,7 @@ public class SerializationTest {
 				DoubleArrayStore.create(10),
 				BitSetStore.create(10),
 				EmptyStore.INSTANCE,
-				new RebasingStore(10, 10, IntArrayStore.create(10)),
-				new DateRangeTypeCompound("startColTest", "endColTest")
+				new RebasingStore(10, 10, IntArrayStore.create(10))
 		);
 	}
 

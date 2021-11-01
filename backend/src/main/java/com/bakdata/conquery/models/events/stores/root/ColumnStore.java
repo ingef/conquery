@@ -97,7 +97,7 @@ public interface ColumnStore {
 	 * Create an empty store that's only a description of the transformation.
 	 */
 	default ColumnStore createDescription() {
-		return this.select(new int[0], new int[0]);
+		return select(new int[0], new int[0]);
 	}
 
 	/**

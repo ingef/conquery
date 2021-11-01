@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -23,7 +24,7 @@ import lombok.ToString;
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_COMPOUND")
 @Getter
 @Setter
-@ToString(of = {"startStore", "endStore"})
+@ToString(of = {"startColumn", "endColumn"})
 public class DateRangeTypeCompound implements DateRangeStore {
 
 
@@ -51,7 +52,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	@JsonIgnore
 	public DateStore getStartStore() {
 		if (startStore == null) {
-			this.startStore = (DateStore) parent.getStore(startColumn);
+			startStore = (DateStore) parent.getStore(startColumn);
 		}
 		return startStore;
 	}
@@ -59,14 +60,14 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	@JsonIgnore
 	public DateStore getEndStore() {
 		if (endStore == null) {
-			this.endStore = (DateStore) parent.getStore(endColumn);
+			endStore = (DateStore) parent.getStore(endColumn);
 		}
 		return endStore;
 	}
 
 	@Override
-	public void addParent(Bucket bucket) {
-		this.parent = bucket;
+	public void addParent(@NonNull Bucket bucket) {
+		parent = bucket;
 	}
 
 	@Override
