@@ -1,6 +1,7 @@
 import { transformElementsToApi } from "../api/apiHelper";
 
-import { Form } from "./config-types";
+import { Form, GeneralField } from "./config-types";
+import { DynamicFormValues } from "./form/Form";
 
 function transformElementGroupsToApi(elementGroups) {
   return elementGroups.map(({ concepts, connector, ...rest }) =>
@@ -14,8 +15,8 @@ function transformElementGroupsToApi(elementGroups) {
   );
 }
 
-function transformFieldToApi(fieldConfig, form) {
-  const formValue = form[fieldConfig.name];
+function transformFieldToApi(fieldConfig, formValues: DynamicFormValues) {
+  const formValue = formValues[fieldConfig.name];
 
   switch (fieldConfig.type) {
     case "RESULT_GROUP":
@@ -38,26 +39,30 @@ function transformFieldToApi(fieldConfig, form) {
       return {
         value: formValue,
         // Only include field values from the selected tab
-        ...transformFieldsToApi(selectedTab.fields, form),
+        ...transformFieldsToApi(selectedTab.fields, formValues),
       };
     default:
       return formValue;
   }
 }
 
-function transformFieldsToApi(fields, form) {
-  return fields.reduce((all, fieldConfig) => {
-    all[fieldConfig.name] = transformFieldToApi(fieldConfig, form);
+function transformFieldsToApi(
+  fields: GeneralField[],
+  formValues: DynamicFormValues,
+) {
+  return fields.reduce<DynamicFormValues>((all, fieldConfig) => {
+    all[fieldConfig.name] = transformFieldToApi(fieldConfig, formValues);
 
     return all;
   }, {});
 }
 
-const transformQueryToApi = (formConfig: Form) => (form: Object) => {
-  return {
-    type: formConfig.type,
-    ...transformFieldsToApi(formConfig.fields, form),
+const transformQueryToApi =
+  (formConfig: Form) => (formValues: DynamicFormValues) => {
+    return {
+      type: formConfig.type,
+      ...transformFieldsToApi(formConfig.fields, formValues),
+    };
   };
-};
 
 export default transformQueryToApi;

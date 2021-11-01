@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import * as React from "react";
+import { FocusEvent, KeyboardEvent, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { CurrencyConfigT } from "../api/types";
@@ -69,10 +69,10 @@ interface InputProps {
   step?: number;
   min?: number;
   max?: number;
-  onKeyPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onKeyPress?: (e: KeyboardEvent<HTMLInputElement>) => void;
 }
 
-interface Props {
+interface Props<T extends string | number | null> {
   className?: string;
   inputType: string;
   money?: boolean;
@@ -80,96 +80,115 @@ interface Props {
   invalid?: boolean;
   invalidText?: string;
   placeholder?: string;
-  value: number | string | null;
+  value: T;
   large?: boolean;
   inputProps?: InputProps;
   currencyConfig?: CurrencyConfigT;
-  onChange: (val: null | number | string) => void;
-  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
+  onChange: (val: T) => void;
+  onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
 }
 
-const BaseInput = (props: Props) => {
+const usePatternMatching = ({ pattern }: { pattern?: string }) => {
+  const onKeyPress = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      if (!pattern) return;
+
+      const regex = new RegExp(pattern);
+      const key = String.fromCharCode(
+        !event.charCode ? event.which : event.charCode,
+      );
+
+      if (!regex.test(key)) {
+        event.preventDefault();
+        return false;
+      }
+    },
+    [pattern],
+  );
+
+  return pattern ? { onKeyPress } : {};
+};
+
+const BaseInput = <T extends string | number | null>({
+  className,
+  inputProps = {},
+  currencyConfig,
+  money,
+  value,
+  onChange,
+  onBlur,
+  placeholder,
+  large,
+  inputType,
+  valid,
+  invalid,
+  invalidText,
+}: Props<T>) => {
   const { t } = useTranslation();
-  const inputProps = props.inputProps || {};
-  const { pattern } = props.inputProps || {};
 
-  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!pattern) return;
-
-    const regex = new RegExp(pattern);
-    const key = String.fromCharCode(
-      !event.charCode ? event.which : event.charCode,
-    );
-
-    if (!regex.test(key)) {
-      event.preventDefault();
-      return false;
-    }
-  };
+  const patternMatchingProps = usePatternMatching({
+    pattern: inputProps.pattern,
+  });
 
   function safeOnChange(val: string | number | null) {
     if (
       (typeof val === "string" && val.length === 0) ||
       (typeof val === "number" && isNaN(val))
     ) {
-      props.onChange(null);
+      onChange(null);
     } else {
-      props.onChange(val);
+      onChange(val);
     }
   }
 
-  const isCurrencyInput = props.money && !!props.currencyConfig;
+  const isCurrencyInput = money && !!currencyConfig;
 
   return (
-    <Root className={props.className}>
+    <Root className={className}>
       {isCurrencyInput ? (
         <CurrencyInput
-          currencyConfig={props.currencyConfig}
-          placeholder={props.placeholder}
-          large={props.large}
-          value={props.value}
+          currencyConfig={currencyConfig}
+          placeholder={placeholder}
+          large={large}
+          value={value}
           onChange={safeOnChange}
         />
       ) : (
         <Input
-          placeholder={props.placeholder}
-          type={props.inputType}
+          placeholder={placeholder}
+          type={inputType}
           onChange={(e) => {
             let value: string | number | null = e.target.value;
 
-            if (props.inputType === "number") {
+            if (inputType === "number") {
               value = parseFloat(value);
             }
 
             safeOnChange(value);
           }}
-          onKeyPress={(e) => handleKeyPress(e)}
-          value={exists(props.value) ? props.value : ""}
-          large={props.large}
-          valid={props.valid}
-          invalid={props.invalid}
-          onBlur={props.onBlur}
+          value={exists(value) ? value : ""}
+          large={large}
+          onBlur={onBlur}
           {...inputProps}
+          {...patternMatchingProps}
         />
       )}
-      {exists(props.value) && !isEmpty(props.value) && (
+      {exists(value) && !isEmpty(value) && (
         <>
-          {props.valid && !props.invalid && (
-            <GreenIcon icon="check" large={props.large} />
-          )}
-          {props.invalid && (
-            <SxWithTooltip text={props.invalidText}>
-              <RedIcon icon="exclamation-triangle" large={props.large} />
+          {valid && !invalid && <GreenIcon icon="check" large={large} />}
+          {invalid && (
+            <SxWithTooltip text={invalidText}>
+              <RedIcon icon="exclamation-triangle" large={large} />
             </SxWithTooltip>
           )}
           <ClearZoneIconButton
             tiny
             icon="times"
             tabIndex={-1}
-            large={props.large}
+            large={large}
             title={t("common.clearValue")}
             aria-label={t("common.clearValue")}
-            onClick={() => props.onChange(null)}
+            onClick={() => onChange(null)}
           />
         </>
       )}

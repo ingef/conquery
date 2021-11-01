@@ -13003,6 +13003,11 @@ react-highlight-words@^0.17.0:
     memoize-one "^4.0.0"
     prop-types "^15.5.8"
 
+react-hook-form@^7.17.5:
+  version "7.17.5"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.17.5.tgz#3852f294159378d0b5893c9fcc89e313937c6f89"
+  integrity sha512-4bPtPGkpVhZlgtTbtMGi0RFphKHgxCj5u3AsGz3SBdleELlG1pDf9zRQOtfGlOGkZlc7u78RzD0xu9kOw7PYdQ==
+
 react-hot-keys@^2.0.0-beta.2:
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/react-hot-keys/-/react-hot-keys-2.7.1.tgz#a811445e66551c9f5b0e6b130d12096a59688539"

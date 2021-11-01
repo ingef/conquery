@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import * as React from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -13,7 +13,7 @@ const Root = styled("div")`
   position: relative;
 `;
 
-const FormConfigsSearchBox: React.FC = () => {
+const FormConfigsSearchBox: FC = () => {
   const { t } = useTranslation();
   const search = useSelector<StateT, string[]>(
     (state) => state.formConfigsSearch,

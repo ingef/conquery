@@ -5,7 +5,6 @@ import type { CurrencyConfigT } from "../api/types";
 
 import BaseInput from "./BaseInput";
 import Labeled from "./Labeled";
-import { InputProps } from "./types";
 
 const SxBaseInput = styled(BaseInput)<{ fullWidth?: boolean }>`
   ${({ fullWidth }) =>
@@ -15,7 +14,7 @@ const SxBaseInput = styled(BaseInput)<{ fullWidth?: boolean }>`
     `};
 `;
 
-interface Props<T> extends InputProps<T> {
+interface Props<T> {
   label: string;
   indexPrefix?: number;
   optional?: boolean;
@@ -25,36 +24,56 @@ interface Props<T> extends InputProps<T> {
   placeholder?: string;
   tinyLabel?: boolean;
   large?: boolean;
+  value: T;
+  onChange: (value: T) => void;
+  onBlur: () => void;
+  defaultValue?: T;
   inputProps?: Object;
   currencyConfig?: CurrencyConfigT;
   fullWidth?: boolean;
   tooltip?: string;
 }
 
-const InputPlain = <T extends string | number | null = string | null>(
-  props: Props<T>,
-) => {
+const InputPlain = <T extends string | number | null = string | null>({
+  className,
+  fullWidth,
+  label,
+  tinyLabel,
+  large,
+  indexPrefix,
+  tooltip,
+  optional,
+  inputType = "text",
+  money,
+  placeholder,
+  value,
+  onChange,
+  onBlur,
+  currencyConfig,
+  inputProps,
+}: Props<T>) => {
   return (
     <Labeled
-      className={props.className}
-      fullWidth={props.fullWidth}
-      label={props.label}
-      tinyLabel={props.tinyLabel}
-      largeLabel={props.large}
-      indexPrefix={props.indexPrefix}
-      tooltip={props.tooltip}
-      optional={props.optional}
+      className={className}
+      fullWidth={fullWidth}
+      label={label}
+      tinyLabel={tinyLabel}
+      largeLabel={large}
+      indexPrefix={indexPrefix}
+      tooltip={tooltip}
+      optional={optional}
     >
       <SxBaseInput
-        large={props.large}
-        fullWidth={props.fullWidth}
-        inputType={props.inputType || "text"}
-        money={props.money}
-        placeholder={props.placeholder}
-        value={props.input.value}
-        onChange={props.input.onChange}
-        currencyConfig={props.currencyConfig}
-        inputProps={props.inputProps}
+        large={large}
+        fullWidth={fullWidth}
+        inputType={inputType}
+        money={money}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        onBlur={onBlur}
+        currencyConfig={currencyConfig}
+        inputProps={inputProps}
       />
     </Labeled>
   );

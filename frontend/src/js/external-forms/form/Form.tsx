@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import { memo, useMemo, useCallback } from "react";
+import { memo, useMemo } from "react";
+import { useForm, useFormState } from "react-hook-form";
 import { TFunction, useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import { reduxForm, formValueSelector } from "redux-form";
 
 import type { SelectOptionT } from "../../api/types";
 import type { DatasetT } from "../../dataset/reducer";
@@ -15,7 +15,6 @@ import type {
   FormField as FormFieldType,
 } from "../config-types";
 import { collectAllFormFields, isFormField, isOptionalField } from "../helper";
-import { selectReduxFormState } from "../stateSelectors";
 import {
   validateRequired,
   validateDateRange,
@@ -115,31 +114,30 @@ function getErrorForField(t: TFunction, field: FormFieldType, value: any) {
   return error;
 }
 
-interface ConfiguredFormPropsType {
-  config: FormType;
-}
-
 interface Props {
   config: FormType;
   availableDatasets: SelectOptionT[];
 }
 
-const Form = memo(({ config, availableDatasets }: Props) => {
-  // TODO: THIS REALLY ISN'T IDEAL,
-  // AS THE WHOLE FORM HAS TO RERENDER ON EVERY STATE CHANGE
-  // WE WILL NEED TO MIGRATE AWAY FROM REDUX-FORM SOON
-  const state = useSelector<StateT, StateT>((state) => state);
-  const getFieldValue = useCallback(
-    (fieldname: string) => {
-      const fieldValueSelector = formValueSelector(
-        config.type,
-        selectReduxFormState,
-      );
+export interface DynamicFormValues {
+  [fieldname: string]: unknown;
+}
 
-      return fieldValueSelector(state, fieldname);
-    },
-    [state, config.type],
+const Form = memo(({ config }: Props) => {
+  // const { t } = useTranslation();
+  const { register, control } = useForm<DynamicFormValues>();
+  const availableDatasets = useSelector<StateT, DatasetT[]>(
+    (state) => state.datasets.data,
   );
+  const datasetOptions = useMemo(
+    () =>
+      availableDatasets.map((dataset) => ({
+        label: dataset.label,
+        value: dataset.id,
+      })),
+    [availableDatasets],
+  );
+  // const allFields = collectAllFormFields(config.fields);
 
   const activeLang = useActiveLang();
 
@@ -157,11 +155,14 @@ const Form = memo(({ config, availableDatasets }: Props) => {
           <Field
             key={key}
             formType={config.type}
-            getFieldValue={() =>
-              isFormField(field) ? getFieldValue(field.name) : null
-            }
+            getFieldValue={() => null}
+            // getFieldValue={() =>
+            //   isFormField(field) ? getFieldValue(field.name) : null
+            // }
+            register={register}
+            control={control}
             field={field}
-            availableDatasets={availableDatasets}
+            availableDatasets={datasetOptions}
             locale={activeLang}
             optional={optional}
           />
@@ -171,66 +172,4 @@ const Form = memo(({ config, availableDatasets }: Props) => {
   );
 });
 
-// This is the generic form component that receives a form config
-// and builds all fields from there.
-//
-// Note: The config contains the fields in a hierarchical structure,
-//       because one of the fields is a "TAB", which contains subfields
-//       depending on the tab, that is selected
-const ConfiguredForm = ({ config, ...props }: ConfiguredFormPropsType) => {
-  const { t } = useTranslation();
-  const availableDatasets = useSelector<StateT, DatasetT[]>(
-    (state) => state.datasets.data,
-  );
-  const datasetOptions = useMemo(
-    () =>
-      availableDatasets.map((dataset) => ({
-        label: dataset.label,
-        value: dataset.id,
-      })),
-    [availableDatasets],
-  );
-  const allFields = collectAllFormFields(config.fields);
-
-  const ReduxFormConnectedForm = reduxForm({
-    form: config.type,
-    getFormState: selectReduxFormState,
-    initialValues: Object.fromEntries(
-      allFields.map((field) => [
-        field.name,
-        getInitialValue(field, { availableDatasets: datasetOptions }),
-      ]),
-    ),
-    destroyOnUnmount: false,
-    validate: (values) =>
-      Object.keys(values).reduce((errors, name) => {
-        const field = allFields.find((field) => field.name === name);
-
-        // Note: For some reason, redux form understands, that:
-        //       EVEN IF we add errors for ALL fields –
-        //       including those fields that are not shown,
-        //       because their tab is hidden – as long as those
-        //       fields are not "rendered", the form seems to be valid
-        //
-        // => Otherwise, we'd have to check which tab is selected here,
-        //    and which errors to add
-        const error = getErrorForField(t, field, values[name]);
-
-        if (error) {
-          errors[name] = error;
-        }
-
-        return errors;
-      }, {}),
-  })(Form);
-
-  return (
-    <ReduxFormConnectedForm
-      {...props}
-      config={config}
-      availableDatasets={datasetOptions}
-    />
-  );
-};
-
-export default ConfiguredForm;
+export default Form;

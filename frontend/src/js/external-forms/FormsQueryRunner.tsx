@@ -1,5 +1,6 @@
 import { StateT } from "app-types";
 import { FC } from "react";
+import { useFormContext } from "react-hook-form";
 import { useSelector } from "react-redux";
 import { isValid, isPristine, getFormValues, FormStateMap } from "redux-form";
 
@@ -57,14 +58,8 @@ const FormQueryRunner: FC = () => {
   );
 
   const formName = useSelector<StateT, string | null>(selectActiveFormType);
-  const reduxFormState = useSelector<StateT, FormStateMap | null>(
-    selectReduxFormState,
-  );
-  const form = useSelector<StateT, unknown>((state) =>
-    formName && reduxFormState
-      ? getFormValues(formName, () => reduxFormState)(state)
-      : {},
-  );
+  const formContext = useFormContext();
+  const form = formName ? formContext.getValues() : {};
 
   const formConfig = useSelector<StateT, Form | null>(selectFormConfig);
 

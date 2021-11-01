@@ -15,9 +15,7 @@ const Root = styled("div")`
 `;
 
 const FormsContainer: FC = () => {
-  const formConfig = useSelector<StateT, FormType | null>((state) =>
-    selectFormConfig(state),
-  );
+  const formConfig = useSelector<StateT, FormType | null>(selectFormConfig);
 
   return <Root>{!!formConfig && <Form config={formConfig} />}</Root>;
 };

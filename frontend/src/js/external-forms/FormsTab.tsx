@@ -1,6 +1,7 @@
 import { tabDescription } from ".";
 import { StateT } from "app-types";
 import { useEffect } from "react";
+import { FormProvider, useForm } from "react-hook-form";
 import { useSelector, useStore } from "react-redux";
 
 import { useGetForms } from "../api/api";
@@ -16,6 +17,7 @@ import buildExternalFormsReducer from "./reducer";
 
 const FormsTab = () => {
   const store = useStore();
+  const methods = useForm();
   const getForms = useGetForms();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
     (state) => state.datasets.selectedDatasetId,
@@ -53,11 +55,11 @@ const FormsTab = () => {
   }, [store, datasetId]);
 
   return (
-    <>
+    <FormProvider {...methods}>
       <FormsNavigation />
       <FormsContainer />
       <FormsQueryRunner />
-    </>
+    </FormProvider>
   );
 };
 

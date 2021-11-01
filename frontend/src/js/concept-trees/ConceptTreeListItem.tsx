@@ -1,4 +1,4 @@
-import * as React from "react";
+import { FC } from "react";
 
 import type { ConceptT, ConceptIdT } from "../api/types";
 
@@ -16,7 +16,7 @@ interface PropsT {
   onLoadTree: (id: string) => void;
 }
 
-const ConceptTreeListItem: React.FC<PropsT> = ({
+const ConceptTreeListItem: FC<PropsT> = ({
   trees,
   treeId,
   search,
