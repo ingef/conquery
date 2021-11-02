@@ -58,16 +58,22 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@JsonIgnore
 	public DateStore getStartStore() {
+		if (getParent() == null) {
+			return null;
+		}
 		if (startStore == null) {
-			startStore = (DateStore) parent.getStore(getStartColumn());
+			setStartStore((DateStore) getParent().getStore(getStartColumn()));
 		}
 		return startStore;
 	}
 
 	@JsonIgnore
 	public DateStore getEndStore() {
+		if (getParent() == null) {
+			return null;
+		}
 		if (endStore == null) {
-			endStore = (DateStore) parent.getStore(getEndColumn());
+			setEndStore((DateStore) getParent().getStore(getEndColumn()));
 		}
 		return endStore;
 	}
