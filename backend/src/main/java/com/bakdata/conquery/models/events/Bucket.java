@@ -50,7 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
-@AllArgsConstructor(access = AccessLevel.PUBLIC)
+@AllArgsConstructor
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator}, access = AccessLevel.PROTECTED)
 public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
 
