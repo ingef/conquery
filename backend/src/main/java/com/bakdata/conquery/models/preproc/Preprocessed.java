@@ -184,7 +184,7 @@ public class Preprocessed {
 			final PPColumn ppColumn = columns[colIdx];
 			final ColumnValues columnValues = values[colIdx];
 
-			//No need to preprocess the column further more, if it does not contain values
+			//No need to preprocess the column further more, if it does not contain values, likely backed by a compound ColumnStore
 			if (columnValues == null) {
 				continue;
 			}
