@@ -1,10 +1,10 @@
 {
   "type": "FILTER_TEST",
   "label": "NUMBER_MISSING FILTER Test",
-  "expectedCsv": "tests/filter/NUMBER_REAL_MISSING/expected_NUMBER_Filter.csv",
+  "expectedCsv": "expected_NUMBER_Filter.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/NUMBER_REAL_MISSING/content_NUMBER_Filter.csv",
+      "csv": "content_NUMBER_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "EXISTS_AGGREGATOR & NUMBER Test",
-  "expectedCsv": "tests/aggregator/EXISTS_AGGREGATOR_OR/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -83,7 +83,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/aggregator/EXISTS_AGGREGATOR_OR/content.csv",
+        "csv": "content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

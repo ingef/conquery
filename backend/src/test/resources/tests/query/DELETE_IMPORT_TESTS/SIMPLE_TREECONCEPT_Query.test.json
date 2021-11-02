@@ -1,7 +1,7 @@
 {
     "type": "QUERY_TEST",
     "label": "DELETE_IMPORT_TESTS Test",
-    "expectedCsv": "tests/query/DELETE_IMPORT_TESTS/expected.csv",
+    "expectedCsv": "expected.csv",
     "query": {
         "type": "CONCEPT_QUERY",
         "root": {
@@ -64,7 +64,7 @@
     "content": {
         "tables": [
           {
-            "csv": "tests/query/DELETE_IMPORT_TESTS/content1.csv",
+            "csv": "content1.csv",
             "name": "test_table",
             "primaryColumn" : {
               "name": "pid",
@@ -82,7 +82,7 @@
             ]
           },
           {
-            "csv": "tests/query/DELETE_IMPORT_TESTS/content2.csv",
+            "csv": "content2.csv",
             "name": "test_table2",
             "primaryColumn" : {
               "name": "pid",

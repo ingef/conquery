@@ -1,7 +1,7 @@
 {
   "type": "FILTER_TEST",
   "label": "COUNT Test",
-  "expectedCsv": "tests/filter/COUNT/expected_COUNT_Filter.csv",
+  "expectedCsv": "expected_COUNT_Filter.csv",
   "connector": {
     "validityDates": {
       "label": "Datum",
@@ -23,7 +23,7 @@
   },
   "content": {
     "tables": {
-      "csv": "tests/filter/COUNT/content_COUNT_Filter.csv",
+      "csv": "content_COUNT_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

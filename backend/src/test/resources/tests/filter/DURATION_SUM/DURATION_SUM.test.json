@@ -1,10 +1,10 @@
 {
   "type": "FILTER_TEST",
   "label": "DURATION_SUM Test",
-  "expectedCsv": "tests/filter/DURATION_SUM/expected_DURATION_SUM_Filter.csv",
+  "expectedCsv": "expected_DURATION_SUM_Filter.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/DURATION_SUM/content_DURATION_SUM_Filter.csv",
+      "csv": "content_DURATION_SUM_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

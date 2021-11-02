@@ -1,10 +1,10 @@
 {
   "type": "FILTER_TEST",
   "label": "Prefix Test",
-  "expectedCsv": "tests/filter/PREFIX/expected_SELECT_Filter.csv",
+  "expectedCsv": "expected_SELECT_Filter.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/PREFIX/content_SELECT_Filter.csv",
+      "csv": "content_SELECT_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

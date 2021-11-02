@@ -1,7 +1,7 @@
 {
 	"type": "QUERY_TEST",
 	"label": "UPDATE_IMPORT_TESTS Test",
-	"expectedCsv": "tests/query/UPDATE_IMPORT_TESTS/expected.csv",
+	"expectedCsv": "expected.csv",
 	"query": {
 		"type": "CONCEPT_QUERY",
 		"root": {
@@ -58,7 +58,7 @@
 	"content": {
 		"tables": [
 			{
-				"csv": "tests/query/UPDATE_IMPORT_TESTS/table1_content.csv",
+				"csv": "table1_content.csv",
 				"name": "table1",
 				"primaryColumn": {
 					"name": "pid",
@@ -76,7 +76,7 @@
 				]
 			},
 			{
-				"csv": "tests/query/UPDATE_IMPORT_TESTS/table2_content.csv",
+				"csv": "table2_content.csv",
 				"name": "table2",
 				"primaryColumn": {
 					"name": "pid",

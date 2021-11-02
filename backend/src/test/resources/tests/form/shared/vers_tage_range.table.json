@@ -1,5 +1,5 @@
 {
-	"csv": "/tests/form/shared/versicherten_tage.csv",
+	"csv": "/versicherten_tage.csv",
 	"name" : "vers_tage_range",
     "primaryColumn" : {
         "name" : "pid",

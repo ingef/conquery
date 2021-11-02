@@ -1,7 +1,7 @@
 {
     "type": "QUERY_TEST",
     "label": "REL_EXPORT WITHOUT DATES Test",
-    "expectedCsv": "tests/query/REL_EXPORT/PREREQUISITE_WITHOUT_DATES/expected.csv",
+    "expectedCsv": "expected.csv",
     "query": {
         "type": "RELATIVE_FORM_QUERY",
         
@@ -152,7 +152,7 @@
     "content": {
         "tables": [
             {
-                "csv": "tests/query/REL_EXPORT/PREREQUISITE_WITHOUT_DATES/content.csv",
+                "csv": "content.csv",
                 "name": "table",
                 "primaryColumn": {
                     "name": "pid",

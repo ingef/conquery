@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "MULTIPLE_TABLES_ICD_QUERY2 Test",
-  "expectedCsv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

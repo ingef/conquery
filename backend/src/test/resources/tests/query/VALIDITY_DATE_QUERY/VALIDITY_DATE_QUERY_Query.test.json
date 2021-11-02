@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "VALIDITY_DATE_QUERY Test",
-  "expectedCsv": "tests/query/VALIDITY_DATE_QUERY/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -60,7 +60,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/VALIDITY_DATE_QUERY/content.csv",
+        "csv": "content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

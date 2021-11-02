@@ -2,7 +2,7 @@
     "type": "FORM_TEST",
     "label": "ABS-EXPORT-FORM WITH SELECT SET Test",
     "expectedCsv": {
-        "results": "tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/expected_with_select.csv"
+        "results": "expected_with_select.csv"
     },
     "form": {
         "type": "EXPORT_FORM",
@@ -41,6 +41,6 @@
         "tables": [
             "/tests/form/shared/vers_stamm.table.json"
         ],
-        "previousQueryResults": ["tests/form/EXPORT_FORM/ABSOLUT/SIMPLE/query_results_1.csv"]
+        "previousQueryResults": ["query_results_1.csv"]
     }
 }

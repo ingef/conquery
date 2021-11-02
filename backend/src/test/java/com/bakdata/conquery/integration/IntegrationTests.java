@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -131,7 +130,7 @@ public class IntegrationTests {
 	private DynamicNode collectTests(ResourceTree currentDir) {
 
 		if (currentDir.getValue() != null) {
-			return readTest(currentDir.getValue(), currentDir.getName(), this);
+			return readTest(currentDir.getValue(), this);
 		}
 
 		List<DynamicNode> list = new ArrayList<>();
@@ -149,12 +148,13 @@ public class IntegrationTests {
 		);
 	}
 
-	private static DynamicTest readTest(Resource resource, String name, IntegrationTests integrationTests) {
-		try (InputStream in = resource.open()) {
-			JsonIntegrationTest test = new JsonIntegrationTest(in);
+	private static DynamicTest readTest(Resource resource, IntegrationTests integrationTests) {
+		try {
+
+			JsonIntegrationTest test = JsonIntegrationTest.read(resource);
 			ConqueryConfig conf = getConfigOverride(test);
 
-			name = test.getTestSpec().getLabel();
+			String name = test.getTestSpec().getLabel();
 
 			TestConquery conquery = getCachedConqueryInstance(integrationTests.getWorkDir(), conf);
 
@@ -170,7 +170,7 @@ public class IntegrationTests {
 		}
 		catch (Exception e) {
 			return DynamicTest.dynamicTest(
-					name,
+					resource.getPath(),
 					resource.getURI(),
 					() -> {
 						throw e;

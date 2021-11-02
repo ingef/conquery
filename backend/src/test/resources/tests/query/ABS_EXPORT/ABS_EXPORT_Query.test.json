@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "ABS_EXPORT Test",
-  "expectedCsv": "tests/query/ABS_EXPORT/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "ABSOLUTE_FORM_QUERY",
     "dateRange": {
@@ -102,7 +102,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/ABS_EXPORT/content.csv",
+        "csv": "content.csv",
         "name": "test_table",
         "primaryColumn": {
           "name": "pid",

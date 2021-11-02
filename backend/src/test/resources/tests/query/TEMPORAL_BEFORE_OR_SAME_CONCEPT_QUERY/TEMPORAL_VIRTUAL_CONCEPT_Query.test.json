@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "TEMPORAL_BEFORE_CONCEPT_QUERY Test",
-  "expectedCsv": "tests/query/TEMPORAL_BEFORE_OR_SAME_CONCEPT_QUERY/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -76,7 +76,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/TEMPORAL_BEFORE_OR_SAME_CONCEPT_QUERY/content.csv",
+        "csv": "content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",

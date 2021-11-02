@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "MULTI_CONCEPT_QUERY_SEPARATE_DATES Test",
-  "expectedCsv": "tests/query/MULTI_CONCEPT_QUERY_SEPARATE_DATES/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -123,7 +123,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/MULTI_CONCEPT_QUERY_SEPARATE_DATES/content.csv",
+        "csv": "content.csv",
         "name": "test_table",
         "primaryColumn": {
           "name": "pid",
@@ -141,7 +141,7 @@
         ]
       },
       {
-        "csv": "tests/query/MULTI_CONCEPT_QUERY_SEPARATE_DATES/content2.csv",
+        "csv": "content2.csv",
         "name": "test_table2",
         "primaryColumn": {
           "name": "pid",

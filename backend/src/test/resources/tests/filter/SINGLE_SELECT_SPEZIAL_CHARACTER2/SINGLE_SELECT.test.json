@@ -1,10 +1,10 @@
 {
   "type": "FILTER_TEST",
   "label": "SINGLE_SELECT_SPEZIAL_CHARACTER2 Test",
-  "expectedCsv": "tests/filter/SINGLE_SELECT_SPEZIAL_CHARACTER2/expected_SINGLE_SELECT_Filter.csv",
+  "expectedCsv": "expected_SINGLE_SELECT_Filter.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/SINGLE_SELECT_SPEZIAL_CHARACTER2/content_SINGLE_SELECT_Filter.csv",
+      "csv": "content_SINGLE_SELECT_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

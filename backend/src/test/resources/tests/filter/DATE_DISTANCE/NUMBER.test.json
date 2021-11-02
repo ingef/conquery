@@ -1,14 +1,14 @@
 {
   "type": "FILTER_TEST",
   "label": "NUMBER_REAL Test",
-  "expectedCsv": "tests/filter/DATE_DISTANCE/expected_NUMBER_Filter.csv",
+  "expectedCsv": "expected_NUMBER_Filter.csv",
   "dateRange" : {
     "min" : "2000-01-31",
     "max" : "2000-02-20"
   },
   "content": {
     "tables": {
-      "csv": "tests/filter/DATE_DISTANCE/content_NUMBER_Filter.csv",
+      "csv": "content_NUMBER_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

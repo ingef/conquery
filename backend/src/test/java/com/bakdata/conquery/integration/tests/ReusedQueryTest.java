@@ -60,7 +60,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
 
-		final String testJson = In.resource("/tests/query/SECONDARY_ID_MIXED/SECONDARY_IDS_MIXED.test.json").withUTF8().readAll();
+		final String testJson = In.resource("/tests/query/SECONDARY_ID/SECONDARY_ID_MIXED/SECONDARY_IDS_MIXED.test.json").withUTF8().readAll();
 
 		final Dataset dataset = conquery.getDataset();
 

@@ -10,13 +10,22 @@ import com.fasterxml.jackson.databind.util.ClassUtil;
 
 public class MutableInjectableValues extends InjectableValues {
 
+	public MutableInjectableValues() {
+
+	}
+
 	private final ConcurrentHashMap<String, Object> values = new ConcurrentHashMap<>();
-	
+
 	public <T> MutableInjectableValues add(Class<T> type, T value) {
 		if(!type.isInstance(value)) {
 			throw new IllegalArgumentException(value+" is not of type "+type);
 		}
 		values.put(type.getName(), value);
+		return this;
+	}
+
+	public MutableInjectableValues add(String key, Object value) {
+		values.put(key, value);
 		return this;
 	}
 

@@ -1,7 +1,7 @@
 {  
    "type":"QUERY_TEST",
    "label":"NUMBER_MISSING_QUERY Test",
-   "expectedCsv":"tests/query/NUMBER_MISSING/expected.csv",
+   "expectedCsv":"expected.csv",
    "query":{  
       "type":"CONCEPT_QUERY",
     "root": {
@@ -66,7 +66,7 @@
    "content":{  
       "tables":[  
          {  
-            "csv":"tests/query/NUMBER_MISSING/content.csv",
+            "csv":"content.csv",
             "name":"table1",
             "primaryColumn":{  
                "name":"pid",

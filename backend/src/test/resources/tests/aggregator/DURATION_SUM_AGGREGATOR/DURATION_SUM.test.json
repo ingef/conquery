@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "DURATION_SUM_AGGREGATOR Test",
-  "expectedCsv": "tests/aggregator/DURATION_SUM_AGGREGATOR/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -43,7 +43,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/aggregator/DURATION_SUM_AGGREGATOR/content.csv",
+        "csv": "content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

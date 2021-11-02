@@ -1,7 +1,6 @@
 package com.bakdata.conquery.integration.json;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.validation.Validator;
 
@@ -13,8 +12,10 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.util.support.StandaloneSupport;
+import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.dropwizard.jersey.validation.Validators;
+import io.github.classgraph.Resource;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +30,13 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 	@Getter
 	private final ConqueryTestSpec testSpec;
 
-	public JsonIntegrationTest(InputStream in) throws IOException {
-		testSpec = TEST_SPEC_READER.readValue(in.readAllBytes());
+	public static JsonIntegrationTest read(Resource resource) throws IOException {
+		final String path = resource.getPath();
+		final String root = path.substring(0, path.lastIndexOf('/') + 1);
 
+		ConqueryTestSpec spec = TEST_SPEC_READER.with(new InjectableValues.Std().addValue("root", root)).readValue(resource.open());
+
+		return new JsonIntegrationTest(spec);
 	}
 
 	@Override

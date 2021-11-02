@@ -1,10 +1,10 @@
 {
   "type": "FILTER_TEST",
   "label": "BIG_MULTI_SELECT_SPEZIAL_CHARACTER Test",
-  "expectedCsv": "tests/filter/BIG_MULTI_SELECT_SPEZIAL_CHARACTER/expected_BIG_MULTI_SELECT_Filter.csv",
+  "expectedCsv": "expected_BIG_MULTI_SELECT_Filter.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/BIG_MULTI_SELECT_SPEZIAL_CHARACTER/content_BIG_MULTI_SELECT_Filter.csv",
+      "csv": "content_BIG_MULTI_SELECT_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

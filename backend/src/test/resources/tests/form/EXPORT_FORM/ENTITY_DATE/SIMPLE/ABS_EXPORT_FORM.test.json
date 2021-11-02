@@ -2,7 +2,7 @@
     "type": "FORM_TEST",
     "label": "ADD DEFAULT SELECT Test",
     "expectedCsv": {
-        "results": "tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/expected.csv"
+        "results": "expected.csv"
     },
     "form": {
         "type": "EXPORT_FORM",
@@ -38,6 +38,6 @@
         "tables": [
             "/tests/form/shared/vers_stamm.table.json"
         ],
-        "previousQueryResults": ["tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/query_results_1.csv"]
+        "previousQueryResults": ["query_results_1.csv"]
     }
 }

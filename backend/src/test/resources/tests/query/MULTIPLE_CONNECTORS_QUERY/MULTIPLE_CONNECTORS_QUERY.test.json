@@ -1,7 +1,7 @@
 {
     "type": "QUERY_TEST",
     "label": "MULTIPLE_CONNECTORS_QUERY Test",
-    "expectedCsv": "tests/query/MULTIPLE_CONNECTORS_QUERY/expected.csv",
+    "expectedCsv": "expected.csv",
     "query": {
         "type": "CONCEPT_QUERY",
         "root": {

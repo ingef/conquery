@@ -1,7 +1,7 @@
 {  
    "type":"QUERY_TEST",
    "label":"NUMBER_MISSING_NO_FILTER_RESTRICTION_QUERY Test",
-   "expectedCsv":"tests/query/NUMBER_MISSING_NO_RESTRICTION/expected.csv",
+   "expectedCsv":"expected.csv",
    "query":{  
       "type":"CONCEPT_QUERY",
     "root": {
@@ -57,7 +57,7 @@
    "content":{  
       "tables":[  
          {  
-            "csv":"tests/query/NUMBER_MISSING_NO_RESTRICTION/content.csv",
+            "csv":"content.csv",
             "name":"table1",
             "primaryColumn":{  
                "name":"pid",

@@ -1,10 +1,10 @@
 {
   "type": "FILTER_TEST",
   "label": "COUNT_QUARTERS Test",
-  "expectedCsv": "tests/filter/COUNT_QUARTERS_RANGE/expected_COUNT_QUARTERS_Filter.csv",
+  "expectedCsv": "expected_COUNT_QUARTERS_Filter.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/COUNT_QUARTERS_RANGE/content_COUNT_QUARTERS_Filter.csv",
+      "csv": "content_COUNT_QUARTERS_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

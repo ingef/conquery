@@ -2,7 +2,7 @@
     "type": "FORM_TEST",
     "label": "ADD DEFAULT SELECT Test",
     "expectedCsv": {
-        "results": "tests/form/EXPORT_FORM/ENTITY_DATE/LOGICAL_WITH_EXCLUDE/expected.csv"
+        "results": "expected.csv"
     },
     "form": {
         "type": "EXPORT_FORM",

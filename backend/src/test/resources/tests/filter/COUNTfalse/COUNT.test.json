@@ -1,10 +1,10 @@
 {
   "type": "FILTER_TEST",
   "label": "COUNTfalse Test",
-  "expectedCsv": "tests/filter/COUNTfalse/expected_COUNT_Filter.csv",
+  "expectedCsv": "expected_COUNT_Filter.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/COUNTfalse/content_COUNT_Filter.csv",
+      "csv": "content_COUNT_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

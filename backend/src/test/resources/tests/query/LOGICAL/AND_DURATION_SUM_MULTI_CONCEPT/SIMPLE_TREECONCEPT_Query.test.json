@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "AND DURATION SUM Test",
-  "expectedCsv": "tests/query/LOGICAL/AND_DURATION_SUM_MULTI_CONCEPT/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",
     "secondaryId": "secondary",
@@ -116,7 +116,7 @@
     ],
     "tables": [
       {
-        "csv": "tests/query/LOGICAL/AND_DURATION_SUM_MULTI_CONCEPT/table1.csv",
+        "csv": "table1.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -139,7 +139,7 @@
         ]
       },
       {
-        "csv": "tests/query/LOGICAL/AND_DURATION_SUM_MULTI_CONCEPT/table2.csv",
+        "csv": "table2.csv",
         "name": "table2",
         "primaryColumn": {
           "name": "pid",

@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "DATE_DISTANCE_AGGREGATOR2 Test",
-  "expectedCsv": "tests/aggregator/DATE_DISTANCE_AGGREGATOR/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -48,7 +48,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/aggregator/DATE_DISTANCE_AGGREGATOR/content.csv",
+        "csv": "content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

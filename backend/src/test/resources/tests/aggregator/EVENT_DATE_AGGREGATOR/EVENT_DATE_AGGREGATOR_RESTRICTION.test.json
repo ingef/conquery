@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "EVENT_DATE_AGGREGATOR_RESTRICTION Test",
-  "expectedCsv": "tests/aggregator/EVENT_DATE_AGGREGATOR/expected_restriction.csv",
+  "expectedCsv": "expected_restriction.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -52,7 +52,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/aggregator/EVENT_DATE_AGGREGATOR/content.csv",
+        "csv": "content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

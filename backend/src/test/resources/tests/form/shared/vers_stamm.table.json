@@ -1,5 +1,5 @@
 {
-    "csv": "tests/form/shared/vers_stamm.csv",
+    "csv": "vers_stamm.csv",
     "name": "vers_stamm",
     "primaryColumn": {
         "name": "pid",

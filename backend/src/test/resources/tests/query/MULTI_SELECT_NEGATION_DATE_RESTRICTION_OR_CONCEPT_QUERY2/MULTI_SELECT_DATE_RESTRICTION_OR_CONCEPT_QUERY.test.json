@@ -1,7 +1,7 @@
 {  
    "type":"QUERY_TEST",
    "label":"MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY2 Test",
-   "expectedCsv":"tests/query/MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY2/expected.csv",
+   "expectedCsv":"expected.csv",
    "query":{  
       "type":"CONCEPT_QUERY",
       "root":{
@@ -70,7 +70,7 @@
    "content":{  
       "tables":[  
          {  
-            "csv":"tests/query/MULTI_SELECT_NEGATION_DATE_RESTRICTION_OR_CONCEPT_QUERY2/content.csv",
+            "csv":"content.csv",
             "name":"table1",
             "primaryColumn":{  
                "name":"pid",

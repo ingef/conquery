@@ -71,7 +71,7 @@
    "content":{  
       "tables":[  
          {  
-            "csv":"tests/query/DATE_DISTANCE_AGE_SPAN/content.csv",
+            "csv":"content.csv",
             "name":"table1",
             "primaryColumn":{  
                "name":"pid",

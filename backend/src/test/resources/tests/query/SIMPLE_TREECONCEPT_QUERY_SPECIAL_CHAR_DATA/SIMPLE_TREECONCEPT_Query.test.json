@@ -1,7 +1,7 @@
 {
     "type": "QUERY_TEST",
     "label": "SIMPLE_TREECONCEPT_QUERY_SPECIAL_CHAR_DATA Test",
-    "expectedCsv": "tests/query/SIMPLE_TREECONCEPT_QUERY_SPECIAL_CHAR_DATA/expected.csv",
+    "expectedCsv": "expected.csv",
     "query": {
         "type": "CONCEPT_QUERY",
         "root": {
@@ -46,7 +46,7 @@
     "content": {
         "tables": [
 			{
-                "csv": "tests/query/SIMPLE_TREECONCEPT_QUERY_SPECIAL_CHAR_DATA/content.csv",
+                "csv": "content.csv",
 				"name": "test_table",
                 "primaryColumn" : {
                     "name": "pid",

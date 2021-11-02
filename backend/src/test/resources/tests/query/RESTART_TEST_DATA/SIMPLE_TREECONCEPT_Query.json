@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "SIMPLE_TREECONCEPT_QUERY Test",
-  "expectedCsv": "tests/query/RESTART_TEST_DATA/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -57,7 +57,7 @@
     ],
     "tables": [
       {
-        "csv": "tests/query/RESTART_TEST_DATA/content.csv",
+        "csv": "content.csv",
         "name": "test_table",
         "primaryColumn": {
           "name": "pid",

@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "REUSED_QUERY Test",
-  "expectedCsv": "tests/query/REUSED_QUERY/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -47,7 +47,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/REUSED_QUERY/content.csv",
+        "csv": "content.csv",
         "name": "test_table",
         "primaryColumn": {
           "name": "pid",
@@ -66,8 +66,8 @@
       }
     ],
     "previousQueryResults": [
-      "tests/query/REUSED_QUERY/query_results_1.csv",
-      "tests/query/REUSED_QUERY/query_results_2.csv"
+      "query_results_1.csv",
+      "query_results_2.csv"
     ]
   }
 }

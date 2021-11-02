@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "SIMPLE_TREECONCEPT_QUERY Test",
-  "expectedCsv": "tests/query/SIMPLE_TREECONCEPT_CONNECTOR_CONDITION_WITH_CHILDREN_QUERY/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -46,7 +46,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/SIMPLE_TREECONCEPT_CONNECTOR_CONDITION_WITH_CHILDREN_QUERY/content.csv",
+        "csv": "content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

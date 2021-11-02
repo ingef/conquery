@@ -1,7 +1,7 @@
 {
     "type": "QUERY_TEST",
     "label": "REL_EXPORT WITH DATES Test",
-    "expectedCsv": "tests/query/REL_EXPORT/PREREQUISITE_WITH_DATES/expected.csv",
+    "expectedCsv": "expected.csv",
     "query": {
         "type": "RELATIVE_FORM_QUERY",
         "resolutionsAndAlignmentMap": [
@@ -121,7 +121,7 @@
     "content": {
         "tables": [
             {
-                "csv": "tests/query/REL_EXPORT/PREREQUISITE_WITH_DATES/content.csv",
+                "csv": "content.csv",
                 "name": "test_table",
                 "primaryColumn": {
                     "name": "pid",

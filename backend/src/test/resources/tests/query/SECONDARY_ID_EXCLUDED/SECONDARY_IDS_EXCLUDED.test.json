@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "SECONDARY_ID_EXCLUDED Test",
-  "expectedCsv": "tests/query/SECONDARY_ID_EXCLUDED/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",
     "secondaryId": "secondary",
@@ -74,7 +74,7 @@
     ],
     "tables": [
       {
-        "csv": "tests/query/SECONDARY_ID_EXCLUDED/content.csv",
+        "csv": "content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",

@@ -1,10 +1,10 @@
 {
   "type": "FILTER_TEST",
   "label": "SUM_DECIMAL",
-  "expectedCsv": "tests/filter/SUM_DECIMAL/expected_SUM_Filter.csv",
+  "expectedCsv": "expected_SUM_Filter.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/SUM_DECIMAL/content_SUM_Filter.csv",
+      "csv": "content_SUM_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

@@ -1,10 +1,10 @@
 {
   "type": "FILTER_TEST",
   "label": "DIFFSUM_INTEGER Test",
-  "expectedCsv": "tests/filter/DIFFSUM_INTEGER/expected_SUM_Filter.csv",
+  "expectedCsv": "expected_SUM_Filter.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/DIFFSUM_INTEGER/content_SUM_Filter.csv",
+      "csv": "content_SUM_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"

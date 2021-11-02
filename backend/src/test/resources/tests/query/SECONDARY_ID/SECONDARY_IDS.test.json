@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "SECONDARY_ID Test",
-  "expectedCsv": "tests/query/SECONDARY_ID/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",
     "secondaryId": "secondary",
@@ -93,7 +93,7 @@
     ],
     "tables": [
       {
-        "csv": "tests/query/SECONDARY_ID/content.csv",
+        "csv": "content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -116,7 +116,7 @@
         ]
       },
       {
-        "csv": "tests/query/SECONDARY_ID/content2.csv",
+        "csv": "content2.csv",
         "name": "table12",
         "primaryColumn": {
           "name": "pid",

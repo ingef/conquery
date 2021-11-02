@@ -1,7 +1,7 @@
 {
 	"type": "QUERY_TEST",
 	"label": "NUMBER_QUERY Test",
-	"expectedCsv": "tests/query/NUMBER/expected.csv",
+	"expectedCsv": "expected.csv",
 	"query": {
 		"type": "CONCEPT_QUERY",
 		"root": {
@@ -64,7 +64,7 @@
 	"content": {
 		"tables": [
 			{
-				"csv": "tests/query/NUMBER/content.csv",
+				"csv": "content.csv",
 				"name": "table1",
 				"primaryColumn": {
 					"name": "pid",

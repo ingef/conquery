@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "TABLE_EXPORT Test",
-  "expectedCsv": "tests/query/TABLE_EXPORT/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "TABLE_EXPORT",
     "tables": [
@@ -101,7 +101,7 @@
     },
     "tables": [
       {
-        "csv": "tests/query/TABLE_EXPORT/content.csv",
+        "csv": "content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -124,7 +124,7 @@
         ]
       },
       {
-        "csv": "tests/query/TABLE_EXPORT/content2.csv",
+        "csv": "content2.csv",
         "name": "table2",
         "primaryColumn": {
           "name": "pid",

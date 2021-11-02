@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "AND Test",
-  "expectedCsv": "tests/query/LOGICAL/AND/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -68,7 +68,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/LOGICAL/AND/content.csv",
+        "csv": "content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

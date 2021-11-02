@@ -25,7 +25,7 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test sepcification
-		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+		String testJson = In.resource("/tests/query/CONCEPT/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		
 		DatasetId dataset = conquery.getDataset().getId();
 		

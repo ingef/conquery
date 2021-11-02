@@ -1,7 +1,7 @@
 {  
    "type":"QUERY_TEST",
    "label":"SINGLE_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY Test",
-   "expectedCsv":"tests/query/SINGLE_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/expected.csv",
+   "expectedCsv":"expected.csv",
    "query":{  
       "type":"CONCEPT_QUERY",
       "root":{  
@@ -61,7 +61,7 @@
    "content":{  
       "tables":[  
          {  
-            "csv":"tests/query/SINGLE_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/content.csv",
+            "csv":"content.csv",
             "name":"table1",
             "primaryColumn":{  
                "name":"pid",

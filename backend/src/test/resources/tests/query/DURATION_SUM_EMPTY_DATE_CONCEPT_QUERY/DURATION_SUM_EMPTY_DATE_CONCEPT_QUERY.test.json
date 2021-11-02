@@ -58,7 +58,7 @@
    "content":{  
       "tables":[  
          {  
-            "csv":"tests/query/DURATION_SUM_EMPTY_DATE_CONCEPT_QUERY/content.csv",
+            "csv":"content.csv",
             "name":"table1",
             "primaryColumn":{  
                "name":"pid",

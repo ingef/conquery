@@ -1,11 +1,11 @@
 {
   "type": "FILTER_TEST",
   "label": "SELECT Test",
-  "expectedCsv": "tests/filter/SELECT/expected_SELECT_Filter.csv",
+  "expectedCsv": "expected_SELECT_Filter.csv",
   "content": {
     "tables":
       {
-        "csv": "tests/filter/SELECT/content_SELECT_Filter.csv",
+        "csv": "content_SELECT_Filter.csv",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

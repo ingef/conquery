@@ -2,7 +2,7 @@
     "type": "FORM_TEST",
     "label": "REL-EXPORT-FORM SECONDARY_ID",
     "expectedCsv": {
-        "results": "/tests/form/EXPORT_FORM/RELATIVE/SECONDARY_ID/expected.csv"
+        "results": "/expected.csv"
     },
     "form": {
         "type": "EXPORT_FORM",

@@ -1,5 +1,5 @@
 {
-    "csv": "tests/form/shared/abc.csv",
+    "csv": "abc.csv",
     "name": "table",
     "primaryColumn": {
       "name": "pid",

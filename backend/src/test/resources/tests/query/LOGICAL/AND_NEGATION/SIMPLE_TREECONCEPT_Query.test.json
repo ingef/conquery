@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "AND NEGATION Test",
-  "expectedCsv": "tests/query/LOGICAL/AND_NEGATION/expected.csv",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -72,7 +72,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/LOGICAL/AND_NEGATION/content.csv",
+        "csv": "content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
