@@ -3,6 +3,8 @@ package com.bakdata.conquery.apiv1.frontend;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import lombok.Builder;
@@ -27,4 +29,6 @@ public class FEFilter {
 	private FilterTemplate template;
 	private String pattern;
 	private Boolean allowDropFile;
+	@Nullable
+	private Object defaultValue;
 }

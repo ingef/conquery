@@ -94,7 +94,7 @@ public class CQExternal extends CQElement {
 		}
 
 		// Allocate at once, the maximum possible size
-		final Map<String, ConstantValueAggregator> extraAggregators = new HashMap<>(format.size());
+		final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(format.size());
 
 		if (extra != null) {
 			for (int col = 0; col < format.size(); col++) {
