@@ -51,7 +51,7 @@ const SxWithTooltip = styled(WithTooltip)`
 
 const ClearZoneIconButton = styled(IconButton)`
   position: absolute;
-  top: ${({ large }) => (large ? "5px" : "0")};
+  top: 0;
   right: 10px;
   cursor: pointer;
   height: 100%;
@@ -190,7 +190,6 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
               tiny
               icon="times"
               tabIndex={-1}
-              large={large}
               title={t("common.clearValue")}
               aria-label={t("common.clearValue")}
               onClick={() => onChange(null)}

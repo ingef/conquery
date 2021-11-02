@@ -14,7 +14,7 @@ import type { SelectOptionT } from "../../api/types";
 import { nodeIsInvalid } from "../../model/node";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputDateRange from "../../ui-components/InputDateRange";
-import InputPlain from "../../ui-components/InputPlain";
+import InputPlain from "../../ui-components/InputPlain/InputPlain";
 import InputSelect from "../../ui-components/InputSelectOld";
 import ToggleButton from "../../ui-components/ToggleButton";
 import type { GeneralField } from "../config-types";

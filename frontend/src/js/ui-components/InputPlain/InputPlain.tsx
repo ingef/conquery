@@ -2,10 +2,9 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { forwardRef } from "react";
 
-import type { CurrencyConfigT } from "../api/types";
-
-import BaseInput from "./BaseInput";
-import Labeled from "./Labeled";
+import type { CurrencyConfigT } from "../../api/types";
+import BaseInput from "../BaseInput";
+import Labeled from "../Labeled";
 
 const SxBaseInput = styled(BaseInput)<{ fullWidth?: boolean }>`
   ${({ fullWidth }) =>

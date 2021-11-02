@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { CurrencyConfigT } from "../api/types";
 import { exists } from "../common/helpers/exists";
 
-import InputPlain from "./InputPlain";
+import InputPlain from "./InputPlain/InputPlain";
 import InputRangeHeader from "./InputRangeHeader";
 import ToggleButton from "./ToggleButton";
 import { InputProps } from "./types";

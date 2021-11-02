@@ -10,7 +10,7 @@ import type { TreesT } from "../concept-trees/reducer";
 import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
-import InputPlain from "../ui-components/InputPlain";
+import InputPlain from "../ui-components/InputPlain/InputPlain";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import { useSelectConceptRootNodeAndResolveCodes } from "./actions";

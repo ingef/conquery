@@ -7,7 +7,7 @@ import { usePostLogin } from "../api/api";
 import PrimaryButton from "../button/PrimaryButton";
 import ErrorMessage from "../error-message/ErrorMessage";
 import FaIcon from "../icon/FaIcon";
-import InputPlain from "../ui-components/InputPlain";
+import InputPlain from "../ui-components/InputPlain/InputPlain";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
 
