@@ -205,22 +205,7 @@ public class AdminDatasetProcessor {
 		namespace.sendToAll(new UpdateTable(table));
 	}
 
-	/**
-	 * Add the concept to the dataset if it does not exist yet.
-	 */
-	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
-		concept.setDataset(dataset);
-		ValidatorHelper.failOnError(log, validator.validate(concept));
 
-		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
-			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
-		}
-
-
-		// Register the Concept in the ManagerNode and Workers
-		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
-		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
-	}
 
 	/**
 	 * update a concept to the given
@@ -235,13 +220,13 @@ public class AdminDatasetProcessor {
 		deleteConcept(concept);
 
 		//adds new content of the content
-		addConceptSlow(dataset, concept);
+		addConcept(dataset, concept);
 	}
 
 	/**
-	 * Add the concept to the dataset if it does not exist yet (with SlowJob)
+	 * Add the concept to the dataset if it does not exist yet
 	 */
-	public synchronized void addConceptSlow(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
+	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
 		concept.setDataset(dataset);
 		ValidatorHelper.failOnError(log, validator.validate(concept));
 
