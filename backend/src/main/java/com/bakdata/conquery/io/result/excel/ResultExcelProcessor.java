@@ -57,10 +57,7 @@ public class ResultExcelProcessor {
 
 		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel(), settings);
 
-
-
 		final ArrayList<ResultInfo> resultInfosId = new ArrayList<>();
-		config.getFrontend().getQueryUpload().getIdResultInfos();
 
 		StreamingOutput out = output -> excelRenderer.renderToStream(resultInfosId,
 				(ManagedExecution<?> & SingleTableResult)exec,

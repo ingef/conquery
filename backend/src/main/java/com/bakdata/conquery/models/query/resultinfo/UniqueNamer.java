@@ -7,6 +7,9 @@ import java.util.Objects;
 
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ConcurrentHashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.Multisets;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +32,7 @@ public class UniqueNamer {
 	 * This lowers the risk of duplicate column names in the result.
 	 */
 	@Getter
-	private final Map<String, Integer> ocurrenceCounter = Collections.synchronizedMap(new HashMap<>());
+	private final Multiset<String> ocurrenceCounter = ConcurrentHashMultiset.create();
 
 
 	@NonNull
@@ -39,10 +42,11 @@ public class UniqueNamer {
 		// lookup if prefix is needed and computed it if necessary
 		int postfix = -1;
 		synchronized (ocurrenceCounter) {
-			postfix = ocurrenceCounter.compute(label, (k, v) -> (v == null) ? 0 : ++v);
+			ocurrenceCounter.add(label);
+			postfix = ocurrenceCounter.count(label) - 1 ;
 		}
 		String uniqueName = (postfix > 0) ? label + "_" + postfix : label;
-		if (ocurrenceCounter.containsKey(uniqueName) && ocurrenceCounter.get(uniqueName) > 0) {
+		if (ocurrenceCounter.count(uniqueName) > 0) {
 			log.warn(
 					"Even with postfixing the result will contain column name duplicates. This might be caused by another column that is having a number postfix by default.");
 		}

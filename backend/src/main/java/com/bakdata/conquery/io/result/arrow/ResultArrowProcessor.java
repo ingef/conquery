@@ -6,6 +6,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDown
 
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 
@@ -82,9 +83,9 @@ public class ResultArrowProcessor {
 		);
 
 
-		final ArrayList<ResultInfo> resultInfosId = new ArrayList<>();
+		final List<ResultInfo> resultInfosId = new ArrayList<>();
 		config.getFrontend().getQueryUpload().getIdResultInfos();
-		final ArrayList<ResultInfo> resultInfosExec = new ArrayList<>();
+		final List<ResultInfo> resultInfosExec = new ArrayList<>();
 		exec.collectResultInfos(resultInfosExec);
 
 		StreamingOutput out = output -> renderToStream(
