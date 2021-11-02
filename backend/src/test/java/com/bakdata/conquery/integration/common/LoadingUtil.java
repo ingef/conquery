@@ -254,7 +254,7 @@ public class LoadingUtil {
 										 .put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
 		JsonNode responseEntity = response.readEntity(JsonNode.class);
 		if (responseEntity != null) {
-			log.info(String.format("addOrUpdateConcept-response-entity : %s", responseEntity.toPrettyString()));
+			log.info("addOrUpdateConcept-response-entity : {}", responseEntity.toPrettyString());
 		}
 		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
 		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
