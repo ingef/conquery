@@ -33,7 +33,10 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	@NotEmpty
 	private String startColumn, endColumn;
 
-	// does not have to be serialized because will be lazy-loaded after the deserialization of DateRangeTypeCompound
+	/**
+	  * does not have to be serialized because will be lazy-loaded after the deserialization of DateRangeTypeCompound
+	  * @implNote since this value is lazy loaded, do not use it directly and use the getter instead.
+	  */
 	@JsonIgnore
 	private DateStore startStore;
 
