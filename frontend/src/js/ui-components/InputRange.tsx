@@ -91,8 +91,11 @@ const InputRange = ({
     pattern: pattern,
   };
 
-  const onChangeValue = (type: "exact" | "max" | "min", newValue: number) => {
-    const nextValue = newValue >= 0 ? newValue : null;
+  const onChangeValue = (
+    type: "exact" | "max" | "min",
+    newValue: number | null,
+  ) => {
+    const nextValue = exists(newValue) && newValue >= 0 ? newValue : null;
 
     if (type === "exact") {
       if (nextValue === null) {
@@ -141,48 +144,42 @@ const InputRange = ({
       <Container>
         {isRangeMode ? (
           <>
-            <SxInputPlain<number>
+            <SxInputPlain
               inputType="number"
               currencyConfig={currencyConfig}
               money={moneyRange}
               placeholder={placeholder}
               label={t("inputRange.minLabel")}
               tinyLabel={true}
-              input={{
-                value: val.min,
-                defaultValue: defaultVal.min,
-                onChange: (value) => onChangeValue("min", value),
-              }}
+              value={val.min}
+              defaultValue={defaultVal.min}
+              onChange={(value) => onChangeValue("min", value as number | null)}
               inputProps={inputProps}
             />
-            <SxInputPlain<number>
+            <SxInputPlain
               inputType="number"
               currencyConfig={currencyConfig}
               money={moneyRange}
               placeholder={placeholder}
               label={t("inputRange.maxLabel")}
               tinyLabel={true}
-              input={{
-                value: val.max,
-                defaultValue: defaultVal.max,
-                onChange: (value) => onChangeValue("max", value),
-              }}
+              value={val.max}
+              defaultValue={defaultVal.max}
+              onChange={(value) => onChangeValue("max", value as number | null)}
               inputProps={inputProps}
             />
           </>
         ) : (
-          <InputPlain<number>
+          <InputPlain
             inputType="number"
             currencyConfig={currencyConfig}
             money={moneyRange}
             placeholder={placeholder}
             label={t("inputRange.exactLabel")}
             tinyLabel={true}
-            input={{
-              value: val.exact,
-              defaultValue: defaultVal.exact,
-              onChange: (value) => onChangeValue("exact", value),
-            }}
+            value={val.exact}
+            defaultValue={defaultVal.exact}
+            onChange={(value) => onChangeValue("exact", value as number | null)}
             inputProps={inputProps}
           />
         )}

@@ -8,7 +8,6 @@ import type {
   FilterIdT,
 } from "../api/types";
 import type { FilterWithValueType } from "../standard-query-editor/types";
-import InputPlain from "../ui-components/InputPlain";
 import InputRange, { ModeT } from "../ui-components/InputRange";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
@@ -167,20 +166,6 @@ const TableFilters = (props: PropsT) => {
                   }
                   placeholder="-"
                   currencyConfig={props.currencyConfig}
-                />
-              );
-            case "STRING":
-              return (
-                <InputPlain
-                  indexPrefix={filterIdx + 1}
-                  input={{
-                    value: filter.value || "",
-                    defaultValue: filter.defaultValue,
-                    onChange: (value) =>
-                      props.onSetFilterValue(filterIdx, value),
-                  }}
-                  placeholder="-"
-                  label={filter.label}
                 />
               );
             default:

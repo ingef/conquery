@@ -41,7 +41,7 @@ type Props<T> = T & {
 const TheFormField = styled("div")`
   margin: 0 0 10px;
 `;
-const FormField = <T extends {}>({
+const FormField = <T extends Object>({
   children,
   name,
   control,
@@ -132,10 +132,8 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               placeholder={
                 (field.placeholder && field.placeholder[locale]) || ""
               }
-              input={{
-                value: fieldProps.value,
-                onChange: fieldProps.onChange,
-              }}
+              value={fieldProps.value as number | null}
+              onChange={fieldProps.onChange}
               inputProps={{
                 step: field.step || "1",
                 pattern: field.pattern,

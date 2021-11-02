@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FocusEvent, KeyboardEvent, useCallback } from "react";
+import { FocusEvent, forwardRef, KeyboardEvent, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { CurrencyConfigT } from "../api/types";
@@ -72,7 +72,7 @@ interface InputProps {
   onKeyPress?: (e: KeyboardEvent<HTMLInputElement>) => void;
 }
 
-interface Props<T extends string | number | null> {
+interface Props {
   className?: string;
   inputType: string;
   money?: boolean;
@@ -80,12 +80,12 @@ interface Props<T extends string | number | null> {
   invalid?: boolean;
   invalidText?: string;
   placeholder?: string;
-  value: T;
+  value: string | number | null;
   large?: boolean;
   inputProps?: InputProps;
   currencyConfig?: CurrencyConfigT;
-  onChange: (val: T) => void;
   onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
+  onChange: (val: string | number | null) => void;
 }
 
 const usePatternMatching = ({ pattern }: { pattern?: string }) => {
@@ -109,91 +109,97 @@ const usePatternMatching = ({ pattern }: { pattern?: string }) => {
   return pattern ? { onKeyPress } : {};
 };
 
-const BaseInput = <T extends string | number | null>({
-  className,
-  inputProps = {},
-  currencyConfig,
-  money,
-  value,
-  onChange,
-  onBlur,
-  placeholder,
-  large,
-  inputType,
-  valid,
-  invalid,
-  invalidText,
-}: Props<T>) => {
-  const { t } = useTranslation();
+const BaseInput = forwardRef<HTMLInputElement, Props>(
+  (
+    {
+      className,
+      inputProps = {},
+      currencyConfig,
+      money,
+      value,
+      onChange,
+      onBlur,
+      placeholder,
+      large,
+      inputType,
+      valid,
+      invalid,
+      invalidText,
+    },
+    ref,
+  ) => {
+    const { t } = useTranslation();
 
-  const patternMatchingProps = usePatternMatching({
-    pattern: inputProps.pattern,
-  });
+    const patternMatchingProps = usePatternMatching({
+      pattern: inputProps.pattern,
+    });
 
-  function safeOnChange(val: string | number | null) {
-    if (
-      (typeof val === "string" && val.length === 0) ||
-      (typeof val === "number" && isNaN(val))
-    ) {
-      onChange(null);
-    } else {
-      onChange(val);
+    function safeOnChange(val: string | number | null) {
+      if (
+        (typeof val === "string" && val.length === 0) ||
+        (typeof val === "number" && isNaN(val))
+      ) {
+        onChange(null);
+      } else {
+        onChange(val);
+      }
     }
-  }
 
-  const isCurrencyInput = money && !!currencyConfig;
+    const isCurrencyInput = money && !!currencyConfig;
 
-  return (
-    <Root className={className}>
-      {isCurrencyInput ? (
-        <CurrencyInput
-          currencyConfig={currencyConfig}
-          placeholder={placeholder}
-          large={large}
-          value={value}
-          onChange={safeOnChange}
-        />
-      ) : (
-        <Input
-          placeholder={placeholder}
-          type={inputType}
-          onChange={(e) => {
-            let value: string | number | null = e.target.value;
-
-            if (inputType === "number") {
-              value = parseFloat(value);
-            }
-
-            safeOnChange(value);
-          }}
-          value={exists(value) ? value : ""}
-          large={large}
-          onBlur={onBlur}
-          {...inputProps}
-          {...patternMatchingProps}
-        />
-      )}
-      {exists(value) && !isEmpty(value) && (
-        <>
-          {valid && !invalid && <GreenIcon icon="check" large={large} />}
-          {invalid && (
-            <SxWithTooltip text={invalidText}>
-              <RedIcon icon="exclamation-triangle" large={large} />
-            </SxWithTooltip>
-          )}
-          <ClearZoneIconButton
-            tiny
-            icon="times"
-            tabIndex={-1}
+    return (
+      <Root className={className}>
+        {isCurrencyInput ? (
+          <CurrencyInput
+            currencyConfig={currencyConfig}
+            placeholder={placeholder}
             large={large}
-            title={t("common.clearValue")}
-            aria-label={t("common.clearValue")}
-            onClick={() => onChange(null)}
+            value={value as number | null}
+            onChange={safeOnChange}
           />
-        </>
-      )}
-    </Root>
-  );
-};
+        ) : (
+          <Input
+            placeholder={placeholder}
+            type={inputType}
+            ref={ref}
+            onChange={(e) => {
+              let value: string | number | null = e.target.value;
+
+              if (inputType === "number") {
+                value = parseFloat(value);
+              }
+
+              safeOnChange(value);
+            }}
+            value={exists(value) ? value : ""}
+            large={large}
+            onBlur={onBlur}
+            {...inputProps}
+            {...patternMatchingProps}
+          />
+        )}
+        {exists(value) && !isEmpty(value) && (
+          <>
+            {valid && !invalid && <GreenIcon icon="check" large={large} />}
+            {invalid && (
+              <SxWithTooltip text={invalidText}>
+                <RedIcon icon="exclamation-triangle" large={large} />
+              </SxWithTooltip>
+            )}
+            <ClearZoneIconButton
+              tiny
+              icon="times"
+              tabIndex={-1}
+              large={large}
+              title={t("common.clearValue")}
+              aria-label={t("common.clearValue")}
+              onClick={() => onChange(null)}
+            />
+          </>
+        )}
+      </Root>
+    );
+  },
+);
 
 export default BaseInput;

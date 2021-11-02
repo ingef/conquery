@@ -85,11 +85,6 @@ export interface SelectFilterT extends FilterBaseT {
   defaultValue: SelectFilterValueT | null;
 }
 
-export type StringFilterValueT = string;
-export interface StringFilterT extends FilterBaseT {
-  type: "STRING";
-}
-
 export interface DateColumnT {
   options: SelectOptionT[];
   defaultValue: string | null;
@@ -97,7 +92,6 @@ export interface DateColumnT {
 }
 
 export type FilterT =
-  | StringFilterT
   | SelectFilterT
   | MultiSelectFilterT
   | RangeFilterT
@@ -177,11 +171,7 @@ export interface FilterConfigT {
     | "SELECT"
     | "MULTI_SELECT"
     | "BIG_MULTI_SELECT";
-  value:
-    | StringFilterValueT
-    | RangeFilterValueT
-    | SelectFilterValueT
-    | FilterIdT[]; // Multi select
+  value: RangeFilterValueT | SelectFilterValueT | FilterIdT[]; // Multi select
 }
 
 export interface DateColumnConfigT {

@@ -205,10 +205,8 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
                         inputProps={{
                           autoFocus: true,
                         }}
-                        input={{
-                          value: label,
-                          onChange: setLabel,
-                        }}
+                        value={label}
+                        onChange={(value) => setLabel(value as string)}
                       />
                       <SxPrimaryButton type="submit">
                         {t("uploadConceptListModal.insertNode")}

@@ -114,10 +114,8 @@ const LoginPage = () => {
           <SxInputPlain
             label={t("login.username")}
             large
-            input={{
-              value: user,
-              onChange: setUser,
-            }}
+            value={user}
+            onChange={(value) => setUser(value as string)}
             inputProps={{
               disabled: loading,
             }}
@@ -126,10 +124,8 @@ const LoginPage = () => {
             inputType="password"
             label={t("login.password")}
             large
-            input={{
-              value: password,
-              onChange: setPassword,
-            }}
+            value={password}
+            onChange={(value) => setPassword(value as string)}
             inputProps={{
               disabled: loading,
             }}
