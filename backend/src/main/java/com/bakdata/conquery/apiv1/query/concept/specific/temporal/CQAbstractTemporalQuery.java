@@ -33,6 +33,11 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	 */
 	protected final CQSampled preceding;
 
+	/**
+	 * Create the {@link PrecedenceMatcher} specific to the implementing classes desired logic.
+	 * 
+	 * @see PrecedenceMatcher
+	 */
 	protected abstract PrecedenceMatcher createMatcher();
 
 	@Override
