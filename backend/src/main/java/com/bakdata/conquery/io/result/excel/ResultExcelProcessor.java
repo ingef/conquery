@@ -57,7 +57,7 @@ public class ResultExcelProcessor {
 
 		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel(), settings);
 
-		final ArrayList<ResultInfo> resultInfosId = new ArrayList<>();
+		final List<ResultInfo> resultInfosId = new ArrayList<>();
 
 		StreamingOutput out = output -> excelRenderer.renderToStream(resultInfosId,
 				(ManagedExecution<?> & SingleTableResult)exec,
