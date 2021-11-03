@@ -8,14 +8,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.util.Preconditions;
@@ -31,9 +30,7 @@ import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.complex.ListVector;
 import org.apache.arrow.vector.complex.StructVector;
 import org.apache.arrow.vector.ipc.ArrowWriter;
-import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
-import org.apache.arrow.vector.types.pojo.FieldType;
 import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.arrow.vector.util.Text;
 
@@ -42,25 +39,26 @@ public class ArrowRenderer {
 
     public static void renderToStream(
             Function<VectorSchemaRoot, ArrowWriter> writerProducer,
-            PrintSettings cfg,
+            PrintSettings printSettings,
             int batchSize,
-            List<String> idHeaders,
+            List<ResultInfo> idHeaders,
             List<ResultInfo> resultInfo,
             Stream<EntityResult> results) throws IOException {
 
         // Combine id and value Fields to one vector to build a schema
-        final List<Field> idFields = generateFieldsFromIdMapping(idHeaders);
+		final UniqueNamer uniqNamer = new UniqueNamer(printSettings);
+		final List<Field> idFields = generateFields(idHeaders, uniqNamer);
         List<Field> fields = new ArrayList<>(idFields);
-        fields.addAll(generateFieldsFromResultType(resultInfo, cfg));
+        fields.addAll(generateFields(resultInfo, uniqNamer));
         VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 
         // Build separate pipelines for id and value, as they have different sources but the same target
-        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), cfg, null);
-        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), cfg, resultInfo);
+        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), printSettings, null);
+        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), printSettings, resultInfo);
 
         // Write the data
         try (ArrowWriter writer = writerProducer.apply(root)) {
-            write(writer, root, idWriters, valueWriter, cfg.getIdMapper(), results, batchSize);
+            write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), results, batchSize);
         }
 
     }
@@ -317,21 +315,9 @@ public class ArrowRenderer {
         throw new IllegalArgumentException("Unsupported vector type " + vector);
     }
 
-    public static List<Field> generateFieldsFromIdMapping(List<String> idHeaders) {
-        Preconditions.checkArgument(idHeaders != null && idHeaders.size() > 0, "No id headers given");
-
-        ImmutableList.Builder<Field> fields = ImmutableList.builder();
-
-        for (String header : idHeaders) {
-            fields.add(new Field(header, FieldType.nullable(new ArrowType.Utf8()), null));
-        }
-
-        return fields.build();
-    }
-
-    public static List<Field> generateFieldsFromResultType(@NonNull List<ResultInfo> info, PrintSettings settings) {
+    public static List<Field> generateFields(@NonNull List<ResultInfo> info, UniqueNamer collector) {
         return info.stream()
-                .map(i -> ArrowUtil.createField(i, settings))
+                .map(i -> ArrowUtil.createField(i, collector))
                 .collect(Collectors.toUnmodifiableList());
 
     }

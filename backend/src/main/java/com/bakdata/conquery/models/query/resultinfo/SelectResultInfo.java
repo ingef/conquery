@@ -25,9 +25,9 @@ public class SelectResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public ColumnDescriptor asColumnDescriptor(PrintSettings settings) {
+	public ColumnDescriptor asColumnDescriptor(PrintSettings settings, UniqueNamer uniqueNamer) {
 		return ColumnDescriptor.builder()
-				.label(getUniqueName(settings))
+				.label(uniqueNamer.getUniqueName(this))
 				.defaultLabel(defaultColumnName(settings))
 				.userConceptLabel(userColumnName(settings))
 				.type(getType().typeInfo())

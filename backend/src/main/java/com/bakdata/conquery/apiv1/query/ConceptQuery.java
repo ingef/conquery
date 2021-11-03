@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -15,7 +16,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
@@ -75,7 +76,7 @@ public class ConceptQuery extends Query {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public void collectResultInfos(List<ResultInfo> collector) {
 		Preconditions.checkNotNull(resolvedDateAggregationMode);
 		if(!DateAggregationMode.NONE.equals(resolvedDateAggregationMode)) {
 			collector.add(ConqueryConstants.DATES_INFO);

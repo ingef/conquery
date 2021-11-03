@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import io.dropwizard.jersey.validation.Validators;
@@ -160,9 +161,10 @@ public class DefaultColumnNameTest {
 
 		final CQConcept cqConcept = concept.createCQConcept(hasCQConceptLabel);
 
+		final UniqueNamer uniqNamer = new UniqueNamer(SETTINGS);
 		SelectResultInfo info = new SelectResultInfo(concept.extractSelect(cqConcept), cqConcept);
 
-		assertThat(info.getUniqueName(SETTINGS)).isEqualTo(expectedColumnName);
+		assertThat(uniqNamer.getUniqueName(info)).isEqualTo(expectedColumnName);
 	}
 
 

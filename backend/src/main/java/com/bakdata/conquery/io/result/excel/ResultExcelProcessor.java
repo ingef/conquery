@@ -2,6 +2,8 @@ package com.bakdata.conquery.io.result.excel;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import javax.ws.rs.core.MediaType;
@@ -19,6 +21,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -55,8 +58,9 @@ public class ResultExcelProcessor {
 
 		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel(), settings);
 
-		StreamingOutput out = output -> excelRenderer.renderToStream(
-				config.getFrontend().getQueryUpload().getPrintIdFields(locale),
+		final List<ResultInfo> resultInfosId = new ArrayList<>();
+
+		StreamingOutput out = output -> excelRenderer.renderToStream(resultInfosId,
 				(ManagedExecution<?> & SingleTableResult)exec,
 				output
 		);

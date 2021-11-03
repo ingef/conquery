@@ -35,7 +35,6 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan.TableExportDescription;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -71,7 +70,7 @@ public class TableExportQuery extends Query {
 	private Map<Column, Integer> positions;
 
 	@JsonIgnore
-	private ResultInfo[] resultInfos = null;
+	private List<ResultInfo> resultInfos = null;
 
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
@@ -146,7 +145,7 @@ public class TableExportQuery extends Query {
 		resultInfos = createResultInfos(currentPosition.get(), secondaryIdPositions, positions);
 	}
 
-	private static ResultInfo[] createResultInfos(int size, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
+	private static List<ResultInfo> createResultInfos(int size, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
 
 		ResultInfo[] infos = new ResultInfo[size];
 
@@ -173,7 +172,7 @@ public class TableExportQuery extends Query {
 			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " - " + column.getLabel(), ResultType.resolveResultType(column.getType()));
 		}
 
-		return infos;
+		return List.of(infos);
 	}
 
 	private static Column findValidityDateColumn(Connector connector, ValidityDateContainer dateColumn) {
@@ -191,14 +190,12 @@ public class TableExportQuery extends Query {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public void collectResultInfos(List<ResultInfo> collector) {
 		if (resultInfos == null) {
 			return;
 		}
 
-		for (ResultInfo resultInfo : resultInfos) {
-			collector.add(resultInfo);
-		}
+		collector.addAll(resultInfos);
 	}
 
 	@Override

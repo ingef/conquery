@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -40,7 +39,6 @@ public class CsvResultGenerationTest {
 		// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
 		setStorage(new NonPersistentStoreFactory());
 	}};
-	List<String> printIdFields = List.of("id1", "id2");
 
 
 	@Test
@@ -57,13 +55,11 @@ public class CsvResultGenerationTest {
 		List<EntityResult> results = getTestEntityResults();
 
 		ManagedQuery mquery = new ManagedQuery(null, null, null) {
-			public List<ResultInfo> getResultInfo() {
-				ResultInfoCollector coll = new ResultInfoCollector();
-				coll.addAll(getResultTypes().stream()
+			public void collectResultInfos(List<ResultInfo> collector) {
+				collector.addAll(getResultTypes().stream()
 						.map(ResultTestUtil.TypedSelectDummy::new)
 						.map(select -> new SelectResultInfo(select, new CQConcept()))
 						.collect(Collectors.toList()));
-				return coll.getInfos();
 			}
 
 			;
@@ -78,12 +74,12 @@ public class CsvResultGenerationTest {
 		StringWriter writer = new StringWriter();
 
 		CsvRenderer renderer = new CsvRenderer(CONFIG.getCsv().createWriter(writer), printSettings);
-		renderer.toCSV(printIdFields, mquery.getResultInfo(), mquery.streamResults());
+		renderer.toCSV(ResultTestUtil.ID_FIELDS, mquery.getResultInfos(), mquery.streamResults());
 
 		String computed = writer.toString();
 
 
-		String expected = generateExpectedCSV(results, mquery.getResultInfo(), printSettings);
+		String expected = generateExpectedCSV(results, mquery.getResultInfos(), printSettings);
 
 		log.info("Wrote and than read this csv data: {}", computed);
 
@@ -94,7 +90,7 @@ public class CsvResultGenerationTest {
 
 	private String generateExpectedCSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings settings) {
 		List<String> expected = new ArrayList<>();
-		expected.add(String.join(",", printIdFields) + "," + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining(",")) + "\n");
+		expected.add(ResultTestUtil.ID_FIELDS.stream().map(info -> info.defaultColumnName(settings)).collect(Collectors.joining(",")) + "," + getResultTypes().stream().map(ResultType::typeInfo).collect(Collectors.joining(",")) + "\n");
 		results.stream()
 				.map(EntityResult.class::cast)
 				.forEach(res -> {
