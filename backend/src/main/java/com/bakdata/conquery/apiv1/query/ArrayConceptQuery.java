@@ -93,20 +93,24 @@ public class ArrayConceptQuery extends Query {
 	}
 
 	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
-		int lastIndex = Math.max(0,collector.size()-1);
-		childQueries.forEach(q -> q.collectResultInfos(collector));
+	public List<ResultInfo> getResultInfos() {
+		final List<ResultInfo> resultInfos = new ArrayList<>();
 		ResultInfo dateInfo = ConqueryConstants.DATES_INFO;
-		
-		if(!collector.isEmpty()) {
-			// Remove DateInfo from each childQuery			
-			collector.subList(lastIndex, collector.size()).removeAll(List.of(dateInfo));
-		}
 
 		if(!DateAggregationMode.NONE.equals(getResolvedDateAggregationMode())){
 			// Add one DateInfo for the whole Query
-			collector.add(0, dateInfo);
+			resultInfos.add(0, dateInfo);
 		}
+		int lastIndex = resultInfos.size();
+
+		childQueries.forEach(q -> resultInfos.addAll(q.getResultInfos()));
+
+		if(!resultInfos.isEmpty()) {
+			// Remove DateInfo from each childQuery			
+			resultInfos.subList(lastIndex, resultInfos.size()).removeAll(List.of(dateInfo));
+		}
+
+		return resultInfos;
 	}
 
 	@Override

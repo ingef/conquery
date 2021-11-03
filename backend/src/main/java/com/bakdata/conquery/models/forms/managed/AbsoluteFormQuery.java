@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.forms.managed;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -58,12 +59,15 @@ public class AbsoluteFormQuery extends Query {
 	}
 	
 	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
-		features.collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		collector.add(0, ConqueryConstants.RESOLUTION_INFO);
-		collector.add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
-		collector.add(2, ConqueryConstants.DATE_RANGE_INFO);
+		resultInfos.add(ConqueryConstants.RESOLUTION_INFO);
+		resultInfos.add(ConqueryConstants.CONTEXT_INDEX_INFO);
+		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
+		resultInfos.addAll(features.getResultInfos());
+
+		return resultInfos;
 	}
 
 	@Override

@@ -65,11 +65,11 @@ public class ExcelResultRenderTest {
 		List<EntityResult> results = getTestEntityResults();
 
 		ManagedQuery mquery = new ManagedQuery(null, null, null) {
-			public void collectResultInfos(List<ResultInfo> collector) {
-				collector.addAll(getResultTypes().stream()
+			public List<ResultInfo> getResultInfos() {
+				return getResultTypes().stream()
 						.map(ResultTestUtil.TypedSelectDummy::new)
 						.map(select -> new SelectResultInfo(select, new CQConcept()))
-						.collect(Collectors.toList()));
+						.collect(Collectors.toList());
 			}
 
 			@Override

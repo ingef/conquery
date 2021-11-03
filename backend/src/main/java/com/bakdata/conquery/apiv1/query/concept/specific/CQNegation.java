@@ -61,8 +61,8 @@ public class CQNegation extends CQElement {
 	}
 
 	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
-		child.collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		return child.getResultInfos();
 	}
 	
 	@Override

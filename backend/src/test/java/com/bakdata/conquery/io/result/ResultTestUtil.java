@@ -2,14 +2,17 @@ package com.bakdata.conquery.io.result;
 
 import java.util.List;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
@@ -19,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @UtilityClass
 public class ResultTestUtil {
@@ -47,7 +51,7 @@ public class ResultTestUtil {
 
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {
-		List<EntityResult> results = List.of(
+		return List.of(
 				new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, "CAT1", Resolution.DAYS.toString(), 5646, List.of(345, 534), "test_string", 4521, List.of(true, false), List.of(List.of(345, 534), List.of(1, 2)), List.of("fizz", "buzz")}),
 				new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null, null, null, null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()}),
 				new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, List.of(false, false), null, null}),
@@ -56,7 +60,26 @@ public class ResultTestUtil {
 						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, null, null, null, null},
 						new Object[]{Boolean.TRUE, null, null, null, null, null, null, null, 4, List.of(true, false, true, false), null, null}
 				)));
-		return results;
+	}
+
+
+
+	@NotNull
+	public static ManagedQuery getTestQuery() {
+		return new ManagedQuery(null, null, null) {
+			@Override
+			public List<ResultInfo> getResultInfos() {
+				return getResultTypes().stream()
+									   .map(ResultTestUtil.TypedSelectDummy::new)
+									   .map(select -> new SelectResultInfo(select, new CQConcept()))
+									   .collect(Collectors.toList());
+			}
+
+			@Override
+			public Stream<EntityResult> streamResults() {
+				return getTestEntityResults().stream();
+			}
+		};
 	}
 
 	public static class TypedSelectDummy extends Select {

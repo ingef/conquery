@@ -37,13 +37,7 @@ public abstract class Query implements QueryDescription {
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfos() {
-		final ArrayList<ResultInfo> resultInfos = new ArrayList<>();
-		collectResultInfos(resultInfos);
-		return resultInfos;
-	}
-	
-	public abstract void collectResultInfos(List<ResultInfo> collector);
+	public abstract List<ResultInfo> getResultInfos();
 	
 	@Override
 	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset) {

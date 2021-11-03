@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -112,14 +113,17 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	}
 
 	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
 		for (CQElement c : children) {
-			c.collectResultInfos(collector);
+			resultInfos.addAll(c.getResultInfos());
 		}
 
 		if (createExists()) {
-			collector.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
+			resultInfos.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
+
+		return resultInfos;
 	}
 
 	@Override

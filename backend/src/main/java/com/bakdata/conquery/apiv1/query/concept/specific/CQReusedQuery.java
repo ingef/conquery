@@ -89,8 +89,8 @@ public class CQReusedQuery extends CQElement {
 	}
 
 	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
-		resolvedQuery.getReusableComponents().collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		return resolvedQuery.getReusableComponents().getResultInfos();
 	}
 
 }

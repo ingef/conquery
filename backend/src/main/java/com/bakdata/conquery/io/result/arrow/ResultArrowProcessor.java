@@ -83,9 +83,9 @@ public class ResultArrowProcessor {
 		);
 
 
-		final List<ResultInfo> resultInfosId = new ArrayList<>();
-		final List<ResultInfo> resultInfosExec = new ArrayList<>();
-		exec.collectResultInfos(resultInfosExec);
+		// Collect ResultInfos for id columns and result columns
+		final List<ResultInfo> resultInfosId = config.getFrontend().getQueryUpload().getIdResultInfos();
+		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
 		StreamingOutput out = output -> renderToStream(
 				writerProducer.apply(output),

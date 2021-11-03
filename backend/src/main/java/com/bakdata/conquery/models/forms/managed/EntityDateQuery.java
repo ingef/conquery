@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -84,12 +85,16 @@ public class EntityDateQuery extends Query {
     }
 
     @Override
-    public void collectResultInfos(List<ResultInfo> collector) {
-        features.collectResultInfos(collector);
+    public List<ResultInfo> getResultInfos() {
+		List<ResultInfo>  resultInfos = new ArrayList<>();
+		resultInfos.add(ConqueryConstants.RESOLUTION_INFO);
+		resultInfos.add(ConqueryConstants.CONTEXT_INDEX_INFO);
+		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
 
-        collector.add(0, ConqueryConstants.RESOLUTION_INFO);
-        collector.add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
-        collector.add(2, ConqueryConstants.DATE_RANGE_INFO);
+		resultInfos.addAll(features.getResultInfos());
+
+		return resultInfos;
+
     }
 
     @Override
