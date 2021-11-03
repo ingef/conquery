@@ -1,5 +1,19 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -12,7 +26,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
@@ -38,12 +51,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -279,6 +286,18 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			List<Select> conSelects = new ArrayList<>(t.getSelects());
 			conSelects.addAll(t.getConnector().getDefaultSelects());
 			t.setSelects(conSelects);
+		}
+
+		if (Stream.concat(
+				getTables().stream()
+						   .map(CQTable::getSelects)
+						   .flatMap(List::stream),
+				getSelects().stream()
+		)
+				  .findAny()
+				  .isEmpty()) {
+			//TODO Create custom Exception and map it for frontend/users
+			throw new IllegalArgumentException("No selects were set after trying to set default selects.");
 		}
 	}
 }

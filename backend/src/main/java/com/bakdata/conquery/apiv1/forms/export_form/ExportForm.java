@@ -96,6 +96,9 @@ public class ExportForm extends Form {
 		queryGroup = (ManagedQuery) context.getDatasetRegistry().getMetaRegistry().resolve(queryGroupId);
 
 		timeMode.resolve(context);
+
+		//TODO check if at least one default select is set.
+
 		prerequisite = queryGroup.getQuery();
 
 
