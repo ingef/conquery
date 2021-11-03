@@ -38,17 +38,19 @@ public class UniqueNamer {
 	@NonNull
 	@JsonIgnore
 	public final String getUniqueName(ResultInfo info) {
-		@NonNull String uniqueName = Objects.requireNonNullElse(info.userColumnName(settings), info.defaultColumnName(settings));
+		@NonNull String label = Objects.requireNonNullElse(info.userColumnName(settings), info.defaultColumnName(settings));
 		// lookup if prefix is needed and computed it if necessary
-		int postfix = -1;
+		String uniqueName = label;
 		synchronized (ocurrenceCounter) {
+			int postfix = ocurrenceCounter.add(uniqueName, 1);
 			do {
-				ocurrenceCounter.add(uniqueName);
-				postfix = ocurrenceCounter.count(uniqueName) - 1 ;
 
-				uniqueName = (postfix > 0) ? uniqueName + "_" + postfix : uniqueName;
+				if (postfix > 0) {
+					uniqueName = label + "_" + postfix;
+					postfix = ocurrenceCounter.add(uniqueName, 1);
+				}
 
-			} while (postfix > 0 && ocurrenceCounter.contains(uniqueName));
+			} while (ocurrenceCounter.count(uniqueName) > 1);
 		}
 		return uniqueName;
 	}

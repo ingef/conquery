@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.excel;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import javax.ws.rs.core.MediaType;
