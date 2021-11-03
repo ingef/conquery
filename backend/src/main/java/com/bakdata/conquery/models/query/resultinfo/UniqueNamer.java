@@ -38,17 +38,17 @@ public class UniqueNamer {
 	@NonNull
 	@JsonIgnore
 	public final String getUniqueName(ResultInfo info) {
-		@NonNull String label = Objects.requireNonNullElse(info.userColumnName(settings), info.defaultColumnName(settings));
+		@NonNull String uniqueName = Objects.requireNonNullElse(info.userColumnName(settings), info.defaultColumnName(settings));
 		// lookup if prefix is needed and computed it if necessary
 		int postfix = -1;
 		synchronized (ocurrenceCounter) {
-			ocurrenceCounter.add(label);
-			postfix = ocurrenceCounter.count(label) - 1 ;
-		}
-		String uniqueName = (postfix > 0) ? label + "_" + postfix : label;
-		if (ocurrenceCounter.count(uniqueName) > 0) {
-			log.warn(
-					"Even with postfixing the result will contain column name duplicates. This might be caused by another column that is having a number postfix by default.");
+			do {
+				ocurrenceCounter.add(uniqueName);
+				postfix = ocurrenceCounter.count(uniqueName) - 1 ;
+
+				uniqueName = (postfix > 0) ? uniqueName + "_" + postfix : uniqueName;
+
+			} while (postfix > 0 && ocurrenceCounter.contains(uniqueName));
 		}
 		return uniqueName;
 	}

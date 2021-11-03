@@ -84,7 +84,6 @@ public class ResultArrowProcessor {
 
 
 		final List<ResultInfo> resultInfosId = new ArrayList<>();
-		config.getFrontend().getQueryUpload().getIdResultInfos();
 		final List<ResultInfo> resultInfosExec = new ArrayList<>();
 		exec.collectResultInfos(resultInfosExec);
 
