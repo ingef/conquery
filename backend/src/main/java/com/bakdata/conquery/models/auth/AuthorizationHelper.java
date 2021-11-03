@@ -59,7 +59,7 @@ public class AuthorizationHelper {
 		if(groups.isEmpty()) {
 			return Optional.empty();
 		}
-		// TODO: 17.02.2020 implement primary flag for subject etc.
+		// TODO: 17.02.2020 implement primary flag for group
 		return Optional.of(groups.get(0));
 	}
 
