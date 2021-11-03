@@ -3,10 +3,12 @@ package com.bakdata.conquery.resources.admin.rest;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -16,7 +18,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
@@ -24,7 +29,11 @@ import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -89,8 +98,10 @@ public class AdminResource {
 
     @GET
     @Path("logout")
-    public Response logout() {
-        return Response.ok().cookie(AuthenticationConfig.expireAuthCookie()).build();
+    public Response logout(@Context ContainerRequestContext requestContext) {
+    	// Invalidate all cookies. At the moment the adminEnd uses cookies only for authentication, so this does not interfere with other things
+		final NewCookie[] expiredCookies = requestContext.getCookies().keySet().stream().map(AuthenticationConfig::expireCookie).toArray(NewCookie[]::new);
+		return Response.ok().cookie(expiredCookies).build();
     }
 
     @GET
@@ -99,9 +110,20 @@ public class AdminResource {
         final MetaStorage storage = processor.getStorage();
         final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
         return storage.getAllExecutions().stream()
-                .map(t -> t.buildStatusFull(storage, subject, datasetRegistry, processor.getConfig()))
-                .filter(t -> t.getCreatedAt().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
-                .limit(limit.orElse(100))
-                .toArray(FullExecutionStatus[]::new);
+					.map(t -> {
+						try {
+							return t.buildStatusFull(storage, subject, datasetRegistry, processor.getConfig());
+						} catch (ConqueryError e) {
+							// Initialization of execution probably failed, so we construct a status based on the overview status
+							final FullExecutionStatus fullExecutionStatus = new FullExecutionStatus();
+							t.setStatusBase(currentUser, fullExecutionStatus);
+							fullExecutionStatus.setStatus(ExecutionState.FAILED);
+							fullExecutionStatus.setError(e);
+							return fullExecutionStatus;
+						}
+					})
+					.filter(t -> t.getCreatedAt().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
+					.limit(limit.orElse(100))
+					.toArray(FullExecutionStatus[]::new);
     }
 }

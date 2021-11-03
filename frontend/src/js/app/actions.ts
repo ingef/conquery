@@ -8,6 +8,7 @@ import type { SnackMessageActions } from "../snack-message/actions";
 import type { StandardQueryEditorActions } from "../standard-query-editor/actions";
 import type { StartupActions } from "../startup/actions";
 import type { TimebasedActions } from "../timebased-query-editor/actions";
+import type { TooltipActions } from "../tooltip/actions";
 import type { UploadConceptListModalActions } from "../upload-concept-list-modal/actions";
 
 type ReduxInitAction = { type: "@@INIT" };
@@ -24,4 +25,5 @@ export type Action =
   | SnackMessageActions
   | PreviousQueryListActions
   | TimebasedActions
-  | StartupActions;
+  | StartupActions
+  | TooltipActions;

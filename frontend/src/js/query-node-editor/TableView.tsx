@@ -1,9 +1,14 @@
 import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
-import type { CurrencyConfigT, DatasetIdT, SelectOptionT } from "../api/types";
+import type {
+  CurrencyConfigT,
+  DatasetIdT,
+  SelectOptionT,
+  SelectorResultType,
+} from "../api/types";
 import type { ConceptQueryNodeType } from "../standard-query-editor/types";
 import type { ModeT } from "../ui-components/InputRange";
 
@@ -27,6 +32,8 @@ interface PropsT {
   tableIdx: number;
   datasetId: DatasetIdT;
   currencyConfig: CurrencyConfigT;
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
 
   onShowDescription: (filterIdx: number) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
@@ -50,6 +57,8 @@ const TableView: FC<PropsT> = ({
   onShowDescription,
   datasetId,
   currencyConfig,
+  allowlistedSelects,
+  blocklistedSelects,
 
   onSelectTableSelects,
   onSetDateColumn,
@@ -74,6 +83,8 @@ const TableView: FC<PropsT> = ({
           {table.selects && table.selects.length > 0 && (
             <TableSelects
               selects={table.selects}
+              allowlistedSelects={allowlistedSelects}
+              blocklistedSelects={blocklistedSelects}
               onSelectTableSelects={(value) =>
                 onSelectTableSelects(tableIdx, value)
               }

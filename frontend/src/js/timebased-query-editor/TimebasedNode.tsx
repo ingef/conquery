@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useRef, FC } from "react";
+import { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 

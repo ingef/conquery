@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC, forwardRef, ReactNode } from "react";
+import { forwardRef, ReactNode } from "react";
 
 import { Heading4 } from "../headings/Headings";
 

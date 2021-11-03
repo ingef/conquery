@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.jackson;
 import java.util.Locale;
 
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -27,6 +26,17 @@ public class Jackson {
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
 		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
+	}
+
+	/**
+	 * Helper method that also creates a copy of the injected values to reduce side effects.
+	 * @param om the {@link ObjectMapper} which is copied. Its {@link com.fasterxml.jackson.databind.InjectableValues} must be {@link MutableInjectableValues}
+	 * @return A copy of the {@link ObjectMapper} along with a copy of its {@link MutableInjectableValues}.
+	 */
+	public static ObjectMapper copyMapperAndInjectables(ObjectMapper om) {
+		final ObjectMapper copy = om.copy();
+		copy.setInjectableValues(((MutableInjectableValues)copy.getInjectableValues()).copy());
+		return copy;
 	}
 
 	public static <T extends ObjectMapper> T configure(T objectMapper){

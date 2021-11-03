@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";

@@ -19,6 +19,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredTable;
+import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -79,7 +80,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -205,12 +206,13 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 													 .orElseThrow();
 
 
-			final String path = import2Table.getCsv().getPath();
+			final ResourceFile csv = import2Table.getCsv();
+			final String path = csv.getPath();
 
 			//copy csv to tmp folder
 			// Content 2.2 contains an extra entry of a value that hasn't been seen before.
 			FileUtils.copyInputStreamToFile(In.resource(path.substring(0, path.lastIndexOf('/')) + "/" + "content2.2.csv")
-											  .asStream(), new File(conquery.getTmpDir(), import2Table.getCsv().getName()));
+											  .asStream(), new File(conquery.getTmpDir(), csv.getName()));
 
 			File descriptionFile = new File(conquery.getTmpDir(), import2Table.getName() + ConqueryConstants.EXTENSION_DESCRIPTION);
 			File preprocessedFile =  new File(conquery.getTmpDir(), import2Table.getName() + ConqueryConstants.EXTENSION_PREPROCESSED);
@@ -223,7 +225,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			TableInputDescriptor input = new TableInputDescriptor();
 			{
 				input.setPrimary(IntegrationUtils.copyOutput(import2Table.getPrimaryColumn()));
-				input.setSourceFile(import2Table.getCsv().getName());
+				input.setSourceFile(csv.getName());
 				input.setOutput(new OutputDescription[import2Table.getColumns().length]);
 				for (int i = 0; i < import2Table.getColumns().length; i++) {
 					input.getOutput()[i] = IntegrationUtils.copyOutput(import2Table.getColumns()[i]);

@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { useRef, FC } from "react";
+import { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -16,7 +16,6 @@ import QueryNodeActions from "./QueryNodeActions";
 import { getRootNodeLabel } from "./helper";
 import {
   StandardQueryNodeT,
-  DragItemQuery,
   PreviousQueryQueryNodeType,
   DragItemNode,
 } from "./types";
@@ -182,6 +181,7 @@ const QueryNode: FC<PropsT> = ({
 
           additionalInfos: node.additionalInfos,
           matchingEntries: node.matchingEntries,
+          matchingEntities: node.matchingEntities,
           dateRange: node.dateRange,
         }),
   };
@@ -194,50 +194,52 @@ const QueryNode: FC<PropsT> = ({
   });
 
   return (
-    <Root
-      ref={(instance) => {
-        ref.current = instance;
-        drag(instance);
-      }}
-      hasActiveFilters={hasActiveFilters}
-      onClick={!!node.error ? () => {} : onEditClick}
-    >
-      <Node>
-        {node.isPreviousQuery && (
-          <PreviousQueryLabel>
-            {t("queryEditor.previousQuery")}
-          </PreviousQueryLabel>
-        )}
-        {node.error ? (
-          <StyledErrorMessage message={node.error} />
-        ) : (
-          <>
-            {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-            <Label>{node.label || node.id}</Label>
-            {node.description && (!node.ids || node.ids.length === 1) && (
-              <Description>{node.description}</Description>
-            )}
-          </>
-        )}
-      </Node>
-      <QueryNodeActions
-        excludeTimestamps={node.excludeTimestamps}
-        onDeleteNode={onDeleteNode}
-        onToggleTimestamps={onToggleTimestamps}
-        isExpandable={isQueryExpandable(node)}
-        hasActiveSecondaryId={hasActiveSecondaryId}
-        excludeFromSecondaryIdQuery={node.excludeFromSecondaryIdQuery}
-        onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
-        onExpandClick={() => {
-          if (!node.query) return;
-
-          onExpandClick(node.query);
+    <AdditionalInfoHoverable node={node}>
+      <Root
+        ref={(instance) => {
+          ref.current = instance;
+          drag(instance);
         }}
-        previousQueryLoading={node.loading}
-        error={node.error}
-      />
-    </Root>
+        hasActiveFilters={hasActiveFilters}
+        onClick={!!node.error ? () => {} : onEditClick}
+      >
+        <Node>
+          {node.isPreviousQuery && (
+            <PreviousQueryLabel>
+              {t("queryEditor.previousQuery")}
+            </PreviousQueryLabel>
+          )}
+          {node.error ? (
+            <StyledErrorMessage message={node.error} />
+          ) : (
+            <>
+              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
+              <Label>{node.label || node.id}</Label>
+              {node.description && (!node.ids || node.ids.length === 1) && (
+                <Description>{node.description}</Description>
+              )}
+            </>
+          )}
+        </Node>
+        <QueryNodeActions
+          excludeTimestamps={node.excludeTimestamps}
+          onDeleteNode={onDeleteNode}
+          onToggleTimestamps={onToggleTimestamps}
+          isExpandable={isQueryExpandable(node)}
+          hasActiveSecondaryId={hasActiveSecondaryId}
+          excludeFromSecondaryIdQuery={node.excludeFromSecondaryIdQuery}
+          onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
+          onExpandClick={() => {
+            if (!node.query) return;
+
+            onExpandClick(node.query);
+          }}
+          previousQueryLoading={node.loading}
+          error={node.error}
+        />
+      </Root>
+    </AdditionalInfoHoverable>
   );
 };
 
-export default AdditionalInfoHoverable(QueryNode);
+export default QueryNode;

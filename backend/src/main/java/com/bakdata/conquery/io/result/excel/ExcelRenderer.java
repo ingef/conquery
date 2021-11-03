@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.result.excel;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -12,6 +13,8 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
+import io.dropwizard.util.Strings;
+import org.apache.poi.ooxml.POIXMLProperties;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -71,9 +74,9 @@ public class ExcelRenderer {
             OutputStream outputStream) throws IOException {
         List<ResultInfo> info = exec.getResultInfo();
 
+		setMetaData(exec);
 
-
-        SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
+		SXSSFSheet sheet = workbook.createSheet(C10N.get(ExcelSheetNameC10n.class, I18n.LOCALE.get()).result());
         try {
             sheet.setDefaultColumnWidth(config.getDefaultColumnWidth());
 
@@ -93,7 +96,21 @@ public class ExcelRenderer {
 
     }
 
-    /**
+	/**
+	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
+	 */
+	private <E extends ManagedExecution<?> & SingleTableResult> void setMetaData(E exec) {
+		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
+		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
+
+		final User owner = exec.getOwner();
+		coreProperties.setCreator(owner != null ? owner.getLabel() : config.getApplicationName());
+		coreProperties.setKeywords(String.join(" ", exec.getTags()));
+		final POIXMLProperties.ExtendedProperties extendedProperties = workbook.getXSSFWorkbook().getProperties().getExtendedProperties();
+		extendedProperties.setApplication(config.getApplicationName());
+	}
+
+	/**
      * Do postprocessing on the result to improve the visuals:
      * - Set the area of the table environment
      * - Freeze the id columns
@@ -191,8 +208,8 @@ public class ExcelRenderer {
 			Stream<EntityResult> resultLines) {
 
 		// Row 0 is the Header the data starts at 1
-		AtomicInteger currentRow = new AtomicInteger(1);
-		final int writtenLines = resultLines.mapToInt(l -> this.writeRowsForEntity(infos, l, () -> sheet.createRow(currentRow.getAndIncrement()), cfg, sheet)).sum();
+		final AtomicInteger currentRow = new AtomicInteger(1);
+		final int writtenLines = resultLines.mapToInt(l -> this.writeRowsForEntity(infos, l, currentRow, cfg, sheet)).sum();
 
 		// The result was shorter than the number of rows to track, so we auto size here explicitly
 		if (writtenLines < config.getLastRowToAutosize()){
@@ -208,7 +225,7 @@ public class ExcelRenderer {
 	private int writeRowsForEntity(
 			List<ResultInfo> infos,
 			EntityResult internalRow,
-			Supplier<Row> externalRowSupplier,
+			final AtomicInteger currentRow,
 			PrintSettings settings,
 			SXSSFSheet sheet) {
 		String[] ids = settings.getIdMapper().map(internalRow).getExternalId();
@@ -216,7 +233,8 @@ public class ExcelRenderer {
 		int writtenLines = 0;
 
 		for (Object[] resultValues : internalRow.listResultLines()) {
-			Row row = externalRowSupplier.get();
+			final int thisRow = currentRow.getAndIncrement();
+			Row row = sheet.createRow(thisRow);
 			// Write id cells
 			int currentColumn = 0;
 			for (String id : ids) {
@@ -240,11 +258,12 @@ public class ExcelRenderer {
 
 				typeWriter.writeCell(resultInfo, settings, dataCell, resultValue, styles);
 			}
-			writtenLines++;
 
-			if (writtenLines == config.getLastRowToAutosize()){
+			if (thisRow == config.getLastRowToAutosize()){
+				// Last row rows to track for auto sizing the column width is reached. Untrack to remove the performance penalty.
 				setColumnWidthsAndUntrack(sheet);
 			}
+			writtenLines++;
 		}
 		return writtenLines;
 	}

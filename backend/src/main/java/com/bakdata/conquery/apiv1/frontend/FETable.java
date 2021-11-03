@@ -6,6 +6,7 @@ import java.util.Set;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,5 +21,7 @@ public class FETable {
 	private FEValidityDate dateColumn;
 	private List<FEFilter> filters;
 	private List<FESelect> selects;
+	@JsonProperty("default")
+	private Boolean isDefault;
 	private Set<SecondaryIdDescriptionId> supportedSecondaryIds;
 }

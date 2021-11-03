@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.storage;
 
-import java.io.IOException;
-
 import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;

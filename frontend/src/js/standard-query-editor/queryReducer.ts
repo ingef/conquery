@@ -104,6 +104,7 @@ const filterItem = (
 
       additionalInfos: item.additionalInfos,
       matchingEntries: item.matchingEntries,
+      matchingEntities: item.matchingEntities,
       dateRange: item.dateRange,
 
       isPreviousQuery: item.isPreviousQuery,
@@ -811,8 +812,8 @@ const onToggleSecondaryIdExclude = (
   { andIdx, orIdx }: ActionType<typeof toggleSecondaryIdExclude>["payload"],
 ) => {
   return setElementProperties(state, andIdx, orIdx, {
-    excludeFromSecondaryIdQuery: !state[andIdx].elements[orIdx]
-      .excludeFromSecondaryIdQuery,
+    excludeFromSecondaryIdQuery:
+      !state[andIdx].elements[orIdx].excludeFromSecondaryIdQuery,
   });
 };
 

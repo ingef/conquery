@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC, ReactElement } from "react";
+import { FC, ReactElement } from "react";
 
 import FaIcon from "../icon/FaIcon";
 

@@ -1,8 +1,8 @@
-import React, { FC } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectedDateColumnT } from "../standard-query-editor/types";
-import InputSelect from "../ui-components/InputSelect";
+import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 interface PropsT {
   dateColumn: SelectedDateColumnT;
@@ -17,9 +17,11 @@ const DateColumnSelect: FC<PropsT> = ({ dateColumn, onSelectDateColumn }) => {
       <InputSelect
         label={t("queryNodeEditor.dateColumn")}
         options={dateColumn.options}
-        input={{
-          value: dateColumn.value,
-          onChange: onSelectDateColumn,
+        value={
+          dateColumn.options.find((op) => op.value === dateColumn.value) || null
+        }
+        onChange={(value) => {
+          if (value) onSelectDateColumn(value.value as string);
         }}
       />
     </div>

@@ -1,13 +1,12 @@
 package com.bakdata.conquery.util;
 
-import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
-import com.bakdata.conquery.io.storage.Store;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.function.BiConsumer;
+
+import com.bakdata.conquery.io.storage.Store;
+import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 
 public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 

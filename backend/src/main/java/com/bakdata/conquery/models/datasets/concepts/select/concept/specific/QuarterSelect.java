@@ -1,10 +1,11 @@
-package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
+package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuarterAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -17,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @CPSType(id = "QUARTER", base = Select.class)
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-public class QuarterSelect extends Select {
+public class QuarterSelect extends UniversalSelect {
 
 	@NotNull
 	private final TemporalSampler sample;

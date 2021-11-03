@@ -123,7 +123,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		unreadableValuesDumpDir = unreadableDataDumpDirectory;
 		if(unreadableValuesDumpDir != null) {
-			if(!unreadableValuesDumpDir.exists() && unreadableValuesDumpDir.mkdirs()) {
+			if(!unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.mkdirs()) {
 				throw new IllegalStateException("Could not create dump directory: " + unreadableValuesDumpDir);
 			}
 			else if(!unreadableValuesDumpDir.isDirectory()) {
@@ -247,12 +247,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			if(unreadableValuesDumpDir != null) {
 				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), unreadableValuesDumpDir, store.getName(), objectMapper);
 			}
-			if(log.isTraceEnabled()){
-				// With trace also print the stacktrace
-				log.trace(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
-			} else {
-				log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), e);
-			}
+			// With trace also print the stacktrace
+			log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), (Throwable) (log.isTraceEnabled()? e : null));
 		}
 		return null;
 	}

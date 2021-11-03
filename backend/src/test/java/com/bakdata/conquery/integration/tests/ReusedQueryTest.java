@@ -12,6 +12,14 @@ import java.util.Set;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -20,13 +28,12 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -35,13 +42,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.apiv1.query.ConceptQuery;
-import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -80,7 +80,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 		}
 

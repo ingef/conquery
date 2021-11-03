@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 
 import type { ConceptIdT, InfoT, DateRangeT, ConceptT } from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
@@ -23,6 +23,7 @@ interface TreeNodeData {
   description: string;
   active: boolean;
   matchingEntries: number;
+  matchingEntities: number;
   dateRange: DateRangeT;
   additionalInfos: InfoT[];
   children: ConceptIdT[];
@@ -42,6 +43,7 @@ const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({
   description: concept.description,
   active: concept.active,
   matchingEntries: concept.matchingEntries,
+  matchingEntities: concept.matchingEntities,
   dateRange: concept.dateRange,
   additionalInfos: concept.additionalInfos,
   children: concept.children,
@@ -78,6 +80,7 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
 
           additionalInfos: data.additionalInfos,
           matchingEntries: data.matchingEntries,
+          matchingEntities: data.matchingEntities,
           dateRange: data.dateRange,
 
           children: data.children,
@@ -98,6 +101,7 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
 
             additionalInfos: data.additionalInfos,
             matchingEntries: data.matchingEntries,
+            matchingEntities: data.matchingEntities,
             dateRange: data.dateRange,
 
             tree: data.tree,

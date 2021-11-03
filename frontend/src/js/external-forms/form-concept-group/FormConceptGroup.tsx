@@ -1,12 +1,15 @@
 import styled from "@emotion/styled";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import type { WrappedFieldProps } from "redux-form";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
-import { PostFilterSuggestionsResponseT } from "../../api/types";
-import TransparentButton from "../../button/TransparentButton";
+import {
+  PostFilterSuggestionsResponseT,
+  SelectorResultType,
+} from "../../api/types";
+import { TransparentButton } from "../../button/TransparentButton";
 import {
   CONCEPT_TREE_NODE,
   FORM_CONCEPT_NODE,
@@ -57,6 +60,8 @@ interface Props extends WrappedFieldProps {
   disallowMultipleColumns?: boolean;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
   defaults: ConceptListDefaultsType;
   isValidConcept?: Function;
 }
@@ -410,6 +415,7 @@ const Row = styled("div")`
 
 const SxTransparentButton = styled(TransparentButton)`
   margin-left: 10px;
+  flex-shrink: 0;
 `;
 
 const SxDescription = styled(Description)`
@@ -697,6 +703,8 @@ const FormConceptGroup = (props: Props) => {
         fieldName={props.input.name}
         blocklistedTables={props.blocklistedTables}
         allowlistedTables={props.allowlistedTables}
+        blocklistedSelects={props.blocklistedSelects}
+        allowlistedSelects={props.allowlistedSelects}
         onCloseModal={(valueIdx, conceptIdx) =>
           props.input.onChange(
             setConceptProperties(props.input.value, valueIdx, conceptIdx, {

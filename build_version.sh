@@ -2,4 +2,4 @@
 
 mvn clean initialize -P setVersion
 
-mvn -T 1C package -DskipTests -pl executable -am
+mvn -T 1C package -Dmaven.test.skip=true -DskipTests -pl executable -am

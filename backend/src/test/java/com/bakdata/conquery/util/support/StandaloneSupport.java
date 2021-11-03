@@ -1,6 +1,5 @@
 package com.bakdata.conquery.util.support;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -66,6 +65,7 @@ public class StandaloneSupport {
 						"in", tmpDir,
 						"out", tmpDir,
 						"desc", descriptions
+
 				)
 		);
 

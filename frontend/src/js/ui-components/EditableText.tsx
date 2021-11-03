@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React from "react";
+import { FC } from "react";
 import Highlighter from "react-highlight-words";
 
 import IconButton from "../button/IconButton";
@@ -40,7 +40,7 @@ const SxHighlightableLabel = styled(HighlightableLabel)`
   white-space: nowrap;
 `;
 
-const EditableText: React.FC<PropsT> = (props) => {
+const EditableText: FC<PropsT> = (props) => {
   return props.editing ? (
     <EditableTextForm
       className={props.className}

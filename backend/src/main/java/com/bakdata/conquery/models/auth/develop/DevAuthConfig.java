@@ -1,14 +1,11 @@
 package com.bakdata.conquery.models.auth.develop;
 
-import java.util.List;
-
-import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
-import com.google.common.base.Preconditions;
+import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 
 /**
  * Default configuration for the auth system. Sets up all other default components.

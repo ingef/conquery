@@ -11,6 +11,8 @@ const Container = styled("div")<{ active?: boolean }>`
   background-color: ${({ theme }) => theme.col.grayVeryLight};
   padding: 1px 5px;
   font-size: ${({ theme }) => theme.font.sm};
+  color: ${({ theme }) => theme.col.black};
+  box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.8);
 `;
 
 const SxIconButton = styled(IconButton)`
@@ -21,14 +23,15 @@ const SelectedItem = forwardRef<
   HTMLDivElement,
   {
     active?: boolean;
+    disabled?: boolean;
     option: SelectOptionT;
     onRemoveClick: () => void;
   }
->(({ option, active, onRemoveClick, ...rest }, ref) => {
+>(({ option, disabled, onRemoveClick, ...rest }, ref) => {
   return (
-    <Container ref={ref} active={active} {...rest}>
+    <Container ref={ref} {...rest}>
       <span>{option.label}</span>
-      <SxIconButton icon="times" onClick={onRemoveClick} />
+      <SxIconButton icon="times" disabled={disabled} onClick={onRemoveClick} />
     </Container>
   );
 });

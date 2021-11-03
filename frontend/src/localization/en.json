@@ -160,6 +160,8 @@
   "tooltip": {
     "headline": "Info",
     "placeholder": "More information on a concept ...",
+    "entitiesFound": "entity",
+    "entitiesFound_plural": "entities",
     "entriesFound": "entry",
     "entriesFound_plural": "entries",
     "date": {
@@ -194,7 +196,8 @@
     "dndPlaceholder": "Choose or drop file ...",
     "openFileDialog": "Select file",
     "insertAll": "Insert all",
-    "options": "options",
+    "options": "1 Option",
+    "options_plural": "{{count}} Options",
     "tagPlaceholder": "Folder ...",
     "createTag": "Create folder: {{label}}"
   },
@@ -323,7 +326,7 @@
     "dateSet": "Date set",
     "startDate": "Start date",
     "endDate": "End date",
-    "extra" : "Additional Column",
+    "extra": "Additional Column",
     "ignore": "IGNORE",
     "partialSuccess": "Upload partially successful.",
     "resolved": "1 line resolved.",

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React from "react";
+import { forwardRef } from "react";
 
 import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
 
@@ -60,7 +60,7 @@ export interface IconButtonPropsT extends BasicButtonProps {
 }
 
 // A button that is prefixed by an icon
-const IconButton = React.forwardRef<HTMLButtonElement, IconButtonPropsT>(
+const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
   (
     {
       icon,

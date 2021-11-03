@@ -15,7 +15,7 @@ An `AuthorizationConfig` defines the initial users that are created on applicati
 Different types of AuthorizationConfig can be used by setting `type` to one of the following values:
 
 
-### DEFAULT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/DefaultAuthorizationConfig.java#L11)</sup></sub></sup>
+### DEFAULT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/DefaultAuthorizationConfig.java#L12)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -26,7 +26,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/DevelopmentAuthorizationConfig.java#L16)</sup></sub></sup>
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/DevelopmentAuthorizationConfig.java#L17)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -47,18 +47,7 @@ An `AuthenticationConfig` is used to define how specific realms for authenticati
 Different types of AuthenticationRealmFactory can be used by setting `type` to one of the following values:
 
 
-### API_TOKEN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/ApiTokenRealmFactory.java#L27)</sup></sub></sup>
-
-
-<details><summary>Details</summary><p>
-
-Java Type: `com.bakdata.conquery.models.config.auth.ApiTokenRealmFactory`
-
-No fields can be set for this type.
-
-</p></details>
-
-### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevAuthConfig.java#L13-L16)</sup></sub></sup>
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevAuthConfig.java#L9-L12)</sup></sub></sup>
 Default configuration for the auth system. Sets up all other default components. This configuration causes that every request is handled as invoked by the super user.
 
 <details><summary>Details</summary><p>
@@ -69,7 +58,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### JWT_PKCE_REALM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L49-L60)</sup></sub></sup>
+### JWT_PKCE_REALM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L51-L62)</sup></sub></sup>
 A realm that verifies oauth tokens using PKCE. Since the adminEnd-UI mainly works with direct links that do not support setting of the Authorization-header to transport an access token and it also does not support the oauth code flow, this realm proxies the flow. 1. The user/client is redirected to the IDP for authentication and redirected back to the adminEnd 2. The this realm then picks up the code the transported authorization code from the query and redeems it for an access token and refresh token. 3. Both are converted to cookies, which are saved on the client upon redirection to the page the user initially wanted to visit. 4. With the redirection the client sends back the cookies from which the adminEnd extracts the access token and verifies it. (5.) If the previous step failed. The refresh token is extracted and exchanged for a fresh access token and refresh token and continues with step 3.
 
 <details><summary>Details</summary><p>
@@ -80,12 +69,12 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L74) | additionalTokenChecks | list of `String` | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L97-L100) | alternativeIdClaims | list of `String` | `[]` |  | Which claims hold alternative Ids of the user in case the user name does not match a user. Pay attention, that the user must not be able to alter the value of any of these claims. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L68-L71) | client | `String` | `null` |  | The client id is also used as the expected audience in the validated token. Ensure that the IDP is configured accordingly. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L83-L85) | idpConfiguration | `IdpConfiguration` | `null` |  | See wellKnownEndpoint. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L88-L92) | tokenLeeway | `@javax.validation.constraints.Min(0) int` | `60` |  | A leeway for token's expiration in seconds, this should be a short time. <p> One Minute is the default. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L77-L80) | wellKnownEndpoint | `URI` | `null` |  | Either the wellKnownEndpoint from which an idpConfiguration can be obtained or the idpConfiguration must be supplied. If the idpConfiguration is given, the wellKnownEndpoint is ignored. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L76) | additionalTokenChecks | list of `String` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L99-L102) | alternativeIdClaims | list of `String` | `[]` |  | Which claims hold alternative Ids of the user in case the user name does not match a user. Pay attention, that the user must not be able to alter the value of any of these claims. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L70-L73) | client | `String` | `null` |  | The client id is also used as the expected audience in the validated token. Ensure that the IDP is configured accordingly. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L85-L87) | idpConfiguration | `IdpConfiguration` | `null` |  | See wellKnownEndpoint. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L90-L94) | tokenLeeway | `@javax.validation.constraints.Min(0) int` | `60` |  | A leeway for token's expiration in seconds, this should be a short time. <p> One Minute is the default. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/JwtPkceVerifyingRealmFactory.java#L79-L82) | wellKnownEndpoint | `URI` | `null` |  | Either the wellKnownEndpoint from which an idpConfiguration can be obtained or the idpConfiguration must be supplied. If the idpConfiguration is given, the wellKnownEndpoint is ignored. | 
 </p></details>
 
 ### LOCAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/LocalAuthenticationConfig.java#L35)</sup></sub></sup>
@@ -417,7 +406,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java#L51) | treeMaxPageSize | `int` or `null` | `null` |  |  | 
 </p></details>
 
-### Type XodusStoreFactory<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L88)</sup></sub></sup>
+### Type XodusStoreFactory<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L90)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -428,12 +417,12 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L132) | directory | `Path` | `"file://./storage"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L143) | nThreads | `@javax.validation.constraints.Min(1) int` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L146-L148) | removeUnreadableFromStore | `boolean` | `false` |  | Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L151-L153) | unreadableDataDumpDirectory | `File` | `null` |  | When set, all values that could not be deserialized from the persistent store, are dump into individual files. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L139) | useWeakDictionaryCaching | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L134) | validateOnWrite | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L140) | weakCacheDuration | `@NotNull Duration` | `"48 hours"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L135) | xodus | [XodusConfig](#Type-XodusConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L134) | directory | `Path` | `"file://./storage"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L145) | nThreads | `@javax.validation.constraints.Min(1) int` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L148-L150) | removeUnreadableFromStore | `boolean` | `false` |  | Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L153-L155) | unreadableDataDumpDirectory | `File` | `null` |  | When set, all values that could not be deserialized from the persistent store, are dump into individual files. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L141) | useWeakDictionaryCaching | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L136) | validateOnWrite | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L142) | weakCacheDuration | `@NotNull Duration` | `"48 hours"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusStoreFactory.java#L137) | xodus | [XodusConfig](#Type-XodusConfig) |  |  |  | 
 </p></details>

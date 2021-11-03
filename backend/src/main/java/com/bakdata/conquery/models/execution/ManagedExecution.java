@@ -239,7 +239,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 	}
 
-	protected void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());

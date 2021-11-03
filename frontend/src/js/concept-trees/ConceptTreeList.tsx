@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../api/types";

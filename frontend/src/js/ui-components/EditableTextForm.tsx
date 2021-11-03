@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useState, useRef } from "react";
+import { FC, FormEvent, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
@@ -32,7 +32,7 @@ const SxIconButton = styled(IconButton)`
   margin-left: 3px;
 `;
 
-const EditableTextForm: React.FC<PropsT> = ({
+const EditableTextForm: FC<PropsT> = ({
   className,
   text,
   loading,
@@ -46,7 +46,7 @@ const EditableTextForm: React.FC<PropsT> = ({
   const [textSelected, setTextSelected] = useState<boolean>(false);
   const ref = useRef(null);
 
-  function onSubmitForm(e: React.FormEvent<HTMLFormElement>) {
+  function onSubmitForm(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     onSubmit(value);

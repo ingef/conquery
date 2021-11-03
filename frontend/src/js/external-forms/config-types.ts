@@ -1,5 +1,9 @@
+import { SelectorResultType } from "../api/types";
+
 /* ------------------------------ */
+
 /* COMMON, FORMS, TABS */
+
 /* ------------------------------ */
 interface TranslatableString {
   de: string;
@@ -20,7 +24,7 @@ export interface Form {
   description?: TranslatableString; // Displayed
 }
 
-interface Tabs {
+export interface Tabs {
   name: string; // Sent to backend API
   type: "TABS";
   tabs: Tab[];
@@ -177,7 +181,7 @@ export interface ConceptListDefaults {
   connectors?: ConnectorDefault[];
 }
 type ConceptListFieldValidation = NOT_EMPTY_VALIDATION;
-type ConceptListField = CommonField & {
+export type ConceptListField = CommonField & {
   type: "CONCEPT_LIST";
   conceptDropzoneLabel?: TranslatableString;
   conceptColumnDropzoneLabel?: TranslatableString;
@@ -192,6 +196,9 @@ type ConceptListField = CommonField & {
   // EITHER USE BLOCKLISTING OR ALLOWLISTING OR NONE OF THE TWO:
   blocklistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
   allowlistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
+  // EITHER USE BLOCKLISTING OR ALLOWLISTING OR NONE OF THE TWO:
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
 };
 
 /* ------------------------------ */

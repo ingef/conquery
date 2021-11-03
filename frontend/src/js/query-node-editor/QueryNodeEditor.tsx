@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Hotkeys from "react-hot-keys";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -10,8 +10,9 @@ import {
   CurrencyConfigT,
   DatasetIdT,
   SelectOptionT,
+  SelectorResultType,
 } from "../api/types";
-import TransparentButton from "../button/TransparentButton";
+import { TransparentButton } from "../button/TransparentButton";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import { nodeHasActiveFilters, nodeIsConceptQueryNode } from "../model/node";
 import type {
@@ -104,6 +105,8 @@ export interface QueryNodeEditorPropsT {
   datasetId: DatasetIdT;
   allowlistedTables?: string[];
   blocklistedTables?: string[];
+  allowlistedSelects?: SelectorResultType[];
+  blocklistedSelects?: SelectorResultType[];
   currencyConfig: CurrencyConfigT;
 
   onCloseModal: () => void;
@@ -259,6 +262,8 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
               datasetId={props.datasetId}
               currencyConfig={props.currencyConfig}
               selectedTableIdx={selectedTableIdx}
+              allowlistedSelects={props.allowlistedSelects}
+              blocklistedSelects={props.blocklistedSelects}
               onShowDescription={onShowDescription}
               onToggleTimestamps={props.onToggleTimestamps}
               onToggleSecondaryIdExclude={props.onToggleSecondaryIdExclude}

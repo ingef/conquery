@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.permissions.Ability;

@@ -1,11 +1,11 @@
 package com.bakdata.conquery.integration.tests;
 
+import java.util.Collection;
+import java.util.List;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import org.apache.shiro.authz.Permission;
-
-import java.util.Collection;
-import java.util.List;
 
 public class TestUser extends User {
 

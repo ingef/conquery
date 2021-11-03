@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import React from "react";
 import { useTranslation } from "react-i18next";
 
 import type { CurrencyConfigT } from "../api/types";

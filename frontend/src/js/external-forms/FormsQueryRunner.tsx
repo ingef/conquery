@@ -1,5 +1,5 @@
 import { StateT } from "app-types";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useSelector } from "react-redux";
 import { isValid, isPristine, getFormValues, FormStateMap } from "redux-form";
 
@@ -31,19 +31,18 @@ const isActiveFormValid = (state: StateT) => {
   );
 };
 
-const selectIsButtonEnabled = (
-  datasetId: DatasetIdT | null,
-  queryRunner: QueryRunnerStateT | null,
-) => (state: StateT) => {
-  if (!queryRunner) return false;
+const selectIsButtonEnabled =
+  (datasetId: DatasetIdT | null, queryRunner: QueryRunnerStateT | null) =>
+  (state: StateT) => {
+    if (!queryRunner) return false;
 
-  return !!(
-    datasetId !== null &&
-    !queryRunner.startQuery.loading &&
-    !queryRunner.stopQuery.loading &&
-    isActiveFormValid(state)
-  );
-};
+    return !!(
+      datasetId !== null &&
+      !queryRunner.startQuery.loading &&
+      !queryRunner.stopQuery.loading &&
+      isActiveFormValid(state)
+    );
+  };
 
 const FormQueryRunner: FC = () => {
   const datasetId = useDatasetId();

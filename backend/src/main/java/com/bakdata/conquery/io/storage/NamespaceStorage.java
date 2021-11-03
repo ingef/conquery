@@ -7,8 +7,8 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
-import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StoreFactory;
+import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;

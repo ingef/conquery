@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC } from "react";
+import { FC, memo } from "react";
 import { useSelector } from "react-redux";
 
 import type { Form as FormType } from "./config-types";
@@ -22,4 +22,4 @@ const FormsContainer: FC = () => {
   return <Root>{!!formConfig && <Form config={formConfig} />}</Root>;
 };
 
-export default React.memo(FormsContainer);
+export default memo(FormsContainer);

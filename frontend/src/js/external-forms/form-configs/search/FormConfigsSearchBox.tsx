@@ -4,7 +4,7 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import ReactSelect from "../../../ui-components/ReactSelect";
+import InputMultiSelect from "../../../ui-components/InputMultiSelect/InputMultiSelect";
 
 import { setFormConfigsSearch } from "./actions";
 
@@ -28,20 +28,14 @@ const FormConfigsSearchBox: React.FC = () => {
 
   return (
     <Root>
-      <ReactSelect
+      <InputMultiSelect
         creatable
-        isMulti
-        name="input"
         value={search.map((t) => ({ label: t, value: t }))}
         options={options ? options.map((t) => ({ label: t, value: t })) : []}
         onChange={(values) =>
-          onSearch(values ? values.map((v) => v.value) : [])
+          onSearch(values ? values.map((v) => v.value as string) : [])
         }
         placeholder={t("inputSelect.searchPlaceholder")}
-        noOptionsMessage={() => t("inputSelect.empty")}
-        formatCreateLabel={(inputValue) =>
-          t("common.create") + `: "${inputValue}"`
-        }
       />
     </Root>
   );

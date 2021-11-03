@@ -6,6 +6,11 @@ import java.time.YearMonth;
 import com.google.common.primitives.Ints;
 import lombok.experimental.UtilityClass;
 
+/**
+ * Helper class to convert between {@link LocalDate} and {@link LocalDate#toEpochDay()}.
+ *
+ * Internal representation of Conquery is always based on epoch-days, but if the query-engine requires they should use {@link CDate} to resolve the proper value.
+ */
 @UtilityClass
 public final class CDate {
 
