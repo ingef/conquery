@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
@@ -214,7 +215,7 @@ public class AdminDatasetProcessor {
 	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
 
 		if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
-			throw new WebApplicationException("Can't find the concept in the dataset " + concept.getId(), Response.Status.NOT_FOUND);
+			throw new NotFoundException("Can't find the concept in the dataset " + concept.getId());
 		}
 		//deletes the old content of the concept using his id
 		deleteConcept(concept);

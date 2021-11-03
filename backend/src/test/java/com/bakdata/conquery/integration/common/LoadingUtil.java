@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -248,10 +249,18 @@ public class LoadingUtil {
 							   .buildFromMap(Map.of(
 									   ResourceConstants.DATASET, support.getDataset().getId()
 							   ));
-		final Response response = support.getClient()
-										 .target(conceptURI)
-										 .request(MediaType.APPLICATION_JSON)
-										 .put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
+
+		final Invocation.Builder request = support.getClient()
+												  .target(conceptURI)
+												  .request(MediaType.APPLICATION_JSON);
+		Response response;
+		if (update) {
+			response = request.put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
+		}
+		else {
+			response = request.post(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
+		}
+
 		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
 		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
 	}
