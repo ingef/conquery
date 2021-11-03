@@ -1,6 +1,6 @@
 import { tabDescription } from ".";
 import { StateT } from "app-types";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useSelector, useStore } from "react-redux";
 
 import { useGetForms } from "../api/api";

@@ -1,5 +1,4 @@
 import { StateT } from "app-types";
-import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ConceptIdT, CurrencyConfigT, DatasetIdT } from "../api/types";
@@ -42,7 +41,7 @@ const StandardQueryNodeEditor = ({ editedNode, setEditedNode }: Props) => {
   );
   const node = useSelector<StateT, StandardQueryNodeT | null>((state) =>
     editedNode
-      ? state.queryEditor.query[editedNode.andIdx].elements[editedNode.orIdx]
+      ? state.queryEditor.query[editedNode.andIdx]?.elements[editedNode.orIdx]
       : null,
   );
   const showTables =

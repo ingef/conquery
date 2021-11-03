@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.auth.entities;
 
 import java.util.Set;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

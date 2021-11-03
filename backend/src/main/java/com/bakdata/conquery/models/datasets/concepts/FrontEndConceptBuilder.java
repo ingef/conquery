@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.frontend.FEList;
 import com.bakdata.conquery.apiv1.frontend.FENode;
@@ -19,13 +18,14 @@ import com.bakdata.conquery.apiv1.frontend.FESelect;
 import com.bakdata.conquery.apiv1.frontend.FETable;
 import com.bakdata.conquery.apiv1.frontend.FEValidityDate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
@@ -205,6 +205,7 @@ public class FrontEndConceptBuilder {
 					   .id(con.getTable().getId())
 					   .connectorId(con.getId())
 					   .label(con.getLabel())
+					   .isDefault(con.isDefault())
 					   .filters(
 							   con.collectAllFilters()
 								  .stream()
@@ -254,6 +255,7 @@ public class FrontEndConceptBuilder {
 							 .unit(filter.getUnit())
 							 .allowDropFile(filter.getAllowDropFile())
 							 .pattern(filter.getPattern())
+							 .defaultValue(filter.getDefaultValue())
 							 .build();
 		try {
 			filter.configureFrontend(f);
@@ -271,6 +273,7 @@ public class FrontEndConceptBuilder {
 					.label(select.getLabel())
 					.description(select.getDescription())
 					.resultType(select.getResultType())
+					.isDefault(false) //TODO FK: We're not sure if default-Selects are beneficial in the frontend.
 					.build();
 	}
 

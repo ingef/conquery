@@ -115,6 +115,16 @@
     "clazz": "AdminTablesResource"
   },
   {
+    "method": "PUT",
+    "path": "/datasets/{dataset}/imports",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "PUT",
+    "path": "/datasets/{dataset}/cqpp",
+    "clazz": "AdminDatasetResource"
+  },
+  {
     "method": "POST",
     "path": "/datasets/{dataset}/update-matching-stats",
     "clazz": "AdminDatasetResource"

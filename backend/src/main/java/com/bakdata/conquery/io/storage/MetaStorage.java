@@ -3,8 +3,6 @@ package com.bakdata.conquery.io.storage;
 import java.io.IOException;
 import java.util.Collection;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -39,6 +37,7 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 
     @Getter
     protected final CentralRegistry centralRegistry = new CentralRegistry();
+    @Getter
 	protected final DatasetRegistry datasetRegistry;
 
     public void openStores(StoreFactory storageFactory) {

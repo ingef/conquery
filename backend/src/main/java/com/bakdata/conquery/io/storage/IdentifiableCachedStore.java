@@ -1,15 +1,13 @@
 package com.bakdata.conquery.io.storage;
 
-import com.bakdata.conquery.io.jackson.Injectable;
+import java.util.Optional;
+
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-
-import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * Registers accessors of values instead of the value itself to the central registry.

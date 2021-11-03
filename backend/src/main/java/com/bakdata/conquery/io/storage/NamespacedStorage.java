@@ -8,15 +8,15 @@ import java.util.List;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -43,7 +43,8 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	@Getter
 	private final Validator validator;
-	@Getter @ToString.Include
+	@Getter
+	@ToString.Include
 	private final String pathName;
 
 	protected SingletonStore<Dataset> dataset;
@@ -213,7 +214,6 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	public void removeDictionary(DictionaryId id) {
 		dictionaries.remove(id);
 	}
-
 
 
 	public void addImport(Import imp) {

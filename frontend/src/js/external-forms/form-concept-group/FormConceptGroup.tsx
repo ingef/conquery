@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import type { WrappedFieldProps } from "redux-form";
@@ -9,7 +9,7 @@ import {
   PostFilterSuggestionsResponseT,
   SelectorResultType,
 } from "../../api/types";
-import TransparentButton from "../../button/TransparentButton";
+import { TransparentButton } from "../../button/TransparentButton";
 import {
   CONCEPT_TREE_NODE,
   FORM_CONCEPT_NODE,
@@ -415,6 +415,7 @@ const Row = styled("div")`
 
 const SxTransparentButton = styled(TransparentButton)`
   margin-left: 10px;
+  flex-shrink: 0;
 `;
 
 const SxDescription = styled(Description)`

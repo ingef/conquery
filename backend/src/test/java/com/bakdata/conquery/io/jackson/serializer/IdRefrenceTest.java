@@ -1,7 +1,7 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
-import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.Collections;

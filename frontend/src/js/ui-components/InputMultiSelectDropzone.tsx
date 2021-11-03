@@ -1,7 +1,9 @@
 import styled from "@emotion/styled";
-import React, { FC, ReactNode, useRef } from "react";
+import { FC, ReactNode, useRef } from "react";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
+
+import { SelectFileButton } from "../button/SelectFileButton";
 
 import Dropzone from "./Dropzone";
 import type { DragItemFile } from "./DropzoneWithFileInput";
@@ -18,36 +20,32 @@ const FileInput = styled("input")`
   display: none;
 `;
 
-const TopRight = styled("p")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.tiny};
-  color: ${({ theme }) => theme.col.gray};
+const SxSelectFileButton = styled(SelectFileButton)`
   position: absolute;
   top: -15px;
   right: 0;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
 `;
 
 interface PropsT {
   className?: string;
+  disabled?: boolean;
   onDropFile: (file: File) => void;
   children: () => ReactNode;
 }
 
 const InputMultiSelectDropzone: FC<PropsT> = ({
   className,
+  disabled,
   onDropFile,
   children,
 }) => {
   const { t } = useTranslation();
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function onOpenFileDialog() {
-    fileInputRef.current.click();
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   }
 
   return (
@@ -60,17 +58,21 @@ const InputMultiSelectDropzone: FC<PropsT> = ({
       >
         {children}
       </SxDropzone>
-      <TopRight onClick={onOpenFileDialog}>
+      <SxSelectFileButton bare disabled={disabled} onClick={onOpenFileDialog}>
         {t("inputMultiSelect.openFileDialog")}
         <FileInput
           ref={fileInputRef}
           type="file"
           onChange={(e) => {
-            onDropFile(e.target.files[0]);
-            fileInputRef.current.value = null;
+            if (e.target.files) {
+              onDropFile(e.target.files[0]);
+              if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+              }
+            }
           }}
         />
-      </TopRight>
+      </SxSelectFileButton>
     </Root>
   );
 };

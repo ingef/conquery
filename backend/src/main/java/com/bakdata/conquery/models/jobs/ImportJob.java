@@ -1,34 +1,10 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IntSummaryStatistics;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.ImportColumn;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.*;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -36,15 +12,8 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdMutex;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
-import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
+import com.bakdata.conquery.models.messages.namespaces.specific.*;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
@@ -64,6 +33,14 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * This is the main routine to load data into Conquery.
  */
@@ -81,14 +58,11 @@ public class ImportJob extends Job {
 	private final PreprocessedData container;
 	private final ConqueryConfig config;
 
+
+
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static ImportJob create(
-			Namespace namespace,
-			InputStream inputStream,
-			int entityBucketSize,
-			IdMutex<DictionaryId> sharedDictionaryLocks,
-			ConqueryConfig config)
+	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, boolean update)
 			throws IOException {
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
 
@@ -113,10 +87,21 @@ public class ImportJob extends Job {
 			header.assertMatch(table);
 
 			final ImportId importId = new ImportId(table.getId(), header.getName());
+			Import processedImport = namespace.getStorage().getImport(importId);
 
-			if (namespace.getStorage().getImport(importId) != null) {
+			if (update) {
+				if (processedImport == null) {
+					throw new WebApplicationException(String.format("Import[%s] is not present.", importId), Response.Status.NOT_FOUND);
+				}
+				// before updating the import, make sure that all workers removed the last import
+				namespace.sendToAll(new RemoveImportJob(processedImport));
+				namespace.getStorage().removeImport(importId);
+			}
+			else if (processedImport != null) {
 				throw new WebApplicationException(String.format("Import[%s] is already present.", importId), Response.Status.CONFLICT);
 			}
+
+
 			log.trace("Begin reading Dictionaries");
 			parser.addReplacement(Dataset.PLACEHOLDER.getId(), ds);
 			PreprocessedDictionaries dictionaries = parser.readDictionaries();
@@ -131,7 +116,6 @@ public class ImportJob extends Job {
 			log.trace("Begin reading data.");
 
 			PreprocessedData container = parser.readData();
-
 
 			log.debug("Done reading data. Contains {} Entities.", container.size());
 
@@ -148,7 +132,6 @@ public class ImportJob extends Job {
 			);
 		}
 	}
-
 
 	/**
 	 * Collects all dictionaries that map only to columns of this import.
@@ -297,10 +280,10 @@ public class ImportJob extends Job {
 
 
 		final ColumnStore[] storesSorted = Arrays.stream(table.getColumns())
-												 .map(Column::getName)
-												 .map(container.getStores()::get)
-												 .map(Objects::requireNonNull)
-												 .toArray(ColumnStore[]::new);
+				.map(Column::getName)
+				.map(container.getStores()::get)
+				.map(Objects::requireNonNull)
+				.toArray(ColumnStore[]::new);
 
 
 		log.info("Start sending {} Buckets", buckets2LocalEntities.size());
@@ -328,7 +311,7 @@ public class ImportJob extends Job {
 
 			WorkerInformation responsibleWorker =
 					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket2entities.getKey()), () -> "No responsible worker for Bucket#"
-																													+ bucket2entities.getKey());
+							+ bucket2entities.getKey());
 
 			awaitFreeJobQueue(responsibleWorker);
 
@@ -336,7 +319,7 @@ public class ImportJob extends Job {
 					selectBucket(starts, lengths, storesSorted, primaryMapping, imp, bucket2entities.getKey(), bucket2entities.getValue());
 
 			newWorkerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
-								.add(bucket.getId());
+					.add(bucket.getId());
 
 			log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
 			responsibleWorker.send(ImportBucket.forBucket(bucket));
@@ -377,8 +360,8 @@ public class ImportJob extends Job {
 		int[] entityStarts = new int[bucketSize];
 		int[] entityEnds = new int[bucketSize];
 
-		Arrays.fill(entityEnds,-1);
-		Arrays.fill(entityStarts,-1);
+		Arrays.fill(entityEnds, -1);
+		Arrays.fill(entityStarts, -1);
 
 		int currentStart = 0;
 
@@ -387,11 +370,11 @@ public class ImportJob extends Job {
 
 			int localId = primaryMapping.target2Source(globalId);
 
-			if(localId == -1){
+			if (localId == -1) {
 				continue;
 			}
 
-			if(!localStarts.containsKey(localId)){
+			if (!localStarts.containsKey(localId)) {
 				continue;
 			}
 
@@ -409,13 +392,11 @@ public class ImportJob extends Job {
 			currentStart += length;
 		}
 
-
 		// copy only the parts of the bucket we need
 		final ColumnStore[] bucketStores =
 				Arrays.stream(stores)
-					  .map(store -> store.select(selectionStart.toIntArray(), selectionLength.toIntArray()))
-					  .toArray(ColumnStore[]::new);
-
+						.map(store -> store.select(selectionStart.toIntArray(), selectionLength.toIntArray()))
+						.toArray(ColumnStore[]::new);
 
 		return new Bucket(
 				bucketId,
@@ -447,7 +428,7 @@ public class ImportJob extends Job {
 		}
 
 		namespace.getStorage()
-				 .updatePrimaryDictionary(primaryDict);
+				.updatePrimaryDictionary(primaryDict);
 
 		return primaryMapping;
 	}
@@ -564,7 +545,7 @@ public class ImportJob extends Job {
 	 */
 	private Map<Integer, List<Integer>> groupEntitiesByBucket(Set<Integer> entities, DictionaryMapping primaryMapping, int bucketSize) {
 		return entities.stream()
-					   .collect(Collectors.groupingBy(entity -> Entity.getBucket(primaryMapping.source2Target(entity), bucketSize)));
+				.collect(Collectors.groupingBy(entity -> Entity.getBucket(primaryMapping.source2Target(entity), bucketSize)));
 
 	}
 

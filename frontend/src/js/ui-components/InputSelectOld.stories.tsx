@@ -1,36 +1,36 @@
 import { ComponentMeta, Story } from "@storybook/react";
-import React, { ComponentProps, useState } from "react";
+import { ComponentProps, useState } from "react";
 
 import wordslist from "../../fixtures/words.json";
 
-import InputSelect from "./InputSelect";
+import InputSelectOld from "./InputSelectOld";
 
 export default {
-  title: "FormComponents/InputSelect",
-  component: InputSelect,
+  title: "FormComponents/InputSelectOld",
+  component: InputSelectOld,
   argTypes: {
     backgroundColor: { control: "#fafafa" },
   },
-} as ComponentMeta<typeof InputSelect>;
+} as ComponentMeta<typeof InputSelectOld>;
 
 interface Option {
   label: string;
   value: string;
 }
 
-const Template: Story<ComponentProps<typeof InputSelect>> = (args) => {
+const Template: Story<ComponentProps<typeof InputSelectOld>> = (args) => {
   const [options, setOptions] = useState<Option[]>(
     wordslist
       .slice(0, 100)
       .map((w) => ({ label: w, value: w, disabled: Math.random() < 0.5 })),
   );
   const [value, setValue] = useState<Option | null>({
-    label: "lol",
-    value: "yes",
+    label: "Option 1",
+    value: "option1",
   });
 
   return (
-    <InputSelect
+    <InputSelectOld
       {...args}
       input={{
         value: value?.value || null,

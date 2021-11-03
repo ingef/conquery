@@ -121,22 +121,21 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		setLocation(session);
-		if (message instanceof MessageToShardNode) {
-			MessageToShardNode srm = (MessageToShardNode) message;
-			log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MessageToShardNode, NetworkMessageContext.ShardNodeNetworkContext> job = new ReactingJob<>(srm, context);
-
-			if (((Message) message).isSlowMessage()) {
-				((SlowMessage) message).setProgressReporter(job.getProgressReporter());
-				jobManager.addSlowJob(job);
-			}
-			else {
-				jobManager.addFastJob(job);
-			}
-		}
-		else {
+		if (!(message instanceof MessageToShardNode)) {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 			return;
+		}
+
+		MessageToShardNode srm = (MessageToShardNode) message;
+		log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
+		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>(srm, context);
+
+		if (((Message) message).isSlowMessage()) {
+			((SlowMessage) message).setProgressReporter(job.getProgressReporter());
+			jobManager.addSlowJob(job);
+		}
+		else {
+			jobManager.addFastJob(job);
 		}
 	}
 

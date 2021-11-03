@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -21,12 +21,12 @@ const FormConfigsFilter: FC = () => {
       label: t("previousQueriesFilter.all") as string,
     },
     {
-      value: "activeForm",
-      label: t("formConfigsFilter.activeForm") as string,
-    },
-    {
       value: "own",
       label: t("previousQueriesFilter.own") as string,
+    },
+    {
+      value: "activeForm",
+      label: t("formConfigsFilter.activeForm") as string,
     },
     {
       value: "system",

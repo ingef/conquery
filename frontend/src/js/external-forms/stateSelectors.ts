@@ -1,9 +1,10 @@
 import { StateT } from "app-types";
 import { useSelector } from "react-redux";
 
+import { exists } from "../common/helpers/exists";
 import { useActiveLang } from "../localization/useActiveLang";
 
-import { Form } from "./config-types";
+import { ConceptListField, Form, GeneralField, Tabs } from "./config-types";
 import { initTables } from "./transformers";
 
 const selectFormField = (state, formName: string, fieldName: string) => {
@@ -101,37 +102,51 @@ export const selectRunningQuery = (state: StateT) => {
   return queryRunner ? queryRunner.runningQuery : null;
 };
 
-function getVisibleConceptListFields(config, values) {
+function getVisibleConceptListFields(
+  config: { fields: GeneralField[] },
+  values: Record<string, any>,
+): ConceptListField[] {
   const topLevelFields = config.fields.filter(
-    (field) => field.type === "CONCEPT_LIST",
+    (field): field is ConceptListField => field.type === "CONCEPT_LIST",
   );
-  const tabFields = config.fields.filter((field) => field.type === "TABS");
+  const tabFields = config.fields.filter(
+    (field): field is Tabs => field.type === "TABS",
+  );
 
-  const fieldsWithinVisibleTabs = tabFields.reduce((fields, tabField) => {
-    const activeTabName = values[tabField.name];
-    const activeTab = tabField.tabs.find((tab) => tab.name === activeTabName);
+  const fieldsWithinVisibleTabs = tabFields.reduce<ConceptListField[]>(
+    (fields, tabField) => {
+      const activeTabName = values[tabField.name];
+      const activeTab = tabField.tabs.find((tab) => tab.name === activeTabName);
 
-    const activeTabConceltListFields = activeTab
-      ? getVisibleConceptListFields(activeTab)
-      : [];
+      const activeTabConceptListFields = activeTab
+        ? getVisibleConceptListFields(activeTab, values)
+        : [];
 
-    return [...fields, ...activeTabConceltListFields];
-  }, []);
+      return [...fields, ...activeTabConceptListFields];
+    },
+    [],
+  );
 
   return [...topLevelFields, ...fieldsWithinVisibleTabs];
 }
 
 export const useVisibleConceptListFields = () => {
-  const config = useSelector((state) => selectFormConfig(state));
-  const values = useSelector((state) => selectActiveFormValues(state));
+  const config = useSelector<StateT, Form | null>((state) =>
+    selectFormConfig(state),
+  );
+  const values = useSelector<StateT, Record<string, any>>((state) =>
+    selectActiveFormValues(state),
+  );
 
-  if (!config) return false;
+  if (!config) return [];
 
   return getVisibleConceptListFields(config, values);
 };
 
 export const useAllowExtendedCopying = (targetFieldname: string) => {
-  const values = useSelector((state) => selectActiveFormValues(state));
+  const values = useSelector<StateT, Record<string, any>>((state) =>
+    selectActiveFormValues(state),
+  );
   const otherConceptListFields = useVisibleConceptListFields().filter(
     (field) => field.name !== targetFieldname,
   );
@@ -139,10 +154,11 @@ export const useAllowExtendedCopying = (targetFieldname: string) => {
   // Need to have min 2 fields to copy from one to another
   if (otherConceptListFields.length < 1) return false;
 
-  const fieldHasFilledConcept = (field) =>
+  const fieldHasFilledConcept = (field: ConceptListField) =>
     !!values[field.name] &&
-    values[field.name].some((value) =>
-      value.concepts.some((concept) => !!concept),
+    values[field.name].some(
+      (value /* TODO: type it FormConceptGroup value */) =>
+        value.concepts.some(exists),
     );
 
   return otherConceptListFields.some(fieldHasFilledConcept);

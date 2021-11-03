@@ -1,6 +1,5 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import React from "react";
 
 import type { CurrencyConfigT } from "../api/types";
 

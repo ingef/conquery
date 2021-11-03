@@ -1,5 +1,5 @@
 import { ReactKeycloakProvider } from "@react-keycloak/web";
-import React, { FC, useContext } from "react";
+import { FC, useContext } from "react";
 
 import keycloak from "../../keycloak";
 import { isIDPEnabled } from "../environment";

@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -77,17 +78,17 @@ public class SecondaryIdQuery extends Query {
 	}
 
 	@Override
-	public void resolve(QueryResolveContext context) {
+	public void resolve(final QueryResolveContext context) {
 
 		DateAggregationMode resolvedDateAggregationMode = dateAggregationMode;
 		if (context.getDateAggregationMode() != null) {
 			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
 		}
-		context = context.withDateAggregationMode(resolvedDateAggregationMode);
+		final QueryResolveContext resolvedContext = context.withDateAggregationMode(resolvedDateAggregationMode);
 
 		this.query = new ConceptQuery(root);
-		query.resolve(context);
+		query.resolve(resolvedContext);
 
 		withSecondaryId = new HashSet<>();
 		withoutSecondaryId = new HashSet<>();
@@ -98,6 +99,8 @@ public class SecondaryIdQuery extends Query {
 		// partition tables by their holding of the requested SecondaryId.
 		// This assumes that from the root, only ConceptNodes hold TableIds we are interested in.
 		query.visit(queryElement -> {
+			// We cannot check for CQExternal here and add the ALL_IDS Table because it is not serializable at the moment
+
 			if (!(queryElement instanceof CQConcept)) {
 				return;
 			}

@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts.filters;
 
-import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @Slf4j
-public abstract class Filter<FE_TYPE> extends Labeled<FilterId> implements NamespacedIdentifiable<FilterId> {
+public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements NamespacedIdentifiable<FilterId> {
 
 	private String unit;
 	private String description;
@@ -37,6 +37,8 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> implements Names
 	private Connector connector;
 	private String pattern;
 	private Boolean allowDropFile;
+
+	private FILTER_VALUE defaultValue;
 
 	@JsonIgnore
 	@Override
@@ -49,7 +51,7 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> implements Names
 	@JsonIgnore
 	public abstract Column[] getRequiredColumns();
 
-	public abstract FilterNode<?> createFilterNode(FE_TYPE filterValue);
+	public abstract FilterNode<?> createFilterNode(FILTER_VALUE filterValue);
 
 	@Override
 	public FilterId createId() {

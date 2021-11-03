@@ -1,5 +1,4 @@
 import { Theme, useTheme } from "@emotion/react";
-import React from "react";
 import Select, { Props } from "react-select";
 import Creatable, { Props as CreatableProps } from "react-select/creatable";
 

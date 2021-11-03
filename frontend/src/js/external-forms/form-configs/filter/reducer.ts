@@ -2,7 +2,7 @@ import { SET_FORM_CONFIGS_FILTER } from "./actionTypes";
 
 export type FormConfigsFilterStateT = string;
 
-const initialState: FormConfigsFilterStateT = "all";
+const initialState: FormConfigsFilterStateT = "own";
 
 const formConfigsFilter = (
   state: FormConfigsFilterStateT = initialState,

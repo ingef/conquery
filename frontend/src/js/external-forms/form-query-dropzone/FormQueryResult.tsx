@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 
 import IconButton from "../../button/IconButton";
 import type { PreviousQueryT } from "../../previous-queries/list/reducer";

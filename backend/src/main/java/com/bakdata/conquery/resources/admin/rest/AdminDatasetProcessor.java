@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +35,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
@@ -65,7 +67,6 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminDatasetProcessor {
 
 
-
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
 	private static final String ABBREVIATION_MARKER = "\u2026";
 
@@ -94,10 +95,12 @@ public class AdminDatasetProcessor {
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
 
-		Namespace ns = new Namespace(
+		Namespace ns =
+				new Namespace(
 				datasetStorage,
 				config.isFailOnError(),
-				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class)
+				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
+																			.writerWithView(InternalOnly.class)
 		);
 
 		datasetRegistry.add(ns);
@@ -122,11 +125,12 @@ public class AdminDatasetProcessor {
 							"Cannot delete dataset `%s`, because it still has tables: `%s`",
 							dataset.getId(),
 							namespace.getStorage().getTables().stream()
-									.map(Table::getId)
-									.map(Objects::toString)
-									.collect(Collectors.joining(","))
+									 .map(Table::getId)
+									 .map(Objects::toString)
+									 .collect(Collectors.joining(","))
 					),
-					Response.Status.CONFLICT);
+					Response.Status.CONFLICT
+			);
 		}
 
 		datasetRegistry.removeNamespace(dataset.getId());
@@ -159,9 +163,9 @@ public class AdminDatasetProcessor {
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
 		final List<Column> dependents = namespace.getStorage().getTables().stream()
-				.map(Table::getColumns).flatMap(Arrays::stream)
-				.filter(column -> secondaryId.equals(column.getSecondaryId()))
-				.collect(Collectors.toList());
+												 .map(Table::getColumns).flatMap(Arrays::stream)
+												 .filter(column -> secondaryId.equals(column.getSecondaryId()))
+												 .collect(Collectors.toList());
 
 		if (!dependents.isEmpty()) {
 			final Set<TableId> tables = dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet());
@@ -262,8 +266,17 @@ public class AdminDatasetProcessor {
 	@SneakyThrows
 	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-		ImportJob job = ImportJob.create(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config);
+		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, false);
+		namespace.getJobManager().addSlowJob(job);
+	}
 
+	/**
+	 * Reads an Import partially Importing it if it is present, then submitting it for full import [Update of an import].
+	 */
+	@SneakyThrows
+	public void updateImport(Namespace namespace, InputStream inputStream) throws IOException {
+
+		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, true);
 		namespace.getJobManager().addSlowJob(job);
 	}
 
@@ -272,7 +285,7 @@ public class AdminDatasetProcessor {
 	 */
 	public synchronized void deleteImport(Import imp) {
 		final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
-		
+
 		namespace.getStorage().removeImport(imp.getId());
 		namespace.sendToAll(new RemoveImportJob(imp));
 
@@ -287,9 +300,9 @@ public class AdminDatasetProcessor {
 		final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
 
 		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-				.filter(con -> con.getTable().equals(table))
-				.map(Connector::getConcept)
-				.collect(Collectors.toList());
+															.filter(con -> con.getTable().equals(table))
+															.map(Connector::getConcept)
+															.collect(Collectors.toList());
 
 		if (force || dependentConcepts.isEmpty()) {
 			for (Concept<?> concept : dependentConcepts) {
@@ -297,8 +310,8 @@ public class AdminDatasetProcessor {
 			}
 
 			namespace.getStorage().getAllImports().stream()
-					.filter(imp -> imp.getTable().equals(table))
-					.forEach(this::deleteImport);
+					 .filter(imp -> imp.getTable().equals(table))
+					 .forEach(this::deleteImport);
 
 			namespace.getStorage().removeTable(table.getId());
 			namespace.sendToAll(new RemoveTable(table));
@@ -320,12 +333,14 @@ public class AdminDatasetProcessor {
 
 	/**
 	 * Issues all Shards to do an UpdateMatchingStats.
+	 *
 	 * @implNote This intentionally submits a SlowJob so that it will be queued after all jobs that are already in the queue (usually import jobs).
 	 */
 	public void updateMatchingStats(Dataset dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset.getId());
 
-		ns.getJobManager().addSlowJob(new SimpleJob("Initiate Update Matching Stats and FilterSearch",
+		ns.getJobManager().addSlowJob(new SimpleJob(
+				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
 					ns.sendToAll(new UpdateMatchingStatsMessage());
 					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());

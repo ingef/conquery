@@ -1,5 +1,5 @@
 import { ComponentMeta, Story } from "@storybook/react";
-import React, { ComponentProps, useState } from "react";
+import { ComponentProps, useState } from "react";
 
 import wordslist from "../../fixtures/words.json";
 import type { SelectOptionT } from "../api/types";
@@ -24,8 +24,8 @@ const Template: Story<ComponentProps<typeof MultiSelectWithFileSupport>> = (
   );
   const [value, setValue] = useState<SelectOptionT[] | null>([
     {
-      label: "lol",
-      value: "yes",
+      label: "Option 1",
+      value: "option1",
     },
   ]);
   const onLoad = (str: string) => {

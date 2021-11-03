@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React from "react";
+import { FC, ReactNode } from "react";
 
 import FaIcon from "../icon/FaIcon";
 
@@ -11,10 +11,10 @@ const Spinner = styled("span")`
 `;
 
 interface PropsT {
-  message: React.ReactNode;
+  message: ReactNode;
 }
 
-const Loading: React.FC<PropsT> = ({ message }) => {
+const Loading: FC<PropsT> = ({ message }) => {
   return (
     <Root>
       <Spinner>

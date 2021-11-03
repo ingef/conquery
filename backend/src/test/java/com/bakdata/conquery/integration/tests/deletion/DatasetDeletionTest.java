@@ -55,7 +55,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables(), conquery.getDataset());
+			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -170,7 +170,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(conqueryReimport.getNamespace().getStorage().getTables()).isNotEmpty();
 
 			conqueryReimport.waitUntilWorkDone();
-			LoadingUtil.importTableContents(conqueryReimport, test.getContent().getTables(), conqueryReimport.getDataset());
+			LoadingUtil.importTableContents(conqueryReimport, test.getContent().getTables());
 
 			conqueryReimport.waitUntilWorkDone();
 

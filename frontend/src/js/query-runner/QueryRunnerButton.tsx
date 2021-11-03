@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import React from "react";
 import { useTranslation } from "react-i18next";
 
 import BasicButton from "../button/BasicButton";
@@ -9,10 +8,10 @@ type PropsType = {
   isStartStopLoading: boolean;
   isQueryRunning: boolean;
   disabled: boolean;
-  onClick: Function;
+  onClick: () => void;
 };
 
-const Left = styled("span")`
+const Left = styled("span")<{ running?: boolean }>`
   transition: ${({ theme }) =>
     `color ${theme.transitionTime}, background-color ${theme.transitionTime}`};
   padding: 0 15px;
@@ -50,7 +49,7 @@ const StyledBasicButton = styled(BasicButton)`
   }
 `;
 
-function getIcon(loading, running) {
+function getIcon(loading: boolean, running: boolean) {
   return loading ? "spinner" : running ? "stop" : "play";
 }
 

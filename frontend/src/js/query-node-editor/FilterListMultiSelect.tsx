@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import { usePostFilterValuesResolve } from "../api/api";
 import type {
@@ -9,9 +9,9 @@ import type {
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import { usePrevious } from "../common/helpers/usePrevious";
 import AsyncInputMultiSelect from "../ui-components/AsyncInputMultiSelect";
-import InputMultiSelect, {
+import InputMultiSelectOld, {
   MultiSelectInputProps,
-} from "../ui-components/InputMultiSelect";
+} from "../ui-components/InputMultiSelectOld";
 
 import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
@@ -59,7 +59,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
   const previousDefaultValue = usePrevious(input.defaultValue);
 
   // Can be both, an auto-completable (async) multi select or a regular one
-  const Component = !!onLoad ? AsyncInputMultiSelect : InputMultiSelect;
+  const Component = !!onLoad ? AsyncInputMultiSelect : InputMultiSelectOld;
 
   const onDropFile = async (file: File) => {
     setLoading(true);
