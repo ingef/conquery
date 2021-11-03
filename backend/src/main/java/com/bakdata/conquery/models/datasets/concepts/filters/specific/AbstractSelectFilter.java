@@ -11,8 +11,8 @@ import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
-import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -37,7 +37,8 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	 * user given mapping from the values in the CSVs to shown labels
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
-	
+
+	@JsonIgnore
 	protected Set<String> values = new HashSet<>();
 	@JsonIgnore
 	protected transient QuickSearch<FilterSearchItem> sourceSearch;
