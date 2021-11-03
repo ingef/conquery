@@ -104,7 +104,6 @@ public class FormConfigProcessor {
 	 * Adds the provided config to the desired dataset and the datasets that the
 	 * subject has access to (has the READ ability on the Dataset), if the config is
 	 * translatable to those.
-	 * @return
 	 */
 	public FormConfig addConfig(Subject subject, Dataset targetDataset, FormConfigAPI config) {
 
@@ -113,23 +112,6 @@ public class FormConfigProcessor {
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
 
-		List<DatasetId> translateToDatasets = datasetRegistry.getAllDatasets()
-													 .stream()
-													 .filter(dId -> subject.isPermitted(dId, Ability.READ))
-													 .map(Identifiable::getId)
-													 .collect(Collectors.toList());
-
-		translateToDatasets.remove(targetDataset);
-
-		return addConfigAndTranslations(subject, targetDataset, config);
-	}
-	
-	/**
-	 * Adds the config to the dataset it was submitted under and also to all other datasets it can be translated to.
-	 * This method does not check permissions.
-	 * @return
-	 */
-	public FormConfig addConfigAndTranslations(Subject subject, Dataset targetDataset, FormConfigAPI config) {
 		FormConfig internalConfig = FormConfigAPI.intern(config, storage.getUser(subject.getId()), targetDataset);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
