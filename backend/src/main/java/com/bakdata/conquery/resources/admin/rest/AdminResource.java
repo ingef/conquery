@@ -116,7 +116,7 @@ public class AdminResource {
 						} catch (ConqueryError e) {
 							// Initialization of execution probably failed, so we construct a status based on the overview status
 							final FullExecutionStatus fullExecutionStatus = new FullExecutionStatus();
-							t.setStatusBase(currentUser, fullExecutionStatus);
+							t.setStatusBase(subject, fullExecutionStatus);
 							fullExecutionStatus.setStatus(ExecutionState.FAILED);
 							fullExecutionStatus.setError(e);
 							return fullExecutionStatus;

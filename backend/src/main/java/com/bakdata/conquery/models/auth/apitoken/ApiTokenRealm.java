@@ -48,13 +48,6 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		this.setAuthenticationTokenClass(ApiToken.class);
 	}
 
-
-	@Override
-	protected void onInit() {
-		super.onInit();
-	}
-
-
 	@Override
 	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(token instanceof ApiToken)) {
@@ -164,8 +157,10 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 			User user,
 			ApiTokenHash hash,
 			MetaStorage storage) {
+		final UUID id = UUID.randomUUID();
+		log.info("Creating new api token data for user {} with id: {}", user.getId(), id);
 		return new ApiTokenData(
-				UUID.randomUUID(),
+				id,
 				hash,
 				apiTokenRequest.getName(),
 				user.getId(),
