@@ -33,7 +33,7 @@ public abstract class CQElement implements Visitable {
 	 */
 	@Setter
 	@Getter
-	private String label = null;
+	private String label;
 
 	public String getUserOrDefaultLabel(Locale locale){
 		// Prefer the user label
@@ -46,11 +46,11 @@ public abstract class CQElement implements Visitable {
 	@NotNull
 	public String defaultLabel(Locale locale) {
 		// Fallback to CPSType#id() implementation is provided or class name
-		CPSType type = this.getClass().getAnnotation(CPSType.class);
+		CPSType type = getClass().getAnnotation(CPSType.class);
 		if(type != null) {
 			return type.id();
 		}
-		return this.getClass().getSimpleName();
+		return getClass().getSimpleName();
 	}
 
 	/**
@@ -70,7 +70,7 @@ public abstract class CQElement implements Visitable {
 	
 	public Set<ManagedExecution<?>> collectRequiredQueries() {
 		Set<ManagedExecution<?>> set = new HashSet<>();
-		this.collectRequiredQueries(set);
+		collectRequiredQueries(set);
 		return set;
 	}
 	
