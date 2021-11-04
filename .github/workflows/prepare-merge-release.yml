@@ -1,7 +1,7 @@
 name: "Merge Release"
 
 on:
-  create:
+  push:
     branches:
       - test/release
 
