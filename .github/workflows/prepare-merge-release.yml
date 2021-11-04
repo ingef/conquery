@@ -3,7 +3,7 @@ name: "Merge Release"
 on:
   create:
     branches:
-      - release
+      - test/release
 
 jobs:
   bump-test:
