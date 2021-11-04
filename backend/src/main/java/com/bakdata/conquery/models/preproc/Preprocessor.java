@@ -127,9 +127,11 @@ public class Preprocessor {
 				DateReader dateReader = config.getLocale().getDateReader();
 				final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader);
 				final List<OutputDescription.Output> outputs = new ArrayList<>();
+				final PPColumn[] columns = result.getColumns();
 
 				// Instantiate Outputs based on descriptors (apply header positions)
 				for (OutputDescription op : input.getOutput()) {
+					op.checkColumnExistsOn(columns);
 					outputs.add(op.createForHeaders(headerMap, dateReader));
 				}
 
@@ -148,7 +150,7 @@ public class Preprocessor {
 						int primaryId =
 								(int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn(), lineId), "primaryId may not be null");
 
-						final PPColumn[] columns = result.getColumns();
+
 
 						final int primary = result.addPrimary(primaryId);
 						final Object[] outRow = applyOutputs(outputs, columns, row, lineId);

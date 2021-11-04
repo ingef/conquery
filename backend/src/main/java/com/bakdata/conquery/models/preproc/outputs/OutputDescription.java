@@ -8,9 +8,11 @@ import javax.validation.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
+import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,6 +37,16 @@ public abstract class OutputDescription {
 	private String name;
 
 	private boolean required = false;
+
+	/**
+	 * If any column is used or referenced by an {@link OutputDescription} like in {@link CompoundDateRangeOutput}
+	 * then this function checks if the column really exists. If not an {@link IllegalStateException} will be thrown
+	 * @param allColumns all Columns of the table, where the output generated from
+	 */
+	public  void checkColumnExistsOn(PPColumn[] allColumns)
+	{
+		//Basically, this method does nothing as long as no column in the OutputDescription is used.
+	}
 
 	/**
 	 * Hashcode is used to in validity-hash of Preprocessed files.

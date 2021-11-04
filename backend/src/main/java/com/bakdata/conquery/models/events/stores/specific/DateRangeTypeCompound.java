@@ -19,8 +19,11 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * Stores {@link CDateRange} by storing only the references of the start and end of the {@link CDateRange}.
- * After the deserialisation, stores are instantiated as {@link DateStore}s using the references to the columns.
+ * The {@link DateRangeTypeCompound} is almost similar to the {@link DateRangeTypeDateRange}.
+ * While the {@link DateRangeTypeDateRange} stores the values of its <b>Stores</b>, the {@link DateRangeTypeCompound} does not need to store any
+ * <b>Stores</b>, but only stores the references to these <b>Stores</b> and thus avoids storing these <b>Stores</b> more than once.
+ * With {@link DateRangeTypeCompound}, these <b>Stores</b> are only restored after deserialization with the help of the parent {@link Bucket} and their
+ * references.
  */
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_COMPOUND")
 @Getter
@@ -40,7 +43,10 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	@JsonIgnore
 	private DateStore startStore;
 
-	// does not have to be serialized because will be lazy-loaded after the deserialization of DateRangeTypeCompound
+	/**
+	 * does not have to be serialized because will be lazy-loaded after the deserialization of DateRangeTypeCompound
+	 * @implNote since this value is lazy loaded, do not use it directly and use the getter instead.
+	 */
 	@JsonIgnore
 	private DateStore endStore;
 
@@ -90,9 +96,6 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	public int getLines() {
 		if (getStartStore() == null && getEndStore() == null) {
 			return 0;
-		}
-		if (getStartStore() == null || getEndStore() == null) {
-			throw new IllegalStateException(String.format("DateRangeTypeCompound[%s] has one null store.", this));
 		}
 		// they can be unaligned, if one of them is empty.
 		return Math.max(getStartStore().getLines(), getEndStore().getLines());

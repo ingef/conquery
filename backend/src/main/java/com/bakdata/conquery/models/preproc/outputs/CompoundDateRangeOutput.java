@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import java.util.Arrays;
+
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -7,6 +10,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.CompoundDateRangeParser;
 import com.bakdata.conquery.util.DateReader;
@@ -23,6 +27,7 @@ import lombok.ToString;
 public class CompoundDateRangeOutput extends OutputDescription {
 
 	@NotNull
+	@NotEmpty
 	private String startColumn, endColumn;
 
 	@Override
@@ -33,6 +38,16 @@ public class CompoundDateRangeOutput extends OutputDescription {
 				return null;
 			}
 		};
+	}
+
+	@Override
+	public void checkColumnExistsOn(PPColumn[] allColumns) {
+		Arrays.stream(allColumns)
+			  .filter(column -> column.getName().equals(getStartColumn()))
+			  .findAny().orElseThrow(() -> new IllegalStateException(String.format("CompoundDateRangeOutput : Column %s not found", getStartColumn())));
+		Arrays.stream(allColumns)
+			  .filter(column -> column.getName().equals(getEndColumn()))
+			  .findAny().orElseThrow(() -> new IllegalStateException(String.format("CompoundDateRangeOutput : Column %s not found", getEndColumn())));
 	}
 
 	/**
