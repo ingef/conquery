@@ -18,7 +18,7 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: test/release
+          #branch: test/release
           base: test/master
           title: Merge release
           assignees: awildturtok,thoniTUB
