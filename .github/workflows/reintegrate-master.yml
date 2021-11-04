@@ -14,8 +14,8 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          branch: master
-          base: develop
+          branch: test/master
+          base: test/develop
           title: Reintegrate Master
           assignees: awildturtok,thoniTUB
           reviewers: awildturtok,thoniTUB
