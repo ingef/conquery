@@ -47,7 +47,8 @@ public class Jackson {
 			.enable(Feature.ALLOW_UNQUOTED_FIELD_NAMES)
 			.enable(Feature.ALLOW_COMMENTS)
 			.enable(Feature.ALLOW_UNQUOTED_CONTROL_CHARS)
-			.enable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+			//TODO this is just a hotfix to avoid reimports
+//			.enable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
 			.enable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
 			.enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
 			.enable(DeserializationFeature.FAIL_ON_NUMBERS_FOR_ENUMS)

@@ -6,7 +6,7 @@ import { setPreviousQueriesFilter } from "./actions";
 
 export type PreviousQueriesFilterStateT = "all" | "own" | "shared" | "system";
 
-const initialState: PreviousQueriesFilterStateT = "all";
+const initialState: PreviousQueriesFilterStateT = "own";
 
 const previousQueriesFilter = (
   state: PreviousQueriesFilterStateT = initialState,

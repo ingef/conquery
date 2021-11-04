@@ -273,7 +273,7 @@ public class FrontEndConceptBuilder {
 					.label(select.getLabel())
 					.description(select.getDescription())
 					.resultType(select.getResultType())
-					.isDefault(select.isDefault())
+					.isDefault(false) //TODO FK: We're not sure if default-Selects are beneficial in the frontend.
 					.build();
 	}
 

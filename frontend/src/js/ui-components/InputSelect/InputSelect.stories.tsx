@@ -40,6 +40,7 @@ const Template: Story<ComponentProps<typeof InputSelect>> = (args) => {
 export const Default = Template.bind({});
 Default.args = {
   label: "This is a nice label",
+  smallMenu: false,
   tooltip:
     "And here goes some tooltip that really helps the user understand what's going on",
   disabled: false,
