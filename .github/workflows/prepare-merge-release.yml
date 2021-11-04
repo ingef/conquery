@@ -1,0 +1,21 @@
+name: "Merge Release"
+
+on:
+  create:
+    branches:
+      - release
+
+jobs:
+  bump-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: test/release
+          base: test/master
+          title: Merge release
+          assignees: awildturtok,thoniTUB
+          reviewers: awildturtok,thoniTUB
