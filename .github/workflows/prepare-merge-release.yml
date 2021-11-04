@@ -1,0 +1,25 @@
+name: "Merge Release"
+
+on:
+  create:
+    branches:
+      - release
+
+jobs:
+  bump-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.REPO_SCOPED_TOKEN }}
+          branch: release
+          base: master
+          title: Merge release
+          assignees: awildturtok,thoniTUB
+          reviewers: awildturtok,thoniTUB
