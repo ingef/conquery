@@ -3,7 +3,7 @@ name: "Reintegrate master"
 on:
   push:
     branches:
-      - master
+      - test/master
 
 jobs:
   bump-test:
