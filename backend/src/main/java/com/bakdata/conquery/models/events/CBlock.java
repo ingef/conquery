@@ -49,6 +49,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	/**
 	 * Estimate the memory usage of CBlocks.
+	 *
 	 * @param depthEstimate estimate of depth of mostSpecificChildren
 	 */
 	public static long estimateMemoryBytes(long entities, long entries, double depthEstimate) {
@@ -76,7 +77,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	private final int root;
 
 	/**
-	 * Crude Bloomfilter for Concept inclusion per Entity: Each set bit denotes that the concept (with localId <= 64) or a descendant of that concept (with localId > 64) is present for the entity in this Bucket. 
+	 * Crude Bloomfilter for Concept inclusion per Entity: Each set bit denotes that the concept (with localId <= 64) or a descendant of that concept (with localId > 64) is present for the entity in this Bucket.
 	 */
 	private final long[] includedConceptElementsPerEntity;
 
@@ -162,7 +163,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			treeConcept.initializeIdCache(stringStore, bucket.getImp());
 		}
 		// No column only possible if we have just one tree element!
-		else if(treeConcept.countElements() == 1){
+		else if (treeConcept.countElements() == 1) {
 			stringStore = null;
 		}
 		else {
@@ -178,10 +179,12 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final int[] root = treeConcept.getPrefix();
 
-		for (Bucket.Entry entry : bucket.entries()) {
-			try {
-				final int event = entry.getEvent();
+		for (int _event = 0; _event < bucket.getNumberOfEvents(); _event++) {
 
+			// We need to copy so the closure is satisfied.
+			final int event = _event;
+
+			try {
 				// Events without values are omitted
 				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				if (column != null && !bucket.has(event, column)) {
@@ -206,8 +209,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				}
 
 				ConceptTreeChild child = cache == null
-						? treeConcept.findMostSpecificChild(stringValue, rowMap)
-						: cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
+										 ? treeConcept.findMostSpecificChild(stringValue, rowMap)
+										 : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
 
 				// All unresolved elements resolve to the root.
 				if (child == null) {
@@ -219,7 +222,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				mostSpecificChildren[event] = child.getPrefix();
 			}
 			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event " + bucket + "-" + entry.getEvent() + " against concept " + treeConcept, ex);
+				log.error("Failed to resolve event " + bucket + "-" + event + " against concept " + treeConcept, ex);
 			}
 		}
 
@@ -244,15 +247,21 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 */
 	private static long[] calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
 		long[] includedConcepts = new long[bucketSize];
-		for (Bucket.Entry entry : bucket.entries()) {
-			final int[] mostSpecificChild = mostSpecificChildren[entry.getEvent()];
 
-			for (int i = 0; i < mostSpecificChild.length; i++) {
+		for (int entity : bucket.getEntities()) {
+			for (int event = bucket.getEntityStart(entity); event < bucket.getEntityEnd(entity); event++) {
 
-				final long mask = calculateBitMask(i, mostSpecificChild);
-				includedConcepts[entry.getEntity() - bucketSize*bucket.getBucket()] |= mask;
+				final int[] mostSpecificChild = mostSpecificChildren[event];
+
+				for (int i = 0; i < mostSpecificChild.length; i++) {
+
+					final long mask = calculateBitMask(i, mostSpecificChild);
+
+					includedConcepts[bucket.getEntityIndex(entity)] |= mask;
+				}
 			}
 		}
+
 		return includedConcepts;
 	}
 
@@ -267,9 +276,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		if (mostSpecificChild[pathIndex] < 64) {
 			return 1L << mostSpecificChild[pathIndex];
 		}
-		return calculateBitMask(pathIndex-1, mostSpecificChild);
+		return calculateBitMask(pathIndex - 1, mostSpecificChild);
 	}
-
 
 
 	/**
@@ -285,16 +293,19 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				continue;
 			}
 
-			for (Bucket.Entry entry : bucket.entries()) {
-				if (!bucket.has(entry.getEvent(), column)) {
-					continue;
+			for (int entity : bucket.getEntities()) {
+				for (int event = bucket.getEntityStart(entity); event < bucket.getEntityEnd(entity); event++) {
+					if (!bucket.has(event, column)) {
+						continue;
+					}
+
+					CDateRange range = bucket.getAsDateRange(event, column);
+
+					final int index = bucket.getEntityIndex(entity);
+
+					spans[index] = spans[index].spanClosed(range);
 				}
 
-				CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
-
-				final int index = bucket.getEntityIndex(entry.getEntity());
-
-				spans[index] = spans[index].spanClosed(range);
 			}
 		}
 
