@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1.query;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -70,7 +71,7 @@ public class TableExportQuery extends Query {
 	private Map<Column, Integer> positions;
 
 	@JsonIgnore
-	private List<ResultInfo> resultInfos = null;
+	private List<ResultInfo> resultInfos = Collections.emptyList();
 
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
@@ -187,15 +188,6 @@ public class TableExportQuery extends Query {
 		}
 
 		return null;
-	}
-
-	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
-		if (resultInfos == null) {
-			return;
-		}
-
-		collector.addAll(resultInfos);
 	}
 
 	@Override

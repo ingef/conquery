@@ -234,16 +234,20 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	}
 
 	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
+
 		for (Select select : selects) {
-			collector.add(new SelectResultInfo(select, this));
+			resultInfos.add(new SelectResultInfo(select, this));
 		}
 
 		for (CQTable table : tables) {
 			for (Select sel : table.getSelects()) {
-				collector.add(new SelectResultInfo(sel, this));
+				resultInfos.add(new SelectResultInfo(sel, this));
 			}
 		}
+
+		return resultInfos;
 	}
 
 	@Override

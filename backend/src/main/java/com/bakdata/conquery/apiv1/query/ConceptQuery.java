@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -76,12 +77,15 @@ public class ConceptQuery extends Query {
 	}
 
 	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
+	public List<ResultInfo> getResultInfos() {
 		Preconditions.checkNotNull(resolvedDateAggregationMode);
+		List<ResultInfo> resultInfos = new ArrayList<>();
 		if(!DateAggregationMode.NONE.equals(resolvedDateAggregationMode)) {
-			collector.add(ConqueryConstants.DATES_INFO);
+			resultInfos.add(ConqueryConstants.DATES_INFO);
 		}
-		root.collectResultInfos(collector);
+		resultInfos.addAll(root.getResultInfos());
+
+		return resultInfos;
 	}
 
 	@Override

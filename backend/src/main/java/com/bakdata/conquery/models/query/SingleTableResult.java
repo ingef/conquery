@@ -14,13 +14,7 @@ public interface SingleTableResult {
 	List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry);
 
 	@JsonIgnore
-	default List<ResultInfo> getResultInfos() {
-		final ArrayList<ResultInfo> resultInfos = new ArrayList<>();
-		collectResultInfos(resultInfos);
-		return resultInfos;
-	}
-
-	void collectResultInfos(List<ResultInfo> collector);
+	List<ResultInfo> getResultInfos();
 
 	Stream<EntityResult> streamResults();
 

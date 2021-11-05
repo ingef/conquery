@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.result.arrow;
 
-import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
-import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
+import static com.bakdata.conquery.io.result.ResultTestUtil.*;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.*;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -125,19 +124,7 @@ public class ArrowResultGenerationTest {
         // The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
         List<EntityResult> results = getTestEntityResults();
 
-        ManagedQuery mquery = new ManagedQuery(null, null, null) {
-            public void collectResultInfos(List<ResultInfo> collector) {
-				collector.addAll(getResultTypes().stream()
-                        .map(ResultTestUtil.TypedSelectDummy::new)
-                        .map(select -> new SelectResultInfo(select, new CQConcept()))
-                        .collect(Collectors.toList()));
-            }
-
-			@Override
-			public Stream<EntityResult> streamResults() {
-				return results.stream();
-			}
-        };
+        ManagedQuery mquery = getTestQuery();
 
         // First we write to the buffer, than we read from it and parse it as TSV
         ByteArrayOutputStream output = new ByteArrayOutputStream();

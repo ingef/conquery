@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -41,15 +42,15 @@ public class ResultInfoDecorator extends CQElement {
 
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
-		int index = collector.size();
-		child.collectResultInfos(collector);
-		collector.listIterator(index)
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = child.getResultInfos();
+		resultInfos.listIterator()
 				 .forEachRemaining(sd -> {
 					 for (Class entry : values.keySet()) {
 						 sd.addAppendix(entry, values.getInstance(entry));
 					 }
 				 });
+		return resultInfos;
 	}
 
 	@Override

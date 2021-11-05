@@ -182,8 +182,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@JsonIgnore
-	public void collectResultInfos(List<ResultInfo> collector) {
-		query.collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		return query.getResultInfos();
 	}
 
 	@Override

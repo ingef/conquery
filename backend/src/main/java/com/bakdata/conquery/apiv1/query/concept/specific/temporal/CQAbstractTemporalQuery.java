@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -42,8 +43,10 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	}
 	
 	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
-		index.getChild().collectResultInfos(collector);
-		preceding.getChild().collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
+		resultInfos.addAll(index.getChild().getResultInfos());
+		resultInfos.addAll(preceding.getChild().getResultInfos());
+		return resultInfos;
 	}
 }

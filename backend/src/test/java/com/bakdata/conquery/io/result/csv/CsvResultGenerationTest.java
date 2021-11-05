@@ -1,6 +1,6 @@
 package com.bakdata.conquery.io.result.csv;
 
-import static com.bakdata.conquery.io.result.ResultTestUtil.getResultTypes;
+import static com.bakdata.conquery.io.result.ResultTestUtil.*;
 import static com.bakdata.conquery.io.result.ResultTestUtil.getTestEntityResults;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
@@ -54,21 +55,7 @@ public class CsvResultGenerationTest {
 		// The Shard nodes send Object[] but since Jackson is used for deserialization, nested collections are always a list because they are not further specialized
 		List<EntityResult> results = getTestEntityResults();
 
-		ManagedQuery mquery = new ManagedQuery(null, null, null) {
-			public void collectResultInfos(List<ResultInfo> collector) {
-				collector.addAll(getResultTypes().stream()
-						.map(ResultTestUtil.TypedSelectDummy::new)
-						.map(select -> new SelectResultInfo(select, new CQConcept()))
-						.collect(Collectors.toList()));
-			}
-
-			;
-
-			@Override
-			public Stream<EntityResult> streamResults() {
-				return results.stream();
-			}
-		};
+		ManagedQuery mquery = getTestQuery();
 
 		// First we write to the buffer, than we read from it and parse it as TSV
 		StringWriter writer = new StringWriter();

@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
@@ -73,8 +74,9 @@ public abstract class CQElement implements Visitable {
 		this.collectRequiredQueries(set);
 		return set;
 	}
-	
-	public abstract void collectResultInfos(List<ResultInfo> collector);
+
+	@JsonIgnore
+	public abstract List<ResultInfo> getResultInfos();
 
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);

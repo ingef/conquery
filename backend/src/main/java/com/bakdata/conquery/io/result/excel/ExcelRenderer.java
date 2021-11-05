@@ -72,8 +72,7 @@ public class ExcelRenderer {
             List<ResultInfo> idHeaders,
             E exec,
             OutputStream outputStream) throws IOException {
-		final ArrayList<ResultInfo> resultInfosExec = new ArrayList<>();
-		exec.collectResultInfos(resultInfosExec);
+		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
 		setMetaData(exec);
 

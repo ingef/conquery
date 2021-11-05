@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -144,9 +145,12 @@ public class SecondaryIdQuery extends Query {
 	}
 
 	@Override
-	public void collectResultInfos(List<ResultInfo> collector) {
-		collector.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IdT.INSTANCE));
-		query.collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
+		resultInfos.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IdT.INSTANCE));
+		resultInfos.addAll(query.getResultInfos());
+
+		return resultInfos;
 	}
 
 	@Override
