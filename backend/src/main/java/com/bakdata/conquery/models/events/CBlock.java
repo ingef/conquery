@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.events;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -8,7 +14,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.tree.*;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeChildPrefixIndex;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
@@ -23,11 +33,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.constraints.NotNull;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Metadata for connection of {@link Bucket} and {@link Concept}
@@ -173,7 +178,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final int[] root = treeConcept.getPrefix();
 
-		for (BucketEntry entry : bucket.entries()) {
+		for (Bucket.Entry entry : bucket.entries()) {
 			try {
 				final int event = entry.getEvent();
 
@@ -239,7 +244,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 */
 	private static long[] calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
 		long[] includedConcepts = new long[bucketSize];
-		for (BucketEntry entry : bucket.entries()) {
+		for (Bucket.Entry entry : bucket.entries()) {
 			final int[] mostSpecificChild = mostSpecificChildren[entry.getEvent()];
 
 			for (int i = 0; i < mostSpecificChild.length; i++) {
@@ -280,7 +285,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				continue;
 			}
 
-			for (BucketEntry entry : bucket.entries()) {
+			for (Bucket.Entry entry : bucket.entries()) {
 				if (!bucket.has(entry.getEvent(), column)) {
 					continue;
 				}

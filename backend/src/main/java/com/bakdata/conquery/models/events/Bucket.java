@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.events;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -31,6 +31,8 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.AbstractIterator;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -94,13 +96,10 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return getEntityStart(entity) != -1;
 	}
 
-	public Iterable<BucketEntry> entries() {
-		return () -> entities()
-						  .stream()
-						  .flatMap(entity -> IntStream.range(getEntityStart(entity), getEntityEnd(entity))
-													  .mapToObj(e -> new BucketEntry(entity, e))
-						  )
-						  .iterator();
+
+
+	public Iterable<Entry> entries() {
+		return () -> new BucketIterator(entities.iterator());
 	}
 
 	public int getEntityStart(int entityId) {
@@ -192,5 +191,44 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@Override
 	public Dataset getDataset() {
 		return getTable().getDataset();
+	}
+
+	/**
+	 * Implementation of an Iterator of a Bucket: Iterate all Entities and all their Events.
+	 */
+	@RequiredArgsConstructor
+	private class BucketIterator extends AbstractIterator<Entry> {
+
+		private final Iterator<Integer> entities;
+
+		private int entity = -1;
+		private int position = -1;
+
+		@Override
+		protected Entry computeNext() {
+			// Initialize entity, or advance to next entity
+			if(entity == -1 || position >= getEntityEnd(entity)){
+
+				if(!entities.hasNext()){
+					return endOfData();
+				}
+
+				entity = entities.next();
+				position = getEntityStart(entity);
+			}
+
+			// Advance to next position of entity.
+			return new Entry(entity, position++);
+		}
+	}
+
+	/**
+	 * Container class for co-Iteration of Entity and their Events.
+ 	 */
+	@Data
+	@ToString
+	public static class Entry {
+		private final int entity;
+		private final int event;
 	}
 }
