@@ -3,7 +3,7 @@ name: "Reintegrate master"
 on:
   push:
     branches:
-      - test/master
+      - master
 
 jobs:
   bump-test:
@@ -14,12 +14,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+      - name: pull-request
+        uses: repo-sync/pull-request@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          # branch: test/master
-          base: test/develop
-          title: Reintegrate Master
-          assignees: awildturtok,thoniTUB
-          reviewers: awildturtok,thoniTUB
+          destination_branch: "develop"
+          pr_title: "Reintegrate Master"
+          pr_reviewer: "thoniTUB,awildturtok"
+          pr_assignee: "thoniTUB,awildturtok"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
