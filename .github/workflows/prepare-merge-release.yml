@@ -3,23 +3,20 @@ name: "Merge Release"
 on:
   push:
     branches:
-      - test/release
+      - release
 
 jobs:
   bump-test:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+
+      - name: pull-request
+        uses: repo-sync/pull-request@v2
         with:
-          submodules: true
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          #branch: test/release
-          base: test/master
-          title: Merge release
-          assignees: awildturtok,thoniTUB
-          reviewers: awildturtok,thoniTUB
+          destination_branch: "master"
+          pr_title: "Merge Release"
+          pr_reviewer: "thoniTUB,awildturtok"
+          pr_assignee: "thoniTUB,awildturtok"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
