@@ -44,19 +44,8 @@ public abstract class OutputDescription {
 	private boolean required = false;
 
 	@JsonIgnore
-	private TableInputDescriptor parent;
-
-	/**
-	 * Set the a {@link TableInputDescriptor} as parent of an {@link OutputDescription}
-	 * It can be used later for many purposes.
-	 * For example it is used in {@link CompoundDateRangeOutput} to check if the neighbour-columns exist in the table
-	 */
 	@JsonBackReference
-	public void setParent(TableInputDescriptor _parent) {
-		parent = _parent;
-	}
-
-
+	private TableInputDescriptor parent;
 	/**
 	 * Hashcode is used to in validity-hash of Preprocessed files.
 	 */
