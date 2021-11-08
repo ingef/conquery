@@ -43,9 +43,21 @@ public abstract class OutputDescription {
 
 	private boolean required = false;
 
+
 	@JsonIgnore
-	@JsonBackReference
 	private TableInputDescriptor parent;
+
+	/**
+	 * Set the {@link TableInputDescriptor} as parent of an {@link OutputDescription}
+	 * It can be used later for many purposes.
+	 * For example it is used in {@link CompoundDateRangeOutput} to check if the neighbour-columns exist in the table
+	 * @implNote BackReference set here because Jackson does not support for fields in interface and abstract classes see also https://github.com/FasterXML/jackson-databind/issues/3304
+	 */
+	@JsonBackReference
+	public void setParent(TableInputDescriptor _parent) {
+		parent = _parent;
+	}
+
 	/**
 	 * Hashcode is used to in validity-hash of Preprocessed files.
 	 */
