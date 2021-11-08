@@ -257,17 +257,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 				final int[] mostSpecificChild = mostSpecificChildren[event];
 
-				children:
 				for (int i = 0; i < mostSpecificChild.length; i++) {
 
 					final long mask = calculateBitMask(i, mostSpecificChild);
-					final long newConcepts = includedConcepts[entityIndex] | mask;
 
-					if (newConcepts == mask) {
-						break children;
-					}
-
-					includedConcepts[entityIndex] = newConcepts;
+					includedConcepts[entityIndex] |= mask;
 				}
 			}
 		}
