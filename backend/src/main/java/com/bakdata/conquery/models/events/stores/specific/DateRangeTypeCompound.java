@@ -37,14 +37,16 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	private String startColumn, endColumn;
 
 	/**
-	  * does not have to be serialized because will be lazy-loaded after the deserialization of DateRangeTypeCompound
-	  * @implNote since this value is lazy loaded, do not use it directly and use the getter instead.
-	  */
+	 * does not have to be serialized because will be lazy-loaded after the deserialization of DateRangeTypeCompound
+	 *
+	 * @implNote since this value is lazy loaded, do not use it directly and use the getter instead.
+	 */
 	@JsonIgnore
 	private DateStore startStore;
 
 	/**
 	 * does not have to be serialized because will be lazy-loaded after the deserialization of DateRangeTypeCompound
+	 *
 	 * @implNote since this value is lazy loaded, do not use it directly and use the getter instead.
 	 */
 	@JsonIgnore
@@ -67,6 +69,15 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@JsonIgnore
 	public DateStore getStartStore() {
+		/*
+		Parent has not yet been set by BackReference at this point.
+		However, this process will be done later.
+		This is the case, for example, when the method getLines is called.
+		TODO: We still need to investigate whether this can lead to an error later.
+		 */
+		if (getParent() == null) {
+			return null;
+		}
 		if (startStore == null) {
 			setStartStore((DateStore) getParent().getStore(getStartColumn()));
 		}
@@ -75,6 +86,15 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@JsonIgnore
 	public DateStore getEndStore() {
+		/*
+		Parent has not yet been set by BackReference at this point.
+		However, this process will be done later.
+		This is the case, for example, when the method getLines is called.
+		TODO: We still need to investigate whether this can lead to an error later.
+		 */
+		if (getParent() == null) {
+			return null;
+		}
 		if (endStore == null) {
 			setEndStore((DateStore) getParent().getStore(getEndColumn()));
 		}
@@ -98,6 +118,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	/**
 	 * Estimated number of bits required to store a value of type {@link DateRangeTypeCompound}.
+	 *
 	 * @return always 0 because this store does not hold data of its own, but references its neighbouring stores.
 	 */
 	@Override
