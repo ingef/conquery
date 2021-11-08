@@ -14,6 +14,8 @@ import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.CompoundDateRangeParser;
 import com.bakdata.conquery.util.DateReader;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 import lombok.ToString;
@@ -40,14 +42,26 @@ public class CompoundDateRangeOutput extends OutputDescription {
 		};
 	}
 
-	@Override
-	public void checkColumnExistsOn(PPColumn[] allColumns) {
-		Arrays.stream(allColumns)
-			  .filter(column -> column.getName().equals(getStartColumn()))
-			  .findAny().orElseThrow(() -> new IllegalStateException(String.format("CompoundDateRangeOutput : Column %s not found", getStartColumn())));
-		Arrays.stream(allColumns)
-			  .filter(column -> column.getName().equals(getEndColumn()))
-			  .findAny().orElseThrow(() -> new IllegalStateException(String.format("CompoundDateRangeOutput : Column %s not found", getEndColumn())));
+	/**
+	 * This function checks if the end-column really exists.
+	 */
+	@JsonIgnore
+	@ValidationMethod(message = "End-column not found")
+	public boolean isEndColumnPresent() {
+		return Arrays.stream(getParent().getOutput())
+					 .filter(output -> output.getName().equals(getEndColumn()))
+					 .anyMatch(output -> output.getResultType().equals(MajorTypeId.DATE));
+	}
+
+	/**
+	 * This function checks if the start-column really exists.
+	 */
+	@JsonIgnore
+	@ValidationMethod(message = "Start-column not found")
+	public boolean isStartColumnPresent() {
+		return Arrays.stream(getParent().getOutput())
+					 .filter(output -> output.getName().equals(getStartColumn()))
+					 .anyMatch(output -> output.getResultType().equals(MajorTypeId.DATE));
 	}
 
 	/**

@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import groovy.lang.GroovyShell;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -57,6 +58,7 @@ public class TableInputDescriptor {
 
 	@Valid
 	@NotEmpty
+	@JsonManagedReference
 	private OutputDescription[] output;
 
 	/**

@@ -131,7 +131,6 @@ public class Preprocessor {
 
 				// Instantiate Outputs based on descriptors (apply header positions)
 				for (OutputDescription op : input.getOutput()) {
-					op.checkColumnExistsOn(columns);
 					outputs.add(op.createForHeaders(headerMap, dateReader));
 				}
 
