@@ -67,9 +67,6 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@JsonIgnore
 	public DateStore getStartStore() {
-		if (getParent() == null) {
-			return null;
-		}
 		if (startStore == null) {
 			setStartStore((DateStore) getParent().getStore(getStartColumn()));
 		}
@@ -78,9 +75,6 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@JsonIgnore
 	public DateStore getEndStore() {
-		if (getParent() == null) {
-			return null;
-		}
 		if (endStore == null) {
 			setEndStore((DateStore) getParent().getStore(getEndColumn()));
 		}
