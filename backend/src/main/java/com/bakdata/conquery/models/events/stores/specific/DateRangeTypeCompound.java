@@ -131,14 +131,15 @@ public class DateRangeTypeCompound implements DateRangeStore {
 		int start = Integer.MIN_VALUE;
 		int end = Integer.MAX_VALUE;
 
-		final DateStore _startStore = getStartStore();
-		if (_startStore.has(event)) {
-			start = _startStore.getDate(event);
+		final DateStore startStore = getStartStore();
+		final DateStore endStore = getEndStore();
+
+		if (startStore.has(event)) {
+			start = startStore.getDate(event);
 		}
 
-		final DateStore _endStore = getEndStore();
-		if (_endStore.has(event)) {
-			end = _endStore.getDate(event);
+		if (endStore.has(event)) {
+			end = endStore.getDate(event);
 		}
 
 		return CDateRange.of(start, end);
