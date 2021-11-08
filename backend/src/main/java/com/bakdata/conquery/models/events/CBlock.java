@@ -179,10 +179,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final int[] root = treeConcept.getPrefix();
 
-		for (int _event = 0; _event < bucket.getNumberOfEvents(); _event++) {
+		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 
-			// We need to copy so the closure is satisfied.
-			final int event = _event;
 
 			try {
 				// Events without values are omitted
@@ -200,7 +198,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				}
 
 				// Lazy evaluation of map to avoid allocations if possible.
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event));
+				// Copy event for closure.
+				final int _event = event;
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(_event));
 
 
 				if ((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))) {
@@ -249,15 +249,25 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		long[] includedConcepts = new long[bucketSize];
 
 		for (int entity : bucket.getEntities()) {
-			for (int event = bucket.getEntityStart(entity); event < bucket.getEntityEnd(entity); event++) {
+
+			final int entityIndex = bucket.getEntityIndex(entity);
+			final int end = bucket.getEntityEnd(entity);
+
+			for (int event = bucket.getEntityStart(entity); event < end; event++) {
 
 				final int[] mostSpecificChild = mostSpecificChildren[event];
 
+				children:
 				for (int i = 0; i < mostSpecificChild.length; i++) {
 
 					final long mask = calculateBitMask(i, mostSpecificChild);
+					final long newConcepts = includedConcepts[entityIndex] | mask;
 
-					includedConcepts[bucket.getEntityIndex(entity)] |= mask;
+					if (newConcepts == mask) {
+						break children;
+					}
+
+					includedConcepts[entityIndex] = newConcepts;
 				}
 			}
 		}
@@ -273,7 +283,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		if (pathIndex < 0) {
 			return 0;
 		}
-		if (mostSpecificChild[pathIndex] < 64) {
+		if (mostSpecificChild[pathIndex] < Long.SIZE) {
 			return 1L << mostSpecificChild[pathIndex];
 		}
 		return calculateBitMask(pathIndex - 1, mostSpecificChild);
@@ -294,15 +304,15 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			}
 
 			for (int entity : bucket.getEntities()) {
-				for (int event = bucket.getEntityStart(entity); event < bucket.getEntityEnd(entity); event++) {
+				final int index = bucket.getEntityIndex(entity);
+				final int end = bucket.getEntityEnd(entity);
+
+				for (int event = bucket.getEntityStart(entity); event < end; event++) {
 					if (!bucket.has(event, column)) {
 						continue;
 					}
 
 					CDateRange range = bucket.getAsDateRange(event, column);
-
-					final int index = bucket.getEntityIndex(entity);
-
 					spans[index] = spans[index].spanClosed(range);
 				}
 
