@@ -1,0 +1,24 @@
+name: "Reintegrate master"
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  bump-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: pull-request
+        uses: repo-sync/pull-request@v2
+        with:
+          destination_branch: "develop"
+          pr_title: "Reintegrate Master"
+          pr_reviewer: "thoniTUB,awildturtok"
+          pr_assignee: "thoniTUB,awildturtok"
+          github_token: ${{ secrets.GITHUB_TOKEN }}

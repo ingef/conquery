@@ -1,12 +1,14 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -41,8 +43,10 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	}
 	
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
-		index.getChild().collectResultInfos(collector);
-		preceding.getChild().collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
+		resultInfos.addAll(index.getChild().getResultInfos());
+		resultInfos.addAll(preceding.getChild().getResultInfos());
+		return resultInfos;
 	}
 }

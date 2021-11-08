@@ -1,6 +1,8 @@
 package com.bakdata.conquery.apiv1.query;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -13,7 +15,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.EqualsAndHashCode;
@@ -34,13 +36,8 @@ public abstract class Query implements QueryDescription {
 		return set;
 	}
 
-	public ResultInfoCollector collectResultInfos() {
-		ResultInfoCollector collector = new ResultInfoCollector();
-		collectResultInfos(collector);
-		return collector;
-	}
-	
-	public abstract void collectResultInfos(ResultInfoCollector collector);
+	@JsonIgnore
+	public abstract List<ResultInfo> getResultInfos();
 	
 	@Override
 	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset) {

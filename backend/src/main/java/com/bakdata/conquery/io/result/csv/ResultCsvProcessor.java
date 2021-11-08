@@ -69,7 +69,7 @@ public class ResultCsvProcessor {
 		StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getFrontend().getQueryUpload().getPrintIdFields(locale), exec.getResultInfo(), exec.streamResults());
+				renderer.toCSV(config.getFrontend().getQueryUpload().getIdResultInfos(), exec.getResultInfos(), exec.streamResults());
 			}
 			catch (EofException e) {
 				log.info("User canceled download");

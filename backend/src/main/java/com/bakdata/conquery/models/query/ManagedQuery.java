@@ -36,6 +36,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -164,24 +165,26 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		final Locale locale = I18n.LOCALE.get();
 
+		PrintSettings settings = new PrintSettings(true, locale, datasetRegistry, config, null);
+
+		UniqueNamer uniqNamer = new UniqueNamer(settings);
+
 		// First add the id columns to the descriptor list. The are the first columns
-		for (String header : config.getFrontend().getQueryUpload().getPrintIdFields(locale)) {
+		for (ResultInfo header : config.getFrontend().getQueryUpload().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
-												   .label(header)
+												   .label(uniqNamer.getUniqueName(header))
 												   .type(ResultType.IdT.INSTANCE.typeInfo())
 												   .build());
 		}
 
-		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, locale, datasetRegistry, config, null);
-
-		getResultInfo().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
+		final UniqueNamer collector = new UniqueNamer(settings);
+		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings, collector)));
 		return columnDescriptions;
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfo() {
-		return query.collectResultInfos().getInfos();
+	public List<ResultInfo> getResultInfos() {
+		return query.getResultInfos();
 	}
 
 	@Override

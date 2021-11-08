@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.forms.managed;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -22,7 +23,7 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -58,12 +59,15 @@ public class AbsoluteFormQuery extends Query {
 	}
 	
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
-		features.collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		collector.getInfos().add(0, ConqueryConstants.RESOLUTION_INFO);
-		collector.getInfos().add(1, ConqueryConstants.CONTEXT_INDEX_INFO);
-		collector.getInfos().add(2, ConqueryConstants.DATE_RANGE_INFO);
+		resultInfos.add(ConqueryConstants.RESOLUTION_INFO);
+		resultInfos.add(ConqueryConstants.CONTEXT_INDEX_INFO);
+		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
+		resultInfos.addAll(features.getResultInfos());
+
+		return resultInfos;
 	}
 
 	@Override
