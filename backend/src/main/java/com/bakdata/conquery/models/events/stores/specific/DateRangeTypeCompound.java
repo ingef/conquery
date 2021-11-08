@@ -102,7 +102,10 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	}
 
-	// Reported as 0 because this store does not hold data of its own, but references its neighbouring stores.
+	/**
+	 * Estimated number of bits required to store a value of type {@link DateRangeTypeCompound}.
+	 * @return always 0 because this store does not hold data of its own, but references its neighbouring stores.
+	 */
 	@Override
 	public long estimateEventBits() {
 		return 0;
@@ -128,12 +131,14 @@ public class DateRangeTypeCompound implements DateRangeStore {
 		int start = Integer.MIN_VALUE;
 		int end = Integer.MAX_VALUE;
 
-		if (getStartStore().has(event)) {
-			start = getStartStore().getDate(event);
+		final DateStore _startStore = getStartStore();
+		if (_startStore.has(event)) {
+			start = _startStore.getDate(event);
 		}
 
-		if (getEndStore().has(event)) {
-			end = getEndStore().getDate(event);
+		final DateStore _endStore = getEndStore();
+		if (_endStore.has(event)) {
+			end = _endStore.getDate(event);
 		}
 
 		return CDateRange.of(start, end);
