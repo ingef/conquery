@@ -133,7 +133,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Override
 	public void setDateRange(int event, CDateRange raw) {
-		// this has already done by the child stores, so no need to do it again
+		// this is already done by the child stores, so no need to do it again
 	}
 
 	@Override
