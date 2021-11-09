@@ -55,22 +55,25 @@ interface PropsType {
   tooltip?: string;
   tooltipLazy?: boolean;
   infoTooltip?: string;
-  input: {
-    value?: boolean;
-    onChange: (checked: boolean) => void;
-  };
+  value?: boolean;
+  onChange: (checked: boolean) => void;
 }
 
-const InputCheckbox = (props: PropsType) => (
-  <Row
-    className={props.className}
-    onClick={() => props.input.onChange(!props.input.value)}
-  >
-    <WithTooltip text={props.tooltip} lazy={props.tooltipLazy}>
-      <Container>{!!props.input.value && <Checkmark />}</Container>
+const InputCheckbox = ({
+  label,
+  className,
+  tooltip,
+  tooltipLazy,
+  infoTooltip,
+  value,
+  onChange,
+}: PropsType) => (
+  <Row className={className} onClick={() => onChange(!value)}>
+    <WithTooltip text={tooltip} lazy={tooltipLazy}>
+      <Container>{!!value && <Checkmark />}</Container>
     </WithTooltip>
-    <Label>{props.label}</Label>
-    {exists(props.infoTooltip) && <InfoTooltip text={props.infoTooltip} />}
+    <Label>{label}</Label>
+    {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}
   </Row>
 );
 

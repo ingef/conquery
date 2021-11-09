@@ -1,8 +1,7 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
 
 import type { SelectOptionT } from "../../api/types";
 import PrimaryButton from "../../button/PrimaryButton";
@@ -12,10 +11,7 @@ import { useActiveLang } from "../../localization/useActiveLang";
 import Modal from "../../modal/Modal";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
-import {
-  selectActiveFormValues,
-  useVisibleConceptListFields,
-} from "../stateSelectors";
+import { useVisibleConceptListFields } from "../stateSelectors";
 
 const Buttons = styled("div")`
   display: flex;
@@ -53,9 +49,8 @@ const FormConceptCopyModal = ({
 }: PropsT) => {
   const { t } = useTranslation();
   const activeLang = useActiveLang();
-  const formValues = useSelector<StateT, Record<string, any>>((state) =>
-    selectActiveFormValues(state),
-  );
+  const { getValues } = useFormContext();
+  const formValues = getValues();
   const visibleConceptListFields = useVisibleConceptListFields();
 
   const conceptListFieldOptions = visibleConceptListFields
@@ -160,7 +155,8 @@ const FormConceptCopyModal = ({
       />
       <SelectAllCheckbox
         label={t("externalForms.copyModal.selectAll")}
-        input={{ value: allConceptsSelected, onChange: onToggleAllConcepts }}
+        value={allConceptsSelected}
+        onChange={onToggleAllConcepts}
       />
       <Options>
         {Object.keys(valuesChecked).map((idx) =>
@@ -168,10 +164,8 @@ const FormConceptCopyModal = ({
             <SxInputCheckbox
               key={idx}
               label={getLabelFromIdx(idx)}
-              input={{
-                value: valuesChecked[idx],
-                onChange: (checked: boolean) => onToggleConcept(idx, checked),
-              }}
+              value={valuesChecked[idx]}
+              onChange={(checked: boolean) => onToggleConcept(idx, checked)}
             />
           ) : null,
         )}

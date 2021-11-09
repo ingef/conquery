@@ -132,10 +132,8 @@ const InputRange = ({
         tooltip={tooltip}
       />
       <ToggleButton
-        input={{
-          value: mode || "range",
-          onChange: (mode) => onSwitchMode(mode),
-        }}
+        value={mode || "range"}
+        onChange={(mode) => onSwitchMode(mode as ModeT)}
         options={[
           { value: "range", label: t("inputRange.range") },
           { value: "exact", label: t("inputRange.exact") },

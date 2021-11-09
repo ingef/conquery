@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
 import { FC, useState, useEffect, memo } from "react";
+import { useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -24,7 +25,6 @@ import { loadExternalFormValues, setExternalForm } from "./actions";
 import { DragItemFormConfig } from "./form-configs/FormConfig";
 import { useLoadFormConfigs } from "./form-configs/selectors";
 import {
-  selectActiveFormValues,
   useSelectActiveFormName,
   selectActiveFormType,
 } from "./stateSelectors";
@@ -91,14 +91,13 @@ const FormConfigSaver: FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const formValues = useSelector<StateT, Record<string, any>>((state) =>
-    selectActiveFormValues(state),
-  );
-  const previousFormValues = usePrevious(formValues);
   const activeFormName = useSelectActiveFormName();
   const activeFormType = useSelector<StateT, string | null>((state) =>
     selectActiveFormType(state),
   );
+
+  const formValues = useWatch({});
+  const previousFormValues = usePrevious(formValues);
 
   const { loadFormConfigs } = useLoadFormConfigs();
 

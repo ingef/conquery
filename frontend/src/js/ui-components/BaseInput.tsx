@@ -13,12 +13,11 @@ import CurrencyInput from "./CurrencyInput";
 
 const Root = styled("div")`
   position: relative;
-  display: inline-block;
 `;
 
 const Input = styled("input")<{ large?: boolean }>`
   outline: 0;
-  min-width: 170px;
+  width: 100%;
 
   border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
   font-size: ${({ theme }) => theme.font.md};

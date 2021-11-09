@@ -47,6 +47,7 @@ interface Props {
   className?: string;
   value: SelectOptionT | null;
   defaultValue?: SelectOptionT["value"] | null;
+  optional?: boolean;
   onChange: (value: SelectOptionT | null) => void;
 }
 
@@ -61,6 +62,7 @@ const InputSelect = ({
   className,
   value,
   defaultValue,
+  optional,
   onChange,
 }: Props) => {
   const { t } = useTranslation();
@@ -331,6 +333,7 @@ const InputSelect = ({
       }
       indexPrefix={indexPrefix}
       className={className}
+      optional={optional}
     >
       {Select}
     </Labeled>

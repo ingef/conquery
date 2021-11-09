@@ -13,7 +13,7 @@ import {
 import { toUpperCaseUnderscore } from "../../common/helpers";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
-import { DragItemNode } from "../../standard-query-editor/types";
+import { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import { ModeT } from "../../ui-components/InputRange";
 import { FormContextStateT } from "../reducer";
 import {
@@ -41,7 +41,7 @@ interface PropsT {
   onDropConcept: (
     valueIdx: number,
     conceptIdx: number,
-    concept: DragItemNode,
+    concept: DragItemConceptTreeNode,
   ) => void;
   onRemoveConcept: (
     valueIdx: number,
