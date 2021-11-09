@@ -47,6 +47,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class ColumnStoreSerializationTests {
 
+	/**
+	 *
+	 * Set of {@link ColumnStore}-Types that cannot be tested because it needs more inputs than just one class.
+	 * For {@link DateRangeTypeCompound} a manual test is done in {@link com.bakdata.conquery.models.SerializationTests}
+	 *
+	 */
 	private static final Set<Class<? extends ColumnStore>> EXCLUDING = Set.of(DateRangeTypeCompound.class);
 
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();

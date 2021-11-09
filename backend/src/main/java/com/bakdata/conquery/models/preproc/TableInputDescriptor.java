@@ -67,6 +67,15 @@ public class TableInputDescriptor {
 	public static final String[] FAKE_HEADERS = new String[50];
 
 	@JsonIgnore
+	@ValidationMethod(message = "One or more columns are duplicated")
+	public boolean allColumnsDistinct() {
+		return Arrays.stream(getOutput()).map(OutputDescription::getName)
+					 .distinct()
+					 .count() == getOutput().length;
+	}
+
+
+	@JsonIgnore
 	@ValidationMethod(message = "Groovy script is not valid.")
 	public boolean isValidGroovyScript() {
 		try {

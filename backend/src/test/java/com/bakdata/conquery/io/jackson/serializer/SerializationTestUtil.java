@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.jackson.serializer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Validator;
 
