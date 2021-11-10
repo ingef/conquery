@@ -1,0 +1,66 @@
+{
+    "type": "QUERY_TEST",
+    "label": "SIMPLE_QUERY_NO_AGGREGATON Test",
+    "expectedCsv": "tests/query/SIMPLE_QUERY_NO_AGGREGATON/expected.csv",
+    "query": {
+        "type": "CONCEPT_QUERY",
+        "dateAggregationMode": "NONE",
+        "root": {
+            "type": "CONCEPT",
+            "ids": [
+              "test_tree.test_child1"
+            ],
+            "tables": [
+                {
+                  "id": "test_tree.test_column"
+                }
+            ]
+        }
+    },
+    "concepts": [
+        {
+            "label": "test_tree",
+            "type":"TREE",
+            "connectors": {
+              "label": "tree_label",
+              "name": "test_column",
+              "column": "test_table.test_column",
+              "validityDates": {"label": "datum" ,"column": "test_table.datum"}
+            },
+            "children": [
+                {
+                    "label": "test_child1",
+                    "description": " ",
+                    "condition": {"type": "PREFIX_LIST", "prefixes": "A1"}
+                },
+                {
+                    "label": "test_child2",
+                    "description": " ",
+                    "condition": {"type": "PREFIX_LIST", "prefixes": "B2"}
+                }
+            ]
+        }
+    ],
+    "content": {
+        "tables": [
+			{
+                "csv": "tests/query/SIMPLE_QUERY_NO_AGGREGATON/content.csv",
+				"name": "test_table",
+                "primaryColumn" : {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+				"columns": [
+					{
+						"name": "datum",
+						"type": "DATE"
+					},
+					{
+						"name": "test_column",
+						"type": "STRING"
+					}
+				]
+			}
+		]
+    }
+}
