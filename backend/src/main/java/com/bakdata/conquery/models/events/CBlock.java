@@ -286,12 +286,20 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	/**
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
+	 *
+	 * @implNote This is an unrolled implementation of {@link CDateRange#spanClosed(CDateRange)}.
 	 */
 	private static CDateRange[] calculateEntityDateIndices(Bucket bucket, int bucketSize) {
-		CDateRange[] spans = new CDateRange[bucketSize];
-		Arrays.fill(spans, CDateRange.all());
+		int[] mins = new int[bucketSize];
+		int[] maxs = new int[bucketSize];
+
+		// First initialize to an illegal state that's easy on our comparisons
+		Arrays.fill(mins, Integer.MAX_VALUE);
+		Arrays.fill(maxs, Integer.MAX_VALUE);
 
 		Table table = bucket.getTable();
+
+
 		for (Column column : table.getColumns()) {
 			if (!column.getType().isDateCompatible()) {
 				continue;
@@ -307,11 +315,46 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 					}
 
 					CDateRange range = bucket.getAsDateRange(event, column);
-					spans[index] = spans[index].spanClosed(range);
+
+					if (range.hasLowerBound()) {
+						final int minValue = range.getMinValue();
+
+						maxs[index] = Math.max(maxs[index], minValue);
+						mins[index] = Math.min(mins[index], minValue);
+					}
+
+					if (range.hasUpperBound()) {
+						final int maxValue = range.getMaxValue();
+
+						maxs[index] = Math.max(maxs[index], maxValue);
+						mins[index] = Math.min(mins[index], maxValue);
+					}
 				}
 
 			}
 		}
+
+		CDateRange[] spans = new CDateRange[bucketSize];
+
+		for (int index = 0; index < bucketSize; index++) {
+			if (mins[index] == Integer.MAX_VALUE && maxs[index] == Integer.MIN_VALUE) {
+				spans[index] = CDateRange.all();
+				continue;
+			}
+
+			if (mins[index] == Integer.MAX_VALUE) {
+				spans[index] = CDateRange.atMost(maxs[index]);
+				continue;
+			}
+
+			if (maxs[index] == Integer.MAX_VALUE) {
+				spans[index] = CDateRange.atLeast(mins[index]);
+				continue;
+			}
+
+			spans[index] = CDateRange.of(mins[index], maxs[index]);
+		}
+
 
 		return spans;
 	}
