@@ -222,7 +222,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				mostSpecificChildren[event] = child.getPrefix();
 			}
 			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event " + bucket + "-" + event + " against concept " + treeConcept, ex);
+				log.error("Failed to resolve event {}-{} against concept {}", bucket, event, treeConcept, ex);
 			}
 		}
 
