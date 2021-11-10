@@ -20,6 +20,9 @@ import org.apache.commons.text.StringSubstitutor;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -110,19 +113,31 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@Slf4j
 	@CPSType(base = ConqueryError.class, id = "CQ_UNKNOWN_ERROR")
-	public static class UnknownError extends NoContextError {
+	public static class UnknownError extends ContextError {
+
+		private final static String UNKNOWN_ERROR_CLASS = "UNKNOWN_ERROR_CLASS";
+		private final static String UNKNOWN_ERROR_MESSAGE = "UNKNOWN_ERROR_MESSAGE";
+		private final static String UNKNOWN_ERROR_STACKTRACE = "UNKNOWN_ERROR_STACKTRACE";
 
 		/**
 		 * Constructor for deserialization.
 		 */
 		@JsonCreator
 		private UnknownError() {
-			super("An unknown error occured");
+			super("An unknown error occurred: ${" + UNKNOWN_ERROR_CLASS + "} - ${" + UNKNOWN_ERROR_MESSAGE + "}\n${" + UNKNOWN_ERROR_STACKTRACE + "}");
 		}
 
 		public UnknownError(Throwable e) {
 			this();
 			log.error("Encountered unknown Error[{}]", this.getId(), e);
+			getContext().put(UNKNOWN_ERROR_CLASS, e.getClass().getSimpleName());
+			getContext().put(UNKNOWN_ERROR_MESSAGE, e.getMessage());
+
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			String stackTrace = sw.toString();
+			getContext().put(UNKNOWN_ERROR_STACKTRACE, stackTrace);
 		}
 	}
 
