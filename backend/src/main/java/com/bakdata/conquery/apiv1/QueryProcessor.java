@@ -191,8 +191,6 @@ public class QueryProcessor {
 						 // to exclude subtypes from somewhere else
 						 .filter(QueryProcessor::canFrontendRender)
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
-						 // We decide, that if a subject owns an execution it is permitted to see it, which saves us a lot of permissions
-						 // However, for other executions we check because those are probably shared.
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
 							 OverviewExecutionStatus status = mq.buildStatusOverview(
@@ -271,7 +269,7 @@ public class QueryProcessor {
 			return;
 		}
 
-		log.info("{} cancelled Query[{}]", subject, query.getId());
+		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
 		final Namespace namespace = getDatasetRegistry().get(dataset.getId());
 
@@ -287,6 +285,7 @@ public class QueryProcessor {
 		patch.applyTo(execution, storage, subject);
 		storage.updateExecution(execution);
 
+		// TODO remove this, since we don't translate anymore
 		// Patch this query in other datasets
 		List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets();
 		remainingDatasets.remove(execution.getDataset());
@@ -304,7 +303,7 @@ public class QueryProcessor {
 	}
 
 	public void reexecute(Subject subject, ManagedExecution<?> query) {
-		log.info("User[{}] reexecuted Query[{}]", subject, query);
+		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			datasetRegistry.get(query.getDataset().getId())
