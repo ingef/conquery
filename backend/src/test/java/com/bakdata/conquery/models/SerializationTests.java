@@ -322,7 +322,7 @@ public class SerializationTests {
 	@Test
 	public void executionQueryJobError() throws JSONException, IOException {
 		log.info("Beware, this test will print an ERROR message.");
-		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5), new ConqueryError.UnknownError(null));
+		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5), new ConqueryError.UnknownError(new Exception("This is just a test cause")));
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
