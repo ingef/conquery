@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.ExpiredCredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.realm.AuthenticatingRealm;
@@ -65,6 +66,11 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		if (tokenData == null) {
 			log.trace("Unknown token, cannot map token hash to token data. Aborting authentication");
 			throw new IncorrectCredentialsException();
+		}
+
+		if (LocalDate.now().isAfter(tokenData.getExpirationDate())) {
+			log.info("Supplied token expired on: {}", tokenData.getExpirationDate());
+			throw new ExpiredCredentialsException("Supplied token is expired");
 		}
 
 		final ApiTokenData.MetaData metaData = new ApiTokenData.MetaData(LocalDate.now());
@@ -121,6 +127,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 			response.setName(data.getName());
 			response.setExpirationDate(data.getExpirationDate());
 			response.setScopes(data.getScopes());
+			response.setExpired(LocalDate.now().isAfter(data.getExpirationDate()));
 
 			// If the token was ever used it should have an meta data entry
 			ApiTokenData.MetaData meta = apiToken.getValue();

@@ -56,6 +56,7 @@ public abstract class ApiTokenDataRepresentation {
 		private UUID id;
 		private LocalDate lastUsed;
 		private LocalDate creationDate;
+		private boolean isExpired;
 
 	}
 }

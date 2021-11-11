@@ -21,6 +21,8 @@ import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.google.common.collect.MoreCollectors;
 
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
@@ -34,6 +36,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ApiTokenRealmTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
@@ -61,12 +64,7 @@ public class ApiTokenRealmTest extends IntegrationTest.Simple implements Program
 		tokenRequest1.setScopes(EnumSet.of(Scopes.DATASET));
 		tokenRequest1.setExpirationDate(LocalDate.now().plus(1, ChronoUnit.DAYS));
 
-		ApiToken apiToken1 =
-				conquery.getClient()
-						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class,"createToken"))
-						.request(MediaType.APPLICATION_JSON_TYPE)
-						.header("Authorization", "Bearer " + userToken)
-						.post(Entity.entity(tokenRequest1, MediaType.APPLICATION_JSON_TYPE), ApiToken.class);
+		ApiToken apiToken1 = requestApiToken(conquery, userToken, tokenRequest1);
 
 		assertThat(apiToken1.getToken()).isNotBlank();
 
@@ -96,42 +94,22 @@ public class ApiTokenRealmTest extends IntegrationTest.Simple implements Program
 		tokenRequest2.setScopes(EnumSet.of(Scopes.ADMIN));
 		tokenRequest2.setExpirationDate(LocalDate.now().plus(1, ChronoUnit.DAYS));
 
-		ApiToken apiToken2 =
-				conquery.getClient()
-						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class,"createToken"))
-						.request(MediaType.APPLICATION_JSON_TYPE)
-						.header("Authorization", "Bearer " + userToken)
-						.post(Entity.entity(tokenRequest2, MediaType.APPLICATION_JSON_TYPE), ApiToken.class);
+		ApiToken apiToken2 = requestApiToken(conquery, userToken, tokenRequest2);
 
 		assertThat(apiToken2.getToken()).isNotBlank();
 
 		// List ApiToken 2
-		apiTokens =
-				conquery.getClient()
-						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class,"listUserTokens"))
-						.request(MediaType.APPLICATION_JSON_TYPE)
-						.header("Authorization", "Bearer " + userToken)
-						.get(new GenericType<List<ApiTokenDataRepresentation.Response>>(){});
+		apiTokens = requestTokenList(conquery, userToken);
 
 		assertThat(apiTokens).hasSize(2);
 
 		// Use ApiToken1 to get Datasets
-		List<IdLabel<DatasetId>> datasets =
-				conquery.getClient()
-						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetsResource.class,"getDatasets"))
-						.request(MediaType.APPLICATION_JSON_TYPE)
-						.header("Authorization", "Bearer " + apiToken1.getToken())
-						.get(new GenericType<List<IdLabel<DatasetId>>>(){});
+		List<IdLabel<DatasetId>> datasets = requestDatasets(conquery, apiToken1);
 
 		assertThat(datasets).isNotEmpty();
 
 		// Use ApiToken2 to get Datasets
-		datasets =
-				conquery.getClient()
-						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetsResource.class,"getDatasets"))
-						.request(MediaType.APPLICATION_JSON_TYPE)
-						.header("Authorization", "Bearer " + apiToken2.getToken())
-						.get(new GenericType<List<IdLabel<DatasetId>>>(){});
+		datasets = requestDatasets(conquery, apiToken2);
 
 		assertThat(datasets).as("The second token has no scope for dataset").isEmpty();
 
@@ -198,6 +176,43 @@ public class ApiTokenRealmTest extends IntegrationTest.Simple implements Program
 
 		assertThat(response.getStatus()).as("It is forbidden to act on someone else ApiTokens").isEqualTo(403);
 
+		// Request ApiToken 3 (expired)
+		final ApiTokenDataRepresentation.Request tokenRequest3 = new ApiTokenDataRepresentation.Request();
 
+		tokenRequest3.setName("test-token");
+		tokenRequest3.setScopes(EnumSet.of(Scopes.DATASET));
+		tokenRequest3.setExpirationDate(LocalDate.now().minus(1, ChronoUnit.DAYS));
+
+		assertThatThrownBy(() -> requestApiToken(conquery, userToken, tokenRequest3)).as("Expiration date is in the past").isExactlyInstanceOf(ClientErrorException.class).hasMessageContaining("HTTP 422");
+
+		// Craft expired token behind validation to simulate the use of an expired token
+		ApiToken apiToken3 = realm.createApiToken(user2, tokenRequest3);
+
+		assertThatThrownBy(() -> requestDatasets(conquery,apiToken3)).as("Expired token").isExactlyInstanceOf(NotAuthorizedException.class);
+	}
+
+	private List<IdLabel<DatasetId>> requestDatasets(StandaloneSupport conquery, ApiToken apiToken) {
+		return conquery.getClient()
+			   .target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetsResource.class, "getDatasets"))
+			   .request(MediaType.APPLICATION_JSON_TYPE)
+			   .header("Authorization", "Bearer " + apiToken.getToken())
+			   .get(new GenericType<>() {
+				});
+	}
+
+	private List<ApiTokenDataRepresentation.Response> requestTokenList(StandaloneSupport conquery, String userToken) {
+		return conquery.getClient()
+						.target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class, "listUserTokens"))
+						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Authorization", "Bearer " + userToken)
+						.get(new GenericType<>() {});
+	}
+
+	private ApiToken requestApiToken(StandaloneSupport conquery, String userToken, ApiTokenDataRepresentation.Request tokenRequest) {
+		return conquery.getClient()
+					   .target(HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), ApiTokenResource.class, "createToken"))
+					   .request(MediaType.APPLICATION_JSON_TYPE)
+					   .header("Authorization", "Bearer " + userToken)
+					   .post(Entity.entity(tokenRequest, MediaType.APPLICATION_JSON_TYPE), ApiToken.class);
 	}
 }
