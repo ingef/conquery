@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -127,15 +128,15 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			super("An unknown error occurred: ${" + UNKNOWN_ERROR_CLASS + "} - ${" + UNKNOWN_ERROR_MESSAGE + "}\n${" + UNKNOWN_ERROR_STACKTRACE + "}");
 		}
 
-		public UnknownError(Throwable e) {
+		public UnknownError(@NonNull Throwable cause) {
 			this();
-			log.error("Encountered unknown Error[{}]", this.getId(), e);
-			getContext().put(UNKNOWN_ERROR_CLASS, e.getClass().getSimpleName());
-			getContext().put(UNKNOWN_ERROR_MESSAGE, e.getMessage());
+			log.error("Encountered unknown Error[{}]", this.getId(), cause);
+			getContext().put(UNKNOWN_ERROR_CLASS, cause.getClass().getSimpleName());
+			getContext().put(UNKNOWN_ERROR_MESSAGE, cause.getMessage());
 
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);
+			cause.printStackTrace(pw);
 			String stackTrace = sw.toString();
 			getContext().put(UNKNOWN_ERROR_STACKTRACE, stackTrace);
 		}
