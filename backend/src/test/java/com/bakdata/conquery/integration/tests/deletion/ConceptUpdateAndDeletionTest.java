@@ -14,7 +14,6 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -116,7 +115,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		// To perform the update, the old concept will be deleted first and the new concept will be added. That means the deletion of concept is also covered here
 		{
 			log.info("Executing  update");
-			LoadingUtil.updateConcepts(conquery, test2.getRawConcepts(), Response.Status.Family.SUCCESSFUL, "No Content");
+			LoadingUtil.updateConcepts(conquery, test2.getRawConcepts(), Response.Status.Family.SUCCESSFUL);
 			conquery.waitUntilWorkDone();
 			log.info("Update executed");
 		}

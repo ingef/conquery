@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -226,43 +225,54 @@ public class LoadingUtil {
 		);
 	}
 
-	public static void addConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason)
+	public static void addConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily)
 			throws JSONException, IOException {
 		List<Concept<?>> concepts = getConcepts(support, rawConcepts);
 		for (Concept<?> concept : concepts) {
-			addOrUpdateConcept(support, concept, expectedResponseFamily, expectedReason, false);
+			addConcept(support, concept, expectedResponseFamily);
 		}
 	}
 
-	public static void updateConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason)
+	public static void updateConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily)
 			throws JSONException, IOException {
 		List<Concept<?>> concepts = getConcepts(support, rawConcepts);
 		for (Concept<?> concept : concepts) {
-			addOrUpdateConcept(support, concept, expectedResponseFamily, expectedReason, true);
+			updateConcept(support, concept, expectedResponseFamily);
 		}
 	}
 
-	private static void addOrUpdateConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily, @NonNull String expectedReason, boolean update) {
+	private static void updateConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily) {
 		final URI
 				conceptURI =
-				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, update ? "updateConcept" : "addConcept")
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "updateConcept")
 							   .buildFromMap(Map.of(
 									   ResourceConstants.DATASET, support.getDataset().getId()
 							   ));
 
-		final Invocation.Builder request = support.getClient()
-												  .target(conceptURI)
-												  .request(MediaType.APPLICATION_JSON);
-		Response response;
-		if (update) {
-			response = request.put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
-		}
-		else {
-			response = request.post(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
-		}
+		final Response response = support.getClient()
+										 .target(conceptURI)
+										 .request(MediaType.APPLICATION_JSON)
+										 .put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
+
 
 		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
-		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
+	}
+
+	private static void addConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily) {
+		final URI
+				conceptURI =
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
+							   .buildFromMap(Map.of(
+									   ResourceConstants.DATASET, support.getDataset().getId()
+							   ));
+
+		final Response response = support.getClient()
+										 .target(conceptURI)
+										 .request(MediaType.APPLICATION_JSON)
+										 .post(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
+
+
+		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
 	}
 
 

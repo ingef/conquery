@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -36,7 +35,6 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
@@ -207,10 +205,9 @@ public class AdminDatasetProcessor {
 	}
 
 
-
 	/**
-	 * update a concept to the given
-	 * dataset
+	 * update a concept of the given dataset.
+	 * Therefore the concept will be deleted first then added
 	 */
 	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
 
@@ -239,7 +236,7 @@ public class AdminDatasetProcessor {
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
-		getJobManager().addSlowJob(new SimpleJob(String.format("sendToAll : Add %s ", concept.getId()),()->namespace.sendToAll(new UpdateConcept(concept))));
+		getJobManager().addSlowJob(new SimpleJob(String.format("sendToAll : Add %s ", concept.getId()), () -> namespace.sendToAll(new UpdateConcept(concept))));
 	}
 
 	/**
