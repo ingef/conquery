@@ -98,8 +98,8 @@ public class XodusStore {
 		});
 	}
 
-	public void removeStore() {
-		log.debug("Removing store {} from environment {}", store.getName(), environment.getLocation());
+	public void deleteStore() {
+		log.debug("Deleting store {} from environment {}", store.getName(), environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
 		storeRemoveHook.accept(this);
 	}
