@@ -179,7 +179,7 @@ public class SerializationTests {
 		Import imp = new Import(table);
 		imp.setName("importTest");
 
-		DateRangeTypeCompound compoundStore = new DateRangeTypeCompound(startCol.getName(), endCol.getName());
+		DateRangeTypeCompound compoundStore = new DateRangeTypeCompound(startCol.getName(), endCol.getName(), null);
 
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));

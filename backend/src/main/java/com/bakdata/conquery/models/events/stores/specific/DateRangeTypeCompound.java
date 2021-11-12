@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
+import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
@@ -53,6 +53,9 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	private DateStore endStore;
 
 
+	private BooleanStore has;
+
+
 	/**
 	 * Represents the bucket from where this will be saved
 	 * This bucket will be set after the deserialization
@@ -62,9 +65,10 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	private Bucket parent;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeCompound(String startColumn, String endColumn) {
+	public DateRangeTypeCompound(String startColumn, String endColumn, BooleanStore has) {
 		setStartColumn(startColumn);
 		setEndColumn(endColumn);
+		setHas(has);
 	}
 
 	@JsonIgnore
@@ -123,12 +127,12 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	 */
 	@Override
 	public long estimateEventBits() {
-		return 0;
+		return has.estimateEventBits();
 	}
 
 	@Override
 	public DateRangeTypeCompound select(int[] starts, int[] length) {
-		return new DateRangeTypeCompound(getStartColumn(), getEndColumn());
+		return new DateRangeTypeCompound(getStartColumn(), getEndColumn(), has.select(starts, length));
 	}
 
 	@Override
@@ -138,7 +142,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Override
 	public void setNull(int event) {
-		// this has already been done by the child stores, so no need to do it again
+		has.setNull(event);
 	}
 
 	@Override
@@ -162,6 +166,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Override
 	public boolean has(int event) {
-		return getStartStore().has(event) || getEndStore().has(event);
+		return has.getBoolean(event);
 	}
+
 }

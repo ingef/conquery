@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -17,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
  */
 @Slf4j
 @ToString(callSuper = true)
-public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> {
+public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 
 	@NotNull
 	final private String startColumn, endColumn;
@@ -38,22 +39,27 @@ public class CompoundDateRangeParser extends Parser<CDateRange, DateRangeStore> 
 
 
 	@Override
-	protected CDateRange parseValue(@NotNull String value) throws ParsingException {
+	protected Boolean parseValue(@NotNull String value) throws ParsingException {
 		return null;
 	}
 
 	@Override
 	protected DateRangeStore decideType() {
-		return new DateRangeTypeCompound(this.startColumn, this.endColumn);
+		return new DateRangeTypeCompound(this.startColumn, this.endColumn, BitSetStore.create(getLines()));
 	}
 
 
 	@Override
-	public void setValue(DateRangeStore store, int event, CDateRange value) {
+	public void setValue(DateRangeStore store, int event, Boolean value) {
+		final DateRangeTypeCompound compoundStore = (DateRangeTypeCompound) store;
+
+		if(!value) {
+			compoundStore.setNull(event);
+		}
 	}
 
 	@Override
 	public ColumnValues createColumnValues() {
-		return null;
+		return new BooleanColumnValues();
 	}
 }

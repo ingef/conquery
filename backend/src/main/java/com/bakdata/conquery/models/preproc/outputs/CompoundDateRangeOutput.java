@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 
 import javax.validation.constraints.NotEmpty;
@@ -10,11 +11,11 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.CompoundDateRangeParser;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
@@ -31,15 +32,36 @@ public class CompoundDateRangeOutput extends OutputDescription {
 	@NotNull
 	@NotEmpty
 	private String startColumn, endColumn;
+	private boolean allowOpen;
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
+		assertRequiredHeaders(headers, startColumn, endColumn);
+
+		final int startIndex = headers.getInt(startColumn);
+		final int endIndex = headers.getInt(endColumn);
+
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				return null;
+				if (Strings.isNullOrEmpty(row[startIndex]) && Strings.isNullOrEmpty(row[endIndex])) {
+					return false;
+				}
+
+				if (!allowOpen && (Strings.isNullOrEmpty(row[startIndex]) || Strings.isNullOrEmpty(row[endIndex]))) {
+					throw new IllegalArgumentException("Open Ranges are not allowed.");
+				}
+
+				LocalDate start = dateReader.parseToLocalDate(row[startIndex]);
+				LocalDate end = dateReader.parseToLocalDate(row[endIndex]);
+
+				return start.isBefore(end) || start.isEqual(end);
 			}
 		};
+	}
+
+	public Parser<?, ?> createParser(ConqueryConfig config) {
+		return new CompoundDateRangeParser(config, startColumn, endColumn);
 	}
 
 	/**
@@ -72,7 +94,5 @@ public class CompoundDateRangeOutput extends OutputDescription {
 		return MajorTypeId.DATE_RANGE;
 	}
 
-	public Parser<?, ?> createParser(ConqueryConfig config) {
-		return new CompoundDateRangeParser(config, startColumn, endColumn);
-	}
+
 }
