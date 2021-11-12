@@ -54,8 +54,8 @@ public abstract class OutputDescription {
 	 * @implNote BackReference set here because Jackson does not support for fields in interfaces and abstract classes see also https://github.com/FasterXML/jackson-databind/issues/3304
 	 */
 	@JsonBackReference
-	public void setParent(TableInputDescriptor _parent) {
-		parent = _parent;
+	public void setParent(TableInputDescriptor parent) {
+		this.parent = parent;
 	}
 
 	/**
