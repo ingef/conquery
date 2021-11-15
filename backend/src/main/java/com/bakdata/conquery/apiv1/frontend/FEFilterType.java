@@ -11,5 +11,6 @@ public enum FEFilterType {
 	REAL_RANGE,
 	NONE,
 	STRING,
-	MONEY_RANGE
+	MONEY_RANGE,
+	POSTAL_CODE
 }
