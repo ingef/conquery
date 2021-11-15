@@ -30,7 +30,6 @@ const Grow = styled("div")`
 const HorizontalScrollContainer = styled("div")`
   overflow-x: auto;
   width: 100%;
-  min-height: 260px;
 `;
 const Table = styled("table")`
   margin: 10px 0;
@@ -307,6 +306,7 @@ const CSVColumnPicker: FC<PropsT> = ({
                   {row.map((cell, i) => (
                     <Th key={cell + i}>
                       <InputSelect
+                        smallMenu
                         options={SELECT_OPTIONS}
                         value={
                           SELECT_OPTIONS.find(

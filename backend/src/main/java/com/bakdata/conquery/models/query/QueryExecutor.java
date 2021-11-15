@@ -82,8 +82,9 @@ public class QueryExecutor implements Closeable {
 			return true;
 		}
 		catch (Exception e) {
+			// Just trace here. If it's wrapped as an UnknownError, it will be logged anyway.
+			log.trace("Error while executing {}", executionContext.getExecutionId(), e);
 			ConqueryError err = asConqueryError(e);
-			log.warn("Error while executing {}", executionContext.getExecutionId(), err);
 			sendFailureToManagerNode(result, asConqueryError(err));
 			return false;
 		}

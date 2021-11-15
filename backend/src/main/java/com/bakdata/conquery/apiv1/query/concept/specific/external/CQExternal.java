@@ -27,7 +27,7 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -340,10 +340,11 @@ public class CQExternal extends CQElement {
 
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public List<ResultInfo> getResultInfos() {
 		if (extra == null) {
-			return;
+			return Collections.emptyList();
 		}
+		List<ResultInfo> resultInfos = new ArrayList<>();
 		for (int col = 0; col < format.size(); col++) {
 			if (!format.get(col).equals(FORMAT_EXTRA)) {
 				continue;
@@ -351,8 +352,10 @@ public class CQExternal extends CQElement {
 
 			String column = values[0][col];
 
-			collector.add(new SimpleResultInfo(column, new ResultType.ListT(ResultType.StringT.INSTANCE)));
+			resultInfos.add(new SimpleResultInfo(column, new ResultType.ListT(ResultType.StringT.INSTANCE)));
 		}
+
+		return resultInfos;
 	}
 
 

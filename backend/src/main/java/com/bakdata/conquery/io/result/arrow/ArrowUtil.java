@@ -3,11 +3,10 @@ package com.bakdata.conquery.io.result.arrow;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.arrow.memory.RootAllocator;
@@ -81,12 +80,12 @@ public class ArrowUtil {
 	 * Creates an arrow field vector (a column) corresponding to the internal conquery type and initializes the column with
 	 * a localized header.
 	 * @param info internal meta data for the result column
-	 * @param settings settings for the overall creation of the result
+	 * @param collector to create unique names across the columns
 	 * @return a Field (the arrow representation of the column)
 	 */
-	public Field createField(ResultInfo info, PrintSettings settings) {
+	public Field createField(ResultInfo info, UniqueNamer collector) {
 		// Fallback to string field if type is not explicitly registered
 		BiFunction<ResultInfo, String, Field> fieldCreator = FIELD_MAP.getOrDefault(info.getType().getClass(), ArrowUtil::stringField);
-		return fieldCreator.apply(info, info.getUniqueName(settings));
+		return fieldCreator.apply(info, collector.getUniqueName(info));
 	}
 }

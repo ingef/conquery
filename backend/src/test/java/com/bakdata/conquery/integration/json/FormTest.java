@@ -152,11 +152,11 @@ public class FormTest extends ConqueryTestSpec {
 		CsvLineStreamRenderer renderer = new CsvLineStreamRenderer(config.getCsv().createWriter(), PRINT_SETTINGS);
 
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
-			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfo();
+			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos();
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
 			List<String> actual =
 					renderer.toStream(
-							config.getFrontend().getQueryUpload().getPrintIdFields(Locale.ENGLISH),
+							config.getFrontend().getQueryUpload().getIdResultInfos(),
 							resultInfos,
 							managed.getValue().stream().flatMap(ManagedQuery::streamResults)
 					)
