@@ -105,12 +105,9 @@ const TableFilters = (props: PropsT) => {
               return (
                 <InputRange
                   indexPrefix={filterIdx + 1}
-                  input={{
-                    value: filter.value,
-                    defaultValue: filter.defaultValue,
-                    onChange: (value) =>
-                      props.onSetFilterValue(filterIdx, value),
-                  }}
+                  value={filter.value}
+                  defaultValue={filter.defaultValue}
+                  onChange={(value) => props.onSetFilterValue(filterIdx, value)}
                   limits={{ min: filter.min, max: filter.max }}
                   unit={filter.unit}
                   label={filter.label}
@@ -127,12 +124,9 @@ const TableFilters = (props: PropsT) => {
               return (
                 <InputRange
                   indexPrefix={filterIdx + 1}
-                  input={{
-                    value: filter.value,
-                    defaultValue: filter.defaultValue,
-                    onChange: (value) =>
-                      props.onSetFilterValue(filterIdx, value),
-                  }}
+                  value={filter.value}
+                  defaultValue={filter.defaultValue}
+                  onChange={(value) => props.onSetFilterValue(filterIdx, value)}
                   limits={{ min: filter.min, max: filter.max }}
                   unit={filter.unit}
                   label={filter.label}
@@ -151,12 +145,9 @@ const TableFilters = (props: PropsT) => {
                 <InputRange
                   indexPrefix={filterIdx + 1}
                   moneyRange
-                  input={{
-                    value: filter.value,
-                    defaultValue: filter.defaultValue,
-                    onChange: (value) =>
-                      props.onSetFilterValue(filterIdx, value),
-                  }}
+                  value={filter.value}
+                  defaultValue={filter.defaultValue}
+                  onChange={(value) => props.onSetFilterValue(filterIdx, value)}
                   unit={filter.unit}
                   label={filter.label}
                   mode={filter.mode || "range"}

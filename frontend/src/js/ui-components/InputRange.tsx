@@ -7,7 +7,6 @@ import { exists } from "../common/helpers/exists";
 import InputPlain from "./InputPlain/InputPlain";
 import InputRangeHeader from "./InputRangeHeader";
 import ToggleButton from "./ToggleButton";
-import { InputProps } from "./types";
 
 const Container = styled("div")`
   width: 100%;
@@ -33,11 +32,14 @@ interface ValueT {
 }
 
 export type ModeT = "range" | "exact";
-interface PropsType extends InputProps<ValueT | null> {
+interface PropsType {
   moneyRange?: boolean;
   label: string;
   indexPrefix?: number;
   unit?: string;
+  value: ValueT | null;
+  onChange: (value: ValueT) => void;
+  defaultValue?: ValueT;
   limits?: {
     min?: number;
     max?: number;
@@ -76,7 +78,9 @@ const InputRange = ({
   unit,
   tooltip,
   onSwitchMode,
-  input: { value, defaultValue, onChange },
+  value,
+  defaultValue,
+  onChange,
 }: PropsType) => {
   const { t } = useTranslation();
   // Make sure undefined / null is never set as a value, but an empty string instead

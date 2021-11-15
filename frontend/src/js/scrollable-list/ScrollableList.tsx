@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { ReactNode, useEffect } from "react";
+import { ReactNode } from "react";
 import ReactList from "react-list";
 
 interface PropsType {

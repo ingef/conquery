@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import { DateStringMinMax } from "../../common/helpers";
+import { exists } from "../../common/helpers/exists";
 import { nodeIsInvalid } from "../../model/node";
 import { DragItemQuery } from "../../standard-query-editor/types";
 import InputCheckbox from "../../ui-components/InputCheckbox";
@@ -32,7 +33,7 @@ import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
 import { getInitialValue, isFormField, isOptionalField } from "../helper";
 import { getErrorForField } from "../validators";
 
-import { DynamicFormValues } from "./Form";
+import type { DynamicFormValues } from "./Form";
 
 type Props<T> = T & {
   children: (props: ControllerRenderProps<DynamicFormValues> & T) => ReactNode;
@@ -51,7 +52,7 @@ const ConnectedField = <T extends Object>({
   ...props
 }: Props<T>) => {
   const { t } = useTranslation();
-  const { field, fieldState, formState } = useController<DynamicFormValues>({
+  const { field } = useController<DynamicFormValues>({
     name: formField.name,
     defaultValue,
     control,
@@ -327,22 +328,21 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           {({ ref, ...fieldProps }) => (
             <FormConceptGroup
               fieldName={field.name}
-              value={fieldProps.value as FormConceptGroupT}
+              value={fieldProps.value as FormConceptGroupT[]}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
               label={field.label[locale] || ""}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               conceptDropzoneText={
                 field.conceptDropzoneLabel
-                  ? field.conceptDropzoneLabel[locale]
+                  ? field.conceptDropzoneLabel[locale] || ""
                   : t("externalForms.default.conceptDropzoneLabel")
               }
               attributeDropzoneText={
                 field.conceptColumnDropzoneLabel
-                  ? field.conceptColumnDropzoneLabel[locale]
+                  ? field.conceptColumnDropzoneLabel[locale] || ""
                   : t("externalForms.default.conceptDropzoneLabel")
               }
               formType={formType}
-              enableDropFile
               disallowMultipleColumns={!field.isTwoDimensional}
               isSingle={field.isSingle}
               blocklistedTables={field.blocklistedConnectors}
@@ -374,26 +374,29 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                   : { concepts: [], connector: "OR" }
               }
               renderRowPrefix={
-                field.rowPrefixField &&
-                ((input, feature, i) => (
-                  <SxToggleButton
-                    options={field.rowPrefixField.options.map((option) => ({
-                      label: option.label[locale],
-                      value: option.value,
-                    }))}
-                    value={feature[field.rowPrefixField.name]}
-                    onChange={(value) =>
-                      input.onChange([
-                        ...input.value.slice(0, i),
-                        {
-                          ...input.value[i],
-                          [field.rowPrefixField.name]: value,
-                        },
-                        ...input.value.slice(i + 1),
-                      ])
-                    }
-                  />
-                ))
+                exists(field.rowPrefixField)
+                  ? ({ value: fieldValue, onChange, row, i }) => (
+                      <SxToggleButton
+                        options={field.rowPrefixField!.options.map(
+                          (option) => ({
+                            label: option.label[locale] || "",
+                            value: option.value,
+                          }),
+                        )}
+                        value={row[field.rowPrefixField!.name]}
+                        onChange={(value) =>
+                          onChange([
+                            ...fieldValue.slice(0, i),
+                            {
+                              ...fieldValue[i],
+                              [field.rowPrefixField!.name]: value,
+                            },
+                            ...fieldValue.slice(i + 1),
+                          ])
+                        }
+                      />
+                    )
+                  : undefined
               }
             />
           )}

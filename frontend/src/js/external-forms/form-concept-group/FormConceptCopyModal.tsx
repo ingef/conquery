@@ -13,6 +13,8 @@ import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
 import { useVisibleConceptListFields } from "../stateSelectors";
 
+import type { FormConceptGroupT } from "./FormConceptGroup";
+
 const Buttons = styled("div")`
   display: flex;
   align-items: center;
@@ -38,7 +40,7 @@ const SxInputCheckbox = styled(InputCheckbox)`
 
 interface PropsT {
   targetFieldname: string;
-  onAccept: (selectedNodes: Object[]) => void;
+  onAccept: (selectedNodes: FormConceptGroupT[]) => void;
   onClose: () => void;
 }
 
@@ -50,7 +52,7 @@ const FormConceptCopyModal = ({
   const { t } = useTranslation();
   const activeLang = useActiveLang();
   const { getValues } = useFormContext();
-  const formValues = getValues();
+  const formValues = getValues(); // Isn't watching for changes
   const visibleConceptListFields = useVisibleConceptListFields();
 
   const conceptListFieldOptions = visibleConceptListFields
@@ -72,16 +74,12 @@ const FormConceptCopyModal = ({
 
   useEffect(() => {
     const values = formValues[selectedOption.value] as unknown[];
-    const initiallyChecked = values.reduce<{ [key: string]: boolean }>(
-      (checkedValues, _, i) => {
-        checkedValues[String(i)] = false;
-        return checkedValues;
-      },
-      {},
+    const initiallyChecked = Object.fromEntries(
+      values.map((_, i) => [String(i), false]),
     );
 
     setValuesChecked(initiallyChecked);
-  }, [selectedOption]);
+  }, [selectedOption, formValues]);
 
   const allConceptsSelected = Object.keys(valuesChecked).every(
     (key) => valuesChecked[key],
@@ -131,11 +129,13 @@ const FormConceptCopyModal = ({
   }
 
   function onSubmit() {
-    const selectedValues = Object.keys(valuesChecked)
-      .filter((key) => valuesChecked[key])
-      .map((key) => formValues[selectedOption.value][key]);
+    const selectedNodes = Object.keys(valuesChecked)
+      .filter((index) => valuesChecked[index])
+      .map(
+        (index) => formValues[selectedOption.value][index] as FormConceptGroupT,
+      );
 
-    onAccept(selectedValues);
+    onAccept(selectedNodes);
     onClose();
   }
 

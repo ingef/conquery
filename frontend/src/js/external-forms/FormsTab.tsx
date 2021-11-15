@@ -1,5 +1,6 @@
 import { tabDescription } from ".";
 import { StateT } from "app-types";
+import { usePrevious } from "js/common/helpers/usePrevious";
 import { useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useSelector, useStore } from "react-redux";
@@ -19,12 +20,9 @@ import { collectAllFormFields, getInitialValue } from "./helper";
 import buildExternalFormsReducer from "./reducer";
 import { selectFormConfig } from "./stateSelectors";
 
-const useLoadForms = () => {
+const useLoadForms = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   const store = useStore();
   const getForms = useGetForms();
-  const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId,
-  );
 
   useEffect(() => {
     async function loadForms() {
@@ -84,8 +82,6 @@ const useInitializeForm = () => {
     [allFields, datasetOptions],
   );
 
-  console.log(defaultValues);
-
   const methods = useForm<DynamicFormValues>({
     defaultValues,
     mode: "onChange",
@@ -95,13 +91,23 @@ const useInitializeForm = () => {
 };
 
 const FormsTab = () => {
-  useLoadForms();
+  const datasetId = useSelector<StateT, DatasetIdT | null>(
+    (state) => state.datasets.selectedDatasetId,
+  );
+  const previousDatasetId = usePrevious(datasetId);
+  useLoadForms({ datasetId });
 
   const { methods, config, datasetOptions } = useInitializeForm();
 
+  useEffect(() => {
+    if (datasetId && previousDatasetId !== datasetId) {
+      methods.reset();
+    }
+  }, [methods, datasetId, previousDatasetId]);
+
   return (
     <FormProvider {...methods}>
-      <FormsNavigation />
+      <FormsNavigation reset={methods.reset} />
       <FormContainer
         methods={methods}
         config={config}

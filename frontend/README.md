@@ -8,10 +8,10 @@
 - simple express.js server for a mock api
 - keycloak server for authentication, local setup using docker-compose
 
-# Some notable libraries
-- redux-form
+# Some notable libraries in use
 - react-dnd
 - i18next
+- react-hook-form
 
 ## Setup
 
@@ -101,12 +101,11 @@ Depending on the use-case, we're still calling the same concepts differently som
 
 ## Various Technical Explanations
 
-- Migration from Flow to TypeScript is in progress. At the moment, Typescript errors are printed to console on server start and build, to see what they are and to fix them. Also to check how many are left using `yarn typecheck`. But type errors are ignored (see `.env`) to be able to still compile for now. Plan is to fix the errors step by step and then to enable errors on start / build again.
-- Emotion is used for theming and styles. The plan is to migrate (back) to styled-components, because that's more TypeScript compatible in some edge cases like generic component props (see usage of Dropzone).
-- Redux actions aren't typed well yet. Plan is to migrate fully to https://github.com/piotrwitek/typesafe-actions
+- Migration from Flow to TypeScript is in progress. At the moment, Typescript errors are printed to console on server start and build, to see what they are and to fix them. To check how many errors are left: `yarn typecheck`. But type errors are ignored (see `.env`) to be able to still compile for now. Plan is to fix the errors step by step and then to enable failure on TS errors on start / build again.
+- Emotion is used for theming and styles. The plan is to migrate (back) to styled-components or to another css-in-js solution, because emotion's "styled" is less TypeScript compatible in some edge cases like generic component props (see usage of Dropzone).
+- Redux actions aren't all typed well yet. Plan is to migrate fully to https://github.com/piotrwitek/typesafe-actions
 - We're moving away from redux middlewares like thunk (replaced by hooks) and multi 
-- Redux Form is still heavily in use. In consequence, many of the input components use a less than optimal `input`: { value, onChange }` props structure. Plan is to replace Redux Form with something more modern that's using either context or local state.
-- We're still trying to support IE11. But this is phasing out slowly, since most users are already using more modern Browsers.
+- We're still trying to support IE11. But this is phasing out, since most users are already using more modern Browsers.
 
 ### Drag and Drop
 
