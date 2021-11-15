@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.auth.apitoken.ApiTokenData;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenRealm;
 import com.bakdata.conquery.models.auth.apitoken.Scopes;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.*;
 import lombok.experimental.Accessors;
@@ -32,6 +33,7 @@ public abstract class ApiTokenDataRepresentation {
 	protected Set<Scopes> scopes;
 
 	@ValidationMethod
+	@JsonIgnore
 	boolean isNotExpired() {
 		final LocalDate now = LocalDate.now();
 		return expirationDate.isAfter(now) || expirationDate.isEqual(now);
