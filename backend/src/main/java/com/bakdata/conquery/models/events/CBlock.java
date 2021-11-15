@@ -347,7 +347,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				continue;
 			}
 
-			if (maxs[index] == Integer.MAX_VALUE) {
+			if (maxs[index] == Integer.MIN_VALUE) {
 				spans[index] = CDateRange.atLeast(mins[index]);
 				continue;
 			}
