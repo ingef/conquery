@@ -133,8 +133,9 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       <>
         <Row>
           <InfoText>
-            {!!props.options ? props.options.length : 0}{" "}
-            {t("inputMultiSelect.options")}
+            {t("inputMultiSelect.options", {
+              count: props.options ? props.options.length : 0,
+            })}
           </InfoText>
           <TransparentButton
             tiny
