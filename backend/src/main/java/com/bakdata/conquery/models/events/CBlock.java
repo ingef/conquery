@@ -295,7 +295,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		// First initialize to an illegal state that's easy on our comparisons
 		Arrays.fill(mins, Integer.MAX_VALUE);
-		Arrays.fill(maxs, Integer.MAX_VALUE);
+		Arrays.fill(maxs, Integer.MIN_VALUE);
 
 		Table table = bucket.getTable();
 
