@@ -1,4 +1,6 @@
+import type { Location } from "history";
 import { createContext, useCallback, useState } from "react";
+import { useLocation } from "react-router";
 
 import { isIDPEnabled } from "../environment";
 
@@ -14,9 +16,27 @@ export const AuthTokenContext = createContext<AuthTokenContextValue>({
   setAuthToken: () => null,
 });
 
+const getInitialAuthToken = (location: Location): string => {
+  if (isIDPEnabled) {
+    return "";
+  }
+
+  // Store the token from the URL if it is present.
+  const { search } = location;
+  const params = new URLSearchParams(search);
+  const accessToken = params.get("access_token");
+  if (accessToken) {
+    storeAuthToken(accessToken);
+  }
+
+  return getStoredAuthToken() || "";
+};
+
 export const useAuthTokenContextValue = (): AuthTokenContextValue => {
+  const location = useLocation();
+
   const [authToken, internalSetAuthToken] = useState<string>(
-    isIDPEnabled ? "" : getStoredAuthToken() || "",
+    getInitialAuthToken(location),
   );
 
   const setAuthToken = useCallback((token: string) => {
