@@ -17,14 +17,15 @@ import lombok.Setter;
 @Setter
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@Path("/datasets")
-public class DatasetsResource extends HAuthorized {
+@Path("/")
+public class APIResource extends HAuthorized {
 	
 	@Inject
 	protected ConceptsProcessor processor;
 	
 	@GET
+	@Path("datasets")
 	public List<IdLabel<DatasetId>> getDatasets() {
-		return processor.getDatasets(subject);
+		return processor.getDatasets(user);
 	}
 }

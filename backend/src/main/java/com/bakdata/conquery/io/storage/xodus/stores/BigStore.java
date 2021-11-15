@@ -239,8 +239,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 	}
 
 	@Override
-	public void deleteStore() {
-		metaStore.deleteStore();
-		dataStore.deleteStore();
+	public void removeStore() {
+		metaStore.removeStore();
+		dataStore.removeStore();
 	}
 }

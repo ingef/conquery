@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -37,33 +37,33 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 	private List<GroupId> groups;
 
 	/**
-	 * Patches the given {@link Identifiable} by checking if the subject holds the necessary Permission for that operation.
+	 * Patches the given {@link Identifiable} by checking if the user holds the necessary Permission for that operation.
 	 * Hence the patched instance must have a corresponding {@link Permission}-type.
 	 * Tagging and Labeling only alters the state of the instance while sharing also alters the state of {@link Group}s.
 	 *
 	 * @param instance          The instance to patch
 	 * @param storage           Storage that persists the instance and also auth information.
-	 * @param subject              The subject on whose behalf the patch is executed
+	 * @param user              The user on whose behalf the patch is executed
 	 * @param <INST>            Type of the instance that is patched
 	 */
-	public <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, Subject subject) {
+	public <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, User user) {
 		buildChain(QueryUtils.getNoOpEntryPoint(),
 				   storage,
-				   subject,
+				   user,
 				   instance
 		)
 				.accept(this);
 	}
 
-	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, Subject subject, INST instance) {
-		if (getTags() != null && subject.isPermitted(instance, Ability.TAG)) {
+	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, User user, INST instance) {
+		if (getTags() != null && user.isPermitted(instance, Ability.TAG)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}
-		if (getLabel() != null && subject.isPermitted(instance, Ability.LABEL)) {
+		if (getLabel() != null && user.isPermitted(instance, Ability.LABEL)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.labeler());
 		}
-		if (getGroups() != null && subject.isPermitted(instance, Ability.SHARE)) {
-			patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, subject));
+		if (getGroups() != null && user.isPermitted(instance, Ability.SHARE)) {
+			patchConsumerChain = patchConsumerChain.andThen(instance.sharer(storage, user));
 		}
 		return patchConsumerChain;
 	}

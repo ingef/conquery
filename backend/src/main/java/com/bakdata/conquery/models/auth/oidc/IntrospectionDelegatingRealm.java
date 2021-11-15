@@ -39,7 +39,6 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.BearerToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
-import org.apache.shiro.realm.AuthenticatingRealm;
 
 /**
  * Realm that validates OpenID access tokens by delegating them to an IDP TokenIntrospection endpoint
@@ -47,13 +46,14 @@ import org.apache.shiro.realm.AuthenticatingRealm;
 @Slf4j
 @Getter
 @Setter
-public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
+@RequiredArgsConstructor
+public class IntrospectionDelegatingRealm extends ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 	private static final String GROUPS_CLAIM = "groups";
 
+	private final MetaStorage storage;
 	private final IntrospectionDelegatingRealmFactory authProviderConf;
-	public final MetaStorage storage;
 
 	private ClientAuthentication clientAuthentication;
 
@@ -65,11 +65,6 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 			.expireAfterWrite(10, TimeUnit.MINUTES)
 			.build(new TokenValidator());
 
-	public IntrospectionDelegatingRealm(MetaStorage storage, IntrospectionDelegatingRealmFactory authProviderConf) {
-		this.storage = storage;
-		this.authProviderConf = authProviderConf;
-	}
-
 	@Override
 	protected void onInit() {
 		super.onInit();
@@ -79,7 +74,7 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 
 	@Override
 	@SneakyThrows
-	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
 			log.trace("Incompatible token. Expected {}, got {}", TOKEN_CLASS, token.getClass());
 			return null;
@@ -92,9 +87,13 @@ public class IntrospectionDelegatingRealm extends AuthenticatingRealm implements
 
 		UserId userId = extractId(successResponse);
 
-		User user = getUserOrThrowUnknownAccount(storage, userId);
+		User user = storage.getUser(userId);
 
-		return new ConqueryAuthenticationInfo(user, token, this, true);
+		if (user == null) {
+			throw new IllegalStateException("Unable to retrieve user with id: " + userId);
+		}
+
+		return new ConqueryAuthenticationInfo(user.getId(), token, this, true);
 	}
 
 	private static UserId extractId(TokenIntrospectionSuccessResponse successResponse) {

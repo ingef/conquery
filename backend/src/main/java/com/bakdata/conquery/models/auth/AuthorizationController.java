@@ -9,9 +9,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.apitoken.ApiTokenRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -23,7 +21,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.util.Strings;
 import lombok.Getter;
@@ -77,7 +74,7 @@ public final class AuthorizationController implements Managed{
 		redirectingAuthFilter = new RedirectingAuthFilter(authenticationFilter);
 
 
-		// Add the user token realm
+		// Add the central authentication realm
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 		authenticationRealms.add(conqueryTokenRealm);
 		realms.add(conqueryTokenRealm);
@@ -86,7 +83,6 @@ public final class AuthorizationController implements Managed{
 		// Add the central authorization realm
 		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
 		realms.add(authorizingRealm);
-
 		securityManager = new DefaultSecurityManager(realms);
 		ModularRealmAuthenticator authenticator = (ModularRealmAuthenticator) securityManager.getAuthenticator();
 		authenticator.setAuthenticationStrategy(new FirstSuccessfulStrategy());
@@ -172,7 +168,7 @@ public final class AuthorizationController implements Managed{
 		// Find a new user id that is not used yet
 		String name = null;
 		do {
-			name = namePrefix + UUID.randomUUID() + originUserId.getName();
+			name = namePrefix + UUID.randomUUID() + originUserId.getEmail();
 		} while (storage.getUser(new UserId(name)) != null);
 
 		// Retrieve original user and its effective permissions

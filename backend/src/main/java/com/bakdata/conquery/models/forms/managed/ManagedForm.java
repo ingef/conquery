@@ -15,7 +15,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -178,8 +177,8 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, user, status, datasetRegistry);
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually

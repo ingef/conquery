@@ -1,16 +1,17 @@
 package com.bakdata.conquery.models.config.auth;
 
+import java.util.List;
+import java.util.Set;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import lombok.Getter;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.util.List;
-import java.util.Set;
 
 
 @CPSType(base = AuthorizationConfig.class, id = "DEVELOPMENT")

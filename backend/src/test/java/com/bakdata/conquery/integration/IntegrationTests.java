@@ -118,7 +118,7 @@ public class IntegrationTests {
 	}
 
 	private DynamicTest createDynamicProgrammaticTestNode(ProgrammaticIntegrationTest test) {
-		TestConquery conquery = getCachedConqueryInstance(workDir, getConfigOverride(test, workDir));
+		TestConquery conquery = getCachedConqueryInstance(workDir, getConfigOverride(test));
 
 		return DynamicTest.dynamicTest(
 				test.getClass().getSimpleName(),
@@ -152,7 +152,7 @@ public class IntegrationTests {
 	private static DynamicTest readTest(Resource resource, String name, IntegrationTests integrationTests) {
 		try (InputStream in = resource.open()) {
 			JsonIntegrationTest test = new JsonIntegrationTest(in);
-			ConqueryConfig conf = getConfigOverride(test, integrationTests.getWorkDir());
+			ConqueryConfig conf = getConfigOverride(test);
 
 			name = test.getTestSpec().getLabel();
 
@@ -180,9 +180,9 @@ public class IntegrationTests {
 	}
 
 	@NotNull
-	private static ConqueryConfig getConfigOverride(IntegrationTest test, File workDir) {
+	private static ConqueryConfig getConfigOverride(IntegrationTest test) {
 		ConqueryConfig conf = Cloner.clone(DEFAULT_CONFIG, Map.of(), MAPPER);
-		test.overrideConfig(conf, workDir);
+		test.overrideConfig(conf);
 		return conf;
 	}
 

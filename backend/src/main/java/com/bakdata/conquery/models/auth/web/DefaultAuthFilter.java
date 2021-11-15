@@ -4,7 +4,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
-import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.google.common.base.Function;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
@@ -37,7 +37,7 @@ import java.util.Set;
 @PreMatching
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Priority(Priorities.AUTHENTICATION)
-public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> {
+public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 	private final Set<TokenExtractor> tokenExtractors = new HashSet<>();
 
@@ -100,6 +100,9 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 	 * extraction process the Token is resubmitted to the realm from the AuthFilter
 	 * to the {@link ConqueryAuthenticator} which dispatches it to shiro.
 	 *
+	 * @param request
+	 *            An incoming request that potentially holds a token for the
+	 *            implementing realm.
 	 * @return The extracted {@link AuthenticationToken} or <code>null</code> if no
 	 *         token could be parsed.
 	 */
@@ -113,10 +116,13 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 	 * An {@link AuthorizationController} must be provided during the building
 	 * process.
 	 * </p>
+	 *
+	 * @param <P>
+	 *            the principal
 	 */
 	@Accessors(chain = true)
 	@Setter
-	private static class Builder extends AuthFilterBuilder<AuthenticationToken, Subject, DefaultAuthFilter> {
+	private static class Builder extends AuthFilterBuilder<AuthenticationToken, User, DefaultAuthFilter> {
 
 		@Override
 		protected DefaultAuthFilter newInstance() {
@@ -127,7 +133,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, Subject> 
 	public static DefaultAuthFilter asDropwizardFeature(MetaStorage storage) {
 		Builder builder = new Builder();
 		DefaultAuthFilter authFilter = builder
-				.setAuthenticator(new ConqueryAuthenticator()).setUnauthorizedHandler(new DefaultUnauthorizedHandler())
+				.setAuthenticator(new ConqueryAuthenticator(storage)).setUnauthorizedHandler(new DefaultUnauthorizedHandler())
 				.buildAuthFilter();
 		return authFilter;
 	}

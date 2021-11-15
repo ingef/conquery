@@ -36,7 +36,7 @@ public interface Store<KEY, VALUE> {
 
 	void clear();
 
-	void deleteStore();
+	void removeStore();
 
 	void close() throws IOException;
 }

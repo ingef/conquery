@@ -15,7 +15,7 @@ An `AuthorizationConfig` defines the initial users that are created on applicati
 Different types of AuthorizationConfig can be used by setting `type` to one of the following values:
 
 
-### DEFAULT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/DefaultAuthorizationConfig.java#L11)</sup></sub></sup>
+### DEFAULT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/DefaultAuthorizationConfig.java#L12)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -26,7 +26,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/DevelopmentAuthorizationConfig.java#L16)</sup></sub></sup>
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/DevelopmentAuthorizationConfig.java#L17)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -47,18 +47,7 @@ An `AuthenticationConfig` is used to define how specific realms for authenticati
 Different types of AuthenticationRealmFactory can be used by setting `type` to one of the following values:
 
 
-### API_TOKEN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/auth/ApiTokenRealmFactory.java#L27)</sup></sub></sup>
-
-
-<details><summary>Details</summary><p>
-
-Java Type: `com.bakdata.conquery.models.config.auth.ApiTokenRealmFactory`
-
-No fields can be set for this type.
-
-</p></details>
-
-### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevAuthConfig.java#L10-L13)</sup></sub></sup>
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevAuthConfig.java#L9-L12)</sup></sub></sup>
 Default configuration for the auth system. Sets up all other default components. This configuration causes that every request is handled as invoked by the super user.
 
 <details><summary>Details</summary><p>

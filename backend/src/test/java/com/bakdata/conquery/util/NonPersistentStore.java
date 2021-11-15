@@ -72,7 +72,7 @@ public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
     }
 
     @Override
-    public void deleteStore() {
+    public void removeStore() {
         clear();
     }
 

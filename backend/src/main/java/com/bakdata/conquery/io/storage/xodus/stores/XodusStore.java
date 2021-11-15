@@ -98,15 +98,19 @@ public class XodusStore {
 		});
 	}
 
-	public void deleteStore() {
-		log.debug("Deleting store {} from environment {}", store.getName(), environment.getLocation());
+	public void remove() {
+//		if (!environment.isOpen()) {
+//			log.debug("While removing store: Environment is already closed for {}", this);
+//			return;
+//		}
+		log.debug("Removing store {} from environment {}", store.getName(), environment.getLocation());
 		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
 		storeRemoveHook.accept(this);
 	}
 
 	public void close() {
 		if (!environment.isOpen()) {
-			log.trace("While closing store: Environment is already closed for {}", this);
+			log.debug("While closing store: Environment is already closed for {}", this);
 			return;
 		}
 		storeCloseHook.accept(this);

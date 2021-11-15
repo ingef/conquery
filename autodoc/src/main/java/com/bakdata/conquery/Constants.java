@@ -69,11 +69,11 @@ import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRe
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.resources.api.APIResource;
 import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConfigResource;
 import com.bakdata.conquery.resources.api.DatasetResource;
-import com.bakdata.conquery.resources.api.DatasetsResource;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
@@ -138,7 +138,7 @@ public class Constants {
 					.build(),
 			Group.builder().name("REST API JSONs")
 				 .resource(ConfigResource.class)
-				 .resource(DatasetsResource.class)
+				 .resource(APIResource.class)
 				 .resource(DatasetResource.class)
 				 .resource(ConceptResource.class)
 				 .resource(FilterResource.class)

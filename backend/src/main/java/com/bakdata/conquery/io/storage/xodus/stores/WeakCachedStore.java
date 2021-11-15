@@ -114,9 +114,9 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void deleteStore() {
+	public void removeStore() {
 		cache.invalidateAll();
-		store.deleteStore();
+		store.removeStore();
 	}
 
 	@Override
