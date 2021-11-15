@@ -7,7 +7,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -68,7 +67,7 @@ public interface QueryDescription extends Visitable {
 	/**
 	 * Check implementation specific permissions. Is called after all visitors have been registered and executed.
 	 */
-	default void authorize(Subject subject, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors) {
+	default void authorize(User user, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors) {
 		NamespacedIdentifiableCollector nsIdCollector = QueryUtils.getVisitor(visitors, NamespacedIdentifiableCollector.class);
 		ExternalIdChecker externalIdChecker = QueryUtils.getVisitor(visitors, QueryUtils.ExternalIdChecker.class);
 		if(nsIdCollector == null) {
@@ -79,7 +78,7 @@ public interface QueryDescription extends Visitable {
 												  .map(NamespacedIdentifiable::getDataset)
 												  .collect(Collectors.toSet());
 
-		subject.authorize(datasets, Ability.READ);
+		user.authorize(datasets, Ability.READ);
 
 		// Generate ConceptPermissions
 		final Set<Concept> concepts = nsIdCollector.getIdentifiables().stream()
@@ -88,13 +87,13 @@ public interface QueryDescription extends Visitable {
 													  .map(ConceptElement::getConcept)
 													  .collect(Collectors.toSet());
 
-		subject.authorize(concepts, Ability.READ);
+		user.authorize(concepts, Ability.READ);
 
-		subject.authorize(collectRequiredQueries(), Ability.READ);
+		user.authorize(collectRequiredQueries(), Ability.READ);
 		
-		// Check if the query contains parts that require to resolve external IDs. If so the subject must have the preserve_id permission on the dataset.
+		// Check if the query contains parts that require to resolve external IDs. If so the user must have the preserve_id permission on the dataset.
 		if(externalIdChecker.resolvesExternalIds()) {
-			subject.authorize(submittedDataset, Ability.PRESERVE_ID);
+			user.authorize(submittedDataset, Ability.PRESERVE_ID);
 		}
 	}
 

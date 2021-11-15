@@ -73,7 +73,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 	}
 
 	public void removeStore() {
-		store.deleteStore();
+		store.removeStore();
 	}
 
 	@Override

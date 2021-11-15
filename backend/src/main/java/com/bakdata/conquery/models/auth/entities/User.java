@@ -10,10 +10,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
@@ -31,10 +32,15 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.subject.PrincipalCollection;
 
 @Slf4j
-public class User extends PermissionOwner<UserId> implements Principal, RoleOwner, Subject {
+public class User extends PermissionOwner<UserId> implements Principal, RoleOwner {
 
 	@JsonProperty
 	private final Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
+
+	@Getter
+	@Setter
+	@JsonIgnore
+	private transient boolean displayLogout = true;
 
 	// protected for testing purposes
 	@JsonIgnore
@@ -136,33 +142,11 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 		return object instanceof Owned && equals(((Owned) object).getOwner());
 	}
 
-	@JsonIgnore
-	@Override
-	public boolean isDisplayLogout() {
-		return shiroUserAdapter.getAuthenticationInfo().get().isDisplayLogout();
-	}
-
-	@JsonIgnore
-	@Override
-	public void setAuthenticationInfo(ConqueryAuthenticationInfo info) {
-		shiroUserAdapter.getAuthenticationInfo().set(info);
-	}
-
-	@Override
-	@JsonIgnore
-	public User getUser() {
-		return this;
-	}
-
-
 	/**
 	 * This class is non static so its a fixed part of the enclosing User object.
 	 * Its protected for testing purposes only.
 	 */
 	protected class ShiroUserAdapter extends FilteredUser {
-
-		@Getter
-		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo = ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false));
 
 		@Override
 		public void checkPermission(Permission permission) throws AuthorizationException {
@@ -176,7 +160,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 		@Override
 		public PrincipalCollection getPrincipals() {
-			return authenticationInfo.get().getPrincipals();
+			return new SinglePrincipalCollection(getId());
 		}
 
 		@Override

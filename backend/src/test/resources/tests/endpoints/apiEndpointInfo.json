@@ -72,7 +72,7 @@
   {
     "method": "GET",
     "path": "/datasets",
-    "clazz": "DatasetsResource"
+    "clazz": "APIResource"
   },
   {
     "method": "GET",

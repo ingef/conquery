@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -39,19 +39,19 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getResult(Subject subject, Dataset dataset, E exec, String userAgent, String queryCharset, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getResult(User user, Dataset dataset, E exec, String userAgent, String queryCharset, boolean pretty) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		ConqueryMDC.setLocation(subject.getName());
+		ConqueryMDC.setLocation(user.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
-		subject.authorize(namespace.getDataset(), Ability.READ);
-		subject.authorize(namespace.getDataset(), Ability.DOWNLOAD);
+		user.authorize(namespace.getDataset(), Ability.READ);
+		user.authorize(namespace.getDataset(), Ability.DOWNLOAD);
 
-		subject.authorize(exec, Ability.READ);
+		user.authorize(exec, Ability.READ);
 
-		// Check if subject is permitted to download on all datasets that were referenced by the query
-		authorizeDownloadDatasets(subject, exec);
+		// Check if user is permitted to download on all datasets that were referenced by the query
+		authorizeDownloadDatasets(user, exec);
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
+		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(user, exec, namespace);
 
 
 		// Get the locale extracted by the LocaleFilter

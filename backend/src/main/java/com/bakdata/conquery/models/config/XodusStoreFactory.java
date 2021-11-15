@@ -478,13 +478,9 @@ public class XodusStoreFactory implements StoreFactory {
 			}
 		}
 
-		removeEnvironment(env);
-	}
-
-	private void removeEnvironment(Environment env) {
 		log.info("Removed last XodusStore in Environment. Removing Environment as well: {}", env.getLocation());
 
-		final List<String> xodusStore= env.computeInReadonlyTransaction(env::getAllStoreNames);
+		final List<String> xodusStore= env.computeInReadonlyTransaction(t -> env.getAllStoreNames(t));
 
 		if (!xodusStore.isEmpty()){
 			throw new IllegalStateException("Cannot delete environment, because it still contains these stores:" + xodusStore);

@@ -20,7 +20,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
-import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -53,15 +53,15 @@ public class ResultCsvResource {
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCsv(
-			@Auth Subject subject,
+			@Auth User user,
 			@PathParam(DATASET) Dataset datasetId,
 			@PathParam(QUERY) ManagedExecution<?> execution,
-			@HeaderParam("subject-agent") String userAgent,
+			@HeaderParam("user-agent") String userAgent,
 			@QueryParam("charset") String queryCharset,
 			@QueryParam("pretty") Optional<Boolean> pretty)
 	{
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, datasetId, subject.getId(), subject.getName());
-		return processor.getResult(subject, datasetId, (ManagedExecution<?> & SingleTableResult) execution, userAgent, queryCharset, pretty.orElse(Boolean.TRUE));
+		log.info("Result for {} download on dataset {} by user {} ({}).", execution, datasetId, user.getId(), user.getName());
+		return processor.getResult(user, datasetId, (ManagedExecution<?> & SingleTableResult) execution, userAgent, queryCharset, pretty.orElse(Boolean.TRUE));
 	}
 }

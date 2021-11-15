@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableSet;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -30,13 +29,10 @@ import org.apache.shiro.authz.Permission;
  * The base class of security subjects in this project. Used to represent
  * persons and groups with permissions.
  *
- * @param <T> The id type by which an instance is identified.
- *
- * @implNote The NoArgsConstructor is private and used for deserialization
+ * @param <T> The id type by which an instance is identified
  */
 @Slf4j
 @EqualsAndHashCode(callSuper = false)
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Comparable<PermissionOwner<?>> {
 
 	private static final Comparator<PermissionOwner<?>>
@@ -144,11 +140,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 	}
 
-	/**
-	 * Returns a collection of the effective permissions. These are the permissions of the owner and
-	 * the permission of the roles/groups it inherits from.
-	 * @return Owned and inherited permissions.
-	 */
 	@JsonIgnore
 	public abstract Set<ConqueryPermission> getEffectivePermissions();
 

@@ -14,17 +14,17 @@ public class UserId extends PermissionOwnerId<User> {
 	public static final String TYPE = "user";
 
 	@Getter
-	private final String name;
+	private final String email;
 
-	public UserId(String name) {
+	public UserId(String email) {
 		super();
-		this.name = name;
+		this.email = email;
 	}
 	
 	@Override
 	public void collectComponents(List<Object> components) {
 		components.add(TYPE);
-		components.add(name);
+		components.add(email);
 	}
 
 	public enum Parser implements IId.Parser<UserId> {

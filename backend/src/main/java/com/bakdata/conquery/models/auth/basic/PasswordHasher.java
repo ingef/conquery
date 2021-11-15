@@ -70,9 +70,6 @@ public class PasswordHasher {
 		catch (InvalidKeySpecException e) {
 			throw new IllegalStateException("The key specification was invalid", e);
 		}
-		finally {
-			spec.clearPassword();
-		}
 	}
 	
 	@Data

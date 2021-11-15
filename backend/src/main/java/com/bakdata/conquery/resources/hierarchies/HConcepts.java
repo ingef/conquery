@@ -27,6 +27,6 @@ public abstract class HConcepts extends HDatasets {
 	@Override
 	public void init() {
 		super.init();
-		subject.authorize(concept, Ability.READ);
+		user.authorize(concept, Ability.READ);
 	}
 }

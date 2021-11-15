@@ -22,7 +22,7 @@ import com.bakdata.conquery.apiv1.frontend.FEList;
 import com.bakdata.conquery.apiv1.frontend.FERoot;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -88,9 +88,9 @@ public class ConceptsProcessor {
 
 						});
 
-	public FERoot getRoot(NamespaceStorage storage, Subject subject) {
+	public FERoot getRoot(NamespaceStorage storage, User user) {
 
-		return FrontEndConceptBuilder.createRoot(storage, subject);
+		return FrontEndConceptBuilder.createRoot(storage, user);
 	}
 
 	public FEList getNode(Concept<?> concept) {
@@ -102,10 +102,10 @@ public class ConceptsProcessor {
 		}
 	}
 
-	public List<IdLabel<DatasetId>> getDatasets(Subject subject) {
+	public List<IdLabel<DatasetId>> getDatasets(User user) {
 		return namespaces.getAllDatasets()
 						 .stream()
-						 .filter(d -> subject.isPermitted(d, Ability.READ))
+						 .filter(d -> user.isPermitted(d, Ability.READ))
 						 .sorted(Comparator.comparing(Dataset::getWeight)
 										   .thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
