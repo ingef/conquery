@@ -29,7 +29,7 @@ public class PostalCodeDistanceEntity {
 	final private double distance;
 
 
-	@ValidationMethod(message = "The postal codes can not be equals")
+	@ValidationMethod(message = "The postal codes can not be equal")
 	public boolean isPostalCodesDifferent() {
 		return !plz1.equals(plz2);
 	}
