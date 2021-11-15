@@ -21,7 +21,7 @@ import lombok.ToString;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 public class BitSetStore implements BooleanStore {
-
+	//TODO now that this class is in use, consider using RoaringBitmaps
 	@JsonSerialize(using = BitSetSerializer.class)
 	@JsonDeserialize(using = BitSetDeserializer.class)
 	private final BitSet values;

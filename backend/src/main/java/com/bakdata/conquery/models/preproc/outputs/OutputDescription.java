@@ -8,20 +8,15 @@ import javax.validation.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
-import com.bakdata.conquery.models.preproc.PPColumn;
-import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -83,7 +78,6 @@ public abstract class OutputDescription {
 		 * Parse the line/row
 		 *
 		 * @param row        the row to parse
-		 * @param type       the Parser for the emitted column
 		 * @param sourceLine the linenumber of the row in the input file
 		 * @return a value or null
 		 * @throws ParsingException

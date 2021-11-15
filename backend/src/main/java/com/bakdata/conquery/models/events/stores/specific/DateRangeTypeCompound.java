@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -53,6 +52,9 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	private DateStore endStore;
 
 
+	/**
+	 * per line store if line is present.
+	 */
 	private BooleanStore has;
 
 
@@ -64,7 +66,6 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	@JsonIgnore
 	private Bucket parent;
 
-	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
 	public DateRangeTypeCompound(String startColumn, String endColumn, BooleanStore has) {
 		setStartColumn(startColumn);
 		setEndColumn(endColumn);

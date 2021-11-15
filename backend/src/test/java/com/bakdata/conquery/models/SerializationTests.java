@@ -42,6 +42,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -179,12 +180,12 @@ public class SerializationTests {
 		Import imp = new Import(table);
 		imp.setName("importTest");
 
-		DateRangeTypeCompound compoundStore = new DateRangeTypeCompound(startCol.getName(), endCol.getName(), null);
+		DateRangeTypeCompound compoundStore = new DateRangeTypeCompound(startCol.getName(), endCol.getName(), BitSetStore.create(4));
 
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, 1, 3, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
+		Bucket bucket = new Bucket(0, 1, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
 
 		compoundStore.setParent(bucket);
 

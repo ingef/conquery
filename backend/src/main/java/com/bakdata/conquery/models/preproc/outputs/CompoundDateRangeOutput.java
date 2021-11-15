@@ -7,7 +7,6 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -22,7 +21,9 @@ import lombok.Data;
 import lombok.ToString;
 
 /**
- * Parse input columns as {@link CDateRange}. Input values must be {@link com.bakdata.conquery.models.common.CDate} based ints.
+ * Output creating delegating store of start and end-Column neighbours.
+ *
+ * This output will still parse and validate the data to ensure that some assertions are held (ie.: only open when allowOpen is set, and start <= end).
  */
 @Data
 @ToString(of = {"startColumn", "endColumn"})
@@ -31,8 +32,8 @@ public class CompoundDateRangeOutput extends OutputDescription {
 
 	@NotNull
 	@NotEmpty
-	private String startColumn, endColumn;
-	private boolean allowOpen;
+	private final String startColumn, endColumn;
+	private final boolean allowOpen;
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
@@ -41,6 +42,8 @@ public class CompoundDateRangeOutput extends OutputDescription {
 		final int startIndex = headers.getInt(startColumn);
 		final int endIndex = headers.getInt(endColumn);
 
+		// This output only verifies that the parsed data is valid and present, it will not store the CDateRanges themselves
+		// Obviously this mean doing the work twice, but it's still better than storing the data twice also.
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
@@ -52,10 +55,14 @@ public class CompoundDateRangeOutput extends OutputDescription {
 					throw new IllegalArgumentException("Open Ranges are not allowed.");
 				}
 
-				LocalDate start = dateReader.parseToLocalDate(row[startIndex]);
-				LocalDate end = dateReader.parseToLocalDate(row[endIndex]);
+				final LocalDate start = dateReader.parseToLocalDate(row[startIndex]);
+				final LocalDate end = dateReader.parseToLocalDate(row[endIndex]);
 
-				return start.isBefore(end) || start.isEqual(end);
+				return
+						// Since it's not possible that BOTH are null either of them being null already implies an open and therefore valid range.
+						(start == null || end == null)
+						// row is included if start <= end
+						|| start.isBefore(end) || start.isEqual(end);
 			}
 		};
 	}
