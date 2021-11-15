@@ -1,3 +1,4 @@
+import { FC } from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import {
@@ -16,27 +17,33 @@ interface PropsT {
   rightTabs: TabT[];
 }
 
-const AppRouter = (props: PropsT) => {
+const ContextProviders: FC = ({ children }) => {
   const authTokenContextValue = useAuthTokenContextValue();
 
   return (
     <AuthTokenContextProvider value={authTokenContextValue}>
-      <KeycloakProvider>
-        <Router basename={basename}>
-          <Switch>
-            <Route path="/login" component={LoginPage} />
-            <Route
-              path="/*"
-              render={(routeProps) => (
-                <WithAuthToken {...routeProps}>
-                  <App {...props} />
-                </WithAuthToken>
-              )}
-            />
-          </Switch>
-        </Router>
-      </KeycloakProvider>
+      <KeycloakProvider>{children}</KeycloakProvider>
     </AuthTokenContextProvider>
+  );
+};
+
+const AppRouter = (props: PropsT) => {
+  return (
+    <Router basename={basename}>
+      <ContextProviders>
+        <Switch>
+          <Route path="/login" component={LoginPage} />
+          <Route
+            path="/*"
+            render={(routeProps) => (
+              <WithAuthToken {...routeProps}>
+                <App {...props} />
+              </WithAuthToken>
+            )}
+          />
+        </Switch>
+      </ContextProviders>
+    </Router>
   );
 };
 
