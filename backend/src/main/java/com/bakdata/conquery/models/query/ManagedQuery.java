@@ -25,6 +25,7 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -135,8 +136,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	public void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status) {
-		super.setStatusBase(user, status);
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
+		super.setStatusBase(subject, status);
 		status.setNumberOfResults(lastResultCount);
 
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
@@ -147,8 +148,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, user, status, datasetRegistry);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions(datasetRegistry);
 		}
