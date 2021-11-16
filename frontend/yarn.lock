@@ -10034,10 +10034,10 @@ junk@^3.1.0:
   resolved "https://registry.yarnpkg.com/junk/-/junk-3.1.0.tgz#31499098d902b7e98c5d9b9c80f43457a88abfa1"
   integrity sha512-pBxcB3LFc8QVgdggvZWyeys+hnrNWg4OcZIU/1X59k5jQdLBlCsYGRQaz234SqoRLTCgMH00fY0xRJH+F9METQ==
 
-keycloak-js@^12.0.1:
-  version "12.0.4"
-  resolved "https://registry.yarnpkg.com/keycloak-js/-/keycloak-js-12.0.4.tgz#fc60ccd8c32788e48302a543e6133e852a48abaf"
-  integrity sha512-O/BHtyiDrZrUnKBrVF8POojqd3gmhuiDw4FiI+FbnB14nu7G5jKFrKYZa9Q0JYKIZXHJOBzSaKQcMp2WUI+zmA==
+keycloak-js@^15.0.2:
+  version "15.0.2"
+  resolved "https://registry.yarnpkg.com/keycloak-js/-/keycloak-js-15.0.2.tgz#9d12dd8860953a267b9b18f351ad2e76b8e94a9c"
+  integrity sha512-dv2a4NcPSH3AzGWG3ZtB+VrHpuQLdFBYXtQBj/+oBzm6XNwnVAMdL6LIC0OzCLQpn3rKTQJtNSATAGhbKJgewQ==
   dependencies:
     base64-js "1.3.1"
     js-sha256 "0.9.0"
@@ -12985,10 +12985,10 @@ react-highlight-words@^0.17.0:
     memoize-one "^4.0.0"
     prop-types "^15.5.8"
 
-react-hook-form@^7.17.5:
-  version "7.17.5"
-  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.17.5.tgz#3852f294159378d0b5893c9fcc89e313937c6f89"
-  integrity sha512-4bPtPGkpVhZlgtTbtMGi0RFphKHgxCj5u3AsGz3SBdleELlG1pDf9zRQOtfGlOGkZlc7u78RzD0xu9kOw7PYdQ==
+react-hook-form@^7.19.5:
+  version "7.19.5"
+  resolved "https://registry.yarnpkg.com/react-hook-form/-/react-hook-form-7.19.5.tgz#cc6087419facf2fb57d47d5b0d4a8ca63201298f"
+  integrity sha512-+M9gd0nWWASuEitf5PQGOGNElnHknzY3rGISrPDXwsOmZb7c/jyvkRUqk4OJXaZit1ZwesSv+EysttdAeFEfmw==
 
 react-hot-keys@^2.0.0-beta.2:
   version "2.7.1"
