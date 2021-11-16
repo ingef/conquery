@@ -2,8 +2,11 @@ package com.bakdata.conquery.models;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -25,6 +28,10 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.apitoken.ApiToken;
+import com.bakdata.conquery.models.auth.apitoken.ApiTokenCreator;
+import com.bakdata.conquery.models.auth.apitoken.ApiTokenData;
+import com.bakdata.conquery.models.auth.apitoken.Scopes;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -52,6 +59,7 @@ import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -60,6 +68,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.util.CharArrayBuffer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
@@ -322,7 +332,7 @@ public class SerializationTests {
 	@Test
 	public void executionQueryJobError() throws JSONException, IOException {
 		log.info("Beware, this test will print an ERROR message.");
-		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5), new ConqueryError.UnknownError(new Exception("This is just a test cause")));
+		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5), new ConqueryError.UnknownError(null));
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
@@ -388,6 +398,28 @@ public class SerializationTests {
 		centralRegistry.register(connector);
 
 		SerializationTestUtil.forType(AbsoluteFormQuery.class).registry(centralRegistry).test(query);
+	}
+
+	@Test
+	public void testApiTokenData() throws JSONException, IOException {
+		final CharArrayBuffer buffer = new CharArrayBuffer(5);
+		buffer.append("testtest");
+		final ApiToken apiToken = new ApiToken(buffer);
+		final ApiTokenData
+				apiTokenData =
+				new ApiTokenData(
+						UUID.randomUUID(),
+						ApiTokenCreator.hashToken(apiToken),
+						"tokenName",
+						new UserId("tokenUser"),
+						LocalDate.now(),
+						LocalDate.now().plus(1, ChronoUnit.DAYS),
+						EnumSet.of(Scopes.DATASET),
+						STORAGE
+				);
+
+
+		SerializationTestUtil.forType(ApiTokenData.class).injectables(STORAGE).test(apiTokenData);
 	}
 
 }

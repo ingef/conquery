@@ -155,9 +155,6 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	}
 
 	public boolean isAggregateValidityDates() {
-		if (aggregators.isEmpty()) {
-			return false;
-		}
 		return dateAggregator.equals(aggregators.get(0));
 	}
 
