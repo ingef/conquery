@@ -1,20 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.postalcode;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import com.univocity.parsers.common.processor.BeanListProcessor;
+import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.Getter;
@@ -26,79 +19,80 @@ public class PostalCodesManager {
 
 	@Getter
 	@Setter
-	static private File dataFile = null;
-
+	private String dataFilePath = null;
 
 	@Getter
-	final static private HashMap<Set<String>, Double> data = new HashMap<>();
+	private List<Double> data;
 
-	static private boolean loaded = false;
+	private int recordsNumber = 0;
+
+	public PostalCodesManager() {
+		try {
+			loadData();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+	}
 
 
 	/**
 	 * This method loads the postcodes and their distances between each other
-	 * Then it gives a list of the entries read.
-	 *
-	 * @return The list is NULL if the file concerned has not been set yet
 	 */
-	static public List<PostalCodeDistanceEntity> loadData() throws IOException, URISyntaxException {
-		if (getDataFile() == null) {
-			setDataFile(new File(PostalCodesManager.class.getClassLoader().getResource("com.bakdata.conquery/postalcodes.csv").toURI()));
+	private void loadData() throws IOException, URISyntaxException {
+		if (getDataFilePath() == null) {
+			setDataFilePath("/com.bakdata.conquery/postalcodes.csv");
 		}
-		final BeanListProcessor<PostalCodeDistanceEntity> rowProcessor = new BeanListProcessor<>(PostalCodeDistanceEntity.class);
+
+
+		final PostalCodeProcessor rowProcessor = new PostalCodeProcessor();
 
 		final CsvParserSettings csvParserSettings = new CsvParserSettings();
 		csvParserSettings.setDelimiterDetectionEnabled(true);
-		csvParserSettings.setHeaderExtractionEnabled(true);
+		csvParserSettings.setHeaderExtractionEnabled(false);
 		csvParserSettings.setProcessor(rowProcessor);
 
 		final CsvParser parser = new CsvParser(csvParserSettings);
-		parser.parse(new InputStreamReader(new FileInputStream(getDataFile()), StandardCharsets.UTF_8));
+		parser.parse(new InputStreamReader(In.resource(getDataFilePath()).asStream(), StandardCharsets.UTF_8));
 
-		final List<PostalCodeDistanceEntity> codeDistanceEntityList = rowProcessor.getBeans();
 
-		codeDistanceEntityList.forEach(elt -> {
-			final Double lastValue = data.putIfAbsent(Set.of(elt.getPlz1(), elt
-					.getPlz2()), elt.getDistance());
-			if (lastValue != null) {
-				log.error("Two found distances found for postal codes {} & {} : {} km (First value) and {} km", elt.getPlz1(), elt.getPlz2(), lastValue, elt.getDistance());
-			}
-		});
-		loaded = true;
-		return codeDistanceEntityList;
+		data = rowProcessor.getData();
+		recordsNumber = rowProcessor.getRecordsNumber();
 	}
 
 
 	/**
 	 * This method filters out all postcodes that are within the specified distance radius from the specified reference postcode (reference-postcode included).
 	 */
-	static public List<String> filterAllNeighbours(PostalCodeSearchEntity postalCodeSearchEntity) {
+	public String[] filterAllNeighbours(PostalCodeSearchEntity postalCodeSearchEntity) {
 		try {
 			if (postalCodeSearchEntity.getRadius() == 0) {
-				return List.of(postalCodeSearchEntity.getPlz());
+				return new String[]{String.format("%05d", (int) postalCodeSearchEntity.getPlz())};
 			}
-			if (!loaded) {
-				loadData();
+
+			final List<String> foundPostalCodesList = new ArrayList<>();
+			for (int i = 0; i < recordsNumber; i++) {
+				final double plz1 = data.get(i);
+				final double plz2 = data.get(++i);
+				final double distance = data.get(++i);
+
+				if (plz1 == postalCodeSearchEntity.getPlz() && distance <= postalCodeSearchEntity.getRadius()) {
+					foundPostalCodesList.add(String.format("%05d", (int) plz2));
+				}
+				else if (plz2 == postalCodeSearchEntity.getPlz() && distance <= postalCodeSearchEntity.getRadius()) {
+					foundPostalCodesList.add(String.format("%05d", (int) plz1));
+				}
 			}
-			final List<String> foundPostalCodes = getData().entrySet()
-														   .stream()
-														   .filter(entry -> entry.getKey().contains(postalCodeSearchEntity.getPlz())
-																			&& entry.getValue() <= postalCodeSearchEntity.getRadius())
-														   .map(Map.Entry::getKey)
-														   .flatMap(Collection::stream)
-														   .collect(Collectors.toList());
-
-			//remove all occurrences of the reference postal code
-			foundPostalCodes.removeIf(elt -> elt.equals(postalCodeSearchEntity.getPlz()));
-
-			//To have at least one element of reference plz , we have to add it again to the result list
-			foundPostalCodes.add(postalCodeSearchEntity.getPlz());
-
+			String[] foundPostalCodes = new String[foundPostalCodesList.size()];
+			foundPostalCodesList.toArray(foundPostalCodes);
 			return foundPostalCodes;
 		}
 		catch (Exception error) {
 			log.error("{}", error);
-			return Collections.emptyList();
+			return new String[0];
 		}
 
 	}
