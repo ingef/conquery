@@ -69,7 +69,6 @@ const FormQueryRunner: FC = () => {
   const startQuery = () => {
     if (datasetId) {
       const form = getValues();
-      console.log("FORM", form);
       const query = { formName, form };
 
       startExternalFormsQuery(datasetId, query, {

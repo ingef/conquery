@@ -1,12 +1,12 @@
 import { tabDescription } from ".";
 import { StateT } from "app-types";
-import { usePrevious } from "js/common/helpers/usePrevious";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useSelector, useStore } from "react-redux";
 
 import { useGetForms } from "../api/api";
-import { DatasetIdT, DatasetT } from "../api/types";
+import type { DatasetIdT, DatasetT } from "../api/types";
+import { usePrevious } from "../common/helpers/usePrevious";
 import StandardQueryEditorTab from "../standard-query-editor";
 import { updateReducers } from "../store";
 import TimebasedQueryEditorTab from "../timebased-query-editor";
@@ -14,8 +14,8 @@ import TimebasedQueryEditorTab from "../timebased-query-editor";
 import FormContainer from "./FormContainer";
 import FormsNavigation from "./FormsNavigation";
 import FormsQueryRunner from "./FormsQueryRunner";
-import { Form } from "./config-types";
-import { DynamicFormValues } from "./form/Form";
+import type { Form } from "./config-types";
+import type { DynamicFormValues } from "./form/Form";
 import { collectAllFormFields, getInitialValue } from "./helper";
 import buildExternalFormsReducer from "./reducer";
 import { selectFormConfig } from "./stateSelectors";
@@ -87,7 +87,21 @@ const useInitializeForm = () => {
     mode: "onChange",
   });
 
-  return { methods, config, datasetOptions };
+  const onReset = useCallback(() => {
+    methods.reset(defaultValues);
+  }, [methods, defaultValues]);
+
+  const previousConfig = usePrevious(config);
+  useEffect(
+    function resetOnFormChange() {
+      if (previousConfig?.type !== config?.type) {
+        onReset();
+      }
+    },
+    [previousConfig, config, onReset],
+  );
+
+  return { methods, config, datasetOptions, onReset };
 };
 
 const FormsTab = () => {
@@ -97,17 +111,17 @@ const FormsTab = () => {
   const previousDatasetId = usePrevious(datasetId);
   useLoadForms({ datasetId });
 
-  const { methods, config, datasetOptions } = useInitializeForm();
+  const { methods, config, datasetOptions, onReset } = useInitializeForm();
 
   useEffect(() => {
     if (datasetId && previousDatasetId !== datasetId) {
-      methods.reset();
+      onReset();
     }
-  }, [methods, datasetId, previousDatasetId]);
+  }, [datasetId, previousDatasetId, onReset]);
 
   return (
     <FormProvider {...methods}>
-      <FormsNavigation reset={methods.reset} />
+      <FormsNavigation reset={onReset} />
       <FormContainer
         methods={methods}
         config={config}

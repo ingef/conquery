@@ -13,7 +13,7 @@ import InputMultiSelectOld, {
   MultiSelectInputProps,
 } from "../ui-components/InputMultiSelectOld";
 
-import type { FiltersContextT } from "./TableFilters";
+import type { FiltersContextT } from "./TableFilter";
 import UploadFilterListModal from "./UploadFilterListModal";
 
 interface FilterContextT extends FiltersContextT {

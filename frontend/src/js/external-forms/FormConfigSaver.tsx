@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
 import { FC, useState, useEffect, memo } from "react";
-import { useWatch } from "react-hook-form";
+import { useFormContext, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -21,7 +21,7 @@ import Dropzone from "../ui-components/Dropzone";
 import EditableText from "../ui-components/EditableText";
 import Label from "../ui-components/Label";
 
-import { loadExternalFormValues, setExternalForm } from "./actions";
+import { setExternalForm } from "./actions";
 import { DragItemFormConfig } from "./form-configs/FormConfig";
 import { useLoadFormConfigs } from "./form-configs/selectors";
 import {
@@ -96,6 +96,7 @@ const FormConfigSaver: FC = () => {
     selectActiveFormType(state),
   );
 
+  const { setValue } = useFormContext();
   const formValues = useWatch({});
   const previousFormValues = usePrevious(formValues);
 
@@ -167,10 +168,17 @@ const FormConfigSaver: FC = () => {
       const config = await getFormConfig(datasetId, dragItem.id);
 
       if (config.formType !== activeFormType) {
-        dispatch(setExternalForm(config.formType));
+        dispatch(setExternalForm({ form: config.formType }));
       }
 
-      dispatch(loadExternalFormValues(config.formType, config.values));
+      Object.entries(config.values).forEach(([fieldname, value]) => {
+        setValue(fieldname, value, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        });
+      });
+
       setConfigName(config.label);
       setIsDirty(false);
     } catch (e) {
@@ -181,8 +189,8 @@ const FormConfigSaver: FC = () => {
 
   return (
     <Root>
-      <SxDropzone<FC<DropzoneProps<DragItemFormConfig>>>
-        onDrop={onLoad}
+      <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemFormConfig>>> */
+        onDrop={(item) => onLoad(item as DragItemFormConfig)}
         acceptedDropTypes={[FORM_CONFIG]}
       >
         {() => (

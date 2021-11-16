@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { TreesT } from "js/concept-trees/reducer";
 import { ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -23,6 +22,7 @@ import {
   getConceptsByIdsWithTablesAndSelects,
   hasConceptChildren,
 } from "../../concept-trees/globalTreeStoreHelper";
+import type { TreesT } from "../../concept-trees/reducer";
 import { nodeHasActiveFilters } from "../../model/node";
 import { selectsWithDefaults } from "../../model/select";
 import { resetAllFiltersInTables } from "../../model/table";
@@ -54,7 +54,6 @@ import {
 } from "../stateSelectors";
 import {
   initSelectsWithDefaults,
-  initTables,
   initTablesWithDefaults,
 } from "../transformers";
 
@@ -642,10 +641,9 @@ const useCopyModal = ({
   };
 };
 
-export interface FormQueryNodeEditorState {
+export interface EditedFormQueryNodePosition {
   valueIdx: number;
   conceptIdx: number;
-  node: ConceptQueryNodeType;
 }
 
 const FormConceptGroup = (props: Props) => {
@@ -653,8 +651,8 @@ const FormConceptGroup = (props: Props) => {
   const newValue = props.newValue;
   const defaults = props.defaults || {};
 
-  const [formQueryNodeEditorState, setFormQueryNodeEditorState] =
-    useState<FormQueryNodeEditorState | null>(null);
+  const [editedFormQueryNodePosition, setEditedFormQueryNodePosition] =
+    useState<EditedFormQueryNodePosition | null>(null);
 
   const visibleConceptListFields = useVisibleConceptListFields();
   const allowExtendedCopying = useAllowExtendedCopying(
@@ -685,6 +683,12 @@ const FormConceptGroup = (props: Props) => {
     onChange: props.onChange,
     newValue,
   });
+
+  const editedNode = exists(editedFormQueryNodePosition)
+    ? props.value[editedFormQueryNodePosition.valueIdx].concepts[
+        editedFormQueryNodePosition.conceptIdx
+      ]
+    : null;
 
   return (
     <div>
@@ -801,13 +805,9 @@ const FormConceptGroup = (props: Props) => {
                     name={props.fieldName}
                     hasActiveFilters={nodeHasActiveFilters(concept)}
                     onFilterClick={() =>
-                      setFormQueryNodeEditorState({
+                      setEditedFormQueryNodePosition({
                         valueIdx: i,
                         conceptIdx: j,
-                        node: initTables({
-                          blocklistedTables: props.blocklistedTables,
-                          allowlistedTables: props.allowlistedTables,
-                        })(concept),
                       })
                     }
                     expand={{
@@ -896,18 +896,19 @@ const FormConceptGroup = (props: Props) => {
           onClose={onCloseUploadConceptListModal}
         />
       )}
-      {formQueryNodeEditorState && (
+      {editedFormQueryNodePosition && editedNode && (
         <FormQueryNodeEditor
           formType={props.formType}
           fieldName={props.fieldName}
-          editorState={formQueryNodeEditorState}
+          node={editedNode}
+          nodePosition={editedFormQueryNodePosition}
           blocklistedTables={props.blocklistedTables}
           allowlistedTables={props.allowlistedTables}
           blocklistedSelects={props.blocklistedSelects}
           allowlistedSelects={props.allowlistedSelects}
-          onCloseModal={() => setFormQueryNodeEditorState(null)}
+          onCloseModal={() => setEditedFormQueryNodePosition(null)}
           onUpdateLabel={(label) => {
-            const { valueIdx, conceptIdx } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
               setConceptProperties(props.value, valueIdx, conceptIdx, {
                 label,
@@ -915,23 +916,23 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onDropConcept={(concept) => {
-            const { valueIdx, conceptIdx, node } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
               setConceptProperties(props.value, valueIdx, conceptIdx, {
-                ids: [...concept.ids, ...node.ids],
+                ids: [...concept.ids, ...editedNode.ids],
               }),
             );
           }}
           onRemoveConcept={(conceptId) => {
-            const { valueIdx, conceptIdx, node } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
               setConceptProperties(props.value, valueIdx, conceptIdx, {
-                ids: node.ids.filter((id) => id !== conceptId),
+                ids: editedNode.ids.filter((id) => id !== conceptId),
               }),
             );
           }}
           onToggleTable={(tableIdx, isExcluded) => {
-            const { valueIdx, conceptIdx } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
               toggleTable(
                 props.value,
@@ -943,19 +944,19 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onResetTable={(tableIdx) => {
-            const { valueIdx, conceptIdx } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
               resetTable(props.value, valueIdx, conceptIdx, tableIdx),
             );
           }}
           onSelectSelects={(selectedSelects) => {
-            const { valueIdx, conceptIdx } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
               setSelects(props.value, valueIdx, conceptIdx, selectedSelects),
             );
           }}
           onSetFilterValue={(tableIdx, filterIdx, filterValue) => {
-            const { valueIdx, conceptIdx } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
               setFilterValue(
                 props.value,
@@ -968,7 +969,7 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onSelectTableSelects={(tableIdx, selectedSelects) => {
-            const { valueIdx, conceptIdx } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
               setTableSelects(
                 props.value,
@@ -980,7 +981,7 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onSwitchFilterMode={(tableIdx, filterIdx, mode) => {
-            const { valueIdx, conceptIdx } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
               switchFilterMode(
                 props.value,
@@ -993,11 +994,11 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onResetAllFilters={() => {
-            const { valueIdx, conceptIdx } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(resetAllFilters(props.value, valueIdx, conceptIdx));
           }}
           onSetDateColumn={(tableIdx, dateColumnValue) => {
-            const { valueIdx, conceptIdx } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
               setDateColumn(
                 props.value,
@@ -1009,7 +1010,7 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onLoadFilterSuggestions={async (params, tableIdx, filterIdx) => {
-            const { valueIdx, conceptIdx } = formQueryNodeEditorState;
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             const suggestions = await postPrefixForSuggestions(params);
 
             props.onChange(

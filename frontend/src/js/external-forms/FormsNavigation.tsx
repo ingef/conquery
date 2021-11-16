@@ -53,7 +53,9 @@ const FormsNavigation = ({ reset }: Props) => {
 
   const dispatch = useDispatch();
 
-  const onItemClick = (form: string) => dispatch(setExternalForm(form));
+  const onChangeToForm = (form: string) => {
+    dispatch(setExternalForm({ form }));
+  };
 
   const options = Object.values(availableForms)
     .map((formType) => ({
@@ -67,7 +69,7 @@ const FormsNavigation = ({ reset }: Props) => {
   );
   const onClear = () => {
     if (activeFormType) {
-      dispatch(reset());
+      reset();
     }
   };
 
@@ -79,7 +81,7 @@ const FormsNavigation = ({ reset }: Props) => {
         value={options.find((o) => o.value === activeForm) || null}
         onChange={(value) => {
           if (value) {
-            onItemClick(value.value as string);
+            onChangeToForm(value.value as string);
           }
         }}
       />

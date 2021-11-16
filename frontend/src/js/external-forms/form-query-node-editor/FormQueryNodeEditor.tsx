@@ -1,4 +1,5 @@
 import { StateT } from "app-types";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 import type { PostPrefixForSuggestionsParams } from "../../api/api";
@@ -10,18 +11,24 @@ import {
   SelectorResultType,
 } from "../../api/types";
 import { toUpperCaseUnderscore } from "../../common/helpers";
+import { usePrevious } from "../../common/helpers/usePrevious";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
-import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import type {
+  ConceptQueryNodeType,
+  DragItemConceptTreeNode,
+} from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
-import type { FormQueryNodeEditorState } from "../form-concept-group/FormConceptGroup";
+import type { EditedFormQueryNodePosition } from "../form-concept-group/FormConceptGroup";
 import { FormContextStateT } from "../reducer";
 import { selectFormContextState } from "../stateSelectors";
+import { initTables } from "../transformers";
 
 interface PropsT {
   formType: string;
   fieldName: string;
-  editorState: FormQueryNodeEditorState;
+  nodePosition: EditedFormQueryNodePosition;
+  node: ConceptQueryNodeType;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
   allowlistedSelects?: SelectorResultType[];
@@ -61,13 +68,41 @@ const FormQueryNodeEditor = (props: PropsT) => {
     (state) => state.datasets.selectedDatasetId,
   );
 
-  const { node } = props.editorState;
+  const [editedNode, setEditedNode] = useState(props.node);
+
+  const previousNodePosition = usePrevious(props.nodePosition);
+  useEffect(
+    function () {
+      if (previousNodePosition !== props.nodePosition) {
+        setEditedNode(
+          initTables({
+            blocklistedTables: props.blocklistedTables,
+            allowlistedTables: props.allowlistedTables,
+          })(props.node),
+        );
+      }
+    },
+    [
+      previousNodePosition,
+      props.nodePosition,
+      props.node,
+      props.blocklistedTables,
+      props.allowlistedTables,
+    ],
+  );
+
+  useEffect(
+    function syncWithNodeFromOutside() {
+      setEditedNode(props.node);
+    },
+    [props.node],
+  );
 
   const showTables =
-    !!node &&
-    node.tables &&
-    node.tables.length > 1 &&
-    node.tables.some((table) => tableIsEditable(table));
+    !!editedNode &&
+    editedNode.tables &&
+    editedNode.tables.length > 1 &&
+    editedNode.tables.some((table) => tableIsEditable(table));
 
   const formState = useSelector<StateT, FormContextStateT | null>((state) =>
     selectFormContextState(state, props.formType),
@@ -87,7 +122,7 @@ const FormQueryNodeEditor = (props: PropsT) => {
       datasetId={datasetId}
       name={`${props.formType}_${toUpperCaseUnderscore(props.fieldName)}`}
       onLoadFilterSuggestions={props.onLoadFilterSuggestions}
-      node={node}
+      node={editedNode}
       editorState={editorState}
       showTables={showTables}
       blocklistedTables={props.blocklistedTables}

@@ -11,18 +11,6 @@ import { FormConceptGroupT } from "./form-concept-group/FormConceptGroup";
 export const selectFormContextState = (state: StateT, formType: string) =>
   state.externalForms ? state.externalForms.formsContext[formType] : null;
 
-export const selectReduxForm = (state: StateT) =>
-  state.externalForms ? state.externalForms.reduxForm : null;
-
-export const selectActiveFormValues = (state: StateT): Record<string, any> => {
-  const reduxForm = selectReduxForm(state);
-  const activeForm = selectActiveFormType(state);
-
-  return reduxForm && activeForm && !!reduxForm[activeForm]
-    ? reduxForm[activeForm].values
-    : {};
-};
-
 export const selectAvailableForms = (state: StateT) =>
   state.externalForms ? state.externalForms.availableForms : {};
 
@@ -47,9 +35,6 @@ export const useSelectActiveFormName = (): string => {
 
   return (formConfig && formConfig.title[activeLang]) || "";
 };
-
-export const selectReduxFormState = (state: StateT) =>
-  state.externalForms ? state.externalForms.reduxForm : {};
 
 export const selectQueryRunner = (state: StateT) =>
   state.externalForms ? state.externalForms.queryRunner : null;
@@ -113,10 +98,9 @@ export const useAllowExtendedCopying = (
 
   const fieldHasFilledConcept = (field: ConceptListField) =>
     !!values[field.name] &&
-    values[field.name].some((value: FormConceptGroupT[]) => {
-      console.log(value);
-      return value.concepts.some(exists);
-    });
+    values[field.name].some((value: FormConceptGroupT) =>
+      value.concepts.some(exists),
+    );
 
   return otherConceptListFields.some(fieldHasFilledConcept);
 };

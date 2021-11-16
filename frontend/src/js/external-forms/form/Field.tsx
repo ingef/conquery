@@ -159,7 +159,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           defaultValue={defaultValue}
         >
           {({ ref, ...fieldProps }) => {
-            console.log(fieldProps);
             return (
               <InputDateRange
                 inline={true}

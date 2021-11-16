@@ -73,13 +73,13 @@ const FormConceptCopyModal = ({
   }>({});
 
   useEffect(() => {
-    const values = formValues[selectedOption.value] as unknown[];
+    const values = getValues()[selectedOption.value] as unknown[];
     const initiallyChecked = Object.fromEntries(
       values.map((_, i) => [String(i), false]),
     );
 
     setValuesChecked(initiallyChecked);
-  }, [selectedOption, formValues]);
+  }, [selectedOption, getValues]);
 
   const allConceptsSelected = Object.keys(valuesChecked).every(
     (key) => valuesChecked[key],
