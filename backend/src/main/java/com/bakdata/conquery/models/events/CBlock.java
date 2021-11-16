@@ -290,12 +290,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * @implNote This is an unrolled implementation of {@link CDateRange#spanClosed(CDateRange)}.
 	 */
 	private static CDateRange[] calculateEntityDateIndices(Bucket bucket, int bucketSize) {
-		int[] mins = new int[bucketSize];
-		int[] maxs = new int[bucketSize];
+		CDateRange[] spans = new CDateRange[bucketSize];
+
+		Arrays.fill(spans, CDateRange.all());
 
 		// First initialize to an illegal state that's easy on our comparisons
-		Arrays.fill(mins, Integer.MAX_VALUE);
-		Arrays.fill(maxs, Integer.MIN_VALUE);
 
 		Table table = bucket.getTable();
 
@@ -309,6 +308,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				final int index = bucket.getEntityIndex(entity);
 				final int end = bucket.getEntityEnd(entity);
 
+				// We unroll spanClosed for the whole bucket/entity, this avoids costly
+				int max = Integer.MIN_VALUE;
+				int min = Integer.MAX_VALUE;
+
+
 				for (int event = bucket.getEntityStart(entity); event < end; event++) {
 					if (!bucket.has(event, column)) {
 						continue;
@@ -319,43 +323,42 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 					if (range.hasLowerBound()) {
 						final int minValue = range.getMinValue();
 
-						maxs[index] = Math.max(maxs[index], minValue);
-						mins[index] = Math.min(mins[index], minValue);
+						max = Math.max(max, minValue);
+						min = Math.min(min, minValue);
 					}
 
 					if (range.hasUpperBound()) {
 						final int maxValue = range.getMaxValue();
 
-						maxs[index] = Math.max(maxs[index], maxValue);
-						mins[index] = Math.min(mins[index], maxValue);
+						max = Math.max(max, maxValue);
+						min = Math.min(min, maxValue);
 					}
 				}
 
+
+				spans[index] = createClosed(max, min, spans[index]);
 			}
 		}
-
-		CDateRange[] spans = new CDateRange[bucketSize];
-
-		for (int index = 0; index < bucketSize; index++) {
-			if (mins[index] == Integer.MAX_VALUE && maxs[index] == Integer.MIN_VALUE) {
-				spans[index] = CDateRange.all();
-				continue;
-			}
-
-			if (mins[index] == Integer.MAX_VALUE) {
-				spans[index] = CDateRange.atMost(maxs[index]);
-				continue;
-			}
-
-			if (maxs[index] == Integer.MIN_VALUE) {
-				spans[index] = CDateRange.atLeast(mins[index]);
-				continue;
-			}
-
-			spans[index] = CDateRange.of(mins[index], maxs[index]);
-		}
-
 
 		return spans;
+	}
+
+	/**
+	 * Helper method for calculateEntityDateIndices, swapping {@link Integer#MIN_VALUE}/{@link Integer#MAX_VALUE} for higher performance.
+	 */
+	private static CDateRange createClosed(int max, int min, CDateRange in) {
+		if(max == Integer.MIN_VALUE && min == Integer.MAX_VALUE){
+			return in;
+		}
+
+		if (max == Integer.MIN_VALUE){
+			return in.spanClosed(CDateRange.atLeast(min));
+		}
+
+		if (min == Integer.MAX_VALUE) {
+			return in.spanClosed(CDateRange.atMost(max));
+		}
+
+		return in.spanClosed(CDateRange.of(min, max));
 	}
 }
