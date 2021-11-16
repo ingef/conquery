@@ -106,6 +106,7 @@ Depending on the use-case, we're still calling the same concepts differently som
 - Redux actions aren't all typed well yet. Plan is to migrate fully to https://github.com/piotrwitek/typesafe-actions
 - We're moving away from redux middlewares like thunk (replaced by hooks) and multi 
 - We're still trying to support IE11. But this is phasing out, since most users are already using more modern Browsers.
+- We've migrated from `redux-form` to `react-hook-form`. Still TODO: there's some form context stored in redux for every available form (e.g. for filter suggestions in concept fields). We should move this from redux to local state (e.g. into `FormConceptGroup`).
 
 ### Drag and Drop
 

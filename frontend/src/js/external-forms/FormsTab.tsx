@@ -113,11 +113,14 @@ const FormsTab = () => {
 
   const { methods, config, datasetOptions, onReset } = useInitializeForm();
 
-  useEffect(() => {
-    if (datasetId && previousDatasetId !== datasetId) {
-      onReset();
-    }
-  }, [datasetId, previousDatasetId, onReset]);
+  useEffect(
+    function resetOnDatasetChange() {
+      if (datasetId && previousDatasetId !== datasetId) {
+        onReset();
+      }
+    },
+    [datasetId, previousDatasetId, onReset],
+  );
 
   return (
     <FormProvider {...methods}>
