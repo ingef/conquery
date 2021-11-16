@@ -54,10 +54,8 @@ interface PropsT {
   autoFocus?: boolean;
   tooltip?: string;
   optional?: boolean;
-  input: {
-    value: DateStringMinMax;
-    onChange: (value: DateStringMinMax) => void;
-  };
+  value: DateStringMinMax;
+  onChange: (value: DateStringMinMax) => void;
 }
 
 function getDisplayDate(
@@ -80,7 +78,8 @@ const InputDateRange: FC<PropsT> = ({
   indexPrefix,
   autoFocus,
   labelSuffix,
-  input: { value, onChange },
+  value,
+  onChange,
   optional,
   tooltip,
 }) => {

@@ -2,6 +2,8 @@ import { TFunction } from "react-i18next";
 
 import { isEmpty } from "../common/helpers";
 
+import { CheckboxField, Field, FormField } from "./config-types";
+
 export const validateRequired = (t: TFunction, value: any): string | null => {
   return isEmpty(value) ? t("externalForms.formValidation.isRequired") : null;
 };
@@ -54,3 +56,77 @@ export const validateConceptGroupFilled = (
     ? t("externalForms.formValidation.isRequired")
     : null;
 };
+
+const DEFAULT_VALIDATION_BY_TYPE: Record<
+  FormField["type"],
+  null | ((t: TFunction, value: any) => string | null)
+> = {
+  STRING: null,
+  NUMBER: null,
+  CHECKBOX: null,
+  CONCEPT_LIST: null,
+  RESULT_GROUP: null,
+  MULTI_RESULT_GROUP: null,
+  SELECT: null,
+  TABS: null,
+  DATASET_SELECT: null,
+  // MULTI_SELECT: null,
+  DATE_RANGE: validateDateRange,
+};
+
+function getNotEmptyValidation(fieldType: string) {
+  switch (fieldType) {
+    case "CONCEPT_LIST":
+      return validateConceptGroupFilled;
+    case "DATE_RANGE":
+      return validateDateRangeRequired;
+    default:
+      return validateRequired;
+  }
+}
+
+function getPossibleValidations(fieldType: string) {
+  return {
+    NOT_EMPTY: getNotEmptyValidation(fieldType),
+    GREATER_THAN_ZERO: validatePositive,
+  };
+}
+
+const isFieldWithValidations = (
+  field: FormField,
+): field is Exclude<Field, CheckboxField> => {
+  return field.type !== "TABS" && field.type !== "CHECKBOX";
+};
+
+export function getErrorForField(
+  t: TFunction,
+  field: FormField,
+  value: unknown,
+) {
+  const defaultValidation = DEFAULT_VALIDATION_BY_TYPE[field.type];
+
+  let error = defaultValidation ? defaultValidation(t, value) : null;
+
+  if (
+    isFieldWithValidations(field) &&
+    !!field.validations &&
+    field.validations.length > 0
+  ) {
+    for (let validation of field.validations) {
+      const validateFn = getPossibleValidations(field.type)[validation];
+
+      if (validateFn) {
+        error = error || validateFn(t, value);
+      } else {
+        console.error(
+          "Validation configured that is not supported: ",
+          validation,
+          "for field",
+          field.name,
+        );
+      }
+    }
+  }
+
+  return error;
+}

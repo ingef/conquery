@@ -111,12 +111,10 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
             )}
           </>
         }
-        input={{
-          onChange: onSetDate,
-          value: {
-            min: minDate,
-            max: maxDate,
-          },
+        onChange={onSetDate}
+        value={{
+          min: minDate,
+          max: maxDate,
         }}
       />
     </Modal>

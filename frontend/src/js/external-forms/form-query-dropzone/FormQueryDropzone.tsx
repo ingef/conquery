@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
-import type { WrappedFieldProps } from "redux-form";
 
 import {
   PREVIOUS_QUERY,
@@ -19,38 +18,48 @@ const SxDropzone = styled(Dropzone)<{ centered?: boolean }>`
   justify-content: ${({ centered }) => (centered ? "center" : "flex-start")};
 `;
 
-interface PropsT extends WrappedFieldProps {
+interface PropsT {
   label: string;
   tooltip?: string;
   optional?: boolean;
   dropzoneText: string;
   className?: string;
+  value: DragItemQuery | null;
+  onChange: (value: DragItemQuery | null) => void;
 }
 
-const FormQueryDropzone: FC<PropsT> = (props) => {
+const FormQueryDropzone: FC<PropsT> = ({
+  label,
+  tooltip,
+  optional,
+  dropzoneText,
+  className,
+  value,
+  onChange,
+}) => {
   const onDrop = (item: DragItemQuery) => {
-    props.input.onChange(item);
+    onChange(item);
   };
 
   return (
-    <div className={props.className}>
+    <div className={className}>
       <Label>
-        {props.optional && <Optional />}
-        {props.label}
-        {exists(props.tooltip) && <InfoTooltip text={props.tooltip} />}
+        {optional && <Optional />}
+        {label}
+        {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>
       <SxDropzone<FC<DropzoneProps<DragItemQuery>>>
         onDrop={onDrop}
         acceptedDropTypes={[PREVIOUS_QUERY, PREVIOUS_SECONDARY_ID_QUERY]}
-        centered={!props.input.value}
+        centered={!value}
       >
         {() =>
-          !props.input.value ? (
-            props.dropzoneText
+          !value ? (
+            dropzoneText
           ) : (
             <FormQueryResult
-              queryResult={props.input.value}
-              onDelete={() => props.input.onChange(null)}
+              queryResult={value}
+              onDelete={() => onChange(null)}
             />
           )
         }

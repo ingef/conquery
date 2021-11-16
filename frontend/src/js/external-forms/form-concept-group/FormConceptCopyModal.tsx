@@ -1,8 +1,7 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
 
 import type { SelectOptionT } from "../../api/types";
 import PrimaryButton from "../../button/PrimaryButton";
@@ -12,10 +11,9 @@ import { useActiveLang } from "../../localization/useActiveLang";
 import Modal from "../../modal/Modal";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
-import {
-  selectActiveFormValues,
-  useVisibleConceptListFields,
-} from "../stateSelectors";
+import { useVisibleConceptListFields } from "../stateSelectors";
+
+import type { FormConceptGroupT } from "./FormConceptGroup";
 
 const Buttons = styled("div")`
   display: flex;
@@ -42,7 +40,7 @@ const SxInputCheckbox = styled(InputCheckbox)`
 
 interface PropsT {
   targetFieldname: string;
-  onAccept: (selectedNodes: Object[]) => void;
+  onAccept: (selectedNodes: FormConceptGroupT[]) => void;
   onClose: () => void;
 }
 
@@ -53,9 +51,8 @@ const FormConceptCopyModal = ({
 }: PropsT) => {
   const { t } = useTranslation();
   const activeLang = useActiveLang();
-  const formValues = useSelector<StateT, Record<string, any>>((state) =>
-    selectActiveFormValues(state),
-  );
+  const { getValues } = useFormContext();
+  const formValues = getValues(); // Isn't watching for changes
   const visibleConceptListFields = useVisibleConceptListFields();
 
   const conceptListFieldOptions = visibleConceptListFields
@@ -76,17 +73,13 @@ const FormConceptCopyModal = ({
   }>({});
 
   useEffect(() => {
-    const values = formValues[selectedOption.value] as unknown[];
-    const initiallyChecked = values.reduce<{ [key: string]: boolean }>(
-      (checkedValues, _, i) => {
-        checkedValues[String(i)] = false;
-        return checkedValues;
-      },
-      {},
+    const values = getValues()[selectedOption.value] as unknown[];
+    const initiallyChecked = Object.fromEntries(
+      values.map((_, i) => [String(i), false]),
     );
 
     setValuesChecked(initiallyChecked);
-  }, [selectedOption]);
+  }, [selectedOption, getValues]);
 
   const allConceptsSelected = Object.keys(valuesChecked).every(
     (key) => valuesChecked[key],
@@ -136,11 +129,13 @@ const FormConceptCopyModal = ({
   }
 
   function onSubmit() {
-    const selectedValues = Object.keys(valuesChecked)
-      .filter((key) => valuesChecked[key])
-      .map((key) => formValues[selectedOption.value][key]);
+    const selectedNodes = Object.keys(valuesChecked)
+      .filter((index) => valuesChecked[index])
+      .map(
+        (index) => formValues[selectedOption.value][index] as FormConceptGroupT,
+      );
 
-    onAccept(selectedValues);
+    onAccept(selectedNodes);
     onClose();
   }
 
@@ -160,7 +155,8 @@ const FormConceptCopyModal = ({
       />
       <SelectAllCheckbox
         label={t("externalForms.copyModal.selectAll")}
-        input={{ value: allConceptsSelected, onChange: onToggleAllConcepts }}
+        value={allConceptsSelected}
+        onChange={onToggleAllConcepts}
       />
       <Options>
         {Object.keys(valuesChecked).map((idx) =>
@@ -168,10 +164,8 @@ const FormConceptCopyModal = ({
             <SxInputCheckbox
               key={idx}
               label={getLabelFromIdx(idx)}
-              input={{
-                value: valuesChecked[idx],
-                onChange: (checked: boolean) => onToggleConcept(idx, checked),
-              }}
+              value={valuesChecked[idx]}
+              onChange={(checked: boolean) => onToggleConcept(idx, checked)}
             />
           ) : null,
         )}

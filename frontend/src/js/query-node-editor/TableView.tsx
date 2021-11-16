@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -76,6 +76,15 @@ const TableView: FC<PropsT> = ({
     !!table.dateColumn && table.dateColumn.options.length > 0;
   const displayFilters = !!table.filters && table.filters.length > 0;
 
+  const filterContext = useMemo(
+    () => ({
+      datasetId,
+      treeId: node.tree,
+      tableId: table.id,
+    }),
+    [node.tree, table.id, datasetId],
+  );
+
   return (
     <Column>
       {displaySelects && (
@@ -107,11 +116,7 @@ const TableView: FC<PropsT> = ({
             key={tableIdx}
             filters={table.filters}
             excludeTable={table.exclude}
-            context={{
-              datasetId,
-              treeId: node.tree,
-              tableId: table.id,
-            }}
+            context={filterContext}
             onSetFilterValue={(filterIdx: number, value: unknown) =>
               onSetFilterValue(tableIdx, filterIdx, value)
             }

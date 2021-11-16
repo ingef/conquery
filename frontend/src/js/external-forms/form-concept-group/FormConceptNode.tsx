@@ -7,14 +7,14 @@ import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
 import { FORM_CONCEPT_NODE } from "../../common/constants/dndTypes";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
-import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import type { ConceptQueryNodeType } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 export interface DragItemFormConceptNode {
   type: "FORM_CONCEPT_NODE";
   width: number;
   height: number;
-  conceptNode: DragItemConceptTreeNode; // TODO: VERIFY THIS
+  conceptNode: ConceptQueryNodeType;
 }
 
 const Root = styled("div")<{ active?: boolean }>`
@@ -75,12 +75,12 @@ const RootNode = styled("p")`
 interface PropsT {
   valueIdx: number;
   conceptIdx: number;
-  conceptNode: Object;
+  conceptNode: ConceptQueryNodeType;
   name: string;
-  onFilterClick: Function;
+  onFilterClick: () => void;
   hasActiveFilters: boolean;
   expand?: {
-    onClick: Function;
+    onClick: () => void;
     expandable: boolean;
     active: boolean;
   };
