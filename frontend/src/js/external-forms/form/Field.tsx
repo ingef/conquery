@@ -43,7 +43,7 @@ type Props<T> = T & {
   defaultValue?: any;
 };
 const FieldContainer = styled("div")`
-  margin: 0 0 10px;
+  margin: 0 0 14px;
 `;
 const ConnectedField = <T extends Object>({
   children,
@@ -108,21 +108,30 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           dangerouslySetInnerHTML={{ __html: field.label[locale] || "" }}
         />
       );
-    // case "STRING":
-    //   return (
-    //     <RxFormField
-    //       name={field.name}
-    //       component={Plain}
-    //       props={{
-    //         inputType: "text",
-    //         label: field.label[locale],
-    //         placeholder: (field.placeholder && field.placeholder[locale]) || "",
-    //         fullWidth: field.style ? field.style.fullWidth : false,
-    //         tooltip: field.tooltip ? field.tooltip[locale] : undefined,
-    //         optional,
-    //       }}
-    //     />
-    //   );
+    case "STRING":
+      return (
+        <ConnectedField
+          formField={field}
+          control={control}
+          defaultValue={defaultValue}
+        >
+          {({ ref, ...fieldProps }) => (
+            <InputPlain
+              ref={ref}
+              inputType="text"
+              label={field.label[locale] || ""}
+              placeholder={
+                (field.placeholder && field.placeholder[locale]) || ""
+              }
+              fullWidth={field.style ? field.style.fullWidth : false}
+              value={fieldProps.value as string}
+              onChange={(value) => setValue(field.name, value, setValueConfig)}
+              tooltip={field.tooltip ? field.tooltip[locale] : undefined}
+              optional={optional}
+            />
+          )}
+        </ConnectedField>
+      );
     case "NUMBER":
       return (
         <ConnectedField
