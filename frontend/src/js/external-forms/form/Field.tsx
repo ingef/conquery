@@ -36,20 +36,44 @@ import { getErrorForField } from "../validators";
 
 import type { DynamicFormValues } from "./Form";
 
+const BOTTOM_MARGIN = 7;
+const COLOR_BY_FIELD_TYPE: Record<FormField["type"], string> = {
+  // #577590
+  STRING: "#777",
+  DATE_RANGE: "#f9c74f",
+  NUMBER: "#f8961e",
+  CONCEPT_LIST: "#277da1",
+  SELECT: "#90be6d",
+  DATASET_SELECT: "#43aa8b",
+  CHECKBOX: "#aaa",
+  MULTI_RESULT_GROUP: "#f94144",
+  RESULT_GROUP: "#f94144",
+  TABS: "#fff",
+};
+
 type Props<T> = T & {
   children: (props: ControllerRenderProps<DynamicFormValues> & T) => ReactNode;
   control: Control<DynamicFormValues>;
   formField: FormField;
   defaultValue?: any;
+  noContainer?: boolean;
+  noLabel?: boolean;
 };
-const FieldContainer = styled("div")`
-  margin: 0 0 14px;
+const FieldContainer = styled("div")<{ noLabel?: boolean }>`
+  margin: 0 0 ${BOTTOM_MARGIN}px;
+  padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
+  /* background-color: #fff8f8; */
+  border-radius: 3px;
+  box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.2);
+  border-left: 5px solid;
 `;
 const ConnectedField = <T extends Object>({
   children,
   control,
   formField,
   defaultValue,
+  noContainer,
+  noLabel,
   ...props
 }: Props<T>) => {
   const { t } = useTranslation();
@@ -62,16 +86,31 @@ const ConnectedField = <T extends Object>({
     },
   });
 
-  return <FieldContainer>{children({ ...field, ...props })}</FieldContainer>;
+  return noContainer ? (
+    <div>{children({ ...field, ...props })}</div>
+  ) : (
+    <FieldContainer
+      style={{ borderColor: COLOR_BY_FIELD_TYPE[formField.type] }}
+      noLabel={noLabel}
+    >
+      {children({ ...field, ...props })}
+    </FieldContainer>
+  );
 };
 
 const SxToggleButton = styled(ToggleButton)`
   margin-bottom: 5px;
 `;
 
+const Spacer = styled("div")`
+  margin-bottom: ${BOTTOM_MARGIN * 2}px;
+`;
+
 const NestedFields = styled("div")`
-  padding: 10px;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  padding: 12px 12px 7px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  margin-bottom: ${BOTTOM_MARGIN * 2}px;
 `;
 
 interface PropsT {
@@ -228,6 +267,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           formField={field}
           control={control}
           defaultValue={defaultValue}
+          noLabel
         >
           {({ ref, ...fieldProps }) => (
             <InputCheckbox
@@ -288,6 +328,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           control={control}
           formField={field}
           defaultValue={defaultValue}
+          noContainer
         >
           {({ ref, ...fieldProps }) => {
             const tabToShow = field.tabs.find(
@@ -307,7 +348,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                     tooltip: tab.tooltip ? tab.tooltip[locale] : undefined,
                   }))}
                 />
-                {tabToShow && tabToShow.fields.length > 0 && (
+                {tabToShow && tabToShow.fields.length > 0 ? (
                   <NestedFields>
                     {tabToShow.fields.map((f, i) => {
                       const key = isFormField(f) ? f.name : f.type + i;
@@ -323,6 +364,8 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                       );
                     })}
                   </NestedFields>
+                ) : (
+                  <Spacer />
                 )}
               </>
             );
