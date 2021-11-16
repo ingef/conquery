@@ -9,23 +9,6 @@
     },
     "fields": [
       {
-        "name": "timeCountBeforeee",
-        "type": "NUMBER",
-        "defaultValue": 1,
-        "min": 1,
-        "label": {
-          "de": "Zeit davor"
-        },
-        "tooltip": {
-          "de": "Zeit davor"
-        },
-        "placeholder": {
-          "de": "1"
-        },
-        "pattern": "^(?!-)\\d*$",
-        "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
-      },
-      {
         "name": "queryGroup",
         "type": "RESULT_GROUP",
         "label": {
