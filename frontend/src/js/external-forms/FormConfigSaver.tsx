@@ -22,7 +22,8 @@ import EditableText from "../ui-components/EditableText";
 import Label from "../ui-components/Label";
 
 import { setExternalForm } from "./actions";
-import { DragItemFormConfig } from "./form-configs/FormConfig";
+import type { DragItemFormConfig } from "./form-configs/FormConfig";
+import type { FormConfigT } from "./form-configs/reducer";
 import { useLoadFormConfigs } from "./form-configs/selectors";
 import {
   useSelectActiveFormName,
@@ -90,6 +91,8 @@ const FormConfigSaver: FC = () => {
   const [isDirty, setIsDirty] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [formConfigToLoadNext, setFormConfigToLoadNext] =
+    useState<FormConfigT | null>(null);
 
   const activeFormName = useSelectActiveFormName();
   const activeFormType = useSelector<StateT, string | null>((state) =>
@@ -129,6 +132,31 @@ const FormConfigSaver: FC = () => {
     }
   }, [formValues, previousFormValues]);
 
+  useEffect(
+    function deferredLoadFormConfig() {
+      // Needs to be deferred because the form type might get changed
+      // and other effects will have to run to reset / initialize the form first
+      // before we can load new values into it
+      if (formConfigToLoadNext) {
+        setFormConfigToLoadNext(null);
+
+        const entries = Object.entries(formConfigToLoadNext.values);
+
+        for (const [fieldname, value] of entries) {
+          setValue(fieldname, value, {
+            shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true,
+          });
+        }
+
+        setConfigName(formConfigToLoadNext.label);
+        setIsDirty(false);
+      }
+    },
+    [formConfigToLoadNext, setValue],
+  );
+
   async function onSubmit() {
     if (!datasetId) return;
 
@@ -166,25 +194,17 @@ const FormConfigSaver: FC = () => {
     setIsDirty(false);
     try {
       const config = await getFormConfig(datasetId, dragItem.id);
+      setIsLoading(false);
 
       if (config.formType !== activeFormType) {
         dispatch(setExternalForm({ form: config.formType }));
       }
 
-      Object.entries(config.values).forEach(([fieldname, value]) => {
-        setValue(fieldname, value, {
-          shouldValidate: true,
-          shouldDirty: true,
-          shouldTouch: true,
-        });
-      });
-
-      setConfigName(config.label);
-      setIsDirty(false);
+      setFormConfigToLoadNext(config);
     } catch (e) {
       dispatch(setMessage({ message: t("formConfig.loadError") }));
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 
   return (

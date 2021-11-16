@@ -1,5 +1,6 @@
 import { tabDescription } from ".";
 import { StateT } from "app-types";
+import { useActiveLang } from "js/localization/useActiveLang";
 import { useCallback, useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useSelector, useStore } from "react-redux";
@@ -55,6 +56,7 @@ const useLoadForms = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
 };
 
 const useInitializeForm = () => {
+  const activeLang = useActiveLang();
   const config = useSelector<StateT, Form | null>(selectFormConfig);
   const availableDatasets = useSelector<StateT, DatasetT[]>(
     (state) => state.datasets.data,
@@ -74,12 +76,16 @@ const useInitializeForm = () => {
   const defaultValues = useMemo(
     () =>
       Object.fromEntries(
-        allFields.map((field) => [
-          field.name,
-          getInitialValue(field, { availableDatasets: datasetOptions }),
-        ]),
+        allFields.map((field) => {
+          const initialValue = getInitialValue(field, {
+            availableDatasets: datasetOptions,
+            activeLang,
+          });
+
+          return [field.name, initialValue];
+        }),
       ),
-    [allFields, datasetOptions],
+    [allFields, datasetOptions, activeLang],
   );
 
   const methods = useForm<DynamicFormValues>({

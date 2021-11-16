@@ -10,10 +10,11 @@ import {
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
-import { DateStringMinMax } from "../../common/helpers";
+import type { DateStringMinMax } from "../../common/helpers";
 import { exists } from "../../common/helpers/exists";
+import type { Language } from "../../localization/useActiveLang";
 import { nodeIsInvalid } from "../../model/node";
-import { DragItemQuery } from "../../standard-query-editor/types";
+import type { DragItemQuery } from "../../standard-query-editor/types";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputDateRange from "../../ui-components/InputDateRange";
 import InputPlain from "../../ui-components/InputPlain/InputPlain";
@@ -76,7 +77,7 @@ const NestedFields = styled("div")`
 interface PropsT {
   formType: string;
   field: GeneralField;
-  locale: "de" | "en";
+  locale: Language;
   availableDatasets: SelectOptionT[];
   optional?: boolean;
   register: UseFormRegister<DynamicFormValues>;
@@ -95,7 +96,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     commonProps;
   const { t } = useTranslation();
   const defaultValue = isFormField(field)
-    ? getInitialValue(field, { availableDatasets })
+    ? getInitialValue(field, { availableDatasets, activeLang: locale })
     : null;
 
   switch (field.type) {
@@ -230,6 +231,11 @@ const Field = ({ field, ...commonProps }: PropsT) => {
         </ConnectedField>
       );
     case "SELECT":
+      const options = field.options.map((option) => ({
+        label: option.label[locale] || "",
+        value: option.value,
+      }));
+
       return (
         <ConnectedField
           formField={field}
@@ -239,10 +245,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           {({ ref, ...fieldProps }) => (
             <InputSelect
               label={field.label[locale]}
-              options={field.options.map((option) => ({
-                label: option.label[locale] || "",
-                value: option.value,
-              }))}
+              options={options}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               optional={optional}
               value={fieldProps.value as SelectOptionT | null}

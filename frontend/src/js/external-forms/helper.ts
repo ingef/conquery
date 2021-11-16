@@ -1,4 +1,5 @@
 import type { SelectOptionT } from "../api/types";
+import type { Language } from "../localization/useActiveLang";
 
 import type { FormField, GeneralField } from "./config-types";
 
@@ -32,18 +33,29 @@ export function collectAllFormFields(fields: GeneralField[]): FormField[] {
 
 export function getInitialValue(
   field: FormField,
-  context: { availableDatasets: SelectOptionT[] },
+  context: { availableDatasets: SelectOptionT[]; activeLang: Language },
 ):
   | string
   | number
   | boolean
   | undefined
   | Array<unknown>
-  | { min: null; max: null } {
+  | { min: null; max: null }
+  | SelectOptionT {
   switch (field.type) {
     case "DATASET_SELECT":
       if (context.availableDatasets.length > 0) {
-        return context.availableDatasets[0].value;
+        return context.availableDatasets[0];
+      } else {
+        return undefined;
+      }
+    case "SELECT":
+      if (field.options.length > 0) {
+        const options = field.options.map((option) => ({
+          label: option.label[context.activeLang] || "",
+          value: option.value,
+        }));
+        return options.find((option) => option.value === field.defaultValue);
       } else {
         return undefined;
       }
