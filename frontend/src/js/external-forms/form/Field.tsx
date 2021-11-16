@@ -62,7 +62,7 @@ type Props<T> = T & {
 const FieldContainer = styled("div")<{ noLabel?: boolean }>`
   margin: 0 0 ${BOTTOM_MARGIN}px;
   padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
-  /* background-color: #fff8f8; */
+  background-color: ${({ theme }) => theme.col.bg};
   border-radius: 3px;
   box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.2);
   border-left: 5px solid;
@@ -107,8 +107,9 @@ const Spacer = styled("div")`
 `;
 
 const NestedFields = styled("div")`
-  padding: 12px 12px 7px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+  padding: 12px 10px 5px;
+  box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.2);
+  background-color: ${({ theme }) => theme.col.bg};
   border-radius: 3px;
   margin-bottom: ${BOTTOM_MARGIN * 2}px;
 `;
