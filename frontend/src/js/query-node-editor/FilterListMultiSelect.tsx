@@ -26,7 +26,6 @@ interface PropsT {
   tooltip?: string;
   allowDropFile?: boolean;
 
-  isLoading?: boolean;
   onLoad?: (prefix: string) => void;
 
   value: SelectOptionT[];
@@ -46,7 +45,6 @@ const FilterListMultiSelect: FC<PropsT> = ({
   allowDropFile,
 
   onLoad,
-  isLoading,
 }) => {
   const [resolved, setResolved] = useState<PostFilterResolveResponseT | null>(
     null,
@@ -57,6 +55,19 @@ const FilterListMultiSelect: FC<PropsT> = ({
   const postFilterValuesResolve = usePostFilterValuesResolve();
 
   const previousDefaultValue = usePrevious(defaultValue);
+
+  const onLoadMore = async (prefix: string) => {
+    if (onLoad && !loading) {
+      setLoading(true);
+      try {
+        await onLoad(prefix);
+      } catch (e) {
+        // fail silently
+        console.error(e);
+      }
+      setLoading(false);
+    }
+  };
 
   const onDropFile = async (rows: string[]) => {
     setLoading(true);
@@ -140,10 +151,10 @@ const FilterListMultiSelect: FC<PropsT> = ({
         defaultValue={defaultValue}
         label={label}
         options={options}
-        // isLoading={isLoading || loading}
+        isLoading={loading}
         disabled={disabled}
         indexPrefix={indexPrefix}
-        onLoadMore={onLoad}
+        onLoadMore={onLoad ? onLoadMore : undefined}
         onResolve={allowDropFile ? onDropFile : undefined}
       />
     </>

@@ -817,11 +817,6 @@ const onToggleSecondaryIdExclude = (
   });
 };
 
-const loadFilterSuggestionsStart = (
-  state: StandardQueryStateT,
-  payload: ActionType<typeof loadFilterSuggestions.request>["payload"],
-) => setNodeFilterProperties(state, payload, { isLoading: true });
-
 const loadFilterSuggestionsSuccess = (
   state: StandardQueryStateT,
   {
@@ -831,19 +826,13 @@ const loadFilterSuggestionsSuccess = (
 ) => {
   // When [] comes back from the API, don't touch the current options
   if (!data || data.length === 0) {
-    return setNodeFilterProperties(state, rest, { isLoading: false });
+    return state;
   }
 
   return setNodeFilterProperties(state, rest, {
-    isLoading: false,
     options: data,
   });
 };
-
-const loadFilterSuggestionsError = (
-  state: StandardQueryStateT,
-  payload: ActionType<typeof loadFilterSuggestions.failure>["payload"],
-) => setNodeFilterProperties(state, payload, { isLoading: false });
 
 const createQueryNodeFromConceptListUploadResult = (
   label: string,
@@ -1077,12 +1066,8 @@ const query = (
       return loadPreviousQueryError(state, action);
     case getType(renameQuery.success):
       return onRenamePreviousQuery(state, action);
-    case getType(loadFilterSuggestions.request):
-      return loadFilterSuggestionsStart(state, action.payload);
     case getType(loadFilterSuggestions.success):
       return loadFilterSuggestionsSuccess(state, action.payload);
-    case getType(loadFilterSuggestions.failure):
-      return loadFilterSuggestionsError(state, action.payload);
     case getType(acceptQueryUploadConceptListModal):
       return insertUploadedConceptList(state, action.payload);
     case getType(setDateColumn):
