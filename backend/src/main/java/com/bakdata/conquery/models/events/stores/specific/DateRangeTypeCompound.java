@@ -113,11 +113,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@Override
 	public int getLines() {
-		if (getStartStore() == null && getEndStore() == null) {
-			return 0;
-		}
-		// they can be unaligned, if one of them is empty.
-		return Math.max(getStartStore().getLines(), getEndStore().getLines());
+		return has.getLines();
 
 	}
 
@@ -144,6 +140,10 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	@Override
 	public void setNull(int event) {
 		has.setNull(event);
+	}
+
+	public void setHas(int event, boolean present) {
+		has.setBoolean(event, present);
 	}
 
 	@Override

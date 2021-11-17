@@ -9,6 +9,7 @@ import com.bakdata.conquery.io.jackson.serializer.BitSetSerializer;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
@@ -30,20 +31,22 @@ public class BitSetStore implements BooleanStore {
 	@JsonDeserialize(using = BitSetDeserializer.class)
 	private final BitSet nullBits;
 
+	@JsonIgnore
+	private final int lines;
+
 	@JsonCreator
 	public BitSetStore(BitSet values, BitSet nullBits) {
 		this.values = values;
 		this.nullBits = nullBits;
+
+		// dangling false is not counted
+		lines = Math.max(values.length(), nullBits.length());
 	}
 
 	public static BitSetStore create(int size) {
 		return new BitSetStore(new BitSet(size), new BitSet(size));
 	}
 
-	@Override
-	public int getLines() {
-		return values.length();
-	}
 
 	@Override
 	public long estimateEventBits() {
@@ -66,6 +69,7 @@ public class BitSetStore implements BooleanStore {
 		for (int index = 0; index < starts.length; index++) {
 			for (int bit = 0; bit < lengths[index]; bit++) {
 				out.set(pos + bit, getValues().get(starts[index] + bit));
+
 				outNulls.set(pos + bit, getNullBits().get(starts[index] + bit));
 			}
 			pos += lengths[index];
@@ -77,7 +81,7 @@ public class BitSetStore implements BooleanStore {
 
 	@Override
 	public boolean has(int event) {
-		return nullBits.get(event);
+		return !nullBits.get(event);
 	}
 
 	@Override

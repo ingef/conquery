@@ -53,9 +53,7 @@ public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 	public void setValue(DateRangeStore store, int event, Boolean value) {
 		final DateRangeTypeCompound compoundStore = (DateRangeTypeCompound) store;
 
-		if(!value) {
-			compoundStore.setNull(event);
-		}
+		compoundStore.setHas(event, value);
 	}
 
 	@Override
