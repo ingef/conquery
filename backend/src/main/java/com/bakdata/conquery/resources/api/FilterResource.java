@@ -20,8 +20,10 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HFilters;
-import io.dropwizard.logback.shaded.checkerframework.checker.nullness.qual.Nullable;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Setter
@@ -56,15 +58,19 @@ public class FilterResource extends HFilters {
 	}
 
 	@Data
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class FilterValues {
-		private List<String> values;
+		private final List<String> values;
 	}
 
 	@Data
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class AutocompleteRequest {
-		@Nullable
-		private Optional<String> text;
-		private OptionalInt page;
-		private OptionalInt pageSize;
+		@NonNull
+		private final Optional<String> text;
+		@NonNull
+		private final OptionalInt page;
+		@NonNull
+		private final OptionalInt pageSize;
 	}
 }
