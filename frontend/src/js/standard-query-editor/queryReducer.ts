@@ -52,7 +52,7 @@ import {
   setSelects,
   setTableSelects,
   expandPreviousQuery,
-  loadFilterSuggestions,
+  loadFilterSuggestionsSuccess,
 } from "./actions";
 import type {
   StandardQueryNodeT,
@@ -817,12 +817,9 @@ const onToggleSecondaryIdExclude = (
   });
 };
 
-const loadFilterSuggestionsSuccess = (
+const onLoadFilterSuggestionsSuccess = (
   state: StandardQueryStateT,
-  {
-    data,
-    ...rest
-  }: ActionType<typeof loadFilterSuggestions.success>["payload"],
+  { data, ...rest }: ActionType<typeof loadFilterSuggestionsSuccess>["payload"],
 ) => {
   // When [] comes back from the API, don't touch the current options
   if (!data || data.length === 0) {
@@ -1066,8 +1063,8 @@ const query = (
       return loadPreviousQueryError(state, action);
     case getType(renameQuery.success):
       return onRenamePreviousQuery(state, action);
-    case getType(loadFilterSuggestions.success):
-      return loadFilterSuggestionsSuccess(state, action.payload);
+    case getType(loadFilterSuggestionsSuccess):
+      return onLoadFilterSuggestionsSuccess(state, action.payload);
     case getType(acceptQueryUploadConceptListModal):
       return insertUploadedConceptList(state, action.payload);
     case getType(setDateColumn):
