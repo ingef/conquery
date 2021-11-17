@@ -499,7 +499,7 @@ const updateFilterOptionsWithSuggestions = (
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  suggestions: PostFilterSuggestionsResponseT,
+  suggestions: PostFilterSuggestionsResponseT["values"],
 ) => {
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
     options: suggestions,
@@ -1011,7 +1011,7 @@ const FormConceptGroup = (props: Props) => {
           }}
           onLoadFilterSuggestions={async (params, tableIdx, filterIdx) => {
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
-            const suggestions = await postPrefixForSuggestions(params);
+            const { values, total } = await postPrefixForSuggestions(params);
 
             props.onChange(
               updateFilterOptionsWithSuggestions(
@@ -1020,7 +1020,7 @@ const FormConceptGroup = (props: Props) => {
                 conceptIdx,
                 tableIdx,
                 filterIdx,
-                suggestions,
+                values,
               ),
             );
           }}

@@ -241,7 +241,7 @@ export const loadFilterSuggestions = createAsyncAction(
 )<
   FilterContext,
   FilterContext & {
-    data: PostFilterSuggestionsResponseT;
+    data: PostFilterSuggestionsResponseT["values"];
   },
   FilterContext & ErrorObject
 >();
@@ -265,7 +265,9 @@ export const useLoadFilterSuggestions = (
 
     return postPrefixForSuggestions(params).then(
       (r) =>
-        dispatch(loadFilterSuggestions.success(successPayload(r, context))),
+        dispatch(
+          loadFilterSuggestions.success(successPayload(r.values, context)),
+        ),
       (e) => dispatch(loadFilterSuggestions.failure(errorPayload(e, context))),
     );
   };

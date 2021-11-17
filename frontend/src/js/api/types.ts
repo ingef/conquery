@@ -391,7 +391,10 @@ export interface FilterSuggestion {
   optionValue: string;
   templateValues: Record<string, string>;
 }
-export type PostFilterSuggestionsResponseT = FilterSuggestion[];
+export type PostFilterSuggestionsResponseT = {
+  total: number;
+  values: FilterSuggestion[];
+};
 
 export type GetFormQueriesResponseT = Forms;
 
