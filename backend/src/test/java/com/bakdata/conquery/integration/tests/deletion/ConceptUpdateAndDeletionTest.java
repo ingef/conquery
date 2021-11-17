@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Objects;
 
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
@@ -12,7 +14,6 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -37,9 +38,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 
-		final StandaloneSupport conquery = testConquery.getSupport(name);
-
-		final MetaStorage storage = conquery.getMetaStorage();
+		StandaloneSupport conquery = testConquery.getSupport(name);
 
 		// Read two JSONs with different Trees
 		final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
@@ -47,6 +46,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 		final Dataset dataset = conquery.getDataset();
 		final Namespace namespace = conquery.getNamespace();
+
 
 		final ConceptId conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
 		final Concept<?> concept;
@@ -67,7 +67,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			concept = Objects.requireNonNull(namespace.getStorage().getConcept(conceptId));
+			assertThat(namespace.getStorage().getConcept(conceptId)).isNotNull();
 
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
@@ -76,9 +76,9 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final Query query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 
-		// State before deletion.
+		// State before update.
 		{
-			log.info("Checking state before deletion");
+			log.info("Checking state before update");
 
 			// Must contain the concept.
 			assertThat(namespace.getStorage().getAllConcepts())
@@ -95,7 +95,6 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 					}
 
 					final ModificationShieldedWorkerStorage workerStorage = value.getStorage();
-
 					assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
 							.isNotEmpty();
 
@@ -105,62 +104,22 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 							.isNotEmpty();
 				}
 			}
-
-			log.info("Executing query before deletion");
-
+			log.info("Executing query before update");
 			IntegrationUtils.assertQueryResult(conquery, query, 1L, ExecutionState.DONE, conquery.getTestUser(), 201);
-		}
-
-		// Delete the Concept.
-		{
-			log.info("Issuing deletion of import {}", conceptId);
-
-			conquery.getDatasetsProcessor().deleteConcept(concept);
-
 			conquery.waitUntilWorkDone();
+			log.info("Query before update executed");
 		}
 
-		// Check state after deletion.
-		{
-			log.info("Checking state after deletion");
-
-			// We've deleted the concept so it and it's associated cblock should be gone.
-			assertThat(namespace.getStorage().getAllConcepts())
-					.filteredOn(con -> con.getId().equals(conceptId))
-					.isEmpty();
-
-			assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
-					.isEmpty();
-
-			assertThat(
-					conquery.getShardNodes().stream()
-							.flatMap(node -> node.getWorkers().getWorkers().values().stream())
-							.filter(worker -> worker.getInfo().getDataset().equals(dataset.getId()))
-							.map(Worker::getStorage)
-			)
-					// Concept is deleted on Workers
-					.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
-					// CBlocks of Concept are deleted on Workers
-					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
-															 .stream()
-															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
-
-
-
-			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
-
-			// Issue a query and assert that it is failing.
-			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 400);
-		}
-
-		conquery.waitUntilWorkDone();
 
 		// Load a different concept with the same id (it has different children "C1" that are more than "A1")
+		// To perform the update, the old concept will be deleted first and the new concept will be added. That means the deletion of concept is also covered here
 		{
-			// only import the deleted concept
-			LoadingUtil.importConcepts(conquery, test2.getRawConcepts());
+			log.info("Executing  update");
+			LoadingUtil.updateConcepts(conquery, test2.getRawConcepts(), Response.Status.Family.SUCCESSFUL);
 			conquery.waitUntilWorkDone();
+			log.info("Update executed");
 		}
+
 
 		// Check state after update.
 		{
@@ -196,29 +155,34 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			// Assert that it now contains 2 instead of 1.
 			IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+			conquery.waitUntilWorkDone();
+			log.info("Query after update executed");
 		}
 
-		// Finally, restart conquery and assert again, that the data is correct.
+
+		//new Conquery generated after restarting
+		//StandaloneSupport conquery;
+
+
+		// Restart conquery and assert again, that the data is correct.
 		{
 			testConquery.shutdown();
-
 			//restart
 			testConquery.beforeAll();
-
-			StandaloneSupport conquery2 = testConquery.openDataset(dataset.getId());
+			conquery = testConquery.openDataset(dataset.getId());
 
 			log.info("Checking state after re-start");
 
 			{
 				// Must contain the concept.
-				assertThat(namespace.getStorage().getAllConcepts())
+				assertThat(conquery.getNamespace().getStorage().getAllConcepts())
 						.filteredOn(con -> con.getId().equals(conceptId))
 						.isNotEmpty();
 
-				assertThat(conquery2.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
+				assertThat(conquery.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
 						.isNotEmpty();
 
-				for (ShardNode node : conquery2.getShardNodes()) {
+				for (ShardNode node : conquery.getShardNodes()) {
 					for (Worker value : node.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().equals(dataset.getId())) {
 							continue;
@@ -238,9 +202,94 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				log.info("Executing query after restart.");
 				// Re-assert state.
-				IntegrationUtils.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				IntegrationUtils.assertQueryResult(conquery, query, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
+				conquery.waitUntilWorkDone();
+			}
+		}
+
+
+		// Delete the Concept.
+		{
+			log.info("Issuing deletion of import {}", conceptId);
+			concept = Objects.requireNonNull(conquery.getNamespace().getStorage().getConcept(conceptId));
+			conquery.getDatasetsProcessor().deleteConcept(concept);
+
+			conquery.waitUntilWorkDone();
+		}
+
+		// Check state after deletion.
+		{
+			log.info("Checking state after deletion");
+
+			// We've deleted the concept so it and it's associated cblock should be gone.
+			assertThat(conquery.getNamespace().getStorage().getAllConcepts())
+					.filteredOn(con -> con.getId().equals(conceptId))
+					.isEmpty();
+
+			assertThat(conquery.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
+					.isEmpty();
+
+			assertThat(
+					conquery.getShardNodes().stream()
+							.flatMap(node -> node.getWorkers().getWorkers().values().stream())
+							.filter(worker -> worker.getInfo().getDataset().equals(dataset.getId()))
+							.map(Worker::getStorage)
+			)
+					// Concept is deleted on Workers
+					.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
+					// CBlocks of Concept are deleted on Workers
+					.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
+															 .stream()
+															 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
+
+
+			log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
+
+			// Issue a query and assert that it is failing.
+			IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 400);
+		}
+
+
+		// Restart conquery and assert again, that the state after deletion was maintained.
+		{
+			{
+				testConquery.shutdown();
+				//restart
+				testConquery.beforeAll();
+				conquery = testConquery.openDataset(dataset.getId());
+			}
+
+			// Check state after restart.
+			{
+				log.info("Checking state after restart");
+
+				// We've deleted the concept so it and it's associated cblock should be gone.
+				assertThat(conquery.getNamespace().getStorage().getAllConcepts())
+						.filteredOn(con -> con.getId().equals(conceptId))
+						.isEmpty();
+
+				assertThat(conquery.getNamespace().getStorage().getCentralRegistry().getOptional(conceptId))
+						.isEmpty();
+
+				assertThat(
+						conquery.getShardNodes().stream()
+								.flatMap(node -> node.getWorkers().getWorkers().values().stream())
+								.filter(worker -> worker.getInfo().getDataset().equals(dataset.getId()))
+								.map(Worker::getStorage)
+				)
+						// Concept is deleted on Workers
+						.noneMatch(workerStorage -> workerStorage.getConcept(conceptId) != null)
+						// CBlocks of Concept are deleted on Workers
+						.noneMatch(workerStorage -> workerStorage.getAllCBlocks()
+																 .stream()
+																 .anyMatch(cBlock -> cBlock.getConnector().getConcept().getId().equals(conceptId)));
+
+
+				log.info("Executing query after restart (EXPECTING AN EXCEPTION IN THE LOGS!)");
+
+				// Issue a query and assert that it is failing.
+				IntegrationUtils.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED, conquery.getTestUser(), 400);
 			}
 		}
 	}
-
 }
