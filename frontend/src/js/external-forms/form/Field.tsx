@@ -1,5 +1,6 @@
+import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { memo, ReactNode } from "react";
+import { memo, ReactNode, useMemo } from "react";
 import {
   Control,
   ControllerRenderProps,
@@ -37,18 +38,27 @@ import { getErrorForField } from "../validators";
 import type { DynamicFormValues } from "./Form";
 
 const BOTTOM_MARGIN = 7;
-const COLOR_BY_FIELD_TYPE: Record<FormField["type"], string> = {
-  // #577590
-  STRING: "#777",
-  DATE_RANGE: "#f9c74f",
-  NUMBER: "#f8961e",
-  CONCEPT_LIST: "#277da1",
-  SELECT: "#90be6d",
-  DATASET_SELECT: "#43aa8b",
-  CHECKBOX: "#aaa",
-  MULTI_RESULT_GROUP: "#f94144",
-  RESULT_GROUP: "#f94144",
-  TABS: "#fff",
+
+const useColorByField = (fieldType: FormField["type"]) => {
+  const theme = useTheme();
+
+  const COLOR_BY_FIELD_TYPE: Record<FormField["type"], string> = useMemo(
+    () => ({
+      STRING: theme.col.palette[8],
+      DATE_RANGE: theme.col.palette[0],
+      NUMBER: theme.col.palette[1],
+      CONCEPT_LIST: theme.col.palette[2],
+      SELECT: theme.col.palette[3],
+      DATASET_SELECT: theme.col.palette[4],
+      CHECKBOX: theme.col.palette[7],
+      MULTI_RESULT_GROUP: theme.col.palette[5],
+      RESULT_GROUP: theme.col.palette[5],
+      TABS: theme.col.palette[9],
+    }),
+    [theme],
+  );
+
+  return COLOR_BY_FIELD_TYPE[fieldType];
 };
 
 type Props<T> = T & {
@@ -86,13 +96,12 @@ const ConnectedField = <T extends Object>({
     },
   });
 
+  const color = useColorByField(formField.type);
+
   return noContainer ? (
     <div>{children({ ...field, ...props })}</div>
   ) : (
-    <FieldContainer
-      style={{ borderColor: COLOR_BY_FIELD_TYPE[formField.type] }}
-      noLabel={noLabel}
-    >
+    <FieldContainer style={{ borderColor: color }} noLabel={noLabel}>
       {children({ ...field, ...props })}
     </FieldContainer>
   );

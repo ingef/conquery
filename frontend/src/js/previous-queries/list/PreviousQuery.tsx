@@ -31,9 +31,9 @@ const Root = styled("div")<{ own?: boolean; system?: boolean }>`
 
   border-left: ${({ theme, own, system }) =>
     own
-      ? `4px solid ${theme.col.orange}`
-      : system
       ? `4px solid ${theme.col.blueGrayDark}`
+      : system
+      ? `4px solid ${theme.col.grayLight}`
       : `1px solid ${theme.col.grayLight}`};
 
   &:hover {

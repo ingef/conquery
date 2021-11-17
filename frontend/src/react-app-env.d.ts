@@ -30,6 +30,7 @@ declare module "@emotion/react" {
       red: string;
       green: string;
       orange: string;
+      palette: string[];
     };
     img: {
       logo: string;
