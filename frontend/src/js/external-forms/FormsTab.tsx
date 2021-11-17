@@ -1,6 +1,5 @@
 import { tabDescription } from ".";
 import { StateT } from "app-types";
-import { useActiveLang } from "js/localization/useActiveLang";
 import { useCallback, useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useSelector, useStore } from "react-redux";
@@ -8,6 +7,7 @@ import { useSelector, useStore } from "react-redux";
 import { useGetForms } from "../api/api";
 import type { DatasetIdT, DatasetT } from "../api/types";
 import { usePrevious } from "../common/helpers/usePrevious";
+import { useActiveLang } from "../localization/useActiveLang";
 import StandardQueryEditorTab from "../standard-query-editor";
 import { updateReducers } from "../store";
 import TimebasedQueryEditorTab from "../timebased-query-editor";
