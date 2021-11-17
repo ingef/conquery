@@ -39,27 +39,28 @@ import type { DynamicFormValues } from "./Form";
 
 const BOTTOM_MARGIN = 7;
 
-const useColorByField = (fieldType: FormField["type"]) => {
-  const theme = useTheme();
+// TODO: REFINE COLORS
+// const useColorByField = (fieldType: FormField["type"]) => {
+//   const theme = useTheme();
 
-  const COLOR_BY_FIELD_TYPE: Record<FormField["type"], string> = useMemo(
-    () => ({
-      STRING: theme.col.palette[8],
-      DATE_RANGE: theme.col.palette[0],
-      NUMBER: theme.col.palette[1],
-      CONCEPT_LIST: theme.col.palette[2],
-      SELECT: theme.col.palette[3],
-      DATASET_SELECT: theme.col.palette[4],
-      CHECKBOX: theme.col.palette[7],
-      MULTI_RESULT_GROUP: theme.col.palette[5],
-      RESULT_GROUP: theme.col.palette[5],
-      TABS: theme.col.palette[9],
-    }),
-    [theme],
-  );
+//   const COLOR_BY_FIELD_TYPE: Record<FormField["type"], string> = useMemo(
+//     () => ({
+//       STRING: theme.col.palette[8],
+//       DATE_RANGE: theme.col.palette[0],
+//       NUMBER: theme.col.palette[1],
+//       CONCEPT_LIST: theme.col.palette[2],
+//       SELECT: theme.col.palette[3],
+//       DATASET_SELECT: theme.col.palette[4],
+//       CHECKBOX: theme.col.palette[7],
+//       MULTI_RESULT_GROUP: theme.col.palette[5],
+//       RESULT_GROUP: theme.col.palette[5],
+//       TABS: theme.col.palette[9],
+//     }),
+//     [theme],
+//   );
 
-  return COLOR_BY_FIELD_TYPE[fieldType];
-};
+//   return COLOR_BY_FIELD_TYPE[fieldType];
+// };
 
 type Props<T> = T & {
   children: (props: ControllerRenderProps<DynamicFormValues> & T) => ReactNode;
@@ -96,12 +97,13 @@ const ConnectedField = <T extends Object>({
     },
   });
 
-  const color = useColorByField(formField.type);
+  // TODO: REFINE COLORS
+  // const color = useColorByField(formField.type);
 
   return noContainer ? (
     <div>{children({ ...field, ...props })}</div>
   ) : (
-    <FieldContainer style={{ borderColor: color }} noLabel={noLabel}>
+    <FieldContainer style={{ borderColor: "#ccc" }} noLabel={noLabel}>
       {children({ ...field, ...props })}
     </FieldContainer>
   );
