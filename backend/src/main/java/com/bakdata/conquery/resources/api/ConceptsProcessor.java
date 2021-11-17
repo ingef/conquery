@@ -83,7 +83,11 @@ public class ConceptsProcessor {
 
 								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
 
-								return autocompleteTextFilter(filter, searchTerm);
+								final List<FEValue> result = autocompleteTextFilter(filter, searchTerm);
+
+								log.debug("Got {} results for {}", result.size(), filterAndSearch);
+
+								return result;
 							}
 
 						});
@@ -199,10 +203,11 @@ public class ConceptsProcessor {
 	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
 		if (Strings.isNullOrEmpty(text)) {
 			// If no text provided, we just list them
-			return filter.getSourceSearch().listItems()
-						 .stream()
-						 .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-						 .collect(Collectors.toList());
+			final List<FilterSearchItem> items = filter.getSourceSearch().listItems();
+			return items
+					.stream()
+					.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+					.collect(Collectors.toList());
 		}
 
 		List<FEValue> result = new LinkedList<>();
