@@ -29,13 +29,13 @@ const Headline = styled("h2")<{ active: boolean }>`
   margin-right: 5px;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.gray};
-  border-bottom: 3px solid
+  border-bottom: 4px solid
     ${({ theme, active }) => (active ? theme.col.blueGrayDark : "transparent")};
 
   &:hover {
     color: ${({ theme, active }) =>
       active ? theme.col.blueGrayDark : theme.col.black};
-    border-bottom: 3px solid
+    border-bottom: 4px solid
       ${({ theme, active }) =>
         active ? theme.col.blueGrayDark : theme.col.grayLight};
   }

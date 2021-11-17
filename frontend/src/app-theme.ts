@@ -20,6 +20,18 @@ export const theme: Theme = {
     red: "#b22125",
     green: "#36971C",
     orange: "#E9711C",
+    palette: [
+      "#f9c74f",
+      "#f8961e",
+      "#277da1",
+      "#90be6d",
+      "#43aa8b",
+      "#f94144",
+      "#5e60ce",
+      "#aaa",
+      "#777",
+      "#fff",
+    ],
   },
   img: {
     logo: logo,

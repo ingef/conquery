@@ -1,5 +1,6 @@
+import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { memo, ReactNode } from "react";
+import { memo, ReactNode, useMemo } from "react";
 import {
   Control,
   ControllerRenderProps,
@@ -36,20 +37,53 @@ import { getErrorForField } from "../validators";
 
 import type { DynamicFormValues } from "./Form";
 
+const BOTTOM_MARGIN = 7;
+
+const useColorByField = (fieldType: FormField["type"]) => {
+  const theme = useTheme();
+
+  const COLOR_BY_FIELD_TYPE: Record<FormField["type"], string> = useMemo(
+    () => ({
+      STRING: theme.col.palette[8],
+      DATE_RANGE: theme.col.palette[0],
+      NUMBER: theme.col.palette[1],
+      CONCEPT_LIST: theme.col.palette[2],
+      SELECT: theme.col.palette[3],
+      DATASET_SELECT: theme.col.palette[4],
+      CHECKBOX: theme.col.palette[7],
+      MULTI_RESULT_GROUP: theme.col.palette[5],
+      RESULT_GROUP: theme.col.palette[5],
+      TABS: theme.col.palette[9],
+    }),
+    [theme],
+  );
+
+  return COLOR_BY_FIELD_TYPE[fieldType];
+};
+
 type Props<T> = T & {
   children: (props: ControllerRenderProps<DynamicFormValues> & T) => ReactNode;
   control: Control<DynamicFormValues>;
   formField: FormField;
   defaultValue?: any;
+  noContainer?: boolean;
+  noLabel?: boolean;
 };
-const FieldContainer = styled("div")`
-  margin: 0 0 14px;
+const FieldContainer = styled("div")<{ noLabel?: boolean }>`
+  margin: 0 0 ${BOTTOM_MARGIN}px;
+  padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
+  background-color: ${({ theme }) => theme.col.bg};
+  border-radius: 3px;
+  box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.2);
+  border-left: 5px solid;
 `;
 const ConnectedField = <T extends Object>({
   children,
   control,
   formField,
   defaultValue,
+  noContainer,
+  noLabel,
   ...props
 }: Props<T>) => {
   const { t } = useTranslation();
@@ -62,16 +96,31 @@ const ConnectedField = <T extends Object>({
     },
   });
 
-  return <FieldContainer>{children({ ...field, ...props })}</FieldContainer>;
+  const color = useColorByField(formField.type);
+
+  return noContainer ? (
+    <div>{children({ ...field, ...props })}</div>
+  ) : (
+    <FieldContainer style={{ borderColor: color }} noLabel={noLabel}>
+      {children({ ...field, ...props })}
+    </FieldContainer>
+  );
 };
 
 const SxToggleButton = styled(ToggleButton)`
   margin-bottom: 5px;
 `;
 
+const Spacer = styled("div")`
+  margin-bottom: ${BOTTOM_MARGIN * 2}px;
+`;
+
 const NestedFields = styled("div")`
-  padding: 10px;
-  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  padding: 12px 10px 5px;
+  box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.2);
+  background-color: ${({ theme }) => theme.col.bg};
+  border-radius: 3px;
+  margin-bottom: ${BOTTOM_MARGIN * 2}px;
 `;
 
 interface PropsT {
@@ -228,6 +277,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           formField={field}
           control={control}
           defaultValue={defaultValue}
+          noLabel
         >
           {({ ref, ...fieldProps }) => (
             <InputCheckbox
@@ -288,6 +338,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           control={control}
           formField={field}
           defaultValue={defaultValue}
+          noContainer
         >
           {({ ref, ...fieldProps }) => {
             const tabToShow = field.tabs.find(
@@ -307,7 +358,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                     tooltip: tab.tooltip ? tab.tooltip[locale] : undefined,
                   }))}
                 />
-                {tabToShow && tabToShow.fields.length > 0 && (
+                {tabToShow && tabToShow.fields.length > 0 ? (
                   <NestedFields>
                     {tabToShow.fields.map((f, i) => {
                       const key = isFormField(f) ? f.name : f.type + i;
@@ -323,6 +374,8 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                       );
                     })}
                   </NestedFields>
+                ) : (
+                  <Spacer />
                 )}
               </>
             );
