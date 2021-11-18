@@ -11,6 +11,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.datasets.concepts.filters.postalcode.PostalCodeSearchEntity;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
@@ -96,6 +97,14 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = "REAL_RANGE", base = FilterValue.class)
 	public static class CQRealRangeFilter extends FilterValue<Range<BigDecimal>> {
 		public CQRealRangeFilter(@NsIdRef Filter<Range<BigDecimal>> filter, Range<BigDecimal> value) {
+			super(filter, value);
+		}
+	}
+
+	@NoArgsConstructor
+	@CPSType(id = "POSTAL_CODE", base = FilterValue.class)
+	public static class PostalCodeFilter extends FilterValue<PostalCodeSearchEntity> {
+		public PostalCodeFilter(@NsIdRef Filter<PostalCodeSearchEntity> filter, PostalCodeSearchEntity value) {
 			super(filter, value);
 		}
 	}

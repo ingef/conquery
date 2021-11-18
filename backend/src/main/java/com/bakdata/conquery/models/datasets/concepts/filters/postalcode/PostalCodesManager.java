@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvParser;
@@ -44,7 +45,7 @@ public class PostalCodesManager {
 	 */
 	private void loadData() throws IOException, URISyntaxException {
 		if (getDataFilePath() == null) {
-			setDataFilePath("/com.bakdata.conquery/postalcodes.csv");
+			setDataFilePath("/com/bakdata/conquery/postalcodes.csv.gz");
 		}
 
 
@@ -56,7 +57,7 @@ public class PostalCodesManager {
 		csvParserSettings.setProcessor(rowProcessor);
 
 		final CsvParser parser = new CsvParser(csvParserSettings);
-		parser.parse(new InputStreamReader(In.resource(getDataFilePath()).asStream(), StandardCharsets.UTF_8));
+		parser.parse(new InputStreamReader(new GZIPInputStream(In.resource(getDataFilePath()).asStream()), StandardCharsets.US_ASCII));
 
 
 		data = rowProcessor.getData();
@@ -69,8 +70,9 @@ public class PostalCodesManager {
 	 */
 	public String[] filterAllNeighbours(PostalCodeSearchEntity postalCodeSearchEntity) {
 		try {
+			final double plz = Double.parseDouble(postalCodeSearchEntity.getPlz());
 			if (postalCodeSearchEntity.getRadius() == 0) {
-				return new String[]{String.format("%05d", (int) postalCodeSearchEntity.getPlz())};
+				return new String[]{String.format("%05d", (int) plz)};
 			}
 
 			final List<String> foundPostalCodesList = new ArrayList<>();
@@ -79,10 +81,10 @@ public class PostalCodesManager {
 				final double plz2 = data.get(++i);
 				final double distance = data.get(++i);
 
-				if (plz1 == postalCodeSearchEntity.getPlz() && distance <= postalCodeSearchEntity.getRadius()) {
+				if (plz1 == plz && distance <= postalCodeSearchEntity.getRadius()) {
 					foundPostalCodesList.add(String.format("%05d", (int) plz2));
 				}
-				else if (plz2 == postalCodeSearchEntity.getPlz() && distance <= postalCodeSearchEntity.getRadius()) {
+				else if (plz2 == plz && distance <= postalCodeSearchEntity.getRadius()) {
 					foundPostalCodesList.add(String.format("%05d", (int) plz1));
 				}
 			}

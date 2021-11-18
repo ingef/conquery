@@ -1,0 +1,48 @@
+{
+  "type": "FILTER_TEST",
+  "label": "POSTAL_CODE Test",
+  "expectedCsv": "tests/filter/POSTAL_CODE/expected_POSTAL_CODE_Filter.csv",
+  "content": {
+    "tables":
+      {
+        "csv": "tests/filter/POSTAL_CODE/content_POSTAL_CODE_Filter.csv",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "plz",
+            "type": "STRING"
+          },
+          {
+            "name": "name",
+            "type": "STRING"
+          },
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filters": {
+      "description": "Test POSTAL_CODE_Filter",
+      "column": "table.plz",
+      "type": "POSTAL_CODE"
+    }
+  },
+  "filterValue": {
+    "type": "POSTAL_CODE",
+    "value": {
+      "plz": "10115",
+      "radius": 20
+    }
+  }
+}
