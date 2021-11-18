@@ -20,12 +20,12 @@ public class PostalCodesManager {
 
 	@Getter
 	@Setter
-	private String dataFilePath = null;
+	private final String dataFilePath;
 
 	@Getter
-	private List<Double> data;
+	private final List<Double> data;
 
-	private int recordsNumber = 0;
+	private final int recordsNumber = 0;
 
 	public PostalCodesManager() {
 		try {
