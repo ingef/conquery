@@ -26,7 +26,7 @@ interface PropsT {
   tooltip?: string;
   allowDropFile?: boolean;
 
-  onLoad?: (prefix: string) => void;
+  onLoad?: (prefix: string) => Promise<void>;
 
   value: SelectOptionT[];
   onChange: (value: SelectOptionT[]) => void;

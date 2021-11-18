@@ -76,7 +76,7 @@ interface PropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-  ) => void;
+  ) => Promise<void>;
   onSetDateColumn: (tableIdx: number, value: string | null) => void;
 }
 

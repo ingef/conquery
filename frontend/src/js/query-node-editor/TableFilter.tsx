@@ -30,7 +30,7 @@ export interface BaseTableFilterProps {
     tableIdx: number,
     filterId: FilterIdT,
     prefix: string,
-  ) => void;
+  ) => Promise<void>;
   onShowDescription: (filterIdx: number) => void;
 }
 
