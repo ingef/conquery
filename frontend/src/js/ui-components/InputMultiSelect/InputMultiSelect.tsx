@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import { useDebounce } from "../../common/helpers/useDebounce";
+import FaIcon from "../../icon/FaIcon";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
 import {
@@ -37,6 +38,10 @@ const MIN_LOAD_MORE_LENGTH = 2;
 
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
+`;
+
+const SxFaIcon = styled(FaIcon)`
+  margin: 2px 5px;
 `;
 
 interface Props {
@@ -278,7 +283,8 @@ const InputMultiSelect = ({
             }}
           />
         </ItemsInputContainer>
-        {(inputValue.length > 0 || selectedItems.length > 0) && (
+        {loading && <SxFaIcon icon="spinner" />}
+        {!loading && (inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
             icon="times"
             disabled={disabled}
