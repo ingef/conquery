@@ -98,7 +98,6 @@ public class FilterSearch {
 	/***
 	 * Create interactive Search for the selected filter based on its Template.
 	 * @param filter
-	 * @param csvParserSettings
 	 */
 	public static void createSourceSearch(AbstractSelectFilter<?> filter, CsvParser parser) {
 		FilterTemplate template = filter.getTemplate();
@@ -153,10 +152,14 @@ public class FilterSearch {
 				}
 			}
 
+
 			filter.setSourceSearch(search);
 
 			FilterSearch.search.put(autocompleteKey, search);
-			log.info("Processed reference list '{}' in {} ms ({} Items)", file.getAbsolutePath(), System.currentTimeMillis() - time, search.getStats().getItems());
+			final long duration = System.currentTimeMillis() - time;
+
+			log.info("Processed reference list '{}' in {} ms ({} Items in {} Lines)",
+					 file.getAbsolutePath(), duration, search.getStats().getItems(), it.getContext().currentLine());
 		} catch (Exception e) {
 			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);
 		}
