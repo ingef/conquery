@@ -16,7 +16,9 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 @CPSType(id = "POSTAL_CODE", base = Filter.class)
 public class PostalCodeFilter extends SingleColumnFilter<PostalCodeSearchEntity> {
-	static private final PostalCodesManager postalCodesManager = new PostalCodesManager();
+	static private final PostalCodesManager
+			postalCodesManager =
+			PostalCodesManager.newPostalCodesManagerPreloaded("/com/bakdata/conquery/postalcodes.csv", false);
 
 	@Override
 	public void configureFrontend(FEFilter f) {
@@ -25,7 +27,8 @@ public class PostalCodeFilter extends SingleColumnFilter<PostalCodeSearchEntity>
 
 	@Override
 	public FilterNode<String[]> createFilterNode(PostalCodeSearchEntity postalCodeSearchEntity) {
-		return new MultiSelectFilterNode(getColumn(), postalCodesManager.filterAllNeighbours(postalCodeSearchEntity));
+		return new MultiSelectFilterNode(getColumn(), postalCodesManager.filterAllNeighbours(Integer.parseInt(postalCodeSearchEntity.getPlz()), postalCodeSearchEntity
+				.getRadius()));
 	}
 
 	@Override

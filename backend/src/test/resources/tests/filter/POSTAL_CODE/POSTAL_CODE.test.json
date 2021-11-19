@@ -16,10 +16,6 @@
             "type": "STRING"
           },
           {
-            "name": "name",
-            "type": "STRING"
-          },
-          {
             "name": "datum",
             "type": "DATE"
           }
