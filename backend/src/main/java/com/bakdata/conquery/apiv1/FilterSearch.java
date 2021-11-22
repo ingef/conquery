@@ -156,8 +156,6 @@ public class FilterSearch {
 					search.addItem(item, row[i]);
 				}
 			}
-			parser.stopParsing();
-
 
 			filter.setSourceSearch(search);
 
