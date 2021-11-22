@@ -7,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.validation.Valid;
+
+import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -17,6 +20,7 @@ import com.github.powerlibraries.io.In;
 import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -85,7 +89,7 @@ public class FilterSearch {
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
-	public static void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager, CsvParser parser) {
+	public static void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager, CSVConfig parser) {
 		datasetsToUpdate.stream()
 				.flatMap(ds -> datasets.get(ds.getId()).getStorage().getAllConcepts().stream())
 				.flatMap(c -> c.getConnectors().stream())
@@ -99,7 +103,7 @@ public class FilterSearch {
 	 * Create interactive Search for the selected filter based on its Template.
 	 * @param filter
 	 */
-	public static void createSourceSearch(AbstractSelectFilter<?> filter, CsvParser parser) {
+	public static void createSourceSearch(AbstractSelectFilter<?> filter, CSVConfig parserConfig) {
 		FilterTemplate template = filter.getTemplate();
 
 		List<String> templateColumns = new ArrayList<>(template.getColumns());
@@ -126,6 +130,7 @@ public class FilterSearch {
 							   .withKeywordMatchScorer(FilterSearchType.CONTAINS::score)
 							   .build();
 
+		final CsvParser parser = parserConfig.createParser();
 		try {
 			IterableResult<String[], ParsingContext> it = parser.iterate(In.file(file).withUTF8().asReader());
 			String[] header = it.getContext().parsedHeaders();
@@ -151,6 +156,7 @@ public class FilterSearch {
 					search.addItem(item, row[i]);
 				}
 			}
+			parser.stopParsing();
 
 
 			filter.setSourceSearch(search);
@@ -162,6 +168,8 @@ public class FilterSearch {
 					 file.getAbsolutePath(), duration, search.getStats().getItems(), it.getContext().currentLine());
 		} catch (Exception e) {
 			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);
+		} finally {
+			parser.stopParsing();
 		}
 	}
 

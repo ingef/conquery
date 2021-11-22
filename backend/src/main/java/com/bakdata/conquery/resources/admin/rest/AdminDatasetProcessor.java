@@ -360,7 +360,7 @@ public class AdminDatasetProcessor {
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
 					ns.sendToAll(new UpdateMatchingStatsMessage());
-					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
+					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv());
 				}
 		));
 	}

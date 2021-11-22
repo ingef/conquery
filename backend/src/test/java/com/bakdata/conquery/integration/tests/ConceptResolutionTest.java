@@ -34,7 +34,7 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		
 		test.importRequiredData(conquery);
 		FilterSearch
-			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), conquery.getConfig().getCsv().createParser());
+			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), conquery.getConfig().getCsv());
 
 		conquery.waitUntilWorkDone();
 
