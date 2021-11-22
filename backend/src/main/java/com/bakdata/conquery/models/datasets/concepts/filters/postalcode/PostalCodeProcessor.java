@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.postalcode;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.common.processor.AbstractRowProcessor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.internal.guava.HashBasedTable;
 import org.glassfish.jersey.internal.guava.Table;
@@ -16,6 +17,9 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 
 	final Table<Integer, Integer, Double> csvEntries = HashBasedTable.create();
 	private int plz1Index, plz2Index, distanceIndex;
+
+	@Getter
+	final private List<PostalCodeRecord> data = new ArrayList<>();
 
 	@Override
 	public void processStarted(ParsingContext context) {
@@ -41,13 +45,6 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 	}
 
 
-	public List<PostalCodeRecord> getData() {
-		return csvEntries.cellSet()
-						 .stream()
-						 .map(cell -> new PostalCodeRecord(cell.getRowKey(), cell.getColumnKey(), cell.getValue()))
-						 .collect(Collectors.toList());
-	}
-
 	@Override
 	public void rowProcessed(String[] row, ParsingContext context) {
 
@@ -57,7 +54,11 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 		int plz1 = Integer.parseInt(row[plz1Index].trim());
 		int plz2 = Integer.parseInt(row[plz2Index].trim());
 		double distance = Double.parseDouble(row[distanceIndex].trim());
-		csvEntries.put(plz1, plz2, distance);
+
+		//if the element has not been already added then we add the new record
+		if (csvEntries.put(plz1, plz2, distance) == null) {
+			data.add(new PostalCodeRecord(plz1, plz2, distance));
+		}
 
 
 	}

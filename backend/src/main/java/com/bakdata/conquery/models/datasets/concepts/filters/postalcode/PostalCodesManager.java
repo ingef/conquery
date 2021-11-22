@@ -5,7 +5,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import javax.validation.constraints.Min;
@@ -66,24 +65,18 @@ public class PostalCodesManager {
 				return new String[]{String.format("%05d", plz)};
 			}
 
-			final List<String>
-					foundPostalCodesList =
-					data.stream()
-						.filter(postalCodeRecord -> (postalCodeRecord.getPlz1() == plz || postalCodeRecord.getPlz2() == plz)
-													&& postalCodeRecord.getDistance_km() <= radius)
-						.map(postalCodeRecord -> {
-							if (postalCodeRecord.getPlz1() == plz) {
-								return String.format("%05d", postalCodeRecord.getPlz2());
-							}
-							else {
-								return String.format("%05d", postalCodeRecord.getPlz1());
-							}
-						})
-						.collect(Collectors.toList());
-
-			String[] foundPostalCodes = new String[foundPostalCodesList.size()];
-			foundPostalCodesList.toArray(foundPostalCodes);
-			return foundPostalCodes;
+			return data.stream()
+					   .filter(postalCodeRecord -> (postalCodeRecord.getPlz1() == plz || postalCodeRecord.getPlz2() == plz)
+												   && postalCodeRecord.getDistance_km() <= radius)
+					   .map(postalCodeRecord -> {
+						   if (postalCodeRecord.getPlz1() == plz) {
+							   return String.format("%05d", postalCodeRecord.getPlz2());
+						   }
+						   else {
+							   return String.format("%05d", postalCodeRecord.getPlz1());
+						   }
+					   })
+					   .toArray(String[]::new);
 		}
 		catch (Exception error) {
 			log.error("{}", error);
