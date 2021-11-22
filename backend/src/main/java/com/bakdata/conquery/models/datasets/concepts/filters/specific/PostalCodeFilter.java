@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 public class PostalCodeFilter extends SingleColumnFilter<PostalCodeSearchEntity> {
 	static private final PostalCodesManager
 			postalCodesManager =
-			PostalCodesManager.newPostalCodesManagerPreloaded("/com/bakdata/conquery/postalcodes.csv", false);
+			PostalCodesManager.loadFrom("/com/bakdata/conquery/postalcodes.csv", false);
 
 	@Override
 	public void configureFrontend(FEFilter f) {
