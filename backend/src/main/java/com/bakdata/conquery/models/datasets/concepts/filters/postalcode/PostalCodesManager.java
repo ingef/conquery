@@ -30,7 +30,7 @@ public class PostalCodesManager {
 	 * @param csvFilePath Path of file containing the postal codes data as csv
 	 * @return Preloaded  {@link PostalCodesManager}
 	 */
-	static public PostalCodesManager newPostalCodesManagerPreloaded(@NonNull @NotEmpty String csvFilePath, boolean zipped) {
+	static public PostalCodesManager loadFrom(@NonNull @NotEmpty String csvFilePath, boolean zipped) {
 
 		try {
 
