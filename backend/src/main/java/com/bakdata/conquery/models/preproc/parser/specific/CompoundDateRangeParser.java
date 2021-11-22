@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
@@ -8,6 +10,7 @@ import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 
 	@NotNull
+	@NotEmpty
 	final private String startColumn, endColumn;
 
 
@@ -30,6 +34,10 @@ public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 		this.startColumn = startColumn;
 	}
 
+	@ValidationMethod(message = "Start-Column must be different to End-Column")
+	public boolean isStartColumnNotEqualsEndColumn() {
+		return !startColumn.equals(endColumn);
+	}
 
 	@Override
 	public boolean isEmpty() {

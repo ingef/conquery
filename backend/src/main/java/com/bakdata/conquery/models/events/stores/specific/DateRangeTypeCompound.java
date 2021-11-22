@@ -74,15 +74,6 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@JsonIgnore
 	public DateStore getStartStore() {
-		/*
-		Parent has not yet been set by BackReference at this point.
-		However, this process will be done later.
-		This is the case, for example, when the method getLines is called.
-		TODO: We still need to investigate whether this can lead to an error later.
-		 */
-		if (getParent() == null) {
-			return null;
-		}
 		if (startStore == null) {
 			setStartStore((DateStore) getParent().getStore(getStartColumn()));
 		}
@@ -91,15 +82,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 
 	@JsonIgnore
 	public DateStore getEndStore() {
-		/*
-		Parent has not yet been set by BackReference at this point.
-		However, this process will be done later.
-		This is the case, for example, when the method getLines is called.
-		TODO: We still need to investigate whether this can lead to an error later.
-		 */
-		if (getParent() == null) {
-			return null;
-		}
+
 		if (endStore == null) {
 			setEndStore((DateStore) getParent().getStore(getEndColumn()));
 		}

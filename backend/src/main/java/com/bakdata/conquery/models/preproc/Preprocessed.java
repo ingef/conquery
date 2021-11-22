@@ -74,9 +74,9 @@ public class Preprocessed {
 			ColumnDescription columnDescription = input.getColumnDescription(index);
 			columns[index] = new PPColumn(columnDescription.getName(), columnDescription.getType());
 
-			columns[index].setParser(input.getOutput()[index].createParser(config));
+			final Parser parser = input.getOutput()[index].createParser(config);
+			columns[index].setParser(parser);
 
-			final Parser parser = columns[index].getParser();
 			values[index] = parser.createColumnValues();
 		}
 	}

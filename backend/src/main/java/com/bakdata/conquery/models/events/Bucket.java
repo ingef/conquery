@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -81,6 +82,12 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	@NsIdRef
 	private final Import imp;
+
+	@JsonIgnore
+	@ValidationMethod(message = "Number of events does not match to the number of stores")
+	public boolean isNumberOfEventsEqualsNumberOfStores() {
+		return getStores().length == getNumberOfEvents();
+	}
 
 	@JsonIgnore
 	public Table getTable() {
