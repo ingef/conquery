@@ -79,7 +79,7 @@ public class PostalCodesManager {
 								return String.format("%05d", postalCodeRecord.getPlz1());
 							}
 						})
-						.collect(Collectors.toList());
+						.toArray(String[]::new);
 
 			String[] foundPostalCodes = new String[foundPostalCodesList.size()];
 			foundPostalCodesList.toArray(foundPostalCodes);
