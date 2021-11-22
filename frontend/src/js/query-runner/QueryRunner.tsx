@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 import Hotkeys from "react-hot-keys";
 
 import { exists } from "../common/helpers/exists";

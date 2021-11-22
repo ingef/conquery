@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC, ReactElement } from "react";
+import { FC, ReactElement } from "react";
 
 import FaIcon from "../icon/FaIcon";
 
@@ -13,6 +13,13 @@ interface PropsT {
   wide?: boolean;
 }
 
+const SxFaIcon = styled(FaIcon)`
+  transition: ${({ theme }) => theme.transitionTime};
+  &:hover {
+    color: ${({ theme }) => theme.col.black};
+  }
+`;
+
 const SxWithTooltip = styled(WithTooltip)`
   display: inline-block;
   padding: 0 7px;
@@ -21,7 +28,7 @@ const SxWithTooltip = styled(WithTooltip)`
 const InfoTooltip: FC<PropsT> = ({ className, text, html, noIcon, wide }) => {
   return (
     <SxWithTooltip className={className} text={text} html={html} wide={wide}>
-      {!noIcon && <FaIcon regular icon="question-circle" />}
+      {!noIcon && <SxFaIcon gray regular icon="question-circle" />}
     </SxWithTooltip>
   );
 };

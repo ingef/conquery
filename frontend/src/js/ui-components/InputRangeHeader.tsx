@@ -1,9 +1,10 @@
-import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
+
+import Label from "./Label";
 
 interface PropsT {
   className?: string;
@@ -14,14 +15,6 @@ interface PropsT {
   disabled?: boolean;
 }
 
-const Container = styled("p")<{ disabled?: boolean }>`
-  font-size: ${({ theme }) => theme.font.sm};
-  margin: 6px 0 3px;
-  color: ${({ theme, disabled }) => (disabled ? theme.col.gray : "initial")};
-  display: flex;
-  align-items: center;
-`;
-
 const InputRangeHeader: FC<PropsT> = ({
   label,
   indexPrefix,
@@ -31,12 +24,12 @@ const InputRangeHeader: FC<PropsT> = ({
   disabled,
 }) => {
   return (
-    <Container className={className} disabled={disabled}>
+    <Label className={className} disabled={disabled}>
       {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
       {label}
       {unit && ` ( ${unit} )`}
       {tooltip && <InfoTooltip text={tooltip} />}
-    </Container>
+    </Label>
   );
 };
 

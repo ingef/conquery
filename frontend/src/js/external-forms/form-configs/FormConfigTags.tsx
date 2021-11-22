@@ -1,5 +1,5 @@
 import { StateT } from "app-types";
-import React from "react";
+import { FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
 import Tags from "../../tags/Tags";
@@ -16,7 +16,7 @@ interface PropsT {
   tags: string[];
 }
 
-const FormConfigTags: React.FC<PropsT> = ({ tags }) => {
+const FormConfigTags: FC<PropsT> = ({ tags }) => {
   const search = useSelector<StateT, string[]>(
     (state) => state.formConfigsSearch,
   );

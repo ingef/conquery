@@ -1,9 +1,10 @@
 import { StateT } from "app-types";
-import React, { FC } from "react";
+import { FC } from "react";
+import { useFormContext, useFormState } from "react-hook-form";
 import { useSelector } from "react-redux";
-import { isValid, isPristine, getFormValues, FormStateMap } from "redux-form";
 
 import { DatasetIdT } from "../api/types";
+import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import QueryRunner from "../query-runner/QueryRunner";
 import { useStartQuery, useStopQuery } from "../query-runner/actions";
@@ -11,7 +12,6 @@ import { QueryRunnerStateT } from "../query-runner/reducer";
 
 import { Form } from "./config-types";
 import {
-  selectReduxFormState,
   selectFormConfig,
   selectQueryRunner,
   selectRunningQuery,
@@ -19,29 +19,22 @@ import {
 } from "./stateSelectors";
 import transformQueryToApi from "./transformQueryToApi";
 
-const isActiveFormValid = (state: StateT) => {
-  const activeForm = selectActiveFormType(state);
-  const reduxFormState = selectReduxFormState(state);
-
-  if (!activeForm || !reduxFormState) return false;
-
-  return (
-    !isPristine(activeForm, () => reduxFormState)(state) &&
-    isValid(activeForm, () => reduxFormState)(state)
-  );
-};
-
-const selectIsButtonEnabled = (
-  datasetId: DatasetIdT | null,
-  queryRunner: QueryRunnerStateT | null,
-) => (state: StateT) => {
+const isButtonEnabled = ({
+  queryRunner,
+  datasetId,
+  isValid,
+}: {
+  datasetId: DatasetIdT | null;
+  queryRunner: QueryRunnerStateT | null;
+  isValid: boolean;
+}) => {
   if (!queryRunner) return false;
 
   return !!(
     datasetId !== null &&
     !queryRunner.startQuery.loading &&
     !queryRunner.stopQuery.loading &&
-    isActiveFormValid(state)
+    isValid
   );
 };
 
@@ -51,25 +44,21 @@ const FormQueryRunner: FC = () => {
     selectQueryRunner,
   );
   const queryId = useSelector<StateT, string | null>(selectRunningQuery);
-  const isQueryRunning = !!queryId;
-
-  const isButtonEnabled = useSelector<StateT, boolean>(
-    selectIsButtonEnabled(datasetId, queryRunner),
-  );
-
+  const isQueryRunning = exists(queryId);
   const formName = useSelector<StateT, string | null>(selectActiveFormType);
-  const reduxFormState = useSelector<StateT, FormStateMap | null>(
-    selectReduxFormState,
-  );
-  const form = useSelector<StateT, unknown>((state) =>
-    formName && reduxFormState
-      ? getFormValues(formName, () => reduxFormState)(state)
-      : {},
-  );
-
   const formConfig = useSelector<StateT, Form | null>(selectFormConfig);
 
-  const query = { formName, form };
+  const { getValues } = useFormContext();
+  const { isValid } = useFormState();
+
+  const buttonEnabled =
+    exists(formConfig) &&
+    isButtonEnabled({
+      datasetId,
+      queryRunner,
+      isValid,
+    });
+
   const formQueryTransformation = formConfig
     ? transformQueryToApi(formConfig)
     : () => {};
@@ -79,6 +68,9 @@ const FormQueryRunner: FC = () => {
 
   const startQuery = () => {
     if (datasetId) {
+      const form = getValues();
+      const query = { formName, form };
+
       startExternalFormsQuery(datasetId, query, {
         formQueryTransformation,
       });
@@ -97,7 +89,7 @@ const FormQueryRunner: FC = () => {
   return (
     <QueryRunner
       queryRunner={queryRunner}
-      isButtonEnabled={isButtonEnabled}
+      isButtonEnabled={buttonEnabled}
       isQueryRunning={isQueryRunning}
       startQuery={startQuery}
       stopQuery={stopQuery}

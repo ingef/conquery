@@ -1,5 +1,5 @@
 import { StateT } from "app-types";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -16,12 +16,12 @@ const PreviousQueriesFilter: FC<Props> = ({ className }) => {
   const { t } = useTranslation();
   const OPTIONS: { value: PreviousQueriesFilterStateT; label: string }[] = [
     {
-      value: "own",
-      label: t("previousQueriesFilter.own") as string,
-    },
-    {
       value: "all",
       label: t("previousQueriesFilter.all") as string,
+    },
+    {
+      value: "own",
+      label: t("previousQueriesFilter.own") as string,
     },
     {
       value: "shared",

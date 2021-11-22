@@ -9,7 +9,7 @@ export const useCloseOnClickOutside = ({
   isOpen?: boolean;
   toggleMenu: () => void;
 }) => {
-  const clickOutsideRef = useRef<HTMLLabelElement>(null);
+  const clickOutsideRef = useRef<HTMLElement | null>(null);
 
   useClickOutside(
     clickOutsideRef,

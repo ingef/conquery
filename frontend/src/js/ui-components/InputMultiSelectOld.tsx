@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import Mustache from "mustache";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import { components, MenuListComponentProps } from "react-select";
@@ -133,8 +133,9 @@ const InputMultiSelect: FC<InputMultiSelectProps> = (props) => {
       <>
         <Row>
           <InfoText>
-            {!!props.options ? props.options.length : 0}{" "}
-            {t("inputMultiSelect.options")}
+            {t("inputMultiSelect.options", {
+              count: props.options ? props.options.length : 0,
+            })}
           </InfoText>
           <TransparentButton
             tiny

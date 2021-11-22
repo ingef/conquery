@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostFilterResolveResponseT } from "../api/types";
@@ -100,7 +100,7 @@ const UploadFilterListModal: FC<PropsT> = ({
                   <span
                     dangerouslySetInnerHTML={{
                       __html: t("uploadConceptListModal.unknownCodes", {
-                        context: unresolvedItemsCount,
+                        count: unresolvedItemsCount,
                       }),
                     }}
                   />

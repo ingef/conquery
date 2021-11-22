@@ -28,7 +28,7 @@ const MenuActionBar = ({ optionsCount, onInsertAllClick }: Props) => {
   return (
     <Row>
       <InfoText>
-        {optionsCount} {t("inputMultiSelect.options")}
+        {t("inputMultiSelect.options", { count: optionsCount })}
       </InfoText>
       <TransparentButton
         tiny

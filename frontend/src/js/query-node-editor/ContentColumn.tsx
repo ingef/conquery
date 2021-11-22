@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -17,7 +17,7 @@ import {
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import InputCheckbox from "../ui-components/InputCheckbox";
-import InputMultiSelect from "../ui-components/InputMultiSelect";
+import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 import type { ModeT } from "../ui-components/InputRange";
 
 import ContentCell from "./ContentCell";
@@ -128,10 +128,8 @@ const ContentColumn: FC<PropsT> = ({
                 label={t("queryNodeEditor.excludeTimestamps")}
                 tooltip={t("help.excludeTimestamps")}
                 tooltipLazy
-                input={{
-                  value: node.excludeTimestamps,
-                  onChange: () => onToggleTimestamps(),
-                }}
+                value={node.excludeTimestamps}
+                onChange={onToggleTimestamps}
               />
             </Row>
           )}
@@ -141,10 +139,8 @@ const ContentColumn: FC<PropsT> = ({
                 label={t("queryNodeEditor.excludeFromSecondaryIdQuery")}
                 tooltip={t("help.excludeFromSecondaryIdQuery")}
                 tooltipLazy
-                input={{
-                  value: node.excludeFromSecondaryIdQuery,
-                  onChange: () => onToggleSecondaryIdExclude(),
-                }}
+                value={node.excludeFromSecondaryIdQuery}
+                onChange={onToggleSecondaryIdExclude}
               />
             </Row>
           )}
@@ -152,12 +148,10 @@ const ContentColumn: FC<PropsT> = ({
         {nodeIsConceptQueryNode(node) && node.selects && (
           <ContentCell headline={t("queryNodeEditor.commonSelects")}>
             <InputMultiSelect
-              input={{
-                onChange: onSelectSelects,
-                value: node.selects
-                  .filter(({ selected }) => !!selected)
-                  .map(({ id, label }) => ({ value: id, label: label })),
-              }}
+              onChange={onSelectSelects}
+              value={node.selects
+                .filter(({ selected }) => !!selected)
+                .map(({ id, label }) => ({ value: id, label: label }))}
               options={sortSelects(node.selects).map((select) => ({
                 value: select.id,
                 label: select.label,

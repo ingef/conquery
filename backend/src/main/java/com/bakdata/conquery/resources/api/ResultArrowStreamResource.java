@@ -18,7 +18,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.arrow.ResultArrowStreamProcessor;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -49,13 +49,13 @@ public class ResultArrowStreamResource {
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_STREAM)
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response get(
-		@Auth User user,
+		@Auth Subject subject,
 		@PathParam(DATASET) Dataset dataset,
 		@PathParam(QUERY) ManagedExecution<?> execution,
 		@QueryParam("pretty") Optional<Boolean> pretty)
 	{
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by user {} ({}).", execution, dataset, user.getId(), user.getName());
-		return processor.getArrowStreamResult(user, (ManagedExecution<?> & SingleTableResult)execution, dataset, pretty.orElse(false));
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());
+		return processor.getArrowStreamResult(subject, (ManagedExecution<?> & SingleTableResult)execution, dataset, pretty.orElse(false));
 	}
 }

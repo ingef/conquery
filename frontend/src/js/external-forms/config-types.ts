@@ -24,7 +24,7 @@ export interface Form {
   description?: TranslatableString; // Displayed
 }
 
-interface Tabs {
+export interface Tabs {
   name: string; // Sent to backend API
   type: "TABS";
   tabs: Tab[];
@@ -47,17 +47,18 @@ type GREATER_THAN_ZERO_VALIDATION = "GREATER_THAN_ZERO";
 /* ------------------------------ */
 /* FIELDS AND THEIR VALIDATIONS */
 /* ------------------------------ */
-type Field =
+export type Field =
   | CheckboxField
   | StringField
   | NumberField
   | SelectField
   | DatasetSelectField
-  | MultiSelectField
   | ResultGroupField
   | MultiResultGroupField
   | ConceptListField
   | DateRangeField;
+// TODO: At some point, handle multi select as well
+// | MultiSelectField;
 
 interface CommonField {
   name: string; // Sent to backend API
@@ -81,7 +82,7 @@ interface Description {
 
 /* ------------------------------ */
 
-type CheckboxField = CommonField & {
+export type CheckboxField = CommonField & {
   type: "CHECKBOX";
   defaultValue?: boolean; // Default: False
 };
@@ -137,12 +138,13 @@ type DatasetSelectField = CommonField & {
 
 /* ------------------------------ */
 
-type MultiSelectField = CommonField & {
-  type: "MULTI_SELECT";
-  options: SelectOption[];
-  defaultOption?: SelectValue;
-  validations?: SelectFieldValidation[];
-};
+// TODO: At some point, handle multi select as well
+// type MultiSelectField = CommonField & {
+//   type: "MULTI_SELECT";
+//   options: SelectOption[];
+//   defaultValue?: SelectValue[];
+//   validations?: SelectFieldValidation[];
+// };
 
 /* ------------------------------ */
 
@@ -181,7 +183,7 @@ export interface ConceptListDefaults {
   connectors?: ConnectorDefault[];
 }
 type ConceptListFieldValidation = NOT_EMPTY_VALIDATION;
-type ConceptListField = CommonField & {
+export type ConceptListField = CommonField & {
   type: "CONCEPT_LIST";
   conceptDropzoneLabel?: TranslatableString;
   conceptColumnDropzoneLabel?: TranslatableString;

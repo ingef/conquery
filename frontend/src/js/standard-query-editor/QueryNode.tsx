@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { useRef, FC } from "react";
+import { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -16,7 +16,6 @@ import QueryNodeActions from "./QueryNodeActions";
 import { getRootNodeLabel } from "./helper";
 import {
   StandardQueryNodeT,
-  DragItemQuery,
   PreviousQueryQueryNodeType,
   DragItemNode,
 } from "./types";

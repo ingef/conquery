@@ -22,7 +22,7 @@ import javax.ws.rs.core.Response.Status;
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
@@ -43,31 +43,31 @@ public class FormConfigResource {
 	private FormConfigProcessor processor;
 
 	@POST
-	public Response postConfig(@Auth User user, @Valid FormConfigAPI config) {
-		return Response.ok(new PostResponse(processor.addConfig(user, dataset, config).getId())).status(Status.CREATED).build();
+	public Response postConfig(@Auth Subject subject, @Valid FormConfigAPI config) {
+		return Response.ok(new PostResponse(processor.addConfig(subject, dataset, config).getId())).status(Status.CREATED).build();
 	}
 	
 	@GET
-	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth User user, @QueryParam("formType") Set<String> formType) {
-		return processor.getConfigsByFormType(user, dataset, formType);
+	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth Subject subject, @QueryParam("formType") Set<String> formType) {
+		return processor.getConfigsByFormType(subject, dataset, formType);
 	}
 
 	@GET
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation getConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfig form) {
-		return processor.getConfig(user, form);
+	public FormConfigFullRepresentation getConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfig form) {
+		return processor.getConfig(subject, form);
 	}
 	
 	@PATCH
 	@Path("{" + FORM_CONFIG + "}")
-	public FormConfigFullRepresentation patchConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfig form, FormConfigPatch patch ) {
-		return processor.patchConfig(user, form, patch);
+	public FormConfigFullRepresentation patchConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfig form, FormConfigPatch patch ) {
+		return processor.patchConfig(subject, form, patch);
 	}
 	
 	@DELETE
 	@Path("{" + FORM_CONFIG + "}")
-	public Response deleteConfig(@Auth User user, @PathParam(FORM_CONFIG) FormConfig form) {
-		processor.deleteConfig(user, form);
+	public Response deleteConfig(@Auth Subject subject, @PathParam(FORM_CONFIG) FormConfig form) {
+		processor.deleteConfig(subject, form);
 		return Response.ok().build();
 	}
 	

@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
 import { parseISO } from "date-fns";
-import React, { useState, useRef } from "react";
+import { useState, useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
@@ -37,9 +37,9 @@ const Root = styled("div")<{ own: boolean; system: boolean; shared: boolean }>`
 
   border-left: ${({ theme, own, system }) =>
     own
-      ? `4px solid ${theme.col.orange}`
+      ? `5px solid ${theme.col.blueGrayDark}`
       : system
-      ? `4px solid ${theme.col.blueGrayDark}`
+      ? `5px solid ${theme.col.grayLight}`
       : `1px solid ${theme.col.grayLight}`};
 
   &:hover {
@@ -112,7 +112,7 @@ interface PropsT {
   onIndicateShare: () => void;
 }
 
-const FormConfig: React.FC<PropsT> = ({
+const FormConfig: FC<PropsT> = ({
   config,
   onIndicateDeletion,
   onIndicateShare,

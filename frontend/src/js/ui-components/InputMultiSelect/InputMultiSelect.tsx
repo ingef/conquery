@@ -16,11 +16,11 @@ import {
   Menu,
   ResetButton,
   SelectContainer,
-  SxLabeled,
+  SxSelectListOption,
   VerticalSeparator,
 } from "../InputSelect/InputSelectComponents";
+import Labeled from "../Labeled";
 import EmptyPlaceholder from "../SelectEmptyPlaceholder";
-import SelectListOption from "../SelectListOption";
 import TooManyValues from "../TooManyValues";
 
 import LoadMoreSentinel from "./LoadMoreSentinel";
@@ -39,6 +39,7 @@ const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
 
 interface Props {
   label?: string;
+  className?: string;
   disabled?: boolean;
   options: SelectOptionT[];
   tooltip?: string;
@@ -46,14 +47,17 @@ interface Props {
   creatable?: boolean;
   value: SelectOptionT[];
   defaultValue?: SelectOptionT[];
+  placeholder?: string;
+  autoFocus?: boolean;
   onChange: (value: SelectOptionT[]) => void;
   loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
   onLoadMore?: (inputValue: string) => void;
 }
 
-const InputMultiSelectTwo = ({
+const InputMultiSelect = ({
   options,
+  className,
   label,
   tooltip,
   indexPrefix,
@@ -61,6 +65,8 @@ const InputMultiSelectTwo = ({
   disabled,
   value,
   defaultValue,
+  placeholder,
+  autoFocus,
   onChange,
   loading,
   onResolve,
@@ -84,7 +90,7 @@ const InputMultiSelectTwo = ({
     setSelectedItems,
     activeIndex,
   } = useMultipleSelection<SelectOptionT>({
-    initialSelectedItems: defaultValue,
+    initialSelectedItems: defaultValue || [],
     onSelectedItemsChange: (changes) => {
       if (changes.selectedItems) {
         onChange(changes.selectedItems);
@@ -187,7 +193,7 @@ const InputMultiSelectTwo = ({
   });
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
-  const inputProps = getInputProps(getDropdownProps());
+  const inputProps = getInputProps(getDropdownProps({ autoFocus }));
   const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
   const labelProps = getLabelProps({});
 
@@ -200,7 +206,13 @@ const InputMultiSelectTwo = ({
   });
 
   const Select = (
-    <SelectContainer>
+    <SelectContainer
+      ref={(instance) => {
+        if (!label) {
+          clickOutsideRef.current = instance;
+        }
+      }}
+    >
       <Control
         {...comboboxProps}
         disabled={disabled}
@@ -234,6 +246,8 @@ const InputMultiSelectTwo = ({
             placeholder={
               selectedItems.length > 0
                 ? null
+                : placeholder
+                ? placeholder
                 : onResolve
                 ? t("inputMultiSelect.dndPlaceholder")
                 : t("inputSelect.placeholder")
@@ -292,7 +306,7 @@ const InputMultiSelectTwo = ({
               });
 
               return (
-                <SelectListOption
+                <SxSelectListOption
                   key={`${option.value}`}
                   active={highlightedIndex === index}
                   disabled={option.disabled}
@@ -300,7 +314,7 @@ const InputMultiSelectTwo = ({
                   ref={itemPropsRef}
                 >
                   {option.label}
-                </SelectListOption>
+                </SxSelectListOption>
               );
             })}
             <LoadMoreSentinel
@@ -320,9 +334,24 @@ const InputMultiSelectTwo = ({
 
   const hasTooManyValues = selectedItems.length > MAX_VALUES_LIMIT;
 
-  return (
-    <SxLabeled
+  const children = (
+    <>
+      {hasTooManyValues && value.length > 0 && (
+        <TooManyValues count={value.length} onClear={() => onChange([])} />
+      )}
+      {!hasTooManyValues && !onResolve && Select}
+      {!hasTooManyValues && !!onResolve && onDropFile && (
+        <SxInputMultiSelectDropzone disabled={disabled} onDropFile={onDropFile}>
+          {() => Select}
+        </SxInputMultiSelectDropzone>
+      )}
+    </>
+  );
+
+  return label ? (
+    <Labeled
       {...labelProps}
+      className={className}
       ref={clickOutsideRef}
       htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
       label={
@@ -333,17 +362,11 @@ const InputMultiSelectTwo = ({
       }
       indexPrefix={indexPrefix}
     >
-      {hasTooManyValues && value.length > 0 && (
-        <TooManyValues count={value.length} onClear={() => onChange([])} />
-      )}
-      {!hasTooManyValues && !onResolve && Select}
-      {!hasTooManyValues && !!onResolve && onDropFile && (
-        <SxInputMultiSelectDropzone disabled={disabled} onDropFile={onDropFile}>
-          {() => Select}
-        </SxInputMultiSelectDropzone>
-      )}
-    </SxLabeled>
+      {children}
+    </Labeled>
+  ) : (
+    children
   );
 };
 
-export default InputMultiSelectTwo;
+export default InputMultiSelect;

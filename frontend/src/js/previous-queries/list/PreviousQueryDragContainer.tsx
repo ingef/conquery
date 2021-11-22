@@ -1,4 +1,4 @@
-import React, { FC, useRef } from "react";
+import { FC, useRef } from "react";
 import { useDrag } from "react-dnd";
 
 import { DatasetIdT } from "../../api/types";

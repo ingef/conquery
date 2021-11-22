@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -94,21 +93,24 @@ public class ArrayConceptQuery extends Query {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
-		List<ResultInfo> infos = collector.getInfos();
-		int lastIndex = Math.max(0,infos.size()-1);
-		childQueries.forEach(q -> q.collectResultInfos(collector));
+	public List<ResultInfo> getResultInfos() {
+		final List<ResultInfo> resultInfos = new ArrayList<>();
 		ResultInfo dateInfo = ConqueryConstants.DATES_INFO;
-		
-		if(!infos.isEmpty()) {
-			// Remove DateInfo from each childQuery			
-			infos.subList(lastIndex, infos.size()).removeAll(List.of(dateInfo));
-		}
 
 		if(!DateAggregationMode.NONE.equals(getResolvedDateAggregationMode())){
 			// Add one DateInfo for the whole Query
-			collector.getInfos().add(0, dateInfo);
+			resultInfos.add(0, dateInfo);
 		}
+		int lastIndex = resultInfos.size();
+
+		childQueries.forEach(q -> resultInfos.addAll(q.getResultInfos()));
+
+		if(!resultInfos.isEmpty()) {
+			// Remove DateInfo from each childQuery			
+			resultInfos.subList(lastIndex, resultInfos.size()).removeAll(List.of(dateInfo));
+		}
+
+		return resultInfos;
 	}
 
 	@Override

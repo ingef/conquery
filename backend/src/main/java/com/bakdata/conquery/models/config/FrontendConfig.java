@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -17,13 +16,16 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.FullIdPrinter;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
+import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.VersionInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -85,11 +87,16 @@ public class FrontendConfig {
 
 		/**
 		 * Localized header for output CSV.
+		 * @return
 		 */
-		public List<String> getPrintIdFields(Locale locale) {
+		@JsonIgnore
+		public List<ResultInfo> getIdResultInfos() {
 			return ids.stream()
 					  .filter(ColumnConfig::isPrint)
-					  .map(col -> col.getLabel().getOrDefault(locale.getLanguage(), col.getField()))
+					  .map(col -> new LocalizedDefaultResultInfo(
+					  		locale -> col.getLabel().getOrDefault(locale.getLanguage(),col.getField()),
+							locale -> col.getField(),
+							ResultType.IdT.getINSTANCE()))
 					  .collect(Collectors.toUnmodifiableList());
 		}
 
@@ -175,7 +182,7 @@ public class FrontendConfig {
 		/**
 		 * Try to create a {@link FullIdPrinter} for user if they are allowed. If not allowed to read ids, they will receive a pseudomized result instead.
 		 */
-		public IdPrinter getIdPrinter(User owner, ManagedExecution<?> execution, Namespace namespace) {
+		public IdPrinter getIdPrinter(Subject owner, ManagedExecution<?> execution, Namespace namespace) {
 			final int size = (int) ids.stream().filter(ColumnConfig::isPrint).count();
 
 			final int pos = IntStream.range(0, getIds().size())

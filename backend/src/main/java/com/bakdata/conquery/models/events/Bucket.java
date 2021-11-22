@@ -105,11 +105,11 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	public Iterable<BucketEntry> entries() {
 		return () -> entities()
-				.stream()
-				.flatMap(entity -> IntStream.range(getEntityStart(entity), getEntityEnd(entity))
-											.mapToObj(e -> new BucketEntry(entity, e))
-				)
-				.iterator();
+						  .stream()
+						  .flatMap(entity -> IntStream.range(getEntityStart(entity), getEntityEnd(entity))
+													  .mapToObj(e -> new BucketEntry(entity, e))
+						  )
+						  .iterator();
 	}
 
 	public int getEntityStart(int entityId) {

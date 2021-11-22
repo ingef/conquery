@@ -11,6 +11,8 @@ const Container = styled("div")<Props>`
   padding: 3px 8px;
   cursor: pointer;
   color: ${({ theme }) => theme.col.black};
+  font-size: ${({ theme }) => theme.font.md};
+  font-weight: 300;
 
   transition: background-color ${({ theme }) => theme.transitionTime};
 

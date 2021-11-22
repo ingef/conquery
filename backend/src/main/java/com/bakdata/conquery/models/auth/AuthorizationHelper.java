@@ -15,6 +15,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -37,12 +38,12 @@ import lombok.extern.slf4j.Slf4j;
 @UtilityClass
 public class AuthorizationHelper {
 
-	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MetaStorage storage){
+	public static List<Group> getGroupsOf(@NonNull Subject subject, @NonNull MetaStorage storage){
 
 		List<Group> userGroups = new ArrayList<>();
 
 		for (Group group : storage.getAllGroups()) {
-			if(group.containsMember(user)) {
+			if(group.containsMember(subject.getUser())) {
 				userGroups.add(group);
 			}
 		}
@@ -50,15 +51,15 @@ public class AuthorizationHelper {
 	}
 
 	/**
-	 * Find the primary group of the user. All users must have a primary group.
-	 * @implNote Currently this is the first group of a user and should also be the only group.
+	 * Find the primary group of the subject. All users must have a primary group.
+	 * @implNote Currently this is the first group of a subject and should also be the only group.
 	 */
-	public static Optional<Group> getPrimaryGroup(@NonNull User user, @NonNull MetaStorage storage) {
-		List<Group> groups = getGroupsOf(user, storage);
+	public static Optional<Group> getPrimaryGroup(@NonNull Subject subject, @NonNull MetaStorage storage) {
+		List<Group> groups = getGroupsOf(subject, storage);
 		if(groups.isEmpty()) {
 			return Optional.empty();
 		}
-		// TODO: 17.02.2020 implement primary flag for user etc.
+		// TODO: 17.02.2020 implement primary flag for group
 		return Optional.of(groups.get(0));
 	}
 
@@ -93,7 +94,7 @@ public class AuthorizationHelper {
 	 * Checks if an execution is allowed to be downloaded by a user.
 	 * This checks all used {@link DatasetId}s for the {@link Ability#DOWNLOAD} on the user.
 	 */
-	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull Visitable visitable) {
+	public static void authorizeDownloadDatasets(@NonNull Subject subject, @NonNull Visitable visitable) {
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		visitable.visit(collector);
 
@@ -103,45 +104,28 @@ public class AuthorizationHelper {
 					.map(NamespacedIdentifiable::getDataset)
 					.collect(Collectors.toSet());
 
-		user.authorize(datasets, Ability.DOWNLOAD);
-	}
-
-	/**
-	 * Checks if a {@link Visitable} has only references to {@link Dataset}s a user is allowed to read.
-	 * This checks all used {@link DatasetId}s for the {@link Ability#READ} on the user.
-	 */
-	public static void authorizeReadDatasets(@NonNull User user, @NonNull Visitable visitable) {
-		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
-		visitable.visit(collector);
-
-		Set<Dataset> datasets =
-				collector.getIdentifiables()
-						 .stream()
-						 .map(NamespacedIdentifiable::getDataset)
-						 .collect(Collectors.toSet());
-
-		user.authorize(datasets, Ability.READ);
+		subject.authorize(datasets, Ability.DOWNLOAD);
 	}
 
 
 	/**
-	 * Calculates the abilities on all datasets a user has based on its permissions.
+	 * Calculates the abilities on all datasets a subject has based on its permissions.
 	 */
-	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(User user, DatasetRegistry datasetRegistry) {
+	public static Map<DatasetId, Set<Ability>> buildDatasetAbilityMap(Subject subject, DatasetRegistry datasetRegistry) {
 		HashMap<DatasetId, Set<Ability>> datasetAbilities = new HashMap<>();
 		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
 
 			Set<Ability> abilities = datasetAbilities.computeIfAbsent(dataset.getId(), (k) -> new HashSet<>());
 
-			if(user.isPermitted(dataset,Ability.READ)) {
+			if(subject.isPermitted(dataset,Ability.READ)) {
 				abilities.add(Ability.READ);
 			}
 
-			if (user.isPermitted(dataset,Ability.DOWNLOAD)){
+			if (subject.isPermitted(dataset,Ability.DOWNLOAD)){
 				abilities.add(Ability.DOWNLOAD);
 			}
 
-			if (user.isPermitted(dataset,Ability.PRESERVE_ID)) {
+			if (subject.isPermitted(dataset,Ability.PRESERVE_ID)) {
 				abilities.add(Ability.PRESERVE_ID);
 			}
 		}

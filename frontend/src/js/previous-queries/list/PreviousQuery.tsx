@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
 import { parseISO } from "date-fns";
-import React, { useState } from "react";
+import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -31,9 +31,9 @@ const Root = styled("div")<{ own?: boolean; system?: boolean }>`
 
   border-left: ${({ theme, own, system }) =>
     own
-      ? `4px solid ${theme.col.orange}`
+      ? `5px solid ${theme.col.blueGrayDark}`
       : system
-      ? `4px solid ${theme.col.blueGrayDark}`
+      ? `5px solid ${theme.col.grayLight}`
       : `1px solid ${theme.col.grayLight}`};
 
   &:hover {
@@ -115,7 +115,7 @@ interface PropsT {
   onIndicateEditFolders: () => void;
 }
 
-const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
+const PreviousQuery = forwardRef<HTMLDivElement, PropsT>(
   function PreviousQueryComponent(
     {
       query,
@@ -202,7 +202,8 @@ const PreviousQuery = React.forwardRef<HTMLDivElement, PropsT>(
                 text={isShared ? t("common.shared") : t("common.share")}
               >
                 <IconButton
-                  icon={isShared ? "user-friends" : "upload"}
+                  icon="user-friends"
+                  active={isShared}
                   bare
                   onClick={onIndicateShare}
                 />

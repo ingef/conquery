@@ -1,10 +1,10 @@
-import React, { FC } from "react";
+import { FC } from "react";
 
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 import SmallTabNavigationButton from "./SmallTabNavigationButton";
 
-export interface TabOption {
+interface TabOption {
   label: string;
   value: string;
   tooltip?: string;

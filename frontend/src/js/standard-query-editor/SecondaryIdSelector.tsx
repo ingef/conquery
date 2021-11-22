@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC, useEffect } from "react";
+import { FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -100,10 +100,8 @@ const SecondaryIdSelector: FC = () => {
         {t("queryEditor.secondaryId")}
       </Headline>
       <ToggleButton
-        input={{
-          value: selectedSecondaryId || "standard",
-          onChange: onSetSelectedSecondaryId,
-        }}
+        value={selectedSecondaryId || "standard"}
+        onChange={onSetSelectedSecondaryId}
         options={options}
       />
     </div>

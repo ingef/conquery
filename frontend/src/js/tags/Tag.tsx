@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 
 const Root = styled("p")<{ isClickable?: boolean; isSelected?: boolean }>`
   display: inline-block;

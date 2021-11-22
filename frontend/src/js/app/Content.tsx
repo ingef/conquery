@@ -1,7 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React from "react";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 

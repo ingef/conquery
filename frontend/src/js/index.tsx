@@ -1,6 +1,5 @@
 import { ThemeProvider, Theme } from "@emotion/react";
 import { StateT } from "app-types";
-import React from "react";
 import ReactDOM from "react-dom";
 import { Store } from "redux";
 

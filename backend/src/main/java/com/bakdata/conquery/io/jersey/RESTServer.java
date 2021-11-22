@@ -7,7 +7,7 @@ import com.bakdata.conquery.io.jetty.CachingFilter;
 import com.bakdata.conquery.io.jetty.ConqueryErrorExecptionMapper;
 import com.bakdata.conquery.io.jetty.ConqueryJsonExceptionMapper;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.auth.web.AuthorizationExceptionMapper;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -23,7 +23,7 @@ public class RESTServer {
 
 	public static void configure(ConqueryConfig config, ResourceConfig jersey) {
 		// Bind User class to REST authentication
-		jersey.register(new AuthValueFactoryProvider.Binder<>(User.class));
+		jersey.register(new AuthValueFactoryProvider.Binder<>(Subject.class));
 		//change exception mapper behavior because of JERSEY-2437
 		//https://github.com/eclipse-ee4j/jersey/issues/2709
 		((DefaultServerFactory) config.getServerFactory()).setRegisterDefaultExceptionMappers(false);

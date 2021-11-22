@@ -1,5 +1,5 @@
 import { StateT } from "app-types";
-import React, { FC } from "react";
+import { FC } from "react";
 import { Provider } from "react-redux";
 import { Store } from "redux";
 

@@ -1,12 +1,8 @@
 import styled from "@emotion/styled";
-import React from "react";
-import type { WrappedFieldProps } from "redux-form";
 
 import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
-
-import Optional from "./Optional";
 
 const Row = styled("div")`
   display: flex;
@@ -53,24 +49,31 @@ const Checkmark = styled("div")`
   }
 `;
 
-interface PropsType extends WrappedFieldProps {
+interface PropsType {
   label: string;
   className?: string;
   tooltip?: string;
   tooltipLazy?: boolean;
   infoTooltip?: string;
+  value?: boolean;
+  onChange: (checked: boolean) => void;
 }
 
-const InputCheckbox = (props: PropsType) => (
-  <Row
-    className={props.className}
-    onClick={() => props.input.onChange(!props.input.value)}
-  >
-    <WithTooltip text={props.tooltip} lazy={props.tooltipLazy}>
-      <Container>{!!props.input.value && <Checkmark />}</Container>
+const InputCheckbox = ({
+  label,
+  className,
+  tooltip,
+  tooltipLazy,
+  infoTooltip,
+  value,
+  onChange,
+}: PropsType) => (
+  <Row className={className} onClick={() => onChange(!value)}>
+    <WithTooltip text={tooltip} lazy={tooltipLazy}>
+      <Container>{!!value && <Checkmark />}</Container>
     </WithTooltip>
-    <Label>{props.label}</Label>
-    {exists(props.infoTooltip) && <InfoTooltip text={props.infoTooltip} />}
+    <Label>{label}</Label>
+    {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}
   </Row>
 );
 

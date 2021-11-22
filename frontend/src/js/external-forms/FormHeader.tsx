@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import React from "react";
 
 const Root = styled("div")`
   display: flex;
@@ -12,8 +11,6 @@ const Root = styled("div")`
 const Description = styled("p")`
   margin: 0;
   font-size: ${({ theme }) => theme.font.md};
-  border-left: 4px solid ${({ theme }) => theme.col.blueGrayDark};
-  padding-left: 10px;
 `;
 
 interface Props {

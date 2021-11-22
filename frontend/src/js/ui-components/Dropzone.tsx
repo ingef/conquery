@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React from "react";
+import { ReactNode } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 
 import type { DragItemFormConceptNode } from "../external-forms/form-concept-group/FormConceptNode";
@@ -25,7 +25,7 @@ const Root = styled("div")<{
       ? `3px solid ${theme.col.red}`
       : isOver
       ? `3px solid ${theme.col.black}`
-      : `3px dashed ${theme.col.gray}`};
+      : `3px dashed ${theme.col.grayMediumLight}`};
   border-radius: ${({ theme }) => theme.borderRadius};
   padding: ${({ naked }) => (naked ? "0" : "10px")};
   display: flex;
@@ -59,7 +59,7 @@ export interface DropzoneProps<DroppableObject> {
   onDrop: (props: DroppableObject, monitor: DropTargetMonitor) => void;
   canDrop?: (props: DroppableObject, monitor: DropTargetMonitor) => boolean;
   onClick?: () => void;
-  children?: (args: ChildArgs) => React.ReactNode;
+  children?: (args: ChildArgs) => ReactNode;
 }
 
 export type PossibleDroppableObject =

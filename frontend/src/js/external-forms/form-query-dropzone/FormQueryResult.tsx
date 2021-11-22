@@ -1,11 +1,10 @@
 import styled from "@emotion/styled";
-import React, { FC } from "react";
 
 import IconButton from "../../button/IconButton";
-import type { PreviousQueryT } from "../../previous-queries/list/reducer";
+import type { DragItemQuery } from "../../standard-query-editor/types";
 
 interface PropsT {
-  queryResult?: PreviousQueryT;
+  queryResult?: DragItemQuery;
   className?: string;
   onDelete?: () => void;
 }
@@ -19,7 +18,7 @@ const Root = styled("div")`
   color: ${({ theme }) => theme.col.black};
 `;
 
-const FormQueryResult: FC<PropsT> = ({ queryResult, className, onDelete }) => {
+const FormQueryResult = ({ queryResult, className, onDelete }: PropsT) => {
   if (!queryResult) return null;
 
   return (

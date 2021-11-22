@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -66,13 +65,11 @@ public class ExcelResultRenderTest {
 		List<EntityResult> results = getTestEntityResults();
 
 		ManagedQuery mquery = new ManagedQuery(null, null, null) {
-			public List<ResultInfo> getResultInfo() {
-				ResultInfoCollector coll = new ResultInfoCollector();
-				coll.addAll(getResultTypes().stream()
+			public List<ResultInfo> getResultInfos() {
+				return getResultTypes().stream()
 						.map(ResultTestUtil.TypedSelectDummy::new)
 						.map(select -> new SelectResultInfo(select, new CQConcept()))
-						.collect(Collectors.toList()));
-				return coll.getInfos();
+						.collect(Collectors.toList());
 			}
 
 			@Override
@@ -87,7 +84,7 @@ public class ExcelResultRenderTest {
 		ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(),printSettings);
 
 		renderer.renderToStream(
-				printIdFields,
+				ResultTestUtil.ID_FIELDS,
 				mquery,
 				output);
 
@@ -97,7 +94,7 @@ public class ExcelResultRenderTest {
 		List<String> computed = readComputed(inputStream, printSettings);
 
 
-		List<String> expected = generateExpectedTSV(results, mquery.getResultInfo(), printSettings);
+		List<String> expected = generateExpectedTSV(results, mquery.getResultInfos(), printSettings);
 
 		log.info("Wrote and than read this excel data: {}", computed);
 

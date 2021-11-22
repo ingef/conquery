@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import React, { ReactNode } from "react";
+import { forwardRef, ReactNode } from "react";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import { exists } from "../common/helpers/exists";
@@ -33,7 +33,7 @@ interface Props {
   htmlFor?: string;
 }
 
-const Labeled = React.forwardRef<HTMLLabelElement, Props>(
+const Labeled = forwardRef<HTMLLabelElement, Props>(
   (
     {
       indexPrefix,

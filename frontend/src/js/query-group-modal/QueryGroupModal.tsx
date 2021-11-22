@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC, Fragment } from "react";
+import { FC, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -111,12 +111,10 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
             )}
           </>
         }
-        input={{
-          onChange: onSetDate,
-          value: {
-            min: minDate,
-            max: maxDate,
-          },
+        onChange={onSetDate}
+        value={{
+          min: minDate,
+          max: maxDate,
         }}
       />
     </Modal>

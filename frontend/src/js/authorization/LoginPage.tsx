@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { useState } from "react";
+import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 
@@ -7,9 +7,9 @@ import { usePostLogin } from "../api/api";
 import PrimaryButton from "../button/PrimaryButton";
 import ErrorMessage from "../error-message/ErrorMessage";
 import FaIcon from "../icon/FaIcon";
-import InputPlain from "../ui-components/InputPlain";
+import InputPlain from "../ui-components/InputPlain/InputPlain";
 
-import { storeAuthToken } from "./helper";
+import { AuthTokenContext } from "./AuthTokenProvider";
 
 const Root = styled("div")`
   display: flex;
@@ -54,7 +54,7 @@ const Form = styled("form")`
 `;
 
 const SxInputPlain = styled(InputPlain)`
-  padding: 10px 0;
+  padding: 5px 0;
 `;
 
 const SxPrimaryButton = styled(PrimaryButton)`
@@ -81,6 +81,7 @@ const LoginPage = () => {
   const history = useHistory();
   const postLogin = usePostLogin();
   const { t } = useTranslation();
+  const { setAuthToken } = useContext(AuthTokenContext);
 
   async function onSubmit(e: any) {
     e.preventDefault();
@@ -91,7 +92,7 @@ const LoginPage = () => {
       const result = await postLogin(user, password);
 
       if (result.access_token) {
-        storeAuthToken(result.access_token);
+        setAuthToken(result.access_token);
         history.push("/");
 
         return;
@@ -113,10 +114,8 @@ const LoginPage = () => {
           <SxInputPlain
             label={t("login.username")}
             large
-            input={{
-              value: user,
-              onChange: setUser,
-            }}
+            value={user}
+            onChange={(value) => setUser(value as string)}
             inputProps={{
               disabled: loading,
             }}
@@ -125,10 +124,8 @@ const LoginPage = () => {
             inputType="password"
             label={t("login.password")}
             large
-            input={{
-              value: password,
-              onChange: setPassword,
-            }}
+            value={password}
+            onChange={(value) => setPassword(value as string)}
             inputProps={{
               disabled: loading,
             }}

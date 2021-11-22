@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -15,7 +16,7 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.Setter;
@@ -60,8 +61,8 @@ public class CQNegation extends CQElement {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
-		child.collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		return child.getResultInfos();
 	}
 	
 	@Override

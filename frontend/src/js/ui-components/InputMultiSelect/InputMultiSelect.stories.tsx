@@ -1,24 +1,24 @@
 import { ComponentMeta, Story } from "@storybook/react";
-import React, { ComponentProps, useState } from "react";
+import { ComponentProps, useState } from "react";
 
 import wordslist from "../../../fixtures/words.json";
 import { SelectOptionT } from "../../api/types";
 
-import InputMultiSelectTwo from "./InputMultiSelectTwo";
+import InputMultiSelect from "./InputMultiSelect";
 
 const wl = wordslist.slice(0, 100);
 let offset = 100;
 
 export default {
-  title: "FormComponents/InputMultiSelectTwo",
-  component: InputMultiSelectTwo,
+  title: "FormComponents/InputMultiSelect",
+  component: InputMultiSelect,
   argTypes: {
     backgroundColor: { control: "#fafafa" },
   },
-} as ComponentMeta<typeof InputMultiSelectTwo>;
+} as ComponentMeta<typeof InputMultiSelect>;
 
 const Template: Story<
-  ComponentProps<typeof InputMultiSelectTwo> & { passOnResolve?: boolean }
+  ComponentProps<typeof InputMultiSelect> & { passOnResolve?: boolean }
 > = ({ passOnResolve, ...args }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [options, setOptions] = useState<SelectOptionT[]>(
@@ -26,8 +26,8 @@ const Template: Story<
   );
   const [value, setValue] = useState<SelectOptionT[] | null>([
     {
-      label: "lol",
-      value: "yes",
+      label: "Option 1",
+      value: "option1",
     },
   ]);
   const onLoad = (str: string) => {
@@ -57,11 +57,10 @@ const Template: Story<
   };
 
   return (
-    <InputMultiSelectTwo
+    <InputMultiSelect
       {...args}
       options={options}
       value={value || []}
-      defaultValue={[]}
       onChange={(v) => setValue(v)}
       loading={loading}
       onResolve={passOnResolve ? onResolve : undefined}

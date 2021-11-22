@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC, useRef } from "react";
+import { FC, useRef, ReactNode } from "react";
 import { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
@@ -38,7 +38,7 @@ const SxSelectFileButton = styled(SelectFileButton)`
 `;
 
 interface PropsT<DroppableObject> {
-  children: (args: ChildArgs) => React.ReactNode;
+  children: (args: ChildArgs) => ReactNode;
   onSelectFile: (file: File) => void;
   onDrop: (
     item: DroppableObject | DragItemFile,

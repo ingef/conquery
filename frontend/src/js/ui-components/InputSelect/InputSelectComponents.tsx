@@ -2,7 +2,7 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
-import Labeled from "../Labeled";
+import SelectListOption from "../SelectListOption";
 
 export const Control = styled("div")<{ disabled?: boolean }>`
   border: 1px solid ${({ theme }) => theme.col.gray};
@@ -43,11 +43,15 @@ export const Menu = styled("div")`
   box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 10%), 0 4px 11px hsl(0deg 0% 0% / 10%);
   background-color: ${({ theme }) => theme.col.bg};
   z-index: 2;
+  margin-top: 3px;
 `;
 
-export const List = styled("div")`
+export const List = styled("div")<{ small?: boolean }>`
   padding: 3px;
-  max-height: 300px;
+  max-height: ${({ small }) =>
+    small
+      ? "140px"
+      : "300px"}; /* remove this once we use usePopper / portals for this */
   overflow-y: auto;
   --webkit-overflow-scrolling: touch;
 `;
@@ -69,12 +73,8 @@ export const Input = styled("input")`
     `}
 `;
 
-export const SxLabeled = styled(Labeled)`
-  padding: 2px;
-`;
-
 export const DropdownToggleButton = styled(IconButton)`
-  padding: 2px 6px;
+  padding: 2px 4px 2px 6px;
 `;
 
 export const ResetButton = styled(IconButton)`
@@ -87,4 +87,8 @@ export const VerticalSeparator = styled("div")`
   background-color: ${({ theme }) => theme.col.grayLight};
   align-self: stretch;
   flex-shrink: 0;
+`;
+
+export const SxSelectListOption = styled(SelectListOption)`
+  margin-bottom: 2px;
 `;

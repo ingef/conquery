@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import format from "date-fns/format";
 import { saveAs } from "file-saver";
-import React, { useState, useEffect, FC } from "react";
+import { useState, useEffect, FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
@@ -13,8 +13,7 @@ import FaIcon from "../../icon/FaIcon";
 import { useActiveLang } from "../../localization/useActiveLang";
 import ScrollableList from "../../scrollable-list/ScrollableList";
 import WithTooltip from "../../tooltip/WithTooltip";
-import InputSelect from "../../ui-components/InputSelect";
-import ReactSelect from "../../ui-components/ReactSelect";
+import InputSelect from "../../ui-components/InputSelect/InputSelect";
 
 const Row = styled("div")`
   display: flex;
@@ -282,12 +281,13 @@ const CSVColumnPicker: FC<PropsT> = ({
         {csv.length > 0 && (
           <SxInputSelect
             label={t("csvColumnPicker.delimiter")}
-            input={{
-              onChange: (val) => {
-                if (val) setDelimiter(val);
-              },
-              value: delimiter,
+            onChange={(val) => {
+              if (val) setDelimiter(val.value as string);
             }}
+            value={
+              DELIMITER_OPTIONS.find((option) => option.value === delimiter) ||
+              null
+            }
             options={DELIMITER_OPTIONS}
           />
         )}
@@ -305,9 +305,8 @@ const CSVColumnPicker: FC<PropsT> = ({
                 <tr key={j}>
                   {row.map((cell, i) => (
                     <Th key={cell + i}>
-                      <ReactSelect<false>
-                        small
-                        maxMenuHeight={200}
+                      <InputSelect
+                        smallMenu
                         options={SELECT_OPTIONS}
                         value={
                           SELECT_OPTIONS.find(

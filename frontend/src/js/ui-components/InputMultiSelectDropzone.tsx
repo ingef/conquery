@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC, ReactNode, useRef } from "react";
+import { FC, ReactNode, useRef } from "react";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 
@@ -50,10 +50,10 @@ const InputMultiSelectDropzone: FC<PropsT> = ({
 
   return (
     <Root className={className}>
-      <SxDropzone<DragItemFile>
+      <SxDropzone /* TODO: ADD GENERIC TYPE <DragItemFile> */
         acceptedDropTypes={[NativeTypes.FILE]}
         onDrop={(item) => {
-          onDropFile(item.files[0]);
+          onDropFile((item as DragItemFile).files[0]);
         }}
       >
         {children}

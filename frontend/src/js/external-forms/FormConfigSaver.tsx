@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import React, { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, memo } from "react";
+import { useFormContext, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -20,11 +21,11 @@ import Dropzone from "../ui-components/Dropzone";
 import EditableText from "../ui-components/EditableText";
 import Label from "../ui-components/Label";
 
-import { loadExternalFormValues, setExternalForm } from "./actions";
-import { DragItemFormConfig } from "./form-configs/FormConfig";
+import { setExternalForm } from "./actions";
+import type { DragItemFormConfig } from "./form-configs/FormConfig";
+import type { FormConfigT } from "./form-configs/reducer";
 import { useLoadFormConfigs } from "./form-configs/selectors";
 import {
-  selectActiveFormValues,
   useSelectActiveFormName,
   selectActiveFormType,
 } from "./stateSelectors";
@@ -90,15 +91,17 @@ const FormConfigSaver: FC = () => {
   const [isDirty, setIsDirty] = useState<boolean>(true);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [formConfigToLoadNext, setFormConfigToLoadNext] =
+    useState<FormConfigT | null>(null);
 
-  const formValues = useSelector<StateT, Record<string, any>>((state) =>
-    selectActiveFormValues(state),
-  );
-  const previousFormValues = usePrevious(formValues);
   const activeFormName = useSelectActiveFormName();
   const activeFormType = useSelector<StateT, string | null>((state) =>
     selectActiveFormType(state),
   );
+
+  const { setValue } = useFormContext();
+  const formValues = useWatch({});
+  const previousFormValues = usePrevious(formValues);
 
   const { loadFormConfigs } = useLoadFormConfigs();
 
@@ -128,6 +131,31 @@ const FormConfigSaver: FC = () => {
       setIsDirty(true);
     }
   }, [formValues, previousFormValues]);
+
+  useEffect(
+    function deferredLoadFormConfig() {
+      // Needs to be deferred because the form type might get changed
+      // and other effects will have to run to reset / initialize the form first
+      // before we can load new values into it
+      if (formConfigToLoadNext) {
+        setFormConfigToLoadNext(null);
+
+        const entries = Object.entries(formConfigToLoadNext.values);
+
+        for (const [fieldname, value] of entries) {
+          setValue(fieldname, value, {
+            shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true,
+          });
+        }
+
+        setConfigName(formConfigToLoadNext.label);
+        setIsDirty(false);
+      }
+    },
+    [formConfigToLoadNext, setValue],
+  );
 
   async function onSubmit() {
     if (!datasetId) return;
@@ -166,24 +194,23 @@ const FormConfigSaver: FC = () => {
     setIsDirty(false);
     try {
       const config = await getFormConfig(datasetId, dragItem.id);
+      setIsLoading(false);
 
       if (config.formType !== activeFormType) {
-        dispatch(setExternalForm(config.formType));
+        dispatch(setExternalForm({ form: config.formType }));
       }
 
-      dispatch(loadExternalFormValues(config.formType, config.values));
-      setConfigName(config.label);
-      setIsDirty(false);
+      setFormConfigToLoadNext(config);
     } catch (e) {
       dispatch(setMessage({ message: t("formConfig.loadError") }));
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }
 
   return (
     <Root>
-      <SxDropzone<FC<DropzoneProps<DragItemFormConfig>>>
-        onDrop={onLoad}
+      <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemFormConfig>>> */
+        onDrop={(item) => onLoad(item as DragItemFormConfig)}
         acceptedDropTypes={[FORM_CONFIG]}
       >
         {() => (
@@ -232,4 +259,4 @@ const FormConfigSaver: FC = () => {
   );
 };
 
-export default React.memo(FormConfigSaver);
+export default memo(FormConfigSaver);

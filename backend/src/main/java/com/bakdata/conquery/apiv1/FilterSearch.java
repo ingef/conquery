@@ -1,7 +1,14 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -13,9 +20,6 @@ import com.univocity.parsers.csv.CsvParser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
-import java.util.*;
 
 
 @Slf4j
@@ -34,7 +38,7 @@ public class FilterSearch {
 			@Override
 			public double score(String candidate, String keyword) {
 				/* Sort ascending by length of match */
-				if (keyword.startsWith(candidate)) {					
+				if (keyword.startsWith(candidate)) {
 					return 1d / candidate.length();
 				}
 				return -1d;
@@ -94,7 +98,6 @@ public class FilterSearch {
 	/***
 	 * Create interactive Search for the selected filter based on its Template.
 	 * @param filter
-	 * @param csvParserSettings
 	 */
 	public static void createSourceSearch(AbstractSelectFilter<?> filter, CsvParser parser) {
 		FilterTemplate template = filter.getTemplate();
@@ -149,15 +152,19 @@ public class FilterSearch {
 				}
 			}
 
+
 			filter.setSourceSearch(search);
 
 			FilterSearch.search.put(autocompleteKey, search);
-			log.info("Processed reference list '{}' in {} ms", file.getAbsolutePath(), System.currentTimeMillis() - time);
+			final long duration = System.currentTimeMillis() - time;
+
+			log.info("Processed reference list '{}' in {} ms ({} Items in {} Lines)",
+					 file.getAbsolutePath(), duration, search.getStats().getItems(), it.getContext().currentLine());
 		} catch (Exception e) {
 			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);
 		}
 	}
-	
+
 	public static void clear() {
 		search.clear();
 	}

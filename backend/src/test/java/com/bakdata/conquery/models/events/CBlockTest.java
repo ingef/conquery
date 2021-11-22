@@ -13,9 +13,11 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 class CBlockTest {
+	@SneakyThrows
 	@Test
 	public void serialize() throws IOException, JSONException {
 		final CentralRegistry registry = new CentralRegistry();

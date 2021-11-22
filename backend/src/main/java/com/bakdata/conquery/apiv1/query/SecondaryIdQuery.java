@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -26,7 +28,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.Getter;
@@ -77,17 +79,17 @@ public class SecondaryIdQuery extends Query {
 	}
 
 	@Override
-	public void resolve(QueryResolveContext context) {
+	public void resolve(final QueryResolveContext context) {
 
 		DateAggregationMode resolvedDateAggregationMode = dateAggregationMode;
 		if (context.getDateAggregationMode() != null) {
 			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
 		}
-		context = context.withDateAggregationMode(resolvedDateAggregationMode);
+		final QueryResolveContext resolvedContext = context.withDateAggregationMode(resolvedDateAggregationMode);
 
 		this.query = new ConceptQuery(root);
-		query.resolve(context);
+		query.resolve(resolvedContext);
 
 		withSecondaryId = new HashSet<>();
 		withoutSecondaryId = new HashSet<>();
@@ -98,6 +100,8 @@ public class SecondaryIdQuery extends Query {
 		// partition tables by their holding of the requested SecondaryId.
 		// This assumes that from the root, only ConceptNodes hold TableIds we are interested in.
 		query.visit(queryElement -> {
+			// We cannot check for CQExternal here and add the ALL_IDS Table because it is not serializable at the moment
+
 			if (!(queryElement instanceof CQConcept)) {
 				return;
 			}
@@ -141,9 +145,12 @@ public class SecondaryIdQuery extends Query {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
-		collector.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IdT.INSTANCE));
-		query.collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
+		resultInfos.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IdT.INSTANCE));
+		resultInfos.addAll(query.getResultInfos());
+
+		return resultInfos;
 	}
 
 	@Override

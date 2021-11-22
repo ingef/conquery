@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import * as React from "react";
+import { FC } from "react";
 import Hotkeys from "react-hot-keys";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
@@ -151,7 +151,7 @@ function getMinMaxDates(
   };
 }
 
-const Preview: React.FC = () => {
+const Preview: FC = () => {
   const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
   const dispatch = useDispatch();
   const { t } = useTranslation();

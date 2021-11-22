@@ -7,8 +7,8 @@ import { exists } from "../../common/helpers/exists";
 import { useClickOutside } from "../../common/helpers/useClickOutside";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import InfoTooltip from "../../tooltip/InfoTooltip";
+import Labeled from "../Labeled";
 import SelectEmptyPlaceholder from "../SelectEmptyPlaceholder";
-import SelectListOption from "../SelectListOption";
 
 import {
   Control,
@@ -19,9 +19,21 @@ import {
   Menu,
   ResetButton,
   SelectContainer,
-  SxLabeled,
+  SxSelectListOption,
   VerticalSeparator,
 } from "./InputSelectComponents";
+
+const optionIncludedInSearch = (search: string) => (option: SelectOptionT) => {
+  if (!search) return true;
+
+  const lowerInputValue = search.toLowerCase();
+  const lowerLabel = option.label.toLowerCase();
+
+  return (
+    lowerLabel.includes(lowerInputValue) ||
+    String(option.value).toLowerCase().includes(lowerInputValue)
+  );
+};
 
 interface Props {
   label?: string;
@@ -32,12 +44,15 @@ interface Props {
   placeholder?: string;
   loading?: boolean;
   clearable?: boolean;
+  smallMenu?: boolean;
+  className?: string;
   value: SelectOptionT | null;
   defaultValue?: SelectOptionT["value"] | null;
+  optional?: boolean;
   onChange: (value: SelectOptionT | null) => void;
 }
 
-const InputSelectTwo = ({
+const InputSelect = ({
   options,
   placeholder,
   label,
@@ -45,12 +60,16 @@ const InputSelectTwo = ({
   indexPrefix,
   disabled,
   clearable,
+  className,
   value,
   defaultValue,
+  optional,
+  smallMenu,
   onChange,
 }: Props) => {
   const { t } = useTranslation();
   const previousInputValue = usePrevious(value);
+  const previousOptions = usePrevious(options);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [filteredOptions, setFilteredOptions] = useState(() => {
@@ -91,7 +110,6 @@ const InputSelectTwo = ({
       // in that way
       // - the default behavior may be adjusted
       // - including the `onStateChange` reactions that diverge from default behavior (see below)
-      console.log(type);
       switch (type) {
         case useCombobox.stateChangeTypes.FunctionReset:
           return {
@@ -126,23 +144,11 @@ const InputSelectTwo = ({
         setHighlightedIndex(0);
       }
 
-      if (!exists(changes.inputValue)) {
-        return;
+      if (exists(changes.inputValue) && changes.inputValue !== value?.label) {
+        setFilteredOptions(
+          options.filter(optionIncludedInSearch(changes.inputValue)),
+        );
       }
-
-      setFilteredOptions(
-        options.filter((option) => {
-          if (!changes.inputValue) return true;
-
-          const lowerInputValue = changes.inputValue.toLowerCase();
-          const lowerLabel = option.label.toLowerCase();
-
-          return (
-            lowerLabel.includes(lowerInputValue) ||
-            String(option.value).toLowerCase().includes(lowerInputValue)
-          );
-        }),
-      );
     },
     onStateChange: ({ type, ...changes }) => {
       // This only modifies the behavior of some of the actions, after the state has been changed
@@ -188,18 +194,136 @@ const InputSelectTwo = ({
     }, [isOpen, toggleMenu, handleBlur]),
   );
 
-  useEffect(() => {
-    if (
-      exists(value) &&
-      previousInputValue !== value &&
-      value.value !== selectedItem?.value
-    ) {
-      selectItem(value);
-    }
-  }, [previousInputValue, selectedItem, selectItem, value]);
+  useEffect(
+    function takeValueFromAbove() {
+      if (
+        exists(value) &&
+        previousInputValue !== value &&
+        value.value !== selectedItem?.value
+      ) {
+        selectItem(value);
+      }
+    },
+    [previousInputValue, selectedItem, selectItem, value],
+  );
 
-  return (
-    <SxLabeled
+  useEffect(
+    function takeOptionsFromAbove() {
+      const previousOptionsLength = previousOptions
+        ? previousOptions.length
+        : 0;
+
+      if (options.length !== previousOptionsLength) {
+        if (inputValue === value?.label) {
+          setFilteredOptions(options);
+        } else {
+          setFilteredOptions(
+            options.filter(optionIncludedInSearch(inputValue)),
+          );
+        }
+      }
+    },
+    [inputValue, value, options, previousOptions],
+  );
+
+  const Select = (
+    <SelectContainer className={exists(label) ? undefined : className}>
+      <Control
+        {...comboboxProps}
+        disabled={disabled}
+        ref={(instance) => {
+          comboboxRef(instance);
+        }}
+      >
+        <ItemsInputContainer>
+          <Input
+            {...inputProps}
+            onBlur={(e) => {
+              handleBlur(); // Because sometimes inputProps.onBlur doesn't trigger InputBlur action
+              inputProps.onBlur(e);
+            }}
+            ref={(instance) => {
+              inputPropsRef(instance);
+              inputRef.current = instance;
+            }}
+            type="text"
+            disabled={disabled}
+            placeholder={placeholder || t("inputSelect.placeholder")}
+            onClick={(e) => {
+              if (inputProps.onClick) {
+                inputProps.onClick(e);
+              }
+              toggleMenu();
+            }}
+            onChange={(e) => {
+              if (inputProps.onChange) {
+                inputProps.onChange(e);
+              }
+              setInputValue(e.target.value);
+            }}
+          />
+        </ItemsInputContainer>
+        {clearable && (inputValue.length > 0 || exists(selectedItem)) && (
+          <ResetButton
+            icon="times"
+            disabled={disabled}
+            onClick={() => {
+              resetComboboxState();
+              if (clearable) {
+                onChange(null);
+              }
+            }}
+          />
+        )}
+        <VerticalSeparator />
+        <DropdownToggleButton
+          disabled={disabled}
+          icon="chevron-down"
+          {...getToggleButtonProps()}
+        />
+      </Control>
+      {isOpen ? (
+        <Menu
+          {...menuProps}
+          ref={(instance) => {
+            menuPropsRef(instance);
+          }}
+        >
+          <List small={smallMenu}>
+            {filteredOptions.length === 0 && <SelectEmptyPlaceholder />}
+            {filteredOptions.map((option, index) => {
+              const { ref: itemPropsRef, ...itemProps } = getItemProps({
+                index,
+                item: filteredOptions[index],
+              });
+
+              return (
+                <SxSelectListOption
+                  key={`${option.value}`}
+                  active={
+                    highlightedIndex === index ||
+                    selectedItem?.value === option.value
+                  }
+                  disabled={option.disabled}
+                  {...itemProps}
+                  ref={(instance) => {
+                    itemPropsRef(instance);
+                  }}
+                >
+                  {option.label}
+                </SxSelectListOption>
+              );
+            })}
+          </List>
+        </Menu>
+      ) : (
+        <span ref={menuPropsRef} /> // To avoid a warning / error by downshift that ref is not applied
+      )}
+    </SelectContainer>
+  );
+
+  return label ? (
+    <Labeled
       {...labelProps}
       ref={clickOutsideRef}
       htmlFor="" // Important to override getLabelProps with this to avoid click events everywhere
@@ -210,99 +334,14 @@ const InputSelectTwo = ({
         </>
       }
       indexPrefix={indexPrefix}
+      className={className}
+      optional={optional}
     >
-      <SelectContainer>
-        <Control
-          {...comboboxProps}
-          disabled={disabled}
-          ref={(instance) => {
-            comboboxRef(instance);
-          }}
-        >
-          <ItemsInputContainer>
-            <Input
-              {...inputProps}
-              onBlur={(e) => {
-                handleBlur(); // Because sometimes inputProps.onBlur doesn't trigger InputBlur action
-                inputProps.onBlur(e);
-              }}
-              ref={(instance) => {
-                inputPropsRef(instance);
-                inputRef.current = instance;
-              }}
-              type="text"
-              disabled={disabled}
-              placeholder={placeholder || t("inputSelect.placeholder")}
-              onClick={(e) => {
-                if (inputProps.onClick) {
-                  inputProps.onClick(e);
-                }
-                toggleMenu();
-              }}
-              onChange={(e) => {
-                if (inputProps.onChange) {
-                  inputProps.onChange(e);
-                }
-                setInputValue(e.target.value);
-              }}
-            />
-          </ItemsInputContainer>
-          {clearable && (inputValue.length > 0 || exists(selectedItem)) && (
-            <ResetButton
-              icon="times"
-              disabled={disabled}
-              onClick={() => {
-                resetComboboxState();
-                if (clearable) {
-                  onChange(null);
-                }
-              }}
-            />
-          )}
-          <VerticalSeparator />
-          <DropdownToggleButton
-            disabled={disabled}
-            icon="chevron-down"
-            {...getToggleButtonProps()}
-          />
-        </Control>
-        {isOpen ? (
-          <Menu
-            {...menuProps}
-            ref={(instance) => {
-              menuPropsRef(instance);
-            }}
-          >
-            <List>
-              {filteredOptions.length === 0 && <SelectEmptyPlaceholder />}
-              {filteredOptions.map((option, index) => {
-                const { ref: itemPropsRef, ...itemProps } = getItemProps({
-                  index,
-                  item: filteredOptions[index],
-                });
-
-                return (
-                  <SelectListOption
-                    key={`${option.value}`}
-                    active={highlightedIndex === index}
-                    disabled={option.disabled}
-                    {...itemProps}
-                    ref={(instance) => {
-                      itemPropsRef(instance);
-                    }}
-                  >
-                    {option.label}
-                  </SelectListOption>
-                );
-              })}
-            </List>
-          </Menu>
-        ) : (
-          <span ref={menuPropsRef} /> // To avoid a warning / error by downshift that ref is not applied
-        )}
-      </SelectContainer>
-    </SxLabeled>
+      {Select}
+    </Labeled>
+  ) : (
+    Select
   );
 };
 
-export default InputSelectTwo;
+export default InputSelect;

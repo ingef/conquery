@@ -1,4 +1,4 @@
-import React, { useRef, FC } from "react";
+import { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 
 import type { ConceptT } from "../api/types";
