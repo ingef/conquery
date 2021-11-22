@@ -25,10 +25,8 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 	public void processStarted(ParsingContext context) {
 		super.processStarted(context);
 		final String[] headers = context.headers();
-		plz1Index = IntStream.range(0, headers.length).filter(i -> headers[i].equals("plz1")).findFirst().orElse(-1);
-		if (plz1Index == -1) {
-			throw new IllegalStateException("Column plz1 not found in the csv file");
-		}
+		plz1Index = IntStream.range(0, headers.length).filter(i -> headers[i].equals("plz1")).findFirst()..orElseThrow(() -> new IllegalStateException("Required Column[plz1] is missing in Headers."));
+		
 
 		plz2Index = IntStream.range(0, headers.length).filter(i -> headers[i].equals("plz2")).findFirst().orElse(-1);
 		if (plz2Index == -1) {
