@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +33,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -86,7 +86,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@JsonIgnore
 	@ValidationMethod(message = "Number of events does not match to the number of stores")
 	public boolean isNumberOfEventsEqualsNumberOfStores() {
-		return getStores().length == getNumberOfEvents();
+		return Arrays.stream(stores).flatMapToInt(columnStore -> IntStream.of(columnStore.getLines())).sum() == getNumberOfEvents();
 	}
 
 	@JsonIgnore
