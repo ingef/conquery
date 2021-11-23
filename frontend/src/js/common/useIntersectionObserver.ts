@@ -1,4 +1,10 @@
-import { useCallback, useLayoutEffect, useRef, RefObject } from "react";
+import {
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  RefObject,
+  useEffect,
+} from "react";
 
 const INTERSECTION_THRESHOLD = 0.5;
 
@@ -7,6 +13,12 @@ export function useIntersectionObserver<T extends Element>(
   onChange: (domNode: T | null, isIntersecting: boolean) => void,
 ) {
   const intersecting = useRef(false);
+
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
   const observer = useRef<IntersectionObserver | null>(
     new IntersectionObserver(
       (entries) => {
@@ -17,7 +29,7 @@ export function useIntersectionObserver<T extends Element>(
 
           if (intersecting.current !== isIntersecting) {
             intersecting.current = isIntersecting;
-            onChange(domNodeRef.current, isIntersecting);
+            onChangeRef.current(domNodeRef.current, isIntersecting);
           }
         });
       },

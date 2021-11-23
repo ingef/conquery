@@ -2,7 +2,8 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
-import SelectListOption from "../SelectListOption";
+
+import SelectListOption from "./SelectListOption";
 
 export const Control = styled("div")<{ disabled?: boolean }>`
   border: 1px solid ${({ theme }) => theme.col.gray};
@@ -79,6 +80,7 @@ export const DropdownToggleButton = styled(IconButton)`
 
 export const ResetButton = styled(IconButton)`
   padding: 2px 8px;
+  width: 26px;
 `;
 
 export const VerticalSeparator = styled("div")`
