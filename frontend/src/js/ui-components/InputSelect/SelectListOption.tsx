@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import Mustache from "mustache";
-import React, { forwardRef } from "react";
+import { forwardRef } from "react";
 import ReactMarkdown from "react-markdown";
 
 import type { SelectOptionT } from "../../api/types";
