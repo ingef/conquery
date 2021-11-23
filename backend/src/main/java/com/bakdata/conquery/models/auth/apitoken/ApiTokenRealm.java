@@ -56,7 +56,7 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 		}
 
 		final ApiToken apiToken = ((ApiToken) token);
-		ApiTokenHash tokenHash = ApiTokenCreator.hashToken(apiToken);
+		ApiTokenHash tokenHash = apiToken.hashToken();
 
 		// Clear the token
 		apiToken.clear();
@@ -97,14 +97,17 @@ public class ApiTokenRealm extends AuthenticatingRealm implements ConqueryAuthen
 			// Generate a token that does not collide with another tokens hash
 			do {
 				token = apiTokenCreator.createToken();
-				hash = ApiTokenCreator.hashToken(token);
+				hash = token.hashToken();
 
 			} while(tokenStorage.get(hash) != null);
 
 			final ApiTokenData apiTokenData = toInternalRepresentation(tokenRequest, user, hash, storage);
 
 			tokenStorage.add(hash, apiTokenData);
+
+			token.setId(apiTokenData.getId());
 		}
+
 
 		return token;
 	}
