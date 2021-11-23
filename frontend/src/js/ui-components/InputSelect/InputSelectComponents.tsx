@@ -80,6 +80,7 @@ export const DropdownToggleButton = styled(IconButton)`
 
 export const ResetButton = styled(IconButton)`
   padding: 2px 8px;
+  width: 26px;
 `;
 
 export const VerticalSeparator = styled("div")`

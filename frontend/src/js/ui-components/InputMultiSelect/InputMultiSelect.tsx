@@ -41,7 +41,7 @@ const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
 `;
 
 const SxFaIcon = styled(FaIcon)`
-  margin: 2px 5px;
+  margin: 3px 6px;
 `;
 
 interface Props {

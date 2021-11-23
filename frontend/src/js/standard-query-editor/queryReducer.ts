@@ -13,6 +13,7 @@ import type {
   RangeFilterValueT,
   FilterIdT,
   ConceptIdT,
+  SelectOptionT,
 } from "../api/types";
 import { Action } from "../app/actions";
 import { isEmpty, objectWithoutKey } from "../common/helpers";
@@ -28,6 +29,7 @@ import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
 } from "../query-group-modal/actions";
+import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
 import { acceptQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
 
 import {
@@ -826,8 +828,10 @@ const onLoadFilterSuggestionsSuccess = (
     return state;
   }
 
+  const options: SelectOptionT[] = data.map(filterSuggestionToSelectOption);
+
   return setNodeFilterProperties(state, rest, {
-    options: data,
+    options,
   });
 };
 

@@ -1,11 +1,9 @@
 import styled from "@emotion/styled";
-import Mustache from "mustache";
 import { forwardRef } from "react";
 import ReactMarkdown from "react-markdown";
 
-import type { FilterSuggestion, SelectOptionT } from "../../api/types";
+import type { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
-import { isFilterSuggestion } from "../InputSelect/isFilterSuggestion";
 
 const Container = styled("div")<{ active?: boolean }>`
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -33,19 +31,15 @@ const SelectedItem = forwardRef<
   {
     active?: boolean;
     disabled?: boolean;
-    option: SelectOptionT | FilterSuggestion;
+    option: SelectOptionT;
     onRemoveClick: () => void;
   }
 >(({ option, disabled, onRemoveClick, ...rest }, ref) => {
-  const label = isFilterSuggestion(option)
-    ? Mustache.render(option.optionValue, option.templateValues)
-    : option.label || option.value;
+  const label = option.label || option.value;
 
   return (
     <Container ref={ref} {...rest}>
-      <span>
-        {isFilterSuggestion(option) ? <Markdown>{label}</Markdown> : label}
-      </span>
+      <Markdown>{label}</Markdown>
       <SxIconButton icon="times" disabled={disabled} onClick={onRemoveClick} />
     </Container>
   );

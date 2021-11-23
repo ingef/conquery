@@ -68,15 +68,12 @@ const TableFilter = ({
           />
         );
       case "MULTI_SELECT":
-        const defaultValue = filter.options.find(
-          (opt) => opt.value === filter.defaultValue,
-        );
         return (
           <FilterListMultiSelect
             context={{ ...context, filterId: filter.id }}
             indexPrefix={filterIdx + 1}
             value={filter.value || []}
-            defaultValue={defaultValue}
+            defaultValue={filter.defaultValue || []}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             options={filter.options}
@@ -96,7 +93,6 @@ const TableFilter = ({
             options={filter.options}
             disabled={!!excludeTable}
             allowDropFile={!!filter.allowDropFile}
-            isLoading={filter.isLoading}
             onLoad={(prefix: string) =>
               onLoadFilterSuggestions(filterIdx, filter.id, prefix)
             }
