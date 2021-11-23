@@ -1,7 +1,8 @@
 import { transformElementsToApi } from "../api/apiHelper";
+import type { SelectOptionT } from "../api/types";
 
-import { Form, GeneralField } from "./config-types";
-import { DynamicFormValues } from "./form/Form";
+import type { Form, FormField, GeneralField } from "./config-types";
+import type { DynamicFormValues } from "./form/Form";
 
 function transformElementGroupsToApi(elementGroups) {
   return elementGroups.map(({ concepts, connector, ...rest }) =>
@@ -15,10 +16,16 @@ function transformElementGroupsToApi(elementGroups) {
   );
 }
 
-function transformFieldToApi(fieldConfig, formValues: DynamicFormValues) {
+function transformFieldToApi(
+  fieldConfig: FormField,
+  formValues: DynamicFormValues,
+) {
   const formValue = formValues[fieldConfig.name];
 
   switch (fieldConfig.type) {
+    case "SELECT":
+      // A RESULT_GROUP field may allow null / be optional
+      return formValue ? (formValue as SelectOptionT).value : null;
     case "RESULT_GROUP":
       // A RESULT_GROUP field may allow null / be optional
       return formValue ? formValue.id : null;
@@ -35,6 +42,12 @@ function transformFieldToApi(fieldConfig, formValues: DynamicFormValues) {
       const selectedTab = fieldConfig.tabs.find(
         (tab) => tab.name === formValue,
       );
+
+      if (!selectedTab) {
+        throw new Error(
+          `No tab selected for ${fieldConfig.name}, this shouldn't happen`,
+        );
+      }
 
       return {
         value: formValue,
