@@ -132,7 +132,7 @@ const TableView: FC<PropsT> = ({
                   filterId,
                   prefix,
                   page: 0,
-                  pageSize: 50,
+                  pageSize: 200,
                 },
                 tableIdx,
                 filterIdx,
