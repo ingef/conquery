@@ -390,6 +390,7 @@ export interface FilterSuggestion {
   value: string;
   optionValue: string;
   templateValues: Record<string, string>;
+  disabled?: boolean;
 }
 export type PostFilterSuggestionsResponseT = {
   total: number;

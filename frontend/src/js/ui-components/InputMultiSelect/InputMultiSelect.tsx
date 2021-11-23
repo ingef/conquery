@@ -327,12 +327,10 @@ const InputMultiSelect = ({
                 <SxSelectListOption
                   key={`${option.value}`}
                   active={highlightedIndex === index}
-                  disabled={option.disabled}
+                  option={option}
                   {...itemProps}
                   ref={itemPropsRef}
-                >
-                  {option.label}
-                </SxSelectListOption>
+                />
               );
             })}
             {exists(onLoadMore) && (
