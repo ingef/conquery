@@ -58,6 +58,7 @@ export interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
   options: SelectOptionT[] | FilterSuggestion[];
   defaultValue?: string[];
+  allowDropFile: boolean;
 }
 
 export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
@@ -66,7 +67,6 @@ export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
 
 export interface BigMultiSelectFilterT extends MultiSelectFilterBaseT {
   type: "BIG_MULTI_SELECT";
-  allowDropFile: boolean;
   // Not needed in this format:
   template: {
     filePath: string; // "/.../import/stable/Referenzen/example.csv",
@@ -390,8 +390,12 @@ export interface FilterSuggestion {
   value: string;
   optionValue: string;
   templateValues: Record<string, string>;
+  disabled?: boolean;
 }
-export type PostFilterSuggestionsResponseT = FilterSuggestion[];
+export type PostFilterSuggestionsResponseT = {
+  total: number;
+  values: FilterSuggestion[];
+};
 
 export type GetFormQueriesResponseT = Forms;
 

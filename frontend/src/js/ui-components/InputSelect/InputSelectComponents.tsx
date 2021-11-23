@@ -2,7 +2,8 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
-import SelectListOption from "../SelectListOption";
+
+import SelectListOption from "./SelectListOption";
 
 export const Control = styled("div")<{ disabled?: boolean }>`
   border: 1px solid ${({ theme }) => theme.col.gray};

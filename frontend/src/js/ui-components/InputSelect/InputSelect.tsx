@@ -304,14 +304,12 @@ const InputSelect = ({
                     highlightedIndex === index ||
                     selectedItem?.value === option.value
                   }
-                  disabled={option.disabled}
+                  option={option}
                   {...itemProps}
                   ref={(instance) => {
                     itemPropsRef(instance);
                   }}
-                >
-                  {option.label}
-                </SxSelectListOption>
+                />
               );
             })}
           </List>

@@ -30,7 +30,7 @@ export interface BaseTableFilterProps {
     tableIdx: number,
     filterId: FilterIdT,
     prefix: string,
-  ) => void;
+  ) => Promise<void>;
   onShowDescription: (filterIdx: number) => void;
 }
 
@@ -68,15 +68,16 @@ const TableFilter = ({
           />
         );
       case "MULTI_SELECT":
+        const defaultValue = filter.options.find(
+          (opt) => opt.value === filter.defaultValue,
+        );
         return (
           <FilterListMultiSelect
             context={{ ...context, filterId: filter.id }}
             indexPrefix={filterIdx + 1}
-            input={{
-              value: filter.value,
-              defaultValue: filter.defaultValue,
-              onChange: (value: string[]) => onSetFilterValue(filterIdx, value),
-            }}
+            value={filter.value || []}
+            defaultValue={defaultValue}
+            onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             options={filter.options}
             disabled={excludeTable}
@@ -88,11 +89,9 @@ const TableFilter = ({
           <FilterListMultiSelect
             indexPrefix={filterIdx + 1}
             context={{ ...context, filterId: filter.id }}
-            input={{
-              value: filter.value || [],
-              defaultValue: filter.defaultValue || [],
-              onChange: (value) => onSetFilterValue(filterIdx, value),
-            }}
+            value={filter.value || []}
+            defaultValue={filter.defaultValue || []}
+            onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             options={filter.options}
             disabled={!!excludeTable}
