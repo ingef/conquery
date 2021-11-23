@@ -35,34 +35,23 @@ const tableHasNonDefaultDateColumn = (table: TableWithFilterValueT) =>
     ? table.dateColumn.value !== table.dateColumn.defaultValue
     : table.dateColumn.value !== table.dateColumn.options[0].value);
 
+export function tableIsIncludedInIds(
+  table: TableWithFilterValueT,
+  tableIds: string[],
+) {
+  return tableIds.some(
+    (id) => table.id.toLowerCase().indexOf(id.toLowerCase()) !== -1,
+  );
+}
+
 export function tableIsDisabled(
   table: TableWithFilterValueT,
   blocklistedTables?: string[],
   allowlistedTables?: string[],
 ) {
   return (
-    (!!allowlistedTables && !tableIsAllowlisted(table, allowlistedTables)) ||
-    (!!blocklistedTables && tableIsBlocklisted(table, blocklistedTables))
-  );
-}
-
-export function tableIsBlocklisted(
-  table: TableWithFilterValueT,
-  blocklistedTables: string[],
-) {
-  return blocklistedTables.some(
-    (tableName) =>
-      table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1,
-  );
-}
-
-export function tableIsAllowlisted(
-  table: TableWithFilterValueT,
-  allowlistedTables: string[],
-) {
-  return allowlistedTables.some(
-    (tableName) =>
-      table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1,
+    (!!allowlistedTables && !tableIsIncludedInIds(table, allowlistedTables)) ||
+    (!!blocklistedTables && tableIsIncludedInIds(table, blocklistedTables))
   );
 }
 

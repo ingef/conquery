@@ -117,7 +117,11 @@ export type SelectorResultDataType =
   | "MONEY"
   | "BOOLEAN"
   | "STRING"
-  | "LIST";
+  | "LIST"
+  | "CATEGORICAL"
+  | "DATE"
+  | "DATE_RANGE";
+
 export interface SelectorResultType {
   type: SelectorResultDataType;
   elementType?: {
