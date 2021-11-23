@@ -30,7 +30,7 @@ interface PropsT {
 
   value: SelectOptionT[];
   onChange: (value: SelectOptionT[]) => void;
-  defaultValue: SelectOptionT[];
+  defaultValue: string[];
 }
 
 const FilterListMultiSelect: FC<PropsT> = ({
@@ -111,7 +111,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
           context.treeId,
           context.tableId,
           context.filterId,
-          defaultValue.map((v) => v.value) as string[],
+          defaultValue,
         );
 
         if (
@@ -148,10 +148,9 @@ const FilterListMultiSelect: FC<PropsT> = ({
       <InputMultiSelect
         value={value}
         onChange={onChange}
-        defaultValue={defaultValue}
         label={label}
         options={options}
-        isLoading={loading}
+        loading={loading}
         disabled={disabled}
         indexPrefix={indexPrefix}
         onLoadMore={onLoad ? onLoadMore : undefined}

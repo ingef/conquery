@@ -14,6 +14,8 @@ export interface SelectOptionT {
   label: string;
   value: number | string;
   disabled?: boolean;
+  selectedLabel?: string;
+  alwaysShown?: boolean;
 }
 
 // Example: { min: "2019-01-01", max: "2019-12-31" }
@@ -53,10 +55,10 @@ export interface RangeFilterT extends FilterBaseT {
   pattern?: string;
 }
 
-export type MultiSelectFilterValueT = SelectOptionT[] | FilterSuggestion[];
+export type MultiSelectFilterValueT = SelectOptionT[];
 export interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
-  options: SelectOptionT[] | FilterSuggestion[];
+  options: SelectOptionT[];
   defaultValue?: string[];
   allowDropFile: boolean;
 }
@@ -385,7 +387,7 @@ export interface PostFilterResolveResponseT {
   };
 }
 
-export interface FilterSuggestion {
+export interface RawFilterSuggestion {
   label: string;
   value: string;
   optionValue: string;
@@ -394,7 +396,7 @@ export interface FilterSuggestion {
 }
 export type PostFilterSuggestionsResponseT = {
   total: number;
-  values: FilterSuggestion[];
+  values: RawFilterSuggestion[];
 };
 
 export type GetFormQueriesResponseT = Forms;

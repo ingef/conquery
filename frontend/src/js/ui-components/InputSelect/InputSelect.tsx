@@ -22,18 +22,7 @@ import {
   SxSelectListOption,
   VerticalSeparator,
 } from "./InputSelectComponents";
-
-const optionIncludedInSearch = (search: string) => (option: SelectOptionT) => {
-  if (!search) return true;
-
-  const lowerInputValue = search.toLowerCase();
-  const lowerLabel = option.label.toLowerCase();
-
-  return (
-    lowerLabel.includes(lowerInputValue) ||
-    String(option.value).toLowerCase().includes(lowerInputValue)
-  );
-};
+import { optionMatchesQuery } from "./optionMatchesQuery";
 
 interface Props {
   label?: string;
@@ -146,7 +135,9 @@ const InputSelect = ({
 
       if (exists(changes.inputValue) && changes.inputValue !== value?.label) {
         setFilteredOptions(
-          options.filter(optionIncludedInSearch(changes.inputValue)),
+          options.filter((option) =>
+            optionMatchesQuery(option, changes.inputValue),
+          ),
         );
       }
     },
@@ -218,7 +209,7 @@ const InputSelect = ({
           setFilteredOptions(options);
         } else {
           setFilteredOptions(
-            options.filter(optionIncludedInSearch(inputValue)),
+            options.filter((option) => optionMatchesQuery(option, inputValue)),
           );
         }
       }

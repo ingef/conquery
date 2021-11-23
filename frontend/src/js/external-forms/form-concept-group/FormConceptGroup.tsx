@@ -27,6 +27,7 @@ import { nodeHasActiveFilters } from "../../model/node";
 import { selectsWithDefaults } from "../../model/select";
 import { resetAllFiltersInTables } from "../../model/table";
 import { tablesWithDefaults, tableWithDefaults } from "../../model/table";
+import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
   ConceptQueryNodeType,
   DragItemConceptTreeNode,
@@ -501,8 +502,10 @@ const updateFilterOptionsWithSuggestions = (
   filterIdx: number,
   suggestions: PostFilterSuggestionsResponseT["values"],
 ) => {
+  const options = suggestions.map(filterSuggestionToSelectOption);
+
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
-    options: suggestions,
+    options,
   });
 };
 

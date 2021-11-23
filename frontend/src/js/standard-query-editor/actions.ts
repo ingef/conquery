@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { ActionType, createAction } from "typesafe-actions";
 
 import {
@@ -14,7 +14,7 @@ import type {
   QueryNodeT,
   PostFilterSuggestionsResponseT,
 } from "../api/types";
-import { errorPayload, successPayload } from "../common/actions";
+import { successPayload } from "../common/actions";
 import type { TreesT } from "../concept-trees/reducer";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
