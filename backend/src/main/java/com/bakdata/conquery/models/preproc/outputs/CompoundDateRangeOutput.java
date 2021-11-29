@@ -32,8 +32,8 @@ public class CompoundDateRangeOutput extends OutputDescription {
 
 	@NotNull
 	@NotEmpty
-	private final String startColumn, endColumn;
-	private final boolean allowOpen;
+	private String startColumn, endColumn;
+	private boolean allowOpen;
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
