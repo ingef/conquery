@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.filter.event.PrefixTextFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +24,12 @@ public class PrefixTextFilter extends SingleColumnFilter<String> {
 	public void configureFrontend(FEFilter f) {
 		f.setType(FEFilterType.STRING);
 	}
-	
+
+	@Override
+	public TypeReference<String> getValueTypeReference() {
+		return new TypeReference<>() {};
+	}
+
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);

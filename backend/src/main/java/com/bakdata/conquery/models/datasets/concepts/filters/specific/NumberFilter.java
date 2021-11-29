@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,22 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	@Override
 	public Column[] getRequiredColumns() {
 		return new Column[]{getColumn()};
+	}
+
+	@Override
+	public TypeReference<? extends RANGE> getValueTypeReference() {
+		// TODO this is not cool. It is probably better to create separate classes for this.
+		switch (getColumn().getType()) {
+			case MONEY:
+			case INTEGER:
+				return (TypeReference<? extends RANGE>) new TypeReference<Range.LongRange>(){};
+			case DECIMAL:
+				return (TypeReference<? extends RANGE>) new TypeReference<Range<BigDecimal>>(){};
+			case REAL:
+				return (TypeReference<? extends RANGE>) new TypeReference<Range.DoubleRange>(){};
+			default:
+				throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
+		}
 	}
 
 	@Override

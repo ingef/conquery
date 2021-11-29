@@ -32,7 +32,6 @@
     }
   },
   "filterValue": {
-    "type": "INTEGER_RANGE",
     "value": {
       "min": 100,
       "max": 200

@@ -32,7 +32,6 @@
     }
   },
   "filterValue": {
-    "type": "SELECT",
     "value": "!"
   }
 }

@@ -45,7 +45,6 @@
     }
   },
   "filterValue": {
-    "type": "INTEGER_RANGE",
     "value": {
       "min": 5,
       "max": 6

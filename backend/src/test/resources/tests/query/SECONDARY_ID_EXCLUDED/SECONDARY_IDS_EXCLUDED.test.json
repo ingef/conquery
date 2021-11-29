@@ -33,7 +33,6 @@
               "filters": [
                 {
                   "filter": "concept.connector1.value",
-                  "type": "INTEGER_RANGE",
                   "value": {
                     "min": 2
                   }

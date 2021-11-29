@@ -19,7 +19,6 @@
               "filters": [
                 {
                   "filter": "concept.connector.filter",
-                  "type": "SELECT",
                   "value": "f"
                 }
               ]
@@ -40,7 +39,6 @@
               "filters": [
                 {
                   "filter": "concept.connector.filter",
-                  "type": "SELECT",
                   "value": "m"
                 }
               ]

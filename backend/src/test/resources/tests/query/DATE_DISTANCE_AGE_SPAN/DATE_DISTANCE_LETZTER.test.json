@@ -29,7 +29,6 @@
                            "filters":[
                               {  
                                  "filter":"alter.alterxy.alterseinschrankung",
-                                 "type":"INTEGER_RANGE",
                                  "value":{  
                                     "min":"11",
                                     "max":"12"

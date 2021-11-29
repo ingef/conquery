@@ -26,7 +26,6 @@
                            "filters":[  
                               {  
                                  "filter":"sum.sum_connector.value",
-                                 "type":"REAL_RANGE",
                                  "value":{  
                                     "min": 2,
 									"max": 2

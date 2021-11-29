@@ -25,7 +25,6 @@
                         "filters":[  
                            {  
                               "filter":"geschlecht_select.geschlecht_connector.geschlecht",
-                              "type":"MULTI_SELECT",
                               "value":[  
                                  "f"
                               ]

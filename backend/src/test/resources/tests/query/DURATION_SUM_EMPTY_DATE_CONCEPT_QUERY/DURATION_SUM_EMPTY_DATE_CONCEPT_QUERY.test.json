@@ -22,7 +22,6 @@
                   "filters":[  
                      {  
                         "filter":"kg_tage_duration_sum.kg_tage_connector.datum",
-                        "type":"INTEGER_RANGE",
                         "value":{  
                            "min":0
                         }
