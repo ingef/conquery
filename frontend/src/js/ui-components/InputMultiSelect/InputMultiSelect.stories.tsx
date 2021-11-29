@@ -62,7 +62,7 @@ const Template: Story<
       options={options}
       value={value || []}
       onChange={(v) => setValue(v)}
-      loading={loading}
+      loading={args.loading || loading}
       onResolve={passOnResolve ? onResolve : undefined}
       onLoadMore={onLoad}
     />
@@ -78,6 +78,7 @@ Default.args = {
   disabled: false,
   passOnResolve: true,
   creatable: true,
+  loading: false,
 };
 Default.argTypes = {
   passOnResolve: {

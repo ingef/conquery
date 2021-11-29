@@ -30,7 +30,7 @@ export interface BaseTableFilterProps {
     tableIdx: number,
     filterId: FilterIdT,
     prefix: string,
-  ) => void;
+  ) => Promise<void>;
   onShowDescription: (filterIdx: number) => void;
 }
 
@@ -72,11 +72,9 @@ const TableFilter = ({
           <FilterListMultiSelect
             context={{ ...context, filterId: filter.id }}
             indexPrefix={filterIdx + 1}
-            input={{
-              value: filter.value,
-              defaultValue: filter.defaultValue,
-              onChange: (value: string[]) => onSetFilterValue(filterIdx, value),
-            }}
+            value={filter.value || []}
+            defaultValue={filter.defaultValue || []}
+            onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             options={filter.options}
             disabled={excludeTable}
@@ -88,16 +86,13 @@ const TableFilter = ({
           <FilterListMultiSelect
             indexPrefix={filterIdx + 1}
             context={{ ...context, filterId: filter.id }}
-            input={{
-              value: filter.value || [],
-              defaultValue: filter.defaultValue || [],
-              onChange: (value) => onSetFilterValue(filterIdx, value),
-            }}
+            value={filter.value || []}
+            defaultValue={filter.defaultValue || []}
+            onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             options={filter.options}
             disabled={!!excludeTable}
             allowDropFile={!!filter.allowDropFile}
-            isLoading={filter.isLoading}
             onLoad={(prefix: string) =>
               onLoadFilterSuggestions(filterIdx, filter.id, prefix)
             }

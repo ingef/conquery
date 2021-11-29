@@ -48,7 +48,7 @@ interface PropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-  ) => void;
+  ) => Promise<void>;
 }
 
 const TableView: FC<PropsT> = ({
@@ -131,6 +131,8 @@ const TableView: FC<PropsT> = ({
                   tableId: table.id,
                   filterId,
                   prefix,
+                  page: 0,
+                  pageSize: 200,
                 },
                 tableIdx,
                 filterIdx,

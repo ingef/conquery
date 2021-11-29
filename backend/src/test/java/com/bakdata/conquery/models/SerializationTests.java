@@ -526,7 +526,7 @@ public class SerializationTests {
 				apiTokenData =
 				new ApiTokenData(
 						UUID.randomUUID(),
-						ApiTokenCreator.hashToken(apiToken),
+						apiToken.hashToken(),
 						"tokenName",
 						new UserId("tokenUser"),
 						LocalDate.now(),

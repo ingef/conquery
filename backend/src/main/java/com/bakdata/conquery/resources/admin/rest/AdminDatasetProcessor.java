@@ -214,7 +214,7 @@ public class AdminDatasetProcessor {
 	 * Therefore the concept will be deleted first then added
 	 */
 	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
-
+		concept.setDataset(dataset);
 		if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
 			throw new NotFoundException("Can't find the concept in the dataset " + concept.getId());
 		}
@@ -360,7 +360,7 @@ public class AdminDatasetProcessor {
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
 					ns.sendToAll(new UpdateMatchingStatsMessage());
-					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
+					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv());
 				}
 		));
 	}

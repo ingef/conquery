@@ -27,6 +27,7 @@ import { nodeHasActiveFilters } from "../../model/node";
 import { selectsWithDefaults } from "../../model/select";
 import { resetAllFiltersInTables } from "../../model/table";
 import { tablesWithDefaults, tableWithDefaults } from "../../model/table";
+import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
   ConceptQueryNodeType,
   DragItemConceptTreeNode,
@@ -499,10 +500,12 @@ const updateFilterOptionsWithSuggestions = (
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  suggestions: PostFilterSuggestionsResponseT,
+  suggestions: PostFilterSuggestionsResponseT["values"],
 ) => {
+  const options = suggestions.map(filterSuggestionToSelectOption);
+
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
-    options: suggestions,
+    options,
   });
 };
 
@@ -1011,7 +1014,7 @@ const FormConceptGroup = (props: Props) => {
           }}
           onLoadFilterSuggestions={async (params, tableIdx, filterIdx) => {
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
-            const suggestions = await postPrefixForSuggestions(params);
+            const { values, total } = await postPrefixForSuggestions(params);
 
             props.onChange(
               updateFilterOptionsWithSuggestions(
@@ -1020,7 +1023,7 @@ const FormConceptGroup = (props: Props) => {
                 conceptIdx,
                 tableIdx,
                 filterIdx,
-                suggestions,
+                values,
               ),
             );
           }}

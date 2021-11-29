@@ -55,7 +55,7 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 		CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		FilterSearch
-			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf.createParser());
+			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf);
 
 		conquery.waitUntilWorkDone();
 
@@ -72,7 +72,7 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 		filter.setSearchType(FilterSearch.FilterSearchType.CONTAINS);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
 
-		FilterSearch.createSourceSearch(filter, csvConf.createParser());
+		FilterSearch.createSourceSearch(filter, csvConf);
 
 		assertThat(filter.getSourceSearch()).isNotNull();
 

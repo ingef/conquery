@@ -1,6 +1,7 @@
 package com.bakdata.conquery.resources.api;
 
 import com.bakdata.conquery.apiv1.auth.ApiTokenDataRepresentation;
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.apitoken.ApiToken;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -19,6 +20,8 @@ import java.util.UUID;
  * Endpoints to create and manage scoped {@link ApiToken}s.
  */
 @Path("token")
+@Consumes(ExtraMimeTypes.JSON_STRING)
+@Produces(ExtraMimeTypes.JSON_STRING)
 public class ApiTokenResource {
 
 	public static final String TOKEN = "token";

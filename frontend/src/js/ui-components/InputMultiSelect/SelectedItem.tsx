@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { forwardRef } from "react";
+import ReactMarkdown from "react-markdown";
 
 import type { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
@@ -19,6 +20,12 @@ const SxIconButton = styled(IconButton)`
   padding: 1px 2px 1px 5px;
 `;
 
+const Markdown = styled(ReactMarkdown)`
+  p {
+    margin: 0;
+  }
+`;
+
 const SelectedItem = forwardRef<
   HTMLDivElement,
   {
@@ -28,9 +35,11 @@ const SelectedItem = forwardRef<
     onRemoveClick: () => void;
   }
 >(({ option, disabled, onRemoveClick, ...rest }, ref) => {
+  const label = option.label || option.value;
+
   return (
     <Container ref={ref} {...rest}>
-      <span>{option.label}</span>
+      <Markdown>{label}</Markdown>
       <SxIconButton icon="times" disabled={disabled} onClick={onRemoveClick} />
     </Container>
   );

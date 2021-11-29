@@ -14,6 +14,8 @@ export interface SelectOptionT {
   label: string;
   value: number | string;
   disabled?: boolean;
+  selectedLabel?: string;
+  alwaysShown?: boolean;
 }
 
 // Example: { min: "2019-01-01", max: "2019-12-31" }
@@ -53,11 +55,12 @@ export interface RangeFilterT extends FilterBaseT {
   pattern?: string;
 }
 
-export type MultiSelectFilterValueT = SelectOptionT[] | FilterSuggestion[];
+export type MultiSelectFilterValueT = SelectOptionT[];
 export interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
-  options: SelectOptionT[] | FilterSuggestion[];
+  options: SelectOptionT[];
   defaultValue?: string[];
+  allowDropFile: boolean;
 }
 
 export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
@@ -66,7 +69,6 @@ export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
 
 export interface BigMultiSelectFilterT extends MultiSelectFilterBaseT {
   type: "BIG_MULTI_SELECT";
-  allowDropFile: boolean;
   // Not needed in this format:
   template: {
     filePath: string; // "/.../import/stable/Referenzen/example.csv",
@@ -115,7 +117,11 @@ export type SelectorResultDataType =
   | "MONEY"
   | "BOOLEAN"
   | "STRING"
-  | "LIST";
+  | "LIST"
+  | "CATEGORICAL"
+  | "DATE"
+  | "DATE_RANGE";
+
 export interface SelectorResultType {
   type: SelectorResultDataType;
   elementType?: {
@@ -385,13 +391,17 @@ export interface PostFilterResolveResponseT {
   };
 }
 
-export interface FilterSuggestion {
+export interface RawFilterSuggestion {
   label: string;
   value: string;
   optionValue: string;
   templateValues: Record<string, string>;
+  disabled?: boolean;
 }
-export type PostFilterSuggestionsResponseT = FilterSuggestion[];
+export type PostFilterSuggestionsResponseT = {
+  total: number;
+  values: RawFilterSuggestion[];
+};
 
 export type GetFormQueriesResponseT = Forms;
 
