@@ -21,7 +21,6 @@
               "filters": [
                 {
                   "filter": "geschlecht_select.geschlecht_connector.geschlecht",
-                  "type": "SELECT",
                   "value": "1"
                 }
               ]
@@ -43,7 +42,6 @@
               "filters": [
                 {
                   "filter": "geschlecht_select.geschlecht_connector.geschlecht",
-                  "type": "SELECT",
                   "value": "2"
                 }
               ]

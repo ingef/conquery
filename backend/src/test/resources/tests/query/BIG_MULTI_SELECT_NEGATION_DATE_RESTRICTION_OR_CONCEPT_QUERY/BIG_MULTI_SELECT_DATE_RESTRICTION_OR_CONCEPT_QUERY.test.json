@@ -29,7 +29,6 @@
                               "filters":[  
                                  {  
                                     "filter":"geschlecht_select.geschlecht_connector.geschlecht",
-                                    "type":"BIG_MULTI_SELECT",
                                     "value":[  
                                        "f"
                                     ]

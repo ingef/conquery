@@ -32,7 +32,6 @@
     }
   },
   "filterValue": {
-    "type": "REAL_RANGE",
     "value": {
       "min": 0,
       "max": 200

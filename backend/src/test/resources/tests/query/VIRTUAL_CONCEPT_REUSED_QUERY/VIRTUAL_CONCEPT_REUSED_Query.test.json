@@ -24,7 +24,6 @@
               "filters": [
                 {
                   "filter": "test_concept.test_connector.test_filter",
-                  "type": "MULTI_SELECT",
                   "value": [
                     "2"
                   ]

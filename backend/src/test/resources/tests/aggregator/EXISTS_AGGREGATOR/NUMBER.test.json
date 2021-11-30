@@ -15,7 +15,6 @@
           "filters": [
             {
               "filter": "concept.connector.filter",
-              "type": "REAL_RANGE",
               "value": {
                 "min": 1,
                 "max": 1

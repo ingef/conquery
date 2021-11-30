@@ -37,7 +37,6 @@
 							"id": "select.connector",
 							"filters":[
 								{
-								"type": "INTEGER_RANGE",
 								"filter":"select.connector.geschlecht",
 								"value": {
 									"min": 2,

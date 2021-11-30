@@ -3,7 +3,6 @@ package com.bakdata.conquery.models;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -21,6 +20,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -38,11 +38,13 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.CountFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -69,7 +71,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.util.CharArrayBuffer;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
@@ -180,7 +181,6 @@ public class SerializationTests {
 		table.setLabel("tableLabel");
 		table.setName("tableName");
 
-		column.setTable(table);
 
 		ConceptTreeConnector connector = new ConceptTreeConnector();
 		connector.setConcept(concept);
@@ -420,6 +420,74 @@ public class SerializationTests {
 
 
 		SerializationTestUtil.forType(ApiTokenData.class).injectables(STORAGE).test(apiTokenData);
+	}
+
+	@Test
+	public void filterValue() throws JSONException, IOException {
+		Dataset dataset = new Dataset();
+		dataset.setName("datasetName");
+
+		TreeConcept concept = new TreeConcept();
+		concept.setDataset(dataset);
+		concept.setLabel("conceptLabel");
+		concept.setName("conceptName");
+
+		Table table = new Table();
+
+		Column column = new Column();
+		column.setLabel("colLabel");
+		column.setName("colName");
+		column.setType(MajorTypeId.STRING);
+		column.setTable(table);
+
+
+		table.setColumns(new Column[]{column});
+		table.setDataset(dataset);
+		table.setLabel("tableLabel");
+		table.setName("tableName");
+
+
+		ConceptTreeConnector connector = new ConceptTreeConnector();
+		connector.setConcept(concept);
+		connector.setLabel("connLabel");
+		connector.setName("connName");
+		connector.setColumn(column);
+
+		concept.setConnectors(List.of(connector));
+
+
+		final CountFilter countFilter = new CountFilter();
+		countFilter.setColumn(column);
+		countFilter.setConnector(connector);
+
+		FilterValue<Range.LongRange> value = new FilterValue<>(countFilter, new Range.LongRange(0L, 1L));
+
+
+		CentralRegistry registry = new CentralRegistry();
+
+		registry.register(dataset);
+		registry.register(concept);
+		registry.register(column);
+		registry.register(table);
+		registry.register(connector);
+		registry.register(countFilter);
+
+		final Validator validator = Validators.newValidator();
+		concept.setValidator(validator);
+
+
+
+		SerializationTestUtil
+				.forType(FilterValue.class)
+				.registry(registry)
+				.injectables(new Injectable() {
+					@Override
+					public MutableInjectableValues inject(MutableInjectableValues values) {
+						return values.add(Validator.class, validator);
+					}
+				})
+				.test(value);
+
 	}
 
 }

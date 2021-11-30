@@ -25,7 +25,6 @@
 								"filters": [
 									{
 										"filter": "number.number_connector.value",
-										"type": "REAL_RANGE",
 										"value": {
 											"min": 1,
 											"max": 1

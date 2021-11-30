@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +41,11 @@ public class DurationSumFilter extends SingleColumnFilter<Range.LongRange> {
 			default:
 				throw new ConceptConfigurationException(getConnector(), "DURATION_SUM filter is incompatible with columns of type " + getColumn().getType());
 		}
+	}
+
+	@Override
+	public TypeReference<Range.LongRange> getValueTypeReference() {
+		return new TypeReference<>() {};
 	}
 
 	@Override

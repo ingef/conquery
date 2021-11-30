@@ -32,7 +32,6 @@
     }
   },
   "filterValue": {
-    "type": "MULTI_SELECT",
     "value": [
       "1",
       "2"

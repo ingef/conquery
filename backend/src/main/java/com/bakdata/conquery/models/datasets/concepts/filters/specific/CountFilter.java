@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWra
 import com.bakdata.conquery.models.query.queryplan.aggregators.MultiDistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.ArrayUtils;
@@ -46,7 +47,10 @@ public class CountFilter extends Filter<Range.LongRange> {
 		f.setType(FEFilterType.INTEGER_RANGE);
 		f.setMin(1);
 	}
-	
+
+	public TypeReference<Range.LongRange> getValueTypeReference(){
+		return new TypeReference<>() {};
+	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override

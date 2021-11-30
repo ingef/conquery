@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,6 +30,11 @@ public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
 	public void configureFrontend(FEFilter f) {
 		f.setType(FEFilterType.INTEGER_RANGE);
 		f.setMin(1);
+	}
+
+	@Override
+	public TypeReference<Range.LongRange> getValueTypeReference() {
+		return new TypeReference<>() {};
 	}
 
 	@Override

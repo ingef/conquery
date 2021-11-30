@@ -1,18 +1,22 @@
 package com.bakdata.conquery.apiv1.query.concept.filter;
 
-import java.math.BigDecimal;
+import java.io.IOException;
 
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.common.Range.LongRange;
+import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -23,10 +27,11 @@ import lombok.ToString;
 @Setter
 @RequiredArgsConstructor
 @NoArgsConstructor
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-@CPSBase
+@JsonDeserialize(using = FilterValue.FilterValueDeserializer.class)
 @ToString(of = "value")
-public abstract class FilterValue<VALUE> {
+public class FilterValue<VALUE> {
+	// TODO JsonIgnore "type" because there is no typing here anymore
+
 	@NotNull
 	@Nonnull
 	@NsIdRef
@@ -41,62 +46,68 @@ public abstract class FilterValue<VALUE> {
 	}
 
 
-	@NoArgsConstructor
-	@CPSType(id = "MULTI_SELECT", base = FilterValue.class)
-	public static class CQMultiSelectFilter extends FilterValue<String[]> {
-		public CQMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
-			super(filter, value);
-		}
-	}
-
-	@NoArgsConstructor
-	@CPSType(id = "BIG_MULTI_SELECT", base = FilterValue.class)
-	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
-		public CQBigMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
-			super(filter, value);
-		}
-	}
-
-	@NoArgsConstructor
-	@CPSType(id = "SELECT", base = FilterValue.class)
-	public static class CQSelectFilter extends FilterValue<String> {
-		public CQSelectFilter(@NsIdRef Filter<String> filter, String value) {
-			super(filter, value);
-		}
-	}
-
-	@NoArgsConstructor
-	@CPSType(id = "STRING", base = FilterValue.class)
-	public static class CQStringFilter extends FilterValue<String> {
-		public CQStringFilter(@NsIdRef Filter<String> filter, String value) {
-			super(filter, value);
-		}
-	}
-
-	@NoArgsConstructor
-	@CPSType(id = "INTEGER_RANGE", base = FilterValue.class)
-	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
-		public CQIntegerRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {
-			super(filter, value);
-		}
-	}
-
 	/**
-	 * @implNote Is basically the same as INTEGER_RANGE, but when a deserialized MONEY_RANGE was serialized again
-	 * it became an INTEGER_RANGE, which is handled differently by the frontend.
+	 * This class deserializes the actual filter value depending on the resolved filter. This way there does not need to
+	 * be a specific implementation of the filter value. It works like this:
+	 *  1. The parser is advanced to the filter id
+	 *  2. The filter id is resolved to the actual filter class using the NsIdReferenceDeserializer
+	 *  3. The filter class is ask for the filter value type it expects
+	 *  4. The parser is advanced to the start of the actual value / or the previously cached node of it
+	 *  5. The actual filter value is deserialized using the type returned by the filter
+	 *  6. Both filter and actual filter value are wrapped in the FilterValue class and returned
+	 *
+	 * @param <T> the actual filter value type
 	 */
-	@NoArgsConstructor
-	@CPSType(id = "MONEY_RANGE", base = FilterValue.class)
-	public static class CQMoneyRangeFilter extends FilterValue<LongRange> {
-		public CQMoneyRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {	super(filter, value);
-		}
-	}
+	public static class FilterValueDeserializer<T> extends JsonDeserializer<FilterValue<T>> {
 
-	@NoArgsConstructor
-	@CPSType(id = "REAL_RANGE", base = FilterValue.class)
-	public static class CQRealRangeFilter extends FilterValue<Range<BigDecimal>> {
-		public CQRealRangeFilter(@NsIdRef Filter<Range<BigDecimal>> filter, Range<BigDecimal> value) {
-			super(filter, value);
+		@Override
+		public  FilterValue<T> deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+			final NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer = new NsIdReferenceDeserializer<>(Filter.class, null, FilterId.class);
+
+			Filter<T> filter = null;
+			Class<T> valueClass = null;
+			JsonNode valueNode = null;
+			T value = null;
+
+			while(jsonParser.nextToken() != JsonToken.END_OBJECT) {
+				switch(jsonParser.currentName()) {
+					case "filter":
+						jsonParser.nextToken();
+						filter = (Filter<T>) nsIdDeserializer.deserialize(jsonParser, deserializationContext);
+						final TypeReference<? extends T> valueTypeReference = filter.getValueTypeReference();
+						valueClass = (Class<T>) valueTypeReference.getType();
+						break;
+					case "value" :
+						jsonParser.nextToken();
+						if (valueClass == null) {
+							// filter was not parsed yet
+							valueNode = jsonParser.readValueAs(JsonNode.class);
+						} else {
+							value = jsonParser.readValueAs(valueClass);
+						}
+						break;
+					default:
+						deserializationContext.handleUnexpectedToken(FilterValue.class, jsonParser);
+				}
+			}
+
+			if (valueClass == null) {
+				throw new IllegalStateException("Unable to determine class of value member from filter");
+			}
+			if (valueNode == null && value == null) {
+				// Value node might be null if the filter was parsed before the value
+				throw new IllegalStateException("Unable to parse value node for filter");
+			}
+
+			if (value == null){
+				// The "value" field was encountered before the "filter" field
+				final JsonParser traverse = valueNode.traverse();
+				// "Start" the parser
+				traverse.nextToken();
+				value = deserializationContext.readValue(traverse, valueClass);
+			}
+
+			return new FilterValue<T>(filter, (T) value);
 		}
 	}
 }

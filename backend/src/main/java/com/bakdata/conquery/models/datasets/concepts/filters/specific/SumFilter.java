@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -81,6 +82,11 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	@Override
 	public Column[] getRequiredColumns() {
 		return new Column[]{getColumn(), getSubtractColumn(), getDistinctByColumn()};
+	}
+
+	@Override
+	public TypeReference<RANGE> getValueTypeReference() {
+		return new TypeReference<>() {};
 	}
 
 	@Override
