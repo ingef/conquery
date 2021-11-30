@@ -3,6 +3,7 @@ import type { SelectOptionT } from "../api/types";
 
 import type { Form, FormField, GeneralField } from "./config-types";
 import type { DynamicFormValues } from "./form/Form";
+import { isFormField } from "./helper";
 
 function transformElementGroupsToApi(elementGroups) {
   return elementGroups.map(({ concepts, connector, ...rest }) =>
@@ -23,6 +24,10 @@ function transformFieldToApi(
   const formValue = formValues[fieldConfig.name];
 
   switch (fieldConfig.type) {
+    case "CHECKBOX":
+      return formValue || false;
+    case "STRING":
+      return formValue || null;
     case "SELECT":
       // A RESULT_GROUP field may allow null / be optional
       return formValue ? (formValue as SelectOptionT).value : null;
@@ -62,12 +67,12 @@ function transformFieldToApi(
 function transformFieldsToApi(
   fields: GeneralField[],
   formValues: DynamicFormValues,
-) {
-  return fields.reduce<DynamicFormValues>((all, fieldConfig) => {
-    all[fieldConfig.name] = transformFieldToApi(fieldConfig, formValues);
-
-    return all;
-  }, {});
+): DynamicFormValues {
+  return Object.fromEntries(
+    fields
+      .filter(isFormField)
+      .map((field) => [field.name, transformFieldToApi(field, formValues)]),
+  );
 }
 
 const transformQueryToApi =
