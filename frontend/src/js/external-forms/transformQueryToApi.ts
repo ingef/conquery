@@ -28,8 +28,8 @@ function transformFieldToApi(
       return formValue || false;
     case "STRING":
       return formValue || null;
+    case "DATASET_SELECT":
     case "SELECT":
-      // A RESULT_GROUP field may allow null / be optional
       return formValue ? (formValue as SelectOptionT).value : null;
     case "RESULT_GROUP":
       // A RESULT_GROUP field may allow null / be optional
