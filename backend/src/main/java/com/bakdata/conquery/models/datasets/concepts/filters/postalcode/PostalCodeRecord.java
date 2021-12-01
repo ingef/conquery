@@ -6,5 +6,5 @@ import lombok.Data;
 public class PostalCodeRecord {
 	final private int plz1;
 	final private int plz2;
-	final private double distance_km;
+	final private double distanceInKm;
 }
