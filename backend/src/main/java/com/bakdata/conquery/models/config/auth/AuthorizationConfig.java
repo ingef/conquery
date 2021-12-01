@@ -1,14 +1,13 @@
 package com.bakdata.conquery.models.config.auth;
 
-import java.util.List;
-
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * Configurations of this type define the initial users with their permissions
@@ -31,4 +30,5 @@ public interface AuthorizationConfig {
 	 * Usually {@link ExecutionPermission} are not included, since they add little information to the overview.
 	 */
 	List<String> getOverviewScope();
+
 }

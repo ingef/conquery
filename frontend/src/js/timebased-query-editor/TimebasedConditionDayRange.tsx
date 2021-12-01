@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 
-import InputPlain from "../ui-components/InputPlain";
+import InputPlain from "../ui-components/InputPlain/InputPlain";
 
 const Container = styled("div")`
   width: 100%;
@@ -35,13 +35,9 @@ const TimebasedConditionDayRange = ({
       {minDays !== undefined && !!onSetTimebasedConditionMinDays && (
         <SxInputPlain
           inputType="number"
-          input={{
-            value: minDays,
-            onChange: (value) => {
-              if (value === null || typeof value === "number") {
-                onSetTimebasedConditionMinDays(value);
-              }
-            },
+          value={minDays}
+          onChange={(value) => {
+            onSetTimebasedConditionMinDays(value as number | null);
           }}
           inputProps={{ min: 1, pattern: "^(?!-)\\d*$" }}
           placeholder={t("common.timeUnitDays")}
@@ -52,13 +48,9 @@ const TimebasedConditionDayRange = ({
       {maxDays !== undefined && !!onSetTimebasedConditionMaxDays && (
         <SxInputPlain
           inputType="number"
-          input={{
-            value: maxDays,
-            onChange: (value) => {
-              if (value === null || typeof value === "number") {
-                onSetTimebasedConditionMaxDays(value);
-              }
-            },
+          value={maxDays}
+          onChange={(value) => {
+            onSetTimebasedConditionMaxDays(value as number | null);
           }}
           inputProps={{ min: 1, pattern: "^(?!-)\\d*$" }}
           placeholder={t("common.timeUnitDays")}

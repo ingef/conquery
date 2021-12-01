@@ -32,18 +32,18 @@ import lombok.extern.slf4j.Slf4j;
 public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 
 
-    @Override
-    public void react(Worker worker) throws Exception {
+	@Override
+	public void react(Worker worker) throws Exception {
 		worker.getJobManager().addSlowJob(new UpdateMatchingStatsJob(worker));
-    }
+	}
 
-    @RequiredArgsConstructor
-    private static class UpdateMatchingStatsJob extends Job {
-    	private final Worker worker;
+	@RequiredArgsConstructor
+	private static class UpdateMatchingStatsJob extends Job {
+		private final Worker worker;
 
 		@Override
 		public String getLabel() {
-			return String.format("Calculate Matching Stats for %s",worker.getInfo().getDataset());
+			return String.format("Calculate Matching Stats for %s", worker.getInfo().getDataset());
 		}
 
 		@Override
@@ -64,14 +64,10 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 											* 5_000); // Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
 
 
-			// TODO FK: If this causes issues with memory, use a LoadingCache with SoftReferences instead
-			ConcurrentMap<Bucket, int[]> eventEntitiesCache = new ConcurrentHashMap<>();
-
-
 			List<CompletableFuture<?>> subJobs =
 					worker.getStorage().getAllConcepts()
 						  .stream()
-						  .map(concept -> CompletableFuture.runAsync(() -> calculateConceptMatches(concept, messages, worker, eventEntitiesCache), worker.getJobsExecutorService()))
+						  .map(concept -> CompletableFuture.runAsync(() -> calculateConceptMatches(concept, messages, worker), worker.getJobsExecutorService()))
 						  .collect(Collectors.toList());
 
 			log.debug("All jobs submitted. Waiting for completion.");
@@ -82,7 +78,8 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 
 			if (messages.isEmpty()) {
 				log.warn("Results were empty.");
-			} else {
+			}
+			else {
 				worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
 			}
 
@@ -90,8 +87,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 		}
 
 
-
-		private void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker, ConcurrentMap<Bucket, int[]> eventEntitiesCache) {
+		private void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
 
 			for (CBlock cBlock : worker.getStorage().getAllCBlocks()) {
 
@@ -103,35 +99,39 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 					Bucket bucket = cBlock.getBucket();
 					Table table = bucket.getTable();
 
-					final int[] entitiesPerEvent = eventEntitiesCache.computeIfAbsent(bucket, UpdateMatchingStatsJob::calculateEventEntities);
+					for (int entity : bucket.entities()) {
 
-					for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
+						final int entityEnd = bucket.getEntityEnd(entity);
 
-						final int[] localIds = cBlock.getEventMostSpecificChild(event);
+						for (int event = bucket.getEntityStart(entity); event < entityEnd; event++) {
 
-						final int entity = entitiesPerEvent[event];
+							final int[] localIds = cBlock.getEventMostSpecificChild(event);
 
-						if (!(concept instanceof TreeConcept) || localIds == null) {
 
-							results.computeIfAbsent(concept, (ignored) -> new MatchingStats.Entry())
-								   .addEvent(table, bucket, event, entity);
+							if (!(concept instanceof TreeConcept) || localIds == null) {
 
-							continue;
-						}
+								results.computeIfAbsent(concept, (ignored) -> new MatchingStats.Entry())
+									   .addEvent(table, bucket, event, entity);
 
-						if (Connector.isNotContained(localIds)) {
-							continue;
-						}
+								continue;
+							}
 
-						ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalId(localIds);
+							if (Connector.isNotContained(localIds)) {
+								continue;
+							}
 
-						while (element != null) {
-							results.computeIfAbsent(((ConceptElement<?>) element), (ignored) -> new MatchingStats.Entry())
-								   .addEvent(table, bucket, event, entity);
-							element = element.getParent();
+							ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalId(localIds);
+
+							while (element != null) {
+								results.computeIfAbsent(((ConceptElement<?>) element), (ignored) -> new MatchingStats.Entry())
+									   .addEvent(table, bucket, event, entity);
+								element = element.getParent();
+							}
 						}
 					}
-				} catch (Exception e) {
+
+				}
+				catch (Exception e) {
 					log.error("Failed to collect the matching stats for {}", cBlock, e);
 				}
 			}
@@ -139,18 +139,6 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 			getProgressReporter().report(1);
 		}
 
-		private static int[] calculateEventEntities(Bucket bucket) {
-			final int[] entitiesPerEvent = new int[bucket.getNumberOfEvents()];
-
-			for (int entity : bucket.getEntities()) {
-				final int to = bucket.getEntityEnd(entity);
-
-				for (int index = bucket.getEntityStart(entity); index < to; index++) {
-					entitiesPerEvent[index] = entity;
-				}
-			}
-			return entitiesPerEvent;
-		}
 	}
 
 

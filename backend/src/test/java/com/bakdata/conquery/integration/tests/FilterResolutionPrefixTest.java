@@ -40,7 +40,7 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		//read test sepcification
+		//read test specification
 		String testJson = In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json").withUTF8().readAll();
 		
 		DatasetId dataset = conquery.getDataset().getId();
@@ -52,7 +52,7 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 		test.importRequiredData(conquery);
 		CSVConfig csvConf = conquery.getConfig().getCsv();
 		FilterSearch
-				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf.createParser());
+				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf);
 
 		conquery.waitUntilWorkDone();
 
@@ -67,7 +67,7 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 		filter.setSearchType(FilterSearch.FilterSearchType.PREFIX);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
 
-		FilterSearch.createSourceSearch(filter, csvConf.createParser());
+		FilterSearch.createSourceSearch(filter, csvConf);
 
 		assertThat(filter.getSourceSearch()).isNotNull();
 

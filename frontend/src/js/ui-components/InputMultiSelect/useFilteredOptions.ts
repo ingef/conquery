@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
+import { optionMatchesQuery } from "../InputSelect/optionMatchesQuery";
 
 export const useFilteredOptions = ({
   options,
@@ -32,18 +33,9 @@ export const useFilteredOptions = ({
     const stillSelectable = (option: SelectOptionT) =>
       !exists(selectedItems.find((item) => item.value === option.value));
 
-    const matchesQuery = (option: SelectOptionT) => {
-      const lowerInputValue = inputValue.toLowerCase();
-      const lowerLabel = option.label.toLowerCase();
-
-      return (
-        lowerLabel.includes(lowerInputValue) ||
-        String(option.value).toLowerCase().includes(lowerInputValue)
-      );
-    };
-
     const regularOptions = options.filter(
-      (option) => stillSelectable(option) && matchesQuery(option),
+      (option) =>
+        stillSelectable(option) && optionMatchesQuery(option, inputValue),
     );
 
     return [...creatableOption, ...regularOptions];

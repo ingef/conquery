@@ -76,7 +76,7 @@ interface PropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-  ) => void;
+  ) => Promise<void>;
   onSetDateColumn: (tableIdx: number, value: string | null) => void;
 }
 
@@ -128,10 +128,8 @@ const ContentColumn: FC<PropsT> = ({
                 label={t("queryNodeEditor.excludeTimestamps")}
                 tooltip={t("help.excludeTimestamps")}
                 tooltipLazy
-                input={{
-                  value: node.excludeTimestamps,
-                  onChange: () => onToggleTimestamps(),
-                }}
+                value={node.excludeTimestamps}
+                onChange={onToggleTimestamps}
               />
             </Row>
           )}
@@ -141,10 +139,8 @@ const ContentColumn: FC<PropsT> = ({
                 label={t("queryNodeEditor.excludeFromSecondaryIdQuery")}
                 tooltip={t("help.excludeFromSecondaryIdQuery")}
                 tooltipLazy
-                input={{
-                  value: node.excludeFromSecondaryIdQuery,
-                  onChange: () => onToggleSecondaryIdExclude(),
-                }}
+                value={node.excludeFromSecondaryIdQuery}
+                onChange={onToggleSecondaryIdExclude}
               />
             </Row>
           )}

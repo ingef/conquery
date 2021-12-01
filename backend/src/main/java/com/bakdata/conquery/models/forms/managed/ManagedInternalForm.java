@@ -38,11 +38,11 @@ public class ManagedInternalForm extends ManagedForm implements SingleTableResul
 
 	@Override
 	@JsonIgnore
-	public List<ResultInfo> getResultInfo() {
+	public List<ResultInfo> getResultInfos() {
 		if(getSubQueries().size() != 1) {
 			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
 		}
-		return getSubQueries().values().iterator().next().get(0).getResultInfo();
+		return getSubQueries().values().iterator().next().get(0).getResultInfos();
 	}
 
 	@Override

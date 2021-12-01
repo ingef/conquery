@@ -32,6 +32,6 @@ public abstract class HDatasets extends HAuthorized {
 	public void init() {
 		super.init();
 		this.namespace = datasetRegistry.get(dataset.getId());
-		user.authorize(dataset, Ability.READ);
+		subject.authorize(dataset, Ability.READ);
 	}
 }

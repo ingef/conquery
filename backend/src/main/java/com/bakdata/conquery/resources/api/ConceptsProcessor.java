@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -21,7 +22,7 @@ import com.bakdata.conquery.apiv1.frontend.FEList;
 import com.bakdata.conquery.apiv1.frontend.FERoot;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -43,8 +44,8 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -63,9 +64,9 @@ public class ConceptsProcessor {
 			CacheBuilder.newBuilder()
 						.softValues()
 						.expireAfterWrite(10, TimeUnit.MINUTES)
-						.build(new CacheLoader<Concept<?>, FEList>() {
+						.build(new CacheLoader<>() {
 							@Override
-							public FEList load(Concept<?> concept) throws Exception {
+							public FEList load(Concept<?> concept) {
 								return FrontEndConceptBuilder.createTreeMap(concept);
 							}
 						});
@@ -76,18 +77,24 @@ public class ConceptsProcessor {
 						.build(new CacheLoader<>() {
 
 							@Override
-							public List<FEValue> load(Pair<AbstractSelectFilter<?>, String> filterAndSearch) throws Exception {
+							public List<FEValue> load(Pair<AbstractSelectFilter<?>, String> filterAndSearch) {
 								String searchTerm = filterAndSearch.getValue();
 								AbstractSelectFilter<?> filter = filterAndSearch.getKey();
+
 								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
-								return autocompleteTextFilter(filter, searchTerm);
+
+								final List<FEValue> result = autocompleteTextFilter(filter, searchTerm);
+
+								log.debug("Got {} results for {}", result.size(), filterAndSearch);
+
+								return result;
 							}
 
 						});
 
-	public FERoot getRoot(NamespaceStorage storage, User user) {
+	public FERoot getRoot(NamespaceStorage storage, Subject subject) {
 
-		return FrontEndConceptBuilder.createRoot(storage, user);
+		return FrontEndConceptBuilder.createRoot(storage, subject);
 	}
 
 	public FEList getNode(Concept<?> concept) {
@@ -99,10 +106,10 @@ public class ConceptsProcessor {
 		}
 	}
 
-	public List<IdLabel<DatasetId>> getDatasets(User user) {
+	public List<IdLabel<DatasetId>> getDatasets(Subject subject) {
 		return namespaces.getAllDatasets()
 						 .stream()
-						 .filter(d -> user.isPermitted(d, Ability.READ))
+						 .filter(d -> subject.isPermitted(d, Ability.READ))
 						 .sorted(Comparator.comparing(Dataset::getWeight)
 										   .thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
@@ -155,9 +162,17 @@ public class ConceptsProcessor {
 		);
 	}
 
-	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
-		int pageNumber = pageNumberOpt.orElse(0);
-		int itemsPerPage = itemsPerPageOpt.orElse(50);
+	@Data
+	public static class AutoCompleteResult {
+		private final List<FEValue> values;
+		private final long total;
+	}
+
+	public AutoCompleteResult autocompleteTextFilter(AbstractSelectFilter<?> filter, Optional<String> maybeText, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
+		final int pageNumber = pageNumberOpt.orElse(0);
+		final int itemsPerPage = itemsPerPageOpt.orElse(50);
+
+		final String text = maybeText.orElse("");
 
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
@@ -169,15 +184,16 @@ public class ConceptsProcessor {
 			fullResult = searchCache.get(Pair.of(filter, text));
 		}
 		catch (ExecutionException e) {
-			log.warn("Failed to search for \"{}\".", text, (Throwable) (log.isTraceEnabled()? e: null));
-			return ImmutableList.of();
+			log.warn("Failed to search for \"{}\".", text, (Throwable) (log.isTraceEnabled() ? e : null));
+			return new AutoCompleteResult(Collections.emptyList(), 0);
 		}
 
-		int startIncl = fullResult.isEmpty() ? 0 : Math.min(itemsPerPage * pageNumber, fullResult.size());
+		int startIncl = Math.min(itemsPerPage * pageNumber, fullResult.size());
 		int endExcl = Math.min(startIncl + itemsPerPage, fullResult.size());
 
 		log.trace("Preparing subresult for search term \"{}\" in the index range [{}-{})", text, startIncl, endExcl);
-		return fullResult.subList(startIncl, endExcl);
+
+		return new AutoCompleteResult(fullResult.subList(startIncl, endExcl), fullResult.size());
 	}
 
 	/**
@@ -187,10 +203,11 @@ public class ConceptsProcessor {
 	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
 		if (Strings.isNullOrEmpty(text)) {
 			// If no text provided, we just list them
-			return filter.getSourceSearch().listItems()
-						 .stream()
-						 .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-						 .collect(Collectors.toList());
+			final List<FilterSearchItem> items = filter.getSourceSearch().listItems();
+			return items
+					.stream()
+					.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+					.collect(Collectors.toList());
 		}
 
 		List<FEValue> result = new LinkedList<>();

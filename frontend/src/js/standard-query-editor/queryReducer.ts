@@ -13,6 +13,7 @@ import type {
   RangeFilterValueT,
   FilterIdT,
   ConceptIdT,
+  SelectOptionT,
 } from "../api/types";
 import { Action } from "../app/actions";
 import { isEmpty, objectWithoutKey } from "../common/helpers";
@@ -28,6 +29,7 @@ import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
 } from "../query-group-modal/actions";
+import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
 import { acceptQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
 
 import {
@@ -52,7 +54,7 @@ import {
   setSelects,
   setTableSelects,
   expandPreviousQuery,
-  loadFilterSuggestions,
+  loadFilterSuggestionsSuccess,
 } from "./actions";
 import type {
   StandardQueryNodeT,
@@ -817,33 +819,21 @@ const onToggleSecondaryIdExclude = (
   });
 };
 
-const loadFilterSuggestionsStart = (
+const onLoadFilterSuggestionsSuccess = (
   state: StandardQueryStateT,
-  payload: ActionType<typeof loadFilterSuggestions.request>["payload"],
-) => setNodeFilterProperties(state, payload, { isLoading: true });
-
-const loadFilterSuggestionsSuccess = (
-  state: StandardQueryStateT,
-  {
-    data,
-    ...rest
-  }: ActionType<typeof loadFilterSuggestions.success>["payload"],
+  { data, ...rest }: ActionType<typeof loadFilterSuggestionsSuccess>["payload"],
 ) => {
   // When [] comes back from the API, don't touch the current options
   if (!data || data.length === 0) {
-    return setNodeFilterProperties(state, rest, { isLoading: false });
+    return state;
   }
 
+  const options: SelectOptionT[] = data.map(filterSuggestionToSelectOption);
+
   return setNodeFilterProperties(state, rest, {
-    isLoading: false,
-    options: data,
+    options,
   });
 };
-
-const loadFilterSuggestionsError = (
-  state: StandardQueryStateT,
-  payload: ActionType<typeof loadFilterSuggestions.failure>["payload"],
-) => setNodeFilterProperties(state, payload, { isLoading: false });
 
 const createQueryNodeFromConceptListUploadResult = (
   label: string,
@@ -1077,12 +1067,8 @@ const query = (
       return loadPreviousQueryError(state, action);
     case getType(renameQuery.success):
       return onRenamePreviousQuery(state, action);
-    case getType(loadFilterSuggestions.request):
-      return loadFilterSuggestionsStart(state, action.payload);
-    case getType(loadFilterSuggestions.success):
-      return loadFilterSuggestionsSuccess(state, action.payload);
-    case getType(loadFilterSuggestions.failure):
-      return loadFilterSuggestionsError(state, action.payload);
+    case getType(loadFilterSuggestionsSuccess):
+      return onLoadFilterSuggestionsSuccess(state, action.payload);
     case getType(acceptQueryUploadConceptListModal):
       return insertUploadedConceptList(state, action.payload);
     case getType(setDateColumn):

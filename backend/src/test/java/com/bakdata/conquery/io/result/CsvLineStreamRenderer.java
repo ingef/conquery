@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +25,10 @@ public class CsvLineStreamRenderer {
 	private final CsvWriter writer;
 	private final PrintSettings cfg;
 
-	public Stream<String> toStream(List<String> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream) {
+	public Stream<String> toStream(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream) {
 
-		writer.addStringValues(idHeaders);
-		infos.forEach(i -> writer.addValue(i.getUniqueName(cfg)));
+		final UniqueNamer uniqNamer = new UniqueNamer(cfg);
+		Stream.concat(idHeaders.stream(), infos.stream()).map(uniqNamer::getUniqueName).forEach(writer::addValue);
 
 
 		return Stream.concat(

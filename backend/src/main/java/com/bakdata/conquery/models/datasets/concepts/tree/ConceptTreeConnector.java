@@ -2,24 +2,17 @@ package com.bakdata.conquery.models.datasets.concepts.tree;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.BucketEntry;
-import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.dropwizard.validation.ValidationMethod;

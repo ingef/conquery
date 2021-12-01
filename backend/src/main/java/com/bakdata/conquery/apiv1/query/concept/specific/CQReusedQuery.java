@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -18,7 +19,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -88,8 +89,8 @@ public class CQReusedQuery extends CQElement {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
-		resolvedQuery.getReusableComponents().collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		return resolvedQuery.getReusableComponents().getResultInfos();
 	}
 
 }

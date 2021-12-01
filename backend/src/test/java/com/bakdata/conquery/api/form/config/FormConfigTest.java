@@ -87,7 +87,7 @@ public class FormConfigTest {
 	private DatasetId datasetId1;
 	private ExportForm form;
 	private User user;
-	
+
 	@BeforeAll
 	public void setupTestClass() throws Exception{
 

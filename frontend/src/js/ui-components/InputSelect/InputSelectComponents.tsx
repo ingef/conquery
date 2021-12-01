@@ -2,7 +2,8 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
-import SelectListOption from "../SelectListOption";
+
+import SelectListOption from "./SelectListOption";
 
 export const Control = styled("div")<{ disabled?: boolean }>`
   border: 1px solid ${({ theme }) => theme.col.gray};
@@ -46,9 +47,12 @@ export const Menu = styled("div")`
   margin-top: 3px;
 `;
 
-export const List = styled("div")`
+export const List = styled("div")<{ small?: boolean }>`
   padding: 3px;
-  max-height: 304px; /* matches 11 items including the spacing in between items */
+  max-height: ${({ small }) =>
+    small
+      ? "140px"
+      : "300px"}; /* remove this once we use usePopper / portals for this */
   overflow-y: auto;
   --webkit-overflow-scrolling: touch;
 `;
@@ -76,6 +80,7 @@ export const DropdownToggleButton = styled(IconButton)`
 
 export const ResetButton = styled(IconButton)`
   padding: 2px 8px;
+  width: 26px;
 `;
 
 export const VerticalSeparator = styled("div")`

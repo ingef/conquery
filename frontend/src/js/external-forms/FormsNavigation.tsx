@@ -1,9 +1,7 @@
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
-import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
-import { reset } from "redux-form";
 
 import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
@@ -35,7 +33,10 @@ const SxIconButton = styled(IconButton)`
   padding: 6px 10px;
 `;
 
-const FormsNavigation: FC = () => {
+interface Props {
+  reset: () => void;
+}
+const FormsNavigation = ({ reset }: Props) => {
   const language = useActiveLang();
   const { t } = useTranslation();
 
@@ -52,7 +53,9 @@ const FormsNavigation: FC = () => {
 
   const dispatch = useDispatch();
 
-  const onItemClick = (form: string) => dispatch(setExternalForm(form));
+  const onChangeToForm = (form: string) => {
+    dispatch(setExternalForm({ form }));
+  };
 
   const options = Object.values(availableForms)
     .map((formType) => ({
@@ -66,7 +69,7 @@ const FormsNavigation: FC = () => {
   );
   const onClear = () => {
     if (activeFormType) {
-      dispatch(reset(activeFormType));
+      reset();
     }
   };
 
@@ -78,7 +81,7 @@ const FormsNavigation: FC = () => {
         value={options.find((o) => o.value === activeForm) || null}
         onChange={(value) => {
           if (value) {
-            onItemClick(value.value as string);
+            onChangeToForm(value.value as string);
           }
         }}
       />

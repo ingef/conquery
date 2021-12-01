@@ -129,9 +129,11 @@ public abstract class QPParentNode extends QPNode {
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		if (dateAggregator != null) {
+		if (dateAggregator != null && dateAggregator.hasChildren()) {
+			// Report back an date aggregator if any of the children registered one
 			return Set.of(dateAggregator);
 		}
+		// Skip the date aggregation for this sub branch
 		return Collections.emptySet();
 	}
 }

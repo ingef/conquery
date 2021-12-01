@@ -59,13 +59,16 @@ interface OptionsT {
 interface PropsT {
   className?: string;
   options: OptionsT[];
-  input: {
-    value: any;
-    onChange: (value: any) => void;
-  };
+  value: string;
+  onChange: (value: string) => void;
 }
 
-const ToggleButton: FC<PropsT> = ({ options, input, className }) => {
+const ToggleButton: FC<PropsT> = ({
+  options,
+  value: inputValue,
+  onChange,
+  className,
+}) => {
   return (
     <Root className={className}>
       {options.map(({ value, label, description }, i) => (
@@ -73,9 +76,9 @@ const ToggleButton: FC<PropsT> = ({ options, input, className }) => {
           <Option
             isFirst={i === 0}
             isLast={i === options.length - 1}
-            active={input.value === value}
+            active={inputValue === value}
             onClick={() => {
-              if (value !== input.value) input.onChange(value);
+              if (value !== inputValue) onChange(value);
             }}
           >
             {label}

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +28,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.Getter;
@@ -144,9 +145,12 @@ public class SecondaryIdQuery extends Query {
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
-		collector.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IdT.INSTANCE));
-		query.collectResultInfos(collector);
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
+		resultInfos.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IdT.INSTANCE));
+		resultInfos.addAll(query.getResultInfos());
+
+		return resultInfos;
 	}
 
 	@Override
