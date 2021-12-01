@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -22,6 +24,12 @@ import lombok.Getter;
  */
 @Getter
 public class TemporalQueryNode extends QPParentNode {
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext ctx) {
+		super.init(entity, ctx);
+		dateUnion.init(entity, ctx);
+	}
 
 	/**
 	 * Matcher to be used when testing for inclusion.
