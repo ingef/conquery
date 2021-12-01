@@ -40,7 +40,7 @@ public class NegatingNode extends QPChainNode {
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		if (dateAggregator != null) {
+		if (dateAggregator != null && dateAggregator.hasChildren()) {
 			return Set.of(dateAggregator);
 		}
 		return Collections.emptySet();
