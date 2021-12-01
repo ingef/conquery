@@ -100,16 +100,12 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 			for (Bucket bucket : tableBuckets) {
 
-				if (bucket == null) {
-					continue;
-				}
-
 				if (!isOfInterest(bucket)) {
 					continue;
 				}
 
-
 				nextBlock(bucket);
+
 				int start = bucket.getEntityStart(entity.getId());
 				int end = bucket.getEntityEnd(entity.getId());
 				for (int event = start; event < end; event++) {
