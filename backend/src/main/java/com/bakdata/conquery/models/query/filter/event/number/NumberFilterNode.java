@@ -48,4 +48,15 @@ public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends Event
 		requiredTables.add(column.getTable());
 	}
 
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "(" +
+			   "column=" + column +
+			   ", filterValue=" + filterValue +
+			   ')';
+	}
+
+
+
 }

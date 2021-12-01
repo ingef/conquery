@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -107,5 +108,13 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 		requiredTables.add(column.getTable());
 	}
 
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "(" +
+			   "column=" + column +
+			   ", filterValue=" + Arrays.toString(filterValue) +
+			   ')';
+	}
 
 }

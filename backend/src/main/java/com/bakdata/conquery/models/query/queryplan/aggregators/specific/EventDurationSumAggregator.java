@@ -75,4 +75,9 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 	public ResultType getResultType() {
 		return ResultType.IntegerT.INSTANCE;
 	}
+
+	@Override
+	public String toString() {
+		return "EventDurationSumAggregator()";
+	}
 }

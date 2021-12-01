@@ -49,6 +49,6 @@ public class ValidityDateNode extends QPChainNode {
 	
 	@Override
 	public String toString() {
-		return "ValidityDateNode [validityDateColumn=" + validityDateColumn + ", getChild()=" + getChild() + "]";
+		return "ValidityDateNode(validityDateColumn=" + validityDateColumn + ", child=" + getChild() + ")";
 	}
 }

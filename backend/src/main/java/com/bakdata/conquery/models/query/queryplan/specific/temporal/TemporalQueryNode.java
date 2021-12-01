@@ -119,4 +119,13 @@ public class TemporalQueryNode extends QPParentNode {
 		return Set.of(dateUnion);
 	}
 
+	@Override
+	public String toString() {
+		return "TemporalQueryNode{" +
+			   "matcher=" + matcher +
+			   ", reference=" + reference +
+			   ", preceding=" + preceding +
+			   ", dateAggregationAction=" + dateAggregationAction +
+			   '}';
+	}
 }

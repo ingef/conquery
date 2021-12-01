@@ -30,6 +30,14 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	}
 
 	@Override
+	public String toString() {
+		return "SelectFilterNode(" +
+			   "column=" + column +
+			   ", filterValue=" + filterValue +
+			   ')';
+	}
+
+	@Override
 	public void nextBlock(Bucket bucket) {
 		//you can then also skip the block if the id is -1
 		selectedId = ((StringStore) bucket.getStore(getColumn())).getId(filterValue);

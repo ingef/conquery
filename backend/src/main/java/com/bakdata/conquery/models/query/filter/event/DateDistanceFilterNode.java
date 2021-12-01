@@ -66,4 +66,14 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.add(column.getTable());
 	}
+
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "(" +
+			   "unit=" + unit +
+			   ", column=" + column +
+			   ", filterValue=" + filterValue +
+			   ')';
+	}
 }

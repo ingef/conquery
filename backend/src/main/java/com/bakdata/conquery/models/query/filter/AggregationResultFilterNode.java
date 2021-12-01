@@ -58,7 +58,10 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName();
+		return getClass().getSimpleName() + "(" +
+			   "aggregator=" + aggregator +
+			   ", filterValue=" + filterValue +
+			   ')';
 	}
 
 	@Override

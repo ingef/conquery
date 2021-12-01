@@ -64,6 +64,11 @@ public class QueryExecutor implements Closeable {
 		}
 
 		try {
+			// We log the QueryPlan once for debugging purposes.
+			if (log.isDebugEnabled()){
+				log.debug("QueryPlan for Query[{}] = `{}`", result.getQueryId(), plan.get());
+			}
+
 			final List<CompletableFuture<Optional<EntityResult>>> futures =
 					entities.stream()
 							.map(entity -> new QueryJob(executionContext, plan, entity))

@@ -12,5 +12,9 @@ public abstract class FilterNode<FILTER_VALUE> extends EventIterating {
 	protected FILTER_VALUE filterValue;
 
 	public abstract boolean isContained();
-	
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "(filterValue=" + filterValue + ")";
+	}
 }

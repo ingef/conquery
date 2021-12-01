@@ -123,7 +123,7 @@ public abstract class QPParentNode extends QPNode {
 
 	@Override
 	public String toString() {
-		return super.toString() + "[children = " + children + "]";
+		return getClass().getSimpleName() + "(children = " + children + ")";
 	}
 
 

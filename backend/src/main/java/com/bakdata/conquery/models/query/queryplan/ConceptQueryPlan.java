@@ -36,13 +36,19 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = 0;
 
+
+	@ToString.Exclude
 	@Getter
 	private final ThreadLocal<Set<Table>> requiredTables = ThreadLocal.withInitial(this::collectRequiredTables);
 
 	private QPNode child;
+
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
+
+	@ToString.Exclude
 	private Entity entity;
+
 	private DateAggregator dateAggregator = new DateAggregator(DateAggregationAction.MERGE);
 
 	public ConceptQueryPlan(boolean generateDateAggregator) {

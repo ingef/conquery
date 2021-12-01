@@ -31,7 +31,7 @@ public class DateRestrictingNode extends QPChainNode {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		//if there was no date restriction we can just use the restriction CDateSet
-		if(ctx.getDateRestriction().isAll()) {
+		if (ctx.getDateRestriction().isAll()) {
 			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
 		}
 		else {
@@ -75,6 +75,12 @@ public class DateRestrictingNode extends QPChainNode {
 	@Override
 	public boolean isContained() {
 		return getChild().isContained();
+	}
+
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "(child = " + getChild() + ", restriction = " + getRestriction() + ")";
 	}
 
 }

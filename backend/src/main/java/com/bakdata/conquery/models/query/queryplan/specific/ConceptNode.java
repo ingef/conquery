@@ -135,4 +135,14 @@ public class ConceptNode extends QPChainNode {
 		super.collectRequiredTables(requiredTables);
 		requiredTables.add(table.getConnector().getTable());
 	}
+
+	@Override
+	public String toString() {
+		return "ConceptNode(" +
+			   "concepts=" + concepts +
+			   ", table=" + table +
+			   ", selectedSecondaryId=" + selectedSecondaryId +
+			   ", child = " + getChild() +
+			   ')';
+	}
 }
