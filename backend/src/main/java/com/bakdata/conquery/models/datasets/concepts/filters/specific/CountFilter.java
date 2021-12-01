@@ -3,14 +3,14 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.frontend.FEFilter;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.MultiDistinctValuesWrapperAggregator;
@@ -40,10 +40,13 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@Getter @Setter @NsIdRefCollection
 	private Column[] distinctByColumn;
 
+	@Override
+	public Class<FilterValue.CQIntegerRangeFilter> getFilterType() {
+		return FilterValue.CQIntegerRangeFilter.class;
+	}
 
 	@Override
 	public void configureFrontend(FEFilter f) {
-		f.setType(FEFilterType.INTEGER_RANGE);
 		f.setMin(1);
 	}
 	

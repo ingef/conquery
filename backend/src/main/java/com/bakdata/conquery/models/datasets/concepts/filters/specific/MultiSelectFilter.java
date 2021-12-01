@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -17,7 +17,7 @@ import lombok.Setter;
 public class MultiSelectFilter extends AbstractSelectFilter<String[]> {
 
 	public MultiSelectFilter() {
-		super(128, FEFilterType.MULTI_SELECT);
+		super(128, FilterValue.CQMultiSelectFilter.class);
 	}
 
 	@Override

@@ -3,14 +3,14 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.frontend.FEFilter;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
@@ -59,23 +59,25 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	private Column distinctByColumn;
 
 	@Override
-	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+	public Class<? extends FilterValue<? extends RANGE>> getFilterType() {
 		Column column = getColumn();
 		switch (column.getType()) {
 			case MONEY:
-				f.setType(FEFilterType.MONEY_RANGE);
-				return;
+				return (Class<? extends FilterValue<? extends RANGE>>) FilterValue.CQMoneyRangeFilter.class;
 			case INTEGER:
-				f.setType(FEFilterType.INTEGER_RANGE);
-				return;
+				return (Class<? extends FilterValue<? extends RANGE>>) FilterValue.CQIntegerRangeFilter.class;
 			case DECIMAL:
 			case REAL: {
-				f.setType(FEFilterType.REAL_RANGE);
-				return;
+				return (Class<? extends FilterValue<? extends RANGE>>) FilterValue.CQRealRangeFilter.class;
 			}
 			default:
-				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + column.getType());
+				throw new IllegalArgumentException(getConnector() + " NUMBER filter is incompatible with columns of type " + column.getType());
 		}
+	}
+
+	@Override
+	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+
 	}
 
 	@Override
@@ -97,6 +99,8 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 		return new RangeFilterNode(value, aggregator);
 	}
+
+
 
 	private ColumnAggregator<?> getAggregator() {
 		if (getSubtractColumn() == null) {

@@ -19,7 +19,7 @@ public class FEFilter {
 
 	private FilterId id;
 	private String label;
-	private FEFilterType type;
+	private String type;
 	private String unit;
 	private String description;
 	@Builder.Default

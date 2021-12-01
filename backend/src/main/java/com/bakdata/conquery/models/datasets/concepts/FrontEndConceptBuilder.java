@@ -18,6 +18,7 @@ import com.bakdata.conquery.apiv1.frontend.FESelect;
 import com.bakdata.conquery.apiv1.frontend.FETable;
 import com.bakdata.conquery.apiv1.frontend.FEValidityDate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -248,6 +249,8 @@ public class FrontEndConceptBuilder {
 	}
 
 	public static FEFilter createFilter(Filter<?> filter) {
+
+
 		FEFilter f = FEFilter.builder()
 							 .id(filter.getId())
 							 .label(filter.getLabel())
@@ -256,7 +259,9 @@ public class FrontEndConceptBuilder {
 							 .allowDropFile(filter.getAllowDropFile())
 							 .pattern(filter.getPattern())
 							 .defaultValue(filter.getDefaultValue())
+							 .type(filter.getFilterType().getAnnotation(CPSType.class).id())
 							 .build();
+
 		try {
 			filter.configureFrontend(f);
 			return f;

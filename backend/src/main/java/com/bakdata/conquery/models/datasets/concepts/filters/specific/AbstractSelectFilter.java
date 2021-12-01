@@ -3,14 +3,12 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -47,8 +45,10 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 	@JsonIgnore
 	private final int maximumSize;
+
 	@JsonIgnore
-	private final FEFilterType filterType;
+	@Getter
+	private final Class<? extends FilterValue<? extends FE_TYPE>> filterType;
 
 	private FilterTemplate template;
 
@@ -63,7 +63,6 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
-		f.setType(filterType);
 
 		if (values == null || values.isEmpty()) {
 			return;
@@ -71,17 +70,16 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 		if (maximumSize != -1 && values.size() > maximumSize) {
 			log.trace("Too many possible values ({} of {} in Filter[{}]). Upgrading to BigMultiSelect", values.size(), maximumSize, getId());
-			f.setType(FEFilterType.BIG_MULTI_SELECT);
 		}
 
-		if(this.filterType != FEFilterType.BIG_MULTI_SELECT) {
-			f.setOptions(
-				values
-					.stream()
-					.map(v->new FEValue(getLabelFor(v), v))
-					.collect(Collectors.toList())
-			);
-		}
+//		if(filterType != FEFilterType.BIG_MULTI_SELECT) {
+//			f.setOptions(
+//				values
+//					.stream()
+//					.map(v->new FEValue(getLabelFor(v), v))
+//					.collect(Collectors.toList())
+//			);
+//		}
 	}
 
 	@Override
