@@ -78,10 +78,7 @@ public class PostalCodesManager {
 					   })
 					   .toArray(String[]::new);
 		}
-		catch (Exception error) {
-			log.error("{}", error);
-			return new String[0];
-		}
+		
 
 	}
 }
