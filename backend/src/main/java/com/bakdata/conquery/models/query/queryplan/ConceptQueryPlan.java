@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.util.QueryUtils;
-import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.SharedMetricRegistries;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,10 +28,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 
-	private static final Counter INTERESTING_ENTITY = SharedMetricRegistries.getDefault().counter("queries.interest.entity.true");
-	private static final Counter INTERESTING_BUCKET = SharedMetricRegistries.getDefault().counter("queries.interest.bucket.true");
-	private static final Counter NOT_INTERESTING_ENTITY = SharedMetricRegistries.getDefault().counter("queries.interest.entity.false");
-	private static final Counter NOT_INTERESTING_BUCKET = SharedMetricRegistries.getDefault().counter("queries.interest.bucket.false");
+	private static final Meter INTERESTING_ENTITY = SharedMetricRegistries.getDefault().meter("queries.interest.entity.true");
+	private static final Meter INTERESTING_BUCKET = SharedMetricRegistries.getDefault().meter("queries.interest.bucket.true");
+	private static final Meter NOT_INTERESTING_ENTITY = SharedMetricRegistries.getDefault().meter("queries.interest.entity.false");
+	private static final Meter NOT_INTERESTING_BUCKET = SharedMetricRegistries.getDefault().meter("queries.interest.bucket.false");
 
 
 	public static final int VALIDITY_DATE_POSITION = 0;
@@ -149,14 +149,22 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	public boolean isOfInterest(Entity entity) {
 		final boolean interesting = !getRequiredTables().get().isEmpty() && child.isOfInterest(entity);
 
-		if (interesting) {
-			reportInterestingEntity();
-		}
-		else {
-			reportUninterestingEntity();
-		}
+		reportEntityInterest(interesting);
 
 		return interesting;
+	}
+
+	private void reportEntityInterest(boolean interesting) {
+		if (!log.isTraceEnabled()) {
+			return;
+		}
+
+		if (interesting) {
+			INTERESTING_ENTITY.mark();
+		}
+		else {
+			NOT_INTERESTING_ENTITY.mark();
+		}
 	}
 
 	@Override
@@ -176,45 +184,26 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 	public boolean isOfInterest(Bucket bucket) {
 		final boolean interesting = bucket.containsEntity(entity.getId()) && child.isOfInterest(bucket);
 
-		if (interesting) {
-			reportInterestingBucket();
-		}
-		else {
-			reportUninterestingBucket();
-		}
+		reportBucketInterest(interesting);
 
 		return interesting;
 	}
 
+	private void reportBucketInterest(boolean interesting) {
+		if (!log.isTraceEnabled()) {
+			return;
+		}
+
+		if (interesting) {
+			INTERESTING_BUCKET.mark();
+		}
+		else {
+			NOT_INTERESTING_BUCKET.mark();
+		}
+	}
+
 	public Set<Table> collectRequiredTables() {
 		return child.collectRequiredTables();
-	}
-
-	/**
-	 * Helper methods to encapsulate logging _only_ when trace is enabled.
-	 */
-	private void reportInterestingEntity() {
-		if (log.isTraceEnabled()) {
-			INTERESTING_ENTITY.inc();
-		}
-	}
-
-	private void reportInterestingBucket() {
-		if (log.isTraceEnabled()) {
-			INTERESTING_BUCKET.inc();
-		}
-	}
-
-	private void reportUninterestingEntity() {
-		if (log.isTraceEnabled()) {
-			NOT_INTERESTING_ENTITY.inc();
-		}
-	}
-
-	private void reportUninterestingBucket() {
-		if (log.isTraceEnabled()) {
-			NOT_INTERESTING_BUCKET.inc();
-		}
 	}
 
 }
