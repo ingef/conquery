@@ -55,7 +55,7 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 	public abstract FilterNode<?> createFilterNode(FILTER_VALUE filterValue);
 
 	@JsonIgnore
-	public abstract Class<? extends FilterValue<? extends FILTER_VALUE>> getFilterType();
+	public abstract Class<? extends FilterValue<?>> getFilterType();
 
 	@Override
 	public FilterId createId() {

@@ -59,16 +59,16 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	private Column distinctByColumn;
 
 	@Override
-	public Class<? extends FilterValue<? extends RANGE>> getFilterType() {
+	public Class<? extends FilterValue<?>> getFilterType() {
 		Column column = getColumn();
 		switch (column.getType()) {
 			case MONEY:
-				return (Class<? extends FilterValue<? extends RANGE>>) FilterValue.CQMoneyRangeFilter.class;
+				return FilterValue.CQMoneyRangeFilter.class;
 			case INTEGER:
-				return (Class<? extends FilterValue<? extends RANGE>>) FilterValue.CQIntegerRangeFilter.class;
+				return FilterValue.CQIntegerRangeFilter.class;
 			case DECIMAL:
 			case REAL: {
-				return (Class<? extends FilterValue<? extends RANGE>>) FilterValue.CQRealRangeFilter.class;
+				return FilterValue.CQRealRangeFilter.class;
 			}
 			default:
 				throw new IllegalArgumentException(getConnector() + " NUMBER filter is incompatible with columns of type " + column.getType());
