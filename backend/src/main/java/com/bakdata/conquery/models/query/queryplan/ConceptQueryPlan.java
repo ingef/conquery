@@ -115,9 +115,6 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 				int start = bucket.getEntityStart(entity.getId());
 				int end = bucket.getEntityEnd(entity.getId());
 
-				//TODO DELETE THIS
-				log.debug("Entity({}) from {} to {} for Bucket[{}]", getEntity().getId(), start, end, bucket.getId());
-
 				for (int event = start; event < end; event++) {
 					nextEvent(bucket, event);
 				}
