@@ -32,7 +32,7 @@
 						"number"
 					],
 					"type": "CONCEPT",
-					"excludeFromSecondaryIdQuery": false,
+					"excludeFromSecondaryId": false,
 					"tables": [
 						{
 							"id": "number.number_connector"

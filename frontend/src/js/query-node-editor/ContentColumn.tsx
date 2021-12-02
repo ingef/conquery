@@ -136,10 +136,10 @@ const ContentColumn: FC<PropsT> = ({
           {onToggleSecondaryIdExclude && (
             <Row>
               <InputCheckbox
-                label={t("queryNodeEditor.excludeFromSecondaryIdQuery")}
-                tooltip={t("help.excludeFromSecondaryIdQuery")}
+                label={t("queryNodeEditor.excludeFromSecondaryId")}
+                tooltip={t("help.excludeFromSecondaryId")}
                 tooltipLazy
-                value={node.excludeFromSecondaryIdQuery}
+                value={node.excludeFromSecondaryId}
                 onChange={onToggleSecondaryIdExclude}
               />
             </Row>

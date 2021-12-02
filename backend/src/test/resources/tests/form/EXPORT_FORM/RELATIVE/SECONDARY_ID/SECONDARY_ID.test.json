@@ -55,7 +55,7 @@
                     "children": [
                         {
                             "type": "CONCEPT",
-                            "excludeFromSecondaryIdQuery": false,
+                            "excludeFromSecondaryId": false,
                             "ids": [
                                 "abc-concept.a"
                             ],

@@ -1,5 +1,18 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -29,6 +42,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,12 +51,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -70,7 +78,10 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	private List<Select> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation = false;
-	private boolean excludeFromSecondaryIdQuery = false;
+
+	//TODO FK 2.12.2021: remove this after successful recode.
+	@JsonAlias("excludeFromSecondaryIdQuery")
+	private boolean excludeFromSecondaryId = false;
 
 	@InternalOnly
 	@NotNull
@@ -192,7 +203,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 					elements,
 					table,
 					// if the node is excluded, don't pass it into the Node.
-					!excludeFromSecondaryIdQuery && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
+					!excludeFromSecondaryId && hasSelectedSecondaryId ? context.getSelectedSecondaryId() : null
 			);
 
 			tableNodes.add(node);
