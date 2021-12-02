@@ -129,11 +129,11 @@ public class TemporalQueryNode extends QPParentNode {
 
 	@Override
 	public String toString() {
-		return "TemporalQueryNode{" +
+		return "TemporalQueryNode(" +
 			   "matcher=" + matcher +
 			   ", reference=" + reference +
 			   ", preceding=" + preceding +
 			   ", dateAggregationAction=" + dateAggregationAction +
-			   '}';
+			   ')';
 	}
 }
