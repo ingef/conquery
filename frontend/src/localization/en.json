@@ -91,7 +91,7 @@
     "excludeTimestamps": "Exclude from time calculation",
     "excludingTimestamps": "Excluded from time calculation",
     "excludeFromSecondaryId": "Exclude from analysis layer",
-    "excludingFromSecondaryIdQuery": "Excluded from analysis layer",
+    "excludingFromSecondaryId": "Excluded from analysis layer",
     "description": "Description",
     "noDescriptionProvided": "No description provided.",
     "selectAFilter": "Select a filter to see its description here.",

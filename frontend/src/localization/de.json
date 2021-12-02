@@ -91,7 +91,7 @@
     "excludeTimestamps": "Von Zeitberechnung ausschließen",
     "excludingTimestamps": "Von Zeitberechnung ausgeschlossen",
     "excludeFromSecondaryId": "Von Analyse-Ebene ausschließen",
-    "excludingFromSecondaryIdQuery": "Von Analyse-Ebene ausgeschlossen",
+    "excludingFromSecondaryId": "Von Analyse-Ebene ausgeschlossen",
     "description": "Beschreibung",
     "noDescriptionProvided": "Keine Beschreibung verfügbar.",
     "selectAFilter": "Kein Filter ausgewählt.",

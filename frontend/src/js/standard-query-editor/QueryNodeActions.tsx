@@ -97,7 +97,7 @@ const QueryNodeActions: FC<PropsT> = (props) => {
         <WithTooltip
           text={
             props.excludeFromSecondaryId
-              ? t("queryNodeEditor.excludingFromSecondaryIdQuery")
+              ? t("queryNodeEditor.excludingFromSecondaryId")
               : t("queryEditor.hasSecondaryId")
           }
         >
