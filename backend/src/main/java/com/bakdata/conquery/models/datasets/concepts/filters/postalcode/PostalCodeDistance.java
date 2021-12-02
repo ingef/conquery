@@ -4,7 +4,18 @@ import lombok.Data;
 
 @Data
 public class PostalCodeDistance {
-	final private int plz1;
-	final private int plz2;
+	/**
+	 * First postal code
+	 */
+	final private int left;
+
+	/**
+	 * Second postal code
+	 */
+	final private int right;
+
+	/**
+	 * Distance between both postal codes
+	 */
 	final private double distanceInKm;
 }

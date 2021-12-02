@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.io.IOException;
 import java.util.EnumSet;
 
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
@@ -16,9 +17,17 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 @CPSType(id = "POSTAL_CODE", base = Filter.class)
 public class PostalCodeFilter extends SingleColumnFilter<PostalCodeSearchEntity> {
-	static private final PostalCodesManager
-			postalCodesManager =
-			PostalCodesManager.loadFrom("/com/bakdata/conquery/postalcodes.csv", false);
+	static private PostalCodesManager
+			postalCodesManager = null;
+
+	static {
+		try {
+			postalCodesManager = PostalCodesManager.loadFrom("/com/bakdata/conquery/postalcodes.csv", false);
+		}
+		catch (IOException exception) {
+			exception.printStackTrace();
+		}
+	}
 
 	@Override
 	public void configureFrontend(FEFilter f) {
@@ -27,8 +36,15 @@ public class PostalCodeFilter extends SingleColumnFilter<PostalCodeSearchEntity>
 
 	@Override
 	public FilterNode<String[]> createFilterNode(PostalCodeSearchEntity postalCodeSearchEntity) {
-		return new MultiSelectFilterNode(getColumn(), postalCodesManager.filterAllNeighbours(Integer.parseInt(postalCodeSearchEntity.getPlz()), postalCodeSearchEntity
-				.getRadius()));
+
+		if (postalCodesManager != null) {
+			return new MultiSelectFilterNode(getColumn(), postalCodesManager.filterAllNeighbours(Integer.parseInt(postalCodeSearchEntity.getPlz()), postalCodeSearchEntity
+					.getRadius()));
+		}
+		else {
+			return new MultiSelectFilterNode(getColumn(), new String[0]);
+		}
+
 	}
 
 	@Override
