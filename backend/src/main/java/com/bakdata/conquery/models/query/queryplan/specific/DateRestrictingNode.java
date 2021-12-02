@@ -14,9 +14,11 @@ import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString(of = "restriction", callSuper = true)
 public class DateRestrictingNode extends QPChainNode {
 
 	protected final CDateSet restriction;
@@ -75,12 +77,6 @@ public class DateRestrictingNode extends QPChainNode {
 	@Override
 	public boolean isContained() {
 		return getChild().isContained();
-	}
-
-
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "(child = " + getChild() + ", restriction = " + getRestriction() + ")";
 	}
 
 }

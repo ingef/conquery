@@ -13,8 +13,9 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
 import lombok.Getter;
+import lombok.ToString;
 
-
+@ToString(of = "child")
 public abstract class QPChainNode extends QPNode {
 
 	@Getter
@@ -55,15 +56,9 @@ public abstract class QPChainNode extends QPNode {
 		return Collections.singletonList(child);
 	}
 
-
 	@Override
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		child.collectRequiredTables(requiredTables);
-	}
-
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "(child = " + child + ")";
 	}
 
 	@Override

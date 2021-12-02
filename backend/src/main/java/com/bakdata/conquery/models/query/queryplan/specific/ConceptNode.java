@@ -16,8 +16,10 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString(of = {"table", "selectedSecondaryId"}, callSuper = true)
 public class ConceptNode extends QPChainNode {
 
 	private final List<ConceptElement<?>> concepts;
@@ -136,13 +138,4 @@ public class ConceptNode extends QPChainNode {
 		requiredTables.add(table.getConnector().getTable());
 	}
 
-	@Override
-	public String toString() {
-		return "ConceptNode(" +
-			   "concepts=" + concepts +
-			   ", table=" + table +
-			   ", selectedSecondaryId=" + selectedSecondaryId +
-			   ", child = " + getChild() +
-			   ')';
-	}
 }

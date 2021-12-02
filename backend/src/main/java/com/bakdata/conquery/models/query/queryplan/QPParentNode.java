@@ -18,11 +18,13 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.tuple.Pair;
 
 @Getter
 @Setter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(of = "children")
 public abstract class QPParentNode extends QPNode {
 
 	private final List<QPNode> children;
@@ -120,12 +122,6 @@ public abstract class QPParentNode extends QPNode {
 			currentTableChild.acceptEvent(bucket, event);
 		}
 	}
-
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "(children = " + children + ")";
-	}
-
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
