@@ -12,26 +12,26 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.apiv1.query.CQElement;
-import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.google.common.collect.ClassToInstanceMap;
@@ -180,7 +180,7 @@ public class QueryUtils {
 				final CQConcept cqConcept = (CQConcept) element;
 
 				// Excluded Concepts are not available
-				if(cqConcept.isExcludeFromSecondaryIdQuery()){
+				if(cqConcept.isExcludeFromSecondaryId()){
 					return;
 				}
 

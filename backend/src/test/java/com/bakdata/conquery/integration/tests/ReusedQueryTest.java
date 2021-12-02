@@ -153,7 +153,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter((Filter<Range<BigDecimal>>) centralRegistry.resolve(new FilterId(connector.getId(), "filter")), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
 
 			cqConcept.setTables(List.of(cqTable));
-			cqConcept.setExcludeFromSecondaryIdQuery(false);
+			cqConcept.setExcludeFromSecondaryId(false);
 
 
 			root.setChildren(List.of(reuse, cqConcept));
