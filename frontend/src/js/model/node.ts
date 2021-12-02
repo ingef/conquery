@@ -13,7 +13,7 @@ export const nodeIsConceptQueryNode = (
 
 export const nodeHasActiveFilters = (node: StandardQueryNodeT) =>
   node.excludeTimestamps ||
-  node.excludeFromSecondaryIdQuery ||
+  node.excludeFromSecondaryId ||
   (nodeIsConceptQueryNode(node) &&
     (node.includeSubnodes || // TODO REFACTOR / TYPE THIS ONE
       objectHasSelectedSelects(node) ||

@@ -8,7 +8,7 @@ import WithTooltip from "../tooltip/WithTooltip";
 
 interface PropsT {
   excludeTimestamps?: boolean;
-  excludeFromSecondaryIdQuery?: boolean;
+  excludeFromSecondaryId?: boolean;
   isExpandable?: boolean;
   hasDetails?: boolean;
   previousQueryLoading?: boolean;
@@ -96,7 +96,7 @@ const QueryNodeActions: FC<PropsT> = (props) => {
       {props.hasActiveSecondaryId && (
         <WithTooltip
           text={
-            props.excludeFromSecondaryIdQuery
+            props.excludeFromSecondaryId
               ? t("queryNodeEditor.excludingFromSecondaryIdQuery")
               : t("queryEditor.hasSecondaryId")
           }
@@ -109,7 +109,7 @@ const QueryNodeActions: FC<PropsT> = (props) => {
                 props.onToggleSecondaryIdExclude();
               }}
             />
-            {props.excludeFromSecondaryIdQuery && <CrossedOut />}
+            {props.excludeFromSecondaryId && <CrossedOut />}
           </RelativeContainer>
         </WithTooltip>
       )}

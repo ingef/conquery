@@ -162,7 +162,7 @@ const QueryNode: FC<PropsT> = ({
 
     label: node.label,
     excludeTimestamps: node.excludeTimestamps,
-    excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
+    excludeFromSecondaryId: node.excludeFromSecondaryId,
 
     loading: node.loading,
     error: node.error,
@@ -227,7 +227,7 @@ const QueryNode: FC<PropsT> = ({
           onToggleTimestamps={onToggleTimestamps}
           isExpandable={isQueryExpandable(node)}
           hasActiveSecondaryId={hasActiveSecondaryId}
-          excludeFromSecondaryIdQuery={node.excludeFromSecondaryIdQuery}
+          excludeFromSecondaryId={node.excludeFromSecondaryId}
           onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
           onExpandClick={() => {
             if (!node.query) return;

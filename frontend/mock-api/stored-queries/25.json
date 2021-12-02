@@ -29,12 +29,12 @@
                 {
                   "query": "25602",
                   "type": "SAVED_QUERY",
-                  "excludeFromSecondaryIdQuery": true
+                  "excludeFromSecondaryId": true
                 },
                 {
                   "ids": ["action_movies"],
                   "type": "CONCEPT",
-                  "excludeFromSecondaryIdQuery": true,
+                  "excludeFromSecondaryId": true,
                   "excludeFromTimeAggregation": true,
                   "selects": ["123456789"],
                   "tables": [

@@ -196,7 +196,7 @@ export interface QueryConceptNodeT {
   ids: ConceptIdT[];
   label?: string; // Used to expand
   excludeFromTimeAggregation: boolean; // TODO: Not used
-  excludeFromSecondaryIdQuery: boolean;
+  excludeFromSecondaryId: boolean;
   tables: TableConfigT[];
   selects?: SelectorIdT[];
 }
