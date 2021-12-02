@@ -1,5 +1,7 @@
 import { transformElementsToApi } from "../api/apiHelper";
 import type { SelectOptionT } from "../api/types";
+import type { DateStringMinMax } from "../common/helpers";
+import type { DragItemQuery } from "../standard-query-editor/types";
 
 import type { Form, FormField, GeneralField } from "./config-types";
 import type { DynamicFormValues } from "./form/Form";
@@ -27,19 +29,20 @@ function transformFieldToApi(
     case "CHECKBOX":
       return formValue || false;
     case "STRING":
+    case "NUMBER":
       return formValue || null;
     case "DATASET_SELECT":
     case "SELECT":
       return formValue ? (formValue as SelectOptionT).value : null;
     case "RESULT_GROUP":
       // A RESULT_GROUP field may allow null / be optional
-      return formValue ? formValue.id : null;
+      return formValue ? (formValue as DragItemQuery).id : null;
     case "MULTI_RESULT_GROUP":
-      return formValue.map((group) => group.id);
+      return (formValue as DragItemQuery[]).map((group) => group.id);
     case "DATE_RANGE":
       return {
-        min: formValue.min,
-        max: formValue.max,
+        min: (formValue as DateStringMinMax).min,
+        max: (formValue as DateStringMinMax).max,
       };
     case "CONCEPT_LIST":
       return transformElementGroupsToApi(formValue);
