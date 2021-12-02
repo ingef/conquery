@@ -59,9 +59,6 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 	@Override
 	public void rowProcessed(String[] row, ParsingContext context) {
 
-		if (row.length < 3) {
-			throw new IllegalStateException(String.format("Line %d of given csv does not contain enough column-values", context.currentLine()));
-		}
 		int plz1 = Integer.parseInt(row[plz1Index].trim());
 		int plz2 = Integer.parseInt(row[plz2Index].trim());
 		double distance = Double.parseDouble(row[distanceIndex].trim());
