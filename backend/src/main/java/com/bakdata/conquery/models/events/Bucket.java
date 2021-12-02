@@ -88,7 +88,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@JsonIgnore
 	@ValidationMethod(message = "Number of events does not match to the number of stores")
 	public boolean isNumberOfEventsEqualsNumberOfStores() {
-		return Arrays.stream(stores).flatMapToInt(columnStore -> IntStream.of(columnStore.getLines())).sum() == getNumberOfEvents();
+		return Arrays.stream(stores).allMatch(columnStore -> columnStore.getLines() == getNumberOfEvents());
 	}
 	*/
 
