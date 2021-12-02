@@ -15,7 +15,7 @@ import lombok.ToString;
  */
 @Getter
 @AllArgsConstructor
-@ToString
+@ToString(callSuper = true)
 public class ConstantValueAggregator<T> extends Aggregator<T> {
 
 	@Setter

@@ -16,11 +16,13 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * Samples the incoming dates outputting the year-quarter of the sample.
  */
 @Data
+@ToString(of = {"sampler", "column"})
 public class QuarterAggregator extends Aggregator<String> {
 
 	private final TemporalSampler sampler;

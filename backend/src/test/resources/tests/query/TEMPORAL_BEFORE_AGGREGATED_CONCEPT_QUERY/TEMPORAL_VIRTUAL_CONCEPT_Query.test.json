@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
-  "label": "Temporal Before",
-  "expectedCsv": "tests/query/TEMPORAL_BEFORE_CONCEPT_QUERY/expected.csv",
+  "label": "Temporal Before (with Aggregation)",
+  "expectedCsv": "tests/query/TEMPORAL_BEFORE_AGGREGATED_CONCEPT_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -16,6 +16,7 @@
           "tables": [
             {
               "id": "concept.connector",
+              "selects" : "concept.connector.count",
               "filters": [
                 {
                   "filter": "concept.connector.filter",
@@ -37,6 +38,7 @@
           "tables": [
             {
               "id": "concept.connector",
+              "selects" : "concept.connector.count",
               "filters": [
                 {
                   "filter": "concept.connector.filter",
@@ -66,6 +68,11 @@
             "name": "filter",
             "column": "table.value",
             "type": "SINGLE_SELECT"
+          },
+          "selects" : {
+            "type" : "COUNT",
+            "name" : "count",
+            "column" : "table.value"
           }
         }
       ]
@@ -74,7 +81,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/TEMPORAL_BEFORE_CONCEPT_QUERY/content.csv",
+        "csv": "tests/query/TEMPORAL_BEFORE_AGGREGATED_CONCEPT_QUERY/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

@@ -13,10 +13,12 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import lombok.ToString;
 
 /**
  * Aggregator, counting the number of days present.
  */
+@ToString(onlyExplicitlyIncluded = true)
 public class EventDurationSumAggregator extends Aggregator<Long> {
 
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
@@ -75,4 +77,5 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 	public ResultType getResultType() {
 		return ResultType.IntegerT.INSTANCE;
 	}
+
 }

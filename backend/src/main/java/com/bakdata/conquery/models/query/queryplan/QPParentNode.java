@@ -18,11 +18,13 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.tuple.Pair;
 
 @Getter
 @Setter
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@ToString(of = "children")
 public abstract class QPParentNode extends QPNode {
 
 	private final List<QPNode> children;
@@ -41,23 +43,22 @@ public abstract class QPParentNode extends QPNode {
 			throw new IllegalArgumentException("A ParentAggregator needs at least one child.");
 		}
 		this.children = children;
-		this.childMap = children.stream()
-								.flatMap(
-										c -> c
-													 .collectRequiredTables()
-													 .stream()
-													 .map(t -> Pair.of(t, c))
-								)
-								.collect(ImmutableListMultimap
-												 .toImmutableListMultimap(Pair::getLeft, Pair::getRight)
-								);
+		childMap = children.stream()
+						   .flatMap(
+								   c -> c.collectRequiredTables()
+										 .stream()
+										 .map(t -> Pair.of(t, c))
+						   )
+						   .collect(ImmutableListMultimap
+											.toImmutableListMultimap(Pair::getLeft, Pair::getRight)
+						   );
 
 		// Save action for debugging
 		this.action = action;
-		this.dateAggregator = new DateAggregator(action);
+		dateAggregator = new DateAggregator(action);
 
 		for (QPNode child : children) {
-			this.dateAggregator.registerAll(child.getDateAggregators());
+			dateAggregator.registerAll(child.getDateAggregators());
 		}
 	}
 
@@ -121,12 +122,6 @@ public abstract class QPParentNode extends QPNode {
 			currentTableChild.acceptEvent(bucket, event);
 		}
 	}
-
-	@Override
-	public String toString() {
-		return super.toString() + "[children = " + children + "]";
-	}
-
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
