@@ -16,7 +16,7 @@ import lombok.ToString;
 /**
  * Single events are filtered, and included if they start with a given prefix. Entity is only included if it has any event with prefix.
  */
-@ToString(of = {"column"})
+@ToString(callSuper = true, of = "column")
 public class PrefixTextFilterNode extends EventFilterNode<String> {
 
 	@NotNull
@@ -52,14 +52,6 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 	@Override
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.add(column.getTable());
-	}
-
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "(" +
-			   "column=" + column +
-			   ", filterValue=" + filterValue +
-			   ')';
 	}
 
 }

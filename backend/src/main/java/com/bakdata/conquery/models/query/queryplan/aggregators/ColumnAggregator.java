@@ -26,6 +26,7 @@ public abstract class ColumnAggregator<T> extends Aggregator<T> {
 
 	/**
 	 * Skip all buckets where none of the required columns have values.
+	 *
 	 * @param bucket
 	 * @return
 	 */
@@ -42,9 +43,7 @@ public abstract class ColumnAggregator<T> extends Aggregator<T> {
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + "(" +
-			   "column=" + Arrays.toString(getRequiredColumns()) +
-			   ')';
+		return "ColumnAggregator(column=" + Arrays.toString(getRequiredColumns()) + ')';
 	}
 
 }

@@ -4,8 +4,10 @@ import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @AllArgsConstructor
+@ToString
 public abstract class FilterNode<FILTER_VALUE> extends EventIterating {
 
 	@Setter @Getter
@@ -13,8 +15,4 @@ public abstract class FilterNode<FILTER_VALUE> extends EventIterating {
 
 	public abstract boolean isContained();
 
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "(filterValue=" + filterValue + ")";
-	}
 }

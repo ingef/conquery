@@ -8,10 +8,12 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import lombok.ToString;
 
 /**
  * Aggregator implementing a sum over {@code column}, for decimal columns.
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 
 	private boolean hit = false;

@@ -9,11 +9,13 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Special Aggregator, used to calculate the times an entity has events after filtering.
  */
 @RequiredArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
 public class SpecialDateUnion extends Aggregator<CDateSet> {
 
 	private CDateSet set = CDateSet.create();
@@ -61,10 +63,5 @@ public class SpecialDateUnion extends Aggregator<CDateSet> {
 	@Override
 	public ResultType getResultType() {
 		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
-	}
-	
-	@Override
-	public String toString(){
-		return getClass().getSimpleName();
 	}
 }

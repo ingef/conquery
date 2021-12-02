@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -15,10 +14,13 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Event is included when the value in column is one of many selected.
  */
+
+@ToString(callSuper = true, of = {"column"})
 public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 
@@ -39,10 +41,6 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 		selectedValuesCache = new ConcurrentHashMap<>();
 	}
 
-	private MultiSelectFilterNode(Column column, String[] filterValue, ConcurrentMap<Import, int[]> cache) {
-		this(column, filterValue);
-		selectedValuesCache = cache;
-	}
 
 	@Override
 	public void setFilterValue(String[] strings) {
@@ -107,14 +105,4 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.add(column.getTable());
 	}
-
-
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "(" +
-			   "column=" + column +
-			   ", filterValue=" + Arrays.toString(filterValue) +
-			   ')';
 	}
-
-}

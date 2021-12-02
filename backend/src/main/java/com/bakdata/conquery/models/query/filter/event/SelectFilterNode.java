@@ -11,11 +11,13 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 
 /**
  * Single events are filtered, and included if they have a selected value. Entity is only included if it has any event with selected value.
  */
+@ToString(callSuper = true, of = "column")
 public class SelectFilterNode extends EventFilterNode<String> {
 
 	private int selectedId = -1;
@@ -27,14 +29,6 @@ public class SelectFilterNode extends EventFilterNode<String> {
 	public SelectFilterNode(Column column, String filterValue) {
 		super(filterValue);
 		this.column = column;
-	}
-
-	@Override
-	public String toString() {
-		return "SelectFilterNode(" +
-			   "column=" + column +
-			   ", filterValue=" + filterValue +
-			   ')';
 	}
 
 	@Override

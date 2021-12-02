@@ -18,7 +18,7 @@ import lombok.ToString;
  * There exist type specific implementations.
  * @param <RANGE> Range Type for inclusion test.
  */
-@ToString(of = {"column", "filterValue"})
+@ToString(callSuper = true, of = "column")
 public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends EventFilterNode<RANGE> {
 
 
@@ -47,16 +47,4 @@ public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends Event
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.add(column.getTable());
 	}
-
-
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "(" +
-			   "column=" + column +
-			   ", filterValue=" + filterValue +
-			   ')';
-	}
-
-
-
 }
