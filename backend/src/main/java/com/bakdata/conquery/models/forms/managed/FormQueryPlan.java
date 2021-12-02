@@ -55,6 +55,8 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			return Optional.of(createResultForNotContained(entity, null));
 		}
 
+
+
 		List<Object[]> resultValues = new ArrayList<>(dateContexts.size());
 
 		for (DateContext dateContext : dateContexts) {
@@ -136,7 +138,8 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return features.isOfInterest(entity);
+		// We are always interested, if we have contexts. And will return empty lines for the person if we can (which we can't if we have no dateContexts)
+		return !dateContexts.isEmpty();
 	}
 
 	@Override
