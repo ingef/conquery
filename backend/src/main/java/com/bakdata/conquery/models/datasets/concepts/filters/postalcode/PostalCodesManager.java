@@ -16,6 +16,7 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
@@ -50,12 +51,12 @@ public class PostalCodesManager {
 
 
 	/**
-	 * This method filters out all postcodes that are within the specified distance radius from the specified reference postcode (reference-postcode included).
+	 * This method filters out all postcodes that are within the specified distance radius from the specified reference postcode.
 	 */
-	public String[] filterAllNeighbours(@Min(1) int plz, @Min(0) double radius) {
+	public String[] filterAllNeighbours(int plz, double radius) {
 
 		if (radius == 0) {
-			return new String[]{String.format("%05d", plz)};
+			return new String[]{StringUtils.leftPad(Integer.toString(plz), 5, '0')};
 		}
 
 		return data.stream()
@@ -63,10 +64,10 @@ public class PostalCodesManager {
 				   .filter(postalCodeDistance -> postalCodeDistance.getLeft() == plz || postalCodeDistance.getRight() == plz)
 				   .map(postalCodeDistance -> {
 					   if (postalCodeDistance.getLeft() == plz) {
-						   return String.format("%05d", postalCodeDistance.getRight());
+						   return StringUtils.leftPad(Integer.toString(postalCodeDistance.getRight()), 5, '0');
 					   }
 					   else {
-						   return String.format("%05d", postalCodeDistance.getLeft());
+						   return StringUtils.leftPad(Integer.toString(postalCodeDistance.getLeft()), 5, '0');
 					   }
 				   })
 				   .toArray(String[]::new);

@@ -36,15 +36,8 @@ public class PostalCodeFilter extends SingleColumnFilter<PostalCodeSearchEntity>
 
 	@Override
 	public FilterNode<String[]> createFilterNode(PostalCodeSearchEntity postalCodeSearchEntity) {
-
-		if (postalCodesManager != null) {
-			return new MultiSelectFilterNode(getColumn(), postalCodesManager.filterAllNeighbours(Integer.parseInt(postalCodeSearchEntity.getPlz()), postalCodeSearchEntity
-					.getRadius()));
-		}
-		else {
-			return new MultiSelectFilterNode(getColumn(), new String[0]);
-		}
-
+		return new MultiSelectFilterNode(getColumn(), postalCodesManager.filterAllNeighbours(Integer.parseInt(postalCodeSearchEntity.getPlz()), postalCodeSearchEntity
+				.getRadius()));
 	}
 
 	@Override

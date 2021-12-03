@@ -8,13 +8,14 @@ import java.util.stream.IntStream;
 
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.common.processor.AbstractRowProcessor;
+import it.unimi.dsi.fastutil.ints.IntIntImmutableSortedPair;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class PostalCodeProcessor extends AbstractRowProcessor {
 	private int plz1Index, plz2Index, distanceIndex;
-	final Set<UnorderedPair<Integer, Integer>> loadedPlzCombinations = new HashSet<>();
+	final Set<IntIntImmutableSortedPair> loadedPlzCombinations = new HashSet<>();
 
 	/**
 	 * loaded {@link PostalCodeDistance}-data and sorted by distance
@@ -59,11 +60,11 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 	@Override
 	public void rowProcessed(String[] row, ParsingContext context) {
 
-		int plz1 = Integer.parseInt(row[plz1Index].trim());
-		int plz2 = Integer.parseInt(row[plz2Index].trim());
+		int plz1 = Integer.parseInt(row[plz1Index]);
+		int plz2 = Integer.parseInt(row[plz2Index]);
 		double distance = Double.parseDouble(row[distanceIndex].trim());
 
-		if (plz1 != plz2 && loadedPlzCombinations.add(new UnorderedPair<>(plz1, plz2))) {
+		if (plz1 != plz2 && loadedPlzCombinations.add(IntIntImmutableSortedPair.of(plz1, plz2))) {
 			data.add(new PostalCodeDistance(plz1, plz2, distance));
 		}
 
