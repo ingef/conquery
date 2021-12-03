@@ -25,7 +25,7 @@ public class PostalCodeFilter extends SingleColumnFilter<PostalCodeSearchEntity>
 			postalCodesManager = PostalCodesManager.loadFrom("/com/bakdata/conquery/postalcodes.csv", false);
 		}
 		catch (IOException exception) {
-			exception.printStackTrace();
+			throw new RuntimeException(exception);
 		}
 	}
 
