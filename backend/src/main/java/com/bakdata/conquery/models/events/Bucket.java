@@ -83,14 +83,13 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@NsIdRef
 	private final Import imp;
 
-	/*
-	TODO: investigate how to assert that number of events equals to the total number of events counted in stores
+
 	@JsonIgnore
 	@ValidationMethod(message = "Number of events does not match to the number of stores")
 	public boolean isNumberOfEventsEqualsNumberOfStores() {
 		return Arrays.stream(stores).allMatch(columnStore -> columnStore.getLines() == getNumberOfEvents());
 	}
-	*/
+
 
 	@JsonIgnore
 	public Table getTable() {
