@@ -317,18 +317,20 @@ const Field = ({ field, ...commonProps }: PropsT) => {
       );
     case "DATASET_SELECT":
       const datasetDefaultValue =
-        availableDatasets.length > 0 ? availableDatasets[0].value : undefined;
+        availableDatasets.length > 0 ? availableDatasets[0] : undefined;
 
       return (
         <ConnectedField formField={field} control={control}>
           {({ ref, ...fieldProps }) => (
             <InputSelect
-              defaultValue={datasetDefaultValue}
               label={field.label[locale]}
               options={availableDatasets}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               optional={optional}
-              value={fieldProps.value as SelectOptionT | null}
+              value={
+                (fieldProps.value as SelectOptionT | null) ||
+                datasetDefaultValue
+              }
               onChange={(value) => setValue(field.name, value, setValueConfig)}
             />
           )}
