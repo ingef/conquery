@@ -36,7 +36,6 @@ interface Props {
   smallMenu?: boolean;
   className?: string;
   value: SelectOptionT | null;
-  defaultValue?: SelectOptionT["value"] | null;
   optional?: boolean;
   onChange: (value: SelectOptionT | null) => void;
 }
@@ -51,7 +50,6 @@ const InputSelect = ({
   clearable,
   className,
   value,
-  defaultValue,
   optional,
   smallMenu,
   onChange,
@@ -68,9 +66,6 @@ const InputSelect = ({
       ? options
       : [value, ...options];
   });
-
-  const defaultOption =
-    value || filteredOptions.find((option) => option.value === defaultValue);
 
   const {
     isOpen,
@@ -92,7 +87,7 @@ const InputSelect = ({
     itemToString: (item) => {
       return item?.label || "";
     },
-    defaultSelectedItem: defaultOption,
+    defaultSelectedItem: value,
     items: filteredOptions,
     stateReducer: (state, { type, changes }) => {
       // This modifies the action payload itself
