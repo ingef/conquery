@@ -35,7 +35,7 @@ const SelectedItem = forwardRef<
     onRemoveClick: () => void;
   }
 >(({ option, disabled, onRemoveClick, ...rest }, ref) => {
-  const label = option.label || option.value;
+  const label = option.selectedLabel || option.label || option.value;
 
   return (
     <Container ref={ref} {...rest}>
