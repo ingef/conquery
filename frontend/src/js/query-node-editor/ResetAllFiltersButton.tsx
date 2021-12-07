@@ -12,17 +12,18 @@ const SxWithTooltip = styled(WithTooltip)`
 
 interface Props {
   compact?: boolean;
+  icon: "undo" | "trash";
   onClick: () => void;
 }
 
-const ResetAllFiltersButton: FC<Props> = ({ compact, onClick }) => {
+const ResetAllFiltersButton: FC<Props> = ({ compact, icon, onClick }) => {
   const { t } = useTranslation();
 
   return (
     <SxWithTooltip
       text={compact ? t("queryNodeEditor.resetSettings") : undefined}
     >
-      <IconButton active onClick={onClick} icon="undo">
+      <IconButton active onClick={onClick} icon={icon}>
         {!compact && t("queryNodeEditor.resetSettings")}
       </IconButton>
     </SxWithTooltip>

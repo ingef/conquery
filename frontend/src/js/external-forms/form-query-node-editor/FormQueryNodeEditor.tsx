@@ -1,4 +1,5 @@
 import { StateT } from "app-types";
+import { NodeResetConfig } from "js/model/node";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
@@ -48,8 +49,8 @@ interface PropsT {
     filterIdx: number,
     mode: ModeT,
   ) => void;
-  onResetAllFilters: () => void;
-  onResetTable: (tableIdx: number) => void;
+  onResetAllFilters: (config: NodeResetConfig) => void;
+  onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
   onSelectSelects: (selectedSelects: SelectOptionT[]) => void;
   onSelectTableSelects: (
     tableIdx: number,

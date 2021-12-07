@@ -7,6 +7,10 @@ import type {
 import { objectHasSelectedSelects } from "./select";
 import { tablesHaveActiveFilter } from "./table";
 
+export interface NodeResetConfig {
+  useDefaults?: boolean;
+}
+
 export const nodeIsConceptQueryNode = (
   node: StandardQueryNodeT,
 ): node is ConceptQueryNodeType => !node.isPreviousQuery;

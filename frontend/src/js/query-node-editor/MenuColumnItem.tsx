@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
+import type { NodeResetConfig } from "../model/node";
 import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -61,7 +62,7 @@ interface PropsT {
   allowlistedTables?: string[];
   onClick: () => void;
   onToggleTable: (value: boolean) => void;
-  onResetTable: () => void;
+  onResetTable: (config: NodeResetConfig) => void;
 }
 
 const MenuColumnItem: FC<PropsT> = ({
@@ -120,7 +121,7 @@ const MenuColumnItem: FC<PropsT> = ({
                 return;
               }
 
-              onResetTable();
+              onResetTable({ useDefaults: true });
             }}
           />
         </SxWithTooltip>

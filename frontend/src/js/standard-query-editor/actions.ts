@@ -16,6 +16,7 @@ import type {
 } from "../api/types";
 import { successPayload } from "../common/actions";
 import type { TreesT } from "../concept-trees/reducer";
+import type { NodeResetConfig } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
 
@@ -201,12 +202,14 @@ export const setDateColumn = createAction("query-editor/SET_DATE_COLUMN")<{
 export const resetAllFilters = createAction("query-editor/RESET_ALL_FILTERS")<{
   andIdx: number;
   orIdx: number;
+  config: NodeResetConfig;
 }>();
 
 export const resetTable = createAction("query-editor/RESET_TABLE")<{
   andIdx: number;
   orIdx: number;
   tableIdx: number;
+  config: NodeResetConfig;
 }>();
 
 export const switchFilterMode = createAction(

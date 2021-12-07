@@ -5,28 +5,35 @@ import type {
 } from "../api/types";
 import { exists } from "../common/helpers/exists";
 
-const filterWithDefaults = (filter: FilterT) => {
-  switch (filter.type) {
-    case "MULTI_SELECT":
-    case "BIG_MULTI_SELECT":
-      return {
-        ...filter,
-        value: filter.defaultValue
-          ? filter.defaultValue
-              .map((val) => filter.options.find((opt) => opt.value === val))
-              .filter(exists)
-          : [],
-      };
-    default:
-      return {
-        ...filter,
-        value: filter.defaultValue || null,
-      };
-  }
-};
+import { NodeResetConfig } from "./node";
 
-export const filtersWithDefaults = (filters?: FilterT[]) =>
-  filters ? filters.map(filterWithDefaults) : [];
+const resetFilter =
+  (config: NodeResetConfig = {}) =>
+  (filter: FilterT) => {
+    switch (filter.type) {
+      case "MULTI_SELECT":
+      case "BIG_MULTI_SELECT":
+        return {
+          ...filter,
+          value:
+            config.useDefaults && filter.defaultValue
+              ? filter.defaultValue
+                  .map((val) => filter.options.find((opt) => opt.value === val))
+                  .filter(exists)
+              : [],
+        };
+      default:
+        return {
+          ...filter,
+          value: config.useDefaults ? filter.defaultValue || null : null,
+        };
+    }
+  };
+
+export const resetFilters = (
+  filters?: FilterT[],
+  config: NodeResetConfig = {},
+) => (filters ? filters.map(resetFilter(config)) : []);
 
 export const isMultiSelectFilter = (
   filter: FilterT,

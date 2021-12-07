@@ -5,6 +5,8 @@ import type {
   TableWithFilterValueT,
 } from "../standard-query-editor/types";
 
+import type { NodeResetConfig } from "./node";
+
 export function objectHasSelectedSelects(
   obj: ConceptQueryNodeType | TableWithFilterValueT,
 ) {
@@ -30,8 +32,9 @@ const withDefaultSelect = (select: SelectorT) => ({
   selected: !!select.default,
 });
 
-export const selectsWithDefaults = (
+export const resetSelects = (
   selects?: SelectorT[],
+  config: NodeResetConfig,
 ): SelectedSelectorT[] => (selects ? selects.map(withDefaultSelect) : []);
 
 function selectTypesMatch(

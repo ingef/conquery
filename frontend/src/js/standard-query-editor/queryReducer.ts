@@ -22,7 +22,7 @@ import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTre
 import type { TreesT } from "../concept-trees/reducer";
 import { isMultiSelectFilter } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
-import { selectsWithDefaults } from "../model/select";
+import { resetSelects } from "../model/select";
 import { resetAllFiltersInTables, tableWithDefaults } from "../model/table";
 import { loadQuery, renameQuery } from "../previous-queries/list/actions";
 import {
@@ -414,7 +414,7 @@ const switchNodeFilterMode = (
 
 const resetNodeAllFilters = (
   state: StandardQueryStateT,
-  { andIdx, orIdx }: ActionType<typeof resetAllFilters>["payload"],
+  { andIdx, orIdx, config }: ActionType<typeof resetAllFilters>["payload"],
 ) => {
   const node = state[andIdx].elements[orIdx];
 
@@ -422,20 +422,20 @@ const resetNodeAllFilters = (
     excludeFromSecondaryId: false,
     excludeTimestamps: false,
     selects: nodeIsConceptQueryNode(node)
-      ? selectsWithDefaults(node.selects)
+      ? resetSelects(node.selects, config)
       : [],
   });
 
   if (!nodeIsConceptQueryNode(node)) return newState;
 
-  const tables = resetAllFiltersInTables(node.tables);
+  const tables = resetAllFiltersInTables(node.tables, config);
 
   return updateNodeTables(newState, andIdx, orIdx, tables);
 };
 
 const resetNodeTable = (
   state: StandardQueryStateT,
-  { andIdx, orIdx, tableIdx }: ActionType<typeof resetTable>["payload"],
+  { andIdx, orIdx, tableIdx, config }: ActionType<typeof resetTable>["payload"],
 ) => {
   const node = state[andIdx].elements[orIdx];
 
@@ -450,7 +450,7 @@ const resetNodeTable = (
     andIdx,
     orIdx,
     tableIdx,
-    tableWithDefaults(table),
+    tableWithDefaults(config)(table),
   );
 };
 

@@ -14,7 +14,11 @@ import {
 } from "../api/types";
 import { TransparentButton } from "../button/TransparentButton";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
-import { nodeHasActiveFilters, nodeIsConceptQueryNode } from "../model/node";
+import {
+  nodeHasActiveFilters,
+  nodeIsConceptQueryNode,
+  NodeResetConfig,
+} from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
@@ -114,8 +118,8 @@ export interface QueryNodeEditorPropsT {
   onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
-  onResetAllFilters: () => void;
-  onResetTable: (tableIdx: number) => void;
+  onResetAllFilters: (config: NodeResetConfig) => void;
+  onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
   onToggleTimestamps?: () => void;
   onToggleSecondaryIdExclude?: () => void;
   onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
@@ -225,7 +229,15 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
           <Row>
             {hasActiveFilters && (
               <ResetAllFiltersButton
-                onClick={props.onResetAllFilters}
+                icon="undo"
+                onClick={() => props.onResetAllFilters({ useDefaults: true })}
+                compact={isCompact}
+              />
+            )}
+            {hasActiveFilters && (
+              <ResetAllFiltersButton
+                icon="trash"
+                onClick={() => props.onResetAllFilters({ useDefaults: false })}
                 compact={isCompact}
               />
             )}

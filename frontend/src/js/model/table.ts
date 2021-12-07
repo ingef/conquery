@@ -3,8 +3,9 @@ import { compose, isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
-import { filtersWithDefaults } from "./filter";
-import { objectHasSelectedSelects, selectsWithDefaults } from "./select";
+import { resetFilters } from "./filter";
+import type { NodeResetConfig } from "./node";
+import { objectHasSelectedSelects, resetSelects } from "./select";
 
 export const tableIsEditable = (table: TableWithFilterValueT) =>
   (!!table.filters && table.filters.length > 0) ||
@@ -55,10 +56,13 @@ export function tableIsDisabled(
   );
 }
 
-export const resetAllFiltersInTables = (tables: TableWithFilterValueT[]) => {
+export const resetAllFiltersInTables = (
+  tables?: TableWithFilterValueT[],
+  config: NodeResetConfig = {},
+) => {
   if (!tables) return [];
 
-  return tablesWithDefaults(tables);
+  return resetTables(tables, config);
 };
 
 const tableWithDefaultDateColumn = (table: TableT): TableT => {
@@ -76,25 +80,30 @@ const tableWithDefaultDateColumn = (table: TableT): TableT => {
   };
 };
 
-const tableWithDefaultFilters = (table: TableT) => ({
-  ...table,
-  filters: filtersWithDefaults(table.filters),
-});
-
-const tableWithDefaultSelects = (table: TableT) => ({
-  ...table,
-  selects: selectsWithDefaults(table.selects),
-});
-
-export const tableWithDefaults = (table: TableT): TableT =>
-  compose(
-    tableWithDefaultDateColumn,
-    tableWithDefaultSelects,
-    tableWithDefaultFilters,
-  )({
+const tableWithDefaultFilters =
+  (config: NodeResetConfig) => (table: TableT) => ({
     ...table,
-    exclude: false,
+    filters: resetFilters(table.filters, config),
   });
 
-export const tablesWithDefaults = (tables?: TableT[]) =>
-  tables ? tables.map(tableWithDefaults) : [];
+const tableWithDefaultSelects =
+  (config: NodeResetConfig = {}) =>
+  (table: TableT) => ({
+    ...table,
+    selects: resetSelects(table.selects, config),
+  });
+
+export const tableWithDefaults =
+  (config: NodeResetConfig) =>
+  (table: TableT): TableT =>
+    compose(
+      tableWithDefaultDateColumn,
+      tableWithDefaultSelects(config),
+      tableWithDefaultFilters(config),
+    )({
+      ...table,
+      exclude: Boolean(config.useDefaults && !table.default),
+    });
+
+export const resetTables = (tables?: TableT[], config: NodeResetConfig = {}) =>
+  tables ? tables.map(tableWithDefaults(config)) : [];

@@ -2,7 +2,7 @@ import { StateT } from "app-types";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ConceptIdT, CurrencyConfigT, DatasetIdT } from "../api/types";
-import { nodeIsConceptQueryNode } from "../model/node";
+import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
 import { tableIsEditable } from "../model/table";
 import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
 import { QueryNodeEditorStateT } from "../query-node-editor/reducer";
@@ -100,9 +100,11 @@ const StandardQueryNodeEditor = ({ editedNode, setEditedNode }: Props) => {
       onSwitchFilterMode={(tableIdx, filterIdx, mode) =>
         dispatch(switchFilterMode({ andIdx, orIdx, tableIdx, filterIdx, mode }))
       }
-      onResetAllFilters={() => dispatch(resetAllFilters({ andIdx, orIdx }))}
-      onResetTable={(tableIdx: number) =>
-        dispatch(resetTable({ andIdx, orIdx, tableIdx }))
+      onResetAllFilters={(config: NodeResetConfig) =>
+        dispatch(resetAllFilters({ andIdx, orIdx, config }))
+      }
+      onResetTable={(tableIdx: number, config: NodeResetConfig) =>
+        dispatch(resetTable({ andIdx, orIdx, tableIdx, config }))
       }
       onToggleTimestamps={() => dispatch(toggleTimestamps({ andIdx, orIdx }))}
       onToggleSecondaryIdExclude={() =>
