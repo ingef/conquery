@@ -15,6 +15,15 @@ export const nodeIsConceptQueryNode = (
   node: StandardQueryNodeT,
 ): node is ConceptQueryNodeType => !node.isPreviousQuery;
 
+const nodeHasNonDefaultExludedTable = (node: ConceptQueryNodeType) => {
+  if (!node.tables) return false;
+
+  return node.tables.some(
+    (table) =>
+      (table.exclude && table.default) || (!table.default && !table.exclude),
+  );
+};
+
 export const nodeHasActiveFilters = (node: StandardQueryNodeT) =>
   node.excludeTimestamps ||
   node.excludeFromSecondaryId ||
@@ -22,18 +31,12 @@ export const nodeHasActiveFilters = (node: StandardQueryNodeT) =>
     (node.includeSubnodes || // TODO REFACTOR / TYPE THIS ONE
       objectHasSelectedSelects(node) ||
       nodeHasActiveTableFilters(node) ||
-      nodeHasExludedTable(node)));
+      nodeHasNonDefaultExludedTable(node)));
 
 export const nodeHasActiveTableFilters = (node: ConceptQueryNodeType) => {
   if (!node.tables) return false;
 
   return tablesHaveActiveFilter(node.tables);
-};
-
-export const nodeHasExludedTable = (node: ConceptQueryNodeType) => {
-  if (!node.tables) return false;
-
-  return node.tables.some((table) => table.exclude);
 };
 
 export function nodeIsInvalid(
