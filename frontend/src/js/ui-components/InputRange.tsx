@@ -38,7 +38,7 @@ interface PropsType {
   indexPrefix?: number;
   unit?: string;
   value: ValueT | null;
-  onChange: (value: ValueT) => void;
+  onChange: (value: ValueT | null) => void;
   defaultValue?: ValueT;
   limits?: {
     min?: number;
