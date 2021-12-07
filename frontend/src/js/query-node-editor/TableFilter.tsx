@@ -57,8 +57,11 @@ const TableFilter = ({
         return (
           <InputSelect
             indexPrefix={filterIdx + 1}
-            defaultValue={filter.defaultValue}
-            value={filter.options.find((o) => o.value === filter.value) || null}
+            value={
+              filter.options.find((o) => o.value === filter.value) ||
+              filter.options.find((o) => o.value === filter.defaultValue) ||
+              null
+            }
             onChange={(value) =>
               onSetFilterValue(filterIdx, value?.value || null)
             }
