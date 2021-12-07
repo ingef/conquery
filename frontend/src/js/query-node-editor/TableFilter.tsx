@@ -76,7 +76,6 @@ const TableFilter = ({
             context={{ ...context, filterId: filter.id }}
             indexPrefix={filterIdx + 1}
             value={filter.value || []}
-            defaultValue={filter.defaultValue || []}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             options={filter.options}
@@ -90,7 +89,6 @@ const TableFilter = ({
             indexPrefix={filterIdx + 1}
             context={{ ...context, filterId: filter.id }}
             value={filter.value || []}
-            defaultValue={filter.defaultValue || []}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             options={filter.options}
