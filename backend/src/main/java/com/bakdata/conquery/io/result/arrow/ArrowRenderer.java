@@ -3,7 +3,9 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -292,10 +294,9 @@ public class ArrowRenderer {
             return dateDayVectorFiller((DateDayVector) vector, (line) -> (Number) line[pos]);
         }
 
-        if (vector instanceof StructVector) {
-            StructVector structVector = (StructVector) vector;
+        if (vector instanceof StructVector structVector) {
 
-            List<ValueVector> nestedVectors = structVector.getPrimitiveVectors();
+			List<ValueVector> nestedVectors = structVector.getPrimitiveVectors();
             RowConsumer [] nestedConsumers = new RowConsumer[nestedVectors.size()];
             for (int i = 0; i < nestedVectors.size(); i++) {
                 nestedConsumers[i] = generateVectorFiller(i, nestedVectors.get(i), settings, resultType);
@@ -303,10 +304,9 @@ public class ArrowRenderer {
             return structVectorFiller(structVector, nestedConsumers, (line) -> (List<?>) line[pos]);
         }
 
-        if (vector instanceof ListVector) {
-            ListVector listVector = (ListVector) vector;
+        if (vector instanceof ListVector listVector) {
 
-            ValueVector nestedVector = listVector.getDataVector();
+			ValueVector nestedVector = listVector.getDataVector();
 
             // pos = 0 is a workaround for now
             return listVectorFiller(listVector, generateVectorFiller(0, nestedVector, settings, ((ResultType.ListT) resultType).getElementType()), (line) -> (List<?>) line[pos]);

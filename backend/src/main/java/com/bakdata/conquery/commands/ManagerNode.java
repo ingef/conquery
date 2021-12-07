@@ -229,8 +229,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
-		if (message instanceof MessageToManagerNode) {
-			MessageToManagerNode mrm = (MessageToManagerNode) message;
+		if (message instanceof MessageToManagerNode mrm) {
+
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
 					jobManager,

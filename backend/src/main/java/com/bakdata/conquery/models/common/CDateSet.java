@@ -11,18 +11,14 @@ import java.util.NavigableMap;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 /**
  * (De-)Serializers are are registered programmatically because they depend on {@link DateReader}
@@ -102,8 +98,7 @@ public class CDateSet {
 			if (this == object) {
 				return true;
 			}
-			if (object instanceof Set) {
-				Set<?> o = (Set<?>) object;
+			if (object instanceof Set<?> o) {
 
 				try {
 					return this.size() == o.size() && this.containsAll(o);

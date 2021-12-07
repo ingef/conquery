@@ -338,8 +338,7 @@ public class GroupHandler {
 		if (type instanceof BaseTypeSignature) {
 			return code(type.toString());
 		}
-		if (type instanceof ClassRefTypeSignature) {
-			ClassRefTypeSignature classRef = (ClassRefTypeSignature) type;
+		if (type instanceof ClassRefTypeSignature classRef) {
 			Class<?> cl = classRef.loadClass();
 
 			//ID

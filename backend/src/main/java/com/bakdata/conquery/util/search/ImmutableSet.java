@@ -17,6 +17,10 @@
  */
 package com.bakdata.conquery.util.search;
 
+import static java.lang.System.arraycopy;
+import static java.util.Arrays.binarySearch;
+import static java.util.Arrays.parallelSort;
+
 import java.util.AbstractCollection;
 import java.util.AbstractSet;
 import java.util.Collection;
@@ -28,10 +32,6 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
-
-import static java.lang.System.arraycopy;
-import static java.util.Arrays.binarySearch;
-import static java.util.Arrays.parallelSort;
 
 /**
  * Immutable, array backed, {@link Set} of unique (as determined by  their
@@ -279,9 +279,8 @@ public final class ImmutableSet<T extends Comparable<? super T>> extends Abstrac
         if (source instanceof ImmutableSet)
             return (ImmutableSet<T>) source;
 
-        if (source instanceof Set) {
-            final Set set = (Set) source;
-            set.remove(null);
+        if (source instanceof final Set set) {
+			set.remove(null);
             return new ImmutableSet<>(arrayFromCollection(set));
         }
 

@@ -49,10 +49,9 @@ public class CQDateRestriction extends CQElement {
 
         while (!openList.isEmpty()) {
             QPNode current = openList.poll();
-            if (current instanceof ValidityDateNode) {
-                ValidityDateNode validityDateNode = (ValidityDateNode) current;
+            if (current instanceof ValidityDateNode validityDateNode) {
 
-                validityDateNode.setChild(new DateRestrictingNode(
+				validityDateNode.setChild(new DateRestrictingNode(
                         CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
                         validityDateNode.getChild()
                 ));
