@@ -113,10 +113,17 @@ public class BytesTTMap extends NodeParent<ABytesNode> {
 
 	@Override
 	protected void replace(ABytesNode oldNode, TTDirection direction, ABytesNode newNode) {
-		if (direction == MIDDLE && root == oldNode) {
-			root = newNode;
+		switch (direction) {
+			case MIDDLE: {
+				if (root != oldNode) {
+					throw new IllegalStateException();
+				}
+				root = newNode;
+				return;
+			}
+			default:
+				throw new IllegalStateException();
 		}
-		throw new IllegalStateException();
 	}
 
 	private List<ValueNode> collectValueNodes() {
