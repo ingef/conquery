@@ -93,17 +93,11 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	}
 
 	private DateAggregationAction determineDateAction(QueryResolveContext context) {
-		switch(context.getDateAggregationMode()) {
-			case NONE:
-				return DateAggregationAction.BLOCK;
-			case MERGE:
-				return DateAggregationAction.MERGE;
-			case LOGICAL:
-			case INTERSECT:
-				return DateAggregationAction.INTERSECT;
-			default:
-				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());
-		}
+		return switch (context.getDateAggregationMode()) {
+			case NONE -> DateAggregationAction.BLOCK;
+			case MERGE -> DateAggregationAction.MERGE;
+			case LOGICAL, INTERSECT -> DateAggregationAction.INTERSECT;
+		};
 	}
 
 	@Override

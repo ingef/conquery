@@ -41,25 +41,15 @@ public abstract class ResultType {
 	public abstract String typeInfo();
 
 	public static ResultType resolveResultType(MajorTypeId majorTypeId) {
-		switch (majorTypeId) {
-			case STRING:
-				return StringT.INSTANCE;
-			case BOOLEAN:
-				return BooleanT.INSTANCE;
-			case DATE:
-				return DateT.INSTANCE;
-			case DATE_RANGE:
-				return DateRangeT.INSTANCE;
-			case INTEGER:
-				return IntegerT.INSTANCE;
-			case MONEY:
-				return MoneyT.INSTANCE;
-			case DECIMAL:
-			case REAL:
-				return NumericT.INSTANCE;
-			default:
-				throw new IllegalStateException(String.format("Invalid column type '%s'", majorTypeId));
-		}
+		return switch (majorTypeId) {
+			case STRING -> StringT.INSTANCE;
+			case BOOLEAN -> BooleanT.INSTANCE;
+			case DATE -> DateT.INSTANCE;
+			case DATE_RANGE -> DateRangeT.INSTANCE;
+			case INTEGER -> IntegerT.INSTANCE;
+			case MONEY -> MoneyT.INSTANCE;
+			case DECIMAL, REAL -> NumericT.INSTANCE;
+		};
 	}
 
 	abstract static class PrimitiveResultType extends ResultType {

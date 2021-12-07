@@ -5,9 +5,9 @@ import java.util.EnumSet;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
@@ -36,14 +36,11 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 	
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
-		switch (getColumn().getType()) {
-			case DATE: {
-				f.setType(FEFilterType.INTEGER_RANGE);
-				return;
-			}
-			default:
-				throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + getColumn().getType());
+		if (getColumn().getType() != MajorTypeId.DATE) {
+			throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + getColumn().getType());
 		}
+
+		f.setType(FEFilterType.INTEGER_RANGE);
 	}
 	
 	@Override

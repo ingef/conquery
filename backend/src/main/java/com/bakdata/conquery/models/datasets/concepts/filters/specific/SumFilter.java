@@ -3,14 +3,14 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
@@ -61,21 +61,15 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		Column column = getColumn();
-		switch (column.getType()) {
-			case MONEY:
-				f.setType(FEFilterType.MONEY_RANGE);
-				return;
-			case INTEGER:
-				f.setType(FEFilterType.INTEGER_RANGE);
-				return;
-			case DECIMAL:
-			case REAL: {
-				f.setType(FEFilterType.REAL_RANGE);
-				return;
-			}
-			default:
-				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + column.getType());
-		}
+		f.setType(
+				switch (column.getType()) {
+					case MONEY -> FEFilterType.MONEY_RANGE;
+					case INTEGER -> FEFilterType.INTEGER_RANGE;
+					case DECIMAL, REAL -> FEFilterType.REAL_RANGE;
+
+					default -> throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type "
+																					   + column.getType());
+				});
 	}
 
 	@Override
@@ -100,30 +94,20 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	private ColumnAggregator<?> getAggregator() {
 		if (getSubtractColumn() == null) {
-			switch (getColumn().getType()) {
-				case MONEY:
-					return new MoneySumAggregator(getColumn());
-				case INTEGER:
-					return new IntegerSumAggregator(getColumn());
-				case DECIMAL:
-					return new DecimalSumAggregator(getColumn());
-				case REAL:
-					return new RealSumAggregator(getColumn());
-				default:
-					throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
-			}
+			return switch (getColumn().getType()) {
+				case MONEY -> new MoneySumAggregator(getColumn());
+				case INTEGER -> new IntegerSumAggregator(getColumn());
+				case DECIMAL -> new DecimalSumAggregator(getColumn());
+				case REAL -> new RealSumAggregator(getColumn());
+				default -> throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
+			};
 		}
-		switch (getColumn().getType()) {
-			case MONEY:
-				return new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
-			case INTEGER:
-				return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
-			case DECIMAL:
-				return new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
-			case REAL:
-				return new RealDiffSumAggregator(getColumn(), getSubtractColumn());
-			default:
-				throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
-		}
+		return switch (getColumn().getType()) {
+			case MONEY -> new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
+			case INTEGER -> new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
+			case DECIMAL -> new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
+			case REAL -> new RealDiffSumAggregator(getColumn(), getSubtractColumn());
+			default -> throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
+		};
 	}
 }

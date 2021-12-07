@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.List;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.identifiable.ids.AId;
@@ -22,16 +20,12 @@ public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AI
 		public PermissionOwnerId<?> parseInternally(IdIterator parts) {
 			String ownerId = parts.next();
 			String type = parts.next();
-			switch(type) {
-				case UserId.TYPE:
-					return new UserId(ownerId);
-				case RoleId.TYPE:
-					return new RoleId(ownerId);
-				case GroupId.TYPE:
-					return new GroupId(ownerId);
-				default:
-					throw new IllegalStateException("Unknown permission owner type: " + type);
-			}
+			return switch (type) {
+				case UserId.TYPE -> new UserId(ownerId);
+				case RoleId.TYPE -> new RoleId(ownerId);
+				case GroupId.TYPE -> new GroupId(ownerId);
+				default -> throw new IllegalStateException("Unknown permission owner type: " + type);
+			};
 		}
 	}
 	

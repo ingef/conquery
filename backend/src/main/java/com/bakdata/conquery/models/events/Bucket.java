@@ -152,14 +152,14 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	}
 
 	public CDateRange getAsDateRange(int event, Column column) {
-		switch (column.getType()) {
-			case DATE:
-				return CDateRange.exactly(((DateStore) getStore(column)).getDate(event));
-			case DATE_RANGE:
-				return getDateRange(event, column);
-			default:
-				throw new IllegalStateException("Column is not of DateCompatible type.");
-		}
+		return switch (column.getType()) {
+
+			case DATE -> CDateRange.exactly(((DateStore) getStore(column)).getDate(event));
+
+			case DATE_RANGE -> getDateRange(event, column);
+
+			default -> throw new IllegalStateException("Column is not of DateCompatible type.");
+		};
 	}
 
 	public Object createScriptValue(int event, @NotNull Column column) {
