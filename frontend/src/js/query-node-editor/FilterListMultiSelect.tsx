@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 import { usePostFilterValuesResolve } from "../api/api";
 import type {
@@ -6,7 +6,6 @@ import type {
   PostFilterResolveResponseT,
   SelectOptionT,
 } from "../api/types";
-import { usePrevious } from "../common/helpers/usePrevious";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
 import type { FiltersContextT } from "./TableFilter";
@@ -30,14 +29,12 @@ interface PropsT {
 
   value: SelectOptionT[];
   onChange: (value: SelectOptionT[]) => void;
-  defaultValue: string[];
 }
 
 const FilterListMultiSelect: FC<PropsT> = ({
   context,
   value,
   onChange,
-  defaultValue,
   label,
   indexPrefix,
   options,
@@ -53,8 +50,6 @@ const FilterListMultiSelect: FC<PropsT> = ({
   const [error, setError] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const postFilterValuesResolve = usePostFilterValuesResolve();
-
-  const previousDefaultValue = usePrevious(defaultValue);
 
   const onLoadMore = async (prefix: string) => {
     if (onLoad && !loading) {
@@ -97,43 +92,6 @@ const FilterListMultiSelect: FC<PropsT> = ({
 
     setLoading(false);
   };
-
-  useEffect(() => {
-    async function resolveDefaultValue() {
-      const hasDefaultValueToLoad =
-        defaultValue &&
-        defaultValue.length > 0 &&
-        JSON.stringify(defaultValue) !== JSON.stringify(previousDefaultValue);
-
-      if (hasDefaultValueToLoad) {
-        const r = await postFilterValuesResolve(
-          context.datasetId,
-          context.treeId,
-          context.tableId,
-          context.filterId,
-          defaultValue,
-        );
-
-        if (
-          r.resolvedFilter &&
-          r.resolvedFilter.value &&
-          r.resolvedFilter.value.length > 0
-        ) {
-          onChange(r.resolvedFilter.value);
-        }
-      }
-    }
-    resolveDefaultValue();
-  }, [
-    context.datasetId,
-    context.filterId,
-    context.tableId,
-    context.treeId,
-    previousDefaultValue,
-    defaultValue,
-    postFilterValuesResolve,
-    onChange,
-  ]);
 
   return (
     <>
