@@ -204,6 +204,10 @@ public class ConceptsProcessor {
 	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
 		if (Strings.isNullOrEmpty(text)) {
 			// If no text provided, we just list them
+			// Filter might not have a source search (since none might be defined).
+
+			//TODO unify these code paths, they are quite the mess, maybe also create source search for key-value also
+
 			final Stream<FEValue> fromSearch =
 					filter.getSourceSearch() == null
 					? Stream.empty()
