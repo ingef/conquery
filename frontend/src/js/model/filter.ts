@@ -3,6 +3,7 @@ import type {
   FilterT,
   MultiSelectFilterT,
 } from "../api/types";
+import { exists } from "../common/helpers/exists";
 
 const filterWithDefaults = (filter: FilterT) => {
   switch (filter.type) {
@@ -10,7 +11,11 @@ const filterWithDefaults = (filter: FilterT) => {
     case "BIG_MULTI_SELECT":
       return {
         ...filter,
-        value: filter.defaultValue || [],
+        value: filter.defaultValue
+          ? filter.defaultValue
+              .map((val) => filter.options.find((opt) => opt.value === val))
+              .filter(exists)
+          : [],
       };
     default:
       return {

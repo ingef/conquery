@@ -105,22 +105,24 @@ const FilterListMultiSelect: FC<PropsT> = ({
         defaultValue.length > 0 &&
         JSON.stringify(defaultValue) !== JSON.stringify(previousDefaultValue);
 
-      if (hasDefaultValueToLoad) {
-        const r = await postFilterValuesResolve(
-          context.datasetId,
-          context.treeId,
-          context.tableId,
-          context.filterId,
-          defaultValue,
-        );
+      if (!hasDefaultValueToLoad) {
+        return;
+      }
 
-        if (
-          r.resolvedFilter &&
-          r.resolvedFilter.value &&
-          r.resolvedFilter.value.length > 0
-        ) {
-          onChange(r.resolvedFilter.value);
-        }
+      const r = await postFilterValuesResolve(
+        context.datasetId,
+        context.treeId,
+        context.tableId,
+        context.filterId,
+        defaultValue,
+      );
+
+      if (
+        r.resolvedFilter &&
+        r.resolvedFilter.value &&
+        r.resolvedFilter.value.length > 0
+      ) {
+        onChange(r.resolvedFilter.value);
       }
     }
     resolveDefaultValue();
