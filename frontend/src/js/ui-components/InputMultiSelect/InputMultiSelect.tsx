@@ -30,6 +30,7 @@ import MenuActionBar from "./MenuActionBar";
 import SelectedItem from "./SelectedItem";
 import { useCloseOnClickOutside } from "./useCloseOnClickOutside";
 import { useFilteredOptions } from "./useFilteredOptions";
+import { useLoadMoreInitially } from "./useLoadMoreInitially";
 import { useResolvableSelect } from "./useResolvableSelect";
 import { useSyncWithValueFromAbove } from "./useSyncWithValueFromAbove";
 
@@ -208,6 +209,8 @@ const InputMultiSelect = ({
       }
     },
   });
+
+  useLoadMoreInitially({ onLoadMore, isOpen, optionsLength: options.length });
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
   const inputProps = getInputProps(getDropdownProps({ autoFocus }));
