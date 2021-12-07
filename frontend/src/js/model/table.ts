@@ -1,9 +1,9 @@
 import type { TableT } from "../api/types";
-import { compose, isEmpty } from "../common/helpers";
+import { compose } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
-import { resetFilters } from "./filter";
+import { resetFilters, filterValueDiffersFromDefault } from "./filter";
 import type { NodeResetConfig } from "./node";
 import { objectHasSelectedSelects, resetSelects } from "./select";
 
@@ -19,12 +19,7 @@ export const tableHasActiveFilters = (table: TableWithFilterValueT) => {
   const activeSelects = objectHasSelectedSelects(table);
   const activeDateColumn = tableHasNonDefaultDateColumn(table);
   const activeFilters =
-    table.filters &&
-    table.filters.some(
-      (filter) =>
-        !isEmpty(filter.value) &&
-        (isEmpty(filter.defaultValue) || filter.value !== filter.defaultValue),
-    );
+    table.filters && table.filters.some(filterValueDiffersFromDefault);
 
   return activeSelects || activeDateColumn || activeFilters;
 };
