@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC, useMemo } from "react";
+import { FC, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -147,4 +147,4 @@ const TableView: FC<PropsT> = ({
   );
 };
 
-export default TableView;
+export default memo(TableView);

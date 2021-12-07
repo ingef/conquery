@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 
 import {
   ConceptIdT,
@@ -51,6 +51,11 @@ const TableFilter = ({
   onShowDescription,
   onSwitchFilterMode,
 }: TableFilterProps) => {
+  const filterContext = useMemo(
+    () => ({ ...context, filterId: filter.id }),
+    [context, filter.id],
+  );
+
   const filterComponent = (() => {
     switch (filter.type) {
       case "SELECT":
@@ -73,7 +78,7 @@ const TableFilter = ({
       case "MULTI_SELECT":
         return (
           <FilterListMultiSelect
-            context={{ ...context, filterId: filter.id }}
+            context={filterContext}
             indexPrefix={filterIdx + 1}
             value={filter.value || []}
             defaultValue={filter.defaultValue || []}
@@ -88,7 +93,7 @@ const TableFilter = ({
         return (
           <FilterListMultiSelect
             indexPrefix={filterIdx + 1}
-            context={{ ...context, filterId: filter.id }}
+            context={filterContext}
             value={filter.value || []}
             defaultValue={filter.defaultValue || []}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
