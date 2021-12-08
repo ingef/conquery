@@ -1,7 +1,5 @@
-import { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-import { reset } from "redux-form";
+import { useDispatch } from "react-redux";
 
 import { useGetDatasets } from "../api/api";
 import type { DatasetIdT } from "../api/types";
@@ -74,14 +72,9 @@ export const saveQuery = (
   return { type: SAVE_QUERY, payload: { query, previouslySelectedDatasetId } };
 };
 
-const selectActiveForm = (state: StateT) => {
-  return state.externalForms && state.externalForms.activeForm;
-};
-
 export const useSelectDataset = () => {
   const dispatch = useDispatch();
   const loadTrees = useLoadTrees();
-  const activeForm = useSelector<StateT, string | null>(selectActiveForm);
   const loadQueries = useLoadQueries();
 
   return (
@@ -112,11 +105,6 @@ export const useSelectDataset = () => {
       }
 
       loadTrees(datasetId);
-
-      // CLEAR Redux Form
-      if (activeForm) {
-        dispatch(reset(activeForm));
-      }
 
       return loadQueries(datasetId);
     }

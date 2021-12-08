@@ -19,7 +19,7 @@ import com.bakdata.conquery.apiv1.frontend.FETable;
 import com.bakdata.conquery.apiv1.frontend.FEValidityDate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -44,7 +44,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Slf4j
 public class FrontEndConceptBuilder {
 
-	public static FERoot createRoot(NamespaceStorage storage, User user) {
+	public static FERoot createRoot(NamespaceStorage storage, Subject subject) {
 
 		FERoot root = new FERoot();
 		Map<IId<?>, FENode> roots = root.getConcepts();
@@ -58,7 +58,7 @@ public class FrontEndConceptBuilder {
 		}
 
 		// Submit all permissions to Shiro
-		boolean[] isPermitted = user.isPermitted(allConcepts, Ability.READ);
+		boolean[] isPermitted = subject.isPermitted(allConcepts, Ability.READ);
 		
 		for (int i = 0; i<allConcepts.size(); i++) {
 			if(isPermitted[i]) {
@@ -66,9 +66,9 @@ public class FrontEndConceptBuilder {
 			}
 		}
 		if(roots.isEmpty()) {
-			log.warn("No concepts could be collected for {} on dataset {}. The user is possibly lacking the permission to use them.", user.getId(), storage.getDataset().getId());
+			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.", subject.getId(), storage.getDataset().getId());
 		} else {
-			log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), user.getId(), storage.getDataset().getId());
+			log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), subject.getId(), storage.getDataset().getId());
 		}
 		//add the structure tree
 		for(StructureNode sn : storage.getStructure()) {
@@ -273,7 +273,7 @@ public class FrontEndConceptBuilder {
 					.label(select.getLabel())
 					.description(select.getDescription())
 					.resultType(select.getResultType())
-					.isDefault(false) //TODO FK: We're not sure if default-Selects are beneficial in the frontend.
+					.isDefault(select.isDefault())
 					.build();
 	}
 

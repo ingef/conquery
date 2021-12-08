@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-import type { WrappedFieldProps } from "redux-form";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
 import {
   PostFilterSuggestionsResponseT,
+  SelectOptionT,
   SelectorResultType,
 } from "../../api/types";
 import { TransparentButton } from "../../button/TransparentButton";
@@ -22,12 +22,22 @@ import {
   getConceptsByIdsWithTablesAndSelects,
   hasConceptChildren,
 } from "../../concept-trees/globalTreeStoreHelper";
+import type { TreesT } from "../../concept-trees/reducer";
 import { nodeHasActiveFilters } from "../../model/node";
 import { selectsWithDefaults } from "../../model/select";
 import { resetAllFiltersInTables } from "../../model/table";
-import { tablesWithDefaults } from "../../model/table";
-import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
+import { tablesWithDefaults, tableWithDefaults } from "../../model/table";
+import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
+import type {
+  ConceptQueryNodeType,
+  DragItemConceptTreeNode,
+  FilterWithValueType,
+  TableWithFilterValueT,
+} from "../../standard-query-editor/types";
+import DropzoneWithFileInput, {
+  DragItemFile,
+} from "../../ui-components/DropzoneWithFileInput";
+import type { ModeT } from "../../ui-components/InputRange";
 import ToggleButton from "../../ui-components/ToggleButton";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import {
@@ -39,7 +49,10 @@ import { Description } from "../form-components/Description";
 import DropzoneList from "../form-components/DropzoneList";
 import DynamicInputGroup from "../form-components/DynamicInputGroup";
 import FormQueryNodeEditor from "../form-query-node-editor/FormQueryNodeEditor";
-import { useAllowExtendedCopying } from "../stateSelectors";
+import {
+  useAllowExtendedCopying,
+  useVisibleConceptListFields,
+} from "../stateSelectors";
 import {
   initSelectsWithDefaults,
   initTablesWithDefaults,
@@ -48,13 +61,17 @@ import {
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode, { DragItemFormConceptNode } from "./FormConceptNode";
 
-interface Props extends WrappedFieldProps {
+export interface FormConceptGroupT {
+  concepts: (ConceptQueryNodeType | null)[];
+  connector: string;
+}
+
+interface Props {
   formType: string;
   fieldName: string;
   label: string;
   tooltip?: string;
-  onDropFilterFile: Function;
-  newValue?: Object;
+  newValue: FormConceptGroupT;
   isSingle?: boolean;
   optional?: boolean;
   disallowMultipleColumns?: boolean;
@@ -62,17 +79,34 @@ interface Props extends WrappedFieldProps {
   allowlistedTables?: string[];
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
-  defaults: ConceptListDefaultsType;
-  isValidConcept?: Function;
+  defaults?: ConceptListDefaultsType;
+  conceptDropzoneText: string;
+  attributeDropzoneText: string;
+  isValidConcept?: (item: ConceptQueryNodeType) => boolean;
+  value: FormConceptGroupT[];
+  onChange: (value: FormConceptGroupT[]) => void;
+  renderRowPrefix?: (props: {
+    value: FormConceptGroupT[];
+    onChange: (value: FormConceptGroupT[]) => void;
+    row: FormConceptGroupT;
+    i: number;
+  }) => ReactNode;
 }
 
-const addValue = (value, newValue) => [...value, newValue];
+const addValue = (value: FormConceptGroupT[], newValue: FormConceptGroupT) => [
+  ...value,
+  newValue,
+];
 
-const removeValue = (value, valueIdx: number) => {
+const removeValue = (value: FormConceptGroupT[], valueIdx: number) => {
   return [...value.slice(0, valueIdx), ...value.slice(valueIdx + 1)];
 };
 
-const setValueProperties = (value, valueIdx: number, props) => {
+const setValueProperties = (
+  value: FormConceptGroupT[],
+  valueIdx: number,
+  props: Partial<FormConceptGroupT>,
+) => {
   return [
     ...value.slice(0, valueIdx),
     {
@@ -83,12 +117,20 @@ const setValueProperties = (value, valueIdx: number, props) => {
   ];
 };
 
-const addConcept = (value, valueIdx, item) =>
+const addConcept = (
+  value: FormConceptGroupT[],
+  valueIdx: number,
+  item: ConceptQueryNodeType | null,
+) =>
   setValueProperties(value, valueIdx, {
     concepts: [...value[valueIdx].concepts, item],
   });
 
-const removeConcept = (value, valueIdx: number, conceptIdx: number) =>
+const removeConcept = (
+  value: FormConceptGroupT[],
+  valueIdx: number,
+  conceptIdx: number,
+) =>
   setValueProperties(value, valueIdx, {
     concepts: [
       ...value[valueIdx].concepts.slice(0, conceptIdx),
@@ -96,7 +138,12 @@ const removeConcept = (value, valueIdx: number, conceptIdx: number) =>
     ],
   });
 
-const setConcept = (value, valueIdx: number, conceptIdx: number, item) =>
+const setConcept = (
+  value: FormConceptGroupT[],
+  valueIdx: number,
+  conceptIdx: number,
+  item: ConceptQueryNodeType,
+) =>
   setValueProperties(value, valueIdx, {
     concepts: [
       ...value[valueIdx].concepts.slice(0, conceptIdx),
@@ -106,24 +153,33 @@ const setConcept = (value, valueIdx: number, conceptIdx: number, item) =>
   });
 
 const setConceptProperties = (
-  value,
+  value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
-  props,
-) =>
-  setConcept(value, valueIdx, conceptIdx, {
-    ...value[valueIdx].concepts[conceptIdx],
-    ...props,
-  });
+  props: Partial<ConceptQueryNodeType>,
+) => {
+  const concept = value[valueIdx].concepts[conceptIdx];
+
+  return concept
+    ? setConcept(value, valueIdx, conceptIdx, {
+        ...concept,
+        ...props,
+      })
+    : value;
+};
 
 const setTableProperties = (
-  value,
+  value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
   tableIdx: number,
-  props,
+  props: Partial<TableWithFilterValueT>,
 ) => {
-  const tables = value[valueIdx].concepts[conceptIdx].tables;
+  const concept = value[valueIdx].concepts[conceptIdx];
+
+  if (!concept) return value;
+
+  const tables = concept.tables;
 
   return setConceptProperties(value, valueIdx, conceptIdx, {
     tables: [
@@ -138,14 +194,18 @@ const setTableProperties = (
 };
 
 const setFilterProperties = (
-  value,
+  value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  props,
+  props: Partial<FilterWithValueType>,
 ) => {
-  const filters = value[valueIdx].concepts[conceptIdx].tables[tableIdx].filters;
+  const concept = value[valueIdx].concepts[conceptIdx];
+
+  if (!concept) return value;
+
+  const filters = concept.tables[tableIdx].filters;
 
   return setTableProperties(value, valueIdx, conceptIdx, tableIdx, {
     filters: [
@@ -160,17 +220,17 @@ const setFilterProperties = (
 };
 
 const onToggleIncludeSubnodes = (
-  value,
+  value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
   includeSubnodes: boolean,
-  newValue,
+  newValue: FormConceptGroupT,
 ) => {
   const element = value[valueIdx];
   const concept = element.concepts[conceptIdx];
   const conceptData = getConceptById(concept.ids);
 
-  const childIds = [];
+  const childIds: string[] = [];
   const elements = conceptData.children.map((childId) => {
     const child = getConceptById(childId);
 
@@ -216,10 +276,10 @@ const onToggleIncludeSubnodes = (
 };
 
 const createQueryNodeFromConceptListUploadResult = (
-  label,
-  rootConcepts,
-  resolvedConcepts,
-) => {
+  label: string,
+  rootConcepts: TreesT,
+  resolvedConcepts: string[],
+): ConceptQueryNodeType | null => {
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
     rootConcepts,
     resolvedConcepts,
@@ -237,18 +297,18 @@ const createQueryNodeFromConceptListUploadResult = (
 };
 
 const addConceptsFromFile = (
-  label,
-  rootConcepts,
-  resolvedConcepts,
+  label: string,
+  rootConcepts: TreesT,
+  resolvedConcepts: string[],
 
-  defaults,
-  isValidConcept,
+  defaults: ConceptListDefaultsType,
+  isValidConcept: ((item: ConceptQueryNodeType) => boolean) | undefined,
 
-  value,
-  newValue,
+  value: FormConceptGroupT[],
+  newValue: FormConceptGroupT,
 
-  valueIdx,
-  conceptIdx = null,
+  valueIdx: number,
+  conceptIdx?: number,
 ) => {
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
@@ -256,18 +316,23 @@ const addConceptsFromFile = (
     resolvedConcepts,
   );
 
+  if (!queryElement) return value;
+
   const concept = initializeConcept(queryElement, defaults);
 
   if (!concept || (!!isValidConcept && !isValidConcept(concept))) return value;
 
-  if (conceptIdx === null) {
-    return addConcept(addValue(value, newValue), valueIdx, concept);
-  } else {
+  if (exists(conceptIdx)) {
     return setConcept(value, valueIdx, conceptIdx, concept);
+  } else {
+    return addConcept(addValue(value, newValue), valueIdx, concept);
   }
 };
 
-const initializeConcept = (item, defaults) => {
+const initializeConcept = (
+  item: ConceptQueryNodeType,
+  defaults: ConceptListDefaultsType,
+) => {
   if (!item) return item;
 
   return compose(
@@ -281,7 +346,7 @@ const initializeConcept = (item, defaults) => {
 };
 
 const toggleTable = (
-  value,
+  value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
   tableIdx: number,
@@ -292,28 +357,53 @@ const toggleTable = (
   });
 };
 
-const setDateColumn = (
-  value,
-  valueIdx,
-  conceptIdx,
-  tableIdx,
-  dateColumnValue,
+const resetTable = (
+  value: FormConceptGroupT[],
+  valueIdx: number,
+  conceptIdx: number,
+  tableIdx: number,
 ) => {
-  return setTableProperties(value, valueIdx, conceptIdx, tableIdx, {
-    dateColumn: {
-      ...value[valueIdx].concepts[conceptIdx].tables[tableIdx].dateColumn,
-      value: dateColumnValue,
-    },
-  });
+  const concept = value[valueIdx].concepts[conceptIdx];
+
+  if (!concept) return value;
+
+  const table = concept.tables[tableIdx];
+
+  return setTableProperties(
+    value,
+    valueIdx,
+    conceptIdx,
+    tableIdx,
+    tableWithDefaults(table),
+  );
+};
+
+const setDateColumn = (
+  value: FormConceptGroupT[],
+  valueIdx: number,
+  conceptIdx: number,
+  tableIdx: number,
+  dateColumnValue: string | null,
+) => {
+  const concept = value[valueIdx].concepts[conceptIdx];
+
+  return concept
+    ? setTableProperties(value, valueIdx, conceptIdx, tableIdx, {
+        dateColumn: {
+          ...concept.tables[tableIdx].dateColumn,
+          value: dateColumnValue || undefined,
+        },
+      })
+    : value;
 };
 
 const setFilterValue = (
-  value,
+  value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  filterValue,
+  filterValue: any,
 ) => {
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
     value: filterValue,
@@ -321,13 +411,16 @@ const setFilterValue = (
 };
 
 const setSelects = (
-  value,
+  value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
-  selectedSelects,
+  selectedSelects: SelectOptionT[],
 ) => {
-  const concepts = value[valueIdx].concepts;
-  const selects = concepts[conceptIdx].selects;
+  const concept = value[valueIdx].concepts[conceptIdx];
+
+  if (!concept) return value;
+
+  const selects = concept.selects;
 
   return setConceptProperties(value, valueIdx, conceptIdx, {
     // value contains the selects that have now been selected
@@ -343,15 +436,19 @@ const setSelects = (
 };
 
 const setTableSelects = (
-  value,
+  value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
   tableIdx: number,
-  selectedSelects,
+  selectedSelects: SelectOptionT[],
 ) => {
-  const concepts = value[valueIdx].concepts;
-  const tables = concepts[conceptIdx].tables;
+  const concept = value[valueIdx].concepts[conceptIdx];
+  if (!concept) return value;
+
+  const { tables } = concept;
   const selects = tables[tableIdx].selects;
+
+  if (!selects) return value;
 
   return setTableProperties(value, valueIdx, conceptIdx, tableIdx, {
     // value contains the selects that have now been selected
@@ -366,22 +463,26 @@ const setTableSelects = (
   });
 };
 
-const resetAllFilters = (value, valueIdx, conceptIdx) => {
-  const concepts = value[valueIdx].concepts;
-  const tables = concepts[conceptIdx].tables;
+const resetAllFilters = (
+  value: FormConceptGroupT[],
+  valueIdx: number,
+  conceptIdx: number,
+) => {
+  const concept = value[valueIdx].concepts[conceptIdx];
+  if (!concept) return value;
 
   return setConceptProperties(value, valueIdx, conceptIdx, {
-    tables: resetAllFiltersInTables(tables),
+    tables: resetAllFiltersInTables(concept.tables),
   });
 };
 
 const switchFilterMode = (
-  value,
+  value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  mode,
+  mode: ModeT,
 ) => {
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
     mode: mode,
@@ -389,20 +490,22 @@ const switchFilterMode = (
   });
 };
 
-const copyConcept = (item) => {
+const copyConcept = (item: ConceptQueryNodeType | null) => {
   return JSON.parse(JSON.stringify(item));
 };
 
 const updateFilterOptionsWithSuggestions = (
-  value,
+  value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  suggestions: PostFilterSuggestionsResponseT,
+  suggestions: PostFilterSuggestionsResponseT["values"],
 ) => {
+  const options = suggestions.map(filterSuggestionToSelectOption);
+
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
-    options: suggestions,
+    options,
   });
 };
 
@@ -423,17 +526,25 @@ const SxDescription = styled(Description)`
   font-size: ${({ theme }) => theme.font.xs};
 `;
 
-const FormConceptGroup = (props: Props) => {
-  const newValue = props.newValue;
-  const defaults = props.defaults || {};
+interface UploadConceptListModalContext {
+  valueIdx: number;
+  conceptIdx?: number;
+}
 
-  const { t } = useTranslation();
-  const [isCopyModalOpen, setIsCopyModalOpen] = useState(false);
-  const allowExtendedCopying = useAllowExtendedCopying(props.fieldName);
-  const postPrefixForSuggestions = usePostPrefixForSuggestions();
-
+const useUploadConceptListModal = ({
+  value,
+  onChange,
+  newValue,
+  defaults,
+  isValidConcept,
+}: {
+  value: FormConceptGroupT[];
+  onChange: (value: FormConceptGroupT[]) => void;
+  newValue: FormConceptGroupT;
+  defaults: ConceptListDefaultsType;
+  isValidConcept?: (concept: ConceptQueryNodeType) => boolean;
+}) => {
   const dispatch = useDispatch();
-
   const initModal = async (file: File) => {
     const rows = await getUniqueFileRows(file);
 
@@ -441,18 +552,18 @@ const FormConceptGroup = (props: Props) => {
   };
   const resetModal = () => dispatch(resetUploadConceptListModal());
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalContext, setModalContext] = useState({});
+  const [isOpen, setIsOpen] = useState(false);
+  const [modalContext, setModalContext] =
+    useState<UploadConceptListModalContext | null>(null);
 
-  const onCloseModal = () => {
-    setIsModalOpen(false); // For the Modal "container"
+  const onClose = () => {
+    setIsOpen(false); // For the Modal "container"
     resetModal(); // For the common UploadConceptListModal
   };
 
   const onDropFile = async (
     file: File,
-    valueIdx: number,
-    conceptIdx: number,
+    { valueIdx, conceptIdx }: UploadConceptListModalContext,
   ) => {
     setModalContext({ valueIdx, conceptIdx });
 
@@ -461,37 +572,57 @@ const FormConceptGroup = (props: Props) => {
     // => See QueryUploadConceptListModal actions
     await initModal(file);
 
-    setIsModalOpen(true); // For the Modal "container"
+    setIsOpen(true); // For the Modal "container"
   };
 
-  const onAcceptUploadConceptListModal = (
-    label,
-    rootConcepts,
-    resolvedConcepts,
+  const onAccept = (
+    label: string,
+    rootConcepts: TreesT,
+    resolvedConcepts: string[],
   ) => {
+    if (!modalContext) return;
     const { valueIdx, conceptIdx } = modalContext;
 
-    props.input.onChange(
+    onChange(
       addConceptsFromFile(
         label,
         rootConcepts,
         resolvedConcepts,
 
         defaults,
-        props.isValidConcept,
+        isValidConcept,
 
-        props.input.value,
+        value,
         newValue,
 
-        valueIdx, // From the modal's context
-        conceptIdx, // From the modal'S context
+        valueIdx,
+        conceptIdx,
       ),
     );
 
-    onCloseModal();
+    onClose();
   };
 
-  const onAcceptCopyModal = (valuesToCopy) => {
+  return {
+    isOpen,
+    onClose,
+    onDropFile,
+    onAccept,
+  };
+};
+
+const useCopyModal = ({
+  value,
+  onChange,
+  newValue,
+}: {
+  value: FormConceptGroupT[];
+  onChange: (value: FormConceptGroupT[]) => void;
+  newValue: FormConceptGroupT;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const onAccept = (valuesToCopy: FormConceptGroupT[]) => {
     // Deeply copy all values + concepts
     const nextValue = valuesToCopy.reduce((currentValue, value) => {
       const newVal = addValue(currentValue, newValue);
@@ -501,14 +632,70 @@ const FormConceptGroup = (props: Props) => {
           addConcept(curVal, curVal.length - 1, copyConcept(concept)),
         newVal,
       );
-    }, props.input.value);
+    }, value);
 
-    return props.input.onChange(nextValue);
+    return onChange(nextValue);
   };
+
+  return {
+    isOpen,
+    onAccept,
+    setIsOpen,
+  };
+};
+
+export interface EditedFormQueryNodePosition {
+  valueIdx: number;
+  conceptIdx: number;
+}
+
+const FormConceptGroup = (props: Props) => {
+  const { t } = useTranslation();
+  const newValue = props.newValue;
+  const defaults = props.defaults || {};
+
+  const [editedFormQueryNodePosition, setEditedFormQueryNodePosition] =
+    useState<EditedFormQueryNodePosition | null>(null);
+
+  const visibleConceptListFields = useVisibleConceptListFields();
+  const allowExtendedCopying = useAllowExtendedCopying(
+    props.fieldName,
+    visibleConceptListFields,
+  );
+  const postPrefixForSuggestions = usePostPrefixForSuggestions();
+
+  const {
+    isOpen: isUploadConceptListModalOpen,
+    onDropFile,
+    onAccept: onAcceptUploadConceptListModal,
+    onClose: onCloseUploadConceptListModal,
+  } = useUploadConceptListModal({
+    value: props.value,
+    newValue,
+    onChange: props.onChange,
+    defaults,
+    isValidConcept: props.isValidConcept,
+  });
+
+  const {
+    isOpen: isCopyModalOpen,
+    setIsOpen: setIsCopyModalOpen,
+    onAccept: onAcceptCopyModal,
+  } = useCopyModal({
+    value: props.value,
+    onChange: props.onChange,
+    newValue,
+  });
+
+  const editedNode = exists(editedFormQueryNodePosition)
+    ? props.value[editedFormQueryNodePosition.valueIdx].concepts[
+        editedFormQueryNodePosition.conceptIdx
+      ]
+    : null;
 
   return (
     <div>
-      <DropzoneList<DragItemConceptTreeNode | DragItemFormConceptNode>
+      <DropzoneList /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType | DragItemFormConceptNode> */
         tooltip={props.tooltip}
         optional={props.optional}
         label={
@@ -531,22 +718,27 @@ const FormConceptGroup = (props: Props) => {
         }
         acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
         disallowMultipleColumns={props.disallowMultipleColumns}
-        onDelete={(i) =>
-          props.input.onChange(removeValue(props.input.value, i))
+        onDelete={(i) => props.onChange(removeValue(props.value, i))}
+        onDropFile={(file) =>
+          onDropFile(file, { valueIdx: props.value.length })
         }
-        onDropFile={(file) => onDropFile(file, props.input.value.length)}
-        onDrop={(item) => {
-          if ("files" in item && item.files) {
-            onDropFile(item.files[0], props.input.value.length);
+        onDrop={(
+          item:
+            | DragItemFile
+            | DragItemConceptTreeNode
+            | DragItemFormConceptNode,
+        ) => {
+          if (item.type === "__NATIVE_FILE__") {
+            onDropFile(item.files[0], { valueIdx: props.value.length });
 
             return;
           }
 
           if (item.type === FORM_CONCEPT_NODE) {
-            return props.input.onChange(
+            return props.onChange(
               addConcept(
-                addValue(props.input.value, newValue),
-                props.input.value.length,
+                addValue(props.value, newValue),
+                props.value.length,
                 copyConcept(item.conceptNode),
               ),
             );
@@ -554,18 +746,23 @@ const FormConceptGroup = (props: Props) => {
 
           if (props.isValidConcept && !props.isValidConcept(item)) return;
 
-          return props.input.onChange(
+          return props.onChange(
             addConcept(
-              addValue(props.input.value, newValue),
-              props.input.value.length, // Assuming the last index has increased after addValue
+              addValue(props.value, newValue),
+              props.value.length, // Assuming the last index has increased after addValue
               initializeConcept(item, defaults),
             ),
           );
         }}
-        items={props.input.value.map((row, i) => (
+        items={props.value.map((row, i) => (
           <DropzoneListItem>
             {props.renderRowPrefix
-              ? props.renderRowPrefix(props.input, row, i)
+              ? props.renderRowPrefix({
+                  value: props.value,
+                  onChange: props.onChange,
+                  row,
+                  i,
+                })
               : null}
             {row.concepts.length > 1 && (
               <Row>
@@ -573,15 +770,13 @@ const FormConceptGroup = (props: Props) => {
                   {t("externalForms.common.connectedWith")}:
                 </SxDescription>
                 <ToggleButton
-                  input={{
-                    value: props.input.value[i].connector,
-                    onChange: (value) => {
-                      props.input.onChange(
-                        setValueProperties(props.input.value, i, {
-                          connector: value,
-                        }),
-                      );
-                    },
+                  value={props.value[i].connector}
+                  onChange={(val) => {
+                    props.onChange(
+                      setValueProperties(props.value, i, {
+                        connector: val,
+                      }),
+                    );
                   }}
                   options={[
                     { value: "OR", label: t("common.or") },
@@ -594,14 +789,13 @@ const FormConceptGroup = (props: Props) => {
               key={i}
               limit={props.isSingle ? 1 : 0}
               onAddClick={() =>
-                props.input.onChange(addConcept(props.input.value, i, null))
+                props.onChange(addConcept(props.value, i, null))
               }
               onRemoveClick={(j) =>
-                props.input.onChange(
-                  props.input.value &&
-                    props.input.value[i].concepts.length === 1
-                    ? removeValue(props.input.value, i)
-                    : removeConcept(props.input.value, i, j),
+                props.onChange(
+                  props.value && props.value[i].concepts.length === 1
+                    ? removeValue(props.value, i)
+                    : removeConcept(props.value, i, j),
                 )
               }
               items={row.concepts.map((concept, j) =>
@@ -611,20 +805,19 @@ const FormConceptGroup = (props: Props) => {
                     valueIdx={i}
                     conceptIdx={j}
                     conceptNode={concept}
-                    name={props.input.name}
+                    name={props.fieldName}
                     hasActiveFilters={nodeHasActiveFilters(concept)}
                     onFilterClick={() =>
-                      props.input.onChange(
-                        setConceptProperties(props.input.value, i, j, {
-                          isEditing: true,
-                        }),
-                      )
+                      setEditedFormQueryNodePosition({
+                        valueIdx: i,
+                        conceptIdx: j,
+                      })
                     }
                     expand={{
                       onClick: () =>
-                        props.input.onChange(
+                        props.onChange(
                           onToggleIncludeSubnodes(
-                            props.input.value,
+                            props.value,
                             i,
                             j,
                             !concept.includeSubnodes,
@@ -637,22 +830,30 @@ const FormConceptGroup = (props: Props) => {
                     }}
                   />
                 ) : (
-                  <DropzoneWithFileInput<
-                    DragItemConceptTreeNode | DragItemFormConceptNode
-                  >
+                  <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType | DragItemFormConceptNode> */
                     acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
-                    onSelectFile={(file) => onDropFile(file, i, j)}
-                    onDrop={(item) => {
-                      if ("files" in item && item.files) {
-                        onDropFile(item.files[0], i, j);
+                    onSelectFile={(file) =>
+                      onDropFile(file, { valueIdx: i, conceptIdx: j })
+                    }
+                    onDrop={(
+                      item:
+                        | DragItemConceptTreeNode
+                        | DragItemFormConceptNode
+                        | DragItemFile,
+                    ) => {
+                      if (item.type === "__NATIVE_FILE__") {
+                        onDropFile(item.files[0], {
+                          valueIdx: i,
+                          conceptIdx: j,
+                        });
 
                         return;
                       }
 
                       if (item.type === FORM_CONCEPT_NODE) {
-                        return props.input.onChange(
+                        return props.onChange(
                           setConcept(
-                            props.input.value,
+                            props.value,
                             i,
                             j,
                             copyConcept(item.conceptNode),
@@ -663,9 +864,9 @@ const FormConceptGroup = (props: Props) => {
                       if (props.isValidConcept && !props.isValidConcept(item))
                         return null;
 
-                      return props.input.onChange(
+                      return props.onChange(
                         setConcept(
-                          props.input.value,
+                          props.value,
                           i,
                           j,
                           initializeConcept(item, defaults),
@@ -692,155 +893,142 @@ const FormConceptGroup = (props: Props) => {
           onClose={() => setIsCopyModalOpen(false)}
         />
       )}
-      {isModalOpen && (
+      {isUploadConceptListModalOpen && (
         <UploadConceptListModal
           onAccept={onAcceptUploadConceptListModal}
-          onClose={onCloseModal}
+          onClose={onCloseUploadConceptListModal}
         />
       )}
-      <FormQueryNodeEditor
-        formType={props.formType}
-        fieldName={props.input.name}
-        blocklistedTables={props.blocklistedTables}
-        allowlistedTables={props.allowlistedTables}
-        blocklistedSelects={props.blocklistedSelects}
-        allowlistedSelects={props.allowlistedSelects}
-        onCloseModal={(valueIdx, conceptIdx) =>
-          props.input.onChange(
-            setConceptProperties(props.input.value, valueIdx, conceptIdx, {
-              isEditing: false,
-            }),
-          )
-        }
-        onUpdateLabel={(valueIdx, conceptIdx, label) =>
-          props.input.onChange(
-            setConceptProperties(props.input.value, valueIdx, conceptIdx, {
-              label,
-            }),
-          )
-        }
-        onDropConcept={(valueIdx, conceptIdx, concept) => {
-          const node = props.input.value[valueIdx].concepts[conceptIdx];
+      {editedFormQueryNodePosition && editedNode && (
+        <FormQueryNodeEditor
+          formType={props.formType}
+          fieldName={props.fieldName}
+          node={editedNode}
+          nodePosition={editedFormQueryNodePosition}
+          blocklistedTables={props.blocklistedTables}
+          allowlistedTables={props.allowlistedTables}
+          blocklistedSelects={props.blocklistedSelects}
+          allowlistedSelects={props.allowlistedSelects}
+          onCloseModal={() => setEditedFormQueryNodePosition(null)}
+          onUpdateLabel={(label) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              setConceptProperties(props.value, valueIdx, conceptIdx, {
+                label,
+              }),
+            );
+          }}
+          onDropConcept={(concept) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              setConceptProperties(props.value, valueIdx, conceptIdx, {
+                ids: [...concept.ids, ...editedNode.ids],
+              }),
+            );
+          }}
+          onRemoveConcept={(conceptId) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              setConceptProperties(props.value, valueIdx, conceptIdx, {
+                ids: editedNode.ids.filter((id) => id !== conceptId),
+              }),
+            );
+          }}
+          onToggleTable={(tableIdx, isExcluded) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              toggleTable(
+                props.value,
+                valueIdx,
+                conceptIdx,
+                tableIdx,
+                isExcluded,
+              ),
+            );
+          }}
+          onResetTable={(tableIdx) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              resetTable(props.value, valueIdx, conceptIdx, tableIdx),
+            );
+          }}
+          onSelectSelects={(selectedSelects) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              setSelects(props.value, valueIdx, conceptIdx, selectedSelects),
+            );
+          }}
+          onSetFilterValue={(tableIdx, filterIdx, filterValue) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              setFilterValue(
+                props.value,
+                valueIdx,
+                conceptIdx,
+                tableIdx,
+                filterIdx,
+                filterValue,
+              ),
+            );
+          }}
+          onSelectTableSelects={(tableIdx, selectedSelects) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              setTableSelects(
+                props.value,
+                valueIdx,
+                conceptIdx,
+                tableIdx,
+                selectedSelects,
+              ),
+            );
+          }}
+          onSwitchFilterMode={(tableIdx, filterIdx, mode) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              switchFilterMode(
+                props.value,
+                valueIdx,
+                conceptIdx,
+                tableIdx,
+                filterIdx,
+                mode,
+              ),
+            );
+          }}
+          onResetAllFilters={() => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(resetAllFilters(props.value, valueIdx, conceptIdx));
+          }}
+          onSetDateColumn={(tableIdx, dateColumnValue) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              setDateColumn(
+                props.value,
+                valueIdx,
+                conceptIdx,
+                tableIdx,
+                dateColumnValue,
+              ),
+            );
+          }}
+          onLoadFilterSuggestions={async (params, tableIdx, filterIdx) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            const { values, total } = await postPrefixForSuggestions(params);
 
-          props.input.onChange(
-            setConceptProperties(props.input.value, valueIdx, conceptIdx, {
-              ids: [...concept.ids, ...node.ids],
-            }),
-          );
-        }}
-        onRemoveConcept={(valueIdx, conceptIdx, conceptId) => {
-          const node = props.input.value[valueIdx].concepts[conceptIdx];
-
-          props.input.onChange(
-            setConceptProperties(props.input.value, valueIdx, conceptIdx, {
-              ids: node.ids.filter((id) => id !== conceptId),
-            }),
-          );
-        }}
-        onToggleTable={(valueIdx, conceptIdx, tableIdx, isExcluded) =>
-          props.input.onChange(
-            toggleTable(
-              props.input.value,
-              valueIdx,
-              conceptIdx,
-              tableIdx,
-              isExcluded,
-            ),
-          )
-        }
-        onSelectSelects={(valueIdx, conceptIdx, selectedSelects) =>
-          props.input.onChange(
-            setSelects(
-              props.input.value,
-              valueIdx,
-              conceptIdx,
-              selectedSelects,
-            ),
-          )
-        }
-        onSetFilterValue={(
-          valueIdx,
-          conceptIdx,
-          tableIdx,
-          filterIdx,
-          filterValue,
-        ) =>
-          props.input.onChange(
-            setFilterValue(
-              props.input.value,
-              valueIdx,
-              conceptIdx,
-              tableIdx,
-              filterIdx,
-              filterValue,
-            ),
-          )
-        }
-        onSelectTableSelects={(
-          valueIdx,
-          conceptIdx,
-          tableIdx,
-          selectedSelects,
-        ) =>
-          props.input.onChange(
-            setTableSelects(
-              props.input.value,
-              valueIdx,
-              conceptIdx,
-              tableIdx,
-              selectedSelects,
-            ),
-          )
-        }
-        onSwitchFilterMode={(valueIdx, conceptIdx, tableIdx, filterIdx, mode) =>
-          props.input.onChange(
-            switchFilterMode(
-              props.input.value,
-              valueIdx,
-              conceptIdx,
-              tableIdx,
-              filterIdx,
-              mode,
-            ),
-          )
-        }
-        onResetAllFilters={(valueIdx, conceptIdx) =>
-          props.input.onChange(
-            resetAllFilters(props.input.value, valueIdx, conceptIdx),
-          )
-        }
-        onSetDateColumn={(valueIdx, conceptIdx, tableIdx, dateColumnValue) =>
-          props.input.onChange(
-            setDateColumn(
-              props.input.value,
-              valueIdx,
-              conceptIdx,
-              tableIdx,
-              dateColumnValue,
-            ),
-          )
-        }
-        onLoadFilterSuggestions={async (
-          valueIdx,
-          conceptIdx,
-          params,
-          tableIdx,
-          filterIdx,
-        ) => {
-          const suggestions = await postPrefixForSuggestions(params);
-
-          props.input.onChange(
-            updateFilterOptionsWithSuggestions(
-              props.input.value,
-              valueIdx,
-              conceptIdx,
-              tableIdx,
-              filterIdx,
-              suggestions,
-            ),
-          );
-        }}
-      />
+            props.onChange(
+              updateFilterOptionsWithSuggestions(
+                props.value,
+                valueIdx,
+                conceptIdx,
+                tableIdx,
+                filterIdx,
+                values,
+              ),
+            );
+          }}
+        />
+      )}
     </div>
   );
 };

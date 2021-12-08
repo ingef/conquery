@@ -13,9 +13,11 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 class CBlockTest {
+	@SneakyThrows
 	@Test
 	public void serialize() throws IOException, JSONException {
 		final CentralRegistry registry = new CentralRegistry();
@@ -40,7 +42,9 @@ class CBlockTest {
 		final Import imp = new Import(table);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 0, 10, new ColumnStore[0], Collections.emptySet(),new int[10], new int[10], imp);
+		concept.initElements();
+
+		final Bucket bucket = new Bucket(0, 0, 10, new ColumnStore[0], Collections.emptySet(), new int[10], new int[10], imp);
 
 
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);

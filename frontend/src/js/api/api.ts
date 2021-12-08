@@ -172,6 +172,8 @@ export interface PostPrefixForSuggestionsParams {
   tableId: string;
   filterId: string;
   prefix: string;
+  page: number;
+  pageSize: number;
 }
 export const usePostPrefixForSuggestions = () => {
   const api = useApi<PostFilterSuggestionsResponseT>();
@@ -182,13 +184,15 @@ export const usePostPrefixForSuggestions = () => {
     tableId,
     filterId,
     prefix,
+    page,
+    pageSize,
   }: PostPrefixForSuggestionsParams) =>
     api({
       url: getProtectedUrl(
         `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/autocomplete`,
       ),
       method: "POST",
-      data: { text: prefix },
+      data: { text: prefix, page, pageSize },
     });
 };
 

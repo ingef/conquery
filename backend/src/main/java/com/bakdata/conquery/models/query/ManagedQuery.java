@@ -25,6 +25,7 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -35,6 +36,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -134,8 +136,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	public void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status) {
-		super.setStatusBase(user, status);
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
+		super.setStatusBase(subject, status);
 		status.setNumberOfResults(lastResultCount);
 
 		status.setQueryType(query.getClass().getAnnotation(CPSType.class).id());
@@ -146,8 +148,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, user, status, datasetRegistry);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions(datasetRegistry);
 		}
@@ -163,24 +165,26 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		final Locale locale = I18n.LOCALE.get();
 
+		PrintSettings settings = new PrintSettings(true, locale, datasetRegistry, config, null);
+
+		UniqueNamer uniqNamer = new UniqueNamer(settings);
+
 		// First add the id columns to the descriptor list. The are the first columns
-		for (String header : config.getFrontend().getQueryUpload().getPrintIdFields(locale)) {
+		for (ResultInfo header : config.getFrontend().getQueryUpload().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
-												   .label(header)
+												   .label(uniqNamer.getUniqueName(header))
 												   .type(ResultType.IdT.INSTANCE.typeInfo())
 												   .build());
 		}
 
-		// Then all columns that originate from selects and static aggregators
-		PrintSettings settings = new PrintSettings(true, locale, datasetRegistry, config, null);
-
-		getResultInfo().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings)));
+		final UniqueNamer collector = new UniqueNamer(settings);
+		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings, collector)));
 		return columnDescriptions;
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfo() {
-		return query.collectResultInfos().getInfos();
+	public List<ResultInfo> getResultInfos() {
+		return query.getResultInfos();
 	}
 
 	@Override

@@ -1,8 +1,6 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
 
 import Modal from "../../modal/Modal";
 import EditableTagsForm from "../../ui-components/EditableTagsForm";

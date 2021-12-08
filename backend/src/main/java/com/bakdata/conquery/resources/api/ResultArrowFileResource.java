@@ -18,7 +18,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.arrow.ResultArrowFileProcessor;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -37,14 +37,14 @@ public class ResultArrowFileResource {
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response get(
-		@Auth User user,
+		@Auth Subject subject,
 		@PathParam(DATASET) Dataset dataset,
 		@PathParam(QUERY) ManagedExecution<?> query,
 		@QueryParam("pretty") Optional<Boolean> pretty) {
 
 		checkSingleTableResult(query);
-		log.info("Result for {} download on dataset {} by user {} ({}).", query.getId(), dataset.getId(), user.getId(), user.getName());
-		return processor.getArrowFileResult(user, (ManagedExecution<?> & SingleTableResult) query, dataset, pretty.orElse(false));
+		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), dataset.getId(), subject.getId(), subject.getName());
+		return processor.getArrowFileResult(subject, (ManagedExecution<?> & SingleTableResult) query, dataset, pretty.orElse(false));
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.events;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -8,7 +14,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.tree.*;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeCache;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeChildPrefixIndex;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
@@ -23,11 +33,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.constraints.NotNull;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Metadata for connection of {@link Bucket} and {@link Concept}
@@ -44,6 +49,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	/**
 	 * Estimate the memory usage of CBlocks.
+	 *
 	 * @param depthEstimate estimate of depth of mostSpecificChildren
 	 */
 	public static long estimateMemoryBytes(long entities, long entries, double depthEstimate) {
@@ -71,7 +77,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	private final int root;
 
 	/**
-	 * Crude Bloomfilter for Concept inclusion per Entity: Each set bit denotes that the concept (with localId <= 64) or a descendant of that concept (with localId > 64) is present for the entity in this Bucket. 
+	 * Crude Bloomfilter for Concept inclusion per Entity: Each set bit denotes that the concept (with localId <= 64) or a descendant of that concept (with localId > 64) is present for the entity in this Bucket.
 	 */
 	private final long[] includedConceptElementsPerEntity;
 
@@ -157,7 +163,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			treeConcept.initializeIdCache(stringStore, bucket.getImp());
 		}
 		// No column only possible if we have just one tree element!
-		else if(treeConcept.countElements() == 1){
+		else if (treeConcept.countElements() == 1) {
 			stringStore = null;
 		}
 		else {
@@ -173,10 +179,10 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final int[] root = treeConcept.getPrefix();
 
-		for (BucketEntry entry : bucket.entries()) {
-			try {
-				final int event = entry.getEvent();
+		for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 
+
+			try {
 				// Events without values are omitted
 				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				if (column != null && !bucket.has(event, column)) {
@@ -192,7 +198,9 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				}
 
 				// Lazy evaluation of map to avoid allocations if possible.
-				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event));
+				// Copy event for closure.
+				final int _event = event;
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(_event));
 
 
 				if ((connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))) {
@@ -201,8 +209,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				}
 
 				ConceptTreeChild child = cache == null
-						? treeConcept.findMostSpecificChild(stringValue, rowMap)
-						: cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
+										 ? treeConcept.findMostSpecificChild(stringValue, rowMap)
+										 : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
 
 				// All unresolved elements resolve to the root.
 				if (child == null) {
@@ -214,7 +222,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				mostSpecificChildren[event] = child.getPrefix();
 			}
 			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event " + bucket + "-" + entry.getEvent() + " against concept " + treeConcept, ex);
+				log.error("Failed to resolve event {}-{} against concept {}", bucket, event, treeConcept, ex);
 			}
 		}
 
@@ -239,15 +247,25 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 */
 	private static long[] calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
 		long[] includedConcepts = new long[bucketSize];
-		for (BucketEntry entry : bucket.entries()) {
-			final int[] mostSpecificChild = mostSpecificChildren[entry.getEvent()];
 
-			for (int i = 0; i < mostSpecificChild.length; i++) {
+		for (int entity : bucket.getEntities()) {
 
-				final long mask = calculateBitMask(i, mostSpecificChild);
-				includedConcepts[entry.getEntity() - bucketSize*bucket.getBucket()] |= mask;
+			final int entityIndex = bucket.getEntityIndex(entity);
+			final int end = bucket.getEntityEnd(entity);
+
+			for (int event = bucket.getEntityStart(entity); event < end; event++) {
+
+				final int[] mostSpecificChild = mostSpecificChildren[event];
+
+				for (int i = 0; i < mostSpecificChild.length; i++) {
+
+					final long mask = calculateBitMask(i, mostSpecificChild);
+
+					includedConcepts[entityIndex] |= mask;
+				}
 			}
 		}
+
 		return includedConcepts;
 	}
 
@@ -259,40 +277,88 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		if (pathIndex < 0) {
 			return 0;
 		}
-		if (mostSpecificChild[pathIndex] < 64) {
+		if (mostSpecificChild[pathIndex] < Long.SIZE) {
 			return 1L << mostSpecificChild[pathIndex];
 		}
-		return calculateBitMask(pathIndex-1, mostSpecificChild);
+		return calculateBitMask(pathIndex - 1, mostSpecificChild);
 	}
-
 
 
 	/**
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
+	 *
+	 * @implNote This is an unrolled implementation of {@link CDateRange#spanClosed(CDateRange)}.
 	 */
 	private static CDateRange[] calculateEntityDateIndices(Bucket bucket, int bucketSize) {
 		CDateRange[] spans = new CDateRange[bucketSize];
+
 		Arrays.fill(spans, CDateRange.all());
 
+		// First initialize to an illegal state that's easy on our comparisons
+
 		Table table = bucket.getTable();
+
+
 		for (Column column : table.getColumns()) {
 			if (!column.getType().isDateCompatible()) {
 				continue;
 			}
 
-			for (BucketEntry entry : bucket.entries()) {
-				if (!bucket.has(entry.getEvent(), column)) {
-					continue;
+			for (int entity : bucket.getEntities()) {
+				final int index = bucket.getEntityIndex(entity);
+				final int end = bucket.getEntityEnd(entity);
+
+				// We unroll spanClosed for the whole bucket/entity, this avoids costly
+				int max = Integer.MIN_VALUE;
+				int min = Integer.MAX_VALUE;
+
+
+				for (int event = bucket.getEntityStart(entity); event < end; event++) {
+					if (!bucket.has(event, column)) {
+						continue;
+					}
+
+					CDateRange range = bucket.getAsDateRange(event, column);
+
+					if (range.hasLowerBound()) {
+						final int minValue = range.getMinValue();
+
+						max = Math.max(max, minValue);
+						min = Math.min(min, minValue);
+					}
+
+					if (range.hasUpperBound()) {
+						final int maxValue = range.getMaxValue();
+
+						max = Math.max(max, maxValue);
+						min = Math.min(min, maxValue);
+					}
 				}
 
-				CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
 
-				final int index = bucket.getEntityIndex(entry.getEntity());
-
-				spans[index] = spans[index].spanClosed(range);
+				spans[index] = createClosed(max, min, spans[index]);
 			}
 		}
 
 		return spans;
+	}
+
+	/**
+	 * Helper method for calculateEntityDateIndices, swapping {@link Integer#MIN_VALUE}/{@link Integer#MAX_VALUE} for higher performance.
+	 */
+	private static CDateRange createClosed(int max, int min, CDateRange in) {
+		if(max == Integer.MIN_VALUE && min == Integer.MAX_VALUE){
+			return in;
+		}
+
+		if (max == Integer.MIN_VALUE){
+			return in.spanClosed(CDateRange.atLeast(min));
+		}
+
+		if (min == Integer.MAX_VALUE) {
+			return in.spanClosed(CDateRange.atMost(max));
+		}
+
+		return in.spanClosed(CDateRange.of(min, max));
 	}
 }

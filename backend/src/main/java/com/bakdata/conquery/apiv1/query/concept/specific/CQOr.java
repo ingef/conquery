@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -27,7 +28,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.util.QueryUtils;
 import com.google.common.base.Preconditions;
 import lombok.AllArgsConstructor;
@@ -112,14 +113,17 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	}
 
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
 		for (CQElement c : children) {
-			c.collectResultInfos(collector);
+			resultInfos.addAll(c.getResultInfos());
 		}
 
 		if (createExists()) {
-			collector.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
+			resultInfos.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE));
 		}
+
+		return resultInfos;
 	}
 
 	@Override

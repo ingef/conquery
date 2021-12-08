@@ -44,9 +44,9 @@ interface PropsT {
 const valueToColor = (theme: Theme, value: string) => {
   switch (value) {
     case "own":
-      return theme.col.orange;
-    case "system":
       return theme.col.blueGrayDark;
+    case "system":
+      return theme.col.grayLight;
     default:
       return theme.col.black;
   }

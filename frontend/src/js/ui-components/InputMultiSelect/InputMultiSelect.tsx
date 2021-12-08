@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
+import { useDebounce } from "../../common/helpers/useDebounce";
+import FaIcon from "../../icon/FaIcon";
 import InfoTooltip from "../../tooltip/InfoTooltip";
 import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
 import {
@@ -31,10 +33,15 @@ import { useFilteredOptions } from "./useFilteredOptions";
 import { useResolvableSelect } from "./useResolvableSelect";
 import { useSyncWithValueFromAbove } from "./useSyncWithValueFromAbove";
 
-const MAX_VALUES_LIMIT = 200;
+const MAX_SELECTED_ITEMS_LIMIT = 200;
+const MIN_LOAD_MORE_LENGTH = 2;
 
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
+`;
+
+const SxFaIcon = styled(FaIcon)`
+  margin: 3px 6px;
 `;
 
 interface Props {
@@ -97,6 +104,16 @@ const InputMultiSelect = ({
       }
     },
   });
+
+  useDebounce(
+    () => {
+      if (onLoadMore && !loading && inputValue.length >= MIN_LOAD_MORE_LENGTH) {
+        onLoadMore(inputValue);
+      }
+    },
+    200,
+    [inputValue],
+  );
 
   const filteredOptions = useFilteredOptions({
     options,
@@ -266,7 +283,8 @@ const InputMultiSelect = ({
             }}
           />
         </ItemsInputContainer>
-        {(inputValue.length > 0 || selectedItems.length > 0) && (
+        {loading && <SxFaIcon icon="spinner" />}
+        {!loading && (inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
             icon="times"
             disabled={disabled}
@@ -309,21 +327,21 @@ const InputMultiSelect = ({
                 <SxSelectListOption
                   key={`${option.value}`}
                   active={highlightedIndex === index}
-                  disabled={option.disabled}
+                  option={option}
                   {...itemProps}
                   ref={itemPropsRef}
-                >
-                  {option.label}
-                </SxSelectListOption>
+                />
               );
             })}
-            <LoadMoreSentinel
-              onLoadMore={() => {
-                if (exists(onLoadMore) && !loading) {
-                  onLoadMore(inputValue);
-                }
-              }}
-            />
+            {exists(onLoadMore) && (
+              <LoadMoreSentinel
+                onLoadMore={() => {
+                  if (!loading && inputValue.length >= MIN_LOAD_MORE_LENGTH) {
+                    onLoadMore(inputValue);
+                  }
+                }}
+              />
+            )}
           </List>
         </Menu>
       ) : (
@@ -332,7 +350,7 @@ const InputMultiSelect = ({
     </SelectContainer>
   );
 
-  const hasTooManyValues = selectedItems.length > MAX_VALUES_LIMIT;
+  const hasTooManyValues = selectedItems.length > MAX_SELECTED_ITEMS_LIMIT;
 
   const children = (
     <>

@@ -110,7 +110,7 @@ public class LocalAuthRealmTest {
 		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 
 		assertThat(conqueryTokenRealm.doGetAuthenticationInfo(new BearerToken(jwt)).getPrincipals().getPrimaryPrincipal())
-			.isEqualTo(new UserId("TestUser"));
+			.isEqualTo(user1);
 	}
 
 	@Test

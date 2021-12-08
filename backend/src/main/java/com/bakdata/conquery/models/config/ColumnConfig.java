@@ -7,7 +7,6 @@ import java.util.Objects;
 
 import javax.validation.constraints.NotEmpty;
 
-import c10n.C10N;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
@@ -76,7 +75,7 @@ public class ColumnConfig {
 	/**
 	 * Name of column in csv for {@link AdminDatasetProcessor#setIdMapping(java.io.InputStream, com.bakdata.conquery.models.worker.Namespace)}.
 	 *
-	 * Also Name of output column for {@link FrontendConfig.UploadConfig#getPrintIdFields()}, ergo output csv-Columns.
+	 * Also Name of output column for {@link FrontendConfig.UploadConfig#getIdResultInfos()}, ergo output csv-Columns.
 	 */
 	@InternalOnly
 	private String field;

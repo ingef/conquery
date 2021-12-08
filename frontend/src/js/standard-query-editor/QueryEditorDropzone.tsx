@@ -1,7 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { FC } from "react";
-import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 
 import type { QueryIdT } from "../api/types";

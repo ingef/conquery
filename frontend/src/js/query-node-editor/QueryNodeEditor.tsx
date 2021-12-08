@@ -128,7 +128,7 @@ export interface QueryNodeEditorPropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-  ) => void;
+  ) => Promise<void>;
   onSetDateColumn: (tableIdx: number, value: string | null) => void;
   onSelectSelects: (value: SelectOptionT[]) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;

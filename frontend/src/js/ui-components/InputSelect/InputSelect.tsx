@@ -22,18 +22,7 @@ import {
   SxSelectListOption,
   VerticalSeparator,
 } from "./InputSelectComponents";
-
-const optionIncludedInSearch = (search: string) => (option: SelectOptionT) => {
-  if (!search) return true;
-
-  const lowerInputValue = search.toLowerCase();
-  const lowerLabel = option.label.toLowerCase();
-
-  return (
-    lowerLabel.includes(lowerInputValue) ||
-    String(option.value).toLowerCase().includes(lowerInputValue)
-  );
-};
+import { optionMatchesQuery } from "./optionMatchesQuery";
 
 interface Props {
   label?: string;
@@ -47,7 +36,7 @@ interface Props {
   smallMenu?: boolean;
   className?: string;
   value: SelectOptionT | null;
-  defaultValue?: SelectOptionT["value"] | null;
+  optional?: boolean;
   onChange: (value: SelectOptionT | null) => void;
 }
 
@@ -61,7 +50,7 @@ const InputSelect = ({
   clearable,
   className,
   value,
-  defaultValue,
+  optional,
   smallMenu,
   onChange,
 }: Props) => {
@@ -77,9 +66,6 @@ const InputSelect = ({
       ? options
       : [value, ...options];
   });
-
-  const defaultOption =
-    value || filteredOptions.find((option) => option.value === defaultValue);
 
   const {
     isOpen,
@@ -101,7 +87,7 @@ const InputSelect = ({
     itemToString: (item) => {
       return item?.label || "";
     },
-    defaultSelectedItem: defaultOption,
+    defaultSelectedItem: value,
     items: filteredOptions,
     stateReducer: (state, { type, changes }) => {
       // This modifies the action payload itself
@@ -144,7 +130,9 @@ const InputSelect = ({
 
       if (exists(changes.inputValue) && changes.inputValue !== value?.label) {
         setFilteredOptions(
-          options.filter(optionIncludedInSearch(changes.inputValue)),
+          options.filter((option) =>
+            optionMatchesQuery(option, changes.inputValue),
+          ),
         );
       }
     },
@@ -216,7 +204,7 @@ const InputSelect = ({
           setFilteredOptions(options);
         } else {
           setFilteredOptions(
-            options.filter(optionIncludedInSearch(inputValue)),
+            options.filter((option) => optionMatchesQuery(option, inputValue)),
           );
         }
       }
@@ -302,14 +290,12 @@ const InputSelect = ({
                     highlightedIndex === index ||
                     selectedItem?.value === option.value
                   }
-                  disabled={option.disabled}
+                  option={option}
                   {...itemProps}
                   ref={(instance) => {
                     itemPropsRef(instance);
                   }}
-                >
-                  {option.label}
-                </SxSelectListOption>
+                />
               );
             })}
           </List>
@@ -333,6 +319,7 @@ const InputSelect = ({
       }
       indexPrefix={indexPrefix}
       className={className}
+      optional={optional}
     >
       {Select}
     </Labeled>

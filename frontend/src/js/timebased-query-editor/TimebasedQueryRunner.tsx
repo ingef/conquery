@@ -1,5 +1,4 @@
 import { StateT } from "app-types";
-import { FC } from "react";
 import { useSelector } from "react-redux";
 
 import { DatasetIdT, QueryIdT } from "../api/types";

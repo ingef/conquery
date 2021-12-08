@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -23,7 +24,6 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -75,28 +75,31 @@ public class RelativeFormQuery extends Query {
 	}
 	
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {
+	public List<ResultInfo> getResultInfos() {
+		List<ResultInfo> resultInfos = new ArrayList<>();
 		// resolution
-		collector.add(ConqueryConstants.RESOLUTION_INFO);
+		resultInfos.add(ConqueryConstants.RESOLUTION_INFO);
 		// index
-		collector.add(ConqueryConstants.CONTEXT_INDEX_INFO);
+		resultInfos.add(ConqueryConstants.CONTEXT_INDEX_INFO);
 		// event date
-		collector.add(ConqueryConstants.EVENT_DATE_INFO);
+		resultInfos.add(ConqueryConstants.EVENT_DATE_INFO);
 
-		final List<ResultInfo> featureInfos = features.collectResultInfos().getInfos();
-		final List<ResultInfo> outcomeInfos = outcomes.collectResultInfos().getInfos();
+		final List<ResultInfo> featureInfos = features.getResultInfos();
+		final List<ResultInfo> outcomeInfos = outcomes.getResultInfos();
 
 		//date ranges
 		if (!featureInfos.isEmpty()){
-			collector.add(ConqueryConstants.FEATURE_DATE_RANGE_INFO);
+			resultInfos.add(ConqueryConstants.FEATURE_DATE_RANGE_INFO);
 		}
 
 		if (!outcomeInfos.isEmpty()) {
-			collector.add(ConqueryConstants.OUTCOME_DATE_RANGE_INFO);
+			resultInfos.add(ConqueryConstants.OUTCOME_DATE_RANGE_INFO);
 		}
 		//features
-		collector.addAll(featureInfos);
-		collector.addAll(outcomeInfos);
+		resultInfos.addAll(featureInfos);
+		resultInfos.addAll(outcomeInfos);
+
+		return resultInfos;
 	}
 	
 	@Override

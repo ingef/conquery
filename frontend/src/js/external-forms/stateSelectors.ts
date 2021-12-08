@@ -1,69 +1,15 @@
 import { StateT } from "app-types";
+import { useWatch } from "react-hook-form";
 import { useSelector } from "react-redux";
 
 import { exists } from "../common/helpers/exists";
 import { useActiveLang } from "../localization/useActiveLang";
 
 import { ConceptListField, Form, GeneralField, Tabs } from "./config-types";
-import { initTables } from "./transformers";
-
-const selectFormField = (state, formName: string, fieldName: string) => {
-  if (
-    !state ||
-    !state[formName] ||
-    !state[formName].values ||
-    !state[formName].values[fieldName]
-  )
-    return null;
-
-  return state[formName].values[fieldName];
-};
-
-export const selectEditedConceptPosition = (state, formName, fieldName) => {
-  const formField = selectFormField(state, formName, fieldName) || [];
-
-  const selectedConcepts = formField
-    .reduce(
-      (acc, group, andIdx) => [
-        ...acc,
-        ...group.concepts.map((concept, orIdx) => ({ andIdx, orIdx, concept })),
-      ],
-      [],
-    )
-    .filter(({ concept }) => concept && concept.isEditing)
-    .map(({ andIdx, orIdx }) => ({ andIdx, orIdx }));
-
-  return selectedConcepts.length ? selectedConcepts[0] : null;
-};
-
-export const selectEditedConcept = (
-  state,
-  formName,
-  fieldName,
-  { andIdx, orIdx },
-  blocklistedTables: string[],
-  allowlistedTables: string[],
-) => {
-  const formField = selectFormField(state, formName, fieldName);
-  const concept = formField[andIdx].concepts[orIdx];
-
-  return initTables({ blocklistedTables, allowlistedTables })(concept);
-};
+import { FormConceptGroupT } from "./form-concept-group/FormConceptGroup";
 
 export const selectFormContextState = (state: StateT, formType: string) =>
   state.externalForms ? state.externalForms.formsContext[formType] : null;
-
-export const selectReduxForm = (state: StateT) =>
-  state.externalForms ? state.externalForms.reduxForm : null;
-
-export const selectActiveFormValues = (state: StateT): Record<string, any> => {
-  const reduxForm = selectReduxForm(state);
-  const activeForm = selectActiveFormType(state);
-
-  return reduxForm && activeForm && !!reduxForm[activeForm]
-    ? reduxForm[activeForm].values
-    : {};
-};
 
 export const selectAvailableForms = (state: StateT) =>
   state.externalForms ? state.externalForms.availableForms : {};
@@ -89,9 +35,6 @@ export const useSelectActiveFormName = (): string => {
 
   return (formConfig && formConfig.title[activeLang]) || "";
 };
-
-export const selectReduxFormState = (state: StateT) =>
-  state.externalForms ? state.externalForms.reduxForm : {};
 
 export const selectQueryRunner = (state: StateT) =>
   state.externalForms ? state.externalForms.queryRunner : null;
@@ -134,20 +77,19 @@ export const useVisibleConceptListFields = () => {
   const config = useSelector<StateT, Form | null>((state) =>
     selectFormConfig(state),
   );
-  const values = useSelector<StateT, Record<string, any>>((state) =>
-    selectActiveFormValues(state),
-  );
+  const values = useWatch({});
 
   if (!config) return [];
 
   return getVisibleConceptListFields(config, values);
 };
 
-export const useAllowExtendedCopying = (targetFieldname: string) => {
-  const values = useSelector<StateT, Record<string, any>>((state) =>
-    selectActiveFormValues(state),
-  );
-  const otherConceptListFields = useVisibleConceptListFields().filter(
+export const useAllowExtendedCopying = (
+  targetFieldname: string,
+  visibleConceptListFields: ConceptListField[],
+) => {
+  const values = useWatch({});
+  const otherConceptListFields = visibleConceptListFields.filter(
     (field) => field.name !== targetFieldname,
   );
 
@@ -156,9 +98,8 @@ export const useAllowExtendedCopying = (targetFieldname: string) => {
 
   const fieldHasFilledConcept = (field: ConceptListField) =>
     !!values[field.name] &&
-    values[field.name].some(
-      (value /* TODO: type it FormConceptGroup value */) =>
-        value.concepts.some(exists),
+    values[field.name].some((value: FormConceptGroupT) =>
+      value.concepts.some(exists),
     );
 
   return otherConceptListFields.some(fieldHasFilledConcept);

@@ -3,6 +3,8 @@ import type {
   FilterT,
   MultiSelectFilterT,
 } from "../api/types";
+import { exists } from "../common/helpers/exists";
+import type { FilterWithValueType } from "../standard-query-editor/types";
 
 const filterWithDefaults = (filter: FilterT) => {
   switch (filter.type) {
@@ -10,13 +12,38 @@ const filterWithDefaults = (filter: FilterT) => {
     case "BIG_MULTI_SELECT":
       return {
         ...filter,
-        value: filter.defaultValue || [],
+        value: filter.defaultValue
+          ? filter.defaultValue
+              .map((val) => filter.options.find((opt) => opt.value === val))
+              .filter(exists)
+          : [],
       };
     default:
       return {
         ...filter,
         value: filter.defaultValue || null,
       };
+  }
+};
+
+export const filterValueDiffersFromDefault = (
+  filter: FilterWithValueType,
+): boolean => {
+  switch (filter.type) {
+    // Since MULTI_SELECT & BIG_MULTI_SELECT's defaultValue and value have differnt shapes
+    // we'll need to fully compare those
+    case "MULTI_SELECT":
+    case "BIG_MULTI_SELECT":
+      const jsonifiedDefaultValue = JSON.stringify(filter.defaultValue || []);
+      const jsonifiedValue = JSON.stringify(
+        (filter.value || [])?.map((o) => o.value) || [],
+      );
+
+      return jsonifiedDefaultValue !== jsonifiedValue;
+    default:
+      return (
+        JSON.stringify(filter.value) !== JSON.stringify(filter.defaultValue)
+      );
   }
 };
 
