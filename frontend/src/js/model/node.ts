@@ -4,32 +4,49 @@ import type {
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 
-import { objectHasSelectedSelects } from "./select";
-import { tablesHaveActiveFilter } from "./table";
+import { objectHasNonDefaultSelects } from "./select";
+import { tablesHaveNonDefaultSettings, tablesHaveEmptySettings } from "./table";
+
+export interface NodeResetConfig {
+  useDefaults?: boolean;
+}
 
 export const nodeIsConceptQueryNode = (
   node: StandardQueryNodeT,
 ): node is ConceptQueryNodeType => !node.isPreviousQuery;
 
-export const nodeHasActiveFilters = (node: StandardQueryNodeT) =>
+const nodeHasNonDefaultExludedTable = (node: ConceptQueryNodeType) => {
+  if (!node.tables) return false;
+
+  return node.tables.some(
+    (table) =>
+      (table.exclude && table.default) || (!table.default && !table.exclude),
+  );
+};
+
+export const nodeHasEmptySettings = (node: StandardQueryNodeT) => {
+  return (
+    !node.excludeFromSecondaryId &&
+    !node.excludeTimestamps &&
+    (!nodeIsConceptQueryNode(node) ||
+      (tablesHaveEmptySettings(node.tables) &&
+        (!node.selects || node.selects.every((select) => !select.selected))))
+  );
+};
+
+export const nodeHasNonDefaultSettings = (node: StandardQueryNodeT) =>
   node.excludeTimestamps ||
   node.excludeFromSecondaryId ||
   (nodeIsConceptQueryNode(node) &&
     (node.includeSubnodes || // TODO REFACTOR / TYPE THIS ONE
-      objectHasSelectedSelects(node) ||
-      nodeHasActiveTableFilters(node) ||
-      nodeHasExludedTable(node)));
+      objectHasNonDefaultSelects(node) ||
+      nodeHasNonDefaultTableSettings(node) ||
+      nodeHasNonDefaultExludedTable(node)));
 
-export const nodeHasActiveTableFilters = (node: ConceptQueryNodeType) => {
+export const nodeHasNonDefaultTableSettings = (node: ConceptQueryNodeType) => {
   if (!node.tables) return false;
 
-  return tablesHaveActiveFilter(node.tables);
-};
-
-export const nodeHasExludedTable = (node: ConceptQueryNodeType) => {
-  if (!node.tables) return false;
-
-  return node.tables.some((table) => table.exclude);
+  return tablesHaveNonDefaultSettings(node.tables);
 };
 
 export function nodeIsInvalid(

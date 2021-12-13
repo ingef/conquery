@@ -106,6 +106,7 @@ export interface TableT {
   connectorId: string; // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string;
   exclude?: boolean;
+  default?: boolean; // not excluded by default
   filters?: FilterT[]; // Empty array: key not defined
   selects?: SelectorT[]; // Empty array: key not defined
   supportedSecondaryIds?: string[];

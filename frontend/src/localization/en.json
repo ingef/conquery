@@ -58,7 +58,10 @@
     "hasSecondaryId": "Analysis layer active",
     "removeNode": "Remove node",
     "removeColumn": "Remove column",
-    "clear": "Clear the Editor"
+    "clear": "Clear the Editor",
+    "hasEmptySettings": "No settings (empty)",
+    "hasDefaultSettings": "Uses default settings",
+    "hasNonDefaultSettings": "Has changed settings"
   },
   "expandPreviousQueryModal": {
     "headline": "Are you sure to expand the query?",
@@ -87,7 +90,8 @@
     "conceptNodeTables": "Input Tables",
     "properties": "Common properties",
     "reset": "Reset",
-    "resetSettings": "Reset all settings",
+    "resetSettings": "Reset to default settings",
+    "clearSettings": "Clear all fields",
     "excludeTimestamps": "Exclude from time calculation",
     "excludingTimestamps": "Excluded from time calculation",
     "excludeFromSecondaryId": "Exclude from analysis layer",

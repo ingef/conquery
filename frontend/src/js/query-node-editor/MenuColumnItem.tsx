@@ -1,9 +1,10 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
+import type { NodeResetConfig } from "../model/node";
+import { tableHasNonDefaultSettings, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -42,6 +43,9 @@ const SxIconButton = styled(IconButton)`
     line-height: ${({ theme }) => theme.font.lg};
   }
 `;
+const ResetButton = styled(IconButton)`
+  padding: 0;
+`;
 
 const Label = styled("span")`
   padding-left: 10px;
@@ -61,7 +65,7 @@ interface PropsT {
   allowlistedTables?: string[];
   onClick: () => void;
   onToggleTable: (value: boolean) => void;
-  onResetTable: () => void;
+  onResetTable: (config: NodeResetConfig) => void;
 }
 
 const MenuColumnItem: FC<PropsT> = ({
@@ -83,7 +87,7 @@ const MenuColumnItem: FC<PropsT> = ({
   const includable = table.exclude;
   const excludable = !isOnlyOneTableIncluded;
 
-  const isFilterActive = tableHasActiveFilters(table);
+  const isFilterActive = tableHasNonDefaultSettings(table);
 
   return (
     <Container disabled={isDisabled} onClick={onClick}>
@@ -109,9 +113,9 @@ const MenuColumnItem: FC<PropsT> = ({
       </Row>
       {isFilterActive && (
         <SxWithTooltip text={t("queryNodeEditor.resetSettings")}>
-          <SxIconButton
-            active
-            icon="filter"
+          <ResetButton
+            secondary
+            icon="undo"
             onClick={(event) => {
               // To prevent selecting the table as well, see above
               event.stopPropagation();
@@ -120,7 +124,7 @@ const MenuColumnItem: FC<PropsT> = ({
                 return;
               }
 
-              onResetTable();
+              onResetTable({ useDefaults: true });
             }}
           />
         </SxWithTooltip>

@@ -8,12 +8,14 @@ export interface BasicButtonProps
   small?: boolean;
   large?: boolean;
   active?: boolean;
+  secondary?: boolean;
   autoFocus?: boolean; // Should actually be within the extends, not sure why I had to declare this.
 }
 
 const Button = styled("button")<BasicButtonProps>`
   cursor: pointer;
-  font-weight: ${({ active }) => (active ? "700" : "400")};
+  font-weight: ${({ active, secondary }) =>
+    active || secondary ? "700" : "400"};
   padding: ${({ small, tiny, bare, large }) =>
     bare
       ? "0"

@@ -8,12 +8,19 @@ import BasicButton, { BasicButtonProps } from "./BasicButton";
 interface StyledFaIconProps extends FaIconPropsT {
   tight?: boolean;
   red?: boolean;
+  secondary?: boolean;
   hasChildren: boolean;
 }
 
 const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
-  color: ${({ theme, active, red }) =>
-    red ? theme.col.red : active ? theme.col.blueGrayDark : theme.col.black};
+  color: ${({ theme, active, red, secondary }) =>
+    red
+      ? theme.col.red
+      : active
+      ? theme.col.blueGrayDark
+      : secondary
+      ? theme.col.orange
+      : theme.col.black};
   font-size: ${({ theme, large, small }) =>
     large ? theme.font.md : small ? theme.font.xs : theme.font.sm};
   margin-right: ${({ hasChildren, tight }) =>
@@ -23,10 +30,15 @@ const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
 const SxBasicButton = styled(BasicButton)<{
   frame?: boolean;
   active?: boolean;
+  secondary?: boolean;
 }>`
   background-color: transparent;
-  color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayDark : theme.col.black};
+  color: ${({ theme, active, secondary }) =>
+    active
+      ? theme.col.blueGrayDark
+      : secondary
+      ? theme.col.orange
+      : theme.col.black};
   opacity: 0.7;
   transition: opacity ${({ theme }) => theme.transitionTime};
 
@@ -52,6 +64,7 @@ export interface IconButtonPropsT extends BasicButtonProps {
   small?: boolean;
   icon: string;
   regular?: boolean;
+  secondary?: boolean;
   tight?: boolean;
   red?: boolean;
   left?: boolean;
@@ -73,11 +86,17 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       tight,
       iconProps,
       small,
+      secondary,
       ...restProps
     },
     ref,
   ) => (
-    <SxBasicButton active={active} {...restProps} ref={ref}>
+    <SxBasicButton
+      active={active}
+      secondary={secondary}
+      {...restProps}
+      ref={ref}
+    >
       <SxFaIcon
         main
         left={left}
@@ -85,6 +104,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         large={large}
         active={active}
         red={red}
+        secondary={secondary}
         icon={icon}
         hasChildren={!!children}
         tight={tight}
