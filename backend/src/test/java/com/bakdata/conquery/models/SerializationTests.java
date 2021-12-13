@@ -3,8 +3,8 @@ package com.bakdata.conquery.models;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -29,7 +29,6 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.apitoken.ApiToken;
-import com.bakdata.conquery.models.auth.apitoken.ApiTokenCreator;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenData;
 import com.bakdata.conquery.models.auth.apitoken.Scopes;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -76,7 +75,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.util.CharArrayBuffer;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
@@ -190,12 +188,15 @@ public class SerializationTests {
 		Import imp = new Import(table);
 		imp.setName("importTest");
 
-		DateRangeTypeCompound compoundStore = new DateRangeTypeCompound(startCol.getName(), endCol.getName(), BitSetStore.create(4));
+
+		DateRangeTypeCompound
+				compoundStore =
+				new DateRangeTypeCompound(startCol.getName(), endCol.getName(), new BitSetStore(BitSet.valueOf(new byte[]{8}), new BitSet()));
 
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, 1, 3, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
+		Bucket bucket = new Bucket(0, 1, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
 
 		compoundStore.setParent(bucket);
 
