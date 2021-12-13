@@ -3,14 +3,6 @@ export const concat = (arr: []) => arr.reduce((a, b) => a.concat(b), []);
 export const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
   fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);
 
-export const objectWithoutKey = (key: string) => (obj: Object) => {
-  if (!obj.hasOwnProperty(key)) return obj;
-
-  const { [key]: deleted, ...rest } = obj;
-
-  return rest;
-};
-
 export const isEmpty = (variable: any) => {
   return (
     typeof variable === "undefined" ||

@@ -16,7 +16,7 @@ import type {
   SelectOptionT,
 } from "../api/types";
 import { Action } from "../app/actions";
-import { isEmpty, objectWithoutKey } from "../common/helpers";
+import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 import type { TreesT } from "../concept-trees/reducer";
@@ -63,6 +63,7 @@ import type {
   DragItemNode,
   DragItemConceptTreeNode,
   FilterWithValueType,
+  PreviousQueryQueryNodeType,
 } from "./types";
 
 export type StandardQueryStateT = QueryGroupType[];
@@ -245,6 +246,9 @@ const updateNodeTable = (
   table: TableT,
 ) => {
   const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
+
   const tables = [
     ...node.tables.slice(0, tableIdx),
     table,
@@ -273,6 +277,9 @@ const onToggleNodeTable = (
   }: ActionType<typeof toggleTable>["payload"],
 ) => {
   const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
+
   const table = {
     ...node.tables[tableIdx],
     exclude: isExcluded,
@@ -333,7 +340,11 @@ const setNodeTableSelects = (
     value,
   }: ActionType<typeof setTableSelects>["payload"],
 ) => {
-  const table = state[andIdx].elements[orIdx].tables[tableIdx];
+  const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
+
+  const table = node.tables[tableIdx];
   const { selects } = table;
 
   // value contains the selects that have now been selected
@@ -709,33 +720,29 @@ const onExpandPreviousQuery = ({
   );
 };
 
-const findPreviousQueries = (state: StandardQueryStateT, action: any) => {
+const findPreviousQueries = (state: StandardQueryStateT, queryId: string) => {
   // Find all nodes that are previous queries and have the correct id
-  const queries = state
-    .map((group, andIdx) => {
-      return group.elements
-        .map((concept, orIdx) => ({ ...concept, orIdx }))
-        .filter(
-          (concept) =>
-            concept.isPreviousQuery && concept.id === action.payload.queryId,
-        )
-        .map((concept) => ({
-          andIdx,
-          orIdx: concept.orIdx,
-          node: objectWithoutKey("orIdx")(concept),
-        }));
-    })
-    .filter((group) => group.length > 0);
-
-  return [].concat.apply([], queries);
+  return state.flatMap((group, andIdx) => {
+    return group.elements
+      .map((concept, orIdx) => [concept, orIdx] as [StandardQueryNodeT, number])
+      .filter((item): item is [PreviousQueryQueryNodeType, number] => {
+        const [concept] = item;
+        return !!concept.isPreviousQuery && concept.id === queryId;
+      })
+      .map(([concept, orIdx]) => ({
+        andIdx,
+        orIdx,
+        node: concept,
+      }));
+  });
 };
 
 const updatePreviousQueries = (
   state: StandardQueryStateT,
-  action: any,
-  attributes: any,
+  action: { payload: { queryId: string } },
+  attributes: Partial<PreviousQueryQueryNodeType>,
 ) => {
-  const queries = findPreviousQueries(state, action);
+  const queries = findPreviousQueries(state, action.payload.queryId);
 
   return queries.reduce((nextState, query) => {
     const { node, andIdx, orIdx } = query;
