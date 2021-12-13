@@ -1,5 +1,4 @@
 import { StateT } from "app-types";
-import { NodeResetConfig } from "js/model/node";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
@@ -13,6 +12,7 @@ import {
 } from "../../api/types";
 import { toUpperCaseUnderscore } from "../../common/helpers";
 import { usePrevious } from "../../common/helpers/usePrevious";
+import type { NodeResetConfig } from "../../model/node";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import type {
@@ -49,7 +49,7 @@ interface PropsT {
     filterIdx: number,
     mode: ModeT,
   ) => void;
-  onResetAllFilters: (config: NodeResetConfig) => void;
+  onResetAllSettings: (config: NodeResetConfig) => void;
   onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
   onSelectSelects: (selectedSelects: SelectOptionT[]) => void;
   onSelectTableSelects: (
@@ -141,7 +141,7 @@ const FormQueryNodeEditor = (props: PropsT) => {
       onSetFilterValue={props.onSetFilterValue}
       onSwitchFilterMode={props.onSwitchFilterMode}
       onResetTable={props.onResetTable}
-      onResetAllFilters={props.onResetAllFilters}
+      onResetAllSettings={props.onResetAllSettings}
       onSetDateColumn={props.onSetDateColumn}
     />
   );

@@ -23,9 +23,13 @@ import {
   hasConceptChildren,
 } from "../../concept-trees/globalTreeStoreHelper";
 import type { TreesT } from "../../concept-trees/reducer";
-import { nodeHasActiveFilters, NodeResetConfig } from "../../model/node";
+import {
+  nodeHasEmptySettings,
+  nodeHasNonDefaultSettings,
+  NodeResetConfig,
+} from "../../model/node";
 import { resetSelects } from "../../model/select";
-import { resetAllFiltersInTables } from "../../model/table";
+import { resetAllTableSettings } from "../../model/table";
 import { resetTables, tableWithDefaults } from "../../model/table";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
@@ -340,6 +344,8 @@ const initializeConcept = (
     initTablesWithDefaults(defaults.connectors),
   )({
     ...item,
+    excludeFromSecondaryId: false,
+    excludeTimestamps: false,
     tables: resetTables(item.tables, { useDefaults: true }),
     selects: resetSelects(item.selects, { useDefaults: true }),
   });
@@ -464,7 +470,7 @@ const setTableSelects = (
   });
 };
 
-const resetAllFilters = (
+const resetAllSettings = (
   value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
@@ -474,7 +480,10 @@ const resetAllFilters = (
   if (!concept) return value;
 
   return setConceptProperties(value, valueIdx, conceptIdx, {
-    tables: resetAllFiltersInTables(concept.tables, config),
+    excludeFromSecondaryId: false,
+    excludeTimestamps: false,
+    selects: resetSelects(concept.selects, config),
+    tables: resetAllTableSettings(concept.tables, config),
   });
 };
 
@@ -808,7 +817,8 @@ const FormConceptGroup = (props: Props) => {
                     conceptIdx={j}
                     conceptNode={concept}
                     name={props.fieldName}
-                    hasActiveFilters={nodeHasActiveFilters(concept)}
+                    hasNonDefaultSettings={nodeHasNonDefaultSettings(concept)}
+                    isEmpty={nodeHasEmptySettings(concept)}
                     onFilterClick={() =>
                       setEditedFormQueryNodePosition({
                         valueIdx: i,
@@ -948,10 +958,10 @@ const FormConceptGroup = (props: Props) => {
               ),
             );
           }}
-          onResetAllFilters={(config) => {
+          onResetAllSettings={(config) => {
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
-              resetAllFilters(props.value, valueIdx, conceptIdx, config),
+              resetAllSettings(props.value, valueIdx, conceptIdx, config),
             );
           }}
           onResetTable={(tableIdx, config) => {

@@ -7,7 +7,7 @@ import type {
 
 import type { NodeResetConfig } from "./node";
 
-export function objectHasSelectedSelects(
+export function objectHasNonDefaultSelects(
   obj: ConceptQueryNodeType | TableWithFilterValueT,
 ) {
   return (
@@ -27,15 +27,16 @@ export function sortSelects(selects: SelectorT[]) {
     .sort((a, b) => (a.label < b.label ? -1 : 1));
 }
 
-const withDefaultSelect = (select: SelectorT) => ({
+const resetSelected = (select: SelectorT, config: NodeResetConfig) => ({
   ...select,
-  selected: !!select.default,
+  selected: config.useDefaults ? !!select.default : false,
 });
 
 export const resetSelects = (
-  selects?: SelectorT[],
+  selects: SelectorT[],
   config: NodeResetConfig,
-): SelectedSelectorT[] => (selects ? selects.map(withDefaultSelect) : []);
+): SelectedSelectorT[] =>
+  selects ? selects.map((select) => resetSelected(select, config)) : [];
 
 function selectTypesMatch(
   resultType1: SelectorResultType,

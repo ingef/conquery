@@ -14,7 +14,7 @@ import {
   toggleTable,
   setFilterValue,
   switchFilterMode,
-  resetAllFilters,
+  resetAllSettings,
   resetTable,
   toggleTimestamps,
   setSelects,
@@ -100,8 +100,8 @@ const StandardQueryNodeEditor = ({ editedNode, setEditedNode }: Props) => {
       onSwitchFilterMode={(tableIdx, filterIdx, mode) =>
         dispatch(switchFilterMode({ andIdx, orIdx, tableIdx, filterIdx, mode }))
       }
-      onResetAllFilters={(config: NodeResetConfig) =>
-        dispatch(resetAllFilters({ andIdx, orIdx, config }))
+      onResetAllSettings={(config: NodeResetConfig) =>
+        dispatch(resetAllSettings({ andIdx, orIdx, config }))
       }
       onResetTable={(tableIdx: number, config: NodeResetConfig) =>
         dispatch(resetTable({ andIdx, orIdx, tableIdx, config }))

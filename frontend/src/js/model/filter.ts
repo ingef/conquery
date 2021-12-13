@@ -23,6 +23,15 @@ const resetFilter =
                   .filter(exists)
               : [],
         };
+      case "SELECT":
+        return {
+          ...filter,
+          value: config.useDefaults
+            ? filter.defaultValue || null
+            : filter.options.length > 0
+            ? filter.options[0].value
+            : null,
+        };
       default:
         return {
           ...filter,
@@ -61,3 +70,18 @@ export const isMultiSelectFilter = (
   filter: FilterT,
 ): filter is BigMultiSelectFilterT | MultiSelectFilterT =>
   filter.type === "MULTI_SELECT" || filter.type === "BIG_MULTI_SELECT";
+
+export const filterIsEmpty = (filter: FilterWithValueType) => {
+  switch (filter.type) {
+    case "BIG_MULTI_SELECT":
+    case "MULTI_SELECT":
+      return !filter.value || filter.value.length === 0;
+    case "SELECT":
+      return (
+        !filter.value ||
+        (filter.options.length > 0 && filter.value === filter.options[0].value)
+      );
+    default:
+      return !filter.value;
+  }
+};

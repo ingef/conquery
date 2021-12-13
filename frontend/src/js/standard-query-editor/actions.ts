@@ -41,7 +41,7 @@ export type StandardQueryEditorActions = ActionType<
   | typeof toggleExcludeGroup
   | typeof toggleSecondaryIdExclude
   | typeof toggleTimestamps
-  | typeof resetAllFilters
+  | typeof resetAllSettings
   | typeof removeConceptFromNode
   | typeof addConceptToNode
   | typeof switchFilterMode
@@ -199,7 +199,9 @@ export const setDateColumn = createAction("query-editor/SET_DATE_COLUMN")<{
   value: unknown;
 }>();
 
-export const resetAllFilters = createAction("query-editor/RESET_ALL_FILTERS")<{
+export const resetAllSettings = createAction(
+  "query-editor/RESET_ALL_SETTINGS",
+)<{
   andIdx: number;
   orIdx: number;
   config: NodeResetConfig;

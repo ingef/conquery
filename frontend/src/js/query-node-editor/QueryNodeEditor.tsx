@@ -15,7 +15,8 @@ import {
 import { TransparentButton } from "../button/TransparentButton";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import {
-  nodeHasActiveFilters,
+  nodeHasEmptySettings,
+  nodeHasNonDefaultSettings,
   nodeIsConceptQueryNode,
   NodeResetConfig,
 } from "../model/node";
@@ -29,7 +30,7 @@ import type { ModeT } from "../ui-components/InputRange";
 
 import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
-import ResetAllFiltersButton from "./ResetAllFiltersButton";
+import ResetAllSettingsButton from "./ResetAllSettingsButton";
 import { createQueryNodeEditorActions } from "./actions";
 import { QueryNodeEditorStateT } from "./reducer";
 
@@ -118,7 +119,7 @@ export interface QueryNodeEditorPropsT {
   onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
-  onResetAllFilters: (config: NodeResetConfig) => void;
+  onResetAllSettings: (config: NodeResetConfig) => void;
   onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
   onToggleTimestamps?: () => void;
   onToggleSecondaryIdExclude?: () => void;
@@ -138,9 +139,9 @@ export interface QueryNodeEditorPropsT {
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
 }
 
-const COMPACT_WIDTH = 500;
-const RIGHT_SIDE_WIDTH = 320;
-const RIGHT_SIDE_WIDTH_COMPACT = 150;
+const COMPACT_WIDTH = 700;
+const RIGHT_SIDE_WIDTH = 500;
+const RIGHT_SIDE_WIDTH_COMPACT = 200;
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { t } = useTranslation();
@@ -186,7 +187,8 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
 
   if (!node) return null;
 
-  const hasActiveFilters = nodeHasActiveFilters(node);
+  const showDefaultReset = nodeHasNonDefaultSettings(node);
+  const showClearReset = !nodeHasEmptySettings(node);
 
   return (
     <Root
@@ -204,7 +206,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             style={{
               maxWidth:
                 parentWidth -
-                (isCompact || !hasActiveFilters
+                (isCompact || (!showDefaultReset && !showClearReset)
                   ? RIGHT_SIDE_WIDTH_COMPACT
                   : RIGHT_SIDE_WIDTH),
             }}
@@ -227,17 +229,20 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             {node.isPreviousQuery && (node.label || node.id || node.ids)}
           </NodeName>
           <Row>
-            {hasActiveFilters && (
-              <ResetAllFiltersButton
+            {showDefaultReset && (
+              <ResetAllSettingsButton
+                text={t("queryNodeEditor.resetSettings")}
                 icon="undo"
-                onClick={() => props.onResetAllFilters({ useDefaults: true })}
+                onClick={() => props.onResetAllSettings({ useDefaults: true })}
                 compact={isCompact}
+                variant="secondary"
               />
             )}
-            {hasActiveFilters && (
-              <ResetAllFiltersButton
+            {showClearReset && (
+              <ResetAllSettingsButton
+                text={t("queryNodeEditor.clearSettings")}
                 icon="trash"
-                onClick={() => props.onResetAllFilters({ useDefaults: false })}
+                onClick={() => props.onResetAllSettings({ useDefaults: false })}
                 compact={isCompact}
               />
             )}

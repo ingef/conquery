@@ -4,8 +4,8 @@ import type {
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 
-import { objectHasSelectedSelects } from "./select";
-import { tablesHaveActiveFilter } from "./table";
+import { objectHasNonDefaultSelects } from "./select";
+import { tablesHaveNonDefaultSettings, tablesHaveEmptySettings } from "./table";
 
 export interface NodeResetConfig {
   useDefaults?: boolean;
@@ -24,19 +24,29 @@ const nodeHasNonDefaultExludedTable = (node: ConceptQueryNodeType) => {
   );
 };
 
-export const nodeHasActiveFilters = (node: StandardQueryNodeT) =>
+export const nodeHasEmptySettings = (node: StandardQueryNodeT) => {
+  return (
+    !node.excludeFromSecondaryId &&
+    !node.excludeTimestamps &&
+    (!nodeIsConceptQueryNode(node) ||
+      (tablesHaveEmptySettings(node.tables) &&
+        (!node.selects || node.selects.every((select) => !select.selected))))
+  );
+};
+
+export const nodeHasNonDefaultSettings = (node: StandardQueryNodeT) =>
   node.excludeTimestamps ||
   node.excludeFromSecondaryId ||
   (nodeIsConceptQueryNode(node) &&
     (node.includeSubnodes || // TODO REFACTOR / TYPE THIS ONE
-      objectHasSelectedSelects(node) ||
-      nodeHasActiveTableFilters(node) ||
+      objectHasNonDefaultSelects(node) ||
+      nodeHasNonDefaultTableSettings(node) ||
       nodeHasNonDefaultExludedTable(node)));
 
-export const nodeHasActiveTableFilters = (node: ConceptQueryNodeType) => {
+export const nodeHasNonDefaultTableSettings = (node: ConceptQueryNodeType) => {
   if (!node.tables) return false;
 
-  return tablesHaveActiveFilter(node.tables);
+  return tablesHaveNonDefaultSettings(node.tables);
 };
 
 export function nodeIsInvalid(
