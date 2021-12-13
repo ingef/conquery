@@ -14,9 +14,11 @@ import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString(of = "restriction", callSuper = true)
 public class DateRestrictingNode extends QPChainNode {
 
 	protected final CDateSet restriction;
@@ -31,7 +33,7 @@ public class DateRestrictingNode extends QPChainNode {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		//if there was no date restriction we can just use the restriction CDateSet
-		if(ctx.getDateRestriction().isAll()) {
+		if (ctx.getDateRestriction().isAll()) {
 			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
 		}
 		else {

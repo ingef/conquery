@@ -126,7 +126,7 @@ const createConcept = (concept: any) => ({
   ids: concept.ids,
   label: isLabelPristine(concept) ? undefined : concept.label,
   excludeFromTimeAggregation: concept.excludeTimestamps,
-  excludeFromSecondaryIdQuery: concept.excludeFromSecondaryIdQuery,
+  excludeFromSecondaryId: concept.excludeFromSecondaryId,
   tables: transformTablesToApi(concept.tables),
   selects: transformSelectsToApi(concept.selects),
 });

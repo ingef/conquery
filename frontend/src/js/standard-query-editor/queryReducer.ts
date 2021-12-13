@@ -78,7 +78,7 @@ const filterItem = (
   const baseItem = {
     label: item.label,
     excludeTimestamps: item.excludeTimestamps,
-    excludeFromSecondaryIdQuery: item.excludeFromSecondaryIdQuery,
+    excludeFromSecondaryId: item.excludeFromSecondaryId,
     loading: item.loading,
     error: item.error,
   };
@@ -419,7 +419,7 @@ const resetNodeAllFilters = (
   const node = state[andIdx].elements[orIdx];
 
   const newState = setElementProperties(state, andIdx, orIdx, {
-    excludeFromSecondaryIdQuery: false,
+    excludeFromSecondaryId: false,
     excludeTimestamps: false,
     selects: nodeIsConceptQueryNode(node)
       ? selectsWithDefaults(node.selects)
@@ -689,7 +689,7 @@ const expandNode = (
         tables,
         selects,
         excludeTimestamps: node.excludeFromTimeAggregation,
-        excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
+        excludeFromSecondaryId: node.excludeFromSecondaryId,
         tree: lookupResult.root,
       };
   }
@@ -814,8 +814,8 @@ const onToggleSecondaryIdExclude = (
   { andIdx, orIdx }: ActionType<typeof toggleSecondaryIdExclude>["payload"],
 ) => {
   return setElementProperties(state, andIdx, orIdx, {
-    excludeFromSecondaryIdQuery:
-      !state[andIdx].elements[orIdx].excludeFromSecondaryIdQuery,
+    excludeFromSecondaryId:
+      !state[andIdx].elements[orIdx].excludeFromSecondaryId,
   });
 };
 

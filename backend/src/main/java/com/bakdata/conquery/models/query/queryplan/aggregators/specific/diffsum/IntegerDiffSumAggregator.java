@@ -7,10 +7,12 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Aggregator summing over {@code addendColumn} and subtracting over {@code subtrahendColumn}, for integer columns.
  */
+@ToString(callSuper = false, of = {"addendColumn", "subtrahendColumn"})
 public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 
 	@Getter

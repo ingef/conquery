@@ -4,7 +4,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
@@ -37,7 +36,6 @@ public class Dataset extends Labeled<DatasetId> implements Injectable, Authorize
 	/**
 	 * Sorting weight for Frontend.
 	 */
-	@InternalOnly
 	private int weight;
 
 	@JsonIgnore

@@ -7,8 +7,6 @@ import java.util.Map;
 
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ColumnConfig;
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -99,7 +97,7 @@ public class EntityIdMap {
 	@Data
 	@Getter
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	private static class Container {
+	public static class Container {
 		private final List<ExternalId> keys;
 		private final List<String> values;
 		private final Map<String, EntityPrintId> internalToPrint;
@@ -109,7 +107,7 @@ public class EntityIdMap {
 	 * Constructor to deserialize from {@link Container}.
 	 */
 	@JsonCreator
-	private EntityIdMap(Container container) {
+	public EntityIdMap(Container container) {
 
 		for (int index = 0; index < container.keys.size(); index++) {
 			getExternal2Internal().put(container.keys.get(index), container.values.get(index));

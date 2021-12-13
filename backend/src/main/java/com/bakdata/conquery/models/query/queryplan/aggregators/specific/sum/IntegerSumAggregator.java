@@ -6,10 +6,12 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import lombok.ToString;
 
 /**
  * Aggregator implementing a sum over {@code column}, for Integer columns.
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class IntegerSumAggregator extends SingleColumnAggregator<Long> {
 
 	private boolean hit = false;

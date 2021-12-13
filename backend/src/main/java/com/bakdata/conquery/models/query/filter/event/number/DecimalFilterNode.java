@@ -5,7 +5,9 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class DecimalFilterNode extends NumberFilterNode<Range<BigDecimal>> {
 
 	public DecimalFilterNode(Column column, Range<BigDecimal> filterValue) {

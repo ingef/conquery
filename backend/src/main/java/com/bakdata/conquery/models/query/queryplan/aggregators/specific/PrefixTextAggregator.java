@@ -10,10 +10,12 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.google.common.collect.ImmutableSet;
+import lombok.ToString;
 
 /**
  * Aggregator, returning all values of a column, beginning with a specified value.
  */
+@ToString(callSuper = true, of = "prefix")
 public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 
 	private final Set<String> entries = new HashSet<>();

@@ -6,10 +6,12 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import lombok.ToString;
 
 /**
  * Aggregator counting the number of present values in a column.
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class CountAggregator extends SingleColumnAggregator<Long> {
 
 	private long count = 0;

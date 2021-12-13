@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
@@ -203,11 +204,23 @@ public class ConceptsProcessor {
 	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
 		if (Strings.isNullOrEmpty(text)) {
 			// If no text provided, we just list them
-			final List<FilterSearchItem> items = filter.getSourceSearch().listItems();
-			return items
-					.stream()
-					.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-					.collect(Collectors.toList());
+			// Filter might not have a source search (since none might be defined).
+
+			//TODO unify these code paths, they are quite the mess, maybe also create source search for key-value also
+
+			final Stream<FEValue> fromSearch =
+					filter.getSourceSearch() == null
+					? Stream.empty()
+					: filter.getSourceSearch().listItems()
+							.stream()
+							.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()));
+
+
+			final Stream<FEValue> fromLabels = filter.getLabels().entrySet().stream().map(entry -> new FEValue(entry.getValue(), entry.getKey()));
+
+			return Stream.concat(fromLabels, fromSearch)
+					.sorted()
+						 .collect(Collectors.toList());
 		}
 
 		List<FEValue> result = new LinkedList<>();

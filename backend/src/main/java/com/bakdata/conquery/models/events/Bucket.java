@@ -68,6 +68,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@Setter(AccessLevel.PROTECTED)
 	private ColumnStore[] stores;
 
+	//TODO consider usage of SortedSet but that would require custom deserializer, sorted set would have the benefit, that iteration of entities would also conform to layout of data giving some performance gains to CBlocks and Matching Stats
 	private final Set<Integer> entities;
 
 	/**

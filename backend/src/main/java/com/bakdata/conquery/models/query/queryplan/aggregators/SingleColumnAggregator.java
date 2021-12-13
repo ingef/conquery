@@ -35,5 +35,4 @@ public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 		out.add(getColumn().getTable());
 	}
 
-
 }

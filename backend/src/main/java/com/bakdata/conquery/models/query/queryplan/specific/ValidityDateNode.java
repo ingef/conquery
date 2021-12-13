@@ -6,7 +6,9 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import lombok.ToString;
 
+@ToString(of = "validityDateColumn", callSuper = true)
 public class ValidityDateNode extends QPChainNode {
 
 	private final Column validityDateColumn;
@@ -45,10 +47,5 @@ public class ValidityDateNode extends QPChainNode {
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx.withValidityDateColumn(validityDateColumn), currentTable);
 		noRestriction = ctx.getDateRestriction().isAll();
-	}
-	
-	@Override
-	public String toString() {
-		return "ValidityDateNode [validityDateColumn=" + validityDateColumn + ", getChild()=" + getChild() + "]";
 	}
 }

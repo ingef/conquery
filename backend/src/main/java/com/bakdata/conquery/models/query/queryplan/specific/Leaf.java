@@ -9,7 +9,9 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import lombok.ToString;
 
+@ToString
 public class Leaf extends QPNode {
 
 	private boolean triggered = false;

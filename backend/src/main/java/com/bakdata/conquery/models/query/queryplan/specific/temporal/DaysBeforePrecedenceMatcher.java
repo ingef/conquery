@@ -5,11 +5,13 @@ import java.util.OptionalInt;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import lombok.ToString;
 
 
 /**
  * Tests if the days between reference and preceding are within {@link #days}.
  */
+@ToString
 public class DaysBeforePrecedenceMatcher implements PrecedenceMatcher {
 
 	private final Range.IntegerRange days;

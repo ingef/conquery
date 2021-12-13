@@ -12,7 +12,9 @@ import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 public class NegatingNode extends QPChainNode {
 
 	private final DateAggregator dateAggregator;
@@ -40,7 +42,7 @@ public class NegatingNode extends QPChainNode {
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		if (dateAggregator != null) {
+		if (dateAggregator != null && dateAggregator.hasChildren()) {
 			return Set.of(dateAggregator);
 		}
 		return Collections.emptySet();
