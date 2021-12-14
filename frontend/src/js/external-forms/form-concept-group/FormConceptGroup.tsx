@@ -24,7 +24,7 @@ import {
 } from "../../concept-trees/globalTreeStoreHelper";
 import type { TreesT } from "../../concept-trees/reducer";
 import {
-  nodeHasEmptySettings,
+  nodeHasFilterValues,
   nodeHasNonDefaultSettings,
   NodeResetConfig,
 } from "../../model/node";
@@ -818,7 +818,7 @@ const FormConceptGroup = (props: Props) => {
                     conceptNode={concept}
                     name={props.fieldName}
                     hasNonDefaultSettings={nodeHasNonDefaultSettings(concept)}
-                    isEmpty={nodeHasEmptySettings(concept)}
+                    hasFilterValues={nodeHasFilterValues(concept)}
                     onFilterClick={() =>
                       setEditedFormQueryNodePosition({
                         valueIdx: i,

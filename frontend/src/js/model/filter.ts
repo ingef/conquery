@@ -40,6 +40,25 @@ const resetFilter =
     }
   };
 
+const filterHasValue = (filter: FilterWithValueType) => {
+  switch (filter.type) {
+    case "MULTI_SELECT":
+    case "BIG_MULTI_SELECT":
+      return filter.value && filter.value.length > 0;
+    case "SELECT":
+      return (
+        filter.value &&
+        filter.options.length > 0 &&
+        filter.value !== filter.options[0].value
+      );
+    default:
+      return exists(filter.value);
+  }
+};
+
+export const filtersHaveValues = (filters: FilterWithValueType[]) =>
+  filters.some(filterHasValue);
+
 export const filterValueDiffersFromDefault = (
   filter: FilterWithValueType,
 ): boolean => {
