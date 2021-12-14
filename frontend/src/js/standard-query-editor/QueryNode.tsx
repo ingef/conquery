@@ -8,9 +8,10 @@ import { useSelector } from "react-redux";
 import { getWidthAndHeight } from "../app/DndProvider";
 import { QUERY_NODE } from "../common/constants/dndTypes";
 import ErrorMessage from "../error-message/ErrorMessage";
-import { nodeHasActiveFilters } from "../model/node";
+import { nodeHasNonDefaultSettings, nodeHasEmptySettings } from "../model/node";
 import { isQueryExpandable } from "../model/query";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryNodeActions from "./QueryNodeActions";
 import { getRootNodeLabel } from "./helper";
@@ -21,30 +22,30 @@ import {
 } from "./types";
 
 const Root = styled("div")<{
-  hasActiveFilters?: boolean;
+  hasNonDefaultSettings?: boolean;
+  isEmpty?: boolean;
 }>`
   position: relative;
   width: 100%;
   margin: 0 auto;
   background-color: white;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 1fr auto;
+
   padding: 7px;
   font-size: ${({ theme }) => theme.font.sm};
   cursor: pointer;
   text-align: left;
   border-radius: ${({ theme }) => theme.borderRadius};
-  transition: border ${({ theme }) => theme.transitionTime};
-  border: ${({ theme, hasActiveFilters }) =>
-    hasActiveFilters
+  transition: background-color ${({ theme }) => theme.transitionTime};
+  border: ${({ theme, hasNonDefaultSettings, isEmpty }) =>
+    isEmpty
+      ? `1px solid ${theme.col.grayMediumLight}`
+      : hasNonDefaultSettings
       ? `2px solid ${theme.col.blueGrayDark}`
-      : `1px solid ${theme.col.grayMediumLight}`};
+      : `1px solid ${theme.col.orange}`};
   &:hover {
-    border: ${({ theme, hasActiveFilters }) =>
-      hasActiveFilters
-        ? `2px solid ${theme.col.blueGrayDark}`
-        : `1px solid ${theme.col.blueGrayDark}`};
+    background-color: ${({ theme }) => theme.col.bg};
   }
 `;
 
@@ -142,7 +143,8 @@ const QueryNode: FC<PropsT> = ({
     (state) => state.queryEditor.selectedSecondaryId,
   );
 
-  const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
+  const hasNonDefaultSettings = !node.error && nodeHasNonDefaultSettings(node);
+  const hasEmptySettings = nodeHasEmptySettings(node);
   const hasActiveSecondaryId = nodeHasActiveSecondaryId(
     node,
     activeSecondaryId,
@@ -193,6 +195,12 @@ const QueryNode: FC<PropsT> = ({
     }),
   });
 
+  const tooltipText = hasEmptySettings
+    ? t("queryEditor.hasEmptySettings")
+    : hasNonDefaultSettings
+    ? t("queryEditor.hasNonDefaultSettings")
+    : t("queryEditor.hasDefaultSettings");
+
   return (
     <AdditionalInfoHoverable node={node}>
       <Root
@@ -200,27 +208,30 @@ const QueryNode: FC<PropsT> = ({
           ref.current = instance;
           drag(instance);
         }}
-        hasActiveFilters={hasActiveFilters}
+        isEmpty={!!node.error || hasEmptySettings}
+        hasNonDefaultSettings={hasNonDefaultSettings}
         onClick={!!node.error ? () => {} : onEditClick}
       >
-        <Node>
-          {node.isPreviousQuery && (
-            <PreviousQueryLabel>
-              {t("queryEditor.previousQuery")}
-            </PreviousQueryLabel>
-          )}
-          {node.error ? (
-            <StyledErrorMessage message={node.error} />
-          ) : (
-            <>
-              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-              <Label>{node.label || node.id}</Label>
-              {node.description && (!node.ids || node.ids.length === 1) && (
-                <Description>{node.description}</Description>
-              )}
-            </>
-          )}
-        </Node>
+        <WithTooltip text={tooltipText}>
+          <Node>
+            {node.isPreviousQuery && (
+              <PreviousQueryLabel>
+                {t("queryEditor.previousQuery")}
+              </PreviousQueryLabel>
+            )}
+            {node.error ? (
+              <StyledErrorMessage message={node.error} />
+            ) : (
+              <>
+                {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
+                <Label>{node.label || node.id}</Label>
+                {node.description && (!node.ids || node.ids.length === 1) && (
+                  <Description>{node.description}</Description>
+                )}
+              </>
+            )}
+          </Node>
+        </WithTooltip>
         <QueryNodeActions
           excludeTimestamps={node.excludeTimestamps}
           onDeleteNode={onDeleteNode}

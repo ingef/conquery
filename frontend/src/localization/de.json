@@ -58,7 +58,10 @@
     "hasSecondaryId": "Analyse-Ebene aktiv",
     "removeNode": "Knoten entfernen",
     "removeColumn": "Spalte entfernen",
-    "clear": "Editor-Oberfläche zurücksetzen"
+    "clear": "Editor-Oberfläche zurücksetzen",
+    "hasEmptySettings": "Aktuell keine Einstellungen (leer)",
+    "hasDefaultSettings": "Benutzt Standard-Einstellungen",
+    "hasNonDefaultSettings": "Hat veränderte Einstellungen"
   },
   "expandPreviousQueryModal": {
     "headline": "Anfrage wirklich expandieren?",
@@ -87,7 +90,8 @@
     "conceptNodeTables": "Quellen",
     "properties": "Allgemeine Einstellungen",
     "reset": "Zurücksetzen",
-    "resetSettings": "Änderungen zurücksetzen",
+    "resetSettings": "Auf Standard zurücksetzen",
+    "clearSettings": "Alle Felder leeren",
     "excludeTimestamps": "Von Zeitberechnung ausschließen",
     "excludingTimestamps": "Von Zeitberechnung ausgeschlossen",
     "excludeFromSecondaryId": "Von Analyse-Ebene ausschließen",

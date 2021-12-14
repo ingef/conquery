@@ -16,6 +16,7 @@ import type {
 } from "../api/types";
 import { successPayload } from "../common/actions";
 import type { TreesT } from "../concept-trees/reducer";
+import type { NodeResetConfig } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
 
@@ -40,7 +41,7 @@ export type StandardQueryEditorActions = ActionType<
   | typeof toggleExcludeGroup
   | typeof toggleSecondaryIdExclude
   | typeof toggleTimestamps
-  | typeof resetAllFilters
+  | typeof resetAllSettings
   | typeof removeConceptFromNode
   | typeof addConceptToNode
   | typeof switchFilterMode
@@ -198,15 +199,19 @@ export const setDateColumn = createAction("query-editor/SET_DATE_COLUMN")<{
   value: unknown;
 }>();
 
-export const resetAllFilters = createAction("query-editor/RESET_ALL_FILTERS")<{
+export const resetAllSettings = createAction(
+  "query-editor/RESET_ALL_SETTINGS",
+)<{
   andIdx: number;
   orIdx: number;
+  config: NodeResetConfig;
 }>();
 
 export const resetTable = createAction("query-editor/RESET_TABLE")<{
   andIdx: number;
   orIdx: number;
   tableIdx: number;
+  config: NodeResetConfig;
 }>();
 
 export const switchFilterMode = createAction(
