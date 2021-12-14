@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import type { NodeResetConfig } from "../model/node";
-import { tableHasNonDefaultSettings, tableIsDisabled } from "../model/table";
+import { tableHasFilterValues, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -87,7 +87,7 @@ const MenuColumnItem: FC<PropsT> = ({
   const includable = table.exclude;
   const excludable = !isOnlyOneTableIncluded;
 
-  const isFilterActive = tableHasNonDefaultSettings(table);
+  const isFilterActive = tableHasFilterValues(table);
 
   return (
     <Container disabled={isDisabled} onClick={onClick}>
@@ -112,10 +112,10 @@ const MenuColumnItem: FC<PropsT> = ({
         <Label>{table.label}</Label>
       </Row>
       {isFilterActive && (
-        <SxWithTooltip text={t("queryNodeEditor.resetSettings")}>
+        <SxWithTooltip text={t("queryNodeEditor.clearSettings")}>
           <ResetButton
-            secondary
-            icon="undo"
+            icon="filter"
+            active
             onClick={(event) => {
               // To prevent selecting the table as well, see above
               event.stopPropagation();
@@ -124,7 +124,7 @@ const MenuColumnItem: FC<PropsT> = ({
                 return;
               }
 
-              onResetTable({ useDefaults: true });
+              onResetTable({ useDefaults: false });
             }}
           />
         </SxWithTooltip>

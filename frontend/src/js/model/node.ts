@@ -5,7 +5,11 @@ import type {
 } from "../standard-query-editor/types";
 
 import { objectHasNonDefaultSelects } from "./select";
-import { tablesHaveNonDefaultSettings, tablesHaveEmptySettings } from "./table";
+import {
+  tablesHaveNonDefaultSettings,
+  tablesHaveEmptySettings,
+  tablesHaveFilterValues,
+} from "./table";
 
 export interface NodeResetConfig {
   useDefaults?: boolean;
@@ -33,6 +37,9 @@ export const nodeHasEmptySettings = (node: StandardQueryNodeT) => {
         (!node.selects || node.selects.every((select) => !select.selected))))
   );
 };
+
+export const nodeHasFilterValues = (node: StandardQueryNodeT) =>
+  nodeIsConceptQueryNode(node) && tablesHaveFilterValues(node.tables);
 
 export const nodeHasNonDefaultSettings = (node: StandardQueryNodeT) =>
   node.excludeTimestamps ||

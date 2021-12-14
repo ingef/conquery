@@ -14,7 +14,6 @@ interface Props {
   icon: "undo" | "trash";
   onClick: () => void;
   text: string;
-  variant?: "primary" | "secondary";
 }
 
 const ResetAllSettingsButton: FC<Props> = ({
@@ -22,16 +21,10 @@ const ResetAllSettingsButton: FC<Props> = ({
   icon,
   text,
   onClick,
-  variant = "primary",
 }) => {
   return (
     <SxWithTooltip text={compact ? text : undefined}>
-      <IconButton
-        onClick={onClick}
-        icon={icon}
-        active={variant === "primary"}
-        secondary={variant === "secondary"}
-      >
+      <IconButton onClick={onClick} icon={icon} active>
         {!compact && text}
       </IconButton>
     </SxWithTooltip>

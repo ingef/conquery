@@ -16,7 +16,6 @@ import { TransparentButton } from "../button/TransparentButton";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import {
   nodeHasEmptySettings,
-  nodeHasNonDefaultSettings,
   nodeIsConceptQueryNode,
   NodeResetConfig,
 } from "../model/node";
@@ -139,9 +138,9 @@ export interface QueryNodeEditorPropsT {
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
 }
 
-const COMPACT_WIDTH = 700;
-const RIGHT_SIDE_WIDTH = 500;
-const RIGHT_SIDE_WIDTH_COMPACT = 200;
+const COMPACT_WIDTH = 600;
+const RIGHT_SIDE_WIDTH = 400;
+const RIGHT_SIDE_WIDTH_COMPACT = 150;
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { t } = useTranslation();
@@ -187,7 +186,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
 
   if (!node) return null;
 
-  const showDefaultReset = nodeHasNonDefaultSettings(node);
   const showClearReset = !nodeHasEmptySettings(node);
 
   return (
@@ -206,7 +204,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             style={{
               maxWidth:
                 parentWidth -
-                (isCompact || (!showDefaultReset && !showClearReset)
+                (isCompact || !showClearReset
                   ? RIGHT_SIDE_WIDTH_COMPACT
                   : RIGHT_SIDE_WIDTH),
             }}
@@ -229,18 +227,9 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             {node.isPreviousQuery && (node.label || node.id || node.ids)}
           </NodeName>
           <Row>
-            {showDefaultReset && (
-              <ResetAllSettingsButton
-                text={t("queryNodeEditor.resetSettings")}
-                icon="undo"
-                onClick={() => props.onResetAllSettings({ useDefaults: true })}
-                compact={isCompact}
-                variant="secondary"
-              />
-            )}
             {showClearReset && (
               <ResetAllSettingsButton
-                text={t("queryNodeEditor.clearSettings")}
+                text={t("queryNodeEditor.clearAllSettings")}
                 icon="trash"
                 onClick={() => props.onResetAllSettings({ useDefaults: false })}
                 compact={isCompact}
