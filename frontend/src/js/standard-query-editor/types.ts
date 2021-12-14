@@ -122,7 +122,6 @@ export interface ConceptQueryNodeType {
   loading?: boolean;
   error?: string;
 
-  isEditing?: boolean;
   isPreviousQuery?: false;
 }
 
@@ -139,7 +138,6 @@ export interface PreviousQueryQueryNodeType {
   loading?: boolean;
   error?: string;
 
-  isEditing?: boolean;
   isPreviousQuery: true;
 }
 

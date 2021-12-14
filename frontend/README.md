@@ -99,17 +99,21 @@ Depending on the use-case, we're still calling the same concepts differently som
 - **Tooltip** – small area (below), that contains additional information on hovering over certain elements
 - **Additional Infos** – data (key-value pairs) that are part of concept nodes and can be displayed inside the tooltip
 
-## Various Technical Explanations
+## Technical Explanations (mini architectural decision records)
 
 - Migration from Flow to TypeScript is in progress. At the moment, Typescript errors are printed to console on server start and build, to see what they are and to fix them. To check how many errors are left: `yarn typecheck`. But type errors are ignored (see `.env`) to be able to still compile for now. Plan is to fix the errors step by step and then to enable failure on TS errors on start / build again.
 - Emotion is used for theming and styles. The plan is to migrate (back) to styled-components or to another css-in-js solution, because emotion's "styled" is less TypeScript compatible in some edge cases like generic component props (see usage of Dropzone).
 - Redux actions aren't all typed well yet. Plan is to migrate fully to https://github.com/piotrwitek/typesafe-actions
 - We're moving away from redux middlewares like thunk (replaced by hooks) and multi 
-- We're still trying to support IE11. But this is phasing out, since most users are already using more modern Browsers.
 - We've migrated from `redux-form` to `react-hook-form`. Still TODO: there's some form context stored in redux for every available form (e.g. for filter suggestions in concept fields). We should move this from redux to local state (e.g. into `FormConceptGroup`).
+- We have been supporting IE11. But this is phasing out, since most users are already using more modern Browsers. At the moment we're in a gray zone – inofficially, it's ok to use non-IE11 compatible technologies.
 
 ### Drag and Drop
 
 - We're using react-dnd (and we like it).
 - We're using MultiBackend to support Drag and Drop for touch and html5.
 - To render a Drag and Drop preview on mobile, we'll have to calculate `width` and `height` of the drag source.
+
+### Things to clarify for better types
+- Are there ever `tables` that have `filters === null`?
+- Are there ever `tables` that have no `selects`?

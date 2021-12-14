@@ -229,10 +229,12 @@ const onSetTimebasedConditionOperator = (
     operator,
   });
 
+  const { result0 } = state.conditions[conditionIdx];
+
   if (
     operator !== "DAYS_OR_NO_EVENT_BEFORE" ||
-    !state.conditions[conditionIdx].result0 ||
-    state.conditions[conditionIdx].result0.id !== state.indexResult
+    !result0 ||
+    result0.id !== state.indexResult
   )
     return nextState;
 
