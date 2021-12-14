@@ -18,8 +18,7 @@ export interface DragItemFormConceptNode {
 }
 
 const Root = styled("div")<{
-  hasNonDefaultSettings?: boolean;
-  isEmpty?: boolean;
+  active?: boolean;
 }>`
   padding: 5px 10px;
   cursor: pointer;
@@ -27,12 +26,10 @@ const Root = styled("div")<{
   max-width: 200px;
   border-radius: ${({ theme }) => theme.borderRadius};
   transition: background-color ${({ theme }) => theme.transitionTime};
-  border: ${({ theme, hasNonDefaultSettings, isEmpty }) =>
-    isEmpty
-      ? `1px solid ${theme.col.grayMediumLight}`
-      : hasNonDefaultSettings
+  border: ${({ theme, active }) =>
+    active
       ? `2px solid ${theme.col.blueGrayDark}`
-      : `1px solid ${theme.col.orange}`};
+      : `1px solid ${theme.col.grayMediumLight}`};
   &:hover {
     background-color: ${({ theme }) => theme.col.bgAlt};
   }
@@ -82,7 +79,7 @@ interface PropsT {
   name: string;
   onFilterClick: () => void;
   hasNonDefaultSettings: boolean;
-  isEmpty?: boolean;
+  hasFilterValues: boolean;
   expand?: {
     onClick: () => void;
     expandable: boolean;
@@ -97,7 +94,7 @@ const FormConceptNode: FC<PropsT> = ({
   conceptNode,
   onFilterClick,
   hasNonDefaultSettings,
-  isEmpty,
+  hasFilterValues,
   expand,
 }) => {
   const { t } = useTranslation();
@@ -120,11 +117,11 @@ const FormConceptNode: FC<PropsT> = ({
     },
   });
 
-  const tooltipText = isEmpty
-    ? t("queryEditor.hasEmptySettings")
-    : hasNonDefaultSettings
+  const tooltipText = hasNonDefaultSettings
     ? t("queryEditor.hasNonDefaultSettings")
-    : t("queryEditor.hasDefaultSettings");
+    : hasFilterValues
+    ? t("queryEditor.hasDefaultSettings")
+    : undefined;
 
   return (
     <Root
@@ -132,8 +129,7 @@ const FormConceptNode: FC<PropsT> = ({
         ref.current = instance;
         drag(instance);
       }}
-      hasNonDefaultSettings={hasNonDefaultSettings}
-      isEmpty={isEmpty}
+      active={hasNonDefaultSettings || hasFilterValues}
       onClick={onFilterClick}
     >
       <WithTooltip text={tooltipText}>

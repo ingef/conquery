@@ -7,6 +7,7 @@ import {
   resetFilters,
   filterValueDiffersFromDefault,
   filterIsEmpty,
+  filtersHaveValues,
 } from "./filter";
 import type { NodeResetConfig } from "./node";
 import { objectHasNonDefaultSelects, resetSelects } from "./select";
@@ -29,6 +30,12 @@ export const tableHasEmptySettings = (table: TableWithFilterValueT) => {
     (!table.filters || table.filters.every(filterIsEmpty))
   );
 };
+
+export const tableHasFilterValues = (table: TableWithFilterValueT) =>
+  !!table.filters && filtersHaveValues(table.filters);
+
+export const tablesHaveFilterValues = (tables: TableWithFilterValueT[]) =>
+  tables.some(tableHasFilterValues);
 
 export const tableHasNonDefaultSettings = (table: TableWithFilterValueT) => {
   const activeSelects = objectHasNonDefaultSelects(table);

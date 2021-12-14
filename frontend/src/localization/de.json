@@ -59,9 +59,8 @@
     "removeNode": "Knoten entfernen",
     "removeColumn": "Spalte entfernen",
     "clear": "Editor-Oberfläche zurücksetzen",
-    "hasEmptySettings": "Aktuell keine Einstellungen (leer)",
-    "hasDefaultSettings": "Benutzt Standard-Einstellungen",
-    "hasNonDefaultSettings": "Hat veränderte Einstellungen"
+    "hasDefaultSettings": "Standardeinstellungen",
+    "hasNonDefaultSettings": "Eigene Einstellungen"
   },
   "expandPreviousQueryModal": {
     "headline": "Anfrage wirklich expandieren?",
@@ -91,7 +90,8 @@
     "properties": "Allgemeine Einstellungen",
     "reset": "Zurücksetzen",
     "resetSettings": "Auf Standard zurücksetzen",
-    "clearSettings": "Alle Felder leeren",
+    "clearAllSettings": "Alle Felder leeren",
+    "clearSettings": "Felder leeren",
     "excludeTimestamps": "Von Zeitberechnung ausschließen",
     "excludingTimestamps": "Von Zeitberechnung ausgeschlossen",
     "excludeFromSecondaryId": "Von Analyse-Ebene ausschließen",
