@@ -31,7 +31,7 @@ export interface BigMultiSelectFilterWithValueType
 }
 
 export interface SelectFilterWithValueType extends SelectFilterT {
-  value?: SelectFilterValueT;
+  value: SelectFilterValueT | null;
 }
 
 export type FilterWithValueType =
@@ -45,13 +45,13 @@ export interface SelectedSelectorT extends SelectorT {
 }
 
 export interface SelectedDateColumnT extends DateColumnT {
-  value?: string;
+  value: string;
 }
 
 export interface TableWithFilterValueT
   extends Omit<TableT, "filters" | "selects" | "dateColumn"> {
-  filters: FilterWithValueType[] | null;
-  selects?: SelectedSelectorT[];
+  filters: FilterWithValueType[];
+  selects: SelectedSelectorT[];
   dateColumn?: SelectedDateColumnT;
 }
 

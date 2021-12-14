@@ -113,7 +113,3 @@ Depending on the use-case, we're still calling the same concepts differently som
 - We're using react-dnd (and we like it).
 - We're using MultiBackend to support Drag and Drop for touch and html5.
 - To render a Drag and Drop preview on mobile, we'll have to calculate `width` and `height` of the drag source.
-
-### Things to clarify for better types
-- Are there ever `tables` that have `filters === null`?
-- Are there ever `tables` that have no `selects`?

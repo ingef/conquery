@@ -107,8 +107,8 @@ export interface TableT {
   label: string;
   exclude?: boolean;
   default?: boolean; // not excluded by default
-  filters?: FilterT[]; // Empty array: key not defined
-  selects?: SelectorT[]; // Empty array: key not defined
+  filters: FilterT[]; // Empty array: key not defined
+  selects: SelectorT[]; // Empty array: key not defined
   supportedSecondaryIds?: string[];
 }
 

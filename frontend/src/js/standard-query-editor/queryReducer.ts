@@ -165,7 +165,7 @@ const onDropAndNode = (
     },
   ];
 
-  return item.moved
+  return item.type === "QUERY_NODE" && item.moved
     ? onDeleteNode(nextState, {
         andIdx: item.andIdx,
         orIdx: item.orIdx,
@@ -186,7 +186,7 @@ const onDropOrNode = (
     ...state.slice(andIdx + 1),
   ];
 
-  return item.moved
+  return item.type === "QUERY_NODE" && item.moved
     ? item.andIdx === andIdx
       ? onDeleteNode(nextState, {
           andIdx: item.andIdx,
