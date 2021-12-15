@@ -191,7 +191,7 @@ public class SerializationTests {
 
 		DateRangeTypeCompound
 				compoundStore =
-				new DateRangeTypeCompound(startCol.getName(), endCol.getName(), new BitSetStore(BitSet.valueOf(new byte[]{0b1000}), new BitSet())); //0b1000 is a byte representation of 8 so that the 4th is set to make sure that BitSet length is 4.
+				new DateRangeTypeCompound(startCol.getName(), endCol.getName(), new BitSetStore(BitSet.valueOf(new byte[]{0b1000}), new BitSet())); //0b1000 is a binary representation of 8 so that the 4th is set to make sure that BitSet length is 4.
 
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
