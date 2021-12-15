@@ -144,7 +144,7 @@ const setElementProperties = (
         ...properties,
       },
       ...node[andIdx].elements.slice(orIdx + 1),
-    ],
+    ] as StandardQueryNodeT[],
   };
 
   return setGroupProperties(node, andIdx, groupProperties);
