@@ -19,10 +19,4 @@ public class PostalCodeSearchEntity {
 	@NotNull
 	private double radius;
 
-	/**
-	 * Prepared value on Manager, that is transferred to the shard and can be feed in to the filter.
-	 */
-	@InternalOnly
-	private String[] transferValue;
-
 }

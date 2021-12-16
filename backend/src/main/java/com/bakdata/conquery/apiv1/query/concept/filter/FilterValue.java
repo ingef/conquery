@@ -15,10 +15,12 @@ import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.postalcode.PostalCodeSearchEntity;
 import com.bakdata.conquery.models.datasets.concepts.filters.postalcode.PostalCodesManager;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.base.Preconditions;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,6 +54,8 @@ public abstract class FilterValue<S_VALUE,F_VALUE> {
 	 */
 	public abstract FilterNode<?> createNode();
 
+	public abstract void resolve(QueryResolveContext context);
+
 	/**
 	 * Simplified FilterValue which can forward is value into a filter node without transformation
 	 * @param <F_VALUE>
@@ -69,6 +73,9 @@ public abstract class FilterValue<S_VALUE,F_VALUE> {
 		public FilterNode<?> createNode() {
 			return getFilter().createFilterNode(getValue());
 		}
+
+
+		public void resolve(QueryResolveContext context){};
 
 	}
 
@@ -143,24 +150,25 @@ public abstract class FilterValue<S_VALUE,F_VALUE> {
 	@NoArgsConstructor
 	public static class PostalCodeFilter extends FilterValue<PostalCodeSearchEntity, String[]> {
 
-		@JsonCreator
-		public PostalCodeFilter(@NsIdRef Filter<String[]> filter, PostalCodeSearchEntity value, @JacksonInject PostalCodesManager postalCodesManager) {
-			super();
-			this.setFilter(filter);
-			this.setValue(value);
+		@JacksonInject
+		PostalCodesManager postalCodesManager;
 
-			if (postalCodesManager != null) {
-				/*
-				This is only executed on the manager.
-				On a shard node, no postalCodesManager will be injected, but the transferValue will already be set from the manager.
-				 */
-				value.setTransferValue(postalCodesManager.filterAllNeighbours(Integer.parseInt(value.getPlz()), value.getRadius()));
-			}
-		}
+		/**
+		 * Prepared value on Manager, that is transferred to the shard and can be feed in to the filter.
+		 */
+		@InternalOnly
+		private String[] transferValue;
 
 		@Override
 		public FilterNode<?> createNode() {
-			return getFilter().createFilterNode(getValue().getTransferValue());
+			return getFilter().createFilterNode(transferValue);
+		}
+
+		@Override
+		public void resolve(QueryResolveContext context) {
+			Preconditions.checkNotNull(postalCodesManager);
+			final PostalCodeSearchEntity value = getValue();
+			transferValue = postalCodesManager.filterAllNeighbours(Integer.parseInt(value.getPlz()), value.getRadius());
 		}
 	}
 }
