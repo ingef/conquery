@@ -21,7 +21,7 @@
                 "NOT_EMPTY"
             ],
             "tooltip": {
-                "de": "Beschreibt die versicherten Personen, für die Daten ausgegeben werden."
+                "de": "Versichertengruppe (Anfrage) für die Daten ausgegeben werden soll."
             }
         },
         {
