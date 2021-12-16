@@ -611,7 +611,7 @@ Supported Fields:
 Different types of FilterValue can be used by setting `type` to one of the following values:
 
 
-### BIG_MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L85)</sup></sub></sup>
+### BIG_MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L92)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -622,11 +622,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L37) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L42-L44) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L39) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L44-L46) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
 </p></details>
 
-### INTEGER_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L112)</sup></sub></sup>
+### INTEGER_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L119)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -637,11 +637,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L37) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L42-L44) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L39) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L44-L46) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
 </p></details>
 
-### MONEY_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L121-L124)</sup></sub></sup>
+### MONEY_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L128-L131)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -652,11 +652,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L37) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L42-L44) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L39) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L44-L46) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
 </p></details>
 
-### MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L76)</sup></sub></sup>
+### MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L83)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -667,11 +667,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L37) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L42-L44) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L39) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L44-L46) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
 </p></details>
 
-### POSTAL_CODE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L142)</sup></sub></sup>
+### POSTAL_CODE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L149)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -682,11 +682,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L37) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L42-L44) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L39) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L44-L46) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
 </p></details>
 
-### REAL_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L133)</sup></sub></sup>
+### REAL_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L140)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -697,11 +697,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L37) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L42-L44) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L39) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L44-L46) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
 </p></details>
 
-### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L94)</sup></sub></sup>
+### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L101)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -712,11 +712,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L37) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L42-L44) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L39) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L44-L46) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
 </p></details>
 
-### STRING<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L103)</sup></sub></sup>
+### STRING<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L110)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -727,8 +727,8 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L37) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L42-L44) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L39) | filter | ID of `@NotNull @NsIdRef Filter<F_VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L44-L46) | value | `@NotNull S_VALUE` | `null` |  | Submitted value from query | 
 </p></details>
 
 
@@ -753,7 +753,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L69) | text | `@NonNull Optional<String>` | ? |  |  | 
 </p></details>
 
-### Type CQTable<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L22)</sup></sub></sup>
+### Type CQTable<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L23)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -764,10 +764,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L37) | connector | ID of `@NsIdRef Connector` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L41) | dateColumn | [ValidityDateContainer](#Type-ValidityDateContainer) | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L26) | filters | list of [FilterValue<?, ?>](#Base-FilterValue) | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L30) | selects | list of ID of `Select` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L38) | connector | ID of `@NsIdRef Connector` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L42) | dateColumn | [ValidityDateContainer](#Type-ValidityDateContainer) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L27) | filters | list of [FilterValue<?, ?>](#Base-FilterValue) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L31) | selects | list of ID of `Select` | `[]` |  |  | 
 </p></details>
 
 ### Type ConceptCodeList<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L64)</sup></sub></sup>
