@@ -30,17 +30,20 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@Slf4j @CPSBase
+@Slf4j
+@CPSBase
 public abstract class ConqueryTestSpec {
-	
-	@Getter @Setter @NotNull
+
+	@Getter
+	@Setter
+	@NotNull
 	private String label;
 
 	public abstract void executeTest(StandaloneSupport support) throws Exception;
 
 	public abstract void importRequiredData(StandaloneSupport support) throws Exception;
 
-	public void overrideConfig(ConqueryConfig config){
+	public void overrideConfig(ConqueryConfig config) {
 
 	}
 
@@ -53,7 +56,8 @@ public abstract class ConqueryTestSpec {
 		return parseSubTree(support, node, expectedClass, null);
 	}
 
-	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation)
+			throws IOException, JSONException {
 		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory().constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation);
 	}
 
@@ -61,11 +65,16 @@ public abstract class ConqueryTestSpec {
 		return parseSubTree(support, node, expectedType, null);
 	}
 
-	public static  <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation)
+			throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
 						.injectIntoNew(
-								Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
+								support.getTestConquery()
+									   .getStandaloneCommand()
+									   .getEnvironment()
+									   .getObjectMapper()
+									   .addHandler(new DatasetPlaceHolderFiller(support))
 						)
 		);
 
@@ -78,34 +87,35 @@ public abstract class ConqueryTestSpec {
 		ValidatorHelper.failOnError(log, support.getValidator().validate(result));
 		return result;
 	}
-	
-	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+
+	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation)
+			throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
-			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
-				Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
-			)
+				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
+						Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
+				)
 		);
 		List<T> result = new ArrayList<>(node.size());
-		for(var child : node) {
+		for (var child : node) {
 			T value;
 			try {
 				value = mapper.readerFor(expectedType).readValue(child);
 			}
-			catch(Exception e) {
-				if(child.isValueNode()) {
+			catch (Exception e) {
+				if (child.isValueNode()) {
 					String potentialPath = child.textValue();
 					try {
 						value = mapper.readerFor(expectedType).readValue(IntegrationTest.class.getResource(potentialPath));
 					}
-					catch(Exception e2) {
-						throw new RuntimeException("Could not parse value "+potentialPath, e2);
+					catch (Exception e2) {
+						throw new RuntimeException("Could not parse value " + potentialPath, e2);
 					}
 				}
 				else {
 					throw e;
 				}
 			}
-			
+
 			if (modifierBeforeValidation != null) {
 				modifierBeforeValidation.accept(value);
 			}

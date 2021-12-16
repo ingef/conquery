@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.io.IOException;
 import java.util.EnumSet;
 
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
@@ -13,21 +12,13 @@ import com.bakdata.conquery.models.datasets.concepts.filters.postalcode.PostalCo
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.annotation.JacksonInject;
 
 
 @CPSType(id = "POSTAL_CODE", base = Filter.class)
 public class PostalCodeFilter extends SingleColumnFilter<PostalCodeSearchEntity> {
-	static private PostalCodesManager
-			postalCodesManager = null;
-
-	static {
-		try {
-			postalCodesManager = PostalCodesManager.loadFrom("/com/bakdata/conquery/postalcodes.csv", false);
-		}
-		catch (IOException exception) {
-			throw new RuntimeException(exception);
-		}
-	}
+	@JacksonInject
+	private PostalCodesManager postalCodesManager;
 
 	@Override
 	public void configureFrontend(FEFilter f) {

@@ -3,12 +3,15 @@ package com.bakdata.conquery.models.datasets.concepts.filters.postalcode;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -21,7 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 
-public class PostalCodesManager {
+public class PostalCodesManager implements Injectable {
 	private final List<PostalCodeDistance> data;
 
 	/**
@@ -51,7 +54,7 @@ public class PostalCodesManager {
 
 
 	/**
-	 * This method filters out all postcodes that are within the specified distance radius from the specified reference postcode.
+	 * This method filters out all postcodes that are within the specified distance radius from the specified reference postcode (reference postal code included).
 	 */
 	public String[] filterAllNeighbours(int plz, double radius) {
 
@@ -59,20 +62,29 @@ public class PostalCodesManager {
 			return new String[]{StringUtils.leftPad(Integer.toString(plz), 5, '0')};
 		}
 
-		return data.stream()
-				   .takeWhile(postalCodeDistance -> postalCodeDistance.getDistanceInKm() <= radius)
-				   .filter(postalCodeDistance -> postalCodeDistance.getLeft() == plz || postalCodeDistance.getRight() == plz)
-				   .map(postalCodeDistance -> {
-					   if (postalCodeDistance.getLeft() == plz) {
-						   return StringUtils.leftPad(Integer.toString(postalCodeDistance.getRight()), 5, '0');
-					   }
-					   else {
-						   return StringUtils.leftPad(Integer.toString(postalCodeDistance.getLeft()), 5, '0');
-					   }
-				   })
-				   .toArray(String[]::new);
+		final List<String> foundPLZ = new ArrayList<>();
+		foundPLZ.add(StringUtils.leftPad(Integer.toString(plz), 5, '0'));
+
+		foundPLZ.addAll(data.stream()
+							.takeWhile(postalCodeDistance -> postalCodeDistance.getDistanceInKm() <= radius)
+							.filter(postalCodeDistance -> postalCodeDistance.getLeft() == plz || postalCodeDistance.getRight() == plz)
+							.map(postalCodeDistance -> {
+								if (postalCodeDistance.getLeft() == plz) {
+									return StringUtils.leftPad(Integer.toString(postalCodeDistance.getRight()), 5, '0');
+								}
+								else {
+									return StringUtils.leftPad(Integer.toString(postalCodeDistance.getLeft()), 5, '0');
+								}
+							}).collect(Collectors.toList()));
+
+		return foundPLZ.toArray(String[]::new);
 
 
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(PostalCodesManager.class, this);
 	}
 }
 

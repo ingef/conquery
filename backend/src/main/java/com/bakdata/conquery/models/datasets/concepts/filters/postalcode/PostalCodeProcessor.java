@@ -9,7 +9,6 @@ import java.util.stream.IntStream;
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.common.processor.AbstractRowProcessor;
 import it.unimi.dsi.fastutil.ints.IntIntImmutableSortedPair;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class StandaloneSupport {
 
+	@Getter
 	private final TestConquery testConquery;
 	@Getter
 	private final Namespace namespace;

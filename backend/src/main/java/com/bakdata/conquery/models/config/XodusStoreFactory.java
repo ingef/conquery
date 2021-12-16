@@ -26,7 +26,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -175,6 +174,8 @@ public class XodusStoreFactory implements StoreFactory {
 		validator = managerNode.getValidator();
 		configureMapper(managerNode.getConfig(), this.validator);
 		managerNode.getStorage().injectInto(objectMapper);
+		managerNode.getPostalCodesManager().injectInto(objectMapper);
+
 	}
 
 	@Override
