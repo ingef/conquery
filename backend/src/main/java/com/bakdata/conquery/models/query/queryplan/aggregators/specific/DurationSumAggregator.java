@@ -9,10 +9,12 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import lombok.ToString;
 
 /**
  * Aggregator, counting the number of days present.
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 
 	private CDateSet set = CDateSet.create();

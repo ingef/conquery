@@ -24,14 +24,14 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.*;
+import org.apache.shiro.realm.AuthenticatingRealm;
 
 @Slf4j
-public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
+public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;
 
 	private final MetaStorage storage;
-	
 	@Setter
 	private JWTConfig jwtConfig = new JWTConfig();
 	
@@ -43,7 +43,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 	}
 
 	@Override
-	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
 			log.trace("Incompatible token. Expected {}, got {}", TOKEN_CLASS, token.getClass());
 			return null;
@@ -74,16 +74,10 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		String username = decodedToken.getSubject();
 
 		UserId userId = UserId.Parser.INSTANCE.parse(username);
-		User user = storage.getUser(userId);
-		// try to construct a new User if none could be found in the storage
-		if (user == null) {
-			log.warn(
-				"Provided credentials were valid, but a corresponding user was not found in the System. You need to add a user to the system with the id: {}",
-				userId);
-			return null;
-		}
 
-		return new ConqueryAuthenticationInfo(userId, token, this, true);
+		final User user = getUserOrThrowUnknownAccount(storage, userId);
+
+		return new ConqueryAuthenticationInfo(user, token, this, true);
 	}
 
 
@@ -112,7 +106,7 @@ public class ConqueryTokenRealm extends ConqueryAuthenticationRealm {
 		private JWTVerifier tokenVerifier;
 		
 		@JsonIgnore
-		public JWTVerifier getTokenVerifier(ConqueryAuthenticationRealm realm) {
+		public JWTVerifier getTokenVerifier(AuthenticatingRealm realm) {
 			if(tokenVerifier == null) {
 				tokenVerifier = JWT.require(tokenSignAlgorithm).withIssuer(realm.getName()).build();
 			}

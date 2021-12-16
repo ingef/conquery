@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Collects the event dates of all events that are applicable to the specific
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
+@ToString(of = {"requiredTables"})
 public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 
 	private final Set<Table> requiredTables;

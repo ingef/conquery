@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -58,6 +57,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	private final int numberOfEvents;
 	private final ColumnStore[] stores;
 
+	//TODO consider usage of SortedSet but that would require custom deserializer, sorted set would have the benefit, that iteration of entities would also conform to layout of data giving some performance gains to CBlocks and Matching Stats
 	private final Set<Integer> entities;
 
 	/**
@@ -94,14 +94,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 		return getEntityStart(entity) != -1;
 	}
 
-	public Iterable<BucketEntry> entries() {
-		return () -> entities()
-						  .stream()
-						  .flatMap(entity -> IntStream.range(getEntityStart(entity), getEntityEnd(entity))
-													  .mapToObj(e -> new BucketEntry(entity, e))
-						  )
-						  .iterator();
-	}
 
 	public int getEntityStart(int entityId) {
 		return start[getEntityIndex(entityId)];

@@ -14,6 +14,8 @@ export interface SelectOptionT {
   label: string;
   value: number | string;
   disabled?: boolean;
+  selectedLabel?: string;
+  alwaysShown?: boolean;
 }
 
 // Example: { min: "2019-01-01", max: "2019-12-31" }
@@ -53,11 +55,12 @@ export interface RangeFilterT extends FilterBaseT {
   pattern?: string;
 }
 
-export type MultiSelectFilterValueT = SelectOptionT[] | FilterSuggestion[];
+export type MultiSelectFilterValueT = SelectOptionT[];
 export interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
-  options: SelectOptionT[] | FilterSuggestion[];
+  options: SelectOptionT[];
   defaultValue?: string[];
+  allowDropFile: boolean;
 }
 
 export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
@@ -66,7 +69,6 @@ export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
 
 export interface BigMultiSelectFilterT extends MultiSelectFilterBaseT {
   type: "BIG_MULTI_SELECT";
-  allowDropFile: boolean;
   // Not needed in this format:
   template: {
     filePath: string; // "/.../import/stable/Referenzen/example.csv",
@@ -85,11 +87,6 @@ export interface SelectFilterT extends FilterBaseT {
   defaultValue: SelectFilterValueT | null;
 }
 
-export type StringFilterValueT = string;
-export interface StringFilterT extends FilterBaseT {
-  type: "STRING";
-}
-
 export interface DateColumnT {
   options: SelectOptionT[];
   defaultValue: string | null;
@@ -97,7 +94,6 @@ export interface DateColumnT {
 }
 
 export type FilterT =
-  | StringFilterT
   | SelectFilterT
   | MultiSelectFilterT
   | RangeFilterT
@@ -110,6 +106,7 @@ export interface TableT {
   connectorId: string; // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string;
   exclude?: boolean;
+  default?: boolean; // not excluded by default
   filters?: FilterT[]; // Empty array: key not defined
   selects?: SelectorT[]; // Empty array: key not defined
   supportedSecondaryIds?: string[];
@@ -121,7 +118,11 @@ export type SelectorResultDataType =
   | "MONEY"
   | "BOOLEAN"
   | "STRING"
-  | "LIST";
+  | "LIST"
+  | "CATEGORICAL"
+  | "DATE"
+  | "DATE_RANGE";
+
 export interface SelectorResultType {
   type: SelectorResultDataType;
   elementType?: {
@@ -177,11 +178,7 @@ export interface FilterConfigT {
     | "SELECT"
     | "MULTI_SELECT"
     | "BIG_MULTI_SELECT";
-  value:
-    | StringFilterValueT
-    | RangeFilterValueT
-    | SelectFilterValueT
-    | FilterIdT[]; // Multi select
+  value: RangeFilterValueT | SelectFilterValueT | FilterIdT[]; // Multi select
 }
 
 export interface DateColumnConfigT {
@@ -200,7 +197,7 @@ export interface QueryConceptNodeT {
   ids: ConceptIdT[];
   label?: string; // Used to expand
   excludeFromTimeAggregation: boolean; // TODO: Not used
-  excludeFromSecondaryIdQuery: boolean;
+  excludeFromSecondaryId: boolean;
   tables: TableConfigT[];
   selects?: SelectorIdT[];
 }
@@ -395,13 +392,17 @@ export interface PostFilterResolveResponseT {
   };
 }
 
-export interface FilterSuggestion {
+export interface RawFilterSuggestion {
   label: string;
   value: string;
   optionValue: string;
   templateValues: Record<string, string>;
+  disabled?: boolean;
 }
-export type PostFilterSuggestionsResponseT = FilterSuggestion[];
+export type PostFilterSuggestionsResponseT = {
+  total: number;
+  values: RawFilterSuggestion[];
+};
 
 export type GetFormQueriesResponseT = Forms;
 

@@ -16,57 +16,60 @@ function setDefaultSelects(selects: SelectorT[], defaultSelects: string[]) {
   }));
 }
 
-export const initTables = ({
-  blocklistedTables,
-  allowlistedTables,
-}: {
-  blocklistedTables?: string[];
-  allowlistedTables?: string[];
-}) => (node: ConceptQueryNodeType) => {
-  return !node.tables
-    ? node
-    : {
-        ...node,
-        tables: node.tables.map((table) => {
-          const isDisabled = tableIsDisabled(
-            table,
-            blocklistedTables,
-            allowlistedTables,
-          );
+export const initTables =
+  ({
+    blocklistedTables,
+    allowlistedTables,
+  }: {
+    blocklistedTables?: string[];
+    allowlistedTables?: string[];
+  }) =>
+  (node: ConceptQueryNodeType) => {
+    return !node.tables
+      ? node
+      : {
+          ...node,
+          tables: node.tables.map((table) => {
+            const isDisabled = tableIsDisabled(
+              table,
+              blocklistedTables,
+              allowlistedTables,
+            );
 
-          return isDisabled ? { ...table, exclude: true } : table;
-        }),
-      };
-};
+            return isDisabled ? { ...table, exclude: true } : table;
+          }),
+        };
+  };
 
-export const initTablesWithDefaults = (
-  connectorDefaults?: ConnectorDefaultType[],
-) => (node: ConceptQueryNodeType) => {
-  return !node.tables
-    ? node
-    : {
-        ...node,
-        tables: node.tables.map((table) => {
-          if (!table.selects || !connectorDefaults) return table;
+export const initTablesWithDefaults =
+  (connectorDefaults?: ConnectorDefaultType[]) =>
+  (node: ConceptQueryNodeType) => {
+    return !node.tables
+      ? node
+      : {
+          ...node,
+          tables: node.tables.map((table) => {
+            if (!table.selects || !connectorDefaults) return table;
 
-          const connectorDefault = connectorDefaults.find(
-            (c) => table.id.toLowerCase().indexOf(c.name.toLowerCase()) !== -1,
-          );
+            const connectorDefault = connectorDefaults.find(
+              (c) =>
+                table.id.toLowerCase().indexOf(c.name.toLowerCase()) !== -1,
+            );
 
-          if (!connectorDefault) return table;
+            if (!connectorDefault) return table;
 
-          return initSelectsWithDefaults(connectorDefault.selects)(table);
-        }),
-      };
-};
+            return initSelectsWithDefaults(connectorDefault.selects)(table);
+          }),
+        };
+  };
 
-export const initSelectsWithDefaults = (defaultSelects: string[]) => (
-  node: ConceptQueryNodeType | TableWithFilterValueT,
-) => {
-  return !node.selects || !defaultSelects
-    ? node
-    : {
-        ...node,
-        selects: setDefaultSelects(node.selects, defaultSelects),
-      };
-};
+export const initSelectsWithDefaults =
+  (defaultSelects?: string[]) =>
+  <T extends ConceptQueryNodeType | TableWithFilterValueT>(node: T): T => {
+    return !node.selects || !defaultSelects
+      ? node
+      : {
+          ...node,
+          selects: setDefaultSelects(node.selects, defaultSelects),
+        };
+  };

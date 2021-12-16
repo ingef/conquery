@@ -1,6 +1,6 @@
 {
   "type": "QUERY_TEST",
-  "label": "TEMPORAL_BEFORE_CONCEPT_QUERY Test",
+  "label": "Temporal Same",
   "expectedCsv": "tests/query/TEMPORAL_SAME_CONCEPT_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

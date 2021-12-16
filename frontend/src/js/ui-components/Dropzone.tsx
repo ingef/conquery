@@ -25,7 +25,7 @@ const Root = styled("div")<{
       ? `3px solid ${theme.col.red}`
       : isOver
       ? `3px solid ${theme.col.black}`
-      : `3px dashed ${theme.col.gray}`};
+      : `3px dashed ${theme.col.grayMediumLight}`};
   border-radius: ${({ theme }) => theme.borderRadius};
   padding: ${({ naked }) => (naked ? "0" : "10px")};
   display: flex;

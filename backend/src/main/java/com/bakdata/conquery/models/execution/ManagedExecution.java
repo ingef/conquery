@@ -27,6 +27,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
@@ -170,9 +171,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 		else {
 			this.error = error;
-			// Log the error, so its id is at least once in the logs
-			// Indent the unknown stacktrace so it can be better distinguished
-			log.warn("The execution [{}] failed with (the error is from one of the shard nodes):\n\t{}", this.getId(), this.error.getMessage().replaceAll("\\n", "\n\t"));
+			// Log the error, so its id is atleast once in the logs
+			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error);
 		}
 
 		finish(storage, ExecutionState.FAILED);
@@ -239,13 +239,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 	}
 
-	public void setStatusBase(@NonNull User user, @NonNull ExecutionStatus status) {
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
 		status.setLabel(label == null ? queryId.toString() : getLabelWithoutAutoLabelSuffix());
 		status.setPristineLabel(label == null || queryId.toString().equals(label) || isAutoLabeled());
 		status.setId(getId());
 		status.setTags(tags);
 		status.setShared(shared);
-		status.setOwn(user.isOwner(this));
+		status.setOwn(subject.isOwner(this));
 		status.setCreatedAt(getCreationTime().atZone(ZoneId.systemDefault()));
 		status.setRequiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null);
 		status.setStartTime(startTime);
@@ -260,9 +260,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Renders a lightweight status with meta information about this query. Computation an size should be small for this.
 	 */
-	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, User user) {
+	public OverviewExecutionStatus buildStatusOverview(UriBuilder url, Subject subject) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
-		setStatusBase(user, status);
+		setStatusBase(subject, status);
 
 		return status;
 	}
@@ -271,14 +271,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, User user, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
 		initExecutable(datasetRegistry, config);
 		FullExecutionStatus status = new FullExecutionStatus();
-		setStatusBase(user, status);
+		setStatusBase(subject, status);
 
-		setAdditionalFieldsForStatusWithColumnDescription(storage, user, status, datasetRegistry);
-		setAdditionalFieldsForStatusWithSource(user, status);
+		setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
+		setAdditionalFieldsForStatusWithSource(subject, status);
 		setAdditionalFieldsForStatusWithGroups(storage, status);
 		setAvailableSecondaryIds(status);
 		status.setProgress(progress);
@@ -317,14 +317,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, User user, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
 		// Implementation specific
 	}
 
 	/**
 	 * Sets additional fields of an {@link ExecutionStatus} when a more specific status is requested.
 	 */
-	protected void setAdditionalFieldsForStatusWithSource(User user, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
 		QueryDescription query = getSubmitted();
 		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
@@ -336,7 +336,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 														   .map(ConceptElement::getConcept)
 														   .collect(Collectors.toSet());
 
-		boolean canExpand = user.isPermittedAll(concepts, Ability.READ);
+		boolean canExpand = subject.isPermittedAll(concepts, Ability.READ);
 
 		status.setCanExpand(canExpand);
 		status.setQuery(canExpand ? getSubmitted() : null);

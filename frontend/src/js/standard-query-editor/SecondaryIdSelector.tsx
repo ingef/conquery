@@ -100,10 +100,8 @@ const SecondaryIdSelector: FC = () => {
         {t("queryEditor.secondaryId")}
       </Headline>
       <ToggleButton
-        input={{
-          value: selectedSecondaryId || "standard",
-          onChange: onSetSelectedSecondaryId,
-        }}
+        value={selectedSecondaryId || "standard"}
+        onChange={onSetSelectedSecondaryId}
         options={options}
       />
     </div>

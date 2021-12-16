@@ -3,8 +3,8 @@ import { FC } from "react";
 
 import type { ConceptIdT, InfoT, DateRangeT, ConceptT } from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
-import { selectsWithDefaults } from "../model/select";
-import { tablesWithDefaults } from "../model/table";
+import { resetSelects } from "../model/select";
+import { resetTables } from "../model/table";
 import type { ConceptQueryNodeType } from "../standard-query-editor/types";
 
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
@@ -96,8 +96,8 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
             ids: [id],
             ...description,
             label: data.label,
-            tables: tablesWithDefaults(tables),
-            selects: selectsWithDefaults(selects),
+            tables: resetTables(tables, { useDefaults: true }),
+            selects: resetSelects(selects, { useDefaults: true }),
 
             additionalInfos: data.additionalInfos,
             matchingEntries: data.matchingEntries,

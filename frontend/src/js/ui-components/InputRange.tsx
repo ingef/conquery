@@ -4,10 +4,9 @@ import { useTranslation } from "react-i18next";
 import type { CurrencyConfigT } from "../api/types";
 import { exists } from "../common/helpers/exists";
 
-import InputPlain from "./InputPlain";
+import InputPlain from "./InputPlain/InputPlain";
 import InputRangeHeader from "./InputRangeHeader";
 import ToggleButton from "./ToggleButton";
-import { InputProps } from "./types";
 
 const Container = styled("div")`
   width: 100%;
@@ -33,11 +32,14 @@ interface ValueT {
 }
 
 export type ModeT = "range" | "exact";
-interface PropsType extends InputProps<ValueT | null> {
+interface PropsType {
   moneyRange?: boolean;
   label: string;
   indexPrefix?: number;
   unit?: string;
+  value: ValueT | null;
+  onChange: (value: ValueT | null) => void;
+  defaultValue?: ValueT;
   limits?: {
     min?: number;
     max?: number;
@@ -76,7 +78,9 @@ const InputRange = ({
   unit,
   tooltip,
   onSwitchMode,
-  input: { value, defaultValue, onChange },
+  value,
+  defaultValue,
+  onChange,
 }: PropsType) => {
   const { t } = useTranslation();
   // Make sure undefined / null is never set as a value, but an empty string instead
@@ -91,8 +95,11 @@ const InputRange = ({
     pattern: pattern,
   };
 
-  const onChangeValue = (type: "exact" | "max" | "min", newValue: number) => {
-    const nextValue = newValue >= 0 ? newValue : null;
+  const onChangeValue = (
+    type: "exact" | "max" | "min",
+    newValue: number | null,
+  ) => {
+    const nextValue = exists(newValue) && newValue >= 0 ? newValue : null;
 
     if (type === "exact") {
       if (nextValue === null) {
@@ -129,10 +136,8 @@ const InputRange = ({
         tooltip={tooltip}
       />
       <ToggleButton
-        input={{
-          value: mode || "range",
-          onChange: (mode) => onSwitchMode(mode),
-        }}
+        value={mode || "range"}
+        onChange={(mode) => onSwitchMode(mode as ModeT)}
         options={[
           { value: "range", label: t("inputRange.range") },
           { value: "exact", label: t("inputRange.exact") },
@@ -141,48 +146,42 @@ const InputRange = ({
       <Container>
         {isRangeMode ? (
           <>
-            <SxInputPlain<number>
+            <SxInputPlain
               inputType="number"
               currencyConfig={currencyConfig}
               money={moneyRange}
               placeholder={placeholder}
               label={t("inputRange.minLabel")}
               tinyLabel={true}
-              input={{
-                value: val.min,
-                defaultValue: defaultVal.min,
-                onChange: (value) => onChangeValue("min", value),
-              }}
+              value={val.min}
+              defaultValue={defaultVal.min}
+              onChange={(value) => onChangeValue("min", value as number | null)}
               inputProps={inputProps}
             />
-            <SxInputPlain<number>
+            <SxInputPlain
               inputType="number"
               currencyConfig={currencyConfig}
               money={moneyRange}
               placeholder={placeholder}
               label={t("inputRange.maxLabel")}
               tinyLabel={true}
-              input={{
-                value: val.max,
-                defaultValue: defaultVal.max,
-                onChange: (value) => onChangeValue("max", value),
-              }}
+              value={val.max}
+              defaultValue={defaultVal.max}
+              onChange={(value) => onChangeValue("max", value as number | null)}
               inputProps={inputProps}
             />
           </>
         ) : (
-          <InputPlain<number>
+          <InputPlain
             inputType="number"
             currencyConfig={currencyConfig}
             money={moneyRange}
             placeholder={placeholder}
             label={t("inputRange.exactLabel")}
             tinyLabel={true}
-            input={{
-              value: val.exact,
-              defaultValue: defaultVal.exact,
-              onChange: (value) => onChangeValue("exact", value),
-            }}
+            value={val.exact}
+            defaultValue={defaultVal.exact}
+            onChange={(value) => onChangeValue("exact", value as number | null)}
             inputProps={inputProps}
           />
         )}

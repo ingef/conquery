@@ -4,7 +4,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +22,7 @@ public class SampledNode {
 	 * A query plan which should be sampled to a singe day.
 	 */
 	@NotNull @Valid
-	private ConceptQueryPlan child;
+	private QPNode child;
 	/**
 	 * The sampler to be used.
 	 */

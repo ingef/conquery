@@ -15,10 +15,12 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import lombok.ToString;
 
 /**
  * Aggregator counting the number of quarters in a year, returning the maximum number of quarters present.
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 
 	private final Int2ObjectMap<EnumSet<Month>> quartersInYear = new Int2ObjectOpenHashMap<>();

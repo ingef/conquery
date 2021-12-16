@@ -1,7 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import java.time.Duration;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
@@ -15,17 +13,11 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourcesProvider;
-import com.bakdata.conquery.resources.api.APIResource;
-import com.bakdata.conquery.resources.api.ConceptResource;
-import com.bakdata.conquery.resources.api.ConceptsProcessor;
-import com.bakdata.conquery.resources.api.ConfigResource;
-import com.bakdata.conquery.resources.api.DatasetResource;
-import com.bakdata.conquery.resources.api.FilterResource;
-import com.bakdata.conquery.resources.api.FormConfigResource;
-import com.bakdata.conquery.resources.api.MeResource;
-import com.bakdata.conquery.resources.api.QueryResource;
+import com.bakdata.conquery.resources.api.*;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+
+import java.time.Duration;
 
 @CPSType(base = ResourcesProvider.class, id = "ApiV1")
 public class ApiV1 implements ResourcesProvider {
@@ -72,7 +64,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(new ConfigResource(manager.getConfig()));
 		environment.register(FormConfigResource.class);
 
-		environment.register(APIResource.class);
+		environment.register(DatasetsResource.class);
 		environment.register(ConceptResource.class);
 		environment.register(DatasetResource.class);
 		environment.register(FilterResource.class);

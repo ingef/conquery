@@ -9,10 +9,12 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Aggregator summing over {@code addendColumn} and subtracting over {@code subtrahendColumn}, for decimal columns.
  */
+@ToString(of = {"addendColumn", "subtrahendColumn"})
 public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 
 	private boolean hit;
@@ -65,8 +67,4 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 		return ResultType.NumericT.INSTANCE;
 	}
 
-	@Override
-	public boolean isOfInterest(Bucket bucket) {
-		return false;
-	}
 }

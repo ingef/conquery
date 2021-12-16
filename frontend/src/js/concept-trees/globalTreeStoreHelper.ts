@@ -2,8 +2,8 @@ import type { ConceptT, TableT, SelectorT, ConceptIdT } from "../api/types";
 import { includes } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { nodeIsElement } from "../model/node";
-import { selectsWithDefaults } from "../model/select";
-import { tablesWithDefaults } from "../model/table";
+import { resetSelects } from "../model/select";
+import { resetTables } from "../model/table";
 
 import type { TreesT } from "./reducer";
 import { findConcepts } from "./search";
@@ -129,13 +129,13 @@ export const getConceptsByIdsWithTablesAndSelects = (
   }
 
   const selects = rootConcept.selects
-    ? { selects: selectsWithDefaults(rootConcept.selects) }
+    ? { selects: resetSelects(rootConcept.selects, { useDefaults: true }) }
     : {};
 
   return {
     concepts: conceptIds.map((id) => getConceptById(id)).filter(exists),
     root: rootConceptId,
-    tables: tablesWithDefaults(rootConcept.tables),
+    tables: resetTables(rootConcept.tables, { useDefaults: true }),
     ...selects,
   };
 };

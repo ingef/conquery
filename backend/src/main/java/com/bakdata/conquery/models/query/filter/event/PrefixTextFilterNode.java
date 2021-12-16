@@ -11,10 +11,12 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Single events are filtered, and included if they start with a given prefix. Entity is only included if it has any event with prefix.
  */
+@ToString(callSuper = true, of = "column")
 public class PrefixTextFilterNode extends EventFilterNode<String> {
 
 	@NotNull

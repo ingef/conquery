@@ -10,12 +10,14 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.google.common.collect.ImmutableSet;
+import lombok.ToString;
 
 /**
  * Aggregator gathering all unique values in a column, into a Set.
  *
  * @param <VALUE> Value type of the column.
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE>> {
 
 	private final Set<VALUE> entries = new HashSet<>();

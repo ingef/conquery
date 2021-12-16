@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
-import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
+import { ActionType, createAction } from "typesafe-actions";
 
 import {
   PostPrefixForSuggestionsParams,
@@ -14,8 +14,9 @@ import type {
   QueryNodeT,
   PostFilterSuggestionsResponseT,
 } from "../api/types";
-import { ErrorObject, errorPayload, successPayload } from "../common/actions";
+import { successPayload } from "../common/actions";
 import type { TreesT } from "../concept-trees/reducer";
+import type { NodeResetConfig } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
 
@@ -40,7 +41,7 @@ export type StandardQueryEditorActions = ActionType<
   | typeof toggleExcludeGroup
   | typeof toggleSecondaryIdExclude
   | typeof toggleTimestamps
-  | typeof resetAllFilters
+  | typeof resetAllSettings
   | typeof removeConceptFromNode
   | typeof addConceptToNode
   | typeof switchFilterMode
@@ -49,7 +50,7 @@ export type StandardQueryEditorActions = ActionType<
   | typeof setDateColumn
   | typeof setSelectedSecondaryId
   | typeof expandPreviousQuery
-  | typeof loadFilterSuggestions
+  | typeof loadFilterSuggestionsSuccess
 >;
 
 export const dropAndNode = createAction("query-editor/DROP_AND_NODE")<{
@@ -198,15 +199,19 @@ export const setDateColumn = createAction("query-editor/SET_DATE_COLUMN")<{
   value: unknown;
 }>();
 
-export const resetAllFilters = createAction("query-editor/RESET_ALL_FILTERS")<{
+export const resetAllSettings = createAction(
+  "query-editor/RESET_ALL_SETTINGS",
+)<{
   andIdx: number;
   orIdx: number;
+  config: NodeResetConfig;
 }>();
 
 export const resetTable = createAction("query-editor/RESET_TABLE")<{
   andIdx: number;
   orIdx: number;
   tableIdx: number;
+  config: NodeResetConfig;
 }>();
 
 export const switchFilterMode = createAction(
@@ -234,16 +239,12 @@ interface FilterContext {
   tableIdx: number;
   filterIdx: number;
 }
-export const loadFilterSuggestions = createAsyncAction(
-  "query-editor/LOAD_FILTER_SUGGESTIONS_START",
+export const loadFilterSuggestionsSuccess = createAction(
   "query-editor/LOAD_FILTER_SUGGESTIONS_SUCCESS",
-  "query-editor/LOAD_FILTER_SUGGESTIONS_ERROR",
 )<
-  FilterContext,
   FilterContext & {
-    data: PostFilterSuggestionsResponseT;
-  },
-  FilterContext & ErrorObject
+    data: PostFilterSuggestionsResponseT["values"];
+  }
 >();
 
 export const useLoadFilterSuggestions = (
@@ -252,7 +253,7 @@ export const useLoadFilterSuggestions = (
   const dispatch = useDispatch();
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
 
-  return (
+  return async (
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
@@ -261,12 +262,10 @@ export const useLoadFilterSuggestions = (
 
     const context = { ...editedNode, tableIdx, filterIdx };
 
-    dispatch(loadFilterSuggestions.request(context));
+    const suggestions = await postPrefixForSuggestions(params);
 
-    return postPrefixForSuggestions(params).then(
-      (r) =>
-        dispatch(loadFilterSuggestions.success(successPayload(r, context))),
-      (e) => dispatch(loadFilterSuggestions.failure(errorPayload(e, context))),
+    dispatch(
+      loadFilterSuggestionsSuccess(successPayload(suggestions.values, context)),
     );
   };
 };

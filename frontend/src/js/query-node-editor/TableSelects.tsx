@@ -1,10 +1,6 @@
 import { useMemo } from "react";
 
-import type {
-  FilterSuggestion,
-  SelectOptionT,
-  SelectorResultType,
-} from "../api/types";
+import type { SelectOptionT, SelectorResultType } from "../api/types";
 import { isSelectDisabled, sortSelects } from "../model/select";
 import { SelectedSelectorT } from "../standard-query-editor/types";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
@@ -13,9 +9,7 @@ interface PropsT {
   selects: SelectedSelectorT[];
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
-  onSelectTableSelects: (
-    value: SelectOptionT[] | FilterSuggestion[] | null,
-  ) => void;
+  onSelectTableSelects: (value: SelectOptionT[] | null) => void;
   excludeTable?: boolean;
 }
 

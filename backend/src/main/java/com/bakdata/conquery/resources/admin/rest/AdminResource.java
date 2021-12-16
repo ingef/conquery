@@ -3,12 +3,10 @@ package com.bakdata.conquery.resources.admin.rest;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -28,8 +26,7 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -57,7 +54,7 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public String executeScript(@Auth User user, String script) {
+    public String executeScript(@Auth Subject user, String script) {
         return Objects.toString(processor.executeScript(script));
     }
 
@@ -69,7 +66,7 @@ public class AdminResource {
     @Consumes(MediaType.TEXT_PLAIN)
     @POST
     @Path("/script")
-    public Object executeScriptJson(@Auth User user, String script) {
+    public Object executeScriptJson(@Auth Subject user, String script) {
         return processor.executeScript(script);
     }
 
@@ -105,7 +102,7 @@ public class AdminResource {
 
     @GET
     @Path("/queries")
-    public FullExecutionStatus[] getQueries(@Auth User currentUser, @QueryParam("limit") OptionalLong limit, @QueryParam("since") Optional<String> since) {
+    public FullExecutionStatus[] getQueries(@Auth Subject currentUser, @QueryParam("limit") OptionalLong limit, @QueryParam("since") Optional<String> since) {
         final MetaStorage storage = processor.getStorage();
         final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
         return storage.getAllExecutions().stream()

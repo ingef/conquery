@@ -4,7 +4,7 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 
 import SmallTabNavigationButton from "./SmallTabNavigationButton";
 
-export interface TabOption {
+interface TabOption {
   label: string;
   value: string;
   tooltip?: string;

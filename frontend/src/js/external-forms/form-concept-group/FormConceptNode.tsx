@@ -7,33 +7,35 @@ import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
 import { FORM_CONCEPT_NODE } from "../../common/constants/dndTypes";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
-import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import type { ConceptQueryNodeType } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 export interface DragItemFormConceptNode {
   type: "FORM_CONCEPT_NODE";
   width: number;
   height: number;
-  conceptNode: DragItemConceptTreeNode; // TODO: VERIFY THIS
+  conceptNode: ConceptQueryNodeType;
 }
 
-const Root = styled("div")<{ active?: boolean }>`
+const Root = styled("div")<{
+  active?: boolean;
+}>`
   padding: 5px 10px;
   cursor: pointer;
   background-color: white;
   max-width: 200px;
   border-radius: ${({ theme }) => theme.borderRadius};
-  border: ${({ active }) => (active ? "2px" : "1px")} solid
-    ${({ theme, active }) =>
-      active ? theme.col.blueGrayDark : theme.col.grayLight};
-
+  transition: background-color ${({ theme }) => theme.transitionTime};
+  border: ${({ theme, active }) =>
+    active
+      ? `2px solid ${theme.col.blueGrayDark}`
+      : `1px solid ${theme.col.grayMediumLight}`};
   &:hover {
-    border: ${({ active }) => (active ? "2px" : "1px")} solid
-      ${({ theme }) => theme.col.blueGrayDark};
+    background-color: ${({ theme }) => theme.col.bgAlt};
   }
 
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr auto;
 
   font-size: ${({ theme }) => theme.font.sm};
 `;
@@ -52,14 +54,12 @@ const Description = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
 `;
 
-const Left = styled("div")`
-  flex-grow: 1;
-  flex-basis: 0;
+const Right = styled("div")`
+  margin-left: 10px;
 `;
 
-const Right = styled("div")`
-  flex-shrink: 0;
-  margin-left: 10px;
+const SxIconButton = styled(IconButton)`
+  padding: 0 6px;
 `;
 
 const RootNode = styled("p")`
@@ -75,12 +75,13 @@ const RootNode = styled("p")`
 interface PropsT {
   valueIdx: number;
   conceptIdx: number;
-  conceptNode: Object;
+  conceptNode: ConceptQueryNodeType;
   name: string;
-  onFilterClick: Function;
-  hasActiveFilters: boolean;
+  onFilterClick: () => void;
+  hasNonDefaultSettings: boolean;
+  hasFilterValues: boolean;
   expand?: {
-    onClick: Function;
+    onClick: () => void;
     expandable: boolean;
     active: boolean;
   };
@@ -92,7 +93,8 @@ interface PropsT {
 const FormConceptNode: FC<PropsT> = ({
   conceptNode,
   onFilterClick,
-  hasActiveFilters,
+  hasNonDefaultSettings,
+  hasFilterValues,
   expand,
 }) => {
   const { t } = useTranslation();
@@ -115,26 +117,32 @@ const FormConceptNode: FC<PropsT> = ({
     },
   });
 
+  const tooltipText = hasNonDefaultSettings
+    ? t("queryEditor.hasNonDefaultSettings")
+    : hasFilterValues
+    ? t("queryEditor.hasDefaultSettings")
+    : undefined;
+
   return (
     <Root
       ref={(instance) => {
         ref.current = instance;
         drag(instance);
       }}
-      active={hasActiveFilters}
+      active={hasNonDefaultSettings || hasFilterValues}
       onClick={onFilterClick}
     >
-      <Left>
+      <WithTooltip text={tooltipText}>
         {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
         <Label>{conceptNode && conceptNode.label}</Label>
         {conceptNode && !!conceptNode.description && (
           <Description>{conceptNode.description}</Description>
         )}
-      </Left>
+      </WithTooltip>
       <Right>
         {expand && expand.expandable && (
           <WithTooltip text={t("externalForms.common.concept.expand")}>
-            <IconButton
+            <SxIconButton
               icon={expand.active ? "compress-arrows-alt" : "expand-arrows-alt"}
               tiny
               onClick={(e) => {

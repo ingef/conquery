@@ -42,11 +42,6 @@ public abstract class QPNode extends EventIterating {
 		return Collections.emptyList();
 	}
 
-	@Override
-	public String toString() {
-		return getClass().getSimpleName();
-	}
-
 	/**
 	 * Retrieves all generated date Aggregator from the lower level of the tree.
 	 * This is builds a parallel tree to the actual query tree to generate the dates column in the final result.

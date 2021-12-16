@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -12,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
@@ -35,7 +35,6 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
@@ -209,8 +208,25 @@ public class AdminDatasetProcessor {
 		namespace.sendToAll(new UpdateTable(table));
 	}
 
+
 	/**
-	 * Add the concept to the dataset if it does not exist yet.
+	 * update a concept of the given dataset.
+	 * Therefore the concept will be deleted first then added
+	 */
+	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
+		concept.setDataset(dataset);
+		if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+			throw new NotFoundException("Can't find the concept in the dataset " + concept.getId());
+		}
+		//deletes the old content of the concept using his id
+		deleteConcept(concept);
+
+		//adds new content of the content
+		addConcept(dataset, concept);
+	}
+
+	/**
+	 * Add the concept to the dataset if it does not exist yet
 	 */
 	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
 		concept.setDataset(dataset);
@@ -219,11 +235,12 @@ public class AdminDatasetProcessor {
 		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
 			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
 		}
+		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
 
 
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
-		datasetRegistry.get(dataset.getId()).sendToAll(new UpdateConcept(concept));
+		getJobManager().addSlowJob(new SimpleJob(String.format("sendToAll : Add %s ", concept.getId()), () -> namespace.sendToAll(new UpdateConcept(concept))));
 	}
 
 	/**
@@ -343,7 +360,7 @@ public class AdminDatasetProcessor {
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
 					ns.sendToAll(new UpdateMatchingStatsMessage());
-					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv().createParser());
+					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv());
 				}
 		));
 	}

@@ -133,8 +133,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void removeStore() {
-		store.removeStore();
+	public void deleteStore() {
+		store.deleteStore();
 	}
 
 	@Override

@@ -11,10 +11,12 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import lombok.ToString;
 
 /**
  * Aggregator, returning the min duration in the column, relative to the end of date restriction.
  */
+@ToString(callSuper = true, of = "unit")
 public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 
 	private LocalDate reference;

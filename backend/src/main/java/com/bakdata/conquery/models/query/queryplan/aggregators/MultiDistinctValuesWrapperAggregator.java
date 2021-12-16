@@ -11,11 +11,13 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import lombok.Getter;
+import lombok.ToString;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Helper Aggregator, forwarding only events with distinct values to {@code aggregator}.
  */
+@ToString(callSuper = true, of = {"addendColumn", "subtrahendColumn"})
 public class MultiDistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {
 
 	private final ColumnAggregator<VALUE> aggregator;

@@ -50,10 +50,10 @@ const InputMultiSelectDropzone: FC<PropsT> = ({
 
   return (
     <Root className={className}>
-      <SxDropzone<DragItemFile>
+      <SxDropzone /* TODO: ADD GENERIC TYPE <DragItemFile> */
         acceptedDropTypes={[NativeTypes.FILE]}
         onDrop={(item) => {
-          onDropFile(item.files[0]);
+          onDropFile((item as DragItemFile).files[0]);
         }}
       >
         {children}

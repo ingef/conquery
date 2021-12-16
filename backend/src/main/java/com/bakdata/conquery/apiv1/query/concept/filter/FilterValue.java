@@ -44,6 +44,7 @@ public abstract class FilterValue<VALUE> {
 
 	@NoArgsConstructor
 	@CPSType(id = "MULTI_SELECT", base = FilterValue.class)
+	@ToString(callSuper = true)
 	public static class CQMultiSelectFilter extends FilterValue<String[]> {
 		public CQMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
 			super(filter, value);
@@ -52,6 +53,7 @@ public abstract class FilterValue<VALUE> {
 
 	@NoArgsConstructor
 	@CPSType(id = "BIG_MULTI_SELECT", base = FilterValue.class)
+	@ToString(callSuper = true)
 	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
 		public CQBigMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
 			super(filter, value);
@@ -60,6 +62,7 @@ public abstract class FilterValue<VALUE> {
 
 	@NoArgsConstructor
 	@CPSType(id = "SELECT", base = FilterValue.class)
+	@ToString(callSuper = true)
 	public static class CQSelectFilter extends FilterValue<String> {
 		public CQSelectFilter(@NsIdRef Filter<String> filter, String value) {
 			super(filter, value);
@@ -68,6 +71,7 @@ public abstract class FilterValue<VALUE> {
 
 	@NoArgsConstructor
 	@CPSType(id = "STRING", base = FilterValue.class)
+	@ToString(callSuper = true)
 	public static class CQStringFilter extends FilterValue<String> {
 		public CQStringFilter(@NsIdRef Filter<String> filter, String value) {
 			super(filter, value);
@@ -76,6 +80,7 @@ public abstract class FilterValue<VALUE> {
 
 	@NoArgsConstructor
 	@CPSType(id = "INTEGER_RANGE", base = FilterValue.class)
+	@ToString(callSuper = true)
 	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
 		public CQIntegerRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {
 			super(filter, value);
@@ -88,6 +93,7 @@ public abstract class FilterValue<VALUE> {
 	 */
 	@NoArgsConstructor
 	@CPSType(id = "MONEY_RANGE", base = FilterValue.class)
+	@ToString(callSuper = true)
 	public static class CQMoneyRangeFilter extends FilterValue<LongRange> {
 		public CQMoneyRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {	super(filter, value);
 		}
@@ -95,6 +101,7 @@ public abstract class FilterValue<VALUE> {
 
 	@NoArgsConstructor
 	@CPSType(id = "REAL_RANGE", base = FilterValue.class)
+	@ToString(callSuper = true)
 	public static class CQRealRangeFilter extends FilterValue<Range<BigDecimal>> {
 		public CQRealRangeFilter(@NsIdRef Filter<Range<BigDecimal>> filter, Range<BigDecimal> value) {
 			super(filter, value);

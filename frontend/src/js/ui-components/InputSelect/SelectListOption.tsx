@@ -1,13 +1,19 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { forwardRef } from "react";
+import ReactMarkdown from "react-markdown";
 
-interface Props {
+import type { SelectOptionT } from "../../api/types";
+
+interface StyleProps {
   active?: boolean;
   disabled?: boolean;
 }
+interface Props extends StyleProps {
+  option: SelectOptionT;
+}
 
-const Container = styled("div")<Props>`
+const Container = styled("div")<StyleProps>`
   padding: 3px 8px;
   cursor: pointer;
   color: ${({ theme }) => theme.col.black};
@@ -29,8 +35,22 @@ const Container = styled("div")<Props>`
     `};
 `;
 
-const SelectListOption = forwardRef<HTMLDivElement, Props>((props, ref) => {
-  return <Container {...props} ref={ref} />;
-});
+const Markdown = styled(ReactMarkdown)`
+  p {
+    margin: 0;
+  }
+`;
+
+const SelectListOption = forwardRef<HTMLDivElement, Props>(
+  ({ option, ...props }, ref) => {
+    const label = option.label || option.value;
+
+    return (
+      <Container disabled={option.disabled} {...props} ref={ref}>
+        <Markdown>{label}</Markdown>
+      </Container>
+    );
+  },
+);
 
 export default SelectListOption;

@@ -70,7 +70,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		}
 
 		if (maximumSize != -1 && values.size() > maximumSize) {
-			log.warn("Too many possible values ({} of {} in Filter[{}]). Upgrading to BigMultiSelect", values.size(), maximumSize, getId());
+			log.trace("Too many possible values ({} of {} in Filter[{}]). Upgrading to BigMultiSelect", values.size(), maximumSize, getId());
 			f.setType(FEFilterType.BIG_MULTI_SELECT);
 		}
 

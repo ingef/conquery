@@ -37,6 +37,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.realm.AuthenticatingRealm;
+import org.apache.shiro.util.Destroyable;
 
 /**
  * This realm stores credentials in a local database ({@link XodusStore}). Upon
@@ -50,7 +52,7 @@ import org.apache.shiro.authc.AuthenticationToken;
  * through specific endpoints that are registerd by this realm.
  */
 @Slf4j
-public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AccessTokenCreator {
+public class LocalAuthenticationRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, UserManageable, AccessTokenCreator, Destroyable {
 
 	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
 	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
@@ -117,7 +119,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	 *  Should not be called since the tokens are now handled by the ConqueryTokenRealm.
 	 */
 	@Override
-	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		throw new UnsupportedOperationException("Should not be called since the tokens are now handled by the ConqueryTokenRealm.");
 	}
 

@@ -64,6 +64,11 @@ public class QueryExecutor implements Closeable {
 		}
 
 		try {
+			// We log the QueryPlan once for debugging purposes.
+			if (log.isDebugEnabled()){
+				log.debug("QueryPlan for Query[{}] = `{}`", result.getQueryId(), plan.get());
+			}
+
 			final List<CompletableFuture<Optional<EntityResult>>> futures =
 					entities.stream()
 							.map(entity -> new QueryJob(executionContext, plan, entity))
@@ -82,9 +87,8 @@ public class QueryExecutor implements Closeable {
 			return true;
 		}
 		catch (Exception e) {
-			// Just trace here. If it's wrapped as an UnknownError, it will be logged anyway.
-			log.trace("Error while executing {}", executionContext.getExecutionId(), e);
 			ConqueryError err = asConqueryError(e);
+			log.warn("Error while executing {}", executionContext.getExecutionId(), err);
 			sendFailureToManagerNode(result, asConqueryError(err));
 			return false;
 		}

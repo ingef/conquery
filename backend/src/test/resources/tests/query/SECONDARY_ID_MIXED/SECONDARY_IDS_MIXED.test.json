@@ -10,7 +10,7 @@
         "concept"
       ],
       "type": "CONCEPT",
-      "excludeFromSecondaryIdQuery": false,
+      "excludeFromSecondaryId": false,
       "tables": [
         {
           "id": "concept.connector1",

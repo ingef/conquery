@@ -14,7 +14,7 @@
           ],
           "type": "CONCEPT",
           "label": "vs",
-          "excludeFromSecondaryIdQuery" : false,
+          "excludeFromSecondaryId" : false,
           "tables": [
             {
               "id": "concept.connector1"
@@ -25,7 +25,7 @@
           "ids": [
             "concept"
           ],
-          "excludeFromSecondaryIdQuery": true,
+          "excludeFromSecondaryId": true,
           "type": "CONCEPT",
           "tables": [
             {

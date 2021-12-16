@@ -13,21 +13,23 @@ import type {
   RangeFilterValueT,
   FilterIdT,
   ConceptIdT,
+  SelectOptionT,
 } from "../api/types";
 import { Action } from "../app/actions";
-import { isEmpty, objectWithoutKey } from "../common/helpers";
+import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 import type { TreesT } from "../concept-trees/reducer";
 import { isMultiSelectFilter } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
-import { selectsWithDefaults } from "../model/select";
-import { resetAllFiltersInTables, tableWithDefaults } from "../model/table";
+import { resetSelects } from "../model/select";
+import { resetAllTableSettings, tableWithDefaults } from "../model/table";
 import { loadQuery, renameQuery } from "../previous-queries/list/actions";
 import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
 } from "../query-group-modal/actions";
+import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
 import { acceptQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
 
 import {
@@ -44,7 +46,7 @@ import {
   loadSavedQuery,
   toggleTimestamps,
   toggleSecondaryIdExclude,
-  resetAllFilters,
+  resetAllSettings,
   addConceptToNode,
   removeConceptFromNode,
   switchFilterMode,
@@ -52,7 +54,7 @@ import {
   setSelects,
   setTableSelects,
   expandPreviousQuery,
-  loadFilterSuggestions,
+  loadFilterSuggestionsSuccess,
 } from "./actions";
 import type {
   StandardQueryNodeT,
@@ -61,6 +63,7 @@ import type {
   DragItemNode,
   DragItemConceptTreeNode,
   FilterWithValueType,
+  PreviousQueryQueryNodeType,
 } from "./types";
 
 export type StandardQueryStateT = QueryGroupType[];
@@ -76,7 +79,7 @@ const filterItem = (
   const baseItem = {
     label: item.label,
     excludeTimestamps: item.excludeTimestamps,
-    excludeFromSecondaryIdQuery: item.excludeFromSecondaryIdQuery,
+    excludeFromSecondaryId: item.excludeFromSecondaryId,
     loading: item.loading,
     error: item.error,
   };
@@ -243,6 +246,9 @@ const updateNodeTable = (
   table: TableT,
 ) => {
   const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
+
   const tables = [
     ...node.tables.slice(0, tableIdx),
     table,
@@ -271,6 +277,9 @@ const onToggleNodeTable = (
   }: ActionType<typeof toggleTable>["payload"],
 ) => {
   const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
+
   const table = {
     ...node.tables[tableIdx],
     exclude: isExcluded,
@@ -331,7 +340,11 @@ const setNodeTableSelects = (
     value,
   }: ActionType<typeof setTableSelects>["payload"],
 ) => {
-  const table = state[andIdx].elements[orIdx].tables[tableIdx];
+  const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
+
+  const table = node.tables[tableIdx];
   const { selects } = table;
 
   // value contains the selects that have now been selected
@@ -410,30 +423,30 @@ const switchNodeFilterMode = (
   );
 };
 
-const resetNodeAllFilters = (
+const resetNodeAllSettings = (
   state: StandardQueryStateT,
-  { andIdx, orIdx }: ActionType<typeof resetAllFilters>["payload"],
+  { andIdx, orIdx, config }: ActionType<typeof resetAllSettings>["payload"],
 ) => {
   const node = state[andIdx].elements[orIdx];
 
   const newState = setElementProperties(state, andIdx, orIdx, {
-    excludeFromSecondaryIdQuery: false,
+    excludeFromSecondaryId: false,
     excludeTimestamps: false,
     selects: nodeIsConceptQueryNode(node)
-      ? selectsWithDefaults(node.selects)
+      ? resetSelects(node.selects, config)
       : [],
   });
 
   if (!nodeIsConceptQueryNode(node)) return newState;
 
-  const tables = resetAllFiltersInTables(node.tables);
+  const tables = resetAllTableSettings(node.tables, config);
 
   return updateNodeTables(newState, andIdx, orIdx, tables);
 };
 
 const resetNodeTable = (
   state: StandardQueryStateT,
-  { andIdx, orIdx, tableIdx }: ActionType<typeof resetTable>["payload"],
+  { andIdx, orIdx, tableIdx, config }: ActionType<typeof resetTable>["payload"],
 ) => {
   const node = state[andIdx].elements[orIdx];
 
@@ -448,7 +461,7 @@ const resetNodeTable = (
     andIdx,
     orIdx,
     tableIdx,
-    tableWithDefaults(table),
+    tableWithDefaults(config)(table),
   );
 };
 
@@ -687,7 +700,7 @@ const expandNode = (
         tables,
         selects,
         excludeTimestamps: node.excludeFromTimeAggregation,
-        excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
+        excludeFromSecondaryId: node.excludeFromSecondaryId,
         tree: lookupResult.root,
       };
   }
@@ -707,33 +720,29 @@ const onExpandPreviousQuery = ({
   );
 };
 
-const findPreviousQueries = (state: StandardQueryStateT, action: any) => {
+const findPreviousQueries = (state: StandardQueryStateT, queryId: string) => {
   // Find all nodes that are previous queries and have the correct id
-  const queries = state
-    .map((group, andIdx) => {
-      return group.elements
-        .map((concept, orIdx) => ({ ...concept, orIdx }))
-        .filter(
-          (concept) =>
-            concept.isPreviousQuery && concept.id === action.payload.queryId,
-        )
-        .map((concept) => ({
-          andIdx,
-          orIdx: concept.orIdx,
-          node: objectWithoutKey("orIdx")(concept),
-        }));
-    })
-    .filter((group) => group.length > 0);
-
-  return [].concat.apply([], queries);
+  return state.flatMap((group, andIdx) => {
+    return group.elements
+      .map((concept, orIdx) => [concept, orIdx] as [StandardQueryNodeT, number])
+      .filter((item): item is [PreviousQueryQueryNodeType, number] => {
+        const [concept] = item;
+        return !!concept.isPreviousQuery && concept.id === queryId;
+      })
+      .map(([concept, orIdx]) => ({
+        andIdx,
+        orIdx,
+        node: concept,
+      }));
+  });
 };
 
 const updatePreviousQueries = (
   state: StandardQueryStateT,
-  action: any,
-  attributes: any,
+  action: { payload: { queryId: string } },
+  attributes: Partial<PreviousQueryQueryNodeType>,
 ) => {
-  const queries = findPreviousQueries(state, action);
+  const queries = findPreviousQueries(state, action.payload.queryId);
 
   return queries.reduce((nextState, query) => {
     const { node, andIdx, orIdx } = query;
@@ -812,38 +821,26 @@ const onToggleSecondaryIdExclude = (
   { andIdx, orIdx }: ActionType<typeof toggleSecondaryIdExclude>["payload"],
 ) => {
   return setElementProperties(state, andIdx, orIdx, {
-    excludeFromSecondaryIdQuery:
-      !state[andIdx].elements[orIdx].excludeFromSecondaryIdQuery,
+    excludeFromSecondaryId:
+      !state[andIdx].elements[orIdx].excludeFromSecondaryId,
   });
 };
 
-const loadFilterSuggestionsStart = (
+const onLoadFilterSuggestionsSuccess = (
   state: StandardQueryStateT,
-  payload: ActionType<typeof loadFilterSuggestions.request>["payload"],
-) => setNodeFilterProperties(state, payload, { isLoading: true });
-
-const loadFilterSuggestionsSuccess = (
-  state: StandardQueryStateT,
-  {
-    data,
-    ...rest
-  }: ActionType<typeof loadFilterSuggestions.success>["payload"],
+  { data, ...rest }: ActionType<typeof loadFilterSuggestionsSuccess>["payload"],
 ) => {
   // When [] comes back from the API, don't touch the current options
   if (!data || data.length === 0) {
-    return setNodeFilterProperties(state, rest, { isLoading: false });
+    return state;
   }
 
+  const options: SelectOptionT[] = data.map(filterSuggestionToSelectOption);
+
   return setNodeFilterProperties(state, rest, {
-    isLoading: false,
-    options: data,
+    options,
   });
 };
-
-const loadFilterSuggestionsError = (
-  state: StandardQueryStateT,
-  payload: ActionType<typeof loadFilterSuggestions.failure>["payload"],
-) => setNodeFilterProperties(state, payload, { isLoading: false });
 
 const createQueryNodeFromConceptListUploadResult = (
   label: string,
@@ -1053,8 +1050,8 @@ const query = (
       return setNodeTableSelects(state, action.payload);
     case getType(setSelects):
       return setNodeSelects(state, action.payload);
-    case getType(resetAllFilters):
-      return resetNodeAllFilters(state, action.payload);
+    case getType(resetAllSettings):
+      return resetNodeAllSettings(state, action.payload);
     case getType(resetTable):
       return resetNodeTable(state, action.payload);
     case getType(switchFilterMode):
@@ -1077,12 +1074,8 @@ const query = (
       return loadPreviousQueryError(state, action);
     case getType(renameQuery.success):
       return onRenamePreviousQuery(state, action);
-    case getType(loadFilterSuggestions.request):
-      return loadFilterSuggestionsStart(state, action.payload);
-    case getType(loadFilterSuggestions.success):
-      return loadFilterSuggestionsSuccess(state, action.payload);
-    case getType(loadFilterSuggestions.failure):
-      return loadFilterSuggestionsError(state, action.payload);
+    case getType(loadFilterSuggestionsSuccess):
+      return onLoadFilterSuggestionsSuccess(state, action.payload);
     case getType(acceptQueryUploadConceptListModal):
       return insertUploadedConceptList(state, action.payload);
     case getType(setDateColumn):

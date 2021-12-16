@@ -5,6 +5,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
+import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 
 /**
  * Default configuration for the auth system. Sets up all other default components.
@@ -23,6 +24,6 @@ public class DevAuthConfig implements AuthenticationRealmFactory {
 
 		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(new UserIdTokenExtractor(defaultUser));
 
-		return new DefaultInitialUserRealm();
+		return new DefaultInitialUserRealm(managerNode.getStorage());
 	}
 }

@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
@@ -22,7 +23,7 @@ import com.bakdata.conquery.apiv1.frontend.FEList;
 import com.bakdata.conquery.apiv1.frontend.FERoot;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -83,14 +84,18 @@ public class ConceptsProcessor {
 
 								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
 
-								return autocompleteTextFilter(filter, searchTerm);
+								final List<FEValue> result = autocompleteTextFilter(filter, searchTerm);
+
+								log.debug("Got {} results for {}", result.size(), filterAndSearch);
+
+								return result;
 							}
 
 						});
 
-	public FERoot getRoot(NamespaceStorage storage, User user) {
+	public FERoot getRoot(NamespaceStorage storage, Subject subject) {
 
-		return FrontEndConceptBuilder.createRoot(storage, user);
+		return FrontEndConceptBuilder.createRoot(storage, subject);
 	}
 
 	public FEList getNode(Concept<?> concept) {
@@ -102,10 +107,10 @@ public class ConceptsProcessor {
 		}
 	}
 
-	public List<IdLabel<DatasetId>> getDatasets(User user) {
+	public List<IdLabel<DatasetId>> getDatasets(Subject subject) {
 		return namespaces.getAllDatasets()
 						 .stream()
-						 .filter(d -> user.isPermitted(d, Ability.READ))
+						 .filter(d -> subject.isPermitted(d, Ability.READ))
 						 .sorted(Comparator.comparing(Dataset::getWeight)
 										   .thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
@@ -199,9 +204,22 @@ public class ConceptsProcessor {
 	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
 		if (Strings.isNullOrEmpty(text)) {
 			// If no text provided, we just list them
-			return filter.getSourceSearch().listItems()
-						 .stream()
-						 .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+			// Filter might not have a source search (since none might be defined).
+
+			//TODO unify these code paths, they are quite the mess, maybe also create source search for key-value also
+
+			final Stream<FEValue> fromSearch =
+					filter.getSourceSearch() == null
+					? Stream.empty()
+					: filter.getSourceSearch().listItems()
+							.stream()
+							.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()));
+
+
+			final Stream<FEValue> fromLabels = filter.getLabels().entrySet().stream().map(entry -> new FEValue(entry.getValue(), entry.getKey()));
+
+			return Stream.concat(fromLabels, fromSearch)
+					.sorted()
 						 .collect(Collectors.toList());
 		}
 

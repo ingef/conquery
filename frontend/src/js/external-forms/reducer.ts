@@ -1,16 +1,13 @@
 import { combineReducers, Reducer } from "redux";
-import {
-  reducer as reduxFormReducer,
-  FormReducerMapObject,
-  FormStateMap,
-} from "redux-form";
+import { getType } from "typesafe-actions";
 
+import type { Action } from "../app/actions";
 import type { QueryNodeEditorStateT } from "../query-node-editor/reducer";
 import createQueryRunnerReducer, {
   QueryRunnerStateT,
 } from "../query-runner/reducer";
 
-import { SET_EXTERNAL_FORM, LOAD_EXTERNAL_FORM_VALUES } from "./actionTypes";
+import { setExternalForm } from "./actions";
 import type { Form } from "./config-types";
 import { createFormQueryNodeEditorReducer } from "./form-query-node-editor/reducer";
 import { collectAllFormFields } from "./helper";
@@ -44,7 +41,6 @@ function buildFormReducer(form: Form) {
 export interface FormsStateT {
   activeForm: string | null;
   queryRunner: QueryRunnerStateT;
-  reduxForm: FormStateMap;
   availableForms: {
     [formName: string]: Form;
   };
@@ -77,10 +73,10 @@ const buildExternalFormsReducer = (availableForms: {
 
   const activeFormReducer = (
     state: string | null = defaultFormType,
-    action: any,
+    action: Action,
   ): string | null => {
     switch (action.type) {
-      case SET_EXTERNAL_FORM:
+      case getType(setExternalForm):
         return action.payload.form;
       default:
         return state || defaultFormType;
@@ -89,44 +85,8 @@ const buildExternalFormsReducer = (availableForms: {
 
   const availableFormsReducer = () => availableForms;
 
-  const reduxFormReducerPlugin: FormReducerMapObject = forms.reduce(
-    (all, form) => ({
-      ...all,
-      [form.type]: (state: any, action: any) => {
-        switch (action.type) {
-          case LOAD_EXTERNAL_FORM_VALUES: {
-            if (action.payload.formType !== form.type) return state;
-
-            const stateKeys = Object.keys(state.values);
-            const filteredValues = Object.keys(action.payload.values)
-              .filter((key) => stateKeys.includes(key))
-              .reduce<any>((all, key) => {
-                all[key] = action.payload.values[key];
-
-                return all;
-              }, {});
-
-            return {
-              ...state,
-              values: {
-                ...state.values,
-                ...filteredValues,
-              },
-            };
-          }
-          default:
-            return state;
-        }
-      },
-    }),
-    {},
-  );
-
   return combineReducers({
     activeForm: activeFormReducer,
-
-    // Redux-Form reducer to keep the state of all forms:
-    reduxForm: reduxFormReducer.plugin(reduxFormReducerPlugin),
 
     // Query Runner reducer that works with external forms
     queryRunner: createQueryRunnerReducer("externalForms"),

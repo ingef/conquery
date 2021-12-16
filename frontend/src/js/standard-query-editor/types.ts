@@ -75,7 +75,7 @@ export interface DragItemQuery {
 
   secondaryId?: string | null;
   availableSecondaryIds?: string[];
-  excludeFromSecondaryIdQuery?: boolean;
+  excludeFromSecondaryId?: boolean;
   tags: string[];
 
   own?: boolean;
@@ -118,11 +118,10 @@ export interface ConceptQueryNodeType {
 
   label: string;
   excludeTimestamps?: boolean;
-  excludeFromSecondaryIdQuery?: boolean;
+  excludeFromSecondaryId?: boolean;
   loading?: boolean;
   error?: string;
 
-  isEditing?: boolean;
   isPreviousQuery?: false;
 }
 
@@ -135,11 +134,10 @@ export interface PreviousQueryQueryNodeType {
 
   label: string;
   excludeTimestamps?: boolean;
-  excludeFromSecondaryIdQuery?: boolean;
+  excludeFromSecondaryId?: boolean;
   loading?: boolean;
   error?: string;
 
-  isEditing?: boolean;
   isPreviousQuery: true;
 }
 

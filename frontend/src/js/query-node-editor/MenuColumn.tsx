@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { Heading3, Heading4 } from "../headings/Headings";
+import type { NodeResetConfig } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
@@ -71,7 +72,7 @@ interface PropsT {
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
   onSelectTable: (tableIdx: number) => void;
-  onResetTable: (tableIdx: number) => void;
+  onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
 }
 
 const MenuColumn: FC<PropsT> = ({
@@ -129,7 +130,9 @@ const MenuColumn: FC<PropsT> = ({
                 }
               }}
               onToggleTable={(value) => onToggleTable(tableIdx, value)}
-              onResetTable={() => onResetTable(tableIdx)}
+              onResetTable={(config: NodeResetConfig) =>
+                onResetTable(tableIdx, config)
+              }
             />
           ))}
         </div>
