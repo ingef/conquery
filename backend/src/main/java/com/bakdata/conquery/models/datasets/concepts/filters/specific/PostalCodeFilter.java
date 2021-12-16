@@ -16,24 +16,11 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 
 
 @CPSType(id = "POSTAL_CODE", base = Filter.class)
-public class PostalCodeFilter extends SingleColumnFilter<PostalCodeSearchEntity> {
-	@JacksonInject
-	private PostalCodesManager postalCodesManager;
+public class PostalCodeFilter extends MultiSelectFilter {
 
 	@Override
 	public void configureFrontend(FEFilter f) {
 		f.setType(FEFilterType.POSTAL_CODE);
-	}
-
-	@Override
-	public FilterNode<String[]> createFilterNode(PostalCodeSearchEntity postalCodeSearchEntity) {
-		return new MultiSelectFilterNode(getColumn(), postalCodesManager.filterAllNeighbours(Integer.parseInt(postalCodeSearchEntity.getPlz()), postalCodeSearchEntity
-				.getRadius()));
-	}
-
-	@Override
-	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-		return EnumSet.of(MajorTypeId.STRING);
 	}
 
 }

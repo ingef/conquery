@@ -1,6 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 /**
- * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to
+ * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to 
  * {@link ShardNode}s and respectively the {@link Worker}s hosted on them. The {@link ManagerNode} can also
  * forward queries or results to statistic backends. Finally it collects the results of queries for access over the api.
  */
@@ -103,12 +102,12 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		this.name = name;
 	}
 
-	public void run(ConqueryConfig config, Environment environment) throws InterruptedException, IOException {
+	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 		this.environment = environment;
 		validator = environment.getValidator();
 
 		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
-													 .build(getName());
+				.build(getName());
 
 		// Instantiate DatasetRegistry and MetaStorage so they are ready for injection into the object mapper (API + Storage)
 		// The validator is already injected at this point see Conquery.java
@@ -117,17 +116,16 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		postalCodesManager = PostalCodesManager.loadFrom("/com/bakdata/conquery/postalcodes.csv", false);
 
-
 		datasetRegistry.injectInto(environment.getObjectMapper());
 		storage.injectInto(environment.getObjectMapper());
 		postalCodesManager.injectInto(environment.getObjectMapper());
-		postalCodesManager.injectInto(Jackson.BINARY_MAPPER);
 
 		jobManager = new JobManager("ManagerNode", config.isFailOnError());
 		formScanner = new FormScanner();
 		this.config = config;
 
 		config.initialize(this);
+
 		// Initialization of internationalization
 		I18n.init();
 
@@ -164,9 +162,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				ResourcesProvider provider = resourceProvider.getConstructor().newInstance();
 				provider.registerResources(this);
 				providers.add(provider);
-			}
-			catch (Exception e) {
-				log.error("Failed to register Resource {}", resourceProvider, e);
+			} catch (Exception e) {
+				log.error("Failed to register Resource {}",resourceProvider, e);
 			}
 		}
 
@@ -206,12 +203,10 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void loadNamespaces() {
-		final Collection<NamespaceStorage> storages =
+		final Collection<NamespaceStorage > storages =
 				config.getStorage().loadNamespaceStorages();
-		final ObjectWriter
-				objectWriter =
-				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
-		for (NamespaceStorage namespaceStorage : storages) {
+		final ObjectWriter objectWriter = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
+		for(NamespaceStorage namespaceStorage : storages) {
 			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), objectWriter);
 			datasetRegistry.add(ns);
 		}
@@ -219,7 +214,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
+		ConqueryMDC.setLocation("ManagerNode["+session.getLocalAddress().toString()+"]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
@@ -241,24 +236,20 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		if (message instanceof MessageToManagerNode) {
 			MessageToManagerNode mrm = (MessageToManagerNode) message;
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext>
-					job =
-					new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
-							jobManager,
-							new NetworkSession(session),
-							datasetRegistry, config.getCluster().getBackpressure()
-					));
+			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
+					jobManager,
+					new NetworkSession(session),
+					datasetRegistry, config.getCluster().getBackpressure()
+			));
 
 			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)
 			if (mrm.isSlowMessage()) {
 				((SlowMessage) mrm).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
-			}
-			else {
+			} else {
 				jobManager.addFastJob(job);
 			}
-		}
-		else {
+		} else {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 			return;
 		}
@@ -287,24 +278,21 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		try {
 			acceptor.dispose();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);
 		}
 
 		for (ResourcesProvider provider : providers) {
 			try {
 				provider.close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error(provider + " could not be closed", e);
 			}
 
 		}
 		try {
 			storage.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error(storage + " could not be closed", e);
 		}
 

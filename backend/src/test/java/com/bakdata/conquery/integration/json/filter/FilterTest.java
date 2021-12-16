@@ -115,7 +115,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		rawFilterValue.put("filter", support.getDataset().getName() + ".concept.connector.filter");
 
 
-		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class));
+		FilterValue<?,?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class));
 
 		CQTable cqTable = new CQTable();
 

@@ -18,6 +18,7 @@ import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,7 +34,8 @@ public class PostalCodesManager implements Injectable {
 	 * @param csvFilePath Path of file containing the postal codes data as csv
 	 * @return Preloaded  {@link PostalCodesManager}
 	 */
-	static public PostalCodesManager loadFrom(@NonNull @NotEmpty String csvFilePath, boolean zipped) throws IOException {
+	@SneakyThrows(IOException.class)
+	static public PostalCodesManager loadFrom(@NonNull @NotEmpty String csvFilePath, boolean zipped) {
 
 		final PostalCodeProcessor rowProcessor = new PostalCodeProcessor();
 		final CsvParserSettings csvParserSettings = new CsvParserSettings();

@@ -150,7 +150,14 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			final CentralRegistry centralRegistry = conquery.getNamespaceStorage().getCentralRegistry();
 			final Connector connector = centralRegistry.resolve(new ConnectorId(conceptId, "connector1"));
 			cqTable.setConnector(connector);
-			cqTable.setFilters(List.of(new FilterValue.CQRealRangeFilter((Filter<Range<BigDecimal>>) centralRegistry.resolve(new FilterId(connector.getId(), "filter")), new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d)))));
+			cqTable.setFilters(
+					List.of(
+							new FilterValue.CQRealRangeFilter(
+									(Filter<Range<BigDecimal>>) centralRegistry.resolve(new FilterId(connector.getId(), "filter")),
+									new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d))
+							)
+					)
+			);
 
 			cqConcept.setTables(List.of(cqTable));
 			cqConcept.setExcludeFromSecondaryId(false);

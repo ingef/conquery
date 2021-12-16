@@ -3,17 +3,23 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 import java.math.BigDecimal;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.postalcode.PostalCodeSearchEntity;
+import com.bakdata.conquery.models.datasets.concepts.filters.postalcode.PostalCodesManager;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -22,30 +28,55 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @ToString(of = "value")
-public abstract class FilterValue<VALUE> {
+public abstract class FilterValue<S_VALUE,F_VALUE> {
 	@NotNull
 	@Nonnull
 	@NsIdRef
-	private Filter<VALUE> filter;
+	private Filter<F_VALUE> filter;
 
+	/**
+	 * Submitted value from query
+	 */
 	@NotNull
 	@Nonnull
-	private VALUE value;
+	private S_VALUE value;
 
-	public FilterNode<?> createNode() {
-		return getFilter().createFilterNode(getValue());
+	/**
+	 * Is executed on a shard
+	 * @return A query param node.
+	 */
+	public abstract FilterNode<?> createNode();
+
+	/**
+	 * Simplified FilterValue which can forward is value into a filter node without transformation
+	 * @param <F_VALUE>
+	 */
+	@NoArgsConstructor
+	public static abstract class Forwarding<F_VALUE> extends FilterValue<F_VALUE, F_VALUE> {
+
+		public Forwarding(Filter<F_VALUE> filter, F_VALUE value) {
+			super();
+			this.setFilter(filter);
+			this.setValue(value);
+
+		}
+
+		public FilterNode<?> createNode() {
+			return getFilter().createFilterNode(getValue());
+		}
+
 	}
 
 
 	@NoArgsConstructor
 	@CPSType(id = "MULTI_SELECT", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQMultiSelectFilter extends FilterValue<String[]> {
+	public static class CQMultiSelectFilter extends Forwarding<String[]> {
 		public CQMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
 			super(filter, value);
 		}
@@ -54,7 +85,7 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "BIG_MULTI_SELECT", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
+	public static class CQBigMultiSelectFilter extends Forwarding<String[]> {
 		public CQBigMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
 			super(filter, value);
 		}
@@ -63,7 +94,7 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "SELECT", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQSelectFilter extends FilterValue<String> {
+	public static class CQSelectFilter extends Forwarding<String> {
 		public CQSelectFilter(@NsIdRef Filter<String> filter, String value) {
 			super(filter, value);
 		}
@@ -72,7 +103,7 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "STRING", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQStringFilter extends FilterValue<String> {
+	public static class CQStringFilter extends Forwarding<String> {
 		public CQStringFilter(@NsIdRef Filter<String> filter, String value) {
 			super(filter, value);
 		}
@@ -81,7 +112,7 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "INTEGER_RANGE", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
+	public static class CQIntegerRangeFilter extends Forwarding<LongRange> {
 		public CQIntegerRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {
 			super(filter, value);
 		}
@@ -94,7 +125,7 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "MONEY_RANGE", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQMoneyRangeFilter extends FilterValue<LongRange> {
+	public static class CQMoneyRangeFilter extends Forwarding<LongRange> {
 		public CQMoneyRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {	super(filter, value);
 		}
 	}
@@ -102,17 +133,34 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "REAL_RANGE", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQRealRangeFilter extends FilterValue<Range<BigDecimal>> {
+	public static class CQRealRangeFilter extends Forwarding<Range<BigDecimal>> {
 		public CQRealRangeFilter(@NsIdRef Filter<Range<BigDecimal>> filter, Range<BigDecimal> value) {
 			super(filter, value);
 		}
 	}
 
-	@NoArgsConstructor
 	@CPSType(id = "POSTAL_CODE", base = FilterValue.class)
-	public static class PostalCodeFilter extends FilterValue<PostalCodeSearchEntity> {
-		public PostalCodeFilter(@NsIdRef Filter<PostalCodeSearchEntity> filter, PostalCodeSearchEntity value) {
-			super(filter, value);
+	@NoArgsConstructor
+	public static class PostalCodeFilter extends FilterValue<PostalCodeSearchEntity, String[]> {
+
+		@JsonCreator
+		public PostalCodeFilter(@NsIdRef Filter<String[]> filter, PostalCodeSearchEntity value, @JacksonInject PostalCodesManager postalCodesManager) {
+			super();
+			this.setFilter(filter);
+			this.setValue(value);
+
+			if (postalCodesManager != null) {
+				/*
+				This is only executed on the manager.
+				On a shard node, no postalCodesManager will be injected, but the transferValue will already be set from the manager.
+				 */
+				value.setTransferValue(postalCodesManager.filterAllNeighbours(Integer.parseInt(value.getPlz()), value.getRadius()));
+			}
+		}
+
+		@Override
+		public FilterNode<?> createNode() {
+			return getFilter().createFilterNode(getValue().getTransferValue());
 		}
 	}
 }

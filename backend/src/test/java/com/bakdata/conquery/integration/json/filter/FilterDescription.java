@@ -11,7 +11,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import lombok.Data;
 
 @Data
-public class FilterDescription<FE_TYPE extends FilterValue<?>> {
+public class FilterDescription<FE_TYPE extends FilterValue<?,?>> {
 
 	@NotNull
 	@Valid
