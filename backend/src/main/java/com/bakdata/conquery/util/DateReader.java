@@ -32,7 +32,7 @@ public class DateReader {
 	 * All available formats for parsing.
 	 */
 	@JsonIgnore
-	private Set<DateTimeFormatter> dateFormats;
+	private List<DateTimeFormatter> dateFormats;
 
 	@JsonIgnore
 	private List<String> rangeStartEndSeperators;
@@ -44,18 +44,18 @@ public class DateReader {
 	 * Last successfully parsed date format.
 	 */
 	@JsonIgnore
-	private final ThreadLocal<DateTimeFormatter> lastDateFormat = new ThreadLocal<>();
+	private final ThreadLocal<Integer> lastDateFormat = ThreadLocal.withInitial(() -> 0);
 	/**
 	 * Last successfully parsed range format.
 	 */
 	@JsonIgnore
-	private final ThreadLocal<String> lastRangeFormat = new ThreadLocal<>();
+	private final ThreadLocal<Integer> lastRangeFormat = ThreadLocal.withInitial(() -> 0);
 
 	/**
 	 * Last successfully parsed dateset format.
 	 */
 	@JsonIgnore
-	private final ThreadLocal<LocaleConfig.ListFormat> lastDateSetLayout = new ThreadLocal<>();
+	private final ThreadLocal<Integer> lastDateSetLayout = ThreadLocal.withInitial(() -> 0);
 
 	@JsonIgnore
 	private final LocalDate ERROR_DATE = LocalDate.MIN;
@@ -71,7 +71,7 @@ public class DateReader {
 
 	@JsonCreator
 	public DateReader(Set<String> dateParsingFormats, List<String> rangeStartEndSeperators, List<LocaleConfig.ListFormat> dateSetLayouts) {
-		this.dateFormats = dateParsingFormats.stream().map(DateTimeFormatter::ofPattern).collect(Collectors.toSet());
+		this.dateFormats = dateParsingFormats.stream().map(DateTimeFormatter::ofPattern).collect(Collectors.toList());
 		this.rangeStartEndSeperators = rangeStartEndSeperators;
 		this.dateSetLayouts = dateSetLayouts;
 	}
@@ -98,32 +98,18 @@ public class DateReader {
 			return null;
 		}
 
-		CDateRange result = null;
-
-		final String lastSep = lastRangeFormat.get();
-		if (lastSep != null) {
+		for (int i = lastRangeFormat.get(); i < rangeStartEndSeperators.size(); i++) {
+			String sep = rangeStartEndSeperators.get(i);
 			try {
-				return parseToCDateRange(value, lastSep);
-			}
-			catch (ParsingException e) {
-				log.info("Parsing with last used config failed for date range: {}", value, e);
-			}
-		}
-
-		for (String sep : rangeStartEndSeperators) {
-			try {
-				result = parseToCDateRange(value, sep);
-				lastRangeFormat.set(sep);
+				CDateRange result = parseToCDateRange(value, sep);
+				lastRangeFormat.set(i);
+				return result;
 			}
 			catch (ParsingException e) {
 				log.info("Parsing failed for date range: {}", value, e);
-				continue;
 			}
-			break;
 		}
-		if (result != null) {
-			return result;
-		}
+
 		throw new ParsingException("None of the configured formats allowed to parse the date range: " + value);
 	}
 
@@ -152,34 +138,20 @@ public class DateReader {
 			return null;
 		}
 
-		CDateSet result = null;
+		for (int index = lastDateSetLayout.get(); index < dateSetLayouts.size(); index++) {
+			final LocaleConfig.ListFormat sep = dateSetLayouts.get(index);
 
-		final LocaleConfig.ListFormat lastDateSet = lastDateSetLayout.get();
-		if (lastDateSet != null) {
 			try {
-				log.info("Parsing CDateSet using {}", lastDateSet);
-				return lastDateSet.parse(value, this);
-			}
-			catch (ParsingException e) {
-				log.trace("Parsing with last used config failed for date set: {}", value, e);
-			}
-		}
-
-		for (LocaleConfig.ListFormat sep : dateSetLayouts) {
-			try {
-				result = sep.parse(value, this);
+				final CDateSet result = sep.parse(value, this);
+				lastDateSetLayout.set(index);
+				return result;
 			}
 			catch (ParsingException e) {
 				log.trace("Parsing failed for date set '{}' with pattern '{}'", value, sep, e);
-				continue;
 			}
-			lastDateSetLayout.set(sep);
-			break;
 		}
-		if (result != null) {
-			return result;
-		}
-		throw new ParsingException("Non of the configured formats allowed to parse the date set: " + value);
+
+		throw new ParsingException("None of the configured formats allowed to parse the date set: " + value);
 	}
 
 
@@ -190,27 +162,15 @@ public class DateReader {
 	 */
 	private LocalDate tryParseDate(String value) {
 
-		final DateTimeFormatter formatter = lastDateFormat.get();
-
-		if (formatter != null) {
+		for (int i = lastDateFormat.get(); i < dateFormats.size(); i++) {
+			DateTimeFormatter format = dateFormats.get(i);
 			try {
-				return LocalDate.parse(value, formatter);
+				LocalDate res = LocalDate.parse(value, format);
+				lastDateFormat.set(i);
+				return res;
 			}
 			catch (DateTimeParseException e) {
 				//intentionally left blank
-			}
-		}
-
-		for (DateTimeFormatter format : dateFormats) {
-			if (formatter != format) {
-				try {
-					LocalDate res = LocalDate.parse(value, format);
-					lastDateFormat.set(format);
-					return res;
-				}
-				catch (DateTimeParseException e) {
-					//intentionally left blank
-				}
 			}
 		}
 		return ERROR_DATE;
