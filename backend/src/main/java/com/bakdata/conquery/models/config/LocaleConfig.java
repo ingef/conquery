@@ -6,7 +6,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -14,9 +13,11 @@ import javax.validation.constraints.Size;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
+import io.dropwizard.util.Strings;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
@@ -119,16 +120,58 @@ public class LocaleConfig {
 		}
 
 		public CDateSet parse(String value, DateReader reader) {
-			log.info("Parsing `{}` using `{}`", value, pattern);
+			final CDateSet out = CDateSet.create();
 
-			List<CDateRange> ranges = getRegexPattern().matcher(value)
-											 .results()
-											 .map(mr -> reader.parseToCDateRange(mr.group(1)))
-											 .collect(Collectors.toList());
+			StringBuffer buffer = new StringBuffer(value);
 
-			log.info("Parsed `{}`", ranges);
+			require(getStart(), buffer);
 
-			return CDateSet.create(ranges);
+			buffer.delete(0, getStart().length());
+
+			while(buffer.length() > getEnd().length()){
+				// trim leading whitespaces
+				while(buffer.charAt(0) == ' '){
+					buffer.delete(0, 1);
+				}
+
+				int end = buffer.indexOf(getSeparator());
+				int next = end + getSeparator().length();
+
+				if(end == -1){
+					// No next separator found:
+					// might be the last entry, might also be faulty entry
+					if (!Strings.isNullOrEmpty(getEnd())) {
+						end = buffer.indexOf(getEnd());
+					}
+					else {
+						end = buffer.length();
+					}
+					next = end;
+				}
+
+				final String nextRange = buffer.substring(0, end);
+				final CDateRange range = reader.parseToCDateRange(nextRange);
+
+				out.add(range);
+
+				buffer.delete(0, next);
+			}
+
+			require(getEnd(), buffer);
+
+			buffer.delete(0, getEnd().length());
+
+			if(buffer.length() != 0){
+				throw new ParsingException("Trailing Data"); //TODO
+			}
+
+			return out;
+		}
+
+		private void require(String start, StringBuffer buffer) {
+			if (!buffer.substring(0, start.length()).equals(start)) {
+				throw new ParsingException("Expected Start but Got Actual"); //TODO
+			}
 		}
 	}
 

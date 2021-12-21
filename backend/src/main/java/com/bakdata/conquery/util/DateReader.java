@@ -98,11 +98,15 @@ public class DateReader {
 			return null;
 		}
 
-		for (int i = lastRangeFormat.get(); i < rangeStartEndSeperators.size(); i++) {
-			String sep = rangeStartEndSeperators.get(i);
+		final int root = lastRangeFormat.get();
+
+		for (int offset = 0; offset < rangeStartEndSeperators.size(); offset++) {
+			final int index = (root + offset) % rangeStartEndSeperators.size();
+
+			String sep = rangeStartEndSeperators.get(index);
 			try {
 				CDateRange result = parseToCDateRange(value, sep);
-				lastRangeFormat.set(i);
+				lastRangeFormat.set(index);
 				return result;
 			}
 			catch (ParsingException e) {
@@ -138,7 +142,11 @@ public class DateReader {
 			return null;
 		}
 
-		for (int index = lastDateSetLayout.get(); index < dateSetLayouts.size(); index++) {
+		final int root = lastDateSetLayout.get();
+
+		for (int offset = 0; offset < dateSetLayouts.size(); offset++) {
+			final int index = (root + offset) % dateSetLayouts.size();
+
 			final LocaleConfig.ListFormat sep = dateSetLayouts.get(index);
 
 			try {
@@ -151,7 +159,7 @@ public class DateReader {
 			}
 		}
 
-		throw new ParsingException("None of the configured formats allowed to parse the date set: " + value);
+		throw new ParsingException("None of the configured formats to parse the date set: " + value);
 	}
 
 
@@ -162,11 +170,15 @@ public class DateReader {
 	 */
 	private LocalDate tryParseDate(String value) {
 
-		for (int i = lastDateFormat.get(); i < dateFormats.size(); i++) {
-			DateTimeFormatter format = dateFormats.get(i);
+		final int root = lastDateFormat.get();
+
+		for (int offset = 0; offset < dateFormats.size(); offset++) {
+			final int index = (root + offset) % dateFormats.size();
+			final DateTimeFormatter format = dateFormats.get(index);
+
 			try {
 				LocalDate res = LocalDate.parse(value, format);
-				lastDateFormat.set(i);
+				lastDateFormat.set(index);
 				return res;
 			}
 			catch (DateTimeParseException e) {
