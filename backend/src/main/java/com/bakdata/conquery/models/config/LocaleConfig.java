@@ -73,11 +73,11 @@ public class LocaleConfig {
 	@AllArgsConstructor
 	public static class ListFormat {
 		@NonNull @Max(1)
-		String start;
+		private final String start;
 		@NonNull @Min(1)
-		String separator;
+		private final String separator;
 		@NonNull @Max(1)
-		String end;
+		private final String end;
 	}
 
 

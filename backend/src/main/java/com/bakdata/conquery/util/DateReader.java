@@ -107,7 +107,7 @@ public class DateReader {
 			try{
 				return parseToCDateRange(value,lastSep);
 			} catch (ParsingException e) {
-				log.trace("Parsing with last used config failed for date range: {}", value, e);
+				log.info("Parsing with last used config failed for date range: {}", value, e);
 			}
 		}
 
@@ -116,7 +116,7 @@ public class DateReader {
 				result = parseToCDateRange(value,sep);
 				lastRangeFormat.set(sep);
 			} catch (ParsingException e) {
-				log.trace("Parsing failed for date range: {}", value, e);
+				log.info("Parsing failed for date range: {}", value, e);
 				continue;
 			}
 			break;
@@ -128,6 +128,8 @@ public class DateReader {
 	}
 
 	private CDateRange parseToCDateRange(String value, String sep) {
+		log.info("Parsing `{}` using Sep `{}`", value, sep);
+
 		String[] parts = StringUtils.split(value, sep);
 
 		if (parts.length == 1) {
@@ -155,17 +157,19 @@ public class DateReader {
 		final Pattern lastDateSet = lastDateSetLayout.get();
 		if (lastDateSet != null) {
 			try{
+				log.info("Parsing CDateSet using {}", lastDateSet);
 				return parseToCDateSet(value,lastDateSet);
 			} catch (ParsingException e) {
 				log.trace("Parsing with last used config failed for date set: " + value, e);
 			}
 		}
 
-		for(LocaleConfig.ListFormat sep : dateSetLayouts) {
+		for (LocaleConfig.ListFormat sep : dateSetLayouts) {
 			Pattern regexPattern = generateDateSetPattern(sep.getStart(), sep.getSeparator(), sep.getEnd());
 			try {
-				result = parseToCDateSet(value,regexPattern);
-			} catch (ParsingException e) {
+				result = parseToCDateSet(value, regexPattern);
+			}
+			catch (ParsingException e) {
 				log.trace("Parsing failed for date set '" + value + "' with pattern '" + regexPattern + "'", e);
 				continue;
 			}
@@ -180,10 +184,15 @@ public class DateReader {
 
 
 	public CDateSet parseToCDateSet(String value, Pattern pattern) {
+		log.info("Parsing `{}` using `{}`", value, pattern);
+
 		List<CDateRange> ranges = pattern.matcher(value)
 				.results()
 				.map(mr -> parseToCDateRange(mr.group(1)))
 				.collect(Collectors.toList());
+
+		log.info("Parsed `{}`", ranges);
+
 		return CDateSet.create(ranges);
 
 	}
@@ -200,7 +209,7 @@ public class DateReader {
 		 Groups starting with "?:" are not captured. The format parameters are reused in the format string by positional
 		 reference "%X$s" where X refers to the position of the argument in String.format(...).
 		 */
-		return Pattern.compile(String.format("(?:(?:%1$s)|(?:%2$s\\s*))([^%1$s%2$s%3$s]+)(?:%3$s)?",
+		return Pattern.compile(String.format("^(?:(?:%1$s)|(?:%2$s\\s*))([^%1$s%2$s%3$s]+)(?:%3$s)?$",
 				setBegin.isEmpty() ? "" : Pattern.quote(setBegin), // referenced as: %1$s
 				Pattern.quote(rangeSep.trim()),  // referenced as: %2$s, ignore white spaces as they are explicitly captured in the regex
 				setEnd.isEmpty() ? "" : Pattern.quote(setEnd)));  // referenced as: %3$s
