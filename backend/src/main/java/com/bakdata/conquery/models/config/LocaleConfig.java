@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -98,79 +97,84 @@ public class LocaleConfig {
 		@Size(min = 0, max = 1)
 		private final String end;
 
-		private Pattern pattern;
-
-		public Pattern getRegexPattern() {
-			if (pattern != null) {
-				return pattern;
-			}
-			/*
-			 Create a matcher pattern, that captures the date ranges in group 1 (the only group that is captured and which
-			 is not allowed to hold any of the set-delimiters)
-
-			 Groups starting with "?:" are not captured. The format parameters are reused in the format string by positional
-			 reference "%X$s" where X refers to the position of the argument in String.format(...).
-			 */
-			return pattern = Pattern.compile(String.format(
-					"^(?:(?:%1$s)|(?:%2$s\\s*))([^%1$s%2$s%3$s]+)(?:%3$s)?$",
-					getStart().isEmpty() ? "" : Pattern.quote(getStart()), // referenced as: %1$s
-					Pattern.quote(getSeparator().trim()),  // referenced as: %2$s, ignore white spaces as they are explicitly captured in the regex
-					getEnd().isEmpty() ? "" : Pattern.quote(getEnd())
-			));  // referenced as: %3$s
-		}
-
+		/**
+		 * Manually parse value as {@link CDateSet} using the reader for {@link CDateRange}.
+		 */
 		public CDateSet parse(String value, DateReader reader) {
 			final CDateSet out = CDateSet.create();
 
-			StringBuffer buffer = new StringBuffer(value);
+			final StringBuffer buffer = new StringBuffer(value);
 
+			boolean done = false;
+
+			// Require that the string starts properly
 			require(getStart(), buffer);
 
 			buffer.delete(0, getStart().length());
 
-			while(buffer.length() > getEnd().length()){
-				// trim leading whitespaces
-				while(buffer.charAt(0) == ' '){
-					buffer.delete(0, 1);
-				}
-
+			while(!done){
+				// end is the end of what we believe is the current CDateRange
 				int end = buffer.indexOf(getSeparator());
+
+				// next is where we will advance to after parsing the CDateRange:
+				// Either past the next separator, or to the end if there is no next separator
 				int next = end + getSeparator().length();
 
 				if(end == -1){
 					// No next separator found:
 					// might be the last entry, might also be faulty entry
-					if (!Strings.isNullOrEmpty(getEnd())) {
-						end = buffer.indexOf(getEnd());
+					// Either way, parsing should stop after this entry.
+
+					end = findEnd(buffer);
+
+					// There is no end, we can abort now
+					if(end == -1){
+						throw new ParsingException("No end in sight");
 					}
-					else {
-						end = buffer.length();
-					}
+
 					next = end;
+					done = true;
 				}
 
-				final String nextRange = buffer.substring(0, end);
+				// Parse the substring (substring is cheap as it will use offsets)
+				final String nextRange = buffer.substring(0, end).trim();
 				final CDateRange range = reader.parseToCDateRange(nextRange);
 
 				out.add(range);
 
+				// advance beyond the parsed range
 				buffer.delete(0, next);
 			}
 
+			// require that the Set ends properly, and has nothing beyond the end character
 			require(getEnd(), buffer);
 
 			buffer.delete(0, getEnd().length());
 
-			if(buffer.length() != 0){
-				throw new ParsingException("Trailing Data"); //TODO
-			}
+			assertEmpty(buffer);
 
 			return out;
 		}
 
-		private void require(String start, StringBuffer buffer) {
-			if (!buffer.substring(0, start.length()).equals(start)) {
-				throw new ParsingException("Expected Start but Got Actual"); //TODO
+		private int findEnd(StringBuffer buffer) {
+			if (Strings.isNullOrEmpty(getEnd())) {
+				return buffer.length();
+			}
+
+			return buffer.indexOf(getEnd());
+		}
+
+		private void assertEmpty(StringBuffer buffer) {
+			if(buffer.length() != 0){
+				throw new ParsingException(String.format("Trailing Data `%s` when using Format %s", buffer, this));
+			}
+		}
+
+		private void require(String expected, StringBuffer buffer) {
+			final String actual = buffer.substring(0, expected.length());
+
+			if (!actual.equals(expected)) {
+				throw new ParsingException(String.format("Expected `%s` but got `%s`", expected, actual));
 			}
 		}
 	}
