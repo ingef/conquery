@@ -1,19 +1,27 @@
 package com.bakdata.conquery.models.config;
 
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class LocaleConfig {
 	@NotNull
 	private Locale frontend = Locale.ROOT;
@@ -64,20 +72,46 @@ public class LocaleConfig {
 	private List<ListFormat> listFormats = List.of(
 			new ListFormat("", ", ", ""),
 			new ListFormat("{", ",", "}"),
-			new ListFormat("[", ",", "]"));
+			new ListFormat("[", ",", "]")
+	);
 
 	/**
 	 * Container to describe the format of a list
 	 */
 	@Data
-	@AllArgsConstructor
+	@RequiredArgsConstructor
 	public static class ListFormat {
-		@NonNull @Max(1)
+		@NonNull
+		@Size(min = 0, max = 1)
 		private final String start;
-		@NonNull @Min(1)
+		@NonNull
+		@Size(min = 1)
 		private final String separator;
-		@NonNull @Max(1)
+
+		@NonNull
+		@Size(min = 0, max = 1)
 		private final String end;
+
+		private Pattern pattern;
+
+		public Pattern getRegexPattern() {
+			if (pattern != null) {
+				return pattern;
+			}
+			/*
+			 Create a matcher pattern, that captures the date ranges in group 1 (the only group that is captured and which
+			 is not allowed to hold any of the set-delimiters)
+
+			 Groups starting with "?:" are not captured. The format parameters are reused in the format string by positional
+			 reference "%X$s" where X refers to the position of the argument in String.format(...).
+			 */
+			return pattern = Pattern.compile(String.format(
+					"^(?:(?:%1$s)|(?:%2$s\\s*))([^%1$s%2$s%3$s]+)(?:%3$s)?$",
+					getStart().isEmpty() ? "" : Pattern.quote(getStart()), // referenced as: %1$s
+					Pattern.quote(getSeparator().trim()),  // referenced as: %2$s, ignore white spaces as they are explicitly captured in the regex
+					getEnd().isEmpty() ? "" : Pattern.quote(getEnd())
+			));  // referenced as: %3$s
+		}
 	}
 
 
@@ -86,7 +120,7 @@ public class LocaleConfig {
 	 */
 	@JsonIgnore
 	public DateReader getDateReader() {
-		final ArrayList<String> rangeStartEndSeperators = new ArrayList<>(localeRangeStartEndSeparators.values());
+		final List<String> rangeStartEndSeperators = new ArrayList<>(localeRangeStartEndSeparators.values());
 		rangeStartEndSeperators.addAll(parsingRangeStartEndSeparators);
 		return new DateReader(
 				Sets.union(parsingDateFormats, Set.copyOf(dateFormatMapping.values())),
@@ -104,7 +138,6 @@ public class LocaleConfig {
 	}
 
 
-
 	/**
 	 * Finds the best date format according to the locale and mapped date formatters.
 	 * If there is no perfect match, the locale is abstracted, see findClosestMatch.
@@ -118,11 +151,11 @@ public class LocaleConfig {
 	 * First the vanilla locale is checked, then abstractions to country and language.
 	 * The last resort is the {@link Locale#ROOT}. If no match is found, the alternative is returned.
 	 */
-	private static <T> T findClosestMatch(Locale forLocale, Map<Locale,T> options, T alternative) {
+	private static <T> T findClosestMatch(Locale forLocale, Map<Locale, T> options, T alternative) {
 		String country = forLocale.getCountry();
 		String language = forLocale.getLanguage();
 
-		if (options.containsKey(forLocale)){
+		if (options.containsKey(forLocale)) {
 			return options.get(forLocale);
 		}
 

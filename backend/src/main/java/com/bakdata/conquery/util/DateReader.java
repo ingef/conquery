@@ -20,7 +20,6 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -165,7 +164,7 @@ public class DateReader {
 		}
 
 		for (LocaleConfig.ListFormat sep : dateSetLayouts) {
-			Pattern regexPattern = generateDateSetPattern(sep.getStart(), sep.getSeparator(), sep.getEnd());
+			Pattern regexPattern = sep.getRegexPattern();
 			try {
 				result = parseToCDateSet(value, regexPattern);
 			}
@@ -195,24 +194,6 @@ public class DateReader {
 
 		return CDateSet.create(ranges);
 
-	}
-
-	private static Pattern generateDateSetPattern(@NonNull String setBegin, @NonNull String rangeSep, @NonNull String setEnd) {
-		assert(setBegin.length() < 2);
-		assert(rangeSep.length() >= 1);
-		assert(setEnd.length() < 2);
-
-		/*
-		 Create a matcher pattern, that captures the date ranges in group 1 (the only group that is captured and which
-		 is not allowed to hold any of the set-delimiters)
-
-		 Groups starting with "?:" are not captured. The format parameters are reused in the format string by positional
-		 reference "%X$s" where X refers to the position of the argument in String.format(...).
-		 */
-		return Pattern.compile(String.format("^(?:(?:%1$s)|(?:%2$s\\s*))([^%1$s%2$s%3$s]+)(?:%3$s)?$",
-				setBegin.isEmpty() ? "" : Pattern.quote(setBegin), // referenced as: %1$s
-				Pattern.quote(rangeSep.trim()),  // referenced as: %2$s, ignore white spaces as they are explicitly captured in the regex
-				setEnd.isEmpty() ? "" : Pattern.quote(setEnd)));  // referenced as: %3$s
 	}
 
 	/**
