@@ -7,7 +7,6 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.CDateSet;
@@ -56,7 +55,7 @@ public class DateReader {
 	 * Last successfully parsed dateset format.
 	 */
 	@JsonIgnore
-	private final ThreadLocal<Pattern> lastDateSetLayout = new ThreadLocal<>();
+	private final ThreadLocal<LocaleConfig.ListFormat> lastDateSetLayout = new ThreadLocal<>();
 
 	@JsonIgnore
 	private final LocalDate ERROR_DATE = LocalDate.MIN;
@@ -68,7 +67,7 @@ public class DateReader {
 	private final LoadingCache<String, LocalDate> DATE_CACHE = CacheBuilder.newBuilder()
 																		   .weakValues()
 																		   .concurrencyLevel(10)
-																		   .build(CacheLoader.from(this::tryParse));
+																		   .build(CacheLoader.from(this::tryParseDate));
 
 	@JsonCreator
 	public DateReader(Set<String> dateParsingFormats, List<String> rangeStartEndSeperators, List<LocaleConfig.ListFormat> dateSetLayouts) {
@@ -103,18 +102,20 @@ public class DateReader {
 
 		final String lastSep = lastRangeFormat.get();
 		if (lastSep != null) {
-			try{
-				return parseToCDateRange(value,lastSep);
-			} catch (ParsingException e) {
+			try {
+				return parseToCDateRange(value, lastSep);
+			}
+			catch (ParsingException e) {
 				log.info("Parsing with last used config failed for date range: {}", value, e);
 			}
 		}
 
-		for(String sep : rangeStartEndSeperators) {
+		for (String sep : rangeStartEndSeperators) {
 			try {
-				result = parseToCDateRange(value,sep);
+				result = parseToCDateRange(value, sep);
 				lastRangeFormat.set(sep);
-			} catch (ParsingException e) {
+			}
+			catch (ParsingException e) {
 				log.info("Parsing failed for date range: {}", value, e);
 				continue;
 			}
@@ -137,10 +138,10 @@ public class DateReader {
 		}
 
 		if (parts.length == 2) {
-				return CDateRange.of(
-						parseToLocalDate(parts[0]),
-						parseToLocalDate(parts[1])
-				);
+			return CDateRange.of(
+					parseToLocalDate(parts[0]),
+					parseToLocalDate(parts[1])
+			);
 		}
 
 		throw ParsingException.of(value, "daterange");
@@ -153,26 +154,26 @@ public class DateReader {
 
 		CDateSet result = null;
 
-		final Pattern lastDateSet = lastDateSetLayout.get();
+		final LocaleConfig.ListFormat lastDateSet = lastDateSetLayout.get();
 		if (lastDateSet != null) {
-			try{
+			try {
 				log.info("Parsing CDateSet using {}", lastDateSet);
-				return parseToCDateSet(value,lastDateSet);
-			} catch (ParsingException e) {
-				log.trace("Parsing with last used config failed for date set: " + value, e);
+				return lastDateSet.parse(value, this);
+			}
+			catch (ParsingException e) {
+				log.trace("Parsing with last used config failed for date set: {}", value, e);
 			}
 		}
 
 		for (LocaleConfig.ListFormat sep : dateSetLayouts) {
-			Pattern regexPattern = sep.getRegexPattern();
 			try {
-				result = parseToCDateSet(value, regexPattern);
+				result = sep.parse(value, this);
 			}
 			catch (ParsingException e) {
-				log.trace("Parsing failed for date set '" + value + "' with pattern '" + regexPattern + "'", e);
+				log.trace("Parsing failed for date set '{}' with pattern '{}'", value, sep, e);
 				continue;
 			}
-			lastDateSetLayout.set(regexPattern);
+			lastDateSetLayout.set(sep);
 			break;
 		}
 		if (result != null) {
@@ -182,26 +183,12 @@ public class DateReader {
 	}
 
 
-	public CDateSet parseToCDateSet(String value, Pattern pattern) {
-		log.info("Parsing `{}` using `{}`", value, pattern);
-
-		List<CDateRange> ranges = pattern.matcher(value)
-				.results()
-				.map(mr -> parseToCDateRange(mr.group(1)))
-				.collect(Collectors.toList());
-
-		log.info("Parsed `{}`", ranges);
-
-		return CDateSet.create(ranges);
-
-	}
-
 	/**
 	 * Try and parse with the last successful parser. If not successful try and parse with other parsers and update the last successful parser.
 	 * <p>
 	 * Method is private as it is only directly accessed via the Cache.
 	 */
-	private LocalDate tryParse(String value) {
+	private LocalDate tryParseDate(String value) {
 
 		final DateTimeFormatter formatter = lastDateFormat.get();
 

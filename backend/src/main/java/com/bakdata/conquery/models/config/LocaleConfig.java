@@ -6,11 +6,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
@@ -19,6 +22,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
@@ -80,6 +84,7 @@ public class LocaleConfig {
 	 */
 	@Data
 	@RequiredArgsConstructor
+	@Slf4j
 	public static class ListFormat {
 		@NonNull
 		@Size(min = 0, max = 1)
@@ -111,6 +116,19 @@ public class LocaleConfig {
 					Pattern.quote(getSeparator().trim()),  // referenced as: %2$s, ignore white spaces as they are explicitly captured in the regex
 					getEnd().isEmpty() ? "" : Pattern.quote(getEnd())
 			));  // referenced as: %3$s
+		}
+
+		public CDateSet parse(String value, DateReader reader) {
+			log.info("Parsing `{}` using `{}`", value, pattern);
+
+			List<CDateRange> ranges = getRegexPattern().matcher(value)
+											 .results()
+											 .map(mr -> reader.parseToCDateRange(mr.group(1)))
+											 .collect(Collectors.toList());
+
+			log.info("Parsed `{}`", ranges);
+
+			return CDateSet.create(ranges);
 		}
 	}
 
