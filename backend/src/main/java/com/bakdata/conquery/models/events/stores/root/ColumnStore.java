@@ -58,6 +58,8 @@ public interface ColumnStore {
 
 	/**
 	 * Test if the store has the event.
+	 *
+	 * @implSpec Access to getX is only defined, iff this method evaluates to true.
 	 */
 	boolean has(int event);
 
@@ -69,6 +71,7 @@ public interface ColumnStore {
 	/**
 	 * Calculate estimate of total bytes used by this store.
 	 */
+	@JsonIgnore
 	default long estimateMemoryConsumptionBytes() {
 		long bits = estimateEventBits();
 
@@ -78,10 +81,13 @@ public interface ColumnStore {
 	/**
 	 * Number of bits required to store a single value.
 	 */
+	@JsonIgnore
 	long estimateEventBits();
 
 	/**
 	 * Number of lines in this store.
+	 *
+	 * @implSpec Any access beyond getLines is undefined. Meaning that has and getX are not guaranteed nor are checked.
 	 */
 	@JsonIgnore
 	int getLines();
@@ -96,6 +102,7 @@ public interface ColumnStore {
 	/**
 	 * Create an empty store that's only a description of the transformation.
 	 */
+	@JsonIgnore
 	default ColumnStore createDescription() {
 		return select(new int[0], new int[0]);
 	}
