@@ -270,7 +270,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L53) | version | `String` | `"0.0.0-SNAPSHOT"` |  |  | 
 </p></details>
 
-### Type LocaleConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L16)</sup></sub></sup>
+### Type LocaleConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L27)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -281,12 +281,12 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L21-L25) | dateFormatMapping | map from `Locale` to `String` |  |  | Mappings from user provided locale to date format which is used in the generation of result tables. The formats are also available for parsing dates using the {@link DateReader}. However, the locale is neglected there and the formats are tried until one that fits is found. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L18) | frontend | `@NotNull Locale` | `""` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L57-L61) | listFormats | list of `ListFormat` |  |  | List formats that are available for parsing inputs and (the first one) for rendering result tables. Spaces at the ends of the separator are only relevant for the output of results. For the input (parsing) the separator string can be surrounded by an arbitrary number of spaces. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L41-L45) | localeRangeStartEndSeparators | map from `Locale` to `String` |  |  | Mappings from user provided locale to date range format which is used in the generation of result tables. The formats are also available for parsing dates ranges using the {@link DateReader}. However, the locale is neglected there and the formats are tried until one that fits is found. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L33-L35) | parsingDateFormats | `@NotNull Set<String>` | `["yyyyMMdd"]` |  | Additional date formats that are available only for parsing. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L52-L54) | parsingRangeStartEndSeparators | `Set<String>` | `["/"]` |  | Additional date range formats that are available only for parsing. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L33-L37) | dateFormatMapping | map from `Locale` to `String` |  |  | Mappings from user provided locale to date format which is used in the generation of result tables. The formats are also available for parsing dates using the {@link DateReader}. However, the locale is neglected there and the formats are tried until one that fits is found. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L30) | frontend | `@NotNull Locale` | `""` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L69-L73) | listFormats | list of `ListFormat` |  |  | List formats that are available for parsing inputs and (the first one) for rendering result tables. Spaces at the ends of the separator are only relevant for the output of results. For the input (parsing) the separator string can be surrounded by an arbitrary number of spaces. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L53-L57) | localeRangeStartEndSeparators | map from `Locale` to `String` |  |  | Mappings from user provided locale to date range format which is used in the generation of result tables. The formats are also available for parsing dates ranges using the {@link DateReader}. However, the locale is neglected there and the formats are tried until one that fits is found. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L45-L47) | parsingDateFormats | `@NotNull Set<String>` | `["yyyyMMdd"]` |  | Additional date formats that are available only for parsing. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java#L64-L66) | parsingRangeStartEndSeparators | `Set<String>` | `["/"]` |  | Additional date range formats that are available only for parsing. | 
 </p></details>
 
 ### Type MinaConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/MinaConfig.java#L13)</sup></sub></sup>
