@@ -72,12 +72,14 @@ public class PostalCodesManager implements Injectable {
 							.filter(postalCodeDistance -> postalCodeDistance.getLeft() == plz || postalCodeDistance.getRight() == plz)
 							.map(postalCodeDistance -> {
 								if (postalCodeDistance.getLeft() == plz) {
-									return StringUtils.leftPad(Integer.toString(postalCodeDistance.getRight()), 5, '0');
+									return postalCodeDistance.getRight();
 								}
 								else {
-									return StringUtils.leftPad(Integer.toString(postalCodeDistance.getLeft()), 5, '0');
+									return postalCodeDistance.getLeft();
 								}
-							}).collect(Collectors.toList()));
+							})
+							.map(other -> StringUtils.leftPad(Integer.toString(other), 5, '0'))
+							.collect(Collectors.toList()));
 
 		return foundPLZ.toArray(String[]::new);
 
