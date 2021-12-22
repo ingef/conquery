@@ -17,7 +17,7 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 	final Set<IntIntImmutableSortedPair> loadedPlzCombinations = new HashSet<>();
 
 	/**
-	 * loaded {@link PostalCodeDistance}-data and sorted by distance
+	 * loaded {@link PostalCodeDistance}-data
 	 */
 	final private List<PostalCodeDistance> data = new ArrayList<>();
 
