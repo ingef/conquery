@@ -68,6 +68,7 @@ public class PostalCodesManager implements Injectable {
 		foundPLZ.add(StringUtils.leftPad(Integer.toString(plz), 5, '0'));
 
 		foundPLZ.addAll(data.stream()
+							// This works becaus data is already sorted
 							.takeWhile(postalCodeDistance -> postalCodeDistance.getDistanceInKm() <= radius)
 							.filter(postalCodeDistance -> postalCodeDistance.getLeft() == plz || postalCodeDistance.getRight() == plz)
 							.map(postalCodeDistance -> {
