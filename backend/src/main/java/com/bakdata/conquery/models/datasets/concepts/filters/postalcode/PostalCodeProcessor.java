@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.postalcode;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,10 +23,7 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 	final private List<PostalCodeDistance> data = new ArrayList<>();
 
 	public List<PostalCodeDistance> getData() {
-		data.sort((postalCodeDistance1, postalCodeDistance2) -> {
-			final double diffDistance = postalCodeDistance1.getDistanceInKm() - postalCodeDistance2.getDistanceInKm();
-			return diffDistance > 0 ? 1 : (diffDistance < 0 ? -1 : 0);
-		});
+		data.sort(Comparator.comparingDouble(PostalCodeDistance::getDistanceInKm));
 		return data;
 	}
 
@@ -63,6 +61,7 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 		int plz2 = Integer.parseInt(row[plz2Index]);
 		double distance = Double.parseDouble(row[distanceIndex].trim());
 
+		//checks if the distance of the combination (plz1,plz2) or (plz2,plz1)  has been already added in data list
 		if (plz1 != plz2 && loadedPlzCombinations.add(IntIntImmutableSortedPair.of(plz1, plz2))) {
 			data.add(new PostalCodeDistance(plz1, plz2, distance));
 		}

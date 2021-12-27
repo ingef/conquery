@@ -59,32 +59,25 @@ public class PostalCodesManager implements Injectable {
 	 * This method filters out all postcodes that are within the specified distance radius from the specified reference postcode (reference postal code included).
 	 */
 	public String[] filterAllNeighbours(int plz, double radius) {
-
-		if (radius == 0) {
-			return new String[]{StringUtils.leftPad(Integer.toString(plz), 5, '0')};
-		}
-
 		final List<String> foundPLZ = new ArrayList<>();
 		foundPLZ.add(StringUtils.leftPad(Integer.toString(plz), 5, '0'));
-
-		foundPLZ.addAll(data.stream()
-							// This works becaus data is already sorted
-							.takeWhile(postalCodeDistance -> postalCodeDistance.getDistanceInKm() <= radius)
-							.filter(postalCodeDistance -> postalCodeDistance.getLeft() == plz || postalCodeDistance.getRight() == plz)
-							.map(postalCodeDistance -> {
-								if (postalCodeDistance.getLeft() == plz) {
-									return postalCodeDistance.getRight();
-								}
-								else {
-									return postalCodeDistance.getLeft();
-								}
-							})
-							.map(other -> StringUtils.leftPad(Integer.toString(other), 5, '0'))
-							.collect(Collectors.toList()));
-
+		if (radius != 0) {
+			foundPLZ.addAll(data.stream()
+								// This works because data is already sorted
+								.takeWhile(postalCodeDistance -> postalCodeDistance.getDistanceInKm() <= radius)
+								.filter(postalCodeDistance -> postalCodeDistance.getLeft() == plz || postalCodeDistance.getRight() == plz)
+								.map(postalCodeDistance -> {
+									if (postalCodeDistance.getLeft() == plz) {
+										return postalCodeDistance.getRight();
+									}
+									else {
+										return postalCodeDistance.getLeft();
+									}
+								})
+								.map(other -> StringUtils.leftPad(Integer.toString(other), 5, '0'))
+								.collect(Collectors.toList()));
+		}
 		return foundPLZ.toArray(String[]::new);
-
-
 	}
 
 	@Override
