@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -16,7 +17,6 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
-import io.dropwizard.util.Strings;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
@@ -101,81 +101,31 @@ public class LocaleConfig {
 		 * Manually parse value as {@link CDateSet} using the reader for {@link CDateRange}.
 		 */
 		public CDateSet parse(String value, DateReader reader) {
+
+			// Assert that value starts/ends properly
+			if (!value.startsWith(getStart())) {
+				throw new ParsingException(String.format("Expected Start `%s`.", getStart()));
+			}
+
+			if (!value.endsWith(getEnd())) {
+				throw new ParsingException(String.format("Expected End `%s`.", getEnd()));
+			}
+
+			// We strip start and end
+			value = value.substring(getStart().length(), value.length() - getEnd().length());
+
+			final StringTokenizer tokenizer = new StringTokenizer(value, getSeparator().trim());
+
 			final CDateSet out = CDateSet.create();
 
-			final StringBuffer buffer = new StringBuffer(value);
+			while (tokenizer.hasMoreTokens()) {
+				final String token = tokenizer.nextToken().trim();
+				final CDateRange parsed = reader.parseToCDateRange(token);
 
-			boolean done = false;
-
-			// Require that the string starts properly
-			require(getStart(), buffer);
-
-			buffer.delete(0, getStart().length());
-
-			while(!done){
-				// end is the end of what we believe is the current CDateRange
-				int end = buffer.indexOf(getSeparator());
-
-				// next is where we will advance to after parsing the CDateRange:
-				// Either past the next separator, or to the end if there is no next separator
-				int next = end + getSeparator().length();
-
-				if(end == -1){
-					// No next separator found:
-					// might be the last entry, might also be faulty entry
-					// Either way, parsing should stop after this entry.
-
-					end = findEnd(buffer);
-
-					// There is no end, we can abort now
-					if(end == -1){
-						throw new ParsingException("No end in sight");
-					}
-
-					next = end;
-					done = true;
-				}
-
-				// Parse the substring (substring is cheap as it will use offsets)
-				final String nextRange = buffer.substring(0, end).trim();
-				final CDateRange range = reader.parseToCDateRange(nextRange);
-
-				out.add(range);
-
-				// advance beyond the parsed range
-				buffer.delete(0, next);
+				out.add(parsed);
 			}
-
-			// require that the Set ends properly, and has nothing beyond the end character
-			require(getEnd(), buffer);
-
-			buffer.delete(0, getEnd().length());
-
-			assertEmpty(buffer);
 
 			return out;
-		}
-
-		private int findEnd(StringBuffer buffer) {
-			if (Strings.isNullOrEmpty(getEnd())) {
-				return buffer.length();
-			}
-
-			return buffer.indexOf(getEnd());
-		}
-
-		private void assertEmpty(StringBuffer buffer) {
-			if(buffer.length() != 0){
-				throw new ParsingException(String.format("Trailing Data `%s` when using Format %s", buffer, this));
-			}
-		}
-
-		private void require(String expected, StringBuffer buffer) {
-			final String actual = buffer.substring(0, expected.length());
-
-			if (!actual.equals(expected)) {
-				throw new ParsingException(String.format("Expected `%s` but got `%s`", expected, actual));
-			}
 		}
 	}
 
