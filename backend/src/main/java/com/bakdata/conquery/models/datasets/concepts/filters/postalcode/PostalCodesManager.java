@@ -75,7 +75,7 @@ public class PostalCodesManager implements Injectable {
 									}
 								})
 								.map(other -> StringUtils.leftPad(Integer.toString(other), 5, '0'))
-								.collect(Collectors.toList()));
+								.forEach(foundPLZ::add);
 		}
 		return foundPLZ.toArray(String[]::new);
 	}
