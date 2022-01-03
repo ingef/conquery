@@ -12,10 +12,12 @@ const KeycloakProvider: FC = ({ children }) => {
   return (
     <ReactKeycloakProvider
       authClient={keycloak}
-      onEvent={(event: unknown, error: unknown) => {
-        // USEFUL FOR DEBUGGING
-        // console.log("onKeycloakEvent", event, error);
-      }}
+      onEvent={
+        (/*event: unknown, error: unknown*/) => {
+          // USEFUL FOR DEBUGGING
+          // console.log("onKeycloakEvent", event, error);
+        }
+      }
       onTokens={(tokens) => {
         if (tokens.token) {
           setAuthToken(tokens.token);

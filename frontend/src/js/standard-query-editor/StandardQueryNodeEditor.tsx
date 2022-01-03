@@ -2,7 +2,7 @@ import { StateT } from "app-types";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ConceptIdT, CurrencyConfigT, DatasetIdT } from "../api/types";
-import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
+import { nodeIsConceptQueryNode } from "../model/node";
 import { tableIsEditable } from "../model/table";
 import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
 import { QueryNodeEditorStateT } from "../query-node-editor/reducer";
@@ -85,32 +85,32 @@ const StandardQueryNodeEditor = ({ editedNode, setEditedNode }: Props) => {
       onRemoveConcept={(conceptId: ConceptIdT) =>
         dispatch(removeConceptFromNode({ andIdx, orIdx, conceptId }))
       }
-      onToggleTable={(tableIdx: number, isExcluded: boolean) =>
+      onToggleTable={(tableIdx, isExcluded) =>
         dispatch(toggleTable({ andIdx, orIdx, tableIdx, isExcluded }))
       }
       onSelectSelects={(value) => {
         dispatch(setSelects({ andIdx, orIdx, value }));
       }}
-      onSelectTableSelects={(tableIdx: number, value) =>
+      onSelectTableSelects={(tableIdx, value) =>
         dispatch(setTableSelects({ andIdx, orIdx, tableIdx, value }))
       }
-      onSetFilterValue={(tableIdx: number, filterIdx: number, value) =>
+      onSetFilterValue={(tableIdx, filterIdx, value) =>
         dispatch(setFilterValue({ andIdx, orIdx, tableIdx, filterIdx, value }))
       }
       onSwitchFilterMode={(tableIdx, filterIdx, mode) =>
         dispatch(switchFilterMode({ andIdx, orIdx, tableIdx, filterIdx, mode }))
       }
-      onResetAllSettings={(config: NodeResetConfig) =>
+      onResetAllSettings={(config) =>
         dispatch(resetAllSettings({ andIdx, orIdx, config }))
       }
-      onResetTable={(tableIdx: number, config: NodeResetConfig) =>
+      onResetTable={(tableIdx, config) =>
         dispatch(resetTable({ andIdx, orIdx, tableIdx, config }))
       }
       onToggleTimestamps={() => dispatch(toggleTimestamps({ andIdx, orIdx }))}
       onToggleSecondaryIdExclude={() =>
         dispatch(toggleSecondaryIdExclude({ andIdx, orIdx }))
       }
-      onSetDateColumn={(tableIdx: number, value) =>
+      onSetDateColumn={(tableIdx, value) =>
         dispatch(setDateColumn({ andIdx, orIdx, tableIdx, value }))
       }
     />

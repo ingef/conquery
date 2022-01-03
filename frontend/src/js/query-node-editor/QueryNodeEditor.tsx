@@ -133,7 +133,7 @@ export interface QueryNodeEditorPropsT {
     tableIdx: number,
     filterIdx: number,
   ) => Promise<void>;
-  onSetDateColumn: (tableIdx: number, value: string | null) => void;
+  onSetDateColumn: (tableIdx: number, value: string) => void;
   onSelectSelects: (value: SelectOptionT[]) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
 }

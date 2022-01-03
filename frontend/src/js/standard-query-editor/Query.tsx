@@ -31,11 +31,7 @@ import {
   toggleSecondaryIdExclude,
 } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
-import type {
-  DragItemConceptTreeNode,
-  DragItemQuery,
-  PreviousQueryQueryNodeType,
-} from "./types";
+import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
 const Container = styled("div")`
   height: 100%;

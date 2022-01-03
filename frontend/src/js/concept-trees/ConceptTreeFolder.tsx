@@ -24,7 +24,7 @@ interface PropsT {
   onLoadTree: (id: string) => void;
 }
 
-const sumMatchingEntries = (children, initSum) => {
+const sumMatchingEntries = (children: string[], initSum: number) => {
   return children.reduce((sum, treeId) => {
     const rootConcept = getConceptById(treeId);
     const rootMatchingEntries = rootConcept ? rootConcept.matchingEntries : 0;
@@ -98,7 +98,7 @@ const ConceptTreeFolder: FC<PropsT> = ({
               <ConceptTree
                 id={childId}
                 label={tree.label}
-                description={tree.description}
+                description={tree.description || null}
                 error={tree.error}
                 loading={tree.loading}
                 tree={rootConcept}

@@ -84,7 +84,7 @@ interface Props {
   defaults?: ConceptListDefaultsType;
   conceptDropzoneText: string;
   attributeDropzoneText: string;
-  isValidConcept?: (item: ConceptQueryNodeType) => boolean;
+  isValidConcept?: (item: DragItemConceptTreeNode) => boolean;
   value: FormConceptGroupT[];
   onChange: (value: FormConceptGroupT[]) => void;
   renderRowPrefix?: (props: {
@@ -122,7 +122,7 @@ const setValueProperties = (
 const addConcept = (
   value: FormConceptGroupT[],
   valueIdx: number,
-  item: ConceptQueryNodeType | null,
+  item: DragItemConceptTreeNode | null,
 ) =>
   setValueProperties(value, valueIdx, {
     concepts: [...value[valueIdx].concepts, item],
@@ -144,7 +144,7 @@ const setConcept = (
   value: FormConceptGroupT[],
   valueIdx: number,
   conceptIdx: number,
-  item: ConceptQueryNodeType,
+  item: DragItemConceptTreeNode,
 ) =>
   setValueProperties(value, valueIdx, {
     concepts: [
@@ -230,29 +230,38 @@ const onToggleIncludeSubnodes = (
 ) => {
   const element = value[valueIdx];
   const concept = element.concepts[conceptIdx];
-  const conceptData = getConceptById(concept.ids);
+
+  if (!concept) return value;
+
+  const conceptData = getConceptById(concept.ids[0]);
+
+  if (!conceptData || !conceptData.children) return value;
 
   const childIds: string[] = [];
-  const elements = conceptData.children.map((childId) => {
-    const child = getConceptById(childId);
+  const elements = conceptData.children
+    .map((childId) => {
+      const child = getConceptById(childId);
 
-    childIds.push(childId);
+      if (!child) return null;
 
-    return {
-      ...newValue,
-      ...element,
-      concepts: [
-        {
-          ids: [childId],
-          label: child.label,
-          description: child.description,
-          tables: concept.tables,
-          selects: concept.selects,
-          tree: concept.tree,
-        },
-      ],
-    };
-  });
+      childIds.push(childId);
+
+      return {
+        ...newValue,
+        ...element,
+        concepts: [
+          {
+            ids: [childId],
+            label: child.label,
+            description: child.description,
+            tables: concept.tables,
+            selects: concept.selects,
+            tree: concept.tree,
+          },
+        ],
+      };
+    })
+    .filter(exists);
 
   const nextValue = includeSubnodes
     ? [
@@ -281,7 +290,7 @@ const createQueryNodeFromConceptListUploadResult = (
   label: string,
   rootConcepts: TreesT,
   resolvedConcepts: string[],
-): ConceptQueryNodeType | null => {
+): DragItemConceptTreeNode | null => {
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
     rootConcepts,
     resolvedConcepts,
@@ -304,7 +313,7 @@ const addConceptsFromFile = (
   resolvedConcepts: string[],
 
   defaults: ConceptListDefaultsType,
-  isValidConcept: ((item: ConceptQueryNodeType) => boolean) | undefined,
+  isValidConcept: ((item: DragItemConceptTreeNode) => boolean) | undefined,
 
   value: FormConceptGroupT[],
   newValue: FormConceptGroupT,
@@ -332,7 +341,7 @@ const addConceptsFromFile = (
 };
 
 const initializeConcept = (
-  item: ConceptQueryNodeType,
+  item: DragItemConceptTreeNode,
   defaults: ConceptListDefaultsType,
 ) => {
   if (!item) return item;
@@ -388,15 +397,15 @@ const setDateColumn = (
   valueIdx: number,
   conceptIdx: number,
   tableIdx: number,
-  dateColumnValue: string | null,
+  dateColumnValue: string,
 ) => {
   const concept = value[valueIdx].concepts[conceptIdx];
 
   return concept
     ? setTableProperties(value, valueIdx, conceptIdx, tableIdx, {
         dateColumn: {
-          ...concept.tables[tableIdx].dateColumn,
-          value: dateColumnValue || undefined,
+          ...concept.tables[tableIdx].dateColumn!, // will be defined for this table, when the setter is being called
+          value: dateColumnValue,
         },
       })
     : value;
@@ -499,7 +508,7 @@ const switchFilterMode = (
   });
 };
 
-const copyConcept = (item: ConceptQueryNodeType | null) => {
+const copyConcept = (item: DragItemConceptTreeNode | null) => {
   return JSON.parse(JSON.stringify(item));
 };
 
@@ -551,7 +560,7 @@ const useUploadConceptListModal = ({
   onChange: (value: FormConceptGroupT[]) => void;
   newValue: FormConceptGroupT;
   defaults: ConceptListDefaultsType;
-  isValidConcept?: (concept: ConceptQueryNodeType) => boolean;
+  isValidConcept?: (concept: DragItemConceptTreeNode) => boolean;
 }) => {
   const dispatch = useDispatch();
   const initModal = async (file: File) => {
@@ -837,7 +846,7 @@ const FormConceptGroup = (props: Props) => {
                     }}
                   />
                 ) : (
-                  <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType> */
+                  <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <DragItemConceptTreeNode> */
                     acceptedDropTypes={DROP_TYPES}
                     onSelectFile={(file) =>
                       onDropFile(file, { valueIdx: i, conceptIdx: j })
@@ -1013,7 +1022,8 @@ const FormConceptGroup = (props: Props) => {
           }}
           onLoadFilterSuggestions={async (params, tableIdx, filterIdx) => {
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
-            const { values, total } = await postPrefixForSuggestions(params);
+            const { values /* total // TODO: use for pagination */ } =
+              await postPrefixForSuggestions(params);
 
             props.onChange(
               updateFilterOptionsWithSuggestions(

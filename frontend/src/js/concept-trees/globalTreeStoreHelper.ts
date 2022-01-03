@@ -43,7 +43,7 @@ export function setTree(
 //
 // GETTER
 //
-export function getConceptById(conceptId?: ConceptIdT): ConceptT | null {
+export function getConceptById(conceptId: ConceptIdT): ConceptT | null {
   const keys: ConceptIdT[] = Object.keys(window.conceptTrees);
 
   for (let i = 0; i < keys.length; i++) {

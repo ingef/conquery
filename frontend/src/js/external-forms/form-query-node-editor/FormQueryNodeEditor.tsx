@@ -61,7 +61,7 @@ interface PropsT {
     tableIdx: number,
     filterIdx: number,
   ) => Promise<void>;
-  onSetDateColumn: (tableIdx: number, dateColumnValue: string | null) => void;
+  onSetDateColumn: (tableIdx: number, dateColumnValue: string) => void;
 }
 
 const FormQueryNodeEditor = (props: PropsT) => {

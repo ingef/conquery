@@ -2,6 +2,7 @@ import type { SelectorT } from "../api/types";
 import { tableIsDisabled } from "../model/table";
 import type {
   ConceptQueryNodeType,
+  DragItemConceptTreeNode,
   TableWithFilterValueT,
 } from "../standard-query-editor/types";
 
@@ -24,7 +25,7 @@ export const initTables =
     blocklistedTables?: string[];
     allowlistedTables?: string[];
   }) =>
-  (node: ConceptQueryNodeType) => {
+  (node: DragItemConceptTreeNode) => {
     return !node.tables
       ? node
       : {
@@ -43,7 +44,7 @@ export const initTables =
 
 export const initTablesWithDefaults =
   (connectorDefaults?: ConnectorDefaultType[]) =>
-  (node: ConceptQueryNodeType) => {
+  (node: DragItemConceptTreeNode) => {
     return !node.tables
       ? node
       : {

@@ -192,7 +192,7 @@ export const setDateColumn = createAction("query-editor/SET_DATE_COLUMN")<{
   andIdx: number;
   orIdx: number;
   tableIdx: number;
-  value: unknown;
+  value: string;
 }>();
 
 export const resetAllSettings = createAction(
