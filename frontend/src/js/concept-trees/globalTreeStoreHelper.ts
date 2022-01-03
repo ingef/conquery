@@ -4,6 +4,7 @@ import { exists } from "../common/helpers/exists";
 import { nodeIsElement } from "../model/node";
 import { resetSelects } from "../model/select";
 import { resetTables } from "../model/table";
+import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
 
 import type { TreesT } from "./reducer";
 import { findConcepts } from "./search";
@@ -140,7 +141,7 @@ export const getConceptsByIdsWithTablesAndSelects = (
   };
 };
 
-export const hasConceptChildren = (node: ConceptT): boolean => {
+export const hasConceptChildren = (node: DragItemConceptTreeNode): boolean => {
   if (!node) return false;
 
   const concept = getConceptById(node.ids);

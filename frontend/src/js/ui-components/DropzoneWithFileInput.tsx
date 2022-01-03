@@ -1,16 +1,12 @@
 import styled from "@emotion/styled";
-import { FC, useRef, ReactNode } from "react";
+import { useRef, ReactNode } from "react";
 import { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 
 import { SelectFileButton } from "../button/SelectFileButton";
 
-import Dropzone, {
-  ChildArgs,
-  DropzoneProps,
-  PossibleDroppableObject,
-} from "./Dropzone";
+import Dropzone, { ChildArgs, PossibleDroppableObject } from "./Dropzone";
 
 export interface DragItemFile {
   type: "__NATIVE_FILE__"; // Actually, this seems to not be passed by react-dnd
@@ -38,7 +34,7 @@ const SxSelectFileButton = styled(SelectFileButton)`
 `;
 
 interface PropsT<DroppableObject> {
-  children: (args: ChildArgs) => ReactNode;
+  children: (args: ChildArgs<DroppableObject>) => ReactNode;
   onSelectFile: (file: File) => void;
   onDrop: (
     item: DroppableObject | DragItemFile,
@@ -83,7 +79,7 @@ const DropzoneWithFileInput = <
   }
 
   return (
-    <SxDropzone<FC<DropzoneProps<DroppableObject | DragItemFile>>>
+    <SxDropzone /* <FC<DropzoneProps<DroppableObject | DragItemFile>>> */
       acceptedDropTypes={dropTypes}
       onClick={() => {
         if (disableClick) return;
@@ -101,7 +97,7 @@ const DropzoneWithFileInput = <
       isInitial={isInitial}
       className={className}
     >
-      {(args: ChildArgs) => (
+      {(args) => (
         <>
           {showFileSelectButton && (
             <SxSelectFileButton onClick={onOpenFileDialog}>
@@ -117,11 +113,11 @@ const DropzoneWithFileInput = <
               }
 
               if (fileInputRef.current) {
-                fileInputRef.current.value = null;
+                fileInputRef.current.value = "";
               }
             }}
           />
-          {children(args)}
+          {children(args as ChildArgs<DroppableObject>)}
         </>
       )}
     </SxDropzone>

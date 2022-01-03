@@ -27,6 +27,7 @@ export interface PreviousQueryT {
   resultUrls: string[];
   shared: boolean;
   isPristineLabel?: boolean;
+  canExpand?: boolean;
   groups?: UserGroupIdT[];
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   secondaryId?: string | null;

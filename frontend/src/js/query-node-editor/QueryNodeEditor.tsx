@@ -224,7 +224,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
                 onToggleEdit={() => setEditingLabel(!editingLabel)}
               />
             )}
-            {node.isPreviousQuery && (node.label || node.id || node.ids)}
+            {!nodeIsConceptQueryNode(node) && (node.label || node.id)}
           </NodeName>
           <Row>
             {showClearReset && (

@@ -5,6 +5,8 @@ import type {
 } from "../standard-query-editor/types";
 import { TIMEBASED_OPERATOR_TYPES } from "../timebased-query-editor/reducer";
 
+import { nodeIsConceptQueryNode } from "./node";
+
 function isTimebasedQuery(node: PreviousQueryQueryNodeType) {
   const queryString = JSON.stringify(node.query);
 
@@ -21,7 +23,8 @@ function isExternalQuery(node: PreviousQueryQueryNodeType) {
 }
 
 export function isQueryExpandable(node: StandardQueryNodeT) {
-  if (!node.isPreviousQuery || !node.query || !node.canExpand) return false;
+  if (nodeIsConceptQueryNode(node) || !node.query || !node.canExpand)
+    return false;
 
   return !isTimebasedQuery(node) && !isExternalQuery(node);
 }

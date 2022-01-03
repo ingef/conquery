@@ -14,6 +14,7 @@ import type {
   BigMultiSelectFilterT,
   InfoT,
 } from "../api/types";
+import { DNDType } from "../common/constants/dndTypes";
 
 export interface InfoType {
   key: string;
@@ -55,54 +56,21 @@ export interface TableWithFilterValueT
   dateColumn?: SelectedDateColumnT;
 }
 
-export interface DragItemQuery {
-  // drag info;
-  type: "PREVIOUS_QUERY" | "PREVIOUS_SECONDARY_ID_QUERY";
+export interface DragContext {
   width: number;
   height: number;
-
-  id: QueryIdT;
-  label: string;
-  excludeTimestamps?: boolean;
-
-  loading?: boolean;
-  error?: string;
-
-  files?: void;
-  isPreviousQuery: boolean; // true
-
-  canExpand?: boolean;
-
-  secondaryId?: string | null;
-  availableSecondaryIds?: string[];
-  excludeFromSecondaryId?: boolean;
-  tags: string[];
-
-  own?: boolean;
-  shared?: boolean;
+  movedFromAndIdx?: number;
+  movedFromOrIdx?: number;
 }
 
-// ------------------
-// A Query Node that is being dragged around within the standard editor.
-interface DragItemNodeConcept extends Omit<DragItemConceptTreeNode, "type"> {
-  type: "QUERY_NODE";
-  moved: true;
-  andIdx: number;
-  orIdx: number;
+export interface DragItemQuery extends PreviousQueryQueryNodeType {
+  dragContext: DragContext;
+  type: DNDType.PREVIOUS_QUERY | DNDType.PREVIOUS_SECONDARY_ID_QUERY;
 }
-interface DragItemNodeQuery extends Omit<DragItemQuery, "type"> {
-  type: "QUERY_NODE";
-  moved: true;
-  andIdx: number;
-  orIdx: number;
-}
-export type DragItemNode = DragItemNodeConcept | DragItemNodeQuery;
-// ------------------
 
 export interface DragItemConceptTreeNode extends ConceptQueryNodeType {
-  type: "CONCEPT_TREE_NODE";
-  height: number;
-  width: number;
+  dragContext: DragContext;
+  type: DNDType.CONCEPT_TREE_NODE;
 }
 
 export interface ConceptQueryNodeType {
@@ -121,8 +89,6 @@ export interface ConceptQueryNodeType {
   excludeFromSecondaryId?: boolean;
   loading?: boolean;
   error?: string;
-
-  isPreviousQuery?: false;
 }
 
 export interface PreviousQueryQueryNodeType {
@@ -131,19 +97,20 @@ export interface PreviousQueryQueryNodeType {
   canExpand?: boolean;
   secondaryId?: string | null;
   availableSecondaryIds?: string[];
+  files?: void;
+
+  own?: boolean;
+  shared?: boolean;
 
   label: string;
   excludeTimestamps?: boolean;
   excludeFromSecondaryId?: boolean;
   loading?: boolean;
   error?: string;
-
-  isPreviousQuery: true;
+  tags: string[];
 }
 
-export type StandardQueryNodeT =
-  | ConceptQueryNodeType
-  | PreviousQueryQueryNodeType;
+export type StandardQueryNodeT = DragItemConceptTreeNode | DragItemQuery;
 
 export interface QueryGroupType {
   elements: StandardQueryNodeT[];

@@ -11,7 +11,7 @@ import {
   usePostFormConfig,
 } from "../api/api";
 import IconButton from "../button/IconButton";
-import { FORM_CONFIG } from "../common/constants/dndTypes";
+import { DNDType } from "../common/constants/dndTypes";
 import { usePrevious } from "../common/helpers/usePrevious";
 import { useDatasetId } from "../dataset/selectors";
 import FaIcon from "../icon/FaIcon";
@@ -77,6 +77,8 @@ const LoadingText = styled("p")`
 const SxFaIcon = styled(FaIcon)`
   margin-right: 5px;
 `;
+
+const DROP_TYPES = [DNDType.FORM_CONFIG];
 
 const hasChanged = (a: any, b: any) => {
   return JSON.stringify(a) !== JSON.stringify(b);
@@ -211,7 +213,7 @@ const FormConfigSaver: FC = () => {
     <Root>
       <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemFormConfig>>> */
         onDrop={(item) => onLoad(item as DragItemFormConfig)}
-        acceptedDropTypes={[FORM_CONFIG]}
+        acceptedDropTypes={DROP_TYPES}
       >
         {() => (
           <SpacedRow>

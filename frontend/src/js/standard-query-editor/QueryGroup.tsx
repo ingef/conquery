@@ -1,20 +1,14 @@
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 
-import { DateRangeT } from "../api/types";
+import { DateRangeT, QueryT } from "../api/types";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryGroupActions from "./QueryGroupActions";
 import QueryNode from "./QueryNode";
-import type {
-  DragItemConceptTreeNode,
-  DragItemNode,
-  DragItemQuery,
-  PreviousQueryQueryNodeType,
-  QueryGroupType,
-} from "./types";
+import type { QueryGroupType, StandardQueryNodeT } from "./types";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -56,14 +50,12 @@ const isDateActive = (dateRange?: DateRangeT) => {
 interface PropsT {
   group: QueryGroupType;
   andIdx: number;
-  onDropNode: (
-    node: DragItemQuery | DragItemNode | DragItemConceptTreeNode,
-  ) => void;
+  onDropNode: (node: StandardQueryNodeT) => void;
   onDropFile: (file: File) => void;
   onDeleteNode: (idx: number) => void;
   onEditClick: (orIdx: number) => void;
   onExcludeClick: () => void;
-  onExpandClick: (q: PreviousQueryQueryNodeType) => void;
+  onExpandClick: (q: QueryT) => void;
   onDateClick: () => void;
   onDeleteGroup: () => void;
   onLoadPreviousQuery: (id: PreviousQueryIdT) => void;

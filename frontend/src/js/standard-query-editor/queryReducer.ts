@@ -16,6 +16,7 @@ import type {
   SelectOptionT,
 } from "../api/types";
 import { Action } from "../app/actions";
+import { DNDType } from "../common/constants/dndTypes";
 import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
@@ -31,6 +32,7 @@ import {
 } from "../query-group-modal/actions";
 import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
 import { acceptQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
+import { isMovedObject } from "../ui-components/Dropzone";
 
 import {
   dropAndNode,
@@ -58,25 +60,19 @@ import {
 } from "./actions";
 import type {
   StandardQueryNodeT,
-  DragItemQuery,
   QueryGroupType,
-  DragItemNode,
   DragItemConceptTreeNode,
   FilterWithValueType,
-  PreviousQueryQueryNodeType,
+  DragItemQuery,
 } from "./types";
 
 export type StandardQueryStateT = QueryGroupType[];
 
 const initialState: StandardQueryStateT = [];
 
-const filterItem = (
-  item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
-): StandardQueryNodeT => {
-  // This sort of mapping might be a problem when adding new optional properties to
-  // either Nodes or Queries: Flow won't complain when we omit those optional
-  // properties here. But we can't use a spread operator either...
+const filterItem = (item: StandardQueryNodeT): StandardQueryNodeT => {
   const baseItem = {
+    dragContext: item.dragContext,
     label: item.label,
     excludeTimestamps: item.excludeTimestamps,
     excludeFromSecondaryId: item.excludeFromSecondaryId,
@@ -84,34 +80,35 @@ const filterItem = (
     error: item.error,
   };
 
-  if (item.isPreviousQuery) {
-    return {
-      ...baseItem,
+  switch (item.type) {
+    case DNDType.PREVIOUS_QUERY:
+    case DNDType.PREVIOUS_SECONDARY_ID_QUERY:
+      return {
+        ...baseItem,
+        type: item.type,
 
-      id: item.id,
-      // eslint-disable-next-line no-use-before-define
-      query: item.query,
-      isPreviousQuery: item.isPreviousQuery,
-      canExpand: item.canExpand,
-      availableSecondaryIds: item.availableSecondaryIds,
-    };
-  } else {
-    return {
-      ...baseItem,
+        id: item.id,
+        query: item.query,
+        tags: item.tags,
+        canExpand: item.canExpand,
+        availableSecondaryIds: item.availableSecondaryIds,
+      };
+    case DNDType.CONCEPT_TREE_NODE:
+      return {
+        ...baseItem,
+        type: item.type,
 
-      ids: item.ids,
-      description: item.description,
-      tables: item.tables,
-      selects: item.selects,
-      tree: item.tree,
+        ids: item.ids,
+        description: item.description,
+        tables: item.tables,
+        selects: item.selects,
+        tree: item.tree,
 
-      additionalInfos: item.additionalInfos,
-      matchingEntries: item.matchingEntries,
-      matchingEntities: item.matchingEntities,
-      dateRange: item.dateRange,
-
-      isPreviousQuery: item.isPreviousQuery,
-    };
+        additionalInfos: item.additionalInfos,
+        matchingEntries: item.matchingEntries,
+        matchingEntities: item.matchingEntities,
+        dateRange: item.dateRange,
+      };
   }
 };
 
@@ -165,10 +162,10 @@ const onDropAndNode = (
     },
   ];
 
-  return item.type === "QUERY_NODE" && item.moved
+  return isMovedObject(item)
     ? onDeleteNode(nextState, {
-        andIdx: item.andIdx,
-        orIdx: item.orIdx,
+        andIdx: item.dragContext.movedFromAndIdx,
+        orIdx: item.dragContext.movedFromOrIdx,
       })
     : nextState;
 };
@@ -186,15 +183,17 @@ const onDropOrNode = (
     ...state.slice(andIdx + 1),
   ];
 
-  return item.type === "QUERY_NODE" && item.moved
-    ? item.andIdx === andIdx
+  const { movedFromAndIdx, movedFromOrIdx } = item.dragContext;
+
+  return exists(movedFromAndIdx) && exists(movedFromOrIdx)
+    ? movedFromAndIdx === movedFromOrIdx
       ? onDeleteNode(nextState, {
-          andIdx: item.andIdx,
-          orIdx: item.orIdx + 1,
+          andIdx: movedFromAndIdx,
+          orIdx: movedFromOrIdx + 1,
         })
       : onDeleteNode(nextState, {
-          andIdx: item.andIdx,
-          orIdx: item.orIdx,
+          andIdx: movedFromAndIdx,
+          orIdx: movedFromOrIdx,
         })
     : nextState;
 };
@@ -662,7 +661,6 @@ const expandNode = (
       return {
         ...node,
         id: node.query,
-        isPreviousQuery: true,
       };
     case "DATE_RESTRICTION":
       return {
@@ -725,9 +723,13 @@ const findPreviousQueries = (state: StandardQueryStateT, queryId: string) => {
   return state.flatMap((group, andIdx) => {
     return group.elements
       .map((concept, orIdx) => [concept, orIdx] as [StandardQueryNodeT, number])
-      .filter((item): item is [PreviousQueryQueryNodeType, number] => {
+      .filter((item): item is [DragItemQuery, number] => {
         const [concept] = item;
-        return !!concept.isPreviousQuery && concept.id === queryId;
+        return (
+          (concept.type === DNDType.PREVIOUS_QUERY ||
+            concept.type === DNDType.PREVIOUS_SECONDARY_ID_QUERY) &&
+          concept.id === queryId
+        );
       })
       .map(([concept, orIdx]) => ({
         andIdx,
@@ -740,7 +742,7 @@ const findPreviousQueries = (state: StandardQueryStateT, queryId: string) => {
 const updatePreviousQueries = (
   state: StandardQueryStateT,
   action: { payload: { queryId: string } },
-  attributes: Partial<PreviousQueryQueryNodeType>,
+  attributes: Partial<DragItemQuery>,
 ) => {
   const queries = findPreviousQueries(state, action.payload.queryId);
 
@@ -854,9 +856,11 @@ const createQueryNodeFromConceptListUploadResult = (
 
   return lookupResult
     ? {
-        type: "CONCEPT_TREE_NODE",
-        height: 0,
-        width: 0,
+        type: DNDType.CONCEPT_TREE_NODE,
+        dragContext: {
+          height: 0,
+          width: 0,
+        },
         label,
         ids: resolvedConcepts,
         tables: lookupResult.tables,

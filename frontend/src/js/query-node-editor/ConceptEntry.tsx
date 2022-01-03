@@ -40,7 +40,7 @@ const SxIconButton = styled(IconButton)`
 `;
 
 interface Props {
-  node: ConceptT;
+  node: ConceptT | null;
   conceptId: ConceptIdT;
   canRemoveConcepts?: boolean;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
@@ -54,33 +54,39 @@ const ConceptEntry = ({
 }: Props) => {
   const { t } = useTranslation();
 
-  return (
-    <AdditionalInfoHoverable node={node}>
-      <Concept>
-        <ConceptContainer>
-          {!node ? (
-            <NotFound>{t("queryNodeEditor.nodeNotFound")}</NotFound>
-          ) : (
-            <>
-              <ConceptEntryHeadline>{node.label}</ConceptEntryHeadline>
-              {node.description && (
-                <ConceptEntryDescription>
-                  {node.description}
-                </ConceptEntryDescription>
-              )}
-            </>
-          )}
-        </ConceptContainer>
-        {canRemoveConcepts && (
-          <SxIconButton
-            onClick={() => onRemoveConcept(conceptId)}
-            tiny
-            regular
-            icon="trash-alt"
-          />
+  const ConceptEntryRoot = (
+    <Concept>
+      <ConceptContainer>
+        {!node ? (
+          <NotFound>{t("queryNodeEditor.nodeNotFound")}</NotFound>
+        ) : (
+          <>
+            <ConceptEntryHeadline>{node.label}</ConceptEntryHeadline>
+            {node.description && (
+              <ConceptEntryDescription>
+                {node.description}
+              </ConceptEntryDescription>
+            )}
+          </>
         )}
-      </Concept>
+      </ConceptContainer>
+      {canRemoveConcepts && (
+        <SxIconButton
+          onClick={() => onRemoveConcept(conceptId)}
+          tiny
+          regular
+          icon="trash-alt"
+        />
+      )}
+    </Concept>
+  );
+
+  return node ? (
+    <AdditionalInfoHoverable node={node}>
+      {ConceptEntryRoot}
     </AdditionalInfoHoverable>
+  ) : (
+    ConceptEntryRoot
   );
 };
 

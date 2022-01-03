@@ -21,11 +21,7 @@ import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
 
 import { StandardQueryStateT } from "./queryReducer";
-import type {
-  DragItemConceptTreeNode,
-  DragItemNode,
-  DragItemQuery,
-} from "./types";
+import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
 export type StandardQueryEditorActions = ActionType<
   | typeof resetTable
@@ -54,11 +50,11 @@ export type StandardQueryEditorActions = ActionType<
 >;
 
 export const dropAndNode = createAction("query-editor/DROP_AND_NODE")<{
-  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode;
+  item: DragItemConceptTreeNode | DragItemQuery;
 }>();
 
 export const dropOrNode = createAction("query-editor/DROP_OR_NODE")<{
-  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode;
+  item: DragItemConceptTreeNode | DragItemQuery;
   andIdx: number;
 }>();
 

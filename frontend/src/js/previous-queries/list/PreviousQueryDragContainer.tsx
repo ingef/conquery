@@ -3,10 +3,7 @@ import { useDrag } from "react-dnd";
 
 import { DatasetIdT } from "../../api/types";
 import { getWidthAndHeight } from "../../app/DndProvider";
-import {
-  PREVIOUS_QUERY,
-  PREVIOUS_SECONDARY_ID_QUERY,
-} from "../../common/constants/dndTypes";
+import { DNDType } from "../../common/constants/dndTypes";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 
 import PreviousQuery from "./PreviousQuery";
@@ -24,16 +21,17 @@ const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const dragType =
     query.queryType === "CONCEPT_QUERY"
-      ? PREVIOUS_QUERY
-      : PREVIOUS_SECONDARY_ID_QUERY;
+      ? DNDType.PREVIOUS_QUERY
+      : DNDType.PREVIOUS_SECONDARY_ID_QUERY;
 
   const item: DragItemQuery = {
-    width: 0,
-    height: 0,
+    dragContext: {
+      width: 0,
+      height: 0,
+    },
     type: dragType,
     id: query.id,
     label: query.label,
-    isPreviousQuery: true,
     canExpand: query.canExpand,
     tags: query.tags,
     own: query.own,

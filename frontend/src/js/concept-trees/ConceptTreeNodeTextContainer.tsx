@@ -3,7 +3,7 @@ import { useDrag } from "react-dnd";
 
 import type { ConceptT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
-import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";
+import { DNDType } from "../common/constants/dndTypes";
 import { isEmpty } from "../common/helpers";
 import type {
   ConceptQueryNodeType,
@@ -51,9 +51,11 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   const hasChildren = !!node.children && node.children.length > 0;
 
   const item: DragItemConceptTreeNode = {
-    height: 0,
-    width: 0,
-    type: CONCEPT_TREE_NODE,
+    dragContext: {
+      height: 0,
+      width: 0,
+    },
+    type: DNDType.CONCEPT_TREE_NODE,
     ...createQueryElement(),
   };
   const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({

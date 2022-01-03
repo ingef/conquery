@@ -59,6 +59,10 @@ export interface TimebasedQueryStateT {
   conditions: TimebasedConditionT[];
 }
 
+export interface ValidatedTimebasedQueryStateT extends TimebasedQueryStateT {
+  conditions: ValidatedTimebasedConditionT[];
+}
+
 const getEmptyNode = () => ({
   operator: "BEFORE" as const,
   result0: null,

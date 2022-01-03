@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import type { DatasetIdT } from "../api/types";
+import type { DatasetIdT, QueryT } from "../api/types";
 import { getUniqueFileRows } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { TreesT } from "../concept-trees/reducer";
@@ -33,7 +33,6 @@ import {
 import type { StandardQueryStateT } from "./queryReducer";
 import type {
   DragItemConceptTreeNode,
-  DragItemNode,
   DragItemQuery,
   PreviousQueryQueryNodeType,
 } from "./types";
@@ -94,9 +93,8 @@ const Query = ({
   const loadQuery = useLoadQuery();
   const expandPreviousQuery = useExpandPreviousQuery();
 
-  const onDropAndNode = (
-    item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
-  ) => dispatch(dropAndNode({ item }));
+  const onDropAndNode = (item: DragItemQuery | DragItemConceptTreeNode) =>
+    dispatch(dropAndNode({ item }));
   const onDropConceptListFile = async (file: File, andIdx: number | null) => {
     // Need to wait until file is processed.
     // Because if file is empty, modal would close automatically
@@ -107,7 +105,7 @@ const Query = ({
     return dispatch(openQueryUploadConceptListModal({ andIdx }));
   };
   const onDropOrNode = (
-    item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
+    item: DragItemQuery | DragItemConceptTreeNode,
     andIdx: number,
   ) => dispatch(dropOrNode({ item, andIdx }));
   const onDeleteNode = (andIdx: number, orIdx: number) =>
@@ -125,8 +123,7 @@ const Query = ({
     }
   };
 
-  const [queryToExpand, setQueryToExpand] =
-    useState<PreviousQueryQueryNodeType | null>(null);
+  const [queryToExpand, setQueryToExpand] = useState<QueryT | null>(null);
 
   const [queryGroupModalAndIx, setQueryGroupModalAndIdx] = useState<
     number | null
@@ -136,7 +133,7 @@ const Query = ({
     return null;
   }
 
-  const onExpandPreviousQuery = (q: PreviousQueryQueryNodeType) => {
+  const onExpandPreviousQuery = (q: QueryT) => {
     if (isQueryWithSingleElement) {
       expandPreviousQuery(datasetId, rootConcepts, q);
     } else {

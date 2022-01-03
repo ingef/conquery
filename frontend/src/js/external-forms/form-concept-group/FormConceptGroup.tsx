@@ -10,10 +10,7 @@ import {
   SelectorResultType,
 } from "../../api/types";
 import { TransparentButton } from "../../button/TransparentButton";
-import {
-  CONCEPT_TREE_NODE,
-  FORM_CONCEPT_NODE,
-} from "../../common/constants/dndTypes";
+import { DNDType } from "../../common/constants/dndTypes";
 import { getUniqueFileRows } from "../../common/helpers";
 import { compose, includes } from "../../common/helpers/commonHelper";
 import { exists } from "../../common/helpers/exists";
@@ -38,6 +35,7 @@ import type {
   FilterWithValueType,
   TableWithFilterValueT,
 } from "../../standard-query-editor/types";
+import { isMovedObject } from "../../ui-components/Dropzone";
 import DropzoneWithFileInput, {
   DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
@@ -63,10 +61,10 @@ import {
 } from "../transformers";
 
 import FormConceptCopyModal from "./FormConceptCopyModal";
-import FormConceptNode, { DragItemFormConceptNode } from "./FormConceptNode";
+import FormConceptNode from "./FormConceptNode";
 
 export interface FormConceptGroupT {
-  concepts: (ConceptQueryNodeType | null)[];
+  concepts: (DragItemConceptTreeNode | null)[];
   connector: string;
 }
 
@@ -660,6 +658,8 @@ export interface EditedFormQueryNodePosition {
   conceptIdx: number;
 }
 
+const DROP_TYPES = [DNDType.CONCEPT_TREE_NODE];
+
 const FormConceptGroup = (props: Props) => {
   const { t } = useTranslation();
   const newValue = props.newValue;
@@ -706,7 +706,7 @@ const FormConceptGroup = (props: Props) => {
 
   return (
     <div>
-      <DropzoneList /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType | DragItemFormConceptNode> */
+      <DropzoneList /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType> */
         tooltip={props.tooltip}
         optional={props.optional}
         label={
@@ -722,35 +722,30 @@ const FormConceptGroup = (props: Props) => {
             )}
           </>
         }
-        dropzoneChildren={({ isOver, itemType }) =>
-          isOver && itemType === FORM_CONCEPT_NODE
+        dropzoneChildren={({ isOver, item }) =>
+          isOver && isMovedObject(item)
             ? t("externalForms.common.concept.copying")
             : props.attributeDropzoneText
         }
-        acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
+        acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
         disallowMultipleColumns={props.disallowMultipleColumns}
         onDelete={(i) => props.onChange(removeValue(props.value, i))}
         onDropFile={(file) =>
           onDropFile(file, { valueIdx: props.value.length })
         }
-        onDrop={(
-          item:
-            | DragItemFile
-            | DragItemConceptTreeNode
-            | DragItemFormConceptNode,
-        ) => {
+        onDrop={(item: DragItemFile | DragItemConceptTreeNode) => {
           if (item.type === "__NATIVE_FILE__") {
             onDropFile(item.files[0], { valueIdx: props.value.length });
 
             return;
           }
 
-          if (item.type === FORM_CONCEPT_NODE) {
+          if (isMovedObject(item)) {
             return props.onChange(
               addConcept(
                 addValue(props.value, newValue),
                 props.value.length,
-                copyConcept(item.conceptNode),
+                copyConcept(item),
               ),
             );
           }
@@ -842,17 +837,12 @@ const FormConceptGroup = (props: Props) => {
                     }}
                   />
                 ) : (
-                  <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType | DragItemFormConceptNode> */
-                    acceptedDropTypes={[CONCEPT_TREE_NODE, FORM_CONCEPT_NODE]}
+                  <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType> */
+                    acceptedDropTypes={DROP_TYPES}
                     onSelectFile={(file) =>
                       onDropFile(file, { valueIdx: i, conceptIdx: j })
                     }
-                    onDrop={(
-                      item:
-                        | DragItemConceptTreeNode
-                        | DragItemFormConceptNode
-                        | DragItemFile,
-                    ) => {
+                    onDrop={(item: DragItemConceptTreeNode | DragItemFile) => {
                       if (item.type === "__NATIVE_FILE__") {
                         onDropFile(item.files[0], {
                           valueIdx: i,
@@ -862,14 +852,9 @@ const FormConceptGroup = (props: Props) => {
                         return;
                       }
 
-                      if (item.type === FORM_CONCEPT_NODE) {
+                      if (isMovedObject(item)) {
                         return props.onChange(
-                          setConcept(
-                            props.value,
-                            i,
-                            j,
-                            copyConcept(item.conceptNode),
-                          ),
+                          setConcept(props.value, i, j, copyConcept(item)),
                         );
                       }
 
@@ -886,8 +871,8 @@ const FormConceptGroup = (props: Props) => {
                       );
                     }}
                   >
-                    {({ isOver, itemType }) =>
-                      isOver && itemType === FORM_CONCEPT_NODE
+                    {({ isOver, item }) =>
+                      isOver && isMovedObject(item)
                         ? t("externalForms.common.concept.copying")
                         : props.conceptDropzoneText
                     }
