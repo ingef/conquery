@@ -1,6 +1,7 @@
 import type { DatasetActions } from "../dataset/actions";
 import type { ExternalFormActions } from "../external-forms/actions";
 import type { PaneActions } from "../pane/actions";
+import type { PreviewActions } from "../preview/actions";
 import type { PreviousQueriesFilterActions } from "../previous-queries/filter/actions";
 import type { FolderFilterActions } from "../previous-queries/folderFilter/actions";
 import type { PreviousQueryListActions } from "../previous-queries/list/actions";
@@ -34,4 +35,5 @@ export type Action =
   | ExternalFormActions
   | QueryRunnerActions
   | PaneActions
-  | DatasetActions;
+  | DatasetActions
+  | PreviewActions;

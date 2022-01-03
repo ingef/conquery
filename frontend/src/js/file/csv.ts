@@ -19,9 +19,9 @@ export function parseCSV(file: File, delimiter?: string) {
 
 export function loadCSV(
   url: string,
-): Promise<{ result: ParseResult<unknown>; file?: File }> {
+): Promise<{ result: ParseResult<string[]>; file?: File }> {
   return new Promise((resolve) => {
-    Papa.parse(url, {
+    Papa.parse<string[]>(url, {
       download: true,
       delimiter: ";",
       skipEmptyLines: true,
