@@ -151,7 +151,7 @@ public abstract class FilterValue<S_VALUE,F_VALUE> {
 	public static class PostalCodeFilter extends FilterValue<PostalCodeSearchEntity, String[]> {
 
 		@JacksonInject
-		PostalCodesManager postalCodesManager;
+		private PostalCodesManager postalCodesManager;
 
 		/**
 		 * Prepared value on Manager, that is transferred to the shard and can be feed in to the filter.
