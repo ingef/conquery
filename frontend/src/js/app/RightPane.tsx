@@ -29,7 +29,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
   );
 
   useEffect(() => {
-    dispatch(clickPaneTab("right", tabs[0].key));
+    dispatch(clickPaneTab({ paneType: "right", tab: tabs[0].key }));
   }, [dispatch, tabs]);
 
   return (
