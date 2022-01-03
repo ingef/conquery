@@ -4,6 +4,7 @@ import type { FolderFilterActions } from "../previous-queries/folderFilter/actio
 import type { PreviousQueryListActions } from "../previous-queries/list/actions";
 import type { QueriesSearchActions } from "../previous-queries/search/actions";
 import type { QueryGroupModalActions } from "../query-group-modal/actions";
+import type { QueryRunnerActions } from "../query-runner/actions";
 import type { QueryUploadConceptListModalActions } from "../query-upload-concept-list-modal/actions";
 import type { SnackMessageActions } from "../snack-message/actions";
 import type { StandardQueryEditorActions } from "../standard-query-editor/actions";
@@ -28,4 +29,5 @@ export type Action =
   | TimebasedActions
   | StartupActions
   | TooltipActions
-  | ExternalFormActions;
+  | ExternalFormActions
+  | QueryRunnerActions;
