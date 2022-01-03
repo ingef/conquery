@@ -168,6 +168,7 @@ public abstract class FilterValue<S_VALUE,F_VALUE> {
 		public void resolve(QueryResolveContext context) {
 			Preconditions.checkNotNull(postalCodesManager);
 			final PostalCodeSearchEntity value = getValue();
+			
 			transferValue = postalCodesManager.filterAllNeighbours(Integer.parseInt(value.getPlz()), value.getRadius());
 		}
 	}
