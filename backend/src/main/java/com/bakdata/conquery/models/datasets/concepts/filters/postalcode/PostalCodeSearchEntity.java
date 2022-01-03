@@ -16,7 +16,6 @@ public class PostalCodeSearchEntity {
 	private String plz;
 
 	@Min(0)
-	@NotNull
 	private double radius;
 
 }
