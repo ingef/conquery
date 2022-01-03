@@ -3,7 +3,6 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 import java.math.BigDecimal;
 
 import javax.annotation.Nonnull;
-import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -18,13 +17,11 @@ import com.bakdata.conquery.models.datasets.concepts.filters.postalcode.PostalCo
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -75,7 +72,7 @@ public abstract class FilterValue<S_VALUE,F_VALUE> {
 		}
 
 
-		public void resolve(QueryResolveContext context){};
+		public void resolve(QueryResolveContext context){}
 
 	}
 
@@ -154,14 +151,14 @@ public abstract class FilterValue<S_VALUE,F_VALUE> {
 		private PostalCodesManager postalCodesManager;
 
 		/**
-		 * Prepared value on Manager, that is transferred to the shard and can be feed in to the filter.
+		 * Resolved value on Manager, that is transferred to the shard and can be feed in to the filter.
 		 */
 		@InternalOnly
-		private String[] transferValue;
+		private String[] resolvedValue;
 
 		@Override
 		public FilterNode<?> createNode() {
-			return getFilter().createFilterNode(transferValue);
+			return getFilter().createFilterNode(resolvedValue);
 		}
 
 		@Override
@@ -169,7 +166,7 @@ public abstract class FilterValue<S_VALUE,F_VALUE> {
 			Preconditions.checkNotNull(postalCodesManager);
 			final PostalCodeSearchEntity value = getValue();
 			
-			transferValue = postalCodesManager.filterAllNeighbours(Integer.parseInt(value.getPlz()), value.getRadius());
+			resolvedValue = postalCodesManager.filterAllNeighbours(Integer.parseInt(value.getPlz()), value.getRadius());
 		}
 	}
 }

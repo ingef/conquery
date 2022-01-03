@@ -61,8 +61,7 @@ public class PostalCodesManager implements Injectable {
 	public String[] filterAllNeighbours(int plz, double radius) {
 		final List<String> foundPLZ = new ArrayList<>();
 		foundPLZ.add(StringUtils.leftPad(Integer.toString(plz), 5, '0'));
-		if (radius != 0) {
-			foundPLZ.addAll(data.stream()
+			data.stream()
 								// This works because data is already sorted
 								.takeWhile(postalCodeDistance -> postalCodeDistance.getDistanceInKm() <= radius)
 								.filter(postalCodeDistance -> postalCodeDistance.getLeft() == plz || postalCodeDistance.getRight() == plz)
@@ -76,7 +75,6 @@ public class PostalCodesManager implements Injectable {
 								})
 								.map(other -> StringUtils.leftPad(Integer.toString(other), 5, '0'))
 								.forEach(foundPLZ::add);
-		}
 		return foundPLZ.toArray(String[]::new);
 	}
 

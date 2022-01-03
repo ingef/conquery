@@ -12,6 +12,11 @@ import com.univocity.parsers.common.processor.AbstractRowProcessor;
 import it.unimi.dsi.fastutil.ints.IntIntImmutableSortedPair;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This class processes the abstraction of all postal code data from a csv file
+ * The file should have at least the columns <b>plz1</b>, <b>plz2</b> and <b>Distanz_convert_in_km</b>
+ * The loaded data will be parsed into a list of {@link PostalCodeDistance} containing unique and distinct pairs of (plz1,plz2)
+ */
 @Slf4j
 public class PostalCodeProcessor extends AbstractRowProcessor {
 	private int plz1Index, plz2Index, distanceIndex;
