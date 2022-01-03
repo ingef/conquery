@@ -1,3 +1,4 @@
+import type { DatasetActions } from "../dataset/actions";
 import type { ExternalFormActions } from "../external-forms/actions";
 import type { PaneActions } from "../pane/actions";
 import type { PreviousQueriesFilterActions } from "../previous-queries/filter/actions";
@@ -32,4 +33,5 @@ export type Action =
   | TooltipActions
   | ExternalFormActions
   | QueryRunnerActions
-  | PaneActions;
+  | PaneActions
+  | DatasetActions;

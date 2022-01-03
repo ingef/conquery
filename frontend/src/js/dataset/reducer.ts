@@ -1,13 +1,10 @@
+import { getType } from "typesafe-actions";
+
 import type { DatasetIdT } from "../api/types";
+import type { Action } from "../app/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
-import {
-  LOAD_DATASETS_START,
-  LOAD_DATASETS_SUCCESS,
-  LOAD_DATASETS_ERROR,
-  SELECT_DATASET,
-  SAVE_QUERY,
-} from "./actionTypes";
+import { loadDatasets, selectDatasetInput, saveQuery } from "./actions";
 
 export type DatasetT = {
   id: DatasetIdT;
@@ -31,7 +28,7 @@ const initialState: DatasetStateT = {
   selectedDatasetId: null,
 };
 
-const saveQuery = (
+const saveQueryInDataset = (
   state: DatasetStateT,
   action: {
     payload: {
@@ -68,25 +65,36 @@ const saveQuery = (
 
 const datasets = (
   state: DatasetStateT = initialState,
-  action: any,
+  action: Action,
 ): DatasetStateT => {
   switch (action.type) {
-    case LOAD_DATASETS_START:
+    case getType(loadDatasets.request):
       return { ...state, loading: true, pristine: false };
-    case LOAD_DATASETS_SUCCESS:
-      const { data } = action.payload;
-      const selectedDatasetId = data && data.length > 0 ? data[0].id : null;
+    case getType(loadDatasets.success):
+      const { datasets } = action.payload;
+      const selectedDatasetId =
+        datasets && datasets.length > 0 ? datasets[0].id : null;
 
-      return { ...state, loading: false, error: null, data, selectedDatasetId };
-    case LOAD_DATASETS_ERROR:
-      return { ...state, loading: false, error: action.payload.message };
-    case SELECT_DATASET:
+      return {
+        ...state,
+        loading: false,
+        error: null,
+        data: datasets,
+        selectedDatasetId,
+      };
+    case getType(loadDatasets.failure):
+      return {
+        ...state,
+        loading: false,
+        error: action.payload.message || null,
+      };
+    case getType(selectDatasetInput):
       return {
         ...state,
         selectedDatasetId: action.payload.id,
       };
-    case SAVE_QUERY:
-      return saveQuery(state, action);
+    case getType(saveQuery):
+      return saveQueryInDataset(state, action);
     default:
       return state;
   }
