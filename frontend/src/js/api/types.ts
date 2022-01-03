@@ -232,6 +232,13 @@ interface BaseQueryT {
   type: "CONCEPT_QUERY";
 }
 
+export interface ExternalResolvedQueryT extends BaseQueryT {
+  // TODO: Add whatever other fields are here
+  root: {
+    type: "EXTERNAL_RESOLVED";
+  };
+}
+
 export interface AndQueryT extends BaseQueryT {
   secondaryId?: string;
   root: AndNodeT;
@@ -242,7 +249,11 @@ export interface NegationQueryT extends BaseQueryT {
 export interface DateRestrictionQueryT extends BaseQueryT {
   root: DateRestrictionNodeT;
 }
-export type QueryT = AndQueryT | NegationQueryT | DateRestrictionQueryT;
+export type QueryT =
+  | AndQueryT
+  | NegationQueryT
+  | DateRestrictionQueryT
+  | ExternalResolvedQueryT;
 export type QueryNodeT =
   | AndNodeT
   | NegationNodeT
