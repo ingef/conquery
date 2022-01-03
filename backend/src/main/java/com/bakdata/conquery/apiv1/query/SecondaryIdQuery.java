@@ -12,7 +12,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -112,7 +111,7 @@ public class SecondaryIdQuery extends Query {
 				final Table table = connector.getConnector().getTable();
 				final Column secondaryIdColumn = findSecondaryIdColumn(table);
 
-				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryIdQuery()) {
+				if (secondaryIdColumn != null && !concept.isExcludeFromSecondaryId()) {
 					withSecondaryId.add(secondaryIdColumn);
 				}
 				else {

@@ -7,11 +7,13 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import lombok.ToString;
 
 
 /**
  * Aggregator counting the number of occurrences of a selected value in a column.
  */
+@ToString(callSuper = true, of = {"selected"})
 public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	private final String selected;

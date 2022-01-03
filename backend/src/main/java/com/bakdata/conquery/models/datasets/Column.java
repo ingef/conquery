@@ -1,12 +1,10 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -29,7 +27,6 @@ import org.apache.commons.lang3.ArrayUtils;
 
 @Getter
 @Setter
-@ToString
 public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId> {
 
 	public static final int UNKNOWN_POSITION = -1;
@@ -67,12 +64,15 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable().getId(), getTable().getId()));
 		}
 
-		return Objects.requireNonNull(imp.getColumns()[getPosition()].getTypeDescription(), () -> "No description for Column/Import " + getId() + "/" + imp.getId());
+		return Objects.requireNonNull(
+				imp.getColumns()[getPosition()].getTypeDescription(),
+				() -> String.format("No description for Column/Import %s/%s", getId(), imp.getId())
+		);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("Column[%s](type = %s)", getId(), getType());
+		return "Column(id = " + getId() + ", type = " + getType() + ")";
 	}
 
 	@ValidationMethod(message = "Only STRING columns can be part of shared Dictionaries.")
@@ -92,13 +92,14 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 * Because Imports are bound to a {@link com.bakdata.conquery.models.worker.Namespace} but the {@link com.bakdata.conquery.models.preproc.Preprocessed} files are not
 	 * they contain dummy-{@link NsIdRef}. These References are mapped to actual object with valid ids through this
 	 * generated mapping.
-	 *
+	 * <p>
 	 * In this method for shared dictionaries, it is ensured, that the shared dictionary exists in the storage and it is
 	 * created if not.
-	 * @param dicts The mapping of column names in the Import to dictionaries in the Import
-	 * @param storage The {@link NamespaceStorage} that backs the dictionaries
-	 * @param out The collection for the generated replacement, that are needed during the deserialization of the next
-	 *            part of the {@link com.bakdata.conquery.models.preproc.Preprocessed}-file
+	 *
+	 * @param dicts                 The mapping of column names in the Import to dictionaries in the Import
+	 * @param storage               The {@link NamespaceStorage} that backs the dictionaries
+	 * @param out                   The collection for the generated replacement, that are needed during the deserialization of the next
+	 *                              part of the {@link com.bakdata.conquery.models.preproc.Preprocessed}-file
 	 * @param sharedDictionaryLocks A collection of locks used for the synchronized creation of shared dictionaries.
 	 */
 	public void createSharedDictionaryReplacement(Map<String, Dictionary> dicts, NamespaceStorage storage, Map<DictionaryId, Dictionary> out, IdMutex<DictionaryId> sharedDictionaryLocks) {
@@ -110,7 +111,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 		Dictionary sharedDict = null;
 		final DictionaryId sharedDictId = new DictionaryId(table.getDataset().getId(), getSharedDictionary());
 
-		try(IdMutex.Locked lock = sharedDictionaryLocks.acquire(sharedDictId)) {
+		try (IdMutex.Locked lock = sharedDictionaryLocks.acquire(sharedDictId)) {
 			sharedDict = storage.getDictionary(sharedDictId);
 			// Create dictionary if not yet present
 			if (sharedDict == null) {

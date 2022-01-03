@@ -106,6 +106,7 @@ export interface TableT {
   connectorId: string; // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string;
   exclude?: boolean;
+  default?: boolean; // not excluded by default
   filters?: FilterT[]; // Empty array: key not defined
   selects?: SelectorT[]; // Empty array: key not defined
   supportedSecondaryIds?: string[];
@@ -117,7 +118,11 @@ export type SelectorResultDataType =
   | "MONEY"
   | "BOOLEAN"
   | "STRING"
-  | "LIST";
+  | "LIST"
+  | "CATEGORICAL"
+  | "DATE"
+  | "DATE_RANGE";
+
 export interface SelectorResultType {
   type: SelectorResultDataType;
   elementType?: {
@@ -192,7 +197,7 @@ export interface QueryConceptNodeT {
   ids: ConceptIdT[];
   label?: string; // Used to expand
   excludeFromTimeAggregation: boolean; // TODO: Not used
-  excludeFromSecondaryIdQuery: boolean;
+  excludeFromSecondaryId: boolean;
   tables: TableConfigT[];
   selects?: SelectorIdT[];
 }

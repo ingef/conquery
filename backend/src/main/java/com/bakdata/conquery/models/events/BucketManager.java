@@ -330,8 +330,16 @@ public class BucketManager {
 
 	public boolean hasEntityCBlocksForConnector(Entity entity, Connector connector) {
 		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
-		return connectorToCblocks.getOrDefault(connector, Int2ObjectMaps.emptyMap())
-								 .containsKey(bucketId);
+		final Map<Bucket, CBlock> cblocks = connectorToCblocks.getOrDefault(connector, Int2ObjectMaps.emptyMap())
+																.getOrDefault(bucketId, Collections.emptyMap());
+
+		for (Bucket bucket : cblocks.keySet()) {
+			if (bucket.containsEntity(entity.getId())){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public void updateConcept(Concept<?> incoming) {

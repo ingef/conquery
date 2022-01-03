@@ -17,10 +17,12 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import lombok.ToString;
 
 /**
  * Count the number of distinct quarters for all events. Implementation is specific for DateRanges
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<Long> {
 
 	private final TemporalAdjuster monthInQuarter = QuarterUtils.firstMonthInQuarterAdjuster();

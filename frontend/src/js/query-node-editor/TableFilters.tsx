@@ -19,7 +19,7 @@ const TableFilters = ({ filters, ...rest }: PropsT) => {
     <div>
       {filters.map((filter, filterIdx) => (
         <SxTableFilter
-          key={filter.id}
+          key={`${rest.context.tableId}-${filter.id}`}
           filter={filter}
           filterIdx={filterIdx}
           {...rest}

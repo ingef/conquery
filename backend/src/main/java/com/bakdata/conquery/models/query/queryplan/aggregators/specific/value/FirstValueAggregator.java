@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
  * @param <VALUE> Value type of the column/return value
  */
 @Slf4j
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private OptionalInt selectedEvent = OptionalInt.empty();

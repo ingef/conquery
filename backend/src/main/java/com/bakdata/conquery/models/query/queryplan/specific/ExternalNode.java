@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.validation.constraints.NotEmpty;
 
-import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -18,11 +17,12 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@ToString(onlyExplicitlyIncluded = true)
 public class ExternalNode extends QPNode {
 
 	private final Table table;

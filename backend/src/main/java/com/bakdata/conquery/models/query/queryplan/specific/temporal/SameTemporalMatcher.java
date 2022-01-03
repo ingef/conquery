@@ -4,10 +4,12 @@ import java.util.OptionalInt;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import lombok.ToString;
 
 /**
  * Tests if reference and preceding are on the same day.
  */
+@ToString
 public class SameTemporalMatcher implements PrecedenceMatcher {
 
 	@Override
@@ -17,7 +19,7 @@ public class SameTemporalMatcher implements PrecedenceMatcher {
 
 	@Override
 	public boolean isContained(OptionalInt reference, OptionalInt preceding) {
-		if (!preceding.isPresent() || !reference.isPresent()) {
+		if (preceding.isEmpty() || reference.isEmpty()) {
 			return false;
 		}
 

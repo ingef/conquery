@@ -15,10 +15,12 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Entity is included as long as Dates are within a certain range.
  */
+@ToString(callSuper = true, of = {"column", "unit"})
 public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 
 	private LocalDate reference;
@@ -66,4 +68,5 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.add(column.getTable());
 	}
+
 }

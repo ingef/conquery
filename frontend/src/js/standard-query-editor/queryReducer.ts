@@ -22,8 +22,8 @@ import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTre
 import type { TreesT } from "../concept-trees/reducer";
 import { isMultiSelectFilter } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
-import { selectsWithDefaults } from "../model/select";
-import { resetAllFiltersInTables, tableWithDefaults } from "../model/table";
+import { resetSelects } from "../model/select";
+import { resetAllTableSettings, tableWithDefaults } from "../model/table";
 import { loadQuery, renameQuery } from "../previous-queries/list/actions";
 import {
   queryGroupModalResetAllDates,
@@ -46,7 +46,7 @@ import {
   loadSavedQuery,
   toggleTimestamps,
   toggleSecondaryIdExclude,
-  resetAllFilters,
+  resetAllSettings,
   addConceptToNode,
   removeConceptFromNode,
   switchFilterMode,
@@ -78,7 +78,7 @@ const filterItem = (
   const baseItem = {
     label: item.label,
     excludeTimestamps: item.excludeTimestamps,
-    excludeFromSecondaryIdQuery: item.excludeFromSecondaryIdQuery,
+    excludeFromSecondaryId: item.excludeFromSecondaryId,
     loading: item.loading,
     error: item.error,
   };
@@ -412,30 +412,30 @@ const switchNodeFilterMode = (
   );
 };
 
-const resetNodeAllFilters = (
+const resetNodeAllSettings = (
   state: StandardQueryStateT,
-  { andIdx, orIdx }: ActionType<typeof resetAllFilters>["payload"],
+  { andIdx, orIdx, config }: ActionType<typeof resetAllSettings>["payload"],
 ) => {
   const node = state[andIdx].elements[orIdx];
 
   const newState = setElementProperties(state, andIdx, orIdx, {
-    excludeFromSecondaryIdQuery: false,
+    excludeFromSecondaryId: false,
     excludeTimestamps: false,
     selects: nodeIsConceptQueryNode(node)
-      ? selectsWithDefaults(node.selects)
+      ? resetSelects(node.selects, config)
       : [],
   });
 
   if (!nodeIsConceptQueryNode(node)) return newState;
 
-  const tables = resetAllFiltersInTables(node.tables);
+  const tables = resetAllTableSettings(node.tables, config);
 
   return updateNodeTables(newState, andIdx, orIdx, tables);
 };
 
 const resetNodeTable = (
   state: StandardQueryStateT,
-  { andIdx, orIdx, tableIdx }: ActionType<typeof resetTable>["payload"],
+  { andIdx, orIdx, tableIdx, config }: ActionType<typeof resetTable>["payload"],
 ) => {
   const node = state[andIdx].elements[orIdx];
 
@@ -450,7 +450,7 @@ const resetNodeTable = (
     andIdx,
     orIdx,
     tableIdx,
-    tableWithDefaults(table),
+    tableWithDefaults(config)(table),
   );
 };
 
@@ -689,7 +689,7 @@ const expandNode = (
         tables,
         selects,
         excludeTimestamps: node.excludeFromTimeAggregation,
-        excludeFromSecondaryIdQuery: node.excludeFromSecondaryIdQuery,
+        excludeFromSecondaryId: node.excludeFromSecondaryId,
         tree: lookupResult.root,
       };
   }
@@ -814,8 +814,8 @@ const onToggleSecondaryIdExclude = (
   { andIdx, orIdx }: ActionType<typeof toggleSecondaryIdExclude>["payload"],
 ) => {
   return setElementProperties(state, andIdx, orIdx, {
-    excludeFromSecondaryIdQuery:
-      !state[andIdx].elements[orIdx].excludeFromSecondaryIdQuery,
+    excludeFromSecondaryId:
+      !state[andIdx].elements[orIdx].excludeFromSecondaryId,
   });
 };
 
@@ -1043,8 +1043,8 @@ const query = (
       return setNodeTableSelects(state, action.payload);
     case getType(setSelects):
       return setNodeSelects(state, action.payload);
-    case getType(resetAllFilters):
-      return resetNodeAllFilters(state, action.payload);
+    case getType(resetAllSettings):
+      return resetNodeAllSettings(state, action.payload);
     case getType(resetTable):
       return resetNodeTable(state, action.payload);
     case getType(switchFilterMode):

@@ -3,19 +3,42 @@ import { compose } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
-import { filtersWithDefaults, filterValueDiffersFromDefault } from "./filter";
-import { objectHasSelectedSelects, selectsWithDefaults } from "./select";
+import {
+  resetFilters,
+  filterValueDiffersFromDefault,
+  filterIsEmpty,
+  filtersHaveValues,
+} from "./filter";
+import type { NodeResetConfig } from "./node";
+import { objectHasNonDefaultSelects, resetSelects } from "./select";
 
 export const tableIsEditable = (table: TableWithFilterValueT) =>
   (!!table.filters && table.filters.length > 0) ||
   (!!table.selects && table.selects.length > 0) ||
   (!!table.dateColumn && table.dateColumn.options.length > 0);
 
-export const tablesHaveActiveFilter = (tables: TableWithFilterValueT[]) =>
-  tables.some((table) => tableHasActiveFilters(table));
+export const tablesHaveEmptySettings = (tables: TableWithFilterValueT[]) =>
+  tables.every(tableHasEmptySettings);
 
-export const tableHasActiveFilters = (table: TableWithFilterValueT) => {
-  const activeSelects = objectHasSelectedSelects(table);
+export const tablesHaveNonDefaultSettings = (tables: TableWithFilterValueT[]) =>
+  tables.some(tableHasNonDefaultSettings);
+
+export const tableHasEmptySettings = (table: TableWithFilterValueT) => {
+  return (
+    (!table.selects || table.selects.every((select) => !select.selected)) &&
+    !tableHasNonDefaultDateColumn(table) &&
+    (!table.filters || table.filters.every(filterIsEmpty))
+  );
+};
+
+export const tableHasFilterValues = (table: TableWithFilterValueT) =>
+  !!table.filters && filtersHaveValues(table.filters);
+
+export const tablesHaveFilterValues = (tables: TableWithFilterValueT[]) =>
+  tables.some(tableHasFilterValues);
+
+export const tableHasNonDefaultSettings = (table: TableWithFilterValueT) => {
+  const activeSelects = objectHasNonDefaultSelects(table);
   const activeDateColumn = tableHasNonDefaultDateColumn(table);
   const activeFilters =
     table.filters && table.filters.some(filterValueDiffersFromDefault);
@@ -30,41 +53,33 @@ const tableHasNonDefaultDateColumn = (table: TableWithFilterValueT) =>
     ? table.dateColumn.value !== table.dateColumn.defaultValue
     : table.dateColumn.value !== table.dateColumn.options[0].value);
 
+export function tableIsIncludedInIds(
+  table: TableWithFilterValueT,
+  tableIds: string[],
+) {
+  return tableIds.some(
+    (id) => table.id.toLowerCase().indexOf(id.toLowerCase()) !== -1,
+  );
+}
+
 export function tableIsDisabled(
   table: TableWithFilterValueT,
   blocklistedTables?: string[],
   allowlistedTables?: string[],
 ) {
   return (
-    (!!allowlistedTables && !tableIsAllowlisted(table, allowlistedTables)) ||
-    (!!blocklistedTables && tableIsBlocklisted(table, blocklistedTables))
+    (!!allowlistedTables && !tableIsIncludedInIds(table, allowlistedTables)) ||
+    (!!blocklistedTables && tableIsIncludedInIds(table, blocklistedTables))
   );
 }
 
-export function tableIsBlocklisted(
-  table: TableWithFilterValueT,
-  blocklistedTables: string[],
-) {
-  return blocklistedTables.some(
-    (tableName) =>
-      table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1,
-  );
-}
-
-export function tableIsAllowlisted(
-  table: TableWithFilterValueT,
-  allowlistedTables: string[],
-) {
-  return allowlistedTables.some(
-    (tableName) =>
-      table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1,
-  );
-}
-
-export const resetAllFiltersInTables = (tables: TableWithFilterValueT[]) => {
+export const resetAllTableSettings = (
+  tables?: TableWithFilterValueT[],
+  config: NodeResetConfig = {},
+) => {
   if (!tables) return [];
 
-  return tablesWithDefaults(tables);
+  return resetTables(tables, config);
 };
 
 const tableWithDefaultDateColumn = (table: TableT): TableT => {
@@ -82,25 +97,30 @@ const tableWithDefaultDateColumn = (table: TableT): TableT => {
   };
 };
 
-const tableWithDefaultFilters = (table: TableT) => ({
-  ...table,
-  filters: filtersWithDefaults(table.filters),
-});
-
-const tableWithDefaultSelects = (table: TableT) => ({
-  ...table,
-  selects: selectsWithDefaults(table.selects),
-});
-
-export const tableWithDefaults = (table: TableT): TableT =>
-  compose(
-    tableWithDefaultDateColumn,
-    tableWithDefaultSelects,
-    tableWithDefaultFilters,
-  )({
+const tableWithDefaultFilters =
+  (config: NodeResetConfig) => (table: TableT) => ({
     ...table,
-    exclude: false,
+    filters: resetFilters(table.filters, config),
   });
 
-export const tablesWithDefaults = (tables?: TableT[]) =>
-  tables ? tables.map(tableWithDefaults) : [];
+const tableWithDefaultSelects =
+  (config: NodeResetConfig = {}) =>
+  (table: TableT) => ({
+    ...table,
+    selects: resetSelects(table.selects, config),
+  });
+
+export const tableWithDefaults =
+  (config: NodeResetConfig) =>
+  (table: TableT): TableT =>
+    compose(
+      tableWithDefaultDateColumn,
+      tableWithDefaultSelects(config),
+      tableWithDefaultFilters(config),
+    )({
+      ...table,
+      exclude: config.useDefaults ? !table.default : table.exclude,
+    });
+
+export const resetTables = (tables?: TableT[], config: NodeResetConfig = {}) =>
+  tables ? tables.map(tableWithDefaults(config)) : [];

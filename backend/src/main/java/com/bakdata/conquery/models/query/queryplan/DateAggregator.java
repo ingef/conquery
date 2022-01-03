@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * This aggregator builds a tree of other DateAggregator which is partly parallel to the actual query plan.
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
  * flexibility through different {@link DateAggregationAction}s.
  */
 @RequiredArgsConstructor
+@ToString(of = "action")
 public class DateAggregator extends Aggregator<CDateSet> {
 
     private final DateAggregationAction action;
@@ -72,4 +74,5 @@ public class DateAggregator extends Aggregator<CDateSet> {
 	public boolean hasChildren() {
         return !children.isEmpty();
     }
+
 }

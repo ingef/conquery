@@ -12,10 +12,12 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import lombok.ToString;
 
 /**
  * Count the number of distinct quarters of the related events. Implementation is specific for LocalDates
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class CountQuartersOfDatesAggregator extends SingleColumnAggregator<Long> {
 
 	private final IntSet quarters = new IntOpenHashSet();

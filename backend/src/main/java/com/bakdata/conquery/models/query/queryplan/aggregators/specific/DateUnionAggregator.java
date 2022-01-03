@@ -9,10 +9,12 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import lombok.ToString;
 
 /**
  * Aggregator, listing all days present.
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 
 	private CDateSet set = CDateSet.create();

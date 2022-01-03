@@ -4,10 +4,12 @@ import java.util.OptionalInt;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import lombok.ToString;
 
 /**
  * Tests if the preceding date is {@link #days} before the reference, if not it must not be present.
  */
+@ToString
 public class DaysBeforeOrNeverPrecedenceMatcher implements PrecedenceMatcher {
 
 	private final int days;

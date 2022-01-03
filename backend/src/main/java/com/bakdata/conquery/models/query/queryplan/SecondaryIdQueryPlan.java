@@ -33,7 +33,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * This class is able to execute a typical ConceptQueryPlan, but will create
  * one result per distinct value in a {@link SecondaryIdDescriptionId} Column.
  *
- * @implNote This class will first execute the Query on all Tables carrying the selected {@link SecondaryIdDescriptionId}. Which will then be joined with all Tables that don't have a {@link SecondaryIdDescriptionId}, or are explicitly excluded (via {@link CQConcept#isExcludeFromSecondaryIdQuery()}.
+ * @implNote This class will first execute the Query on all Tables carrying the selected {@link SecondaryIdDescriptionId}. Which will then be joined with all Tables that don't have a {@link SecondaryIdDescriptionId}, or are explicitly excluded (via {@link CQConcept#isExcludeFromSecondaryId()}.
  * <p>
  * This Query likely uses a lot of memory!
  */
