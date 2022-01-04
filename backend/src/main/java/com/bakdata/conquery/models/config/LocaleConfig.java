@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -114,12 +113,11 @@ public class LocaleConfig {
 			// We strip start and end
 			value = value.substring(getStart().length(), value.length() - getEnd().length());
 
-			final StringTokenizer tokenizer = new StringTokenizer(value, getSeparator().trim());
-
 			final CDateSet out = CDateSet.create();
 
-			while (tokenizer.hasMoreTokens()) {
-				final String token = tokenizer.nextToken().trim();
+			final String[] tokens = value.split(getSeparator());
+
+			for (String token : tokens) {
 				final CDateRange parsed = reader.parseToCDateRange(token);
 
 				out.add(parsed);
