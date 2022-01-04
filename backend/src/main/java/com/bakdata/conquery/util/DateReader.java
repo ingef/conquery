@@ -23,7 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Utility class for parsing multiple dateformats. Parsing is cached in two ways: First parsed values are cached. Second, the last used parser is cached since it's likely that it will be used again, we therefore try to use it first, then try all others.
+ * Utility class for parsing multiple date-formats.
+ *
+ * We cache successfully parsed dates, hoping to achieve a speedup that way.
+ *
+ * We also assume that date-formats do not change over the course of parsing and use the last successfully parsed format as candidate for parsing other values.
+ *
  */
 @Slf4j
 public class DateReader {
@@ -41,21 +46,21 @@ public class DateReader {
 	private List<LocaleConfig.ListFormat> dateSetLayouts;
 
 	/**
-	 * Last successfully parsed date format.
+	 * Index of the last successfully parsed date format in dateFormats.
 	 */
 	@JsonIgnore
-	private final ThreadLocal<Integer> lastDateFormat = ThreadLocal.withInitial(() -> 0);
+	private final ThreadLocal<Integer> lastDateFormatIndex = ThreadLocal.withInitial(() -> 0);
 	/**
-	 * Last successfully parsed range format.
+	 * Index of the last successfully parsed date range format in rangeStartEndSeperators.
 	 */
 	@JsonIgnore
-	private final ThreadLocal<Integer> lastRangeFormat = ThreadLocal.withInitial(() -> 0);
+	private final ThreadLocal<Integer> lastRangeFormatIndex = ThreadLocal.withInitial(() -> 0);
 
 	/**
-	 * Last successfully parsed dateset format.
+	 * Index of the last successfully parsed dateset format in dateSetLayouts
 	 */
 	@JsonIgnore
-	private final ThreadLocal<Integer> lastDateSetLayout = ThreadLocal.withInitial(() -> 0);
+	private final ThreadLocal<Integer> lastDateSetLayoutIndex = ThreadLocal.withInitial(() -> 0);
 
 	@JsonIgnore
 	private final LocalDate ERROR_DATE = LocalDate.MIN;
@@ -93,12 +98,15 @@ public class DateReader {
 		return out;
 	}
 
+	/**
+	 * Try and parse value to {@link CDateRange} using all available rangeFormats, starting at the last known successful one.
+	 */
 	public CDateRange parseToCDateRange(String value) {
 		if (Strings.isNullOrEmpty(value)) {
 			return null;
 		}
 
-		final int root = lastRangeFormat.get();
+		final int root = lastRangeFormatIndex.get();
 
 		for (int offset = 0; offset < rangeStartEndSeperators.size(); offset++) {
 			final int index = (root + offset) % rangeStartEndSeperators.size();
@@ -106,19 +114,21 @@ public class DateReader {
 			String sep = rangeStartEndSeperators.get(index);
 			try {
 				CDateRange result = parseToCDateRange(value, sep);
-				lastRangeFormat.set(index);
+				lastRangeFormatIndex.set(index);
 				return result;
 			}
 			catch (ParsingException e) {
-				log.info("Parsing failed for date range: {}", value, e);
+				log.trace("Parsing failed for date range `{}` using `{}`", value, sep, e);
 			}
 		}
 
 		throw new ParsingException("None of the configured formats allowed to parse the date range: " + value);
 	}
 
+	/**
+	 * Try and parse value to {@link CDateRange} using the supplied separator.
+	 */
 	private CDateRange parseToCDateRange(String value, String sep) {
-		log.info("Parsing `{}` using Sep `{}`", value, sep);
 
 		String[] parts = StringUtils.split(value, sep);
 
@@ -134,15 +144,18 @@ public class DateReader {
 			);
 		}
 
-		throw ParsingException.of(value, "daterange");
+		throw ParsingException.of(value, String.format("DateRange: Unexpected length of Parts (%d) for `%s` using sep=`%s`", parts.length, value, sep));
 	}
 
+	/**
+	 * Try and parse value to CDateSet using all available layouts, but starting at the last known successful one.
+	 */
 	public CDateSet parseToCDateSet(String value) {
 		if (Strings.isNullOrEmpty(value)) {
 			return null;
 		}
 
-		final int root = lastDateSetLayout.get();
+		final int root = lastDateSetLayoutIndex.get();
 
 		for (int offset = 0; offset < dateSetLayouts.size(); offset++) {
 			final int index = (root + offset) % dateSetLayouts.size();
@@ -151,7 +164,7 @@ public class DateReader {
 
 			try {
 				final CDateSet result = sep.parse(value, this);
-				lastDateSetLayout.set(index);
+				lastDateSetLayoutIndex.set(index);
 				return result;
 			}
 			catch (ParsingException e) {
@@ -170,21 +183,23 @@ public class DateReader {
 	 */
 	private LocalDate tryParseDate(String value) {
 
-		final int root = lastDateFormat.get();
+		final int root = lastDateFormatIndex.get();
 
 		for (int offset = 0; offset < dateFormats.size(); offset++) {
 			final int index = (root + offset) % dateFormats.size();
 			final DateTimeFormatter format = dateFormats.get(index);
 
 			try {
-				LocalDate res = LocalDate.parse(value, format);
-				lastDateFormat.set(index);
+				final LocalDate res = LocalDate.parse(value, format);
+
+				lastDateFormatIndex.set(index);
 				return res;
 			}
 			catch (DateTimeParseException e) {
-				//intentionally left blank
+				log.trace("Failed to parse date `{}` using `{}`", value, format, e);
 			}
 		}
+		// We return ERROR_DATE here, so faulty values are also cached, the exception is thrown at the usage of the cache.
 		return ERROR_DATE;
 	}
 
