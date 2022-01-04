@@ -1,3 +1,5 @@
+import type { ConceptTreesOpenActions } from "../concept-trees-open/actions";
+import type { ConceptTreeActions } from "../concept-trees/actions";
 import type { DatasetActions } from "../dataset/actions";
 import type { ExternalFormActions } from "../external-forms/actions";
 import type { PaneActions } from "../pane/actions";
@@ -36,4 +38,6 @@ export type Action =
   | QueryRunnerActions
   | PaneActions
   | DatasetActions
-  | PreviewActions;
+  | PreviewActions
+  | ConceptTreeActions
+  | ConceptTreesOpenActions;

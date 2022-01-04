@@ -17,8 +17,8 @@ interface PropsT {
   depth: number;
   trees: TreesT;
   tree: ConceptT;
-  treeId: ConceptIdT;
-  active: boolean;
+  conceptId: ConceptIdT;
+  active?: boolean;
   openInitially?: boolean;
   search: SearchT;
   onLoadTree: (id: string) => void;
@@ -36,7 +36,7 @@ const sumMatchingEntries = (children: string[], initSum: number) => {
 const ConceptTreeFolder: FC<PropsT> = ({
   trees,
   tree,
-  treeId,
+  conceptId,
   search,
   depth,
   active,
@@ -44,7 +44,7 @@ const ConceptTreeFolder: FC<PropsT> = ({
   openInitially,
 }) => {
   const { open, onToggleOpen } = useOpenableConcept({
-    conceptId: treeId,
+    conceptId,
     openInitially,
   });
 
@@ -59,18 +59,15 @@ const ConceptTreeFolder: FC<PropsT> = ({
     <Root>
       <ConceptTreeNodeTextContainer
         node={{
-          id: treeId,
           label: tree.label,
           description: tree.description,
           matchingEntries: matchingEntries,
           dateRange: tree.dateRange,
           additionalInfos: tree.additionalInfos,
           children: tree.children,
+          matchingEntities: tree.matchingEntities,
         }}
-        createQueryElement={() => {
-          // We don't have to implement this since ConceptTreeFolders should never be
-          // dragged into the editor, hence they're 'active: false' and thus not draggable
-        }}
+        conceptId={conceptId}
         isStructFolder
         open={open || false}
         depth={depth}
@@ -80,12 +77,12 @@ const ConceptTreeFolder: FC<PropsT> = ({
       />
       {isOpen &&
         tree.children &&
-        tree.children.map((childId, i) => {
+        tree.children.map((childId) => {
           const tree = trees[childId];
 
           const treeProps = {
-            key: i,
-            treeId: childId,
+            key: childId,
+            conceptId: childId as ConceptIdT,
             depth: depth + 1,
             search,
             onLoadTree,
@@ -96,9 +93,7 @@ const ConceptTreeFolder: FC<PropsT> = ({
 
             return (
               <ConceptTree
-                id={childId}
                 label={tree.label}
-                description={tree.description || null}
                 error={tree.error}
                 loading={tree.loading}
                 tree={rootConcept}

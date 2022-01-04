@@ -41,7 +41,7 @@ const ConceptTreesOpenButtons: FC<PropsT> = ({ className }) => {
   const rootConceptIds = useRootConceptIds();
 
   const onCloseAllConceptOpen = () =>
-    dispatch(closeAllConceptOpen(rootConceptIds));
+    dispatch(closeAllConceptOpen({ rootConceptIds }));
   const onResetAllConceptOpen = () => {
     dispatch(resetAllConceptOpen());
     dispatch(clearSearchQuery());

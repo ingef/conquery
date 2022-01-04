@@ -1,7 +1,13 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
 
-import type { ConceptIdT, InfoT, DateRangeT, ConceptT } from "../api/types";
+import type {
+  ConceptIdT,
+  InfoT,
+  DateRangeT,
+  ConceptT,
+  ConceptElementT,
+} from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 import { resetSelects } from "../model/select";
 import { resetTables } from "../model/table";
@@ -20,25 +26,24 @@ const Root = styled("div")`
 // for the tooltip as well as the id of the corresponding tree
 interface TreeNodeData {
   label: string;
-  description: string;
-  active: boolean;
-  matchingEntries: number;
+  description?: string;
+  active?: boolean;
+  matchingEntries: number | null;
   matchingEntities: number;
-  dateRange: DateRangeT;
-  additionalInfos: InfoT[];
-  children: ConceptIdT[];
-
-  tree: ConceptIdT;
+  dateRange?: DateRangeT;
+  additionalInfos?: InfoT[];
+  children?: ConceptIdT[];
 }
 
 interface PropsT {
-  id: ConceptIdT;
+  rootConceptId: ConceptIdT;
+  conceptId: ConceptIdT;
   data: TreeNodeData;
   depth: number;
   search: SearchT;
 }
 
-const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({
+const selectTreeNodeData = (concept: ConceptT) => ({
   label: concept.label,
   description: concept.description,
   active: concept.active,
@@ -47,13 +52,17 @@ const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({
   dateRange: concept.dateRange,
   additionalInfos: concept.additionalInfos,
   children: concept.children,
-
-  tree,
 });
 
-const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
+const ConceptTreeNode: FC<PropsT> = ({
+  data,
+  rootConceptId,
+  conceptId,
+  depth,
+  search,
+}) => {
   const { open, onToggleOpen } = useOpenableConcept({
-    conceptId: id,
+    conceptId,
   });
 
   function toggleOpen() {
@@ -63,7 +72,7 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
   }
 
   if (!search.showMismatches) {
-    const shouldRender = isNodeInSearchResult(id, data.children, search);
+    const shouldRender = isNodeInSearchResult(conceptId, search, data.children);
 
     if (!shouldRender) return null;
   }
@@ -74,7 +83,6 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
     <Root>
       <ConceptTreeNodeTextContainer
         node={{
-          id,
           label: data.label,
           description: data.description,
 
@@ -85,26 +93,29 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
 
           children: data.children,
         }}
+        conceptId={conceptId}
         createQueryElement={(): ConceptQueryNodeType => {
-          const { tables, selects } = getConceptById(data.tree);
+          const concept = getConceptById(
+            rootConceptId,
+          ) as ConceptElementT | null;
 
           const description = data.description
             ? { description: data.description }
             : {};
 
           return {
-            ids: [id],
+            ids: [conceptId],
             ...description,
             label: data.label,
-            tables: resetTables(tables, { useDefaults: true }),
-            selects: resetSelects(selects, { useDefaults: true }),
+            tables: resetTables(concept?.tables, { useDefaults: true }),
+            selects: resetSelects(concept?.selects, { useDefaults: true }),
 
             additionalInfos: data.additionalInfos,
             matchingEntries: data.matchingEntries,
             matchingEntities: data.matchingEntities,
             dateRange: data.dateRange,
 
-            tree: data.tree,
+            tree: rootConceptId,
           };
         }}
         open={isOpen}
@@ -115,14 +126,15 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
       />
       {!!data.children && isOpen && (
         <>
-          {data.children.map((childId, i) => {
+          {data.children.map((childId) => {
             const child = getConceptById(childId);
 
             return child ? (
               <ConceptTreeNode
-                key={i}
-                id={childId}
-                data={selectTreeNodeData(child, data.tree)}
+                key={childId}
+                rootConceptId={rootConceptId}
+                conceptId={childId}
+                data={selectTreeNodeData(child)}
                 depth={depth + 1}
                 search={search}
               />

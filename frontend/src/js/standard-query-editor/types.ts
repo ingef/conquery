@@ -80,8 +80,8 @@ export interface ConceptQueryNodeType {
   tree: ConceptIdT;
   description?: string;
   additionalInfos?: InfoT[];
-  matchingEntries?: number;
-  matchingEntities?: number;
+  matchingEntries: number | null;
+  matchingEntities: number;
   dateRange?: DateRangeT;
 
   label: string;

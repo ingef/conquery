@@ -147,10 +147,10 @@ export type ConceptIdT = string;
 
 export interface ConceptBaseT {
   label: string;
-  active: boolean;
-  detailsAvailable: boolean;
-  codeListResolvable: boolean;
-  matchingEntries: number; // TODO: Don't send with struct nodes (even sent with 0)
+  active?: boolean;
+  detailsAvailable?: boolean;
+  codeListResolvable?: boolean;
+  matchingEntries: number | null; // TODO: Don't send with struct nodes (even sent with 0)
   matchingEntities: number; // TODO: Don't send with struct nodes (even sent with 0)
   children?: ConceptIdT[]; // Might be an empty struct or a "virtual node"
   description?: string; // Empty array: key not defined
@@ -301,7 +301,6 @@ export interface GetConceptsResponseT {
   concepts: {
     [conceptId: string]: ConceptStructT | ConceptElementT;
   };
-  version?: number; // TODO: Is this even sent anymore?
 }
 
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields

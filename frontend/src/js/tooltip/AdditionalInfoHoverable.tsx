@@ -15,7 +15,7 @@ const Root = styled("div")`
 export type AdditionalInfoHoverableNodeType = {
   label: string;
   description?: string;
-  children?: Array<string>;
+  children?: string[];
   matchingEntries: number;
   matchingEntities: number;
   dateRange?: DateRangeT;
