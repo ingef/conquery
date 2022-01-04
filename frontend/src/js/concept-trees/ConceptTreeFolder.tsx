@@ -24,6 +24,15 @@ interface PropsT {
   onLoadTree: (id: string) => void;
 }
 
+const sumMatchingEntities = (children: string[], initSum: number) => {
+  return children.reduce((sum, treeId) => {
+    const rootConcept = getConceptById(treeId);
+    const rootMatchingEntities = rootConcept ? rootConcept.matchingEntities : 0;
+
+    return rootMatchingEntities ? sum + rootMatchingEntities : sum;
+  }, initSum);
+};
+
 const sumMatchingEntries = (children: string[], initSum: number) => {
   return children.reduce((sum, treeId) => {
     const rootConcept = getConceptById(treeId);
@@ -53,6 +62,11 @@ const ConceptTreeFolder: FC<PropsT> = ({
       ? null
       : sumMatchingEntries(tree.children, tree.matchingEntries);
 
+  const matchingEntities =
+    !tree.children || !tree.matchingEntities
+      ? null
+      : sumMatchingEntities(tree.children, tree.matchingEntities);
+
   const isOpen = open || search.allOpen;
 
   return (
@@ -61,11 +75,11 @@ const ConceptTreeFolder: FC<PropsT> = ({
         node={{
           label: tree.label,
           description: tree.description,
-          matchingEntries: matchingEntries,
+          matchingEntries,
+          matchingEntities,
           dateRange: tree.dateRange,
           additionalInfos: tree.additionalInfos,
           children: tree.children,
-          matchingEntities: tree.matchingEntities,
         }}
         conceptId={conceptId}
         isStructFolder

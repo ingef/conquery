@@ -29,7 +29,7 @@ interface TreeNodeData {
   description?: string;
   active?: boolean;
   matchingEntries: number | null;
-  matchingEntities: number;
+  matchingEntities: number | null;
   dateRange?: DateRangeT;
   additionalInfos?: InfoT[];
   children?: ConceptIdT[];

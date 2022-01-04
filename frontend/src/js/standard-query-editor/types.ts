@@ -81,7 +81,7 @@ export interface ConceptQueryNodeType {
   description?: string;
   additionalInfos?: InfoT[];
   matchingEntries: number | null;
-  matchingEntities: number;
+  matchingEntities: number | null;
   dateRange?: DateRangeT;
 
   label: string;
