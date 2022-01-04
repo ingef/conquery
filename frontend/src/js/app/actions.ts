@@ -17,6 +17,7 @@ import type { StartupActions } from "../startup/actions";
 import type { TimebasedActions } from "../timebased-query-editor/actions";
 import type { TooltipActions } from "../tooltip/actions";
 import type { UploadConceptListModalActions } from "../upload-concept-list-modal/actions";
+import type { UserActions } from "../user/actions";
 
 type ReduxInitAction = { type: "@@INIT" };
 
@@ -40,4 +41,5 @@ export type Action =
   | DatasetActions
   | PreviewActions
   | ConceptTreeActions
-  | ConceptTreesOpenActions;
+  | ConceptTreesOpenActions
+  | UserActions;

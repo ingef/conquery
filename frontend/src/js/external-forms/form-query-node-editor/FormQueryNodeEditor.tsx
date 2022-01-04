@@ -29,7 +29,7 @@ interface PropsT {
   formType: string;
   fieldName: string;
   nodePosition: EditedFormQueryNodePosition;
-  node: ConceptQueryNodeType;
+  node: DragItemConceptTreeNode;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
   allowlistedSelects?: SelectorResultType[];

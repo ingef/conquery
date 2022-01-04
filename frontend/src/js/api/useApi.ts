@@ -43,8 +43,8 @@ export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
       if (
         !isIDPEnabled &&
         !isLoginDisabled &&
-        error.status &&
-        error.status === 401
+        (error as { status?: number }).status &&
+        (error as { status?: number }).status === 401
       ) {
         history.push("/login");
       }
