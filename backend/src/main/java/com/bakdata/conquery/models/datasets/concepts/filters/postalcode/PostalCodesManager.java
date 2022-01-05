@@ -1,11 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.postalcode;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import javax.validation.constraints.NotEmpty;
@@ -19,12 +17,13 @@ import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-
+@ToString()
 public class PostalCodesManager implements Injectable {
 	private final List<PostalCodeDistance> data;
 
@@ -35,7 +34,7 @@ public class PostalCodesManager implements Injectable {
 	 * @return Preloaded  {@link PostalCodesManager}
 	 */
 	@SneakyThrows(IOException.class)
-	static public PostalCodesManager loadFrom(@NonNull @NotEmpty String csvFilePath, boolean zipped) {
+	public static PostalCodesManager loadFrom(@NonNull @NotEmpty String csvFilePath, boolean zipped) {
 
 		final PostalCodeProcessor rowProcessor = new PostalCodeProcessor();
 		final CsvParserSettings csvParserSettings = new CsvParserSettings();
@@ -43,13 +42,15 @@ public class PostalCodesManager implements Injectable {
 		csvParserSettings.setHeaderExtractionEnabled(true);
 		csvParserSettings.setProcessor(rowProcessor);
 
+		final InputStream stream =
+				zipped
+				? new GZIPInputStream(In.resource(csvFilePath).asStream())
+				: In.resource(csvFilePath).asStream();
+
 		final CsvParser parser = new CsvParser(csvParserSettings);
-		if (zipped) {
-			parser.parse(new InputStreamReader(new GZIPInputStream(In.resource(csvFilePath).asStream()), StandardCharsets.US_ASCII));
-		}
-		else {
-			parser.parse(new InputStreamReader(In.resource(csvFilePath).asStream(), StandardCharsets.US_ASCII));
-		}
+
+		parser.parse(stream);
+
 		return new PostalCodesManager(rowProcessor.getData());
 
 	}
@@ -60,22 +61,28 @@ public class PostalCodesManager implements Injectable {
 	 */
 	public String[] filterAllNeighbours(int plz, double radius) {
 		final List<String> foundPLZ = new ArrayList<>();
-		foundPLZ.add(StringUtils.leftPad(Integer.toString(plz), 5, '0'));
-			data.stream()
-								// This works because data is already sorted
-								.takeWhile(postalCodeDistance -> postalCodeDistance.getDistanceInKm() <= radius)
-								.filter(postalCodeDistance -> postalCodeDistance.getLeft() == plz || postalCodeDistance.getRight() == plz)
-								.map(postalCodeDistance -> {
-									if (postalCodeDistance.getLeft() == plz) {
-										return postalCodeDistance.getRight();
-									}
-									else {
-										return postalCodeDistance.getLeft();
-									}
-								})
-								.map(other -> StringUtils.leftPad(Integer.toString(other), 5, '0'))
-								.forEach(foundPLZ::add);
+		foundPLZ.add(padPlz(plz));
+
+		data.stream()
+			// This works because data is already sorted
+			.takeWhile(postalCodeDistance -> postalCodeDistance.getDistanceInKm() <= radius)
+			.filter(postalCodeDistance -> postalCodeDistance.getLeft() == plz || postalCodeDistance.getRight() == plz)
+			.map(postalCodeDistance -> {
+				if (postalCodeDistance.getLeft() == plz) {
+					return postalCodeDistance.getRight();
+				}
+				else {
+					return postalCodeDistance.getLeft();
+				}
+			})
+			.map(PostalCodesManager::padPlz)
+			.forEach(foundPLZ::add);
+
 		return foundPLZ.toArray(String[]::new);
+	}
+
+	private static String padPlz(Integer other) {
+		return StringUtils.leftPad(Integer.toString(other), 5, '0');
 	}
 
 	@Override

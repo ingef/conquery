@@ -19,13 +19,18 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class PostalCodeProcessor extends AbstractRowProcessor {
+	private static final String LEFT = "plz1";
+	private static final String RIGHT = "plz2";
+	private static final String DISTANCE = "Distanz_convert_in_km";
+
 	private int plz1Index, plz2Index, distanceIndex;
+
 	private final Set<IntIntImmutableSortedPair> loadedPlzCombinations = new HashSet<>();
 
 	/**
 	 * loaded {@link PostalCodeDistance}-data
 	 */
-	final private List<PostalCodeDistance> data = new ArrayList<>();
+	private final List<PostalCodeDistance> data = new ArrayList<>();
 
 	public List<PostalCodeDistance> getData() {
 		data.sort(Comparator.comparingDouble(PostalCodeDistance::getDistanceInKm));
@@ -38,19 +43,19 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 		final String[] headers = context.headers();
 		plz1Index =
 				IntStream.range(0, headers.length)
-						 .filter(i -> headers[i].equals("plz1"))
+						 .filter(i -> LEFT.equals(headers[i]))
 						 .findFirst()
 						 .orElseThrow(() -> new IllegalStateException("Required Column[plz1] is missing in Headers."));
 
 		plz2Index =
 				IntStream.range(0, headers.length)
-						 .filter(i -> headers[i].equals("plz2"))
+						 .filter(i -> RIGHT.equals(headers[i]))
 						 .findFirst()
 						 .orElseThrow(() -> new IllegalStateException("Required Column[plz2] is missing in Headers."));
 
 		distanceIndex =
 				IntStream.range(0, headers.length)
-						 .filter(i -> headers[i].equals("Distanz_convert_in_km"))
+						 .filter(i -> DISTANCE.equals(headers[i]))
 						 .findFirst()
 						 .orElseThrow(() -> new IllegalStateException("Required Column[Distanz_convert_in_km] is missing in Headers."));
 

@@ -152,7 +152,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			cqTable.setConnector(connector);
 			cqTable.setFilters(
 					List.of(
-							new FilterValue.CQRealRangeFilter(
+							new FilterValue.RealRangeFilterValue(
 									(Filter<Range<BigDecimal>>) centralRegistry.resolve(new FilterId(connector.getId(), "filter")),
 									new Range<>(BigDecimal.valueOf(1.01d), BigDecimal.valueOf(1.01d))
 							)
