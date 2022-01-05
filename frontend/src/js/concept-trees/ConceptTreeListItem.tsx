@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-import type { ConceptT, ConceptIdT } from "../api/types";
+import type { ConceptIdT } from "../api/types";
 
 import ConceptTree from "./ConceptTree";
 import ConceptTreeFolder from "./ConceptTreeFolder";
