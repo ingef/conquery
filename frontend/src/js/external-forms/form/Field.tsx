@@ -1,6 +1,5 @@
-import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { memo, ReactNode, useMemo } from "react";
+import { memo, ReactNode } from "react";
 import {
   Control,
   ControllerRenderProps,
@@ -24,9 +23,8 @@ import ToggleButton from "../../ui-components/ToggleButton";
 import type { FormField, GeneralField } from "../config-types";
 import { Description } from "../form-components/Description";
 import { Headline } from "../form-components/Headline";
-import FormConceptGroup, {
-  FormConceptGroupT,
-} from "../form-concept-group/FormConceptGroup";
+import FormConceptGroup from "../form-concept-group/FormConceptGroup";
+import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
 import {
   FormQueryDropzone,
   FormMultiQueryDropzone,

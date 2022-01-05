@@ -1,24 +1,28 @@
 import { useDispatch } from "react-redux";
+import { ActionType, createAsyncAction } from "typesafe-actions";
 
 import { useGetMe } from "../api/api";
-import { defaultError, defaultSuccess } from "../common/actions";
+import type { GetMeResponseT } from "../api/types";
+import { ErrorObject, errorPayload, successPayload } from "../common/actions";
 
-import { LOAD_ME_START, LOAD_ME_ERROR, LOAD_ME_SUCCESS } from "./actionTypes";
+export type UserActions = ActionType<typeof loadMe>;
 
-export const loadMeStart = () => ({ type: LOAD_ME_START });
-export const loadMeError = (err: any) => defaultError(LOAD_ME_ERROR, err);
-export const loadMeSuccess = (res: any) => defaultSuccess(LOAD_ME_SUCCESS, res);
+export const loadMe = createAsyncAction(
+  "user/LOAD_ME_START",
+  "user/LOAD_ME_SUCCESS",
+  "user/LOAD_ME_ERROR",
+)<void, { data: GetMeResponseT }, ErrorObject>();
 
 export const useLoadMe = () => {
   const dispatch = useDispatch();
   const getMe = useGetMe();
 
   return () => {
-    dispatch(loadMeStart());
+    dispatch(loadMe.request());
 
     return getMe().then(
-      (r) => dispatch(loadMeSuccess(r)),
-      (e) => dispatch(loadMeError(e)),
+      (r) => dispatch(loadMe.success(successPayload(r, {}))),
+      (e) => dispatch(loadMe.failure(errorPayload(e, {}))),
     );
   };
 };

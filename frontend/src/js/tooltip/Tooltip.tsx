@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { StateT } from "app-types";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
-import Markdown from "react-markdown/with-html";
+import Markdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../button/IconButton";
@@ -215,12 +215,18 @@ const Tooltip = () => {
               <PieceOfInfo key={info.key + i}>
                 <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
                 <Markdown
-                  escapeHtml={true}
-                  renderers={{
-                    text: ({ value }) => searchHighlight(value),
-                  }}
-                  source={info.value}
-                />
+                  components={
+                    {
+                      // TODO: Won't work anymore with the latest react-markdown, because
+                      // node is now a ReactElement, not a string.
+                      // Try to use another package for highlighting that doesn't depend on a string
+                      // or just highlight ourselves
+                      // p: ({ node }) => searchHighlight(node)
+                    }
+                  }
+                >
+                  {info.value}
+                </Markdown>
               </PieceOfInfo>
             ))}
         </Infos>

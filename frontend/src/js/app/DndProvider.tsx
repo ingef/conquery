@@ -8,6 +8,9 @@ import MultiBackend, {
 } from "react-dnd-multi-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
 
+import { DNDType } from "../common/constants/dndTypes";
+import { PossibleDroppableObject } from "../ui-components/Dropzone";
+
 const PreviewItem = styled("div")<{ width: number; height: number }>`
   background-color: ${({ theme }) => theme.col.grayVeryLight};
   opacity: 0.9;
@@ -43,6 +46,20 @@ export function getWidthAndHeight(ref: React.RefObject<HTMLElement | null>) {
   };
 }
 
+const findItemWithAndHeight = (
+  item: PossibleDroppableObject,
+): { width: number; height: number } => {
+  switch (item.type) {
+    case "__NATIVE_FILE__":
+      return { width: 0, height: 0 };
+    case DNDType.FORM_CONFIG:
+    case DNDType.CONCEPT_TREE_NODE:
+    case DNDType.PREVIOUS_QUERY:
+    case DNDType.PREVIOUS_SECONDARY_ID_QUERY:
+      return { width: item.dragContext.width, height: item.dragContext.height };
+  }
+};
+
 const DndPreview: FC = () => {
   const { display, item, style } = usePreview();
 
@@ -50,7 +67,9 @@ const DndPreview: FC = () => {
     return null;
   }
 
-  return <PreviewItem width={item.width} height={item.height} style={style} />;
+  const { width, height } = findItemWithAndHeight(item);
+
+  return <PreviewItem width={width} height={height} style={style} />;
 };
 
 const DndProvider: FC = ({ children }) => {

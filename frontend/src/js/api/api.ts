@@ -4,6 +4,8 @@ import type {
   BaseFormConfigT,
 } from "../external-forms/form-configs/reducer";
 import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker";
+import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
 import { transformFormQueryToApi } from "./apiExternalFormsHelper";
 import { transformQueryToApi } from "./apiHelper";
@@ -71,7 +73,7 @@ export const usePostQueries = () => {
 
   return (
     datasetId: DatasetIdT,
-    query: Object,
+    query: StandardQueryStateT | ValidatedTimebasedQueryStateT,
     options: { queryType: string; selectedSecondaryId?: string | null },
   ) =>
     api({

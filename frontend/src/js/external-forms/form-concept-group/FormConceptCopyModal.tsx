@@ -13,7 +13,7 @@ import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
 import { useVisibleConceptListFields } from "../stateSelectors";
 
-import type { FormConceptGroupT } from "./FormConceptGroup";
+import type { FormConceptGroupT } from "./formConceptGroupState";
 
 const Buttons = styled("div")`
   display: flex;

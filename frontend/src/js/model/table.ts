@@ -1,4 +1,3 @@
-import type { TableT } from "../api/types";
 import { compose } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
@@ -82,37 +81,38 @@ export const resetAllTableSettings = (
   return resetTables(tables, config);
 };
 
-const tableWithDefaultDateColumn = (table: TableT): TableT => {
+const tableWithDefaultDateColumn = (
+  table: TableWithFilterValueT,
+): TableWithFilterValueT => {
   return {
     ...table,
     dateColumn:
-      !!table.dateColumn &&
-      !!table.dateColumn.options &&
-      table.dateColumn.options.length > 0
+      !!table.dateColumn && table.dateColumn.options.length > 0
         ? {
             ...table.dateColumn,
             value: table.dateColumn.options[0].value as string,
           }
-        : null,
+        : undefined,
   };
 };
 
 const tableWithDefaultFilters =
-  (config: NodeResetConfig) => (table: TableT) => ({
+  (config: NodeResetConfig) =>
+  (table: TableWithFilterValueT): TableWithFilterValueT => ({
     ...table,
     filters: resetFilters(table.filters, config),
   });
 
 const tableWithDefaultSelects =
   (config: NodeResetConfig = {}) =>
-  (table: TableT) => ({
+  (table: TableWithFilterValueT): TableWithFilterValueT => ({
     ...table,
     selects: resetSelects(table.selects, config),
   });
 
 export const tableWithDefaults =
   (config: NodeResetConfig) =>
-  (table: TableT): TableT =>
+  (table: TableWithFilterValueT): TableWithFilterValueT =>
     compose(
       tableWithDefaultDateColumn,
       tableWithDefaultSelects(config),
@@ -122,5 +122,7 @@ export const tableWithDefaults =
       exclude: config.useDefaults ? !table.default : table.exclude,
     });
 
-export const resetTables = (tables?: TableT[], config: NodeResetConfig = {}) =>
-  tables ? tables.map(tableWithDefaults(config)) : [];
+export const resetTables = (
+  tables?: TableWithFilterValueT[],
+  config: NodeResetConfig = {},
+) => (tables ? tables.map(tableWithDefaults(config)) : []);

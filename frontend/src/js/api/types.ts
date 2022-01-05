@@ -107,8 +107,8 @@ export interface TableT {
   label: string;
   exclude?: boolean;
   default?: boolean; // not excluded by default
-  filters?: FilterT[]; // Empty array: key not defined
-  selects?: SelectorT[]; // Empty array: key not defined
+  filters: FilterT[]; // Empty array: key not defined
+  selects: SelectorT[]; // Empty array: key not defined
   supportedSecondaryIds?: string[];
 }
 
@@ -147,11 +147,11 @@ export type ConceptIdT = string;
 
 export interface ConceptBaseT {
   label: string;
-  active: boolean;
-  detailsAvailable: boolean;
-  codeListResolvable: boolean;
-  matchingEntries: number; // TODO: Don't send with struct nodes (even sent with 0)
-  matchingEntities: number; // TODO: Don't send with struct nodes (even sent with 0)
+  active?: boolean;
+  detailsAvailable?: boolean;
+  codeListResolvable?: boolean;
+  matchingEntries: number | null; // TODO: Don't send with struct nodes (even sent with 0)
+  matchingEntities: number | null; // TODO: Don't send with struct nodes (even sent with 0)
   children?: ConceptIdT[]; // Might be an empty struct or a "virtual node"
   description?: string; // Empty array: key not defined
   additionalInfos?: InfoT[]; // Empty array: key not defined
@@ -205,6 +205,7 @@ export interface QueryConceptNodeT {
 export type QueryIdT = string;
 export interface SavedQueryNodeT {
   type: "SAVED_QUERY";
+  excludeFromSecondaryId: boolean;
   query: QueryIdT; // TODO: rename this "id"
 }
 
@@ -232,6 +233,13 @@ interface BaseQueryT {
   type: "CONCEPT_QUERY";
 }
 
+export interface ExternalResolvedQueryT extends BaseQueryT {
+  // TODO: Add whatever other fields are here
+  root: {
+    type: "EXTERNAL_RESOLVED";
+  };
+}
+
 export interface AndQueryT extends BaseQueryT {
   secondaryId?: string;
   root: AndNodeT;
@@ -242,7 +250,11 @@ export interface NegationQueryT extends BaseQueryT {
 export interface DateRestrictionQueryT extends BaseQueryT {
   root: DateRestrictionNodeT;
 }
-export type QueryT = AndQueryT | NegationQueryT | DateRestrictionQueryT;
+export type QueryT =
+  | AndQueryT
+  | NegationQueryT
+  | DateRestrictionQueryT
+  | ExternalResolvedQueryT;
 export type QueryNodeT =
   | AndNodeT
   | NegationNodeT
@@ -290,7 +302,6 @@ export interface GetConceptsResponseT {
   concepts: {
     [conceptId: string]: ConceptStructT | ConceptElementT;
   };
-  version?: number; // TODO: Is this even sent anymore?
 }
 
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields

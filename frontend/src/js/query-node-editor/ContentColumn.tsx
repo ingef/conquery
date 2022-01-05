@@ -77,7 +77,7 @@ interface PropsT {
     tableIdx: number,
     filterIdx: number,
   ) => Promise<void>;
-  onSetDateColumn: (tableIdx: number, value: string | null) => void;
+  onSetDateColumn: (tableIdx: number, value: string) => void;
 }
 
 const ContentColumn: FC<PropsT> = ({

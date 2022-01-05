@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../api/types";
@@ -11,7 +11,7 @@ import EmptyConceptTreeList from "./EmptyConceptTreeList";
 import ProgressBar from "./ProgressBar";
 import { useLoadTree } from "./actions";
 import type { TreesT, SearchT } from "./reducer";
-import { getAreTreesAvailable } from "./selectors";
+import { useAreTreesAvailable } from "./selectors";
 import { useRootConceptIds } from "./useRootConceptIds";
 
 const Root = styled("div")<{ show?: boolean }>`
@@ -48,9 +48,7 @@ const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
   const loading = useSelector<StateT, boolean>(
     (state) => state.conceptTrees.loading,
   );
-  const areTreesAvailable = useSelector<StateT, boolean>((state) =>
-    getAreTreesAvailable(state),
-  );
+  const areTreesAvailable = useAreTreesAvailable();
   const areDatasetsPristineOrLoading = useSelector<StateT, boolean>(
     (state) => state.datasets.pristine || state.datasets.loading,
   );
@@ -70,11 +68,12 @@ const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
 
   const rootConceptIds = useRootConceptIds();
 
-  if (search.loading) return null;
-
-  const anyTreeLoading = Object.keys(trees).some(
-    (treeId) => trees[treeId].loading,
+  const anyTreeLoading = useMemo(
+    () => Object.keys(trees).some((treeId) => trees[treeId].loading),
+    [trees],
   );
+
+  if (search.loading) return null;
 
   return (
     <Root show={activeTab === "conceptTrees"}>
@@ -84,13 +83,13 @@ const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
       )}
       {!!anyTreeLoading && <ProgressBar trees={trees} />}
       {!anyTreeLoading &&
-        rootConceptIds.map((treeId, i) => (
+        rootConceptIds.map((conceptId, i) => (
           <ConceptTreeListItem
             key={i}
             search={search}
             onLoadTree={onLoadTree}
             trees={trees}
-            treeId={treeId}
+            conceptId={conceptId}
           />
         ))}
     </Root>

@@ -10,7 +10,7 @@ import { NodeResetConfig } from "./node";
 
 const resetFilter =
   (config: NodeResetConfig = {}) =>
-  (filter: FilterT) => {
+  (filter: FilterWithValueType): FilterWithValueType => {
     switch (filter.type) {
       case "MULTI_SELECT":
       case "BIG_MULTI_SELECT":
@@ -81,7 +81,7 @@ export const filterValueDiffersFromDefault = (
 };
 
 export const resetFilters = (
-  filters?: FilterT[],
+  filters?: FilterWithValueType[],
   config: NodeResetConfig = {},
 ) => (filters ? filters.map(resetFilter(config)) : []);
 

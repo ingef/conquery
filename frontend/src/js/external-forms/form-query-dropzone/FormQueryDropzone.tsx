@@ -1,10 +1,7 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
 
-import {
-  PREVIOUS_QUERY,
-  PREVIOUS_SECONDARY_ID_QUERY,
-} from "../../common/constants/dndTypes";
+import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import InfoTooltip from "../../tooltip/InfoTooltip";
@@ -13,6 +10,11 @@ import Label from "../../ui-components/Label";
 import Optional from "../../ui-components/Optional";
 
 import FormQueryResult from "./FormQueryResult";
+
+const DROP_TYPES = [
+  DNDType.PREVIOUS_QUERY,
+  DNDType.PREVIOUS_SECONDARY_ID_QUERY,
+];
 
 const SxDropzone = styled(Dropzone)<{ centered?: boolean }>`
   justify-content: ${({ centered }) => (centered ? "center" : "flex-start")};
@@ -48,9 +50,9 @@ const FormQueryDropzone: FC<PropsT> = ({
         {label}
         {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>
-      <SxDropzone<FC<DropzoneProps<DragItemQuery>>>
-        onDrop={onDrop}
-        acceptedDropTypes={[PREVIOUS_QUERY, PREVIOUS_SECONDARY_ID_QUERY]}
+      <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+        onDrop={(item) => onDrop(item as DragItemQuery)}
+        acceptedDropTypes={DROP_TYPES}
         centered={!value}
       >
         {() =>

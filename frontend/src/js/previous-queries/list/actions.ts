@@ -51,7 +51,7 @@ export const useLoadQueries = () => {
     } catch (e) {
       dispatch(setMessage({ message: t("previousQueries.error") }));
 
-      return dispatch(loadQueries.failure(errorPayload(e, {})));
+      return dispatch(loadQueries.failure(errorPayload(e as Error, {})));
     }
   };
 };

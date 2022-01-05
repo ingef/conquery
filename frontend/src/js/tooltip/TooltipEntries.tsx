@@ -1,17 +1,11 @@
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 
+import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
-
-type PropsType = {
-  className?: string;
-  matchingEntries?: number | null;
-  matchingEntities?: number | null;
-  dateRange?: Object | null;
-};
 
 const Root = styled("div")``;
 const Row = styled("div")`
@@ -87,7 +81,14 @@ const Suffix = styled("span")`
   margin-left: 5px;
 `;
 
-const TooltipEntries = (props: PropsType) => {
+interface Props {
+  className?: string;
+  matchingEntries?: number | null;
+  matchingEntities?: number | null;
+  dateRange?: DateRangeT;
+}
+
+const TooltipEntries = (props: Props) => {
   const { t } = useTranslation();
   const { matchingEntries, matchingEntities, dateRange } = props;
 
@@ -96,6 +97,18 @@ const TooltipEntries = (props: PropsType) => {
 
   const dateFormat = "yyyy-MM-dd";
   const displayDateFormat = t("inputDateRange.dateFormat");
+
+  const parsedFromDate =
+    dateRange && dateRange.min ? parseDate(dateRange.min, dateFormat) : null;
+  const fromDate = parsedFromDate
+    ? formatDate(parsedFromDate, displayDateFormat)
+    : "- - - - - - - -";
+
+  const parsedToDate =
+    dateRange && dateRange.max ? parseDate(dateRange.max, dateFormat) : null;
+  const toDate = parsedToDate
+    ? formatDate(parsedToDate, displayDateFormat)
+    : "- - - - - - - -";
 
   return (
     <Root className={props.className}>
@@ -143,21 +156,11 @@ const TooltipEntries = (props: PropsType) => {
         <CalIcon regular icon="calendar" />
         <Info>
           <Date>
-            {dateRange && dateRange.min
-              ? formatDate(
-                  parseDate(dateRange.min, dateFormat),
-                  displayDateFormat,
-                )
-              : "- - - - - - - -"}
+            {fromDate}
             <Suffix>{`${t("tooltip.date.from")}`}</Suffix>
           </Date>
           <Date>
-            {dateRange && dateRange.max
-              ? formatDate(
-                  parseDate(dateRange.max, dateFormat),
-                  displayDateFormat,
-                )
-              : "- - - - - - - -"}
+            {toDate}
             <Suffix>{`${t("tooltip.date.to")}`}</Suffix>
           </Date>
         </Info>

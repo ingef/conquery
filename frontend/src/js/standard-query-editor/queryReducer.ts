@@ -16,6 +16,7 @@ import type {
   SelectOptionT,
 } from "../api/types";
 import { Action } from "../app/actions";
+import { DNDType } from "../common/constants/dndTypes";
 import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
@@ -31,6 +32,7 @@ import {
 } from "../query-group-modal/actions";
 import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
 import { acceptQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
+import { isMovedObject } from "../ui-components/Dropzone";
 
 import {
   dropAndNode,
@@ -58,25 +60,19 @@ import {
 } from "./actions";
 import type {
   StandardQueryNodeT,
-  DragItemQuery,
   QueryGroupType,
-  DragItemNode,
   DragItemConceptTreeNode,
   FilterWithValueType,
-  PreviousQueryQueryNodeType,
+  DragItemQuery,
 } from "./types";
 
 export type StandardQueryStateT = QueryGroupType[];
 
 const initialState: StandardQueryStateT = [];
 
-const filterItem = (
-  item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
-): StandardQueryNodeT => {
-  // This sort of mapping might be a problem when adding new optional properties to
-  // either Nodes or Queries: Flow won't complain when we omit those optional
-  // properties here. But we can't use a spread operator either...
+const filterItem = (item: StandardQueryNodeT): StandardQueryNodeT => {
   const baseItem = {
+    dragContext: item.dragContext,
     label: item.label,
     excludeTimestamps: item.excludeTimestamps,
     excludeFromSecondaryId: item.excludeFromSecondaryId,
@@ -84,34 +80,35 @@ const filterItem = (
     error: item.error,
   };
 
-  if (item.isPreviousQuery) {
-    return {
-      ...baseItem,
+  switch (item.type) {
+    case DNDType.PREVIOUS_QUERY:
+    case DNDType.PREVIOUS_SECONDARY_ID_QUERY:
+      return {
+        ...baseItem,
+        type: item.type,
 
-      id: item.id,
-      // eslint-disable-next-line no-use-before-define
-      query: item.query,
-      isPreviousQuery: item.isPreviousQuery,
-      canExpand: item.canExpand,
-      availableSecondaryIds: item.availableSecondaryIds,
-    };
-  } else {
-    return {
-      ...baseItem,
+        id: item.id,
+        query: item.query,
+        tags: item.tags,
+        canExpand: item.canExpand,
+        availableSecondaryIds: item.availableSecondaryIds,
+      };
+    case DNDType.CONCEPT_TREE_NODE:
+      return {
+        ...baseItem,
+        type: item.type,
 
-      ids: item.ids,
-      description: item.description,
-      tables: item.tables,
-      selects: item.selects,
-      tree: item.tree,
+        ids: item.ids,
+        description: item.description,
+        tables: item.tables,
+        selects: item.selects,
+        tree: item.tree,
 
-      additionalInfos: item.additionalInfos,
-      matchingEntries: item.matchingEntries,
-      matchingEntities: item.matchingEntities,
-      dateRange: item.dateRange,
-
-      isPreviousQuery: item.isPreviousQuery,
-    };
+        additionalInfos: item.additionalInfos,
+        matchingEntries: item.matchingEntries,
+        matchingEntities: item.matchingEntities,
+        dateRange: item.dateRange,
+      };
   }
 };
 
@@ -144,7 +141,7 @@ const setElementProperties = (
         ...properties,
       },
       ...node[andIdx].elements.slice(orIdx + 1),
-    ],
+    ] as StandardQueryNodeT[],
   };
 
   return setGroupProperties(node, andIdx, groupProperties);
@@ -165,10 +162,10 @@ const onDropAndNode = (
     },
   ];
 
-  return item.moved
+  return isMovedObject(item)
     ? onDeleteNode(nextState, {
-        andIdx: item.andIdx,
-        orIdx: item.orIdx,
+        andIdx: item.dragContext.movedFromAndIdx,
+        orIdx: item.dragContext.movedFromOrIdx,
       })
     : nextState;
 };
@@ -186,17 +183,19 @@ const onDropOrNode = (
     ...state.slice(andIdx + 1),
   ];
 
-  return item.moved
-    ? item.andIdx === andIdx
-      ? onDeleteNode(nextState, {
-          andIdx: item.andIdx,
-          orIdx: item.orIdx + 1,
-        })
-      : onDeleteNode(nextState, {
-          andIdx: item.andIdx,
-          orIdx: item.orIdx,
-        })
-    : nextState;
+  if (!isMovedObject(item)) {
+    return nextState;
+  }
+
+  return item.dragContext.movedFromAndIdx === andIdx
+    ? onDeleteNode(nextState, {
+        andIdx: item.dragContext.movedFromAndIdx,
+        orIdx: item.dragContext.movedFromOrIdx + 1,
+      })
+    : onDeleteNode(nextState, {
+        andIdx: item.dragContext.movedFromAndIdx,
+        orIdx: item.dragContext.movedFromOrIdx,
+      });
 };
 
 // Delete a single Node (concept inside a group)
@@ -659,10 +658,11 @@ const expandNode = (
         ),
       };
     case "SAVED_QUERY":
+      debugger;
       return {
         ...node,
+        type: DNDType.PREVIOUS_QUERY,
         id: node.query,
-        isPreviousQuery: true,
       };
     case "DATE_RESTRICTION":
       return {
@@ -683,6 +683,7 @@ const expandNode = (
       if (!lookupResult)
         return {
           ...node,
+          type: DNDType.CONCEPT_TREE_NODE,
           error: expandErrorMessage,
         };
 
@@ -695,6 +696,7 @@ const expandNode = (
 
       return {
         ...node,
+        type: DNDType.CONCEPT_TREE_NODE,
         label,
         description,
         tables,
@@ -714,7 +716,7 @@ const onExpandPreviousQuery = ({
   rootConcepts,
   query,
   expandErrorMessage,
-}: ActionType<typeof expandPreviousQuery>["payload"]) => {
+}: ActionType<typeof expandPreviousQuery>["payload"]): StandardQueryStateT => {
   return query.root.children.map((child) =>
     expandNode(rootConcepts, child, expandErrorMessage),
   );
@@ -725,9 +727,13 @@ const findPreviousQueries = (state: StandardQueryStateT, queryId: string) => {
   return state.flatMap((group, andIdx) => {
     return group.elements
       .map((concept, orIdx) => [concept, orIdx] as [StandardQueryNodeT, number])
-      .filter((item): item is [PreviousQueryQueryNodeType, number] => {
+      .filter((item): item is [DragItemQuery, number] => {
         const [concept] = item;
-        return !!concept.isPreviousQuery && concept.id === queryId;
+        return (
+          (concept.type === DNDType.PREVIOUS_QUERY ||
+            concept.type === DNDType.PREVIOUS_SECONDARY_ID_QUERY) &&
+          concept.id === queryId
+        );
       })
       .map(([concept, orIdx]) => ({
         andIdx,
@@ -740,7 +746,7 @@ const findPreviousQueries = (state: StandardQueryStateT, queryId: string) => {
 const updatePreviousQueries = (
   state: StandardQueryStateT,
   action: { payload: { queryId: string } },
-  attributes: Partial<PreviousQueryQueryNodeType>,
+  attributes: Partial<DragItemQuery>,
 ) => {
   const queries = findPreviousQueries(state, action.payload.queryId);
 
@@ -854,9 +860,11 @@ const createQueryNodeFromConceptListUploadResult = (
 
   return lookupResult
     ? {
-        type: "CONCEPT_TREE_NODE",
-        height: 0,
-        width: 0,
+        type: DNDType.CONCEPT_TREE_NODE,
+        dragContext: {
+          height: 0,
+          width: 0,
+        },
         label,
         ids: resolvedConcepts,
         tables: lookupResult.tables,
@@ -931,58 +939,6 @@ const onRemoveConceptFromNode = (
     ids: node.ids.filter((id) => id !== conceptId),
   });
 };
-
-// -----------------------------
-// TODO: Figure out, whether we ever want to
-//       include subnodes in the reguar query editor
-//       => If we do, use this method, if we don't remove it
-// -----------------------------
-//
-// const toggleIncludeSubnodes = (state: StateType, { andIdx, orIdx }: Object) => {
-//   const { includeSubnodes } = action.payload;
-
-//   const node = state[andIdx].elements[orIdx];
-//   const concept = getConceptById(node.ids);
-
-//   const childIds = [];
-//   const elements = concept.children.map(childId => {
-//     const child = getConceptById(childId);
-
-//     childIds.push(childId);
-
-//     return {
-//       ids: [childId],
-//       label: child.label,
-//       description: child.description,
-//       tables: node.tables,
-//       selects: node.selects,
-//       tree: node.tree
-//     };
-//   });
-
-//   const groupProps = {
-//     elements: [
-//       ...state[andIdx].elements.slice(0, orIdx),
-//       {
-//         ...state[andIdx].elements[orIdx],
-//         includeSubnodes
-//       },
-//       ...state[andIdx].elements.slice(orIdx + 1)
-//     ]
-//   };
-
-//   if (includeSubnodes) {
-//     groupProps.elements.push(...elements);
-//   } else {
-//     groupProps.elements = groupProps.elements.filter(element => {
-//       return !(difference(element.ids, childIds).length === 0);
-//     });
-//   }
-
-//   return setGroupProperties(state, andIdx, groupProps);
-// };
-
-// -----------------------------
 
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,

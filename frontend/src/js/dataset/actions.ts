@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
+import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
 import { useGetDatasets } from "../api/api";
-import type { DatasetIdT } from "../api/types";
-import { defaultError, defaultSuccess } from "../common/actions";
+import type { DatasetIdT, GetDatasetsResponseT } from "../api/types";
+import { ErrorObject } from "../common/actions";
 import { exists } from "../common/helpers/exists";
 import { useLoadTrees } from "../concept-trees/actions";
 import { useLoadQueries } from "../previous-queries/list/actions";
@@ -11,21 +12,18 @@ import { setMessage } from "../snack-message/actions";
 import { clearQuery, loadSavedQuery } from "../standard-query-editor/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
-import {
-  LOAD_DATASETS_START,
-  LOAD_DATASETS_SUCCESS,
-  LOAD_DATASETS_ERROR,
-  SELECT_DATASET,
-  SAVE_QUERY,
-} from "./actionTypes";
 import { setDatasetId } from "./globalDatasetHelper";
 import type { DatasetT } from "./reducer";
 
-export const loadDatasetsStart = () => ({ type: LOAD_DATASETS_START });
-export const loadDatasetsError = (err: any) =>
-  defaultError(LOAD_DATASETS_ERROR, err);
-export const loadDatasetsSuccess = (res: any) =>
-  defaultSuccess(LOAD_DATASETS_SUCCESS, res);
+export type DatasetActions = ActionType<
+  typeof loadDatasets | typeof selectDatasetInput | typeof saveQuery
+>;
+
+export const loadDatasets = createAsyncAction(
+  "dataset/LOAD_DATASETS_START",
+  "dataset/LOAD_DATASETS_SUCCESS",
+  "dataset/LOAD_DATASETS_ERROR",
+)<void, { datasets: GetDatasetsResponseT }, ErrorObject>();
 
 // Done at the very beginning on loading the site
 export const useLoadDatasets = () => {
@@ -35,7 +33,7 @@ export const useLoadDatasets = () => {
   const loadTrees = useLoadTrees();
 
   return async () => {
-    dispatch(loadDatasetsStart());
+    dispatch(loadDatasets.request());
 
     try {
       const datasets = await getDatasets();
@@ -44,7 +42,7 @@ export const useLoadDatasets = () => {
         throw new Error("No valid dataset found");
       }
 
-      dispatch(loadDatasetsSuccess(datasets));
+      dispatch(loadDatasets.success({ datasets }));
 
       const defaultId = datasets[0].id;
 
@@ -53,24 +51,18 @@ export const useLoadDatasets = () => {
       return loadTrees(defaultId);
     } catch (e) {
       dispatch(setMessage({ message: t("datasetSelector.error") }));
-      dispatch(loadDatasetsError(e));
+      dispatch(loadDatasets.failure(e as Error));
     }
   };
 };
 
-export const selectDatasetInput = (id: DatasetIdT | null) => {
-  return {
-    type: SELECT_DATASET,
-    payload: { id },
-  };
-};
+export const selectDatasetInput =
+  createAction("dataset/SELECT")<{ id: DatasetIdT | null }>();
 
-export const saveQuery = (
-  query: StandardQueryStateT,
-  previouslySelectedDatasetId: DatasetIdT,
-) => {
-  return { type: SAVE_QUERY, payload: { query, previouslySelectedDatasetId } };
-};
+export const saveQuery = createAction("dataset/SAVE_QUERY")<{
+  query: StandardQueryStateT;
+  previouslySelectedDatasetId: DatasetIdT;
+}>();
 
 export const useSelectDataset = () => {
   const dispatch = useDispatch();
@@ -84,10 +76,10 @@ export const useSelectDataset = () => {
     query: StandardQueryStateT,
   ) => {
     if (previouslySelectedDatasetId) {
-      dispatch(saveQuery(query, previouslySelectedDatasetId));
+      dispatch(saveQuery({ query, previouslySelectedDatasetId }));
     }
 
-    dispatch(selectDatasetInput(datasetId));
+    dispatch(selectDatasetInput({ id: datasetId }));
 
     // To allow loading trees to check whether they should abort or not
     setDatasetId(datasetId);

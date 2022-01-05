@@ -1,23 +1,22 @@
+import { getType } from "typesafe-actions";
+
 import type {
   ColumnDescription,
   DatasetIdT,
   GetQueryResponseDoneT,
 } from "../api/types";
+import type { Action } from "../app/actions";
 
 import {
-  QUERY_RESULT_ERROR,
-  QUERY_RESULT_RESET,
-  QUERY_RESULT_RUNNING,
-  QUERY_RESULT_START,
-  QUERY_RESULT_SUCCESS,
-  START_QUERY_ERROR,
-  START_QUERY_START,
-  START_QUERY_SUCCESS,
-  STOP_QUERY_ERROR,
-  STOP_QUERY_START,
-  STOP_QUERY_SUCCESS,
-} from "./actionTypes";
-import { QueryTypeT } from "./actions";
+  queryResultErrorAction,
+  queryResultReset,
+  queryResultRunning,
+  queryResultStart,
+  queryResultSuccess,
+  QueryTypeT,
+  startQuery,
+  stopQuery,
+} from "./actions";
 
 interface APICallType {
   loading?: boolean;
@@ -52,6 +51,10 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
     queryResult: null,
   };
 
+  const queryTypeMatches = (action: { payload: { queryType: QueryTypeT } }) => {
+    return action.payload.queryType === type;
+  };
+
   const getQueryResult = (
     data: GetQueryResponseDoneT,
     datasetId: DatasetIdT,
@@ -70,65 +73,81 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
 
   return (
     state: QueryRunnerStateT = initialState,
-    action: Object,
+    action: Action,
   ): QueryRunnerStateT => {
-    if (!action.payload || action.payload.queryType !== type) {
-      return state;
-    }
-
     switch (action.type) {
-      // To start a query
-      case START_QUERY_START:
-        return {
-          ...state,
-          stopQuery: {},
-          startQuery: { loading: true },
-          queryResult: null,
-        };
-      case START_QUERY_SUCCESS:
-        return {
-          ...state,
-          runningQuery: action.payload.data.id,
-          queryRunning: true,
-          stopQuery: {},
-          startQuery: { success: true },
-        };
-      case START_QUERY_ERROR:
-        return {
-          ...state,
-          stopQuery: {},
-          startQuery: {
-            error: action.payload.message || action.payload.status,
-          },
-        };
-
+      case getType(startQuery.request):
+        return queryTypeMatches(action)
+          ? {
+              ...state,
+              stopQuery: {},
+              startQuery: { loading: true },
+              queryResult: null,
+            }
+          : state;
+      case getType(startQuery.success):
+        return queryTypeMatches(action)
+          ? {
+              ...state,
+              runningQuery: action.payload.data.id,
+              queryRunning: true,
+              stopQuery: {},
+              startQuery: { success: true },
+            }
+          : state;
+      case getType(startQuery.failure):
+        return queryTypeMatches(action)
+          ? {
+              ...state,
+              stopQuery: {},
+              startQuery: {
+                error: action.payload.message || action.payload.status,
+              },
+            }
+          : state;
       // To cancel a query
-      case STOP_QUERY_START:
-        return { ...state, startQuery: {}, stopQuery: { loading: true } };
-      case STOP_QUERY_SUCCESS:
-        return {
-          ...state,
-          runningQuery: null,
-          progress: undefined,
-          queryRunning: false,
-          startQuery: {},
-          stopQuery: { success: true },
-        };
-      case STOP_QUERY_ERROR:
-        return {
-          ...state,
-          startQuery: {},
-          stopQuery: { error: action.payload.message || action.payload.status },
-        };
+      case getType(stopQuery.request):
+        return queryTypeMatches(action)
+          ? { ...state, startQuery: {}, stopQuery: { loading: true } }
+          : state;
+      case getType(stopQuery.success):
+        return queryTypeMatches(action)
+          ? {
+              ...state,
+              runningQuery: null,
+              progress: undefined,
+              queryRunning: false,
+              startQuery: {},
+              stopQuery: { success: true },
+            }
+          : state;
+      case getType(stopQuery.failure):
+        return queryTypeMatches(action)
+          ? {
+              ...state,
+              startQuery: {},
+              stopQuery: {
+                error: action.payload.message || action.payload.status,
+              },
+            }
+          : state;
 
       // To check for query results
-      case QUERY_RESULT_START:
-        return { ...state, queryResult: { loading: true } };
-      case QUERY_RESULT_RUNNING:
-        return { ...state, progress: action.payload.progress };
-      case QUERY_RESULT_RESET:
-        return { ...state, queryResult: { loading: false } };
-      case QUERY_RESULT_SUCCESS:
+      case getType(queryResultStart):
+        return queryTypeMatches(action)
+          ? { ...state, queryResult: { loading: true } }
+          : state;
+      case getType(queryResultRunning):
+        return queryTypeMatches(action)
+          ? { ...state, progress: action.payload.progress }
+          : state;
+      case getType(queryResultReset):
+        return queryTypeMatches(action)
+          ? { ...state, queryResult: { loading: false } }
+          : state;
+      case getType(queryResultSuccess):
+        if (!queryTypeMatches(action)) return state;
+
         const queryResult = getQueryResult(
           action.payload.data,
           action.payload.datasetId,
@@ -141,7 +160,9 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
           progress: undefined,
           queryRunning: false,
         };
-      case QUERY_RESULT_ERROR:
+      case getType(queryResultErrorAction):
+        if (!queryTypeMatches(action)) return state;
+
         const { payload } = action;
 
         return {

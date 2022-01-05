@@ -16,7 +16,7 @@ const PaneTabNavigation: FC<PropsT> = ({ tabs, paneType }) => {
   );
   const dispatch = useDispatch();
 
-  const onClickTab = (tab: string) => dispatch(clickPaneTab(paneType, tab));
+  const onClickTab = (tab: string) => dispatch(clickPaneTab({ paneType, tab }));
 
   return (
     <TabNavigation onClickTab={onClickTab} activeTab={activeTab} tabs={tabs} />

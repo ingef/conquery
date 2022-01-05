@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import type { DatasetIdT } from "../api/types";
 import ConceptTreeList from "../concept-trees/ConceptTreeList";
 import ConceptTreeSearchBox from "../concept-trees/ConceptTreeSearchBox";
-import { getAreTreesAvailable } from "../concept-trees/selectors";
+import { useAreTreesAvailable } from "../concept-trees/selectors";
 import FormConfigsTab from "../external-forms/form-configs/FormConfigsTab";
 import Pane from "../pane/Pane";
 import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
@@ -24,9 +24,7 @@ const LeftPane = () => {
   const selectedDatasetId = useSelector<StateT, DatasetIdT | null>(
     (state) => state.datasets.selectedDatasetId,
   );
-  const areTreesAvailable = useSelector<StateT, boolean>((state) =>
-    getAreTreesAvailable(state),
-  );
+  const areTreesAvailable = useAreTreesAvailable();
   const previousQueriesLoading = useSelector<StateT, boolean>(
     (state) => state.previousQueries.loading,
   );
