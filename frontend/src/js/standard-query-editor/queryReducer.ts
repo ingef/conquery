@@ -940,58 +940,6 @@ const onRemoveConceptFromNode = (
   });
 };
 
-// -----------------------------
-// TODO: Figure out, whether we ever want to
-//       include subnodes in the reguar query editor
-//       => If we do, use this method, if we don't remove it
-// -----------------------------
-//
-// const toggleIncludeSubnodes = (state: StateType, { andIdx, orIdx }: Object) => {
-//   const { includeSubnodes } = action.payload;
-
-//   const node = state[andIdx].elements[orIdx];
-//   const concept = getConceptById(node.ids);
-
-//   const childIds = [];
-//   const elements = concept.children.map(childId => {
-//     const child = getConceptById(childId);
-
-//     childIds.push(childId);
-
-//     return {
-//       ids: [childId],
-//       label: child.label,
-//       description: child.description,
-//       tables: node.tables,
-//       selects: node.selects,
-//       tree: node.tree
-//     };
-//   });
-
-//   const groupProps = {
-//     elements: [
-//       ...state[andIdx].elements.slice(0, orIdx),
-//       {
-//         ...state[andIdx].elements[orIdx],
-//         includeSubnodes
-//       },
-//       ...state[andIdx].elements.slice(orIdx + 1)
-//     ]
-//   };
-
-//   if (includeSubnodes) {
-//     groupProps.elements.push(...elements);
-//   } else {
-//     groupProps.elements = groupProps.elements.filter(element => {
-//       return !(difference(element.ids, childIds).length === 0);
-//     });
-//   }
-
-//   return setGroupProperties(state, andIdx, groupProps);
-// };
-
-// -----------------------------
-
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
 // like `dateRange` or `exclude`.

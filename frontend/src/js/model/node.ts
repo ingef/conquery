@@ -47,8 +47,7 @@ export const nodeHasNonDefaultSettings = (node: StandardQueryNodeT) =>
   node.excludeTimestamps ||
   node.excludeFromSecondaryId ||
   (nodeIsConceptQueryNode(node) &&
-    (node.includeSubnodes || // TODO REFACTOR / TYPE THIS ONE
-      objectHasNonDefaultSelects(node) ||
+    (objectHasNonDefaultSelects(node) ||
       nodeHasNonDefaultTableSettings(node) ||
       nodeHasNonDefaultExludedTable(node)));
 
