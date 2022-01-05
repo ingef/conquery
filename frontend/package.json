@@ -21,10 +21,10 @@
     "build-storybook": "build-storybook -s public"
   },
   "dependencies": {
-    "@emotion/babel-plugin": "^11.0.0-next.12",
-    "@emotion/is-prop-valid": "^1.0.0",
-    "@emotion/react": "^11.0.0-next.12",
-    "@emotion/styled": "^11.0.0-next.12",
+    "@emotion/babel-plugin": "^11.7.2",
+    "@emotion/is-prop-valid": "^1.1.1",
+    "@emotion/react": "^11.7.1",
+    "@emotion/styled": "^11.6.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.34",
     "@fortawesome/free-regular-svg-icons": "^5.13.0",
     "@fortawesome/free-solid-svg-icons": "^5.9.0",
@@ -108,7 +108,7 @@
     "ie-version": "^0.1.0",
     "papaparse": "^5.0.0",
     "prettier": "^2.2.1",
-    "react-app-rewired": "^2.1.5",
+    "react-app-rewired": "^2.1.11",
     "react-scripts": "^5.0.0",
     "redux-logger": "^3.0.6",
     "redux-mock-store": "^1.5.1",
