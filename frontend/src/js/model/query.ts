@@ -1,3 +1,4 @@
+import { exists } from "../common/helpers/exists";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
   PreviousQueryQueryNodeType,
@@ -9,6 +10,8 @@ import { TIMEBASED_OPERATOR_TYPES } from "../timebased-query-editor/reducer";
 import { nodeIsConceptQueryNode } from "./node";
 
 function isTimebasedQuery(node: PreviousQueryQueryNodeType) {
+  if (!node.query) return false;
+
   const queryString = JSON.stringify(node.query);
 
   return TIMEBASED_OPERATOR_TYPES.some((op) => queryString.indexOf(op) !== -1);
@@ -29,7 +32,9 @@ export function isQueryExpandable(node: StandardQueryNodeT) {
   if (nodeIsConceptQueryNode(node) || !node.canExpand) {
     return false;
   } else {
-    return !isTimebasedQuery(node) && !isExternalQuery(node);
+    return (
+      exists(node.query) && !isTimebasedQuery(node) && !isExternalQuery(node)
+    );
   }
 }
 

@@ -1,8 +1,8 @@
-import { GetMeResponseT } from "js/api/types";
 import { useDispatch } from "react-redux";
 import { ActionType, createAsyncAction } from "typesafe-actions";
 
 import { useGetMe } from "../api/api";
+import type { GetMeResponseT } from "../api/types";
 import { ErrorObject, errorPayload, successPayload } from "../common/actions";
 
 export type UserActions = ActionType<typeof loadMe>;

@@ -205,6 +205,7 @@ export interface QueryConceptNodeT {
 export type QueryIdT = string;
 export interface SavedQueryNodeT {
   type: "SAVED_QUERY";
+  excludeFromSecondaryId: boolean;
   query: QueryIdT; // TODO: rename this "id"
 }
 

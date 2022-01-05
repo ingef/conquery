@@ -17,19 +17,21 @@ interface PropsT {
   onIndicateEditFolders: () => void;
 }
 
+const getDragType = (query: PreviousQueryT) => {
+  return query.queryType === "CONCEPT_QUERY"
+    ? DNDType.PREVIOUS_QUERY
+    : DNDType.PREVIOUS_SECONDARY_ID_QUERY;
+};
+
 const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
   const ref = useRef<HTMLDivElement | null>(null);
-  const dragType =
-    query.queryType === "CONCEPT_QUERY"
-      ? DNDType.PREVIOUS_QUERY
-      : DNDType.PREVIOUS_SECONDARY_ID_QUERY;
 
   const item: DragItemQuery = {
     dragContext: {
       width: 0,
       height: 0,
     },
-    type: dragType,
+    type: getDragType(query),
     id: query.id,
     label: query.label,
     canExpand: query.canExpand,
@@ -42,6 +44,7 @@ const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
     item,
     begin: () => ({
       ...item,
+      type: getDragType(query),
       ...getWidthAndHeight(ref),
     }),
   });

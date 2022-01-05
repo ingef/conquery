@@ -183,19 +183,19 @@ const onDropOrNode = (
     ...state.slice(andIdx + 1),
   ];
 
-  const { movedFromAndIdx, movedFromOrIdx } = item.dragContext;
+  if (!isMovedObject(item)) {
+    return nextState;
+  }
 
-  return exists(movedFromAndIdx) && exists(movedFromOrIdx)
-    ? movedFromAndIdx === movedFromOrIdx
-      ? onDeleteNode(nextState, {
-          andIdx: movedFromAndIdx,
-          orIdx: movedFromOrIdx + 1,
-        })
-      : onDeleteNode(nextState, {
-          andIdx: movedFromAndIdx,
-          orIdx: movedFromOrIdx,
-        })
-    : nextState;
+  return item.dragContext.movedFromAndIdx === andIdx
+    ? onDeleteNode(nextState, {
+        andIdx: item.dragContext.movedFromAndIdx,
+        orIdx: item.dragContext.movedFromOrIdx + 1,
+      })
+    : onDeleteNode(nextState, {
+        andIdx: item.dragContext.movedFromAndIdx,
+        orIdx: item.dragContext.movedFromOrIdx,
+      });
 };
 
 // Delete a single Node (concept inside a group)
@@ -658,8 +658,10 @@ const expandNode = (
         ),
       };
     case "SAVED_QUERY":
+      debugger;
       return {
         ...node,
+        type: DNDType.PREVIOUS_QUERY,
         id: node.query,
       };
     case "DATE_RESTRICTION":
@@ -681,6 +683,7 @@ const expandNode = (
       if (!lookupResult)
         return {
           ...node,
+          type: DNDType.CONCEPT_TREE_NODE,
           error: expandErrorMessage,
         };
 
@@ -693,6 +696,7 @@ const expandNode = (
 
       return {
         ...node,
+        type: DNDType.CONCEPT_TREE_NODE,
         label,
         description,
         tables,
@@ -712,7 +716,7 @@ const onExpandPreviousQuery = ({
   rootConcepts,
   query,
   expandErrorMessage,
-}: ActionType<typeof expandPreviousQuery>["payload"]) => {
+}: ActionType<typeof expandPreviousQuery>["payload"]): StandardQueryStateT => {
   return query.root.children.map((child) =>
     expandNode(rootConcepts, child, expandErrorMessage),
   );
