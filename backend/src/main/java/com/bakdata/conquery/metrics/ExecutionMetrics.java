@@ -123,7 +123,7 @@ public class ExecutionMetrics {
 				// Report classes and ids used of filters and selects
 				for (CQTable table : ((CQConcept) element).getTables()) {
 
-					for (FilterValue<?,?> filter : table.getFilters()) {
+					for (FilterValue<?> filter : table.getFilters()) {
 						doReport(CLASSES, filter.getFilter().getClass().getSimpleName());
 						doReport(FILTERS, filter.getFilter().getId().toString());
 					}

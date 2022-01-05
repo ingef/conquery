@@ -26,7 +26,7 @@ import lombok.ToString;
 public class CQTable {
 	@Valid
 	@NotNull
-	private List<FilterValue<?,?>> filters = Collections.emptyList();
+	private List<FilterValue<?>> filters = Collections.emptyList();
 
 	@NotNull
 	@NsIdRefCollection

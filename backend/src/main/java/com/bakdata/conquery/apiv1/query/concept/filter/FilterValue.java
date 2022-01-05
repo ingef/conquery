@@ -24,10 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/**
- *
- * @apiNote SUBMITTED_VALUE and FILTER_VALUE are usually the same, but can be different for {@link FilterValue}s implementing resolve.
- */
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -35,7 +32,7 @@ import lombok.ToString;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @ToString(of = "value")
-public abstract class FilterValue<SUBMITTED_VALUE, FILTER_VALUE> {
+public abstract class FilterValue<FILTER_VALUE> {
 	@NotNull
 	@NsIdRef
 	private Filter<FILTER_VALUE> filter;
@@ -44,40 +41,22 @@ public abstract class FilterValue<SUBMITTED_VALUE, FILTER_VALUE> {
 	 * Submitted value from query
 	 */
 	@NotNull
-	private SUBMITTED_VALUE value;
+	private FILTER_VALUE value;
 
 	/**
 	 * Is executed on a shard
 	 * @return A query param node.
 	 */
-	public abstract FilterNode<?> createNode();
-
-	public abstract void resolve(QueryResolveContext context);
-
-	/**
-	 * Simplified FilterValue which can forward is value into a filter node without transformation
-	 * @param <F_VALUE>
-	 */
-	@NoArgsConstructor
-	private abstract static class Forwarding<F_VALUE> extends FilterValue<F_VALUE, F_VALUE> {
-
-		public Forwarding(Filter<F_VALUE> filter, F_VALUE value) {
-			super(filter, value);
-		}
-
-		public FilterNode<?> createNode() {
-			return getFilter().createFilterNode(getValue());
-		}
-
-		public void resolve(QueryResolveContext context){}
-
+	public FilterNode<?> createNode() {
+		return getFilter().createFilterNode(getValue());
 	}
+	public  void resolve(QueryResolveContext context){}
 
 
 	@NoArgsConstructor
 	@CPSType(id = "MULTI_SELECT", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class MultiSelectFilterValue extends Forwarding<String[]> {
+	public static class MultiSelectFilterValue extends FilterValue<String[]> {
 		public MultiSelectFilterValue(@NsIdRef Filter<String[]> filter, String[] value) {
 			super(filter, value);
 		}
@@ -86,7 +65,7 @@ public abstract class FilterValue<SUBMITTED_VALUE, FILTER_VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "BIG_MULTI_SELECT", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class BigMultiSelectFilterValue extends Forwarding<String[]> {
+	public static class BigMultiSelectFilterValue extends FilterValue<String[]> {
 		public BigMultiSelectFilterValue(@NsIdRef Filter<String[]> filter, String[] value) {
 			super(filter, value);
 		}
@@ -95,7 +74,7 @@ public abstract class FilterValue<SUBMITTED_VALUE, FILTER_VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "SELECT", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class SelectFilterValue extends Forwarding<String> {
+	public static class SelectFilterValue extends FilterValue<String> {
 		public SelectFilterValue(@NsIdRef Filter<String> filter, String value) {
 			super(filter, value);
 		}
@@ -104,7 +83,7 @@ public abstract class FilterValue<SUBMITTED_VALUE, FILTER_VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "STRING", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class StringFilterValue extends Forwarding<String> {
+	public static class StringFilterValue extends FilterValue<String> {
 		public StringFilterValue(@NsIdRef Filter<String> filter, String value) {
 			super(filter, value);
 		}
@@ -113,7 +92,7 @@ public abstract class FilterValue<SUBMITTED_VALUE, FILTER_VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "INTEGER_RANGE", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class IntegerRangeFilterValue extends Forwarding<LongRange> {
+	public static class IntegerRangeFilterValue extends FilterValue<LongRange> {
 		public IntegerRangeFilterValue(@NsIdRef Filter<LongRange> filter, LongRange value) {
 			super(filter, value);
 		}
@@ -126,7 +105,7 @@ public abstract class FilterValue<SUBMITTED_VALUE, FILTER_VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "MONEY_RANGE", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class MoneyRangeFilterValue extends Forwarding<LongRange> {
+	public static class MoneyRangeFilterValue extends FilterValue<LongRange> {
 		public MoneyRangeFilterValue(@NsIdRef Filter<LongRange> filter, LongRange value) {	super(filter, value);
 		}
 	}
@@ -134,7 +113,7 @@ public abstract class FilterValue<SUBMITTED_VALUE, FILTER_VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "REAL_RANGE", base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class RealRangeFilterValue extends Forwarding<Range<BigDecimal>> {
+	public static class RealRangeFilterValue extends FilterValue<Range<BigDecimal>> {
 		public RealRangeFilterValue(@NsIdRef Filter<Range<BigDecimal>> filter, Range<BigDecimal> value) {
 			super(filter, value);
 		}
@@ -142,29 +121,12 @@ public abstract class FilterValue<SUBMITTED_VALUE, FILTER_VALUE> {
 
 	@CPSType(id = "POSTAL_CODE", base = FilterValue.class)
 	@NoArgsConstructor
-	public static class PostalCodeFilterValue extends FilterValue<PostalCodeSearchEntity, String[]> {
+	public static class PostalCodeFilterValue extends FilterValue<PostalCodeSearchEntity> {
 
-		@JacksonInject
-		private PostalCodesManager postalCodesManager;
-
-		/**
-		 * Resolved value on Manager, that is transferred to the shard and can be feed in to the filter.
-		 */
-		@InternalOnly
-		@Getter
-		private String[] resolvedValue;
-
-		@Override
-		public FilterNode<?> createNode() {
-			return getFilter().createFilterNode(resolvedValue);
-		}
-
+		public PostalCodeFilterValue(@NsIdRef Filter<PostalCodeSearchEntity> filter, PostalCodeSearchEntity value){ super(filter,value);}
 		@Override
 		public void resolve(QueryResolveContext context) {
-			Preconditions.checkNotNull(postalCodesManager);
-			final PostalCodeSearchEntity value = getValue();
-			
-			resolvedValue = postalCodesManager.filterAllNeighbours(Integer.parseInt(value.getPlz()), value.getRadius());
+			getValue().resolve(context);
 		}
 	}
 }
