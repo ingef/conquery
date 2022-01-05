@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.config;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -13,7 +11,12 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import com.univocity.parsers.csv.CsvWriter;
 import com.univocity.parsers.csv.CsvWriterSettings;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.With;
 import org.hibernate.validator.constraints.Length;
 
 /**
@@ -37,7 +40,7 @@ public class CSVConfig {
 	 * Helper method to generate parser settings from the provided options in this class.
 	 * @return Setting object that can be passed into a {@link CsvParser}.
 	 */
-	private CsvParserSettings createCsvParserSettings() {
+	public CsvParserSettings createCsvParserSettings() {
 		CsvParserSettings settings = new CsvParserSettings();
 		settings.setFormat(createCsvFormat());
 		settings.setHeaderExtractionEnabled(parseHeaders);

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.postalcode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -41,23 +42,24 @@ public class PostalCodeProcessor extends AbstractRowProcessor {
 	public void processStarted(ParsingContext context) {
 		super.processStarted(context);
 		final String[] headers = context.headers();
+
 		plz1Index =
 				IntStream.range(0, headers.length)
 						 .filter(i -> LEFT.equals(headers[i]))
 						 .findFirst()
-						 .orElseThrow(() -> new IllegalStateException("Required Column[plz1] is missing in Headers."));
+						 .orElseThrow(() -> new IllegalStateException(String.format("Required Column[plz1] is missing in Headers(%s).", Arrays.toString(headers))));
 
 		plz2Index =
 				IntStream.range(0, headers.length)
 						 .filter(i -> RIGHT.equals(headers[i]))
 						 .findFirst()
-						 .orElseThrow(() -> new IllegalStateException("Required Column[plz2] is missing in Headers."));
+						 .orElseThrow(() -> new IllegalStateException(String.format("Required Column[plz2] is missing in Headers(%s).", Arrays.toString(headers))));
 
 		distanceIndex =
 				IntStream.range(0, headers.length)
 						 .filter(i -> DISTANCE.equals(headers[i]))
 						 .findFirst()
-						 .orElseThrow(() -> new IllegalStateException("Required Column[Distanz_convert_in_km] is missing in Headers."));
+						 .orElseThrow(() -> new IllegalStateException(String.format("Required Column[Distanz_convert_in_km] is missing in Headers(%s).", Arrays.toString(headers))));
 
 
 		context.skipLines(1); //skip headers when reading rows

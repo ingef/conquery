@@ -10,6 +10,7 @@ import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.models.config.CSVConfig;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -34,18 +35,17 @@ public class PostalCodesManager implements Injectable {
 	 * @return Preloaded  {@link PostalCodesManager}
 	 */
 	@SneakyThrows(IOException.class)
-	public static PostalCodesManager loadFrom(@NonNull @NotEmpty String csvFilePath, boolean zipped) {
+	public static PostalCodesManager loadFrom(@NonNull @NotEmpty String csvFilePath, boolean zipped, CSVConfig config) {
 
 		final PostalCodeProcessor rowProcessor = new PostalCodeProcessor();
-		final CsvParserSettings csvParserSettings = new CsvParserSettings();
-		csvParserSettings.setDelimiterDetectionEnabled(true);
-		csvParserSettings.setHeaderExtractionEnabled(true);
+		final CsvParserSettings csvParserSettings = config.createCsvParserSettings();
+
 		csvParserSettings.setProcessor(rowProcessor);
 
-		final InputStream stream =
-				zipped
-				? new GZIPInputStream(In.resource(csvFilePath).asStream())
-				: In.resource(csvFilePath).asStream();
+
+		final InputStream stream = zipped
+								   ? new GZIPInputStream(In.resource(csvFilePath).asStream())
+								   : In.resource(csvFilePath).asStream();
 
 		final CsvParser parser = new CsvParser(csvParserSettings);
 

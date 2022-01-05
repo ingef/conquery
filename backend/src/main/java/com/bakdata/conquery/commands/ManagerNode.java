@@ -114,7 +114,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
 		storage = new MetaStorage(datasetRegistry);
 
-		postalCodesManager = PostalCodesManager.loadFrom("/com/bakdata/conquery/postalcodes.csv", false);
+		postalCodesManager = PostalCodesManager.loadFrom("/com/bakdata/conquery/postalcodes.csv", false, config.getCsv());
 
 		datasetRegistry.injectInto(environment.getObjectMapper());
 		storage.injectInto(environment.getObjectMapper());
