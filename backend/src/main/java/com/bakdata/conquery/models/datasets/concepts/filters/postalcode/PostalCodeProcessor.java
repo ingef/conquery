@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PostalCodeProcessor extends AbstractRowProcessor {
 	private int plz1Index, plz2Index, distanceIndex;
-	final Set<IntIntImmutableSortedPair> loadedPlzCombinations = new HashSet<>();
+	private final Set<IntIntImmutableSortedPair> loadedPlzCombinations = new HashSet<>();
 
 	/**
 	 * loaded {@link PostalCodeDistance}-data
