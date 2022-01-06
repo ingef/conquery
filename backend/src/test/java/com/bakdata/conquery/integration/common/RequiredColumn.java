@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.common;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -9,6 +10,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import lombok.Getter;
 import lombok.Setter;
 import org.assertj.core.util.Strings;
@@ -23,6 +26,20 @@ public class RequiredColumn {
 	private String sharedDictionary;
 
 	private String secondaryId;
+
+	@Nullable
+	private OutputDescription outputDescription;
+
+	public OutputDescription createOutput() {
+		if (outputDescription != null) {
+			return outputDescription;
+		}
+		CopyOutput out = new CopyOutput();
+		out.setInputColumn(getName());
+		out.setInputType(getType());
+		out.setName(getName());
+		return out;
+	}
 
 	public Column toColumn(Table table, CentralRegistry storage) {
 		Column col = new Column();

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
@@ -24,7 +25,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 @Slf4j
 public class CopyOutput extends OutputDescription {
 
-	public CopyOutput(String name, String inputColumn, MajorTypeId typeId){
+	public CopyOutput(String name, String inputColumn, MajorTypeId typeId) {
 		setName(name);
 		this.inputColumn = inputColumn;
 		this.inputType = typeId;
@@ -32,12 +33,12 @@ public class CopyOutput extends OutputDescription {
 
 
 	@Override
-	public int hashCode(){
+	public int hashCode() {
 		return new HashCodeBuilder()
-					   .append(super.hashCode())
-					   .append(inputColumn)
-					   .append(inputType.name())
-					   .toHashCode();
+				.append(super.hashCode())
+				.append(inputColumn)
+				.append(inputType.name())
+				.toHashCode();
 	}
 
 	@NotNull
@@ -69,5 +70,9 @@ public class CopyOutput extends OutputDescription {
 	@Override
 	public MajorTypeId getResultType() {
 		return inputType;
+	}
+
+	public Parser<?, ?> createParser(ConqueryConfig config) {
+		return inputType.createParser(config);
 	}
 }

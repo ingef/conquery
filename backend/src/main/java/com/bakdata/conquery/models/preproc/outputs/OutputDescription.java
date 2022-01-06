@@ -7,11 +7,14 @@ import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
+import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -35,16 +38,31 @@ public abstract class OutputDescription {
 
 	private boolean required = false;
 
+
+	@JsonIgnore
+	private TableInputDescriptor parent;
+
+	/**
+	 * Set the {@link TableInputDescriptor} as parent of an {@link OutputDescription}
+	 * It can be used later for many purposes.
+	 * For example it is used in {@link CompoundDateRangeOutput} to check if the neighbour-columns exist in the table
+	 * @implNote BackReference set here because Jackson does not support for fields in interfaces and abstract classes see also https://github.com/FasterXML/jackson-databind/issues/3304
+	 */
+	@JsonBackReference
+	public void setParent(TableInputDescriptor parent) {
+		this.parent = parent;
+	}
+
 	/**
 	 * Hashcode is used to in validity-hash of Preprocessed files.
 	 */
 	@Override
-	public int hashCode(){
+	public int hashCode() {
 		return new HashCodeBuilder()
-					   .append(name)
-					   .append(required)
-					   .append(getClass().getAnnotation(CPSType.class).id())
-					   .toHashCode();
+				.append(name)
+				.append(required)
+				.append(getClass().getAnnotation(CPSType.class).id())
+				.toHashCode();
 	}
 
 	/**
@@ -52,14 +70,14 @@ public abstract class OutputDescription {
 	 */
 	public abstract class Output {
 
-		public OutputDescription getDescription(){
+		public OutputDescription getDescription() {
 			return OutputDescription.this;
 		}
 
 		/**
 		 * Parse the line/row
-		 * @param row the row to parse
-		 * @param type the Parser for the emitted column
+		 *
+		 * @param row        the row to parse
 		 * @param sourceLine the linenumber of the row in the input file
 		 * @return a value or null
 		 * @throws ParsingException
@@ -72,7 +90,7 @@ public abstract class OutputDescription {
 		public Object createOutput(String[] row, Parser type, long sourceLine) throws ParsingException {
 			final Object parsed = parseLine(row, type, sourceLine);
 
-			if(OutputDescription.this.isRequired() && parsed == null) {
+			if (OutputDescription.this.isRequired() && parsed == null) {
 				throw new IllegalArgumentException(String.format("Required Output[%s] produced NULL value at line %d", OutputDescription.this.getName(), sourceLine));
 			}
 
@@ -83,7 +101,8 @@ public abstract class OutputDescription {
 	@Data
 	public static class OutputException extends Exception {
 		private final OutputDescription source;
-		public OutputException(OutputDescription source, Exception cause){
+
+		public OutputException(OutputDescription source, Exception cause) {
 			super(cause);
 			this.source = source;
 		}
@@ -109,7 +128,8 @@ public abstract class OutputDescription {
 
 	/**
 	 * Instantiate the corresponding {@link Output} for the rows.
-	 * @param headers A map from column names to column indices.
+	 *
+	 * @param headers    A map from column names to column indices.
 	 * @param dateReader
 	 * @return the output for the specific headers.
 	 */
@@ -128,4 +148,7 @@ public abstract class OutputDescription {
 	public ColumnDescription getColumnDescription() {
 		return new ColumnDescription(name, getResultType());
 	}
+
+	public abstract Parser<?, ?> createParser(ConqueryConfig config);
+
 }

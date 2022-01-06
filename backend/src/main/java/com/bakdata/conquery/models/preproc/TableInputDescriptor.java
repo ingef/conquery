@@ -9,10 +9,13 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import groovy.lang.GroovyShell;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -25,11 +28,10 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 /**
  * An input describes transformations on a single CSV file to be loaded into the table described in {@link TableImportDescriptor}.
- *
+ * <p>
  * It requires a primary Output and at least one normal output.
- *
+ * <p>
  * Input data can be filtered using the field filter, which is evaluated as a groovy script on every row.
- *
  */
 @Data
 @Slf4j
@@ -54,7 +56,9 @@ public class TableInputDescriptor {
 	@Valid
 	private OutputDescription primary = new CopyOutput("pid", "id", MajorTypeId.STRING);
 
-	@Valid @NotEmpty
+	@Valid
+	@NotEmpty
+	@JsonManagedReference
 	private OutputDescription[] output;
 
 	/**
@@ -62,13 +66,23 @@ public class TableInputDescriptor {
 	 */
 	public static final String[] FAKE_HEADERS = new String[50];
 
-	@JsonIgnore @ValidationMethod(message = "Groovy script is not valid.")
-	public boolean isValidGroovyScript(){
-		try{
+	@JsonIgnore
+	@ValidationMethod(message = "One or more columns are duplicated")
+	public boolean allColumnsDistinct() {
+		return Arrays.stream(getOutput()).map(OutputDescription::getName)
+					 .distinct()
+					 .count() == getOutput().length;
+	}
+
+
+	@JsonIgnore
+	@ValidationMethod(message = "Groovy script is not valid.")
+	public boolean isValidGroovyScript() {
+		try {
 			createFilter(FAKE_HEADERS);
 		}
 		catch (Exception ex) {
-			log.error("Groovy script is not valid",ex);
+			log.error("Groovy script is not valid", ex);
 			return false;
 		}
 
@@ -84,7 +98,7 @@ public class TableInputDescriptor {
 
 		for (int index = 0; index < output.length; index++) {
 			int prev = names.put(output[index].getName(), index);
-			if(prev != -1){
+			if (prev != -1) {
 				log.error("Duplicate Output to Column[{}] at indices {} and {}", output[index].getName(), prev, index);
 				return false;
 			}
@@ -99,8 +113,8 @@ public class TableInputDescriptor {
 		return primary.getResultType() == MajorTypeId.STRING;
 	}
 
-	public GroovyPredicate createFilter(String[] headers){
-		if(filter == null) {
+	public GroovyPredicate createFilter(String[] headers) {
+		if (filter == null) {
 			return null;
 		}
 
@@ -115,8 +129,9 @@ public class TableInputDescriptor {
 				groovy.setVariable(headers[col], col);
 			}
 
-			return  (GroovyPredicate) groovy.parse(filter);
-		} catch (Exception e) {
+			return (GroovyPredicate) groovy.parse(filter);
+		}
+		catch (Exception e) {
 			throw new RuntimeException("Failed to compile filter `" + filter + "`", e);
 		}
 	}
@@ -129,7 +144,6 @@ public class TableInputDescriptor {
 	public ColumnDescription getColumnDescription(int i) {
 		return output[i].getColumnDescription();
 	}
-
 
 	/**
 	 * Create a mapping from a header to it's column position.
