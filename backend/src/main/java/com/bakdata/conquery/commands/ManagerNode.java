@@ -59,7 +59,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 /**
- * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to 
+ * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to
  * {@link ShardNode}s and respectively the {@link Worker}s hosted on them. The {@link ManagerNode} can also
  * forward queries or results to statistic backends. Finally it collects the results of queries for access over the api.
  */
@@ -199,9 +199,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void loadNamespaces() {
-		final Collection<NamespaceStorage > storages =
-				config.getStorage().loadNamespaceStorages();
+		final Collection<NamespaceStorage > storages = config.getStorage().loadNamespaceStorages();
 		final ObjectWriter objectWriter = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
+
 		for(NamespaceStorage namespaceStorage : storages) {
 			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), objectWriter);
 			datasetRegistry.add(ns);
@@ -247,7 +247,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			}
 		} else {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
-			return;
 		}
 	}
 

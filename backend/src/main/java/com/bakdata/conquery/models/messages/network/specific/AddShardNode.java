@@ -7,16 +7,16 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Dummy message that is sent to ManagerNode, to authenticate the connection as a ShardNode connection.
- * This helps to avoids retaining connections from non-ShardNodes.
+ * This helps to avoid retaining connections from non-ShardNodes.
  */
-@CPSType(id="ADD_SHARD_NODE", base=NetworkMessage.class)
-@RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter @Slf4j
+@CPSType(id = "ADD_SHARD_NODE", base = NetworkMessage.class)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@Slf4j
 public class AddShardNode extends MessageToManagerNode {
 
 	@Override
@@ -24,11 +24,10 @@ public class AddShardNode extends MessageToManagerNode {
 		final ShardNodeInformation nodeInformation = new ShardNodeInformation(
 				new NetworkSession(context.getSession().getSession()),
 				context.getBackpressure()
-
 		);
 
 		context.getNamespaces().getShardNodes().put(context.getRemoteAddress(), nodeInformation);
 
-		log.info("ShardNode {} registered.", context.getRemoteAddress());
+		log.info("ShardNode `{}` registered.", context.getRemoteAddress());
 	}
 }
