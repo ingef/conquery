@@ -7,29 +7,41 @@ import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@ToString(callSuper = true)
 public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNode> {
+	/**
+	 * Threshold of jobs at which transmission of new messages will block for ManagerNode until below threshold.
+	 */
 	private final int backpressure;
+
+	/**
+	 * Contains latest state of the Job-Queue of the Shard.
+	 *
+	 * @implNote This is sent by the shards at regular intervals, not polled.
+	 */
 	@JsonIgnore
 	@Getter
 	private transient JobManagerStatus jobManagerStatus = new JobManagerStatus();
+
+	/**
+	 * Used to await/notify for full job-queues.
+	 */
 	@JsonIgnore
 	private final transient Object jobManagerSync = new Object();
-
-	private final Gauge latenessGauge;
 
 	public ShardNodeInformation(NetworkSession session, int backpressure) {
 		super(session);
 		this.backpressure = backpressure;
 
 		// This metric tracks when the last message from the corresponding shard was received.
-		latenessGauge = SharedMetricRegistries.getDefault().gauge(
+		SharedMetricRegistries.getDefault().gauge(
 				getLatenessMetricName(),
 				() -> this::getMillisSinceLastStatus
 		);
