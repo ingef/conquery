@@ -182,8 +182,8 @@ public class IntegrationTests {
 	@NotNull
 	private static ConqueryConfig getConfigOverride(IntegrationTest test, File workDir) {
 		ConqueryConfig conf = Cloner.clone(DEFAULT_CONFIG, Map.of(), MAPPER);
-		test.overrideConfig(conf, workDir);
-		return conf;
+		final ConqueryConfig newConf = test.overrideConfig(conf, workDir);
+		return newConf;
 	}
 
 	@SneakyThrows

@@ -40,8 +40,8 @@ public abstract class ConqueryTestSpec {
 
 	public abstract void importRequiredData(StandaloneSupport support) throws Exception;
 
-	public void overrideConfig(ConqueryConfig config){
-
+	public ConqueryConfig overrideConfig(ConqueryConfig config){
+		return config;
 	}
 
 	@Override

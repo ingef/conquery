@@ -74,8 +74,8 @@ public class FormTest extends ConqueryTestSpec {
 	private Form form;
 
 	@Override
-	public void overrideConfig(ConqueryConfig config) {
-		config.setStorage(new NonPersistentStoreFactory());
+	public ConqueryConfig overrideConfig(ConqueryConfig config) {
+		return config.withStorage(new NonPersistentStoreFactory());
 	}
 
 	@Override

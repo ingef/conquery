@@ -14,13 +14,12 @@ import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
+import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
-import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
-import com.bakdata.conquery.models.common.CDateSet;
-
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -31,12 +30,14 @@ import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.With;
 
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @With
 public class ConqueryConfig extends Configuration {
 
@@ -112,14 +113,14 @@ public class ConqueryConfig extends Configuration {
 
 
 	//this is needed to force start the REST backend on /api/
-	public ConqueryConfig() {
-		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
+	{
+		((DefaultServerFactory) getServerFactory()).setJerseyRootPath("/api/");
 	}
 
 	@Override
 	public void setServerFactory(ServerFactory factory) {
 		super.setServerFactory(factory);
-		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
+		((DefaultServerFactory) getServerFactory()).setJerseyRootPath("/api/");
 	}
 
 	public void initialize(ManagerNode node) {
