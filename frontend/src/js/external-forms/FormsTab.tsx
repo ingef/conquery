@@ -55,13 +55,12 @@ const useLoadForms = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   }, [store, datasetId]);
 };
 
-const useInitializeForm = () => {
-  const activeLang = useActiveLang();
-  const config = useSelector<StateT, Form | null>(selectFormConfig);
+export const useDatasetOptions = () => {
   const availableDatasets = useSelector<StateT, DatasetT[]>(
     (state) => state.datasets.data,
   );
-  const datasetOptions = useMemo(
+
+  return useMemo(
     () =>
       availableDatasets.map((dataset) => ({
         label: dataset.label,
@@ -69,9 +68,16 @@ const useInitializeForm = () => {
       })),
     [availableDatasets],
   );
+};
+
+const useInitializeForm = () => {
+  const activeLang = useActiveLang();
+  const config = useSelector<StateT, Form | null>(selectFormConfig);
   const allFields = useMemo(() => {
     return config ? collectAllFormFields(config.fields) : [];
   }, [config]);
+
+  const datasetOptions = useDatasetOptions();
 
   const defaultValues = useMemo(
     () =>
