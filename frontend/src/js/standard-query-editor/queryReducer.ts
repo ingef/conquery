@@ -21,7 +21,7 @@ import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 import type { TreesT } from "../concept-trees/reducer";
-import { isMultiSelectFilter } from "../model/filter";
+import { isMultiSelectFilter, mergeFilterOptions } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { resetSelects } from "../model/select";
 import { resetAllTableSettings, tableWithDefaults } from "../model/table";
@@ -830,14 +830,14 @@ const onToggleSecondaryIdExclude = (
   });
 };
 
-const mergeFilterOptions = (
+const mergeStandardQueryFilterOptions = (
   state: StandardQueryStateT,
   {
     andIdx,
     orIdx,
     tableIdx,
     filterIdx,
-  }: Omit<ActionType<typeof loadFilterSuggestionsSuccess>["payload"], "data">,
+  }: { andIdx: number; orIdx: number; tableIdx: number; filterIdx: number },
   newOptions: SelectOptionT[],
 ) => {
   // -------------
@@ -852,27 +852,7 @@ const mergeFilterOptions = (
   const filter = filters[filterIdx];
   // -------------
 
-  if (
-    filter.type === "BIG_MULTI_SELECT" ||
-    filter.type === "MULTI_SELECT" ||
-    filter.type === "SELECT"
-  ) {
-    const mergedOptions = [...filter.options];
-
-    for (const option of newOptions) {
-      const existingOption = mergedOptions.find(
-        (o) => o.value === option.value,
-      );
-
-      if (!existingOption) {
-        mergedOptions.push(option);
-      }
-    }
-
-    return mergedOptions;
-  }
-
-  return null;
+  return mergeFilterOptions(filter, newOptions);
 };
 
 const onLoadFilterSuggestionsSuccess = (
@@ -884,7 +864,9 @@ const onLoadFilterSuggestionsSuccess = (
   );
 
   const options =
-    rest.page === 0 ? newOptions : mergeFilterOptions(state, rest, newOptions);
+    rest.page === 0
+      ? newOptions
+      : mergeStandardQueryFilterOptions(state, rest, newOptions);
 
   if (!exists(options)) return state;
 
