@@ -202,6 +202,7 @@
     "insertAll": "Insert all",
     "options": "1 Option",
     "options_plural": "{{count}} Options",
+    "ofTotal": " of {{count}}",
     "tagPlaceholder": "Folder ...",
     "createTag": "Create folder: {{label}}"
   },

@@ -59,6 +59,7 @@ export type MultiSelectFilterValueT = SelectOptionT[];
 export interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
   options: SelectOptionT[];
+  total?: number; // Not coming via the API yet, but may come soon, will be set when loading more options via autocomplete
   defaultValue?: string[];
   allowDropFile: boolean;
 }

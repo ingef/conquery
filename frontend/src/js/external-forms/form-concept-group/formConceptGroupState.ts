@@ -10,6 +10,7 @@ import {
   getConceptsByIdsWithTablesAndSelects,
 } from "../../concept-trees/globalTreeStoreHelper";
 import { TreesT } from "../../concept-trees/reducer";
+import { mergeFilterOptions } from "../../model/filter";
 import { NodeResetConfig } from "../../model/node";
 import { resetSelects } from "../../model/select";
 import {
@@ -468,11 +469,26 @@ export const updateFilterOptionsWithSuggestions = (
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  suggestions: PostFilterSuggestionsResponseT["values"],
+  data: PostFilterSuggestionsResponseT,
+  page: number,
 ) => {
-  const options = suggestions.map(filterSuggestionToSelectOption);
+  const concept = value[valueIdx].concepts[conceptIdx];
+
+  if (!concept) return value;
+
+  const filter = concept.tables[tableIdx].filters[filterIdx];
+
+  const newOptions: SelectOptionT[] = data.values.map(
+    filterSuggestionToSelectOption,
+  );
+
+  const options =
+    page === 0 ? newOptions : mergeFilterOptions(filter, newOptions);
+
+  if (!exists(options)) return value;
 
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
     options,
+    total: data.total,
   });
 };

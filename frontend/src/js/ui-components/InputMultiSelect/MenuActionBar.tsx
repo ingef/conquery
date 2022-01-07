@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 
 import { TransparentButton } from "../../button/TransparentButton";
+import { exists } from "../../common/helpers/exists";
 
 const Row = styled("div")`
   display: flex;
@@ -20,15 +21,19 @@ const InfoText = styled("p")`
 
 interface Props {
   optionsCount: number;
+  total?: number;
   onInsertAllClick: () => void;
 }
 
-const MenuActionBar = ({ optionsCount, onInsertAllClick }: Props) => {
+const MenuActionBar = ({ optionsCount, total, onInsertAllClick }: Props) => {
   const { t } = useTranslation();
   return (
     <Row>
       <InfoText>
         {t("inputMultiSelect.options", { count: optionsCount })}
+        {exists(total) &&
+          total !== optionsCount &&
+          t("inputMultiSelect.ofTotal", { count: total })}
       </InfoText>
       <TransparentButton
         tiny

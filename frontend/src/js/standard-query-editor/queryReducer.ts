@@ -21,7 +21,7 @@ import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 import type { TreesT } from "../concept-trees/reducer";
-import { isMultiSelectFilter } from "../model/filter";
+import { isMultiSelectFilter, mergeFilterOptions } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { resetSelects } from "../model/select";
 import { resetAllTableSettings, tableWithDefaults } from "../model/table";
@@ -303,8 +303,6 @@ const setNodeFilterProperties = (
 
   const table = nodeFromState.tables[tableIdx];
   const { filters } = table;
-
-  if (!filters) return state;
 
   const filter = filters[filterIdx];
 
@@ -832,19 +830,49 @@ const onToggleSecondaryIdExclude = (
   });
 };
 
+const mergeStandardQueryFilterOptions = (
+  state: StandardQueryStateT,
+  {
+    andIdx,
+    orIdx,
+    tableIdx,
+    filterIdx,
+  }: { andIdx: number; orIdx: number; tableIdx: number; filterIdx: number },
+  newOptions: SelectOptionT[],
+) => {
+  // -------------
+  // A bit verbose, just to get the filter, maybe extract to a fn?
+  const nodeFromState = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(nodeFromState)) return null;
+
+  const table = nodeFromState.tables[tableIdx];
+  const { filters } = table;
+
+  const filter = filters[filterIdx];
+  // -------------
+
+  return mergeFilterOptions(filter, newOptions);
+};
+
 const onLoadFilterSuggestionsSuccess = (
   state: StandardQueryStateT,
   { data, ...rest }: ActionType<typeof loadFilterSuggestionsSuccess>["payload"],
 ) => {
-  // When [] comes back from the API, don't touch the current options
-  if (!data || data.length === 0) {
-    return state;
-  }
+  const newOptions: SelectOptionT[] = data.values.map(
+    filterSuggestionToSelectOption,
+  );
 
-  const options: SelectOptionT[] = data.map(filterSuggestionToSelectOption);
+  const options =
+    rest.page === 0
+      ? newOptions
+      : mergeStandardQueryFilterOptions(state, rest, newOptions);
+
+  if (!exists(options)) return state;
 
   return setNodeFilterProperties(state, rest, {
     options,
+    total: data.total,
   });
 };
 

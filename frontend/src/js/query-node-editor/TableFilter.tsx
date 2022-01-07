@@ -30,6 +30,8 @@ export interface BaseTableFilterProps {
     tableIdx: number,
     filterId: FilterIdT,
     prefix: string,
+    page: number,
+    pageSize: number,
   ) => Promise<void>;
   onShowDescription: (filterIdx: number) => void;
 }
@@ -99,8 +101,15 @@ const TableFilter = ({
             options={filter.options}
             disabled={!!excludeTable}
             allowDropFile={!!filter.allowDropFile}
-            onLoad={(prefix: string) =>
-              onLoadFilterSuggestions(filterIdx, filter.id, prefix)
+            total={filter.total}
+            onLoad={(prefix, page, pageSize) =>
+              onLoadFilterSuggestions(
+                filterIdx,
+                filter.id,
+                prefix,
+                page,
+                pageSize,
+              )
             }
           />
         );

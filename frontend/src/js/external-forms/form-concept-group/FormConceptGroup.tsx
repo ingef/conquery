@@ -463,8 +463,7 @@ const FormConceptGroup = (props: Props) => {
           }}
           onLoadFilterSuggestions={async (params, tableIdx, filterIdx) => {
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
-            const { values /* total // TODO: use for pagination */ } =
-              await postPrefixForSuggestions(params);
+            const data = await postPrefixForSuggestions(params);
 
             props.onChange(
               updateFilterOptionsWithSuggestions(
@@ -473,7 +472,8 @@ const FormConceptGroup = (props: Props) => {
                 conceptIdx,
                 tableIdx,
                 filterIdx,
-                values,
+                data,
+                params.page,
               ),
             );
           }}
