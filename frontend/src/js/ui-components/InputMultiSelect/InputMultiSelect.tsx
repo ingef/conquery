@@ -35,7 +35,6 @@ import { useResolvableSelect } from "./useResolvableSelect";
 import { useSyncWithValueFromAbove } from "./useSyncWithValueFromAbove";
 
 const MAX_SELECTED_ITEMS_LIMIT = 200;
-const MIN_LOAD_MORE_LENGTH = 2;
 
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
