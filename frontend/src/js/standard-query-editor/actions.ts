@@ -234,12 +234,13 @@ interface FilterContext {
   orIdx: number;
   tableIdx: number;
   filterIdx: number;
+  page: number;
 }
 export const loadFilterSuggestionsSuccess = createAction(
   "query-editor/LOAD_FILTER_SUGGESTIONS_SUCCESS",
 )<
   FilterContext & {
-    data: PostFilterSuggestionsResponseT["values"];
+    data: PostFilterSuggestionsResponseT;
   }
 >();
 
@@ -256,12 +257,12 @@ export const useLoadFilterSuggestions = (
   ) => {
     if (!editedNode) return;
 
-    const context = { ...editedNode, tableIdx, filterIdx };
+    const context = { ...editedNode, tableIdx, filterIdx, page: params.page };
 
     const suggestions = await postPrefixForSuggestions(params);
 
     dispatch(
-      loadFilterSuggestionsSuccess(successPayload(suggestions.values, context)),
+      loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
     );
   };
 };

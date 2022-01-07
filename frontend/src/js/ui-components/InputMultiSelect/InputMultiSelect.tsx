@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
@@ -50,6 +50,7 @@ interface Props {
   className?: string;
   disabled?: boolean;
   options: SelectOptionT[];
+  total?: number;
   tooltip?: string;
   indexPrefix?: number;
   creatable?: boolean;
@@ -60,13 +61,14 @@ interface Props {
   onChange: (value: SelectOptionT[]) => void;
   loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
-  onLoadMore?: (inputValue: string) => void;
+  onLoadMore?: (inputValue: string, config?: { shouldReset?: boolean }) => void;
 }
 
 const InputMultiSelect = ({
   options,
   className,
   label,
+  total,
   tooltip,
   indexPrefix,
   creatable,
@@ -108,8 +110,8 @@ const InputMultiSelect = ({
 
   useDebounce(
     () => {
-      if (onLoadMore && !loading && inputValue.length >= MIN_LOAD_MORE_LENGTH) {
-        onLoadMore(inputValue);
+      if (onLoadMore && !loading) {
+        onLoadMore(inputValue, { shouldReset: true });
       }
     },
     200,
@@ -213,9 +215,13 @@ const InputMultiSelect = ({
   useLoadMoreInitially({ onLoadMore, isOpen, optionsLength: options.length });
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
-  const inputProps = getInputProps(getDropdownProps({ autoFocus }));
+  const { ref: inputPropsRef, ...inputProps } = getInputProps(
+    getDropdownProps({ autoFocus }),
+  );
   const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
   const labelProps = getLabelProps({});
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
 
@@ -261,7 +267,16 @@ const InputMultiSelect = ({
           <Input
             type="text"
             value={inputValue}
+            onFocus={() => {
+              if (inputRef.current) {
+                inputRef.current.select();
+              }
+            }}
             {...inputProps}
+            ref={(instance) => {
+              inputRef.current = instance;
+              inputPropsRef(instance);
+            }}
             disabled={disabled}
             placeholder={
               selectedItems.length > 0
@@ -313,6 +328,7 @@ const InputMultiSelect = ({
           }}
         >
           <MenuActionBar
+            total={total}
             optionsCount={filteredOptions.length}
             onInsertAllClick={() => {
               setSelectedItems(filteredOptions);
@@ -328,7 +344,7 @@ const InputMultiSelect = ({
 
               return (
                 <SxSelectListOption
-                  key={`${option.value}`}
+                  key={`${option.value}${option.label}`}
                   active={highlightedIndex === index}
                   option={option}
                   {...itemProps}
@@ -339,7 +355,7 @@ const InputMultiSelect = ({
             {exists(onLoadMore) && (
               <LoadMoreSentinel
                 onLoadMore={() => {
-                  if (!loading && inputValue.length >= MIN_LOAD_MORE_LENGTH) {
+                  if (!loading) {
                     onLoadMore(inputValue);
                   }
                 }}

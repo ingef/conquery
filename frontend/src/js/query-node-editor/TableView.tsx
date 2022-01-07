@@ -123,7 +123,13 @@ const TableView: FC<PropsT> = ({
             onSwitchFilterMode={(filterIdx, mode) =>
               onSwitchFilterMode(tableIdx, filterIdx, mode)
             }
-            onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
+            onLoadFilterSuggestions={(
+              filterIdx,
+              filterId,
+              prefix,
+              page,
+              pageSize,
+            ) =>
               onLoadFilterSuggestions(
                 {
                   datasetId: datasetId,
@@ -131,8 +137,8 @@ const TableView: FC<PropsT> = ({
                   tableId: table.id,
                   filterId,
                   prefix,
-                  page: 0,
-                  pageSize: 200,
+                  page,
+                  pageSize,
                 },
                 tableIdx,
                 filterIdx,

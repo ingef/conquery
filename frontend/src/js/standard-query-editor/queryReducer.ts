@@ -304,8 +304,6 @@ const setNodeFilterProperties = (
   const table = nodeFromState.tables[tableIdx];
   const { filters } = table;
 
-  if (!filters) return state;
-
   const filter = filters[filterIdx];
 
   const newTable: TableT = {
@@ -832,19 +830,67 @@ const onToggleSecondaryIdExclude = (
   });
 };
 
+const mergeFilterOptions = (
+  state: StandardQueryStateT,
+  {
+    andIdx,
+    orIdx,
+    tableIdx,
+    filterIdx,
+  }: Omit<ActionType<typeof loadFilterSuggestionsSuccess>["payload"], "data">,
+  newOptions: SelectOptionT[],
+) => {
+  // -------------
+  // A bit verbose, just to get the filter, maybe extract to a fn?
+  const nodeFromState = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(nodeFromState)) return null;
+
+  const table = nodeFromState.tables[tableIdx];
+  const { filters } = table;
+
+  const filter = filters[filterIdx];
+  // -------------
+
+  if (
+    filter.type === "BIG_MULTI_SELECT" ||
+    filter.type === "MULTI_SELECT" ||
+    filter.type === "SELECT"
+  ) {
+    const mergedOptions = [...filter.options];
+
+    for (const option of newOptions) {
+      const existingOption = mergedOptions.find(
+        (o) => o.value === option.value,
+      );
+
+      if (!existingOption) {
+        mergedOptions.push(option);
+      }
+    }
+
+    return mergedOptions;
+  }
+
+  return null;
+};
+
 const onLoadFilterSuggestionsSuccess = (
   state: StandardQueryStateT,
   { data, ...rest }: ActionType<typeof loadFilterSuggestionsSuccess>["payload"],
 ) => {
-  // When [] comes back from the API, don't touch the current options
-  if (!data || data.length === 0) {
-    return state;
-  }
+  const newOptions: SelectOptionT[] = data.values.map(
+    filterSuggestionToSelectOption,
+  );
 
-  const options: SelectOptionT[] = data.map(filterSuggestionToSelectOption);
+  const options =
+    rest.page === 0 ? newOptions : mergeFilterOptions(state, rest, newOptions);
+
+  if (!exists(options)) return state;
 
   return setNodeFilterProperties(state, rest, {
     options,
+    total: data.total,
   });
 };
 
