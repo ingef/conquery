@@ -118,7 +118,7 @@ public class LocaleConfig {
 			final String[] tokens = value.split(getSeparator());
 
 			for (String token : tokens) {
-				final CDateRange parsed = reader.parseToCDateRange(token);
+				final CDateRange parsed = reader.parseToCDateRange(token.trim());
 
 				out.add(parsed);
 			}
