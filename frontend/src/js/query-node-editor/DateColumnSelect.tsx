@@ -6,7 +6,7 @@ import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 interface PropsT {
   dateColumn: SelectedDateColumnT;
-  onSelectDateColumn: (dateColumn: string | null) => void;
+  onSelectDateColumn: (dateColumn: string) => void;
 }
 
 const DateColumnSelect: FC<PropsT> = ({ dateColumn, onSelectDateColumn }) => {

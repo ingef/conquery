@@ -55,20 +55,3 @@ export const toUpperCaseUnderscore = (str: string) => {
 
 export const isObject = (item: any) =>
   item && typeof item === "object" && !Array.isArray(item);
-
-/**
- * pass in your object structure as array elements
- * user = {
- *  name: 'Peter Lustig',
- *  address: {
- *    street: 'Am Loewenzahn 1'
- *  }
- * }
- * e.g.: const name = getNestedObject(user, ['address', 'street']);
- */
-export const getNestedObject = (nestedObj, pathArr) => {
-  return pathArr.reduce(
-    (obj, key) => (obj && obj[key] !== "undefined" ? obj[key] : undefined),
-    nestedObj,
-  );
-};

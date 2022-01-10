@@ -152,11 +152,11 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 				desc.setTable(importTable.getName());
 				TableInputDescriptor input = new TableInputDescriptor();
 				{
-					input.setPrimary(IntegrationUtils.copyOutput(importTable.getPrimaryColumn()));
+					input.setPrimary(importTable.getPrimaryColumn().createOutput());
 					input.setSourceFile(csvName);
 					input.setOutput(new OutputDescription[importTable.getColumns().length]);
 					for (int i = 0; i < importTable.getColumns().length; i++) {
-						input.getOutput()[i] = IntegrationUtils.copyOutput(importTable.getColumns()[i]);
+						input.getOutput()[i] = importTable.getColumns()[i].createOutput();
 					}
 				}
 				desc.setInputs(new TableInputDescriptor[]{input});

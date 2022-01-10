@@ -5,13 +5,10 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../../button/IconButton";
-import {
-  PREVIOUS_QUERY,
-  PREVIOUS_SECONDARY_ID_QUERY,
-} from "../../common/constants/dndTypes";
+import { DNDType } from "../../common/constants/dndTypes";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
-import Dropzone, { DropzoneProps } from "../../ui-components/Dropzone";
+import Dropzone from "../../ui-components/Dropzone";
 import {
   removeFolderFromFilter,
   setFolderFilter,
@@ -22,6 +19,11 @@ import DeletePreviousQueryFolderModal from "./DeletePreviousQueryFolderModal";
 import PreviousQueriesFolder from "./PreviousQueriesFolder";
 import { useRetagQuery } from "./actions";
 import { usePreviousQueriesTags } from "./selector";
+
+const DROP_TYPES = [
+  DNDType.PREVIOUS_QUERY,
+  DNDType.PREVIOUS_SECONDARY_ID_QUERY,
+];
 
 const Folders = styled("div")`
   flex-shrink: 0;
@@ -158,42 +160,44 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
           resultCount={searchResult ? searchResult["__without_folder__"] : null}
           resultWords={[]}
         />
-        {folders.map((folder, i) => (
-          <SxDropzone<FC<DropzoneProps<DragItemQuery>>>
-            key={`${folder}-${i}`}
-            naked
-            onDrop={(item) => onDropIntoFolder(item, folder)}
-            acceptedDropTypes={[PREVIOUS_QUERY, PREVIOUS_SECONDARY_ID_QUERY]}
-            canDrop={(item) =>
-              (item.type === "PREVIOUS_QUERY" ||
-                item.type === "PREVIOUS_SECONDARY_ID_QUERY") &&
-              (item.own || item.shared)
-            }
-            onClick={() => onClickFolder(folder)}
-          >
-            {() => (
-              <>
-                <PreviousQueriesFolder
-                  key={folder}
-                  folder={folder}
-                  active={folderFilter.includes(folder)}
-                  onClick={() => onClickFolder(folder)}
-                  resultCount={searchResult ? searchResult[folder] : null}
-                  resultWords={searchResultWords}
-                />
-                <SxWithTooltip text={t("common.delete")}>
-                  <SxIconButton
-                    icon="times"
-                    onClick={(e) => {
-                      setFolderToDelete(folder);
-                      e.stopPropagation();
-                    }}
+        {folders.map((folder, i) => {
+          return (
+            <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+              key={`${folder}-${i}`}
+              naked
+              onDrop={(item) => onDropIntoFolder(item as DragItemQuery, folder)}
+              acceptedDropTypes={DROP_TYPES}
+              canDrop={(item) =>
+                (item.type === DNDType.PREVIOUS_QUERY ||
+                  item.type === DNDType.PREVIOUS_SECONDARY_ID_QUERY) &&
+                !!(item.own || item.shared)
+              }
+              onClick={() => onClickFolder(folder)}
+            >
+              {() => (
+                <>
+                  <PreviousQueriesFolder
+                    key={folder}
+                    folder={folder}
+                    active={folderFilter.includes(folder)}
+                    onClick={() => onClickFolder(folder)}
+                    resultCount={searchResult ? searchResult[folder] : null}
+                    resultWords={searchResultWords}
                   />
-                </SxWithTooltip>
-              </>
-            )}
-          </SxDropzone>
-        ))}
+                  <SxWithTooltip text={t("common.delete")}>
+                    <SxIconButton
+                      icon="times"
+                      onClick={(e) => {
+                        setFolderToDelete(folder);
+                        e.stopPropagation();
+                      }}
+                    />
+                  </SxWithTooltip>
+                </>
+              )}
+            </SxDropzone>
+          );
+        })}
       </ScrollContainer>
     </Folders>
   );

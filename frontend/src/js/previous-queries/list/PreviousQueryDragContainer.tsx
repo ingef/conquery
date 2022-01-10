@@ -3,10 +3,7 @@ import { useDrag } from "react-dnd";
 
 import { DatasetIdT } from "../../api/types";
 import { getWidthAndHeight } from "../../app/DndProvider";
-import {
-  PREVIOUS_QUERY,
-  PREVIOUS_SECONDARY_ID_QUERY,
-} from "../../common/constants/dndTypes";
+import { DNDType } from "../../common/constants/dndTypes";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 
 import PreviousQuery from "./PreviousQuery";
@@ -20,20 +17,23 @@ interface PropsT {
   onIndicateEditFolders: () => void;
 }
 
+const getDragType = (query: PreviousQueryT) => {
+  return query.queryType === "CONCEPT_QUERY"
+    ? DNDType.PREVIOUS_QUERY
+    : DNDType.PREVIOUS_SECONDARY_ID_QUERY;
+};
+
 const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
   const ref = useRef<HTMLDivElement | null>(null);
-  const dragType =
-    query.queryType === "CONCEPT_QUERY"
-      ? PREVIOUS_QUERY
-      : PREVIOUS_SECONDARY_ID_QUERY;
 
   const item: DragItemQuery = {
-    width: 0,
-    height: 0,
-    type: dragType,
+    dragContext: {
+      width: 0,
+      height: 0,
+    },
+    type: getDragType(query),
     id: query.id,
     label: query.label,
-    isPreviousQuery: true,
     canExpand: query.canExpand,
     tags: query.tags,
     own: query.own,
@@ -44,6 +44,7 @@ const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
     item,
     begin: () => ({
       ...item,
+      type: getDragType(query),
       ...getWidthAndHeight(ref),
     }),
   });

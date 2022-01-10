@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
@@ -38,18 +39,27 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefi
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.google.common.collect.Sets;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class SerializationTest {
+public class ColumnStoreSerializationTests {
+
+	/**
+	 *
+	 * Set of {@link ColumnStore}-Types that cannot be tested because it needs more inputs than just one class.
+	 * For {@link DateRangeTypeCompound} a manual test is done in {@link com.bakdata.conquery.models.SerializationTests}
+	 *
+	 */
+	private static final Set<Class<? extends ColumnStore>> EXCLUDING = Set.of(DateRangeTypeCompound.class);
 
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
-	private static final Dictionary DICTIONARY = new MapDictionary(Dataset.PLACEHOLDER,"dictionary");
+	private static final Dictionary DICTIONARY = new MapDictionary(Dataset.PLACEHOLDER, "dictionary");
 
 	@BeforeAll
-	public static void setupRegistry(){
+	public static void setupRegistry() {
 		CENTRAL_REGISTRY.register(Dataset.PLACEHOLDER);
 		CENTRAL_REGISTRY.register(DICTIONARY);
 	}
@@ -62,10 +72,15 @@ public class SerializationTest {
 						.stream()
 						.map(Object::getClass)
 						.collect(Collectors.toSet())
+
 		)
 				.containsAll(
-						(Set) CPSTypeIdResolver.listImplementations(ColumnStore.class)
-				);
+						Sets.difference(
+								(Set) CPSTypeIdResolver.listImplementations(ColumnStore.class),
+								EXCLUDING
+						)
+				)
+				.doesNotContainAnyElementsOf(EXCLUDING);
 	}
 
 	public static List<ColumnStore> createCTypes() {

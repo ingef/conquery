@@ -15,7 +15,7 @@ const Root = styled("div")`
 export type AdditionalInfoHoverableNodeType = {
   label: string;
   description?: string;
-  children?: Array<string>;
+  children?: string[];
   matchingEntries: number;
   matchingEntities: number;
   dateRange?: DateRangeT;
@@ -52,10 +52,10 @@ const AdditionalInfoHoverable: FC<Props> = ({ node, className, children }) => {
   const onToggleAdditionalInfos = () => {
     if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
 
-    dispatch([
-      toggleAdditionalInfos(),
+    dispatch(toggleAdditionalInfos());
+    dispatch(
       displayAdditionalInfos({ additionalInfos: getAdditionalInfos(node) }),
-    ]);
+    );
   };
 
   return (

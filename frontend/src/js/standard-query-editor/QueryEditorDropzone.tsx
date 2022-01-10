@@ -1,30 +1,22 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { FC, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { QueryIdT } from "../api/types";
-import {
-  CONCEPT_TREE_NODE,
-  QUERY_NODE,
-  PREVIOUS_QUERY,
-  PREVIOUS_SECONDARY_ID_QUERY,
-} from "../common/constants/dndTypes";
+import { DNDType } from "../common/constants/dndTypes";
 import FaIcon from "../icon/FaIcon";
-import { DropzoneProps } from "../ui-components/Dropzone";
-import DropzoneWithFileInput from "../ui-components/DropzoneWithFileInput";
+import { nodeIsConceptQueryNode } from "../model/node";
+import DropzoneWithFileInput, {
+  DragItemFile,
+} from "../ui-components/DropzoneWithFileInput";
 
-import type {
-  DragItemConceptTreeNode,
-  DragItemNode,
-  DragItemQuery,
-} from "./types";
+import type { StandardQueryNodeT } from "./types";
 
 const DROP_TYPES = [
-  CONCEPT_TREE_NODE,
-  QUERY_NODE,
-  PREVIOUS_QUERY,
-  PREVIOUS_SECONDARY_ID_QUERY,
+  DNDType.CONCEPT_TREE_NODE,
+  DNDType.PREVIOUS_QUERY,
+  DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
 const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
@@ -85,9 +77,7 @@ interface PropsT {
   className?: string;
   isInitial?: boolean;
   isAnd?: boolean;
-  onDropNode: (
-    node: DragItemQuery | DragItemNode | DragItemConceptTreeNode,
-  ) => void;
+  onDropNode: (node: StandardQueryNodeT) => void;
   onDropFile: (file: File) => void;
   onLoadPreviousQuery: (id: QueryIdT) => void;
 }
@@ -101,24 +91,26 @@ const QueryEditorDropzone: FC<PropsT> = ({
   onDropNode,
 }) => {
   const { t } = useTranslation();
+  const onDrop = useCallback(
+    (item: StandardQueryNodeT | DragItemFile) => {
+      if (item.type === "__NATIVE_FILE__") {
+        onDropFile(item.files[0]);
+      } else {
+        onDropNode(item);
+
+        if (!nodeIsConceptQueryNode(item)) onLoadPreviousQuery(item.id);
+      }
+    },
+    [onDropFile, onDropNode, onLoadPreviousQuery],
+  );
 
   return (
-    <SxDropzoneWithFileInput<
-      FC<DropzoneProps<DragItemConceptTreeNode | DragItemNode | DragItemQuery>>
-    >
+    <SxDropzoneWithFileInput /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<StandardQueryNodeT>>> */
       className={className}
       isAnd={isAnd}
       isInitial={isInitial}
       acceptedDropTypes={DROP_TYPES}
-      onDrop={(item) => {
-        if (item.type === "__NATIVE_FILE__") {
-          onDropFile(item.files[0]);
-        } else {
-          onDropNode(item);
-
-          if (item.isPreviousQuery) onLoadPreviousQuery(item.id);
-        }
-      }}
+      onDrop={(item) => onDrop(item as StandardQueryNodeT | DragItemFile)}
       onSelectFile={onDropFile}
       disableClick={isInitial}
       showFileSelectButton={isInitial}

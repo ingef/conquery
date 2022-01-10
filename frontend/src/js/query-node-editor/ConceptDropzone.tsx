@@ -2,21 +2,18 @@ import styled from "@emotion/styled";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
-import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";
-import type {
-  DragItemConceptTreeNode,
-  StandardQueryNodeT,
-} from "../standard-query-editor/types";
-import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
+import { DNDType } from "../common/constants/dndTypes";
+import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
+import Dropzone from "../ui-components/Dropzone";
 
-const StyledDropzone = styled(Dropzone)`
+const SxDropzone = styled(Dropzone)`
   width: 100%;
 `;
 
-const DROP_TYPES = [CONCEPT_TREE_NODE];
+const DROP_TYPES = [DNDType.CONCEPT_TREE_NODE];
 
 interface PropsT {
-  node: StandardQueryNodeT;
+  node: DragItemConceptTreeNode;
   onDropConcept: (concept: DragItemConceptTreeNode) => void;
 }
 
@@ -24,21 +21,22 @@ const ConceptDropzone: FC<PropsT> = ({ node, onDropConcept }) => {
   const { t } = useTranslation();
 
   return (
-    <StyledDropzone<FC<DropzoneProps<DragItemConceptTreeNode>>>
+    <SxDropzone /* TOOD: ADD GENERIC TYPE <FC<DropzoneProps<DragItemConceptTreeNode>>> */
       acceptedDropTypes={DROP_TYPES}
-      onDrop={onDropConcept}
+      onDrop={(item) => onDropConcept(item as DragItemConceptTreeNode)}
       canDrop={(item) => {
         // The dragged item should contain exactly one id
         // since it was dragged from the tree
-        const conceptId = item.ids[0];
+        const conceptId = (item as DragItemConceptTreeNode).ids[0];
 
         return (
-          item.tree === node.tree && !node.ids.some((id) => id === conceptId)
+          (item as DragItemConceptTreeNode).tree === node.tree &&
+          !node.ids.some((id) => id === conceptId)
         );
       }}
     >
       {() => t("queryNodeEditor.dropConcept")}
-    </StyledDropzone>
+    </SxDropzone>
   );
 };
 

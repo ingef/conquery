@@ -1,23 +1,23 @@
+import { ActionType, getType } from "typesafe-actions";
+
 import type { ConceptT, ConceptIdT, SecondaryId } from "../api/types";
+import type { Action } from "../app/actions";
+import { nodeIsElement } from "../model/node";
 
 import {
-  LOAD_TREES_START,
-  LOAD_TREES_SUCCESS,
-  LOAD_TREES_ERROR,
-  LOAD_TREE_START,
-  LOAD_TREE_SUCCESS,
-  LOAD_TREE_ERROR,
-  CLEAR_TREES,
-  SEARCH_TREES_START,
-  SEARCH_TREES_SUCCESS,
-  SEARCH_TREES_ERROR,
-  CLEAR_SEARCH_QUERY,
-  TOGGLE_SHOW_MISMATCHES,
-} from "./actionTypes";
+  clearSearchQuery,
+  clearTrees,
+  loadTree,
+  loadTrees,
+  searchTrees,
+  toggleShowMismatches,
+} from "./actions";
 import { setTree } from "./globalTreeStoreHelper";
 
+export type LoadedConcept = ConceptT & { loading?: boolean; error?: string };
+
 export interface TreesT {
-  [treeId: string]: ConceptT;
+  [treeId: string]: LoadedConcept;
 }
 
 export interface SearchT {
@@ -33,10 +33,10 @@ export interface SearchT {
 
 export interface ConceptTreesStateT {
   loading: boolean;
-  version: string | null;
   trees: TreesT;
   search: SearchT;
   secondaryIds: SecondaryId[];
+  error?: string;
 }
 
 const initialSearch = {
@@ -52,7 +52,6 @@ const initialSearch = {
 
 const initialState: ConceptTreesStateT = {
   loading: false,
-  version: null,
   trees: {},
   search: initialSearch,
   secondaryIds: [],
@@ -60,10 +59,8 @@ const initialState: ConceptTreesStateT = {
 
 const setSearchTreesSuccess = (
   state: ConceptTreesStateT,
-  action: Object,
+  { query, result }: ActionType<typeof searchTrees.success>["payload"],
 ): ConceptTreesStateT => {
-  const { query, result } = action.payload;
-
   // only create keys array once, then cache,
   // since the result might be > 100k entries
   const resultCount = Object.keys(result).length;
@@ -87,15 +84,13 @@ const setSearchTreesSuccess = (
 
 const setSearchTreesStart = (
   state: ConceptTreesStateT,
-  action: Object,
+  { query }: ActionType<typeof searchTrees.request>["payload"],
 ): ConceptTreesStateT => {
-  const { query } = action.payload;
-
   return {
     ...state,
     search: {
       ...state.search,
-      loading: query && query.length > 0,
+      loading: !!query && query.length > 0,
       query,
       words: query ? query.split(" ") : [],
       result: {},
@@ -107,15 +102,15 @@ const setSearchTreesStart = (
 
 const updateTree = (
   state: ConceptTreesStateT,
-  action: Object,
-  attributes: Object,
+  treeId: string,
+  attributes: Partial<LoadedConcept>,
 ): ConceptTreesStateT => {
   return {
     ...state,
     trees: {
       ...state.trees,
-      [action.payload.treeId]: {
-        ...state.trees[action.payload.treeId],
+      [treeId]: {
+        ...state.trees[treeId],
         ...attributes,
       },
     },
@@ -124,20 +119,19 @@ const updateTree = (
 
 const setTreeLoading = (
   state: ConceptTreesStateT,
-  action: Object,
+  { treeId }: ActionType<typeof loadTree.request>["payload"],
 ): ConceptTreesStateT => {
-  return updateTree(state, action, { loading: true });
+  return updateTree(state, treeId, { loading: true });
 };
 
 const setTreeSuccess = (
   state: ConceptTreesStateT,
-  action: Object,
+  { data, treeId }: ActionType<typeof loadTree.success>["payload"],
 ): ConceptTreesStateT => {
   // Side effect in a reducer.
   // Globally store the huge (1-5 MB) trees for read only
   // - keeps the redux store free from huge data
-  const { treeId, data } = action.payload;
-  const newState = updateTree(state, action, { loading: false });
+  const newState = updateTree(state, treeId, { loading: false });
 
   const rootConcept = newState.trees[treeId];
 
@@ -148,30 +142,33 @@ const setTreeSuccess = (
 
 const setTreeError = (
   state: ConceptTreesStateT,
-  action: Object,
+  { treeId, message }: ActionType<typeof loadTree.failure>["payload"],
 ): ConceptTreesStateT => {
-  return updateTree(state, action, {
+  return updateTree(state, treeId, {
     loading: false,
-    error: action.payload.message,
+    error: message,
   });
 };
 
 const setLoadTreesSuccess = (
   state: ConceptTreesStateT,
-  action: Object,
+  {
+    data: { concepts, secondaryIds },
+  }: ActionType<typeof loadTrees.success>["payload"],
 ): ConceptTreesStateT => {
-  const { concepts, secondaryIds, version } = action.payload.data;
-
   // Assign default select filter values
-  for (const concept of Object.values(concepts))
-    for (const table of concept.tables || [])
+  for (const concept of Object.values(concepts)) {
+    const tables = nodeIsElement(concept) ? concept.tables || [] : [];
+
+    for (const table of tables) {
       for (const filter of table.filters || [])
         if (filter.defaultValue) filter.value = filter.defaultValue;
+    }
+  }
 
   return {
     ...state,
     loading: false,
-    version: version,
     trees: concepts,
     secondaryIds,
   };
@@ -179,44 +176,44 @@ const setLoadTreesSuccess = (
 
 const conceptTrees = (
   state: ConceptTreesStateT = initialState,
-  action: Object,
+  action: Action,
 ): ConceptTreesStateT => {
   switch (action.type) {
     // All trees
-    case LOAD_TREES_START:
+    case getType(loadTrees.request):
       return { ...state, loading: true };
-    case LOAD_TREES_SUCCESS:
-      return setLoadTreesSuccess(state, action);
-    case LOAD_TREES_ERROR:
+    case getType(loadTrees.success):
+      return setLoadTreesSuccess(state, action.payload);
+    case getType(loadTrees.failure):
       return { ...state, loading: false, error: action.payload.message };
 
     // Individual tree:
-    case LOAD_TREE_START:
-      return setTreeLoading(state, action);
-    case LOAD_TREE_SUCCESS:
-      return setTreeSuccess(state, action);
-    case LOAD_TREE_ERROR:
-      return setTreeError(state, action);
+    case getType(loadTree.request):
+      return setTreeLoading(state, action.payload);
+    case getType(loadTree.success):
+      return setTreeSuccess(state, action.payload);
+    case getType(loadTree.failure):
+      return setTreeError(state, action.payload);
 
-    case CLEAR_TREES:
+    case getType(clearTrees):
       return initialState;
 
-    case SEARCH_TREES_START:
-      return setSearchTreesStart(state, action);
-    case SEARCH_TREES_SUCCESS:
-      return setSearchTreesSuccess(state, action);
-    case SEARCH_TREES_ERROR:
+    case getType(searchTrees.request):
+      return setSearchTreesStart(state, action.payload);
+    case getType(searchTrees.success):
+      return setSearchTreesSuccess(state, action.payload);
+    case getType(searchTrees.failure):
       return {
         ...state,
         search: { ...state.search, loading: false, duration: 0 },
         error: action.payload.message,
       };
-    case CLEAR_SEARCH_QUERY:
+    case getType(clearSearchQuery):
       return {
         ...state,
         search: initialSearch,
       };
-    case TOGGLE_SHOW_MISMATCHES:
+    case getType(toggleShowMismatches):
       return {
         ...state,
         search: {

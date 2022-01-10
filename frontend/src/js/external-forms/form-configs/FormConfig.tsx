@@ -10,7 +10,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { usePatchFormConfig } from "../../api/api";
 import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
-import { FORM_CONFIG } from "../../common/constants/dndTypes";
+import { DNDType } from "../../common/constants/dndTypes";
 import { useFormatDateDistance } from "../../common/helpers";
 import { useDatasetId } from "../../dataset/selectors";
 import SelectableLabel from "../../highlightable-label/HighlightableLabel";
@@ -99,9 +99,11 @@ const StyledWithTooltip = styled(WithTooltip)`
 `;
 
 export interface DragItemFormConfig {
-  width: number;
-  height: number;
-  type: "FORM_CONFIG";
+  dragContext: {
+    width: number;
+    height: number;
+  };
+  type: DNDType.FORM_CONFIG;
   id: string;
   label: string;
 }
@@ -181,9 +183,11 @@ const FormConfig: FC<PropsT> = ({
   };
 
   const item: DragItemFormConfig = {
-    height: 0,
-    width: 0,
-    type: FORM_CONFIG,
+    type: DNDType.FORM_CONFIG,
+    dragContext: {
+      height: 0,
+      width: 0,
+    },
     id: config.id,
     label: config.label,
   };

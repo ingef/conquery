@@ -1,6 +1,8 @@
 import { ConceptElementT, ConceptT } from "../api/types";
+import { DNDType } from "../common/constants/dndTypes";
 import type {
   ConceptQueryNodeType,
+  DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 
@@ -17,7 +19,7 @@ export interface NodeResetConfig {
 
 export const nodeIsConceptQueryNode = (
   node: StandardQueryNodeT,
-): node is ConceptQueryNodeType => !node.isPreviousQuery;
+): node is DragItemConceptTreeNode => node.type === DNDType.CONCEPT_TREE_NODE;
 
 const nodeHasNonDefaultExludedTable = (node: ConceptQueryNodeType) => {
   if (!node.tables) return false;
@@ -45,8 +47,7 @@ export const nodeHasNonDefaultSettings = (node: StandardQueryNodeT) =>
   node.excludeTimestamps ||
   node.excludeFromSecondaryId ||
   (nodeIsConceptQueryNode(node) &&
-    (node.includeSubnodes || // TODO REFACTOR / TYPE THIS ONE
-      objectHasNonDefaultSelects(node) ||
+    (objectHasNonDefaultSelects(node) ||
       nodeHasNonDefaultTableSettings(node) ||
       nodeHasNonDefaultExludedTable(node)));
 

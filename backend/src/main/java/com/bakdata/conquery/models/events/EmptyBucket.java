@@ -19,7 +19,8 @@ public class EmptyBucket extends Bucket {
 	private static final EmptyBucket Instance = new EmptyBucket();
 
 	public EmptyBucket() {
-		super(0, 0, 0, new ColumnStore[0], Collections.emptySet(), new int[0], new int[0], null);
+		super(0, 0, 0, Collections.emptySet(), new int[0], new int[0], null);
+		this.setStores(new ColumnStore[0]);
 	}
 
 

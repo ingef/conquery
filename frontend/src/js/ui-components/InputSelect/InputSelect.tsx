@@ -128,12 +128,16 @@ const InputSelect = ({
         setHighlightedIndex(0);
       }
 
-      if (exists(changes.inputValue) && changes.inputValue !== value?.label) {
-        setFilteredOptions(
-          options.filter((option) =>
-            optionMatchesQuery(option, changes.inputValue),
-          ),
-        );
+      if (exists(changes.inputValue)) {
+        if (changes.inputValue !== value?.label) {
+          setFilteredOptions(
+            options.filter((option) =>
+              optionMatchesQuery(option, changes.inputValue),
+            ),
+          );
+        } else {
+          setFilteredOptions(options);
+        }
       }
     },
     onStateChange: ({ type, ...changes }) => {

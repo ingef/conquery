@@ -2,11 +2,11 @@ import styled from "@emotion/styled";
 import { StateT } from "app-types";
 import { FC, useContext } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 
 import type { ColumnDescription } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
-import { openPreview } from "../preview/actions";
+import { useOpenPreview } from "../preview/actions";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import IconButton from "./IconButton";
@@ -33,8 +33,8 @@ const PreviewButton: FC<PropsT> = ({
   );
   const { t } = useTranslation();
 
-  const dispatch = useDispatch();
-  const onOpenPreview = (url: string) => dispatch(openPreview(url, columns));
+  const openPreview = useOpenPreview();
+  const onOpenPreview = (url: string) => openPreview(url, columns);
 
   const href = `${url}?access_token=${encodeURIComponent(
     authToken,

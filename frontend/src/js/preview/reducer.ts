@@ -1,11 +1,9 @@
-import type { ColumnDescription } from "../api/types";
+import { getType } from "typesafe-actions";
 
-import {
-  OPEN_PREVIEW,
-  CLOSE_PREVIEW,
-  LOAD_CSV_START,
-  LOAD_CSV_ERROR,
-} from "./actionTypes";
+import type { ColumnDescription } from "../api/types";
+import { Action } from "../app/actions";
+
+import { closePreview, loadCSVForPreview } from "./actions";
 
 export type PreviewStateT = {
   csv: string[][] | null;
@@ -19,35 +17,35 @@ const initialState: PreviewStateT = {
   isLoading: false,
 };
 
-export default (
+export default function reducer(
   state: PreviewStateT = initialState,
-  action: any,
-): PreviewStateT => {
+  action: Action,
+): PreviewStateT {
   switch (action.type) {
-    case LOAD_CSV_START:
+    case getType(loadCSVForPreview.request):
       return {
         ...state,
         isLoading: true,
       };
-    case LOAD_CSV_ERROR:
+    case getType(loadCSVForPreview.failure):
       return {
         ...state,
         isLoading: false,
       };
-    case CLOSE_PREVIEW:
-      return {
-        ...state,
-        csv: null,
-        resultColumns: null,
-      };
-    case OPEN_PREVIEW:
+    case getType(loadCSVForPreview.success):
       return {
         ...state,
         csv: action.payload.csv,
         resultColumns: action.payload.columns,
         isLoading: false,
       };
+    case getType(closePreview):
+      return {
+        ...state,
+        csv: null,
+        resultColumns: null,
+      };
     default:
       return state;
   }
-};
+}

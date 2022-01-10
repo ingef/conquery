@@ -10,11 +10,13 @@ import {
   useGetFormConfig,
   usePostFormConfig,
 } from "../api/api";
+import { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
-import { FORM_CONFIG } from "../common/constants/dndTypes";
+import { DNDType } from "../common/constants/dndTypes";
 import { usePrevious } from "../common/helpers/usePrevious";
 import { useDatasetId } from "../dataset/selectors";
 import FaIcon from "../icon/FaIcon";
+import { Language, useActiveLang } from "../localization/useActiveLang";
 import { setMessage } from "../snack-message/actions";
 import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone from "../ui-components/Dropzone";
@@ -22,12 +24,15 @@ import EditableText from "../ui-components/EditableText";
 import Label from "../ui-components/Label";
 
 import { setExternalForm } from "./actions";
+import { Form, FormField } from "./config-types";
 import type { DragItemFormConfig } from "./form-configs/FormConfig";
 import type { FormConfigT } from "./form-configs/reducer";
 import { useLoadFormConfigs } from "./form-configs/selectors";
+import { isFormField } from "./helper";
 import {
   useSelectActiveFormName,
   selectActiveFormType,
+  selectFormConfig,
 } from "./stateSelectors";
 
 const Root = styled("div")`
@@ -78,12 +83,55 @@ const SxFaIcon = styled(FaIcon)`
   margin-right: 5px;
 `;
 
+const DROP_TYPES = [DNDType.FORM_CONFIG];
+
 const hasChanged = (a: any, b: any) => {
   return JSON.stringify(a) !== JSON.stringify(b);
 };
 
-const FormConfigSaver: FC = () => {
+// Potentially transform the stored field value to support older saved form configs
+// because we changed the SELECT values:
+// from string, e.g. 'next'
+// to SelectValueT, e.g. { value: 'next', label: 'Next' }
+const transformLoadedFieldValue = (
+  field: FormField,
+  value: unknown,
+  {
+    activeLang,
+    datasetOptions,
+  }: { activeLang: Language; datasetOptions: SelectOptionT[] },
+) => {
+  switch (field.type) {
+    case "DATASET_SELECT":
+      if (typeof value === "object") return value as SelectOptionT;
+      if (typeof value === "string") {
+        return datasetOptions.find((option) => option.value === value);
+      }
+
+      return value;
+    case "SELECT":
+      if (typeof value === "object") return value as SelectOptionT;
+      if (typeof value === "string") {
+        const options = field.options.map((option) => ({
+          label: option.label[activeLang] || "",
+          value: option.value,
+        }));
+
+        return options.find((option) => option.value === value);
+      }
+      return value;
+    default:
+      return value;
+  }
+};
+
+interface Props {
+  datasetOptions: SelectOptionT[];
+}
+
+const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
   const { t } = useTranslation();
+  const activeLang = useActiveLang();
   const dispatch = useDispatch();
   const datasetId = useDatasetId();
   const [editing, setEditing] = useState<boolean>(false);
@@ -104,6 +152,7 @@ const FormConfigSaver: FC = () => {
   const previousFormValues = usePrevious(formValues);
 
   const { loadFormConfigs } = useLoadFormConfigs();
+  const formConfig = useSelector<StateT, Form | null>(selectFormConfig);
 
   const postFormConfig = usePostFormConfig();
   const getFormConfig = useGetFormConfig();
@@ -137,13 +186,32 @@ const FormConfigSaver: FC = () => {
       // Needs to be deferred because the form type might get changed
       // and other effects will have to run to reset / initialize the form first
       // before we can load new values into it
+      if (!formConfig) return;
+
       if (formConfigToLoadNext) {
         setFormConfigToLoadNext(null);
 
         const entries = Object.entries(formConfigToLoadNext.values);
 
         for (const [fieldname, value] of entries) {
-          setValue(fieldname, value, {
+          // --------------------------
+          // Potentially transform the stored field value to support older saved form configs
+          // because we changed the SELECT values:
+          // from string, e.g. 'next'
+          // to SelectValueT, e.g. { value: 'next', label: 'Next' }
+          const field = formConfig.fields
+            .filter(isFormField)
+            .find((f) => f.name === fieldname);
+
+          if (!field) continue;
+
+          const fieldValue = transformLoadedFieldValue(field, value, {
+            activeLang,
+            datasetOptions,
+          });
+          // --------------------------
+
+          setValue(fieldname, fieldValue, {
             shouldValidate: true,
             shouldDirty: true,
             shouldTouch: true,
@@ -154,7 +222,7 @@ const FormConfigSaver: FC = () => {
         setIsDirty(false);
       }
     },
-    [formConfigToLoadNext, setValue],
+    [formConfigToLoadNext, formConfig, activeLang, datasetOptions, setValue],
   );
 
   async function onSubmit() {
@@ -211,7 +279,7 @@ const FormConfigSaver: FC = () => {
     <Root>
       <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemFormConfig>>> */
         onDrop={(item) => onLoad(item as DragItemFormConfig)}
-        acceptedDropTypes={[FORM_CONFIG]}
+        acceptedDropTypes={DROP_TYPES}
       >
         {() => (
           <SpacedRow>

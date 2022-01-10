@@ -3,7 +3,9 @@ package com.bakdata.conquery.models.events.stores.root;
 import java.util.Arrays;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
@@ -12,14 +14,27 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
  * Base-class representing the data of a single {@link com.bakdata.conquery.models.datasets.Column} of a {@link com.bakdata.conquery.models.events.Bucket}.
  * <p>
  * Internal representation of data is completely transparent to the caller. get may only be called if has is true.
- *
+ * <p>
  * This class has subclasses per storage-type and cannot get/set itself for type-safety reasons.
- *
+ * <p>
  * Every root class must have an associated {@link MajorTypeId} and {@link com.bakdata.conquery.models.preproc.parser.Parser}.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public interface ColumnStore {
+
+
+	/**
+	 * If necessary the given bucket will be set in store as parent
+	 *
+	 * @param bucket bucket that should be set as parent
+	 * @implNote BackReference set here because Jackson does not support for fields in interfaces and abstract classes see also https://github.com/FasterXML/jackson-databind/issues/3304
+	*/
+	@JsonBackReference
+	default void setParent(Bucket bucket) {
+
+	}
+
 
 	/**
 	 * Helper method to select partitions of an array. Resulting array is of length sum(lengths). Incoming type T has to be of ArrayType or this will fail.
@@ -43,6 +58,8 @@ public interface ColumnStore {
 
 	/**
 	 * Test if the store has the event.
+	 *
+	 * @implSpec Access to getX is only defined, iff this method evaluates to true.
 	 */
 	boolean has(int event);
 
@@ -54,6 +71,7 @@ public interface ColumnStore {
 	/**
 	 * Calculate estimate of total bytes used by this store.
 	 */
+	@JsonIgnore
 	default long estimateMemoryConsumptionBytes() {
 		long bits = estimateEventBits();
 
@@ -63,10 +81,13 @@ public interface ColumnStore {
 	/**
 	 * Number of bits required to store a single value.
 	 */
+	@JsonIgnore
 	long estimateEventBits();
 
 	/**
 	 * Number of lines in this store.
+	 *
+	 * @implSpec Any access beyond getLines is undefined. Meaning that has and getX are not guaranteed nor are checked.
 	 */
 	@JsonIgnore
 	int getLines();
@@ -81,8 +102,9 @@ public interface ColumnStore {
 	/**
 	 * Create an empty store that's only a description of the transformation.
 	 */
+	@JsonIgnore
 	default ColumnStore createDescription() {
-		return this.select(new int[0], new int[0]);
+		return select(new int[0], new int[0]);
 	}
 
 	/**
