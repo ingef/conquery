@@ -75,7 +75,7 @@
     "typesafe-actions": "^5.1.0"
   },
   "devDependencies": {
-    "@storybook/addon-actions": "6.3.7",
+    "@storybook/addon-actions": "6.4.10",
     "@storybook/addon-controls": "6.3.7",
     "@storybook/addon-essentials": "6.3.7",
     "@storybook/addon-links": "6.3.7",
