@@ -11,7 +11,10 @@ import { removeTimebasedNode } from "./actions";
 import { TimebasedResultType } from "./reducer";
 
 interface PropsType {
-  onDropNode: (node: TimebasedResultType, moved: boolean) => void;
+  onDropNode: (
+    node: TimebasedResultType | DragItemQuery,
+    moved: boolean,
+  ) => void;
 }
 
 const StyledDropzone = styled(Dropzone)`

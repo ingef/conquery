@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { getWidthAndHeight } from "../app/DndProvider";
 import IconButton from "../button/IconButton";
+import { DNDType } from "../common/constants/dndTypes";
 import { DragItemQuery } from "../standard-query-editor/types";
 import VerticalToggleButton, {
   Option,
@@ -100,6 +101,8 @@ const TimebasedNode: FC<PropsT> = ({
   const ref = useRef<HTMLDivElement | null>(null);
   const item: DragItemQuery = {
     ...node,
+    type: DNDType.PREVIOUS_QUERY,
+    tags: [],
     dragContext: {
       width: 0,
       height: 0,

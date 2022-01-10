@@ -14431,11 +14431,6 @@ redux-mock-store@^1.5.1:
   dependencies:
     lodash.isplainobject "^4.0.6"
 
-redux-multi@^0.1.12:
-  version "0.1.12"
-  resolved "https://registry.yarnpkg.com/redux-multi/-/redux-multi-0.1.12.tgz#28e1fe5e49672cbc5bd8a07f0b2aeaf0ef8355c2"
-  integrity sha1-KOH+XklnLLxb2KB/Cyrq8O+DVcI=
-
 redux-thunk@*, redux-thunk@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/redux-thunk/-/redux-thunk-2.3.0.tgz#51c2c19a185ed5187aaa9a2d08b666d0d6467622"
