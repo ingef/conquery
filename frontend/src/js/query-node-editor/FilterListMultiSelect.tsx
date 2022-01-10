@@ -36,17 +36,25 @@ interface PropsT {
 const PAGE_SIZE = 100;
 
 const getPageToLoad = (
+  prevPageLoaded: number | null,
   currentOptionsCount: number,
   total?: number,
 ): number | null => {
   if (currentOptionsCount === 0) return 0;
 
   const moreCanBeLoaded = exists(total) && currentOptionsCount < total;
-  if (moreCanBeLoaded) {
-    return Math.floor(currentOptionsCount / PAGE_SIZE) + 1;
+  if (!moreCanBeLoaded) {
+    return null;
   }
 
-  return null;
+  const nextPageBasedOnLoadedCount = Math.max(
+    0,
+    Math.ceil(currentOptionsCount / PAGE_SIZE),
+  );
+
+  return prevPageLoaded === null
+    ? nextPageBasedOnLoadedCount
+    : prevPageLoaded + 1;
 };
 
 const FilterListMultiSelect: FC<PropsT> = ({
@@ -69,19 +77,23 @@ const FilterListMultiSelect: FC<PropsT> = ({
   const [error, setError] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const postFilterValuesResolve = usePostFilterValuesResolve();
+  const [prevPageLoaded, setPrevPageLoaded] = useState<number | null>(null);
 
   const onLoadMore = async (
     prefix: string,
     { shouldReset }: { shouldReset?: boolean } = {},
   ) => {
     if (onLoad && !loading) {
-      const pageToLoad = shouldReset ? 0 : getPageToLoad(options.length, total);
+      const pageToLoad = shouldReset
+        ? 0
+        : getPageToLoad(prevPageLoaded, options.length, total);
 
       if (pageToLoad === null) return;
 
       setLoading(true);
       try {
         await onLoad(prefix, pageToLoad, PAGE_SIZE);
+        setPrevPageLoaded(pageToLoad);
       } catch (e) {
         // fail silently
         console.error(e);
