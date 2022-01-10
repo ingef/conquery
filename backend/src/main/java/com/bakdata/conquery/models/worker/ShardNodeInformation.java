@@ -51,6 +51,9 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 		return String.join(".", "jobs", "latency", getRemoteAddress().toString());
 	}
 
+	/**
+	 * Calculate the time in Milliseconds since we last received a {@link JobManagerStatus} from the corresponding shard.
+	 */
 	private long getMillisSinceLastStatus() {
 		return getJobManagerStatus().getTimestamp().until(LocalDateTime.now(), ChronoUnit.MILLIS);
 	}
