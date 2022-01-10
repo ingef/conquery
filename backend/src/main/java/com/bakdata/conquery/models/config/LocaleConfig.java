@@ -111,9 +111,14 @@ public class LocaleConfig {
 			}
 
 			// We strip start and end
-			value = value.substring(getStart().length(), value.length() - getEnd().length());
+			value = value.substring(getStart().length(), value.length() - getEnd().length()).trim();
 
 			final CDateSet out = CDateSet.create();
+
+			// After stripping start and end, the trimmed string is empty
+			if(value.isEmpty()){
+				return out;
+			}
 
 			final String[] tokens = value.split(getSeparator());
 
