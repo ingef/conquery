@@ -24,8 +24,8 @@ public class QuartersInYearFilter extends SingleColumnFilter<Range.LongRange> {
 	}
 
 	@Override
-	public Class<FilterValue.CQIntegerRangeFilter> getFilterType() {
-		return FilterValue.CQIntegerRangeFilter.class;
+	public Class<FilterValue.IntegerRangeFilterValue> getFilterType() {
+		return FilterValue.IntegerRangeFilterValue.class;
 	}
 
 	@Override

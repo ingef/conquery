@@ -19,7 +19,7 @@ public class SelectFilter extends AbstractSelectFilter<String> {
 
 	
 	public SelectFilter() {
-		super(128, FilterValue.CQSelectFilter.class);
+		super(128, FilterValue.SelectFilterValue.class);
 	}
 
 	@Override

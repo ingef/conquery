@@ -21,7 +21,7 @@ public class PrefixTextFilter extends SingleColumnFilter<String> {
 
 	@Override
 	public Class<? extends FilterValue<? extends String>> getFilterType() {
-		return FilterValue.CQStringFilter.class;
+		return FilterValue.StringFilterValue.class;
 	}
 
 	@Override

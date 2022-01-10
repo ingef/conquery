@@ -41,8 +41,8 @@ public class CountFilter extends Filter<Range.LongRange> {
 	private Column[] distinctByColumn;
 
 	@Override
-	public Class<FilterValue.CQIntegerRangeFilter> getFilterType() {
-		return FilterValue.CQIntegerRangeFilter.class;
+	public Class<FilterValue.IntegerRangeFilterValue> getFilterType() {
+		return FilterValue.IntegerRangeFilterValue.class;
 	}
 
 	@Override

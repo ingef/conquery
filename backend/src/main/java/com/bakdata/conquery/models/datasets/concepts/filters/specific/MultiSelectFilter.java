@@ -17,7 +17,7 @@ import lombok.Setter;
 public class MultiSelectFilter extends AbstractSelectFilter<String[]> {
 
 	public MultiSelectFilter() {
-		super(128, FilterValue.CQMultiSelectFilter.class);
+		super(128, FilterValue.MultiSelectFilterValue.class);
 	}
 
 	@Override

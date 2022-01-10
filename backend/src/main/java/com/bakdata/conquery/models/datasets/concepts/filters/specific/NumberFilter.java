@@ -34,12 +34,12 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 		Column column = getColumn();
 		switch (column.getType()) {
 			case MONEY:
-				return FilterValue.CQMoneyRangeFilter.class;
+				return FilterValue.MoneyRangeFilterValue.class;
 			case INTEGER:
-				return FilterValue.CQIntegerRangeFilter.class;
+				return FilterValue.IntegerRangeFilterValue.class;
 			case DECIMAL:
 			case REAL:
-				return FilterValue.CQRealRangeFilter.class;
+				return FilterValue.RealRangeFilterValue.class;
 			default:
 				throw new IllegalArgumentException(getConnector().toString() + " NUMBER filter is incompatible with columns of type " + column.getType());
 		}

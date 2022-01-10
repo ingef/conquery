@@ -36,7 +36,7 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public Class<? extends FilterValue<? extends Range.LongRange>> getFilterType() {
-		return FilterValue.CQIntegerRangeFilter.class;
+		return FilterValue.IntegerRangeFilterValue.class;
 	}
 
 	@Override
