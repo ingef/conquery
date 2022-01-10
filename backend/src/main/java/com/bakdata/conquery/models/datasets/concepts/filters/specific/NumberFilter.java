@@ -2,14 +2,14 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.math.BigDecimal;
 
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
@@ -30,22 +30,24 @@ import lombok.extern.slf4j.Slf4j;
 public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends SingleColumnFilter<RANGE> {
 
 	@Override
-	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+	public Class<? extends FilterValue<?>> getFilterType() {
 		Column column = getColumn();
 		switch (column.getType()) {
 			case MONEY:
-				f.setType(FEFilterType.MONEY_RANGE);
-				return;
+				return FilterValue.CQMoneyRangeFilter.class;
 			case INTEGER:
-				f.setType(FEFilterType.INTEGER_RANGE);
-				return;
+				return FilterValue.CQIntegerRangeFilter.class;
 			case DECIMAL:
 			case REAL:
-				f.setType(FEFilterType.REAL_RANGE);
-				return;
+				return FilterValue.CQRealRangeFilter.class;
 			default:
-				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + column.getType());
+				throw new IllegalArgumentException(getConnector().toString() + " NUMBER filter is incompatible with columns of type " + column.getType());
 		}
+	}
+
+	@Override
+	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+
 	}
 
 	@Override
@@ -60,10 +62,9 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 			case MONEY:
 				return new MoneyFilterNode(getColumn(), (Range.LongRange) value);
 			case INTEGER:
-				return new IntegerFilterNode(getColumn(), (Range.LongRange) value
-				);
+				return new IntegerFilterNode(getColumn(), (Range.LongRange) value);
 			case DECIMAL:
-				return new DecimalFilterNode(getColumn(), ((Range<BigDecimal>) value));
+				return new DecimalFilterNode(getColumn(), (Range<BigDecimal>) value);
 			case REAL:
 				return new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberRange(value));
 			default:
