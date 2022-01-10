@@ -52,12 +52,6 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	@Getter @Setter @JsonIgnore
 	private transient MetaStorage metaStorage;
 
-	{
-		for (ShardNodeInformation shard : shardNodes.values()) {
-
-		}
-	}
-
 	public void add(Namespace ns) {
 		datasets.put(ns.getStorage().getDataset().getId(), ns);
 		ns.setNamespaces(this);
