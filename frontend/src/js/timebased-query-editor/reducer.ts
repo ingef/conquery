@@ -2,6 +2,7 @@ import { ActionType, getType } from "typesafe-actions";
 
 import { Action } from "../app/actions";
 import { renameQuery } from "../previous-queries/list/actions";
+import type { DragItemQuery } from "../standard-query-editor/types";
 
 import {
   addTimebasedCondition,
@@ -91,13 +92,14 @@ const setNode = (
   state: TimebasedQueryStateT,
   resultIdx: number,
   conditionIdx: number,
-  node: TimebasedResultType,
+  node: TimebasedResultType | DragItemQuery,
 ) => {
   const attributes = {
     [`result${resultIdx}`]: {
-      ...node,
-      timestamp: node.timestamp || "EARLIEST",
-    },
+      id: node.id,
+      label: node.label,
+      timestamp: ("timestamp" in node && node.timestamp) || "EARLIEST",
+    } as TimebasedResultType,
   };
 
   return setTimebasedConditionAttributes(state, conditionIdx, attributes);

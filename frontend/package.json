@@ -69,7 +69,6 @@
     "react-window": "^1.8.6",
     "redux": "^4.0.5",
     "redux-devtools-extension": "^2.13.9",
-    "redux-multi": "^0.1.12",
     "redux-thunk": "^2.3.0",
     "resize-observer-polyfill": "^1.5.1",
     "typesafe-actions": "^5.1.0"

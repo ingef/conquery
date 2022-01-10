@@ -52,10 +52,10 @@ const AdditionalInfoHoverable: FC<Props> = ({ node, className, children }) => {
   const onToggleAdditionalInfos = () => {
     if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
 
-    dispatch([
-      toggleAdditionalInfos(),
+    dispatch(toggleAdditionalInfos());
+    dispatch(
       displayAdditionalInfos({ additionalInfos: getAdditionalInfos(node) }),
-    ]);
+    );
   };
 
   return (
