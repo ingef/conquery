@@ -61,6 +61,7 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 	@Override
 	public void awaitClose() {
 		super.awaitClose();
+		// ShardNode is being closed: We therefore remove the registered metric.
 		SharedMetricRegistries.getDefault().remove(getLatenessMetricName());
 	}
 
