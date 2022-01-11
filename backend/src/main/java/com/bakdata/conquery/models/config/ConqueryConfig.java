@@ -26,8 +26,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
-import io.dropwizard.server.DefaultServerFactory;
-import io.dropwizard.server.ServerFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -50,20 +48,23 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private CSVConfig csv = new CSVConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private ArrowConfig arrow = new ArrowConfig();
 
 	/**
 	 * The order of this lists determines the ordner of the generated result urls in a query status.
 	 */
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private List<ResultRendererProvider> resultProviders = List.of(
 			new XlsxResultProvider(),
 			new CsvResultRendererProvider(),
 			new ArrowFileResultProvider(),
 			new ArrowStreamResultProvider()
 	);
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private LocaleConfig locale = new LocaleConfig();
 	@Valid
 	@NotNull
@@ -111,18 +112,6 @@ public class ConqueryConfig extends Configuration {
 
 	private boolean failOnError = false;
 
-
-	//this is needed to force start the REST backend on /api/
-	{
-		((DefaultServerFactory) getServerFactory()).setJerseyRootPath("/api/");
-	}
-
-	@Override
-	public void setServerFactory(ServerFactory factory) {
-		super.setServerFactory(factory);
-		((DefaultServerFactory) getServerFactory()).setJerseyRootPath("/api/");
-	}
-
 	public void initialize(ManagerNode node) {
 		storage.init(node);
 		plugins.forEach(config -> config.initialize((node)));
@@ -134,9 +123,9 @@ public class ConqueryConfig extends Configuration {
 
 	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {
 		return plugins.stream()
-				.filter(c -> type.isAssignableFrom(c.getClass()))
-				.map(type::cast)
-				.collect(MoreCollectors.toOptional());
+					  .filter(c -> type.isAssignableFrom(c.getClass()))
+					  .map(type::cast)
+					  .collect(MoreCollectors.toOptional());
 	}
 
 	public ObjectMapper configureObjectMapper(ObjectMapper objectMapper) {
@@ -144,10 +133,10 @@ public class ConqueryConfig extends Configuration {
 	}
 
 	public static class ConfiguredModule extends SimpleModule {
-		public ConfiguredModule(ConqueryConfig config){
+		public ConfiguredModule(ConqueryConfig config) {
 			DateReader dateReader = config.getLocale().getDateReader();
 			addDeserializer(LocalDate.class, new FormatedDateDeserializer(dateReader));
-			
+
 			addDeserializer(CDateSet.class, new CDateSetDeserializer(dateReader));
 			addSerializer(CDateSet.class, new CDateSetSerializer());
 		}

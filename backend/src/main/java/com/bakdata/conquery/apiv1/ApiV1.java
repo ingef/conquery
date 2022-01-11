@@ -1,5 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
+import java.time.Duration;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
@@ -13,19 +15,27 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourcesProvider;
-import com.bakdata.conquery.resources.api.*;
+import com.bakdata.conquery.resources.api.ConceptResource;
+import com.bakdata.conquery.resources.api.ConceptsProcessor;
+import com.bakdata.conquery.resources.api.ConfigResource;
+import com.bakdata.conquery.resources.api.DatasetResource;
+import com.bakdata.conquery.resources.api.DatasetsResource;
+import com.bakdata.conquery.resources.api.FilterResource;
+import com.bakdata.conquery.resources.api.FormConfigResource;
+import com.bakdata.conquery.resources.api.MeResource;
+import com.bakdata.conquery.resources.api.QueryResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-
-import java.time.Duration;
 
 @CPSType(base = ResourcesProvider.class, id = "ApiV1")
 public class ApiV1 implements ResourcesProvider {
 
 	@Override
 	public void registerResources(ManagerNode manager) {
+
 		DatasetRegistry datasets = manager.getDatasetRegistry();
 		JerseyEnvironment environment = manager.getEnvironment().jersey();
+		environment.setUrlPattern("/api");
 
 		//inject required services
 		environment.register(new AbstractBinder() {
@@ -71,7 +81,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(MeResource.class);
 
 		for (ResultRendererProvider resultProvider : manager.getConfig().getResultProviders()) {
-			resultProvider.registerResultResource(environment,manager);
+			resultProvider.registerResultResource(environment, manager);
 		}
 
 		environment.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
