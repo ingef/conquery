@@ -14,7 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "SELECT", base = Filter.class)
-public class MultiSelectFilter extends AbstractSelectFilter<String[]> {
+public class MultiSelectFilter extends AbstractSelectFilter {
 
 	public MultiSelectFilter() {
 		super(128, FilterValue.CQMultiSelectFilter.class);
