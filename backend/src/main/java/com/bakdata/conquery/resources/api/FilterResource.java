@@ -38,7 +38,7 @@ public class FilterResource extends HFilters {
 	@POST
 	@Path("resolve")
 	public ResolvedConceptsResult resolveFilterValues(FilterValues filterValues) {
-		return processor.resolveFilterValues((AbstractSelectFilter<?>) filter, filterValues.getValues());
+		return processor.resolveFilterValues((AbstractSelectFilter) filter, filterValues.getValues());
 	}
 
 	@POST
@@ -51,7 +51,7 @@ public class FilterResource extends HFilters {
 
 
 		try {
-			return processor.autocompleteTextFilter((AbstractSelectFilter<?>) filter, request.getText(), request.getPage(), request.getPageSize());
+			return processor.autocompleteTextFilter((AbstractSelectFilter) filter, request.getText(), request.getPage(), request.getPageSize());
 		}catch (IllegalArgumentException e) {
 			throw new BadRequestException(e);
 		}

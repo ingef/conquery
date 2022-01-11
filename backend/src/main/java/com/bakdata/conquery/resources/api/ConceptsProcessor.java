@@ -71,15 +71,15 @@ public class ConceptsProcessor {
 							}
 						});
 
-	private final LoadingCache<Pair<AbstractSelectFilter<?>, String>, List<FEValue>> searchCache =
+	private final LoadingCache<Pair<AbstractSelectFilter, String>, List<FEValue>> searchCache =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.build(new CacheLoader<>() {
 
 							@Override
-							public List<FEValue> load(Pair<AbstractSelectFilter<?>, String> filterAndSearch) {
+							public List<FEValue> load(Pair<AbstractSelectFilter, String> filterAndSearch) {
 								String searchTerm = filterAndSearch.getValue();
-								AbstractSelectFilter<?> filter = filterAndSearch.getKey();
+								AbstractSelectFilter filter = filterAndSearch.getKey();
 
 								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
 
@@ -120,7 +120,7 @@ public class ConceptsProcessor {
 	 * Search for all search terms at once, with stricter scoring.
 	 * The user will upload a file and expect only well-corresponding resolutions.
 	 */
-	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
+	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter filter, List<String> searchTerms) {
 
 		//search in the full text engine
 		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms, OptionalInt.empty(), filter.getSearchType()::score)
@@ -168,7 +168,7 @@ public class ConceptsProcessor {
 		private final long total;
 	}
 
-	public AutoCompleteResult autocompleteTextFilter(AbstractSelectFilter<?> filter, Optional<String> maybeText, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
+	public AutoCompleteResult autocompleteTextFilter(AbstractSelectFilter filter, Optional<String> maybeText, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
 		final int pageNumber = pageNumberOpt.orElse(0);
 		final int itemsPerPage = itemsPerPageOpt.orElse(50);
 
@@ -197,10 +197,10 @@ public class ConceptsProcessor {
 	}
 
 	/**
-	 * Autocompletion for search terms. For values of {@link AbstractSelectFilter<?>}.
+	 * Autocompletion for search terms. For values of {@link AbstractSelectFilter}.
 	 * Is used by the serach cache to load missing items
 	 */
-	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
+	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter filter, String text) {
 		if (Strings.isNullOrEmpty(text)) {
 			// If no text provided, we just list them
 			final List<FilterSearchItem> items = filter.getSourceSearch().listItems();

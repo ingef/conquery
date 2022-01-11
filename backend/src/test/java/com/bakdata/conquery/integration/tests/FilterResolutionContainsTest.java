@@ -11,14 +11,14 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
+import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
-import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
@@ -61,7 +61,7 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 
 		Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 		Connector connector = concept.getConnectors().iterator().next();
-		AbstractSelectFilter<?> filter = (AbstractSelectFilter<?>) connector.getFilters().iterator().next();
+		AbstractSelectFilter filter = (AbstractSelectFilter) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", ".csv");

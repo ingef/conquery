@@ -15,15 +15,18 @@ import lombok.Setter;
  */
 @Getter @Setter
 @CPSType(id = "SINGLE_SELECT", base = Filter.class)
-public class SelectFilter extends AbstractSelectFilter<String> {
+public class SelectFilter extends AbstractSelectFilter {
 
-	
-	public SelectFilter() {
-		super(128, FilterValue.CQSelectFilter.class);
+	//TODO this class is not used
+	@Override
+	public Class<? extends FilterValue<?>> getFilterType() {
+		return FilterValue.CQSelectFilter.class;
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(String value) {
-		return new SelectFilterNode(getColumn(), value);
+	public FilterNode<?> createFilterNode(String[] value) {
+		assert value.length == 1;
+
+		return new SelectFilterNode(getColumn(), value[0]);
 	}
 }

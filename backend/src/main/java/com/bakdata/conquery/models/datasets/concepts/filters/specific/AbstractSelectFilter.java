@@ -3,14 +3,11 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
-import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -23,13 +20,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
-@RequiredArgsConstructor
 @Slf4j
 @JsonIgnoreProperties(ignoreUnknown = true, value = {"values"}) //TODO this is a hotfix because we cannot reimport this late
 public abstract class AbstractSelectFilter extends SingleColumnFilter<String[]> {
@@ -45,12 +40,6 @@ public abstract class AbstractSelectFilter extends SingleColumnFilter<String[]> 
 	@JsonIgnore
 	protected transient QuickSearch<FilterSearchItem> sourceSearch;
 
-	@JsonIgnore
-	private final int maximumSize;
-
-	@JsonIgnore
-	private final Class<? extends FilterValue<String[]>> filterType;
-
 	private FilterTemplate template;
 
 	@Override
@@ -60,35 +49,13 @@ public abstract class AbstractSelectFilter extends SingleColumnFilter<String[]> 
 
 	public FilterSearch.FilterSearchType searchType = FilterSearch.FilterSearchType.EXACT;
 
-	public Class<? extends FilterValue<String[]>> getFilterType() {
-		// Big MultiSelects are rendered differently in frontend
-		if (isBig()) {
-			return FilterValue.CQBigMultiSelectFilter.class;
-		}
 
-		return filterType;
-	}
 
-	@JsonIgnore
-	private boolean isBig() {
-		return getMaximumSize() != -1 && getValues().size() > getMaximumSize();
-	}
 
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
 
-		if (values == null || values.isEmpty()) {
-			return;
-		}
-
-		if (isBig()) {
-			f.setOptions(
-					getValues().stream()
-							.map(v -> new FEValue(getLabelFor(v), v))
-							.collect(Collectors.toList())
-			);
-		}
 	}
 
 	@Override

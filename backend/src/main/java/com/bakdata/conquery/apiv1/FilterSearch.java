@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.validation.Valid;
-
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
@@ -20,7 +18,6 @@ import com.github.powerlibraries.io.In;
 import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -94,7 +91,7 @@ public class FilterSearch {
 				.flatMap(ds -> datasets.get(ds.getId()).getStorage().getAllConcepts().stream())
 				.flatMap(c -> c.getConnectors().stream())
 				.flatMap(co -> co.collectAllFilters().stream())
-				.filter(f -> f instanceof AbstractSelectFilter && ((AbstractSelectFilter<?>) f).getTemplate() != null)
+				.filter(f -> f instanceof AbstractSelectFilter && ((AbstractSelectFilter) f).getTemplate() != null)
 				.map(AbstractSelectFilter.class::cast)
 				.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(f, parser))));
 	}
@@ -103,7 +100,7 @@ public class FilterSearch {
 	 * Create interactive Search for the selected filter based on its Template.
 	 * @param filter
 	 */
-	public static void createSourceSearch(AbstractSelectFilter<?> filter, CSVConfig parserConfig) {
+	public static void createSourceSearch(AbstractSelectFilter filter, CSVConfig parserConfig) {
 		FilterTemplate template = filter.getTemplate();
 
 		List<String> templateColumns = new ArrayList<>(template.getColumns());

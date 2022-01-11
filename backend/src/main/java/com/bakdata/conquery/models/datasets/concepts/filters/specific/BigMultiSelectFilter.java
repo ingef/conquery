@@ -14,10 +14,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "BIG_MULTI_SELECT", base = Filter.class)
-public class BigMultiSelectFilter extends AbstractSelectFilter<String[]> {
+public class BigMultiSelectFilter extends AbstractSelectFilter {
 
-	public BigMultiSelectFilter() {
-		super(-1, FilterValue.CQBigMultiSelectFilter.class);
+
+	@Override
+	public Class<? extends FilterValue<?>> getFilterType() {
+		return FilterValue.CQBigMultiSelectFilter.class;
 	}
 
 	@Override
