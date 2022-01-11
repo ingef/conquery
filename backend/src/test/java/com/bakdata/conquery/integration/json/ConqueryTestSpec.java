@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -16,6 +17,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -36,13 +38,24 @@ public abstract class ConqueryTestSpec {
 	@Getter @Setter @NotNull
 	private String label;
 
+	@Setter
+	@Getter
+	@Nullable
+	private ConqueryConfig config;
+
+	public ConqueryConfig overrideConfig(ConqueryConfig config) {
+
+		if (getConfig() != null) {
+			return getConfig().withStorage(new NonPersistentStoreFactory());
+		}
+
+		return config.withStorage(new NonPersistentStoreFactory());
+	}
+
 	public abstract void executeTest(StandaloneSupport support) throws Exception;
 
 	public abstract void importRequiredData(StandaloneSupport support) throws Exception;
 
-	public ConqueryConfig overrideConfig(ConqueryConfig config){
-		return config;
-	}
 
 	@Override
 	public String toString() {

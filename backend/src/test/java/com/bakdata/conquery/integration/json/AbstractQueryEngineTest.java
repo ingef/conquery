@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.annotation.Nullable;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
@@ -18,45 +17,25 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
-import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
-	@Setter
-	@Getter
-	@Nullable
-	private ConqueryConfig config;
-
-	@Override
-	public ConqueryConfig overrideConfig(ConqueryConfig config) {
-
-		if (getConfig() != null) {
-			return getConfig().withStorage(new NonPersistentStoreFactory());
-		}
-
-		return config.withStorage(new NonPersistentStoreFactory());
-	}
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
-		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
 
 		Query query = getQuery();
 
