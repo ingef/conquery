@@ -1,5 +1,23 @@
 package com.bakdata.conquery.integration.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.io.File;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.UUID;
+
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.auth.ApiTokenDataRepresentation;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -13,46 +31,39 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.config.auth.ApiTokenRealmFactory;
+import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
 import com.bakdata.conquery.resources.api.ApiTokenResource;
 import com.bakdata.conquery.resources.api.DatasetsResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MoreCollectors;
-
-import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.File;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ApiTokenRealmTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	@Override
-	public void overrideConfig(final ConqueryConfig conf, final File workDir) {
+	public ConqueryConfig overrideConfig(ConqueryConfig conf, final File workDir) {
 
 		XodusStoreFactory storageConfig = (XodusStoreFactory) conf.getStorage();
-		final Path storageDir = workDir.toPath().resolve(storageConfig.getDirectory().resolve(this.getClass().getSimpleName()));
-		storageConfig.setDirectory(storageDir);
-		conf.getAuthenticationRealms().add(new ApiTokenRealmFactory(storageDir,new XodusConfig()));
+		final Path storageDir = workDir.toPath().resolve(storageConfig.getDirectory().resolve(getClass().getSimpleName()));
+
+		return conf.withStorage(storageConfig.withDirectory(storageDir))
+				   .withAuthenticationRealms(ImmutableList.<AuthenticationRealmFactory>builder()
+														  .addAll(conf.getAuthenticationRealms())
+														  .add(new ApiTokenRealmFactory(storageDir, new XodusConfig())).build())
+				;
+
 	}
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		final User testUser = conquery.getTestUser();
-		ApiTokenRealm realm = conquery.getAuthorizationController().getAuthenticationRealms().stream().filter(ApiTokenRealm.class::isInstance).map(ApiTokenRealm.class::cast).collect(MoreCollectors.onlyElement());
+		final ApiTokenRealm realm = conquery.getAuthorizationController().getAuthenticationRealms().stream()
+									  .filter(ApiTokenRealm.class::isInstance)
+									  .map(ApiTokenRealm.class::cast)
+									  .collect(MoreCollectors.onlyElement());
 
 		final ConqueryTokenRealm conqueryTokenRealm = conquery.getAuthorizationController().getConqueryTokenRealm();
 		final String userToken = conqueryTokenRealm.createTokenForUser(testUser.getId());
@@ -120,7 +131,7 @@ public class ApiTokenRealmTest extends IntegrationTest.Simple implements Program
 						.target(HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetsResource.class,"listDatasets"))
 						.request(MediaType.APPLICATION_JSON_TYPE)
 						.header("Authorization", "Bearer " + apiToken2.getToken())
-						.get(new GenericType<List<DatasetId>>(){});
+						.get(new GenericType<>() {});
 
 		assertThat(adminDatasets).as("The second token has scope for admin").isNotEmpty();
 

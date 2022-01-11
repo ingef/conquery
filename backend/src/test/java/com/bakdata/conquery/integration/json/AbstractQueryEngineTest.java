@@ -17,17 +17,14 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
-import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
@@ -36,14 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
-	@Override
-	public void overrideConfig(ConqueryConfig config) {
-		config.setStorage(new NonPersistentStoreFactory());
-	}
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
-		DatasetRegistry namespaces = standaloneSupport.getNamespace().getNamespaces();
 
 		Query query = getQuery();
 
@@ -77,7 +69,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 														.buildFromMap(
 																Map.of(
 																		DATASET, standaloneSupport.getDataset().getName(),
-																	   QUERY, execution.getId().toString()
+																		QUERY, execution.getId().toString()
 																)
 														))
 								 .queryParam("pretty", false)
