@@ -48,7 +48,7 @@ public class DefaultColumnNameTest {
 	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, DATASET_REGISTRY, new ConqueryConfig(), null);
 	private static final Validator VALIDATOR = Validators.newValidator();
 
-	private static BiFunction<TestConcept, CQConcept, Select> conceptSelectGenerator(String selectName) {
+	public static BiFunction<TestConcept, CQConcept, Select> conceptSelectGenerator(String selectName) {
 		return (concept, cq) -> {
 
 			final UniversalSelect select = new TestUniversalSelect(concept, selectName);
@@ -57,7 +57,7 @@ public class DefaultColumnNameTest {
 		};
 	}
 
-	private static BiFunction<TestConcept, CQConcept, Select> connectorSelectGenerator(int connector, String selectName) {
+	public static BiFunction<TestConcept, CQConcept, Select> connectorSelectGenerator(int connector, String selectName) {
 		return (concept, cq) -> {
 
 			final UniversalSelect select = new TestUniversalSelect(concept.getConnectors().get(connector), selectName);
@@ -294,7 +294,7 @@ public class DefaultColumnNameTest {
 		}
 	}
 
-	private static class TestConcept extends TreeConcept {
+	public static class TestConcept extends TreeConcept {
 
 		private static final Dataset DATASET = new Dataset() {
 			{
