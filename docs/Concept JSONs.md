@@ -185,7 +185,7 @@ These are used to define filters, than can be used to reduce the result set.
 Different types of Filter can be used by setting `type` to one of the following values:
 
 
-### BIG_MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/BigMultiSelectFilter.java#L11-L13)</sup></sub></sup>
+### BIG_MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/BigMultiSelectFilter.java#L10-L12)</sup></sub></sup>
 This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
 
 <details><summary>Details</summary><p>
@@ -383,22 +383,12 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
 
-### SINGLE_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L15-L19)</sup></sub></sup>
-This filter represents a select in the front end. This means that the user can select one or more values from a list of values.",
+### SINGLE_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L21)</sup></sub></sup>
+
 
 <details><summary>Details</summary><p>
 
 Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter`
-
-Example:
-
-```jsonc
-{
-	"label": "gender",
-	"column": "reference_data.gender",
-	"type": "SELECT"
-}
-```
 
 Supported Fields:
 
