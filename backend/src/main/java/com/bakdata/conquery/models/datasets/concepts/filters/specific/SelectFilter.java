@@ -17,11 +17,11 @@ import lombok.Setter;
  * 
  * @jsonExample {"label":"gender","column":"reference_data.gender","type":"SELECT"}
  */
+//TODO this class is not used, can we delete it?
 @Getter @Setter
 @CPSType(id = "SINGLE_SELECT", base = Filter.class)
 public class SelectFilter extends SingleColumnFilter<String> {
 
-	//TODO this class is not used
 	@Override
 	public Class<? extends FilterValue<?>> getFilterType() {
 		return FilterValue.CQSelectFilter.class;

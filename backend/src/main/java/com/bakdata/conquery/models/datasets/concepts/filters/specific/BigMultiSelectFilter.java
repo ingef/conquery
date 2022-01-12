@@ -4,7 +4,6 @@ import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,7 +22,7 @@ public class BigMultiSelectFilter extends AbstractSelectFilter {
 	}
 
 	@Override
-	public FilterNode createFilterNode(String[] value) {
+	public MultiSelectFilterNode createFilterNode(String[] value) {
 		return new MultiSelectFilterNode(getColumn(), value);
 	}
 }
