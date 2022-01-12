@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.math.BigDecimal;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.IRange;
@@ -10,7 +9,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
@@ -45,10 +43,6 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 		}
 	}
 
-	@Override
-	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
-
-	}
 
 	@Override
 	public Column[] getRequiredColumns() {

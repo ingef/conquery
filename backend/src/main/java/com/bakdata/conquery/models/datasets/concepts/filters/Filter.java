@@ -47,7 +47,9 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 		return getConnector().getDataset();
 	}
 
-	public abstract void configureFrontend(FEFilter f) throws ConceptConfigurationException;
+	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+
+	}
 
 	@JsonIgnore
 	public abstract Column[] getRequiredColumns();
@@ -83,7 +85,8 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 				continue;
 			}
 
-			log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable().getId());
+			log.error("Filter[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable()
+																																				   .getId());
 
 			valid = false;
 		}

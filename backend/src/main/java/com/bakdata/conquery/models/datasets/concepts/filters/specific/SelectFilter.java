@@ -1,8 +1,12 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.util.EnumSet;
+
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.filter.event.SelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
@@ -15,7 +19,7 @@ import lombok.Setter;
  */
 @Getter @Setter
 @CPSType(id = "SINGLE_SELECT", base = Filter.class)
-public class SelectFilter extends AbstractSelectFilter {
+public class SelectFilter extends SingleColumnFilter<String> {
 
 	//TODO this class is not used
 	@Override
@@ -24,9 +28,14 @@ public class SelectFilter extends AbstractSelectFilter {
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(String[] value) {
-		assert value.length == 1;
+	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
+		return EnumSet.of(MajorTypeId.STRING);
+	}
 
-		return new SelectFilterNode(getColumn(), value[0]);
+
+
+	@Override
+	public FilterNode<?> createFilterNode(String value) {
+		return new SelectFilterNode(getColumn(), value);
 	}
 }

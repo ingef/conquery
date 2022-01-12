@@ -1,9 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -12,7 +8,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
@@ -39,22 +34,12 @@ import lombok.extern.slf4j.Slf4j;
 public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
 
 
-	@Valid
-	@NotNull
-	@Getter
-	@Setter
 	@NsIdRef
 	private Column column;
 
-	@Valid
-	@Getter
-	@Setter
 	@NsIdRef
 	private Column subtractColumn;
 
-	@Valid
-	@Getter
-	@Setter
 	@NsIdRef
 	private Column distinctByColumn;
 
@@ -75,10 +60,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 		}
 	}
 
-	@Override
-	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
-
-	}
 
 	@Override
 	public Column[] getRequiredColumns() {
@@ -99,7 +80,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 		return new RangeFilterNode(value, aggregator);
 	}
-
 
 
 	private ColumnAggregator<?> getAggregator() {

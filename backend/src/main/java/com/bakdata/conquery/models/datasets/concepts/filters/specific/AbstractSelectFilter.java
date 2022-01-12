@@ -50,12 +50,9 @@ public abstract class AbstractSelectFilter extends SingleColumnFilter<String[]> 
 	public FilterSearch.FilterSearchType searchType = FilterSearch.FilterSearchType.EXACT;
 
 
-
-
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
-
 	}
 
 	@Override

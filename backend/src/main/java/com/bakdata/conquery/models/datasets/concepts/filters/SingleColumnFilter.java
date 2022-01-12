@@ -2,9 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts.filters;
 
 import java.util.EnumSet;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -17,8 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class SingleColumnFilter<FE_TYPE> extends Filter<FE_TYPE> {
 
-	@Valid
-	@NotNull
 	@Getter
 	@Setter
 	@NsIdRef
