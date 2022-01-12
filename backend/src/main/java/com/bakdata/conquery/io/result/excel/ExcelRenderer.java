@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
+import org.apache.commons.collections.ListUtils;
 import org.apache.poi.ooxml.POIXMLProperties;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Cell;
@@ -163,7 +164,11 @@ public class ExcelRenderer {
 
         CTTableColumns columns = table.getCTTable().addNewTableColumns();
         columns.setCount(idHeaders.size() + infos.size());
-		UniqueNamer uniqueNamer = new UniqueNamer(cfg);
+
+		final List<ResultInfo> allInfos = new ArrayList<>(idHeaders);
+		allInfos.addAll(infos);
+
+		UniqueNamer uniqueNamer = new UniqueNamer(cfg, allInfos);
 
         {
             Row header = sheet.createRow(0);

@@ -27,7 +27,10 @@ public class CsvLineStreamRenderer {
 
 	public Stream<String> toStream(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream) {
 
-		final UniqueNamer uniqNamer = new UniqueNamer(cfg);
+		final List<ResultInfo> allInfos = new ArrayList<>(idHeaders);
+		allInfos.addAll(infos);
+
+		UniqueNamer uniqNamer = new UniqueNamer(cfg, allInfos);
 		Stream.concat(idHeaders.stream(), infos.stream()).map(uniqNamer::getUniqueName).forEach(writer::addValue);
 
 

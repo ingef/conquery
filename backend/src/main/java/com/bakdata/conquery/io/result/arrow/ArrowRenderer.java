@@ -45,8 +45,12 @@ public class ArrowRenderer {
             List<ResultInfo> resultInfo,
             Stream<EntityResult> results) throws IOException {
 
+
+		final List<ResultInfo> allInfos = new ArrayList<>(idHeaders);
+		allInfos.addAll(resultInfo);
+
         // Combine id and value Fields to one vector to build a schema
-		final UniqueNamer uniqNamer = new UniqueNamer(printSettings);
+		final UniqueNamer uniqNamer = new UniqueNamer(printSettings, allInfos);
 		final List<Field> idFields = generateFields(idHeaders, uniqNamer);
         List<Field> fields = new ArrayList<>(idFields);
         fields.addAll(generateFields(resultInfo, uniqNamer));

@@ -167,18 +167,22 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		PrintSettings settings = new PrintSettings(true, locale, datasetRegistry, config, null);
 
-		UniqueNamer uniqNamer = new UniqueNamer(settings);
 
 		// First add the id columns to the descriptor list. The are the first columns
-		for (ResultInfo header : config.getFrontend().getQueryUpload().getIdResultInfos()) {
+		final List<ResultInfo> idInfos = config.getFrontend().getQueryUpload().getIdResultInfos();
+		final List<ResultInfo> allInfos = new ArrayList<>(idInfos);
+		final List<ResultInfo> resultInfos = getResultInfos();
+		allInfos.addAll(resultInfos);
+
+		UniqueNamer uniqNamer = new UniqueNamer(settings, allInfos);
+
+		for (ResultInfo header : idInfos) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))
 												   .type(ResultType.IdT.INSTANCE.typeInfo())
 												   .build());
 		}
-
-		final UniqueNamer collector = new UniqueNamer(settings);
-		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings, collector)));
+		resultInfos.forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings, uniqNamer)));
 		return columnDescriptions;
 	}
 

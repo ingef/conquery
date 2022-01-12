@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
@@ -11,13 +13,89 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @Getter
-@EqualsAndHashCode(callSuper = true)
 @RequiredArgsConstructor
 public class SelectResultInfo extends ResultInfo {
 	@NonNull
 	private final Select select;
 	@NonNull
 	private final CQConcept cqConcept;
+
+	@NonNull
+	private SelectNameMode nameMode = SelectNameMode.SELECT;
+
+	public enum SelectNameMode {
+		SELECT(){
+			@Override
+			public String defaultColumnName(PrintSettings printSettings, SelectResultInfo info) {
+				return info.getSelect().getLabel();
+			}
+		},
+		CONCEPT_SELECT {
+			@Override
+			public String defaultColumnName(PrintSettings printSettings, SelectResultInfo info) {
+				StringBuilder sb = new StringBuilder();
+				String cqLabel = info.getCqConcept().getConcept().getLabel();
+
+				if (cqLabel != null) {
+					// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
+					sb.append(cqLabel);
+					sb.append(" ");
+				}
+
+				sb.append(info.getSelect().getLabel());
+				return sb.toString();
+			}
+		},
+		CONCEPT_CHILDREN_SELECT {
+			@Override
+			public String defaultColumnName(PrintSettings printSettings, SelectResultInfo info) {
+				StringBuilder sb = new StringBuilder();
+
+				// Gets the concept label and child labels
+				String cqLabel = info.getCqConcept().defaultLabel(printSettings.getLocale());
+
+				if (cqLabel != null) {
+					// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
+					sb.append(cqLabel);
+					sb.append(" ");
+				}
+
+				sb.append(info.getSelect().getLabel());
+				return sb.toString();
+			}
+		},
+		CONCEPT_CHILDREN_CONNECTOR_SELECT {
+			@Override
+			public String defaultColumnName(PrintSettings printSettings, SelectResultInfo info) {
+				StringBuilder sb = new StringBuilder();
+				String cqLabel = info.getCqConcept().defaultLabel(printSettings.getLocale());
+
+				if (cqLabel != null) {
+					// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
+					sb.append(cqLabel);
+					sb.append(" ");
+				}
+
+				info.select.appendColumnName(sb);
+				return sb.toString();
+			}
+		};
+
+		/**
+		 * Get the next verbosity level from this naming mode.
+		 * @return The next verbosity level.
+		 */
+		@Nullable
+		public SelectNameMode nextEscalation() {
+			final int ordinal = this.ordinal();
+			if (SelectNameMode.values().length == (ordinal + 1)) {
+				return null;
+			}
+			return SelectNameMode.values()[ordinal + 1];
+		}
+
+		public abstract String defaultColumnName(PrintSettings printSettings, SelectResultInfo info);
+	}
 
 	@Override
 	public ResultType getType() {
@@ -59,18 +137,16 @@ public class SelectResultInfo extends ResultInfo {
 
 	@Override
 	public String defaultColumnName(PrintSettings printSettings) {
+		return nameMode.defaultColumnName(printSettings, this);
+	}
 
-		StringBuilder sb = new StringBuilder();
-		String cqLabel = getCqConcept().defaultLabel(printSettings.getLocale());
-
-		if (cqLabel != null) {
-			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
-			sb.append(cqLabel);
-			sb.append(" - ");
+	public boolean escalateNameMode(){
+		final SelectNameMode next = nameMode.nextEscalation();
+		if (next == null) {
+			return false;
 		}
-
-		select.appendColumnName(sb);
-		return sb.toString();
+		nameMode = next;
+		return true;
 	}
 
 	@Override

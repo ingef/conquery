@@ -24,7 +24,10 @@ public class CsvRenderer {
 
 	public void toCSV(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream) {
 
-		UniqueNamer uniqNamer = new UniqueNamer(cfg);
+		final List<ResultInfo> allInfos = new ArrayList<>(idHeaders);
+		allInfos.addAll(infos);
+
+		UniqueNamer uniqNamer = new UniqueNamer(cfg, allInfos);
 		final String[] headers = Stream.concat(idHeaders.stream(), infos.stream()).map(uniqNamer::getUniqueName).toArray(String[]::new);
 
 		writer.writeHeaders(headers);
