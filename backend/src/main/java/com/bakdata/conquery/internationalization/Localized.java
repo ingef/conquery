@@ -1,6 +1,9 @@
 package com.bakdata.conquery.internationalization;
 
 import java.util.Locale;
+import java.util.function.BiFunction;
+
+import com.bakdata.conquery.io.cps.CPSBase;
 
 /**
  * Interface for implementations, that can provide a description of themselves in an internationalized format.
@@ -19,4 +22,7 @@ public interface Localized {
      * @return the localization or a fallback.
      */
     String toString(Locale locale);
+
+	@CPSBase
+    interface Provider extends BiFunction<Object,Locale,String>{}
 }

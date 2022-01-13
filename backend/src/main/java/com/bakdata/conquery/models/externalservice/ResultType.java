@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.externalservice;
 
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
+import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -15,6 +16,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
@@ -132,49 +134,6 @@ public abstract class ResultType {
 		public static final CategoricalT INSTANCE = new CategoricalT();
 	}
 
-	@CPSType(id = "RESOLUTION", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class ResolutionT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final ResolutionT INSTANCE = new ResolutionT();
-
-		@Override
-		public String print(PrintSettings cfg, Object f) {
-			if (f instanceof Resolution) {
-				return ((Resolution) f).toString(cfg.getLocale());
-			}
-			try {
-				// If the object was parsed as a simple string, try to convert it to a
-				// DateContextMode to get Internationalization
-				return Resolution.valueOf(f.toString()).toString(cfg.getLocale());
-			} catch (Exception e) {
-				throw new IllegalArgumentException(f + " is not a valid resolution.", e);
-			}
-		}
-	}
-
-	//TODO introduce semantic type to combine enum based types
-	@CPSType(id = "OBSERVATION_SCOPE", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class ObservationScopeT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final ObservationScopeT INSTANCE = new ObservationScopeT();
-
-		@Override
-		public String print(PrintSettings cfg, Object f) {
-			if (f instanceof FeatureGroup) {
-				return ((FeatureGroup) f).toString(cfg.getLocale());
-			}
-			try {
-				// If the object was parsed as a simple string, try to convert it to a
-				// DateContextMode to get Internationalization
-				return FeatureGroup.valueOf(f.toString()).toString(cfg.getLocale());
-			} catch (Exception e) {
-				throw new IllegalArgumentException(f + " is not a valid observation scope.", e);
-			}
-		}
-	}
-
 	@CPSType(id = "DATE", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
 	public static class DateT extends PrimitiveResultType {
@@ -240,6 +199,17 @@ public abstract class ResultType {
 	public static class StringT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final StringT INSTANCE = new StringT();
+	}
+
+	@CPSType(id = "STRING_LOCALIZED", base = ResultType.class)
+	@RequiredArgsConstructor(onConstructor = @__({@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)}))
+	public static class StringLocalizedT extends PrimitiveResultType {
+		private final Localized.Provider localizationProvider;
+
+		@Override
+		public String print(PrintSettings cfg, Object f) {
+			return localizationProvider.apply(f, cfg.getLocale());
+		}
 	}
 
 	@CPSType(id = "ID", base = ResultType.class)

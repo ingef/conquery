@@ -4,6 +4,7 @@ import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.internationalization.DateContextResolutionC10n;
 import com.bakdata.conquery.internationalization.Localized;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.RequiredArgsConstructor;
@@ -144,5 +145,15 @@ public enum Resolution implements Localized {
 		thisAndCoarser.add(this);
 		return thisAndCoarserSubdivisions = Collections.unmodifiableList(thisAndCoarser);
 
+	}
+
+
+	@CPSType(id = "RESOLUTION", base = Localized.Provider.class)
+	public static class LocalizationProvider implements Localized.Provider {
+
+		@Override
+		public String apply(Object o, Locale locale) {
+			return Resolution.valueOf((String)o).toString(locale);
+		}
 	}
 }

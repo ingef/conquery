@@ -222,7 +222,7 @@ public class ArrowResultGenerationTest {
             sb.append("}");
             return sb.toString();
         }
-        if (type.equals(ResultType.ResolutionT.INSTANCE)) {
+        if (type instanceof ResultType.StringLocalizedT) {
             return type.printNullable(settings, obj);
         }
         if(obj instanceof Collection) {

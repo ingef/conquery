@@ -35,7 +35,7 @@ public class ResultTestUtil {
 				ResultType.IntegerT.INSTANCE,
 				ResultType.NumericT.INSTANCE,
 				ResultType.CategoricalT.INSTANCE,
-				ResultType.ResolutionT.INSTANCE,
+				new ResultType.StringLocalizedT(new Resolution.LocalizationProvider()),
 				ResultType.DateT.INSTANCE,
 				ResultType.DateRangeT.INSTANCE,
 				ResultType.StringT.INSTANCE,
