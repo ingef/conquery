@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -85,12 +86,14 @@ public class RelativeFormQuery extends Query {
 		resultInfos.add(ConqueryConstants.EVENT_DATE_INFO);
 		// date range info
 		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
-		// observation scope info
-		resultInfos.add(ConqueryConstants.OBSERVATION_SCOPE_INFO);
 
 		final List<ResultInfo> featureInfos = features.getResultInfos();
 		final List<ResultInfo> outcomeInfos = outcomes.getResultInfos();
 
+		if (hasMultipleObservationScopes(featureInfos, outcomeInfos)){
+			// observation scope info
+			resultInfos.add(ConqueryConstants.OBSERVATION_SCOPE_INFO);
+		}
 
 		//features
 		resultInfos.addAll(featureInfos);
@@ -98,7 +101,11 @@ public class RelativeFormQuery extends Query {
 
 		return resultInfos;
 	}
-	
+
+	private boolean hasMultipleObservationScopes(List<ResultInfo> featureInfos, List<ResultInfo> outcomeInfos) {
+		return featureInfos.stream().anyMatch(SelectResultInfo.class::isInstance) && outcomeInfos.stream().anyMatch(SelectResultInfo.class::isInstance);
+	}
+
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);

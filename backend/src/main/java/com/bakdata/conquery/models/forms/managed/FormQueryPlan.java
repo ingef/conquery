@@ -28,23 +28,22 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final int constantCount;
 	private final boolean withRelativeEventDate;
-	private final boolean needsObservationScope;
+	private final boolean withObservationScope;
 
-	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features) {
+	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features, boolean withObservationScope ) {
 		this.dateContexts = dateContexts;
 		this.features = features;
+		this.withObservationScope = withObservationScope;
 
 
 		if (dateContexts.size() <= 0) {
 			// There is nothing to do for this FormQueryPlan but we will return an empty result when its executed
 			constantCount = 3;
 			withRelativeEventDate = false;
-			needsObservationScope = false;
 			return;
 		}
 
 		withRelativeEventDate = dateContexts.get(0).getEventDate() != null;
-		needsObservationScope = dateContexts.get(0).getFeatureGroup() != FeatureGroup.SINGLE_GROUP;
 
 		// Either all date contexts have an relative event date or none has one
 
@@ -53,7 +52,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 				throw new IllegalStateException("QueryPlan has absolute AND relative date contexts. Only one kind is allowed.");
 			}
 		}
-		constantCount = calculateConstantCount(withRelativeEventDate, needsObservationScope);
+		constantCount = calculateConstantCount(withRelativeEventDate, this.withObservationScope);
 	}
 
 	private static int calculateConstantCount(boolean hasEventDate, boolean needsobservationScope) {
@@ -153,7 +152,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		//add date range at [2] or [3]
 		result[getDateRangeResultPosition()] = dateContext.getDateRange();
 
-		if(needsObservationScope){
+		if(withObservationScope){
 			//add observation scope at [3] or [4]
 			result[getDateRangeResultPosition() + 1] = dateContext.getFeatureGroup();
 		}
@@ -162,7 +161,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	private int getDateRangeResultPosition() {
-		return constantCount - (needsObservationScope? 2 : 1 );
+		return constantCount - (withObservationScope ? 2 : 1 );
 	}
 
 	@Override
