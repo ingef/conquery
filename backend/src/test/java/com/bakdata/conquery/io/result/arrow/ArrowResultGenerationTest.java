@@ -84,7 +84,7 @@ public class ArrowResultGenerationTest {
                         new Field("INTEGER", FieldType.nullable(new ArrowType.Int(32, true)), null),
                         new Field("NUMERIC", FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null),
                         new Field("CATEGORICAL", FieldType.nullable(new ArrowType.Utf8()), null),
-                        new Field("RESOLUTION", FieldType.nullable(new ArrowType.Utf8()), null),
+                        new Field("STRING_LOCALIZED", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("DATE", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
                         new Field("DATE_RANGE",
                                 FieldType.nullable(ArrowType.Struct.INSTANCE),
