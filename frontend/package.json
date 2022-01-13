@@ -47,7 +47,7 @@
     "keycloak-js": "^15.0.2",
     "lodash.difference": "^4.5.0",
     "mustache": "^4.1.0",
-    "nodemon": "^2.0.7",
+    "nodemon": "^2.0.15",
     "preval.macro": "^5.0.0",
     "react": "^17.0.2",
     "react-dnd": "^11.1.3",
