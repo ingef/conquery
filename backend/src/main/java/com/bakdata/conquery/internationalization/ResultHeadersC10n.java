@@ -29,7 +29,11 @@ public interface ResultHeadersC10n {
 	@En("index")
 	@De("Index Zeiteinheit")
 	String index();
-	
+
+	@En("scope")
+	@De("Bereich")
+	String observationScope();
+
 	@En("feature_date_range")
 	@De("Vorbeobachtungszeitraum")
 	String featureDateRange();

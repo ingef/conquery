@@ -83,18 +83,15 @@ public class RelativeFormQuery extends Query {
 		resultInfos.add(ConqueryConstants.CONTEXT_INDEX_INFO);
 		// event date
 		resultInfos.add(ConqueryConstants.EVENT_DATE_INFO);
+		// date range info
+		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
+		// observation scope info
+		resultInfos.add(ConqueryConstants.OBSERVATION_SCOPE_INFO);
 
 		final List<ResultInfo> featureInfos = features.getResultInfos();
 		final List<ResultInfo> outcomeInfos = outcomes.getResultInfos();
 
-		//date ranges
-		if (!featureInfos.isEmpty()){
-			resultInfos.add(ConqueryConstants.FEATURE_DATE_RANGE_INFO);
-		}
 
-		if (!outcomeInfos.isEmpty()) {
-			resultInfos.add(ConqueryConstants.OUTCOME_DATE_RANGE_INFO);
-		}
 		//features
 		resultInfos.addAll(featureInfos);
 		resultInfos.addAll(outcomeInfos);

@@ -104,6 +104,8 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
 		outcomeSubquery = createSubQuery(outcomePlan, contexts, FeatureGroup.OUTCOME);
 
+
+
 		// determine result length and check against aggregators in query
 		int featureLength = featureSubquery.columnCount();
 		int outcomeLength = outcomeSubquery.columnCount();
@@ -130,33 +132,32 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			// Since the DateContexts are primarily ordered by their coarseness and COMPLETE
 			// is the most coarse resolution it must be at the first
 			// to indexes of the list.
-			Object[] mergedFull = new Object[size];
 
 			if (featurePlan.getAggregatorSize() > 0) {
-				setFeatureValues(mergedFull, featureResultValues.get(resultStartIndex));
+				Object[] result = new Object[size];
+				setFeatureValues(featureSubquery.getConstantCount(),result, featureResultValues.get(resultStartIndex));
+				values.add(result);
 			}
+
 
 			if (outcomePlan.getAggregatorSize() > 0) {
-				setOutcomeValues(
-						mergedFull,
-						outcomeResultValues.get(resultStartIndex)
-				);
+				Object[] result = new Object[size];
+				setOutcomeValues(outcomeSubquery.getConstantCount(), result, outcomeResultValues.get(resultStartIndex));
+				values.add(result);
 			}
-
-			values.add(mergedFull);
 			resultStartIndex++;
 		}
 
 		// append all other lines directly
 		for (int i = resultStartIndex; i < featureResultValues.size(); i++) {
 			Object[] result = new Object[size];
-			setFeatureValues(result, featureResultValues.get(i));
+			setFeatureValues(featureSubquery.getConstantCount(), result, featureResultValues.get(i));
 			values.add(result);
 		}
 
 		for (int i = resultStartIndex; i < outcomeResultValues.size(); i++) {
 			Object[] result = new Object[size];
-			setOutcomeValues(result, outcomeResultValues.get(i));
+			setOutcomeValues(outcomeSubquery.getConstantCount(), result, outcomeResultValues.get(i));
 			values.add(result);
 		}
 
@@ -164,26 +165,23 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 
-	private int getFeatureDateRangePosition() {
+	private int getDateRangePosition() {
 		return featurePlan.getAggregatorSize() > 0 ? 3 : -1;
 	}
 
-	private int getOutcomeDateRangePosition() {
-		if (outcomePlan.getAggregatorSize() > 0) {
-			return featurePlan.getAggregatorSize() > 0 ? 4 : 3;
-		}
-		return -1;
-	}
-
 	private int getFirstAggregatorPosition() {
-		if (outcomePlan.getAggregatorSize() <= 0 && featurePlan.getAggregatorSize() <= 0) {
-			throw new ConqueryError.ExecutionProcessingError();
-		}
-		if (outcomePlan.getAggregatorSize() > 0 && featurePlan.getAggregatorSize() <= 0
-			|| featurePlan.getAggregatorSize() > 0 && outcomePlan.getAggregatorSize() <= 0) {
-			return 4;
-		}
 		return 5;
+		// TODO
+//		if (outcomePlan.getAggregatorSize() <= 0 && featurePlan.getAggregatorSize() <= 0) {
+//			throw new ConqueryError.ExecutionProcessingError();
+//		}
+//		if (outcomePlan.getAggregatorSize() > 0 && featurePlan.getAggregatorSize() <= 0
+//			|| featurePlan.getAggregatorSize() > 0 && outcomePlan.getAggregatorSize() <= 0) {
+//			// If either feature or outcome is given, we don't output the observation scope, since it would be the same everywhere
+//			return 3;
+//		}
+//		// We need an extra column for the observation scope
+//		return 4;
 	}
 
 	/**
@@ -234,26 +232,18 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return new FormQueryPlan(list, subPlan);
 	}
 
-	private void setFeatureValues(Object[] result, Object[] value) {
-		// copy everything up to including index
-		System.arraycopy(value, 0, result, 0, EVENTDATE_POS + 1);
-		// copy daterange
-		result[getFeatureDateRangePosition()] = value[SUB_RESULT_DATE_RANGE_POS];
-		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS + 1, result, getFirstAggregatorPosition(), featurePlan.getAggregatorSize());
+	private void setFeatureValues(int constantCount, Object[] result, Object[] value) {
+		// copy everything up to including scope
+		System.arraycopy(value, 0, result, 0, constantCount);
+
+		System.arraycopy(value, constantCount, result, getFirstAggregatorPosition(), featurePlan.getAggregatorSize());
 	}
 
-	private void setOutcomeValues(Object[] result, Object[] value) {
-		// copy everything up to including index
-		for (int i = 0; i <= EVENTDATE_POS; i++) {
-			if (result[i] != null) {
-				// Skip cells that where already filled from the feature result (in complete merge)
-				continue;
-			}
-			result[i] = value[i];
-		}
-		// copy daterange
-		result[getOutcomeDateRangePosition()] = value[SUB_RESULT_DATE_RANGE_POS];
-		System.arraycopy(value, SUB_RESULT_DATE_RANGE_POS + 1, result, getFirstAggregatorPosition()
+	private void setOutcomeValues(int constantCount, Object[] result, Object[] value) {
+		// copy everything up to including scope
+		System.arraycopy(value, 0, result, 0, constantCount);
+
+		System.arraycopy(value, constantCount, result, getFirstAggregatorPosition()
 																	   + featurePlan.getAggregatorSize(), outcomePlan.getAggregatorSize());
 	}
 

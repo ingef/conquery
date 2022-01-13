@@ -79,7 +79,7 @@ public class DateContext {
 			int index = 0;
 			for (CDateRange quarterInMask : divider.apply(dateRangeMask)) {
 				index++;
-				DateContext dc = new DateContext(quarterInMask, FeatureGroup.OUTCOME,
+				DateContext dc = new DateContext(quarterInMask, FeatureGroup.SINGLE_GROUP,
 					// For now there is no index for complete
 					mode.getResolution().equals(Resolution.COMPLETE) ? null : index, null, mode.getResolution());
 				dcList.add(dc);
