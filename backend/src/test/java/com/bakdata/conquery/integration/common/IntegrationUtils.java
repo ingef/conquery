@@ -21,8 +21,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
-import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -71,14 +69,6 @@ public class IntegrationUtils {
 		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class);
 	}
 
-
-	public static OutputDescription copyOutput(RequiredColumn column) {
-		CopyOutput out = new CopyOutput();
-		out.setInputColumn(column.getName());
-		out.setInputType(column.getType());
-		out.setName(column.getName());
-		return out;
-	}
 
 	private static URI getPostQueryURI(StandaloneSupport conquery) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "postQuery")

@@ -1,9 +1,10 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
+import type { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../button/IconButton";
+import type { DragItemQuery } from "../standard-query-editor/types";
 
 import TimebasedCondition from "./TimebasedCondition";
 import {
@@ -59,7 +60,7 @@ const TimebasedQueryEditor = () => {
   const onDropTimebasedNode = (
     conditionIdx: number,
     resultIdx: number,
-    node: TimebasedResultType,
+    node: TimebasedResultType | DragItemQuery,
     moved: boolean,
   ) => dispatch(dropTimebasedNode({ conditionIdx, resultIdx, node, moved }));
   const onSetTimebasedNodeTimestamp = (

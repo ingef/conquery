@@ -1,19 +1,30 @@
 package com.bakdata.conquery.models.config;
 
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
-@Getter @Setter
+@Getter
+@Setter
 public class LocaleConfig {
 	@NotNull
 	private Locale frontend = Locale.ROOT;
@@ -64,20 +75,61 @@ public class LocaleConfig {
 	private List<ListFormat> listFormats = List.of(
 			new ListFormat("", ", ", ""),
 			new ListFormat("{", ",", "}"),
-			new ListFormat("[", ",", "]"));
+			new ListFormat("[", ",", "]")
+	);
 
 	/**
 	 * Container to describe the format of a list
 	 */
 	@Data
-	@AllArgsConstructor
+	@RequiredArgsConstructor
+	@Slf4j
 	public static class ListFormat {
-		@NonNull @Max(1)
-		String start;
-		@NonNull @Min(1)
-		String separator;
-		@NonNull @Max(1)
-		String end;
+		@NonNull
+		@Size(min = 0, max = 1)
+		private final String start;
+		@NonNull
+		@Size(min = 1)
+		private final String separator;
+
+		@NonNull
+		@Size(min = 0, max = 1)
+		private final String end;
+
+		/**
+		 * Manually parse value as {@link CDateSet} using the reader for {@link CDateRange}.
+		 */
+		public CDateSet parse(String value, DateReader reader) {
+
+			// Assert that value starts/ends properly
+			if (!value.startsWith(getStart())) {
+				throw new ParsingException(String.format("Expected Start `%s`.", getStart()));
+			}
+
+			if (!value.endsWith(getEnd())) {
+				throw new ParsingException(String.format("Expected End `%s`.", getEnd()));
+			}
+
+			// We strip start and end
+			value = value.substring(getStart().length(), value.length() - getEnd().length()).trim();
+
+			final CDateSet out = CDateSet.create();
+
+			// After stripping start and end, the trimmed string is empty
+			if(value.isEmpty()){
+				return out;
+			}
+
+			final String[] tokens = value.split(getSeparator());
+
+			for (String token : tokens) {
+				final CDateRange parsed = reader.parseToCDateRange(token.trim());
+
+				out.add(parsed);
+			}
+
+			return out;
+		}
 	}
 
 
@@ -86,7 +138,7 @@ public class LocaleConfig {
 	 */
 	@JsonIgnore
 	public DateReader getDateReader() {
-		final ArrayList<String> rangeStartEndSeperators = new ArrayList<>(localeRangeStartEndSeparators.values());
+		final List<String> rangeStartEndSeperators = new ArrayList<>(localeRangeStartEndSeparators.values());
 		rangeStartEndSeperators.addAll(parsingRangeStartEndSeparators);
 		return new DateReader(
 				Sets.union(parsingDateFormats, Set.copyOf(dateFormatMapping.values())),
@@ -104,7 +156,6 @@ public class LocaleConfig {
 	}
 
 
-
 	/**
 	 * Finds the best date format according to the locale and mapped date formatters.
 	 * If there is no perfect match, the locale is abstracted, see findClosestMatch.
@@ -118,11 +169,11 @@ public class LocaleConfig {
 	 * First the vanilla locale is checked, then abstractions to country and language.
 	 * The last resort is the {@link Locale#ROOT}. If no match is found, the alternative is returned.
 	 */
-	private static <T> T findClosestMatch(Locale forLocale, Map<Locale,T> options, T alternative) {
+	private static <T> T findClosestMatch(Locale forLocale, Map<Locale, T> options, T alternative) {
 		String country = forLocale.getCountry();
 		String language = forLocale.getLanguage();
 
-		if (options.containsKey(forLocale)){
+		if (options.containsKey(forLocale)) {
 			return options.get(forLocale);
 		}
 

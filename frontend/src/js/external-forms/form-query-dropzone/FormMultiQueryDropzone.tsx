@@ -1,9 +1,6 @@
 import { FC, ReactNode } from "react";
 
-import {
-  PREVIOUS_QUERY,
-  PREVIOUS_SECONDARY_ID_QUERY,
-} from "../../common/constants/dndTypes";
+import { DNDType } from "../../common/constants/dndTypes";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import type { ChildArgs } from "../../ui-components/Dropzone";
 import DropzoneList from "../form-components/DropzoneList";
@@ -18,6 +15,11 @@ interface PropsT {
   value: DragItemQuery[];
   onChange: (value: DragItemQuery[]) => void;
 }
+
+const DROP_TYPES = [
+  DNDType.PREVIOUS_QUERY,
+  DNDType.PREVIOUS_SECONDARY_ID_QUERY,
+];
 
 const FormMultiQueryDropzone: FC<PropsT> = ({
   label,
@@ -37,11 +39,12 @@ const FormMultiQueryDropzone: FC<PropsT> = ({
 
   return (
     <DropzoneList<DragItemQuery>
-      acceptedDropTypes={[PREVIOUS_QUERY, PREVIOUS_SECONDARY_ID_QUERY]}
+      acceptedDropTypes={DROP_TYPES}
       label={label}
       optional={optional}
       tooltip={tooltip}
       dropzoneChildren={dropzoneChildren}
+      onDropFile={undefined}
       items={value.map((query: DragItemQuery, i: number) => (
         <FormQueryResult key={i} queryResult={query} />
       ))}

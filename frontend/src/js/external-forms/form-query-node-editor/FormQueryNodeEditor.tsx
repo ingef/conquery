@@ -15,10 +15,7 @@ import { usePrevious } from "../../common/helpers/usePrevious";
 import type { NodeResetConfig } from "../../model/node";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
-import type {
-  ConceptQueryNodeType,
-  DragItemConceptTreeNode,
-} from "../../standard-query-editor/types";
+import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { EditedFormQueryNodePosition } from "../form-concept-group/FormConceptGroup";
 import { FormContextStateT } from "../reducer";
@@ -29,7 +26,7 @@ interface PropsT {
   formType: string;
   fieldName: string;
   nodePosition: EditedFormQueryNodePosition;
-  node: ConceptQueryNodeType;
+  node: DragItemConceptTreeNode;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
   allowlistedSelects?: SelectorResultType[];
@@ -61,7 +58,7 @@ interface PropsT {
     tableIdx: number,
     filterIdx: number,
   ) => Promise<void>;
-  onSetDateColumn: (tableIdx: number, dateColumnValue: string | null) => void;
+  onSetDateColumn: (tableIdx: number, dateColumnValue: string) => void;
 }
 
 const FormQueryNodeEditor = (props: PropsT) => {

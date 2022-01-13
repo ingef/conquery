@@ -1,12 +1,13 @@
 import styled from "@emotion/styled";
+import type { ReactNode } from "react";
 
 import IconButton from "../../button/IconButton";
 
 interface PropsT {
   className?: string;
   label?: string;
-  items: Array<Element>;
-  limit?: number;
+  items: ReactNode[];
+  limit: number;
   onAddClick: () => void;
   onRemoveClick: (idx: number) => void;
 }

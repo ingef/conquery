@@ -6,6 +6,7 @@ import type {
   PostFilterResolveResponseT,
   SelectOptionT,
 } from "../api/types";
+import { exists } from "../common/helpers/exists";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
 import type { FiltersContextT } from "./TableFilter";
@@ -25,11 +26,36 @@ interface PropsT {
   tooltip?: string;
   allowDropFile?: boolean;
 
-  onLoad?: (prefix: string) => Promise<void>;
+  total?: number;
+  onLoad?: (prefix: string, page: number, pageSize: number) => Promise<void>;
 
   value: SelectOptionT[];
   onChange: (value: SelectOptionT[]) => void;
 }
+
+const PAGE_SIZE = 100;
+
+const getPageToLoad = (
+  prevPageLoaded: number | null,
+  currentOptionsCount: number,
+  total?: number,
+): number | null => {
+  if (currentOptionsCount === 0) return 0;
+
+  const moreCanBeLoaded = exists(total) && currentOptionsCount < total;
+  if (!moreCanBeLoaded) {
+    return null;
+  }
+
+  const nextPageBasedOnLoadedCount = Math.max(
+    0,
+    Math.ceil(currentOptionsCount / PAGE_SIZE),
+  );
+
+  return prevPageLoaded === null
+    ? nextPageBasedOnLoadedCount
+    : prevPageLoaded + 1;
+};
 
 const FilterListMultiSelect: FC<PropsT> = ({
   context,
@@ -41,6 +67,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
   disabled,
   allowDropFile,
 
+  total,
   onLoad,
 }) => {
   const [resolved, setResolved] = useState<PostFilterResolveResponseT | null>(
@@ -50,12 +77,23 @@ const FilterListMultiSelect: FC<PropsT> = ({
   const [error, setError] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const postFilterValuesResolve = usePostFilterValuesResolve();
+  const [prevPageLoaded, setPrevPageLoaded] = useState<number | null>(null);
 
-  const onLoadMore = async (prefix: string) => {
+  const onLoadMore = async (
+    prefix: string,
+    { shouldReset }: { shouldReset?: boolean } = {},
+  ) => {
     if (onLoad && !loading) {
+      const pageToLoad = shouldReset
+        ? 0
+        : getPageToLoad(prevPageLoaded, options.length, total);
+
+      if (pageToLoad === null) return;
+
       setLoading(true);
       try {
-        await onLoad(prefix);
+        await onLoad(prefix, pageToLoad, PAGE_SIZE);
+        setPrevPageLoaded(pageToLoad);
       } catch (e) {
         // fail silently
         console.error(e);
@@ -108,6 +146,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
         onChange={onChange}
         label={label}
         options={options}
+        total={total}
         loading={loading}
         disabled={disabled}
         indexPrefix={indexPrefix}

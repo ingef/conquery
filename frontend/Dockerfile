@@ -3,7 +3,7 @@ FROM mhart/alpine-node:16 AS builder
 WORKDIR /app
 COPY ./package.json .
 
-RUN yarn --no-progress --frozen-lockfile
+RUN yarn --ignore-platform --no-progress --frozen-lockfile
 
 COPY . .
 

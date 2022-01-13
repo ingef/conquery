@@ -1,24 +1,28 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
-import { PREVIOUS_QUERY, TIMEBASED_NODE } from "../common/constants/dndTypes";
+import { DNDType } from "../common/constants/dndTypes";
+import { exists } from "../common/helpers/exists";
 import type { DragItemQuery } from "../standard-query-editor/types";
-import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
+import Dropzone from "../ui-components/Dropzone";
 
-import type { DragItemTimebasedNode } from "./TimebasedNode";
 import { removeTimebasedNode } from "./actions";
 import { TimebasedResultType } from "./reducer";
 
 interface PropsType {
-  onDropNode: (node: TimebasedResultType, moved: boolean) => void;
+  onDropNode: (
+    node: TimebasedResultType | DragItemQuery,
+    moved: boolean,
+  ) => void;
 }
 
 const StyledDropzone = styled(Dropzone)`
   width: 150px;
   text-align: center;
 `;
+
+const DROP_TYPES = [DNDType.PREVIOUS_QUERY];
 
 const TimebasedQueryEditorDropzone = ({ onDropNode }: PropsType) => {
   const { t } = useTranslation();
@@ -29,23 +33,21 @@ const TimebasedQueryEditorDropzone = ({ onDropNode }: PropsType) => {
     moved: boolean,
   ) => dispatch(removeTimebasedNode({ conditionIdx, resultIdx, moved }));
 
-  const onDrop = (item) => {
-    const { moved } = item;
+  const onDrop = (item: DragItemQuery) => {
+    const { movedFromAndIdx, movedFromOrIdx } = item.dragContext;
 
-    if (moved) {
-      const { conditionIdx, resultIdx } = item;
-
-      onRemoveTimebasedNode(conditionIdx, resultIdx, moved);
-      onDropNode(item.node, moved);
+    if (exists(movedFromAndIdx) && exists(movedFromOrIdx)) {
+      onRemoveTimebasedNode(movedFromAndIdx, movedFromOrIdx, true);
+      onDropNode(item, true);
     } else {
       onDropNode(item, false);
     }
   };
 
   return (
-    <StyledDropzone<FC<DropzoneProps<DragItemQuery | DragItemTimebasedNode>>>
-      acceptedDropTypes={[PREVIOUS_QUERY, TIMEBASED_NODE]}
-      onDrop={onDrop}
+    <StyledDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+      acceptedDropTypes={DROP_TYPES}
+      onDrop={(item) => onDrop(item as DragItemQuery)}
     >
       {() => t("dropzone.dragQuery")}
     </StyledDropzone>

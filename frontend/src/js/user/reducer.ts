@@ -1,6 +1,9 @@
-import type { GetMeResponseT } from "../api/types";
+import { getType } from "typesafe-actions";
 
-import { LOAD_ME_START, LOAD_ME_ERROR, LOAD_ME_SUCCESS } from "./actionTypes";
+import type { GetMeResponseT } from "../api/types";
+import type { Action } from "../app/actions";
+
+import { loadMe } from "./actions";
 
 export type UserStateT = {
   loading: boolean;
@@ -14,20 +17,20 @@ const initialState: UserStateT = {
   me: null,
 };
 
-const startup = (state: UserStateT = initialState, action: any): UserStateT => {
+const user = (state: UserStateT = initialState, action: Action): UserStateT => {
   switch (action.type) {
-    case LOAD_ME_START:
+    case getType(loadMe.request):
       return {
         ...state,
         loading: true,
       };
-    case LOAD_ME_ERROR:
+    case getType(loadMe.failure):
       return {
         ...state,
         loading: false,
-        error: action.payload.message,
+        error: action.payload.message || null,
       };
-    case LOAD_ME_SUCCESS:
+    case getType(loadMe.success):
       return {
         ...state,
         loading: false,
@@ -38,4 +41,4 @@ const startup = (state: UserStateT = initialState, action: any): UserStateT => {
   }
 };
 
-export default startup;
+export default user;

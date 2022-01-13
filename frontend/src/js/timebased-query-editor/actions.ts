@@ -1,5 +1,7 @@
 import { ActionType, createAction } from "typesafe-actions";
 
+import type { DragItemQuery } from "../standard-query-editor/types";
+
 import { TimebasedOperatorType, TimebasedResultType } from "./reducer";
 
 export type TimebasedActions = ActionType<
@@ -21,7 +23,7 @@ export const dropTimebasedNode = createAction(
 )<{
   conditionIdx: number;
   resultIdx: number;
-  node: TimebasedResultType;
+  node: TimebasedResultType | DragItemQuery;
   moved: boolean;
 }>();
 

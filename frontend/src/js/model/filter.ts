@@ -2,6 +2,7 @@ import type {
   BigMultiSelectFilterT,
   FilterT,
   MultiSelectFilterT,
+  SelectOptionT,
 } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import type { FilterWithValueType } from "../standard-query-editor/types";
@@ -10,7 +11,7 @@ import { NodeResetConfig } from "./node";
 
 const resetFilter =
   (config: NodeResetConfig = {}) =>
-  (filter: FilterT) => {
+  (filter: FilterWithValueType): FilterWithValueType => {
     switch (filter.type) {
       case "MULTI_SELECT":
       case "BIG_MULTI_SELECT":
@@ -81,7 +82,7 @@ export const filterValueDiffersFromDefault = (
 };
 
 export const resetFilters = (
-  filters?: FilterT[],
+  filters?: FilterWithValueType[],
   config: NodeResetConfig = {},
 ) => (filters ? filters.map(resetFilter(config)) : []);
 
@@ -103,4 +104,31 @@ export const filterIsEmpty = (filter: FilterWithValueType) => {
     default:
       return !filter.value;
   }
+};
+
+export const mergeFilterOptions = (
+  filter: FilterWithValueType,
+  newOptions: SelectOptionT[],
+) => {
+  if (
+    filter.type === "BIG_MULTI_SELECT" ||
+    filter.type === "MULTI_SELECT" ||
+    filter.type === "SELECT"
+  ) {
+    const mergedOptions = [...filter.options];
+
+    for (const option of newOptions) {
+      const existingOption = mergedOptions.find(
+        (o) => o.value === option.value,
+      );
+
+      if (!existingOption) {
+        mergedOptions.push(option);
+      }
+    }
+
+    return mergedOptions;
+  }
+
+  return null;
 };

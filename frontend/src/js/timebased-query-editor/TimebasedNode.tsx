@@ -5,21 +5,13 @@ import { useTranslation } from "react-i18next";
 
 import { getWidthAndHeight } from "../app/DndProvider";
 import IconButton from "../button/IconButton";
-import { TIMEBASED_NODE } from "../common/constants/dndTypes";
+import { DNDType } from "../common/constants/dndTypes";
 import { DragItemQuery } from "../standard-query-editor/types";
 import VerticalToggleButton, {
   Option,
 } from "../ui-components/VerticalToggleButton";
 
 import { TimebasedResultType } from "./reducer";
-
-export interface DragItemTimebasedNode {
-  conditionIdx: number;
-  resultIdx: number;
-  node: DragItemQuery;
-  moved: true;
-  type: "TIMEBASED_NODE";
-}
 
 const TimebasedNodeContainer = styled("div")`
   border: 1px solid ${({ theme }) => theme.col.blueGray};
@@ -107,12 +99,16 @@ const TimebasedNode: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
   const ref = useRef<HTMLDivElement | null>(null);
-  const item = {
-    conditionIdx,
-    resultIdx,
-    node,
-    moved: true,
-    type: TIMEBASED_NODE,
+  const item: DragItemQuery = {
+    ...node,
+    type: DNDType.PREVIOUS_QUERY,
+    tags: [],
+    dragContext: {
+      width: 0,
+      height: 0,
+      movedFromAndIdx: conditionIdx,
+      movedFromOrIdx: resultIdx,
+    },
   };
   const [, drag] = useDrag({
     item,

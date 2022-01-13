@@ -20,7 +20,8 @@ export const useOpenableConcept = ({
   const open = conceptOpen == null ? openInitially : conceptOpen;
 
   const dispatch = useDispatch();
-  const onToggleOpen = () => dispatch(setConceptOpen(conceptId, !open));
+  const onToggleOpen = () =>
+    dispatch(setConceptOpen({ conceptId, open: !open }));
 
   return {
     open,

@@ -37,7 +37,7 @@ interface PropsT {
 
   onShowDescription: (filterIdx: number) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
-  onSetDateColumn: (tableIdx: number, dateColumnValue: string | null) => void;
+  onSetDateColumn: (tableIdx: number, dateColumnValue: string) => void;
   onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
   onSwitchFilterMode: (
     tableIdx: number,
@@ -123,7 +123,13 @@ const TableView: FC<PropsT> = ({
             onSwitchFilterMode={(filterIdx, mode) =>
               onSwitchFilterMode(tableIdx, filterIdx, mode)
             }
-            onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
+            onLoadFilterSuggestions={(
+              filterIdx,
+              filterId,
+              prefix,
+              page,
+              pageSize,
+            ) =>
               onLoadFilterSuggestions(
                 {
                   datasetId: datasetId,
@@ -131,8 +137,8 @@ const TableView: FC<PropsT> = ({
                   tableId: table.id,
                   filterId,
                   prefix,
-                  page: 0,
-                  pageSize: 200,
+                  page,
+                  pageSize,
                 },
                 tableIdx,
                 filterIdx,

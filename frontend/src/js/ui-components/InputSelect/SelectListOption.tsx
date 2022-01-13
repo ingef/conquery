@@ -33,9 +33,8 @@ const Container = styled("div")<StyleProps>`
       opacity: 0.5;
       cursor: not-allowed;
     `};
-`;
 
-const Markdown = styled(ReactMarkdown)`
+  /* to style react-markdown */
   p {
     margin: 0;
   }
@@ -47,7 +46,7 @@ const SelectListOption = forwardRef<HTMLDivElement, Props>(
 
     return (
       <Container disabled={option.disabled} {...props} ref={ref}>
-        <Markdown>{label}</Markdown>
+        <ReactMarkdown>{String(label)}</ReactMarkdown>
       </Container>
     );
   },

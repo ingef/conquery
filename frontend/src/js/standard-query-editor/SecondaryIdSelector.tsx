@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { SecondaryId } from "../api/types";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
+import { nodeIsConceptQueryNode } from "../model/node";
 import ToggleButton from "../ui-components/ToggleButton";
 
 import { setSelectedSecondaryId } from "./actions";
@@ -52,13 +53,13 @@ const SecondaryIdSelector: FC = () => {
     new Set(
       query.flatMap((group) =>
         group.elements.flatMap((el) => {
-          if (el.isPreviousQuery) {
-            return el.availableSecondaryIds || [];
-          } else {
+          if (nodeIsConceptQueryNode(el)) {
             return el.tables
               .filter((table) => !table.exclude)
               .flatMap((table) => table.supportedSecondaryIds)
               .filter(exists);
+          } else {
+            return el.availableSecondaryIds || [];
           }
         }),
       ),

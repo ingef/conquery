@@ -2,6 +2,7 @@ import { ActionType, getType } from "typesafe-actions";
 
 import { Action } from "../app/actions";
 import { renameQuery } from "../previous-queries/list/actions";
+import type { DragItemQuery } from "../standard-query-editor/types";
 
 import {
   addTimebasedCondition,
@@ -59,6 +60,10 @@ export interface TimebasedQueryStateT {
   conditions: TimebasedConditionT[];
 }
 
+export interface ValidatedTimebasedQueryStateT extends TimebasedQueryStateT {
+  conditions: ValidatedTimebasedConditionT[];
+}
+
 const getEmptyNode = () => ({
   operator: "BEFORE" as const,
   result0: null,
@@ -87,13 +92,14 @@ const setNode = (
   state: TimebasedQueryStateT,
   resultIdx: number,
   conditionIdx: number,
-  node: TimebasedResultType,
+  node: TimebasedResultType | DragItemQuery,
 ) => {
   const attributes = {
     [`result${resultIdx}`]: {
-      ...node,
-      timestamp: node.timestamp || "EARLIEST",
-    },
+      id: node.id,
+      label: node.label,
+      timestamp: ("timestamp" in node && node.timestamp) || "EARLIEST",
+    } as TimebasedResultType,
   };
 
   return setTimebasedConditionAttributes(state, conditionIdx, attributes);
@@ -229,10 +235,12 @@ const onSetTimebasedConditionOperator = (
     operator,
   });
 
+  const { result0 } = state.conditions[conditionIdx];
+
   if (
     operator !== "DAYS_OR_NO_EVENT_BEFORE" ||
-    !state.conditions[conditionIdx].result0 ||
-    state.conditions[conditionIdx].result0.id !== state.indexResult
+    !result0 ||
+    result0.id !== state.indexResult
   )
     return nextState;
 

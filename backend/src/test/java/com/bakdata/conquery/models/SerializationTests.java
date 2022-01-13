@@ -3,8 +3,8 @@ package com.bakdata.conquery.models;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -29,7 +29,6 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.apitoken.ApiToken;
-import com.bakdata.conquery.models.auth.apitoken.ApiTokenCreator;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenData;
 import com.bakdata.conquery.models.auth.apitoken.Scopes;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -41,12 +40,19 @@ import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
+import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
+import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -69,7 +75,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.util.CharArrayBuffer;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
@@ -148,6 +153,120 @@ public class SerializationTests {
 				.injectables(STORAGE)
 				.registry(registry)
 				.test(group);
+	}
+
+
+	@Test
+	public void bucketCompoundDateRange() throws JSONException, IOException {
+		Dataset dataset = new Dataset();
+		dataset.setName("datasetName");
+
+		Table table = new Table();
+
+		Column startCol = new Column();
+		startCol.setName("startCol");
+		startCol.setType(MajorTypeId.DATE);
+		startCol.setTable(table);
+
+		Column endCol = new Column();
+		endCol.setLabel("endLabel");
+		endCol.setName("endCol");
+		endCol.setType(MajorTypeId.DATE);
+		endCol.setTable(table);
+
+
+		Column compoundCol = new Column();
+		compoundCol.setName("compoundCol");
+		compoundCol.setType(MajorTypeId.DATE_RANGE);
+		compoundCol.setTable(table);
+
+		table.setColumns(new Column[]{startCol, endCol, compoundCol});
+		table.setDataset(dataset);
+		table.setName("tableName");
+
+
+		Import imp = new Import(table);
+		imp.setName("importTest");
+
+
+		DateRangeTypeCompound
+				compoundStore =
+				new DateRangeTypeCompound(startCol.getName(), endCol.getName(), new BitSetStore(BitSet.valueOf(new byte[]{0b1000}), new BitSet(), 4));
+		//0b1000 is a binary representation of 8 so that the 4th is set to make sure that BitSet length is 4.
+
+		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
+		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
+
+		Bucket bucket = new Bucket(0, 1, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
+
+		compoundStore.setParent(bucket);
+
+
+		CentralRegistry registry = new CentralRegistry();
+
+		registry.register(dataset);
+		registry.register(startCol);
+		registry.register(endCol);
+		registry.register(compoundCol);
+		registry.register(table);
+		registry.register(imp);
+		registry.register(bucket);
+
+
+		final Validator validator = Validators.newValidator();
+
+		SerializationTestUtil
+				.forType(Bucket.class)
+				.registry(registry)
+				.injectables(new Injectable() {
+					@Override
+					public MutableInjectableValues inject(MutableInjectableValues values) {
+						return values.add(Validator.class, validator);
+					}
+				})
+				.test(bucket);
+
+	}
+
+
+	@Test
+	public void table() throws JSONException, IOException {
+		Dataset dataset = new Dataset();
+		dataset.setName("datasetName");
+
+		Table table = new Table();
+
+		Column column = new Column();
+		column.setLabel("colLabel");
+		column.setName("colName");
+		column.setType(MajorTypeId.STRING);
+		column.setTable(table);
+
+
+		table.setColumns(new Column[]{column});
+		table.setDataset(dataset);
+		table.setLabel("tableLabel");
+		table.setName("tableName");
+
+
+		CentralRegistry registry = new CentralRegistry();
+
+		registry.register(dataset);
+		registry.register(table);
+		registry.register(column);
+
+		final Validator validator = Validators.newValidator();
+
+		SerializationTestUtil
+				.forType(Table.class)
+				.registry(registry)
+				.injectables(new Injectable() {
+					@Override
+					public MutableInjectableValues inject(MutableInjectableValues values) {
+						return values.add(Validator.class, validator);
+					}
+				})
+				.test(table);
 	}
 
 	@Test

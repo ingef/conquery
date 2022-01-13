@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { Heading3, Heading4 } from "../headings/Headings";
-import type { NodeResetConfig } from "../model/node";
+import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
@@ -91,13 +91,15 @@ const MenuColumn: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
   const isOnlyOneTableIncluded =
-    !node.isPreviousQuery &&
+    nodeIsConceptQueryNode(node) &&
     node.tables.filter((table) => !table.exclude).length === 1;
 
-  const rootConcept = !node.isPreviousQuery ? getConceptById(node.tree) : null;
+  const rootConcept = nodeIsConceptQueryNode(node)
+    ? getConceptById(node.tree)
+    : null;
 
   const isEmpty =
-    node.isPreviousQuery ||
+    !nodeIsConceptQueryNode(node) ||
     (!showTables &&
       (!rootConcept ||
         !rootConcept.children ||
@@ -108,7 +110,7 @@ const MenuColumn: FC<PropsT> = ({
       {isEmpty && (
         <DimmedNote>{t("queryNodeEditor.emptyMenuColumn")}</DimmedNote>
       )}
-      {!node.isPreviousQuery && showTables && (
+      {nodeIsConceptQueryNode(node) && showTables && (
         <div>
           <CommonSettingsLabel onClick={onCommonSettingsClick}>
             {t("queryNodeEditor.properties")}
@@ -137,7 +139,7 @@ const MenuColumn: FC<PropsT> = ({
           ))}
         </div>
       )}
-      {!node.isPreviousQuery &&
+      {nodeIsConceptQueryNode(node) &&
         rootConcept &&
         rootConcept.children &&
         rootConcept.children.length > 0 && (

@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -57,7 +58,6 @@ public class ImportJob extends Job {
 	private final PreprocessedDictionaries dictionaries;
 	private final PreprocessedData container;
 	private final ConqueryConfig config;
-
 
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
@@ -280,10 +280,10 @@ public class ImportJob extends Job {
 
 
 		final ColumnStore[] storesSorted = Arrays.stream(table.getColumns())
-				.map(Column::getName)
-				.map(container.getStores()::get)
-				.map(Objects::requireNonNull)
-				.toArray(ColumnStore[]::new);
+												 .map(Column::getName)
+												 .map(container.getStores()::get)
+												 .map(Objects::requireNonNull)
+												 .toArray(ColumnStore[]::new);
 
 
 		log.info("Start sending {} Buckets", buckets2LocalEntities.size());
@@ -311,7 +311,7 @@ public class ImportJob extends Job {
 
 			WorkerInformation responsibleWorker =
 					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket2entities.getKey()), () -> "No responsible worker for Bucket#"
-							+ bucket2entities.getKey());
+																													+ bucket2entities.getKey());
 
 			awaitFreeJobQueue(responsibleWorker);
 
@@ -319,7 +319,7 @@ public class ImportJob extends Job {
 					selectBucket(starts, lengths, storesSorted, primaryMapping, imp, bucket2entities.getKey(), bucket2entities.getValue());
 
 			newWorkerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
-					.add(bucket.getId());
+								.add(bucket.getId());
 
 			log.trace("Sending Bucket[{}] to {}", bucket.getId(), responsibleWorker.getId());
 			responsibleWorker.send(ImportBucket.forBucket(bucket));
@@ -395,8 +395,8 @@ public class ImportJob extends Job {
 		// copy only the parts of the bucket we need
 		final ColumnStore[] bucketStores =
 				Arrays.stream(stores)
-						.map(store -> store.select(selectionStart.toIntArray(), selectionLength.toIntArray()))
-						.toArray(ColumnStore[]::new);
+					  .map(store -> store.select(selectionStart.toIntArray(), selectionLength.toIntArray()))
+					  .toArray(ColumnStore[]::new);
 
 		return new Bucket(
 				bucketId,
@@ -428,7 +428,7 @@ public class ImportJob extends Job {
 		}
 
 		namespace.getStorage()
-				.updatePrimaryDictionary(primaryDict);
+				 .updatePrimaryDictionary(primaryDict);
 
 		return primaryMapping;
 	}
@@ -545,7 +545,7 @@ public class ImportJob extends Job {
 	 */
 	private Map<Integer, List<Integer>> groupEntitiesByBucket(Set<Integer> entities, DictionaryMapping primaryMapping, int bucketSize) {
 		return entities.stream()
-				.collect(Collectors.groupingBy(entity -> Entity.getBucket(primaryMapping.source2Target(entity), bucketSize)));
+					   .collect(Collectors.groupingBy(entity -> Entity.getBucket(primaryMapping.source2Target(entity), bucketSize)));
 
 	}
 

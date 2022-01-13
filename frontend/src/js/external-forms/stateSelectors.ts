@@ -6,7 +6,7 @@ import { exists } from "../common/helpers/exists";
 import { useActiveLang } from "../localization/useActiveLang";
 
 import { ConceptListField, Form, GeneralField, Tabs } from "./config-types";
-import { FormConceptGroupT } from "./form-concept-group/FormConceptGroup";
+import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
 export const selectFormContextState = (state: StateT, formType: string) =>
   state.externalForms ? state.externalForms.formsContext[formType] : null;

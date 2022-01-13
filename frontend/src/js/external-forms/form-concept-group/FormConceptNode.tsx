@@ -5,17 +5,9 @@ import { useTranslation } from "react-i18next";
 
 import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
-import { FORM_CONCEPT_NODE } from "../../common/constants/dndTypes";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
-import type { ConceptQueryNodeType } from "../../standard-query-editor/types";
+import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
-
-export interface DragItemFormConceptNode {
-  type: "FORM_CONCEPT_NODE";
-  width: number;
-  height: number;
-  conceptNode: ConceptQueryNodeType;
-}
 
 const Root = styled("div")<{
   active?: boolean;
@@ -75,7 +67,7 @@ const RootNode = styled("p")`
 interface PropsT {
   valueIdx: number;
   conceptIdx: number;
-  conceptNode: ConceptQueryNodeType;
+  conceptNode: DragItemConceptTreeNode;
   name: string;
   onFilterClick: () => void;
   hasNonDefaultSettings: boolean;
@@ -91,6 +83,8 @@ interface PropsT {
 
 // generalized node to handle concepts queried in forms
 const FormConceptNode: FC<PropsT> = ({
+  valueIdx,
+  conceptIdx,
   conceptNode,
   onFilterClick,
   hasNonDefaultSettings,
@@ -101,13 +95,16 @@ const FormConceptNode: FC<PropsT> = ({
   const rootNodeLabel = getRootNodeLabel(conceptNode);
   const ref = useRef<HTMLDivElement | null>(null);
 
-  const item: DragItemFormConceptNode = {
-    type: FORM_CONCEPT_NODE,
-    width: 0,
-    height: 0,
-    conceptNode,
+  const item: DragItemConceptTreeNode = {
+    ...conceptNode,
+    dragContext: {
+      movedFromAndIdx: valueIdx,
+      movedFromOrIdx: conceptIdx,
+      width: 0,
+      height: 0,
+    },
   };
-  const [, drag] = useDrag<DragItemFormConceptNode, void, {}>({
+  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
     item,
     begin: () => {
       return {

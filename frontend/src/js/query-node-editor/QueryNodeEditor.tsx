@@ -133,7 +133,7 @@ export interface QueryNodeEditorPropsT {
     tableIdx: number,
     filterIdx: number,
   ) => Promise<void>;
-  onSetDateColumn: (tableIdx: number, value: string | null) => void;
+  onSetDateColumn: (tableIdx: number, value: string) => void;
   onSelectSelects: (value: SelectOptionT[]) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
 }
@@ -224,7 +224,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
                 onToggleEdit={() => setEditingLabel(!editingLabel)}
               />
             )}
-            {node.isPreviousQuery && (node.label || node.id || node.ids)}
+            {!nodeIsConceptQueryNode(node) && (node.label || node.id)}
           </NodeName>
           <Row>
             {showClearReset && (
