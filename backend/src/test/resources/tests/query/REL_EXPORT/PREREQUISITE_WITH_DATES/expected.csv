@@ -1,11 +1,11 @@
-result,resolution,index,event_date,date_range,scope,test_tree - test_child1 - exists,test_tree - test_child1 - exists_1
-0,complete,,2000-06-01,1999-07-01/2000-06-30,feature_date_range,1,
-0,complete,,2000-06-01,2000-07-01/2001-06-30,outcome_date_range,,1
-0,quarter,-3,2000-06-01,1999-07-01/1999-09-30,feature_date_range,0,
-0,quarter,-2,2000-06-01,1999-10-01/1999-12-31,feature_date_range,0,
-0,quarter,-1,2000-06-01,2000-01-01/2000-03-31,feature_date_range,0,
-0,quarter,0,2000-06-01,2000-04-01/2000-06-30,feature_date_range,1,
-0,quarter,1,2000-06-01,2000-07-01/2000-09-30,outcome_date_range,,0
-0,quarter,2,2000-06-01,2000-10-01/2000-12-31,outcome_date_range,,0
-0,quarter,3,2000-06-01,2001-01-01/2001-03-31,outcome_date_range,,0
-0,quarter,4,2000-06-01,2001-04-01/2001-06-30,outcome_date_range,,1
+result,resolution,index,event_date,date_range,scope,test_tree - test_child1 - exists
+0,complete,,2000-06-01,1999-07-01/2000-06-30,feature_date_range,1
+0,complete,,2000-06-01,2000-07-01/2001-06-30,outcome_date_range,1
+0,quarter,-3,2000-06-01,1999-07-01/1999-09-30,feature_date_range,0
+0,quarter,-2,2000-06-01,1999-10-01/1999-12-31,feature_date_range,0
+0,quarter,-1,2000-06-01,2000-01-01/2000-03-31,feature_date_range,0
+0,quarter,0,2000-06-01,2000-04-01/2000-06-30,feature_date_range,1
+0,quarter,1,2000-06-01,2000-07-01/2000-09-30,outcome_date_range,0
+0,quarter,2,2000-06-01,2000-10-01/2000-12-31,outcome_date_range,0
+0,quarter,3,2000-06-01,2001-01-01/2001-03-31,outcome_date_range,0
+0,quarter,4,2000-06-01,2001-04-01/2001-06-30,outcome_date_range,1
