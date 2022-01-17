@@ -100,7 +100,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		final StringBuilder builder = new StringBuilder();
 
 		builder.append(getConcept().getLabel());
-		builder.append(" - ");
+		builder.append(" ");
 
 		for (ConceptElement<?> id : elements) {
 			if (id.equals(getConcept())) {

@@ -1,4 +1,4 @@
-result,resolution,index,event_date,feature_date_range,outcome_date_range,Alter - Ausgabe Alter,Alter - Ausgabe Alter_1
+result,resolution,index,event_date,feature_date_range,outcome_date_range,Alter,Alter_1
 1,complete,,2001-12-01,2001-01-01/2001-12-31,2002-01-01/2002-12-31,,
 1,year,0,2001-12-01,2001-01-01/2001-12-31,,,
 1,quarter,-3,2001-12-01,2001-01-01/2001-03-31,,,

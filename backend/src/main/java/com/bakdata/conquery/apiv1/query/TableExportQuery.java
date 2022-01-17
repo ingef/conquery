@@ -170,7 +170,7 @@ public class TableExportQuery extends Query {
 				continue;
 			}
 
-			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " - " + column.getLabel(), ResultType.resolveResultType(column.getType()));
+			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), ResultType.resolveResultType(column.getType()));
 		}
 
 		return List.of(infos);
