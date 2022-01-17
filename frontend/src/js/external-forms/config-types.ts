@@ -12,7 +12,7 @@ interface TranslatableString {
 
 export type Forms = Form[];
 
-export type FormField = Field | Tabs;
+export type FormField = Field | Tabs | Group;
 export type NonFormField = Headline | Description;
 
 export type GeneralField = FormField | NonFormField;
@@ -22,6 +22,17 @@ export interface Form {
   title: TranslatableString; // Displayed
   fields: GeneralField[];
   description?: TranslatableString; // Displayed
+}
+
+export interface Group {
+  type: "GROUP";
+  label?: TranslatableString;
+  description?: TranslatableString;
+  style?: {
+    display: "flex" | "grid";
+    gridColumns?: number;
+  };
+  fields: GeneralField[];
 }
 
 export interface Tabs {
