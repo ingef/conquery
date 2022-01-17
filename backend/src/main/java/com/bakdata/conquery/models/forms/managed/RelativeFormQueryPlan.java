@@ -44,7 +44,6 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final QueryPlan<?> query;
 	private final ArrayConceptQueryPlan featurePlan;
-	private final ArrayConceptQueryPlan outcomePlan;
 
 	private final TemporalSampler indexSelector;
 	private final IndexPlacement indexPlacement;
@@ -61,7 +60,6 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	public void init(QueryExecutionContext ctxt, Entity entity) {
 		query.init(ctxt, entity);
 		featurePlan.init(ctxt, entity);
-		outcomePlan.init(ctxt, entity);
 
 		featureSubquery = null;
 		outcomeSubquery = null;
@@ -101,8 +99,8 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 				DateContext.generateRelativeContexts(sample, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
 
 		// create feature and outcome plans
-		featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE, !isSingleScope());
-		outcomeSubquery = createSubQuery(outcomePlan, contexts, FeatureGroup.OUTCOME, !isSingleScope());
+		featureSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.FEATURE);
+		outcomeSubquery = createSubQuery(featurePlan, contexts, FeatureGroup.OUTCOME);
 
 
 
@@ -123,41 +121,17 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		List<Object[]> featureResultValues = featureResult.get().getValues();
 		List<Object[]> outcomeResultValues = outcomeResult.get().getValues();
 
-		int resultStartIndex = 0;
 		List<Object[]> values = new ArrayList<>();
-		if (hasCompleteDateContexts(contexts)) {
-			// merge a line for the complete daterange, when two dateContext were generated
-			// that don't target the same feature group,
-			// which would be a mistake by the generation
-			// Since the DateContexts are primarily ordered by their coarseness and COMPLETE
-			// is the most coarse resolution it must be at the first
-			// to indexes of the list.
 
-			if (featurePlan.getAggregatorSize() > 0) {
-				Object[] result = new Object[size];
-				setFeatureValues(featureSubquery.getConstantCount(),result, featureResultValues.get(resultStartIndex));
-				values.add(result);
-			}
-
-
-			if (outcomePlan.getAggregatorSize() > 0) {
-				Object[] result = new Object[size];
-				setOutcomeValues(outcomeSubquery.getConstantCount(), result, outcomeResultValues.get(resultStartIndex));
-				values.add(result);
-			}
-			resultStartIndex++;
-		}
-
-		// append all other lines directly
-		for (int i = resultStartIndex; i < featureResultValues.size(); i++) {
+		for (int i = 0; i < featureResultValues.size() && timeCountBefore > 0; i++) {
 			Object[] result = new Object[size];
-			setFeatureValues(featureSubquery.getConstantCount(), result, featureResultValues.get(i));
+			setValues(featureSubquery.getConstantCount(), result, featureResultValues.get(i));
 			values.add(result);
 		}
 
-		for (int i = resultStartIndex; i < outcomeResultValues.size(); i++) {
+		for (int i = 0; i < outcomeResultValues.size() && timeCountAfter > 0; i++) {
 			Object[] result = new Object[size];
-			setOutcomeValues(outcomeSubquery.getConstantCount(), result, outcomeResultValues.get(i));
+			setValues(outcomeSubquery.getConstantCount(), result, outcomeResultValues.get(i));
 			values.add(result);
 		}
 
@@ -165,20 +139,11 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	private int getFirstAggregatorPosition() {
-		if (outcomePlan.getAggregatorSize() <= 0 && featurePlan.getAggregatorSize() <= 0) {
+		if (featurePlan.getAggregatorSize() <= 0) {
 			throw new ConqueryError.ExecutionProcessingError();
-		}
-		if (isSingleScope()) {
-			// If either feature or outcome is given, we don't output the observation scope, since it would be the same everywhere
-			return 4;
 		}
 		// We need an extra column for the observation scope
 		return 5;
-	}
-
-	private boolean isSingleScope() {
-		return outcomePlan.getAggregatorSize() > 0 && featurePlan.getAggregatorSize() <= 0
-			   || featurePlan.getAggregatorSize() > 0 && outcomePlan.getAggregatorSize() <= 0;
 	}
 
 	/**
@@ -189,7 +154,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 */
 	private int calculateCompleteLength() {
 
-		return getFirstAggregatorPosition() + featurePlan.getAggregatorSize() + outcomePlan.getAggregatorSize();
+		return getFirstAggregatorPosition() + featurePlan.getAggregatorSize();
 		//return featureLength + outcomeLength - 3/* ^= [RESOLUTION], [INDEX], [EVENTDATE] */;
 	}
 
@@ -204,53 +169,27 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 
-	private boolean hasCompleteDateContexts(List<DateContext> contexts) {
-		if (contexts.isEmpty()) {
-			return false;
-		}
-
-		if (featurePlan.getAggregatorSize() <= 0 || outcomePlan.getAggregatorSize() <= 0) {
-			// Otherwise, if only features or outcomes are given check the first date context. The empty feature/outcome query
-			// will still return an empty result which will be merged with to a complete result.
-			return Resolution.COMPLETE.equals(contexts.get(0).getSubdivisionMode());
-		}
-
-		// We have features and outcomes check if both have complete date ranges (they should be at the beginning of the list)
-		return contexts.size() >= 2
-			   && Resolution.COMPLETE.equals(contexts.get(0).getSubdivisionMode())
-			   && Resolution.COMPLETE.equals(contexts.get(1).getSubdivisionMode())
-			   && !contexts.get(0).getFeatureGroup().equals(contexts.get(1).getFeatureGroup());
-	}
-
-	private static FormQueryPlan createSubQuery(ArrayConceptQueryPlan subPlan, List<DateContext> contexts, FeatureGroup featureGroup, boolean withObservationScope) {
+	private static FormQueryPlan createSubQuery(ArrayConceptQueryPlan subPlan, List<DateContext> contexts, FeatureGroup featureGroup) {
 		List<DateContext> list = new ArrayList<>(contexts);
 		list.removeIf(dctx -> dctx.getFeatureGroup() != featureGroup);
 
-		return new FormQueryPlan(list, subPlan, withObservationScope);
+		return new FormQueryPlan(list, subPlan, true);
 	}
 
-	private void setFeatureValues(int constantCount, Object[] result, Object[] value) {
+	private void setValues(int constantCount, Object[] result, Object[] value) {
 		// copy everything up to including scope
 		System.arraycopy(value, 0, result, 0, constantCount);
 
 		System.arraycopy(value, constantCount, result, getFirstAggregatorPosition(), featurePlan.getAggregatorSize());
 	}
 
-	private void setOutcomeValues(int constantCount, Object[] result, Object[] value) {
-		// copy everything up to including scope
-		System.arraycopy(value, 0, result, 0, constantCount);
-
-		System.arraycopy(value, constantCount, result, getFirstAggregatorPosition()
-																	   + featurePlan.getAggregatorSize(), outcomePlan.getAggregatorSize());
-	}
-
 	public List<Aggregator<?>> getAggregators() {
-		return ImmutableList.copyOf(Iterables.concat(featurePlan.getAggregators(), outcomePlan.getAggregators()));
+		return ImmutableList.copyOf(featurePlan.getAggregators());
 	}
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return query.isOfInterest(entity) || featurePlan.isOfInterest(entity) || outcomePlan.isOfInterest(entity);
+		return query.isOfInterest(entity) || featurePlan.isOfInterest(entity);
 	}
 
 	@Override

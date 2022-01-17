@@ -39,28 +39,15 @@ public class RelativeMode extends Mode {
 	private IndexPlacement indexPlacement;
 	@NotNull
 	private TemporalSampler indexSelector;
-
+	@NotNull
 	private List<CQElement> features = Collections.emptyList();
-
-	private List<CQElement> outcomes = Collections.emptyList();
-
 
 	@InternalOnly
 	private ArrayConceptQuery resolvedFeatures;
 
-	@InternalOnly
-	private ArrayConceptQuery resolvedOutcomes;
-
-	@ValidationMethod
-	boolean isWithFeatureOrOutcomes(){
-		// Its allowed to have one of them emtpy
-		return !(features.isEmpty() && outcomes.isEmpty());
-	}
-
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		features.forEach(e -> visitor.accept(e));
-		outcomes.forEach(e -> visitor.accept(e));
+		features.forEach(visitor);
 	}
 	
 	@Override
@@ -71,12 +58,10 @@ public class RelativeMode extends Mode {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		ExportForm.DefaultSelectSettable.enable(features);
-		ExportForm.DefaultSelectSettable.enable(outcomes);
 
 		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features);
-		resolvedOutcomes = ArrayConceptQuery.createFromFeatures(outcomes);
+
 		// Resolve all
 		resolvedFeatures.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
-		resolvedOutcomes.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
 }

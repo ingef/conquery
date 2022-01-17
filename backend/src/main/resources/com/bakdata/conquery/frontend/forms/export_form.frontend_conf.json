@@ -253,23 +253,6 @@
                             "validations": [
                                 "NOT_EMPTY"
                             ]
-                        },
-                        {
-                            "name": "outcomes",
-                            "type": "CONCEPT_LIST",
-                            "label": {
-                                "de": "Konzepte im Nachbeobachtungszeitraum (Outcome Zeitraum)"
-                            },
-                            "isTwoDimensional": true,
-                            "conceptDropzoneLabel": {
-                                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
-                            },
-                            "conceptColumnDropzoneLabel": {
-                                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
-                            },
-                            "validations": [
-                                "NOT_EMPTY"
-                            ]
                         }
                     ],
                     "tooltip": {

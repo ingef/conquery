@@ -109,7 +109,7 @@ public class FormConfigTest {
 				when(namespaceMock.getDataset()).thenReturn(dataset1);
 			}
 			else {
-				throw new IllegalStateException("Unkown dataset id.");
+				throw new IllegalStateException("Unknown dataset id.");
 			}
 			return namespaceMock;
 		}).when(namespacesMock).get(any(DatasetId.class));
@@ -268,7 +268,6 @@ public class FormConfigTest {
 		form2.setTimeMode(mode3);
 		mode3.setForm(form);
 		mode3.setFeatures(List.of(new CQConcept()));
-		mode3.setOutcomes(List.of(new CQConcept()));
 
 		TestForm form3 = new TestForm();
 		

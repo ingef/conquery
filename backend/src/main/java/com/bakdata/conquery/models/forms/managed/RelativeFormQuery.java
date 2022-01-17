@@ -37,8 +37,6 @@ public class RelativeFormQuery extends Query {
 	private final Query query;
 	@NotNull @Valid
 	private final ArrayConceptQuery features;
-	@NotNull @Valid
-	private final ArrayConceptQuery outcomes;
 	@NotNull
 	private final TemporalSampler indexSelector;
 	@NotNull
@@ -56,7 +54,6 @@ public class RelativeFormQuery extends Query {
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
-		outcomes.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
 	
 	@Override
@@ -64,7 +61,6 @@ public class RelativeFormQuery extends Query {
 		return new RelativeFormQueryPlan(query.createQueryPlan(context),
 			// At the moment we do not use the dates of feature and outcome query
 			features.createQueryPlan(context),
-			outcomes.createQueryPlan(context),
 			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
 	}
 
@@ -72,7 +68,6 @@ public class RelativeFormQuery extends Query {
 	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
 		query.collectRequiredQueries(requiredQueries);
 		features.collectRequiredQueries(requiredQueries);
-		outcomes.collectRequiredQueries(requiredQueries);
 	}
 	
 	@Override
@@ -88,29 +83,20 @@ public class RelativeFormQuery extends Query {
 		resultInfos.add(ConqueryConstants.DATE_RANGE_INFO);
 
 		final List<ResultInfo> featureInfos = features.getResultInfos();
-		final List<ResultInfo> outcomeInfos = outcomes.getResultInfos();
 
-		if (hasMultipleObservationScopes(featureInfos, outcomeInfos)){
-			// observation scope info
-			resultInfos.add(ConqueryConstants.OBSERVATION_SCOPE_INFO);
-		}
+		resultInfos.add(ConqueryConstants.OBSERVATION_SCOPE_INFO);
 
 		//features
 		resultInfos.addAll(featureInfos);
-		resultInfos.addAll(outcomeInfos);
 
 		return resultInfos;
 	}
 
-	private boolean hasMultipleObservationScopes(List<ResultInfo> featureInfos, List<ResultInfo> outcomeInfos) {
-		return featureInfos.stream().anyMatch(SelectResultInfo.class::isInstance) && outcomeInfos.stream().anyMatch(SelectResultInfo.class::isInstance);
-	}
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 		query.visit(visitor);
-		outcomes.visit(visitor);
 		features.visit(visitor);
 	}
 }
