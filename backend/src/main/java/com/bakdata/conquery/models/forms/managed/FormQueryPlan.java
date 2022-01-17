@@ -72,8 +72,7 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
 		if (!isOfInterest(entity)) {
-			// If the entity is not covered by the query generate a basic result line with constants but without features
-			return Optional.of(createResultForNotContained(entity, null));
+			return Optional.empty();
 		}
 
 
