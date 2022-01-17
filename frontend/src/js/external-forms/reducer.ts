@@ -8,13 +8,13 @@ import createQueryRunnerReducer, {
 } from "../query-runner/reducer";
 
 import { setExternalForm } from "./actions";
-import type { Form } from "./config-types";
+import type { ConceptListField, Form } from "./config-types";
 import { createFormQueryNodeEditorReducer } from "./form-query-node-editor/reducer";
 import { collectAllFormFields } from "./helper";
 
 function collectConceptListFieldNames(config: Form) {
   const fieldNames = collectAllFormFields(config.fields)
-    .filter((field) => field.type === "CONCEPT_LIST")
+    .filter((field): field is ConceptListField => field.type === "CONCEPT_LIST")
     .map((field) => field.name);
 
   return [...new Set(fieldNames)];

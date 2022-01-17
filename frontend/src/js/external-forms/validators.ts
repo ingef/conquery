@@ -70,6 +70,7 @@ const DEFAULT_VALIDATION_BY_TYPE: Record<
   SELECT: null,
   TABS: null,
   DATASET_SELECT: null,
+  GROUP: null,
   // MULTI_SELECT: null,
   DATE_RANGE: validateDateRange,
 };
@@ -95,7 +96,9 @@ function getPossibleValidations(fieldType: string) {
 const isFieldWithValidations = (
   field: FormField,
 ): field is Exclude<Field, CheckboxField> => {
-  return field.type !== "TABS" && field.type !== "CHECKBOX";
+  return (
+    field.type !== "TABS" && field.type !== "GROUP" && field.type !== "CHECKBOX"
+  );
 };
 
 export function getErrorForField(

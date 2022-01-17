@@ -201,7 +201,7 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
           // to SelectValueT, e.g. { value: 'next', label: 'Next' }
           const field = formConfig.fields
             .filter(isFormField)
-            .find((f) => f.name === fieldname);
+            .find((f) => f.type !== "GROUP" && f.name === fieldname);
 
           if (!field) continue;
 
