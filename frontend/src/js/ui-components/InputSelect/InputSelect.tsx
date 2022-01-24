@@ -102,23 +102,11 @@ const InputSelect = ({
             // so we need to explicitly set null here if clearable
             selectedItem: clearable ? null : state.selectedItem,
           };
-        case useCombobox.stateChangeTypes.InputKeyDownEnter:
-        case useCombobox.stateChangeTypes.ItemClick:
-          if (inputRef.current) {
-            inputRef.current.blur();
-          }
-          return state;
         case useCombobox.stateChangeTypes.InputBlur:
           if (changes.selectedItem?.disabled) {
             return state;
           }
-
-          return {
-            ...changes,
-            inputValue: String(
-              changes.selectedItem?.label || state.selectedItem?.label || "",
-            ),
-          };
+          return changes;
         default:
           return changes;
       }
@@ -126,18 +114,6 @@ const InputSelect = ({
     onInputValueChange: (changes) => {
       if (changes.highlightedIndex !== 0) {
         setHighlightedIndex(0);
-      }
-
-      if (exists(changes.inputValue)) {
-        if (changes.inputValue !== value?.label) {
-          setFilteredOptions(
-            options.filter((option) =>
-              optionMatchesQuery(option, changes.inputValue),
-            ),
-          );
-        } else {
-          setFilteredOptions(options);
-        }
       }
     },
     onStateChange: ({ type, ...changes }) => {
@@ -149,6 +125,8 @@ const InputSelect = ({
             toggleMenu();
           }
           break;
+        case useCombobox.stateChangeTypes.InputKeyDownEnter:
+        case useCombobox.stateChangeTypes.ItemClick:
         case useCombobox.stateChangeTypes.InputBlur:
           setFilteredOptions(options);
 
@@ -161,6 +139,8 @@ const InputSelect = ({
       }
     },
   });
+
+  const previousInputValue = usePrevious(inputValue);
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
   const { ref: inputPropsRef, ...inputProps } = getInputProps();
@@ -214,6 +194,21 @@ const InputSelect = ({
       }
     },
     [inputValue, value, options, previousOptions],
+  );
+
+  useEffect(
+    function filterOptionsOnChangingInput() {
+      if (exists(inputValue) && inputValue !== previousInputValue) {
+        if (inputValue !== selectedItem?.label) {
+          setFilteredOptions(
+            options.filter((option) => optionMatchesQuery(option, inputValue)),
+          );
+        } else {
+          setFilteredOptions(options);
+        }
+      }
+    },
+    [inputValue, previousInputValue, options, selectedItem],
   );
 
   const Select = (
@@ -275,6 +270,12 @@ const InputSelect = ({
       {isOpen ? (
         <Menu
           {...menuProps}
+          onMouseDown={(e) => {
+            // To prevent causing input blur too soon, when selecting an option
+            // otherwise, input blur resets the search, which resets the filtered options list
+            // leading to a wrong click behavior when filtered
+            e.stopPropagation();
+          }}
           ref={(instance) => {
             menuPropsRef(instance);
           }}
