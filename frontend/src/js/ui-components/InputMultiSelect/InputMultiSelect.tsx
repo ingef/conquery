@@ -36,6 +36,16 @@ import { useSyncWithValueFromAbove } from "./useSyncWithValueFromAbove";
 
 const MAX_SELECTED_ITEMS_LIMIT = 200;
 
+const SENTINEL_INSERT_INDEX_FROM_BOTTOM = 10;
+
+const getSentinelInsertIndex = (optionsLength: number) => {
+  if (optionsLength < SENTINEL_INSERT_INDEX_FROM_BOTTOM) {
+    return optionsLength - 1;
+  }
+
+  return optionsLength - SENTINEL_INSERT_INDEX_FROM_BOTTOM;
+};
+
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
 `;
@@ -342,24 +352,27 @@ const InputMultiSelect = ({
               });
 
               return (
-                <SxSelectListOption
-                  key={`${option.value}${option.label}`}
-                  active={highlightedIndex === index}
-                  option={option}
-                  {...itemProps}
-                  ref={itemPropsRef}
-                />
+                <>
+                  <SxSelectListOption
+                    key={`${option.value}${option.label}`}
+                    active={highlightedIndex === index}
+                    option={option}
+                    {...itemProps}
+                    ref={itemPropsRef}
+                  />
+                  {index === getSentinelInsertIndex(filteredOptions.length) &&
+                    exists(onLoadMore) && (
+                      <LoadMoreSentinel
+                        onLoadMore={() => {
+                          if (!loading) {
+                            onLoadMore(inputValue);
+                          }
+                        }}
+                      />
+                    )}
+                </>
               );
             })}
-            {exists(onLoadMore) && (
-              <LoadMoreSentinel
-                onLoadMore={() => {
-                  if (!loading) {
-                    onLoadMore(inputValue);
-                  }
-                }}
-              />
-            )}
           </List>
         </Menu>
       ) : (
