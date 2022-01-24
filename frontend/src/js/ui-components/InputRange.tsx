@@ -45,7 +45,7 @@ interface PropsType {
     max?: number;
   };
   disabled: boolean;
-  mode: "range" | "exact";
+  mode: ModeT;
   stepSize?: number;
   placeholder: string;
   onSwitchMode: (mode: ModeT) => void;
