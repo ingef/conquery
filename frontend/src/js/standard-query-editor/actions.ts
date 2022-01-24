@@ -254,16 +254,21 @@ export const useLoadFilterSuggestions = (
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
+    { returnOnly }: { returnOnly?: boolean } = {},
   ) => {
-    if (!editedNode) return;
+    if (!editedNode) return null;
 
     const context = { ...editedNode, tableIdx, filterIdx, page: params.page };
 
     const suggestions = await postPrefixForSuggestions(params);
 
-    dispatch(
-      loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
-    );
+    if (!returnOnly) {
+      dispatch(
+        loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
+      );
+    }
+
+    return suggestions;
   };
 };
 

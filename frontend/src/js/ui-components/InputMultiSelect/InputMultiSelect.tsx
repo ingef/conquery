@@ -71,6 +71,7 @@ interface Props {
   loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
   onLoadMore?: (inputValue: string, config?: { shouldReset?: boolean }) => void;
+  onLoadAndInsertAll?: (inputValue: string) => void;
 }
 
 const InputMultiSelect = ({
@@ -90,6 +91,7 @@ const InputMultiSelect = ({
   loading,
   onResolve,
   onLoadMore,
+  onLoadAndInsertAll,
 }: Props) => {
   const { onDropFile } = useResolvableSelect({
     defaultValue,
@@ -340,7 +342,14 @@ const InputMultiSelect = ({
             total={total}
             optionsCount={filteredOptions.length}
             onInsertAllClick={() => {
-              setSelectedItems(filteredOptions);
+              const moreInsertableThanCurrentlyLoaded =
+                exists(total) && total > filteredOptions.length;
+
+              if (!!onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
+                onLoadAndInsertAll(inputValue);
+              } else {
+                setSelectedItems(filteredOptions);
+              }
             }}
           />
           <List>
