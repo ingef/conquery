@@ -133,7 +133,7 @@ export interface QueryNodeEditorPropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-    { returnOnly }?: { returnOnly?: boolean },
+    config?: { returnOnly?: boolean },
   ) => Promise<PostFilterSuggestionsResponseT | null>;
   onSetDateColumn: (tableIdx: number, value: string) => void;
   onSelectSelects: (value: SelectOptionT[]) => void;
