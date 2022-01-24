@@ -1,8 +1,9 @@
 // This file specifies
 // - response type provided by the backend API
 // - partial types that the reponses are built from
-import { Forms } from "../external-forms/config-types";
+import type { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../external-forms/form-configs/reducer";
+import type { ModeT } from "../ui-components/InputRange";
 
 export type DatasetIdT = string;
 export interface DatasetT {
@@ -48,7 +49,7 @@ export interface RangeFilterT extends FilterBaseT {
   value: RangeFilterValueT | null;
   defaultValue?: RangeFilterValueT;
   unit?: string;
-  mode: "range" | "exact";
+  mode?: ModeT; // Usually not sent, then default "range" is assumed
   precision?: number;
   min?: number;
   max?: number;
