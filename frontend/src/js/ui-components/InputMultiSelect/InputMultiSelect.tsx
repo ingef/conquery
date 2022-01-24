@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
@@ -361,9 +361,8 @@ const InputMultiSelect = ({
               });
 
               return (
-                <>
+                <Fragment key={`${option.value}${option.label}`}>
                   <SxSelectListOption
-                    key={`${option.value}${option.label}`}
                     active={highlightedIndex === index}
                     option={option}
                     {...itemProps}
@@ -379,7 +378,7 @@ const InputMultiSelect = ({
                         }}
                       />
                     )}
-                </>
+                </Fragment>
               );
             })}
           </List>

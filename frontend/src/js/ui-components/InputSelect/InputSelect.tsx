@@ -55,7 +55,7 @@ const InputSelect = ({
   onChange,
 }: Props) => {
   const { t } = useTranslation();
-  const previousInputValue = usePrevious(value);
+  const previousValue = usePrevious(value);
   const previousOptions = usePrevious(options);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -188,13 +188,13 @@ const InputSelect = ({
     function takeValueFromAbove() {
       if (
         exists(value) &&
-        previousInputValue !== value &&
+        previousValue !== value &&
         value.value !== selectedItem?.value
       ) {
         selectItem(value);
       }
     },
-    [previousInputValue, selectedItem, selectItem, value],
+    [previousValue, selectedItem, selectItem, value],
   );
 
   useEffect(
