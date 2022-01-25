@@ -1,4 +1,4 @@
-result,dates,concept - select
+result,dates,concept select
 1,{2010-01-01/2010-03-31},0
 2,{2010-01-01/2010-03-31},12
 3,{2010-01-01/2010-03-31},12

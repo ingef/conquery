@@ -67,81 +67,86 @@ public class DefaultColumnNameTest {
 				Arguments.of(
 						TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 1, null),
 						false,
-						"TestConceptLabel - ID_0 - TestSelectLabel"
+						"TestConceptLabel ID_0 TestSelectLabel"
 				),
 				// ConceptSelect without CQLabel, multiple Ids
 				Arguments.of(
 						TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 3, null),
 						false,
-						"TestConceptLabel - ID_0+ID_1+ID_2 - TestSelectLabel"
+						"TestConceptLabel ID_0+ID_1+ID_2 TestSelectLabel"
 				),
 				// ConceptSelect with CQLabel, one Id
 				Arguments.of(
 						TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 1, null),
 						true,
-						"TestCQLabel - TestSelectLabel"
+						"TestCQLabel TestSelectLabel"
 				),
 				// ConceptSelect with CQLabel, multiple Ids
 				Arguments.of(
 						TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 3, null),
 						true,
-						"TestCQLabel - TestSelectLabel"
+						"TestCQLabel TestSelectLabel"
 				),
 
 				// ConnectorSelect, without CQLabel, one Id, one Connector
 				Arguments.of(
 						TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 1, null),
 						false,
-						"TestConceptLabel - ID_0 - TestSelectLabel"
+						"TestConceptLabel ID_0 TestSelectLabel"
 				),
 				// ConnectorSelect without CQLabel, multiple Ids, one Connector
 				Arguments.of(
 						TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 3, null),
 						false,
-						"TestConceptLabel - ID_0+ID_1+ID_2 - TestSelectLabel"
+						"TestConceptLabel ID_0+ID_1+ID_2 TestSelectLabel"
 				),
 				// ConnectorSelect with CQLabel, one Id, one Connector
 				Arguments.of(
 						TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 1, null),
 						true,
-						"TestCQLabel - TestSelectLabel"
+						"TestCQLabel TestSelectLabel"
 				),
 				// ConnectorSelect with CQLabel, multiple Ids, one Connector
 				Arguments.of(
 						TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 3, null),
 						true,
-						"TestCQLabel - TestSelectLabel"
+						"TestCQLabel TestSelectLabel"
 				),
 
 				// ConnectorSelect, without CQLabel, one Id, multiple Connectors
 				Arguments.of(
 						TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 1, null),
 						false,
-						"TestConceptLabel - ID_0 - TestConnectorLabel_0 TestSelectLabel"
+						"TestConceptLabel ID_0 TestConnectorLabel_0 TestSelectLabel"
 				),
 				// ConnectorSelect without CQLabel, multiple Ids, multiple Connectors
 				Arguments.of(
 						TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 3, null),
 						false,
-						"TestConceptLabel - ID_0+ID_1+ID_2 - TestConnectorLabel_0 TestSelectLabel"
+						"TestConceptLabel ID_0+ID_1+ID_2 TestConnectorLabel_0 TestSelectLabel"
 				),
 				// ConnectorSelect with CQLabel, one Id, multiple Connectors
 				Arguments.of(
 						TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 1, null),
 						true,
-						"TestCQLabel - TestConnectorLabel_0 TestSelectLabel"
+						"TestCQLabel TestConnectorLabel_0 TestSelectLabel"
 				),
 				// ConnectorSelect with CQLabel, multiple Ids, multiple Connectors
 				Arguments.of(
 						TestConcept.create(3, CONNECTOR_SELECT_SELECTOR, 3, null),
 						true,
-						"TestCQLabel - TestConnectorLabel_0 TestSelectLabel"
+						"TestCQLabel TestConnectorLabel_0 TestSelectLabel"
 				),
 				// ConnectorSelect without CQLabel, only root Id, one Connector -> Connector label should be suppressed
 				Arguments.of(
 						TestConcept.create(1, CONNECTOR_SELECT_SELECTOR, 0, "Test-Label"),
 						false,
-						"Test-Label - TestSelectLabel"
+						"Test-Label TestSelectLabel"
+				),
+				Arguments.of(
+						TestConcept.create(1, CONCEPT_SELECT_SELECTOR, 0, "TestSelectLabel"),
+						false,
+						"TestSelectLabel"
 				)
 
 		);

@@ -48,13 +48,9 @@ public class SelectResultInfo extends ResultInfo {
 			return null;
 		}
 
-		StringBuilder sb = new StringBuilder();
-
-		sb.append(label);
-		sb.append(" - ");
-
-		select.appendColumnName(sb);
-		return sb.toString();
+		return label
+			   + " "
+			   + select.getColumnName();
 	}
 
 	@Override
@@ -62,14 +58,21 @@ public class SelectResultInfo extends ResultInfo {
 
 		StringBuilder sb = new StringBuilder();
 		String cqLabel = getCqConcept().defaultLabel(printSettings.getLocale());
+		final String selectLabel = select.getColumnName();
+
+		if (selectLabel.equals(cqLabel)) {
+			// If the default name of concept and select is the same, output only one
+			return selectLabel;
+		}
 
 		if (cqLabel != null) {
 			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
 			sb.append(cqLabel);
-			sb.append(" - ");
+			sb.append(" ");
 		}
 
-		select.appendColumnName(sb);
+		sb.append(selectLabel);
+
 		return sb.toString();
 	}
 
