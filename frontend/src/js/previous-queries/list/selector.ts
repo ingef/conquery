@@ -85,13 +85,19 @@ export const selectPreviousQueries = (
   });
 };
 
-export const usePreviousQueriesTags = () => {
+export const useFolders = () => {
   const queries = useSelector<StateT, PreviousQueryT[]>(
     (state) => state.previousQueries.queries,
   );
+  const localFolders = useSelector<StateT, string[]>(
+    (state) => state.previousQueries.localFolders,
+  );
 
   return useMemo(
-    () => Array.from(new Set(queries.flatMap((query) => query.tags))).sort(),
-    [queries],
+    () =>
+      Array.from(
+        new Set([...queries.flatMap((query) => query.tags), ...localFolders]),
+      ).sort(),
+    [queries, localFolders],
   );
 };
