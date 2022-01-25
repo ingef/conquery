@@ -19,6 +19,7 @@ import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -83,7 +84,7 @@ public class FilterSearch {
 		public abstract double score(String candidate, String match);
 	}
 
-	private final Map<String, QuickSearch<FilterSearchItem>> searches = new HashMap<>();
+	private final Map<TemplateKey, QuickSearch<FilterSearchItem>> searches = new HashMap<>();
 
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
@@ -115,16 +116,16 @@ public class FilterSearch {
 
 
 		File file = new File(template.getFilePath());
-		String autocompleteKey = String.join("_", templateColumns) + "_" + file.getName();
+		TemplateKey autocompleteKey = new TemplateKey(template.getFilePath(), templateColumns) ;
 
 
 		if (searches.containsKey(autocompleteKey)) {
-			log.info("Reference list '{}' already exists ...", file.getAbsolutePath());
+			log.debug("Reference list `{}` already exists", autocompleteKey);
 			filter.setSourceSearch(searches.get(autocompleteKey));
 			return;
 		}
 
-		log.info("Processing reference list '{}' ...", file.getAbsolutePath());
+		log.info("BEGIN Processing reference list {}", autocompleteKey);
 		final long time = System.currentTimeMillis();
 
 		QuickSearch<FilterSearchItem> search = new QuickSearch.QuickSearchBuilder()
@@ -166,13 +167,19 @@ public class FilterSearch {
 			searches.put(autocompleteKey, search);
 			final long duration = System.currentTimeMillis() - time;
 
-			log.info("Processed reference list '{}' in {} ms ({} Items in {} Lines)",
-					 file.getAbsolutePath(), duration, search.getStats().getItems(), it.getContext().currentLine());
+			log.info("DONE Processing reference list '{}' in {} ms ({} Items in {} Lines)",
+					 autocompleteKey, duration, search.getStats().getItems(), it.getContext().currentLine());
 		} catch (Exception e) {
 			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);
 		} finally {
 			parser.stopParsing();
 		}
+	}
+
+	@Data
+	private static class TemplateKey {
+		private final String file;
+		private final List<String> columns;
 	}
 
 	public void clear() {
