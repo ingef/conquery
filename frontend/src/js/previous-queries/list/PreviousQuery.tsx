@@ -74,6 +74,18 @@ const TopLeft = styled("div")`
   align-items: center;
 `;
 
+const TooltipText = styled("div")`
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+`;
+const ActiveFolders = styled("ul")`
+  margin: 6px 0 0;
+  text-align: left;
+  padding-left: 18px;
+`;
+
 const NonBreakingText = styled("span")`
   white-space: nowrap;
 `;
@@ -159,6 +171,8 @@ const PreviousQuery = forwardRef<HTMLDivElement, PropsT>(
 
     const [isEditingLabel, setIsEditingLabel] = useState<boolean>(false);
 
+    const folders = query.tags;
+
     return (
       <Root
         ref={ref}
@@ -167,17 +181,30 @@ const PreviousQuery = forwardRef<HTMLDivElement, PropsT>(
       >
         <TopInfos>
           <TopLeft>
-            {mayEditQuery && (
-              <WithTooltip text={t("previousQuery.editFolders")}>
-                <FoldersButton
-                  icon="folder"
-                  tight
-                  small
-                  bare
-                  onClick={onIndicateEditFolders}
-                />
-              </WithTooltip>
-            )}
+            <WithTooltip
+              html={
+                <TooltipText>
+                  {t("previousQuery.editFolders")}
+                  {folders.length > 0 && (
+                    <ActiveFolders>
+                      {folders.map((f) => (
+                        <li key={f}>{f}</li>
+                      ))}
+                    </ActiveFolders>
+                  )}
+                </TooltipText>
+              }
+            >
+              <FoldersButton
+                icon={"folder"}
+                regular={folders.length === 0}
+                tight
+                small
+                bare
+                onClick={onIndicateEditFolders}
+                disabled={!mayEditQuery}
+              />
+            </WithTooltip>
             {query.resultUrls.length > 0 ? (
               <WithTooltip text={t("previousQuery.downloadResults")}>
                 <SxDownloadButton tight small bare url={query.resultUrls[0]}>
