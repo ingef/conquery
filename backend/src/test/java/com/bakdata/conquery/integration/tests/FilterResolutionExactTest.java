@@ -11,14 +11,14 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
+import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
-import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
@@ -52,7 +52,7 @@ public class FilterResolutionExactTest extends IntegrationTest.Simple implements
 		CSVConfig csvConf = conquery.getConfig().getCsv();
 		
 		test.importRequiredData(conquery);
-		FilterSearch
+		conquery.getNamespace().getFilterSearch()
 				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf);
 
 		conquery.waitUntilWorkDone();
@@ -69,7 +69,7 @@ public class FilterResolutionExactTest extends IntegrationTest.Simple implements
 		filter.setSearchType(FilterSearch.FilterSearchType.EXACT);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
 
-		FilterSearch.createSourceSearch(filter, csvConf);
+		conquery.getNamespace().getFilterSearch().createSourceSearch(filter, csvConf);
 
 		assertThat(filter.getSourceSearch()).isNotNull();
 

@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collections;
 import java.util.List;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -33,7 +32,7 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 		
 		test.importRequiredData(conquery);
-		FilterSearch
+		conquery.getNamespace().getFilterSearch()
 			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), conquery.getConfig().getCsv());
 
 		conquery.waitUntilWorkDone();

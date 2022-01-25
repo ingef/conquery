@@ -15,7 +15,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -360,7 +359,7 @@ public class AdminDatasetProcessor {
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
 					ns.sendToAll(new UpdateMatchingStatsMessage());
-					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv());
+					ns.getFilterSearch().updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv());
 				}
 		));
 	}

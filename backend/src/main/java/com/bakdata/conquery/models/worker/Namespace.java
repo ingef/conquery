@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -68,6 +69,9 @@ public class Namespace implements Closeable {
 
 	@JsonIgnore
 	private transient DatasetRegistry namespaces;
+
+	@JsonIgnore
+	private final FilterSearch filterSearch = new FilterSearch();
 
 	public Namespace(NamespaceStorage storage, boolean failOnError, ObjectWriter objectWriter) {
 		this.storage = storage;
