@@ -37,6 +37,7 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import io.dropwizard.auth.Auth;
@@ -138,4 +139,12 @@ public class QueryResource {
 	public ExternalUploadResult upload(@Auth Subject subject, @Valid ExternalUpload upload) {
 		return processor.uploadEntities(subject, dataset, upload);
 	}
+
+	@GET
+	@Path("/entity")
+	public FullExecutionStatus getEntityData(@Auth Subject subject, @QueryParam("entity") String entity, @QueryParam("sources") List<Connector> sources) {
+		return processor.getSingleEntityExport(subject, entity, sources);
+	}
+
+
 }

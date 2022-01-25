@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,6 +25,8 @@ import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.apiv1.query.TableExportQuery;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -31,12 +34,13 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -113,7 +117,9 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, subject.getUser()));
+			final Optional<ManagedExecution<?>>
+					execution =
+					executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, subject.getUser()));
 
 			if (execution.isPresent()) {
 				return execution.get();
@@ -153,7 +159,7 @@ public class QueryProcessor {
 
 		// If the user is not the owner of the execution, we definitely create a new Execution, so the owner can cancel it
 		if (!user.isOwner(execution)) {
-			final ManagedExecution<?> newExecution = executionManager.createExecution(datasetRegistry,execution.getSubmitted(),user,execution.getDataset());
+			final ManagedExecution<?> newExecution = executionManager.createExecution(datasetRegistry, execution.getSubmitted(), user, execution.getDataset());
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);
@@ -376,5 +382,25 @@ public class QueryProcessor {
 				statistic.getUnresolvedId(),
 				statistic.getUnreadableDate()
 		);
+	}
+
+	public FullExecutionStatus getSingleEntityExport(Subject subject, String entity, List<Connector> sources) {
+		//TODO Authorize for query
+
+		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQExternal(List.of("ID"), new String[][]{{entity}}));
+
+		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
+		exportQuery.setTables(
+				sources.stream()
+					   .map(source -> new CQUnfilteredTable(source, null))
+					   .collect(Collectors.toList())
+		);
+
+		final ManagedExecution<?> execution = postQuery(sources.get(0).getDataset(), exportQuery, subject);
+
+		execution.awaitDone(10, TimeUnit.SECONDS);
+
+		return  execution.buildStatusFull(storage, subject, datasetRegistry, config);
+
 	}
 }
