@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -58,8 +59,9 @@ public class FilterSearch {
 				double matchScore = (double) candidate.length() / (double) keyword.length();
 
 				/* boost by 1 if matches start of keyword */
-				if (keyword.startsWith(candidate))
+				if (keyword.startsWith(candidate)) {
 					return matchScore + 1.0;
+				}
 
 				return matchScore;
 			}
@@ -77,8 +79,9 @@ public class FilterSearch {
 
 		/**
 		 * Search function. See {@link QuickSearch}.
+		 *
 		 * @param candidate potential match.
-		 * @param match search String.
+		 * @param match     search String.
 		 * @return Value > 0 increases relevance of string (also used for ordering results). < 0 removes string.
 		 */
 		public abstract double score(String candidate, String match);
@@ -91,12 +94,12 @@ public class FilterSearch {
 	 */
 	public void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager, CSVConfig parser) {
 		datasetsToUpdate.stream()
-				.flatMap(ds -> datasets.get(ds.getId()).getStorage().getAllConcepts().stream())
-				.flatMap(c -> c.getConnectors().stream())
-				.flatMap(co -> co.collectAllFilters().stream())
-				.filter(f -> f instanceof AbstractSelectFilter)
-				.map(AbstractSelectFilter.class::cast)
-				.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(f, parser))));
+						.flatMap(ds -> datasets.get(ds.getId()).getStorage().getAllConcepts().stream())
+						.flatMap(c -> c.getConnectors().stream())
+						.flatMap(co -> co.collectAllFilters().stream())
+						.filter(f -> f instanceof AbstractSelectFilter)
+						.map(AbstractSelectFilter.class::cast)
+						.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(f, parser))));
 	}
 
 	/***
@@ -105,38 +108,56 @@ public class FilterSearch {
 	 */
 	public void createSourceSearch(AbstractSelectFilter<?> filter, CSVConfig parserConfig) {
 
-		FilterTemplate template = filter.getTemplate();
 
-		if (template == null){
-			return; //TODO actually we want to also use plain values without templates!
-		}
-
-		List<String> templateColumns = new ArrayList<>(template.getColumns());
-		templateColumns.add(template.getColumnValue());
-
-
-		File file = new File(template.getFilePath());
-		TemplateKey autocompleteKey = new TemplateKey(template.getFilePath(), templateColumns) ;
-
-
-		if (searches.containsKey(autocompleteKey)) {
-			log.debug("Reference list `{}` already exists", autocompleteKey);
-			filter.setSourceSearch(searches.get(autocompleteKey));
-			return;
-		}
-
-		log.info("BEGIN Processing reference list {}", autocompleteKey);
-		final long time = System.currentTimeMillis();
-
-		QuickSearch<FilterSearchItem> search = new QuickSearch.QuickSearchBuilder()
+		final QuickSearch<FilterSearchItem> search = new QuickSearch.QuickSearchBuilder()
 				.withUnmatchedPolicy(QuickSearch.UnmatchedPolicy.IGNORE)
 				.withMergePolicy(QuickSearch.MergePolicy.UNION)
 				.withKeywordMatchScorer(FilterSearchType.CONTAINS::score)
 				.build();
 
+		if (filter.getTemplate() != null) {
+			filter.setSourceSearch(createSourceSearchWithTemplate(parserConfig, filter.getTemplate(), search));
+		}
+		else {
+			filter.setSourceSearch(createSourceSearchFromValues(filter.getValues(), search));
+		}
+	}
+
+	private QuickSearch<FilterSearchItem> createSourceSearchFromValues(Set<String> values, QuickSearch<FilterSearchItem> search) {
+		// If we don't have a template, just return the values plain
+		for (String value : values) {
+			final FilterSearchItem item = new FilterSearchItem();
+			item.setLabel(value);
+			item.setValue(value);
+			item.setOptionValue(value);
+
+			search.addItem(item, value);
+		}
+
+		return search;
+	}
+
+	private QuickSearch<FilterSearchItem> createSourceSearchWithTemplate(CSVConfig parserConfig, FilterTemplate template, QuickSearch<FilterSearchItem> search) {
+
+		// First, check if we already have search using the same file and template columns
+		List<String> templateColumns = new ArrayList<>(template.getColumns());
+		templateColumns.add(template.getColumnValue());
+
+		TemplateKey autocompleteKey = new TemplateKey(template.getFilePath(), templateColumns);
+
+		if (searches.containsKey(autocompleteKey)) {
+			log.debug("Reference list `{}` already exists", autocompleteKey);
+			return searches.get(autocompleteKey);
+		}
+
+		log.info("BEGIN Processing reference list {}", autocompleteKey);
+		final long time = System.currentTimeMillis();
+
 		final CsvParser parser = parserConfig.createParser();
 
 		try {
+			File file = new File(template.getFilePath());
+
 			IterableResult<String[], ParsingContext> it = parser.iterate(In.file(file).withUTF8().asReader());
 			String[] header = it.getContext().parsedHeaders();
 
@@ -162,16 +183,20 @@ public class FilterSearch {
 				}
 			}
 
-			filter.setSourceSearch(search);
-
 			searches.put(autocompleteKey, search);
 			final long duration = System.currentTimeMillis() - time;
 
 			log.info("DONE Processing reference list '{}' in {} ms ({} Items in {} Lines)",
-					 autocompleteKey, duration, search.getStats().getItems(), it.getContext().currentLine());
-		} catch (Exception e) {
-			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);
-		} finally {
+					 autocompleteKey, duration, search.getStats().getItems(), it.getContext().currentLine()
+			);
+
+			return search;
+		}
+		catch (Exception e) {
+			log.error("Failed to process reference list '{}'", autocompleteKey, e);
+			return null; //TODO this is not so good?
+		}
+		finally {
 			parser.stopParsing();
 		}
 	}
