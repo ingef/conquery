@@ -15,10 +15,11 @@ import {
   toggleNoFoldersFilter,
 } from "../folderFilter/actions";
 
+import AddFolderModal from "./AddFolderModal";
 import DeletePreviousQueryFolderModal from "./DeletePreviousQueryFolderModal";
 import PreviousQueriesFolder from "./PreviousQueriesFolder";
-import { useRetagQuery } from "./actions";
-import { usePreviousQueriesTags } from "./selector";
+import { addFolder, useRetagQuery } from "./actions";
+import { useFolders } from "./selector";
 
 const DROP_TYPES = [
   DNDType.PREVIOUS_QUERY,
@@ -42,11 +43,20 @@ const SxIconButton = styled(IconButton)`
   border-radius: 0;
 `;
 
+const AddButtonWithTooltip = styled(WithTooltip)`
+  margin-left: 10px;
+`;
+
 const SxWithTooltip = styled(WithTooltip)`
   position: absolute;
   right: 0px;
   top: 0px;
   display: none !important; /* to override display: inline */
+`;
+
+const Row = styled("div")`
+  display: flex;
+  align-items: flex-start;
 `;
 
 const SxDropzone = styled(Dropzone)`
@@ -91,7 +101,7 @@ interface Props {
 }
 
 const PreviousQueriesFolders: FC<Props> = ({ className }) => {
-  const folders = usePreviousQueriesTags();
+  const folders = useFolders();
   const folderFilter = useSelector<StateT, string[]>(
     (state) => state.previousQueriesFolderFilter.folders,
   );
@@ -129,6 +139,8 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
 
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
 
+  const [showAddFolderModal, setShowAddFolderModal] = useState<boolean>(false);
+
   return (
     <Folders className={className}>
       {folderToDelete && (
@@ -141,7 +153,28 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
           }}
         />
       )}
-      <SmallLabel>{t("folders.headline")}</SmallLabel>
+      <Row>
+        <SmallLabel>{t("folders.headline")}</SmallLabel>
+        <AddButtonWithTooltip text={t("folders.add")}>
+          <IconButton
+            icon="plus"
+            bare
+            onClick={() => setShowAddFolderModal(true)}
+          />
+        </AddButtonWithTooltip>
+      </Row>
+      {showAddFolderModal && (
+        <AddFolderModal
+          onClose={() => setShowAddFolderModal(false)}
+          isValidName={(v) => v.length > 0 && !folders.includes(v)}
+          onSubmit={(v) => {
+            if (v.length > 0) {
+              setShowAddFolderModal(false);
+              dispatch(addFolder({ folderName: v }));
+            }
+          }}
+        />
+      )}
       <ScrollContainer>
         <SxPreviousQueriesFolder
           key="all-queries"

@@ -4,9 +4,11 @@ import type { QueryIdT, UserGroupIdT } from "../../api/types";
 import { Action } from "../../app/actions";
 
 import {
+  addFolder,
   deleteQuerySuccess,
   loadQueries,
   loadQuery,
+  removeFolder,
   renameQuery,
   retagQuery,
   shareQuerySuccess,
@@ -34,12 +36,14 @@ export interface PreviousQueryT {
 }
 
 export interface PreviousQueriesStateT {
+  localFolders: string[];
   queries: PreviousQueryT[];
   loading: boolean;
   error: string | null;
 }
 
 const initialState: PreviousQueriesStateT = {
+  localFolders: [],
   queries: [],
   loading: false,
   error: null,
@@ -134,11 +138,16 @@ const previousQueriesReducer = (
         isPristineLabel: false,
       });
     case getType(retagQuery.success):
-      return updatePreviousQuery(state, action, {
-        loading: false,
-        error: null,
-        tags: action.payload.tags,
-      });
+      return {
+        ...updatePreviousQuery(state, action, {
+          loading: false,
+          error: null,
+          tags: action.payload.tags,
+        }),
+        localFolders: state.localFolders.filter(
+          (folder) => !action.payload.tags.includes(folder),
+        ),
+      };
     case getType(shareQuerySuccess):
       return updatePreviousQuery(state, action, {
         loading: false,
@@ -157,6 +166,23 @@ const previousQueriesReducer = (
         loading: false,
         error: action.payload.message,
       });
+    case getType(addFolder):
+      return {
+        ...state,
+        localFolders: [...state.localFolders, action.payload.folderName],
+      };
+    case getType(removeFolder):
+      const idx = state.localFolders.indexOf(action.payload.folderName);
+
+      if (idx === -1) return state;
+
+      return {
+        ...state,
+        localFolders: [
+          ...state.localFolders.slice(0, idx),
+          ...state.localFolders.slice(idx + 1),
+        ],
+      };
     default:
       return state;
   }

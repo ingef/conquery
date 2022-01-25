@@ -415,7 +415,13 @@
   "folders": {
     "headline": "Ordner",
     "noFolders": "ohne",
-    "allQueries": "Alle"
+    "allQueries": "Alle",
+    "add": "Ordner hinzufügen"
+  },
+  "addFolderModal": {
+    "headline": "Ordner hinzufügen",
+    "description": "Der Ordner wird temporär erstellt und wird erst für Andere sichtbar, wenn er mindestens eine Anfrage enthält.",
+    "inputLabel": "Name des Ordners"
   },
   "editPreviousQueryFoldersModal": {
     "headline": "Ordner bearbeiten"

@@ -415,7 +415,13 @@
   "folders": {
     "headline": "Folders",
     "noFolders": "none",
-    "allQueries": "All"
+    "allQueries": "All",
+    "add": "Add folder"
+  },
+  "addFolderModal": {
+    "headline": "Add folder",
+    "description": "The folder is created temporarily at first. Once there's a query within the folder, the folder will be saved permanently.",
+    "inputLabel": "Folder name"
   },
   "editPreviousQueryFoldersModal": {
     "headline": "Edit folders"
