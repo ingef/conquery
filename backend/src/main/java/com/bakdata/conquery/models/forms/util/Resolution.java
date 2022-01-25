@@ -152,8 +152,8 @@ public enum Resolution implements Localized {
 	public static class LocalizationProvider implements Localized.Provider {
 
 		@Override
-		public String apply(Object o, Locale locale) {
-			return Resolution.valueOf((String)o).toString(locale);
+		public String localize(Object o, Locale locale) {
+			return Resolution.valueOf((String) o).toString(locale);
 		}
 	}
 }

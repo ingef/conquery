@@ -24,5 +24,20 @@ public interface Localized {
     String toString(Locale locale);
 
 	@CPSBase
-    interface Provider extends BiFunction<Object,Locale,String>{}
+	@FunctionalInterface
+	interface Provider {
+
+		/**
+		 * Returns a localized version of the provided object.
+		 * The concrete type of the object depends on the default deserialization of the {@link Localized}-object: (String, HashMap, Array, ...),
+		 * This is the result of the values that lose their semantic type when they are serialized in to an
+		 * Object-Array (see {@link com.bakdata.conquery.models.query.results.EntityResult}.
+		 *
+		 * @param obj    The object to be localized
+		 * @param locale The target locale
+		 * @return a localized string.
+		 */
+		String localize(Object obj, Locale locale);
+
+	}
 }
