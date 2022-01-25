@@ -210,6 +210,8 @@ public class DateContext {
 	 * @param featureTime the time units to be included.
 	 * @param timeUnit  The time unit.
 	 * @return The feature range.
+	 *
+	 * TODO Replace this and the following function by a function with an interface like this: private static CDateRange generateRelativeRange(int event, boolean indexIncluded, int relativeAmount, CalendarUnit timeUnit)
 	 */
 	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, CalendarUnit timeUnit) {
 		if(featureTime <= 0){
