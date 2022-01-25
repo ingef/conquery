@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
@@ -39,8 +40,8 @@ public class RelativeMode extends Mode {
 	private IndexPlacement indexPlacement;
 	@NotNull
 	private TemporalSampler indexSelector;
-	@NotNull
-	private List<CQElement> features = Collections.emptyList();
+	@NotEmpty
+	private List<CQElement> features;
 
 	@InternalOnly
 	private ArrayConceptQuery resolvedFeatures;
@@ -49,7 +50,7 @@ public class RelativeMode extends Mode {
 	public void visit(Consumer<Visitable> visitor) {
 		features.forEach(visitor);
 	}
-	
+
 	@Override
 	public RelativeFormQuery createSpecializedQuery(DatasetRegistry datasets, User user, Dataset submittedDataset) {
 		return RelExportGenerator.generate(this);

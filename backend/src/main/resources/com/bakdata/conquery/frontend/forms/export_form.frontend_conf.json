@@ -241,7 +241,7 @@
                             "name": "features",
                             "type": "CONCEPT_LIST",
                             "label": {
-                                "de": "Konzepte im Vorbeobachtungszeitraum (Feature Zeitraum)"
+                                "de": "Konzepte im Vorbeobachtungs-/Nachbetrachtungszeitraum"
                             },
                             "isTwoDimensional": true,
                             "conceptDropzoneLabel": {
