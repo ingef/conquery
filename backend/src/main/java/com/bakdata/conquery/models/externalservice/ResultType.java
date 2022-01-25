@@ -201,6 +201,13 @@ public abstract class ResultType {
 		public static final StringT INSTANCE = new StringT();
 	}
 
+	/**
+	 * Result type for columns that allow mapping localized form.
+	 * For this to work. The objects in a column of this type should implement the
+	 * {@link Localized} interface. This ResultType must then have a {@link Localized.Provider},
+	 * that understands the raw deserialized form of the objects to localize. This is because
+	 * we have a rather loose coupling here, as all results are just deserialized in to an Object-Array.
+	 */
 	@CPSType(id = "STRING_LOCALIZED", base = ResultType.class)
 	@RequiredArgsConstructor(onConstructor = @__({@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)}))
 	public static class StringLocalizedT extends PrimitiveResultType {
@@ -208,7 +215,7 @@ public abstract class ResultType {
 
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			return localizationProvider.apply(f, cfg.getLocale());
+			return localizationProvider.localize(f, cfg.getLocale());
 		}
 	}
 
