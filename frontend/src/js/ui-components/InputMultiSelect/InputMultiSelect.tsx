@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
@@ -36,6 +36,16 @@ import { useSyncWithValueFromAbove } from "./useSyncWithValueFromAbove";
 
 const MAX_SELECTED_ITEMS_LIMIT = 200;
 
+const SENTINEL_INSERT_INDEX_FROM_BOTTOM = 10;
+
+const getSentinelInsertIndex = (optionsLength: number) => {
+  if (optionsLength < SENTINEL_INSERT_INDEX_FROM_BOTTOM) {
+    return optionsLength - 1;
+  }
+
+  return optionsLength - SENTINEL_INSERT_INDEX_FROM_BOTTOM;
+};
+
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
 `;
@@ -61,6 +71,7 @@ interface Props {
   loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
   onLoadMore?: (inputValue: string, config?: { shouldReset?: boolean }) => void;
+  onLoadAndInsertAll?: (inputValue: string) => void;
 }
 
 const InputMultiSelect = ({
@@ -80,6 +91,7 @@ const InputMultiSelect = ({
   loading,
   onResolve,
   onLoadMore,
+  onLoadAndInsertAll,
 }: Props) => {
   const { onDropFile } = useResolvableSelect({
     defaultValue,
@@ -330,7 +342,14 @@ const InputMultiSelect = ({
             total={total}
             optionsCount={filteredOptions.length}
             onInsertAllClick={() => {
-              setSelectedItems(filteredOptions);
+              const moreInsertableThanCurrentlyLoaded =
+                exists(total) && total > filteredOptions.length;
+
+              if (!!onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
+                onLoadAndInsertAll(inputValue);
+              } else {
+                setSelectedItems(filteredOptions);
+              }
             }}
           />
           <List>
@@ -342,24 +361,26 @@ const InputMultiSelect = ({
               });
 
               return (
-                <SxSelectListOption
-                  key={`${option.value}${option.label}`}
-                  active={highlightedIndex === index}
-                  option={option}
-                  {...itemProps}
-                  ref={itemPropsRef}
-                />
+                <Fragment key={`${option.value}${option.label}`}>
+                  <SxSelectListOption
+                    active={highlightedIndex === index}
+                    option={option}
+                    {...itemProps}
+                    ref={itemPropsRef}
+                  />
+                  {index === getSentinelInsertIndex(filteredOptions.length) &&
+                    exists(onLoadMore) && (
+                      <LoadMoreSentinel
+                        onLoadMore={() => {
+                          if (!loading) {
+                            onLoadMore(inputValue);
+                          }
+                        }}
+                      />
+                    )}
+                </Fragment>
               );
             })}
-            {exists(onLoadMore) && (
-              <LoadMoreSentinel
-                onLoadMore={() => {
-                  if (!loading) {
-                    onLoadMore(inputValue);
-                  }
-                }}
-              />
-            )}
           </List>
         </Menu>
       ) : (

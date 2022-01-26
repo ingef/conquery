@@ -16,7 +16,6 @@
                         "alter"
                     ],
                     "type": "CONCEPT",
-                    "label": "Alter",
                     "tables": [
                         {
                             "id": "alter.alter",

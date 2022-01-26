@@ -9,6 +9,7 @@ import {
   ConceptIdT,
   CurrencyConfigT,
   DatasetIdT,
+  PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
@@ -132,7 +133,8 @@ export interface QueryNodeEditorPropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-  ) => Promise<void>;
+    config?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
   onSetDateColumn: (tableIdx: number, value: string) => void;
   onSelectSelects: (value: SelectOptionT[]) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;

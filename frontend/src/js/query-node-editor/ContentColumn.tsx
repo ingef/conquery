@@ -6,6 +6,7 @@ import type { PostPrefixForSuggestionsParams } from "../api/api";
 import {
   CurrencyConfigT,
   DatasetIdT,
+  PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
@@ -76,7 +77,8 @@ interface PropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-  ) => Promise<void>;
+    { returnOnly }?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
   onSetDateColumn: (tableIdx: number, value: string) => void;
 }
 

@@ -53,12 +53,15 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 
 	@NotNull
-	public void appendColumnName(StringBuilder sb) {
-		if (getHolder() instanceof Connector && getHolder().findConcept().getConnectors().size() > 1) {
-			// The select originates from a connector and the corresponding concept has more than one connector -> Print also the connector
-			sb.append(((Connector) getHolder()).getLabel());
-			sb.append(' ');
+	@JsonIgnore
+	public String getColumnName() {
+		if (!(getHolder() instanceof Connector) || getHolder().findConcept().getConnectors().size() <= 1) {
+			// The select belongs to a concept or a lone connector of a concept: just return the label
+			return getLabel();
 		}
-		sb.append(getLabel());
+		// The select originates from a connector and the corresponding concept has more than one connector -> Print also the connector
+		return ((Connector) getHolder()).getLabel()
+			   + ' '
+			   + getLabel();
 	}
 }

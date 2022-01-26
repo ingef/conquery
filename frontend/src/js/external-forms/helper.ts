@@ -1,7 +1,7 @@
 import type { SelectOptionT } from "../api/types";
 import type { Language } from "../localization/useActiveLang";
 
-import type { FormField, GeneralField } from "./config-types";
+import type { FormField, GeneralField, Group } from "./config-types";
 
 const nonFormFieldTypes = new Set(["HEADLINE", "DESCRIPTION"]);
 
@@ -20,7 +20,9 @@ export const isFormField = (field: GeneralField): field is FormField => {
 
 export function collectAllFormFields(fields: GeneralField[]): FormField[] {
   return fields.filter(isFormField).flatMap((field) => {
-    if (field.type === "TABS") {
+    if (field.type === "GROUP") {
+      return [field, ...collectAllFormFields(field.fields)];
+    } else if (field.type === "TABS") {
       return [
         field,
         ...field.tabs.flatMap((tab) => collectAllFormFields(tab.fields)),
@@ -32,7 +34,7 @@ export function collectAllFormFields(fields: GeneralField[]): FormField[] {
 }
 
 export function getInitialValue(
-  field: FormField,
+  field: Exclude<FormField, Group>,
   context: { availableDatasets: SelectOptionT[]; activeLang: Language },
 ):
   | string

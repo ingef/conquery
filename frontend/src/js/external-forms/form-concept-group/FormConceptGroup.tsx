@@ -461,21 +461,30 @@ const FormConceptGroup = (props: Props) => {
               ),
             );
           }}
-          onLoadFilterSuggestions={async (params, tableIdx, filterIdx) => {
+          onLoadFilterSuggestions={async (
+            params,
+            tableIdx,
+            filterIdx,
+            { returnOnly } = {},
+          ) => {
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             const data = await postPrefixForSuggestions(params);
 
-            props.onChange(
-              updateFilterOptionsWithSuggestions(
-                props.value,
-                valueIdx,
-                conceptIdx,
-                tableIdx,
-                filterIdx,
-                data,
-                params.page,
-              ),
-            );
+            if (!returnOnly) {
+              props.onChange(
+                updateFilterOptionsWithSuggestions(
+                  props.value,
+                  valueIdx,
+                  conceptIdx,
+                  tableIdx,
+                  filterIdx,
+                  data,
+                  params.page,
+                ),
+              );
+            }
+
+            return data;
           }}
         />
       )}

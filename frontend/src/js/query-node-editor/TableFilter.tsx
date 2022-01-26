@@ -5,6 +5,7 @@ import {
   CurrencyConfigT,
   DatasetIdT,
   FilterIdT,
+  PostFilterSuggestionsResponseT,
   TableIdT,
 } from "../api/types";
 import { FilterWithValueType } from "../standard-query-editor/types";
@@ -32,7 +33,8 @@ export interface BaseTableFilterProps {
     prefix: string,
     page: number,
     pageSize: number,
-  ) => Promise<void>;
+    config?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
   onShowDescription: (filterIdx: number) => void;
 }
 
@@ -102,13 +104,14 @@ const TableFilter = ({
             disabled={!!excludeTable}
             allowDropFile={!!filter.allowDropFile}
             total={filter.total}
-            onLoad={(prefix, page, pageSize) =>
+            onLoad={(prefix, page, pageSize, config) =>
               onLoadFilterSuggestions(
                 filterIdx,
                 filter.id,
                 prefix,
                 page,
                 pageSize,
+                config,
               )
             }
           />

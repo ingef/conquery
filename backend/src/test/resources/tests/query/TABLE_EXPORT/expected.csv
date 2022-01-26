@@ -1,4 +1,4 @@
-result,dates,SecondaryId,table1 - value,table2 - value
+result,dates,SecondaryId,table1 value,table2 value
 a,{2014-06-30/2015-06-30},f_a1,1.0,
 a,{2016-06-30/2016-06-30},f_a1,1.0,
 a,{2014-06-30/2015-06-30},f_a2,1.0,
