@@ -209,11 +209,9 @@ public class ConceptsProcessor {
 			//TODO unify these code paths, they are quite the mess, maybe also create source search for key-value also
 
 			final Stream<FEValue> fromSearch =
-					filter.getSourceSearch() == null
-					? Stream.empty()
-					: filter.getSourceSearch().listItems()
-							.stream()
-							.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()));
+					filter.getSourceSearch().listItems()
+						  .stream()
+						  .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()));
 
 
 			final Stream<FEValue> fromLabels = filter.getLabels().entrySet().stream().map(entry -> new FEValue(entry.getValue(), entry.getKey()));

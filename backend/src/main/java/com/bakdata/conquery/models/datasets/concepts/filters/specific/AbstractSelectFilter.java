@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -42,7 +44,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 	@JsonIgnore
 	protected Set<String> values = new HashSet<>();
-	@JsonIgnore
+	@JsonIgnore @NotNull
 	protected transient QuickSearch<FilterSearchItem> sourceSearch;
 
 	@JsonIgnore
