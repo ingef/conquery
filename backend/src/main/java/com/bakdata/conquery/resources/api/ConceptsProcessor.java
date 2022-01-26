@@ -45,6 +45,7 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.BiMap;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -123,14 +124,16 @@ public class ConceptsProcessor {
 	 */
 	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
 
-		//search in the full text engine
-		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms, OptionalInt.empty(), filter.getSearchType()::score)
+		// search in the full text engine
+		final Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms, OptionalInt.empty(), filter.getSearchType()::score)
 				.stream()
 				.map(FEValue::getValue)
 				.collect(Collectors.toSet());
 
 		Set<String> openSearchTerms = new HashSet<>(searchTerms);
 		openSearchTerms.removeAll(searchResult);
+
+		final BiMap<String, String> inverse = filter.getLabels().inverse();
 
 		// Iterate over all unresolved search terms. Gather all that match labels into searchResults. Keep the unresolvable ones.
 		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext(); ) {
@@ -140,12 +143,9 @@ public class ConceptsProcessor {
 				searchResult.add(searchTerm);
 				it.remove();
 			}
-			else {
-				String matchingValue = filter.getLabels().inverse().get(searchTerm);
-				if (matchingValue != null) {
-					searchResult.add(matchingValue);
-					it.remove();
-				}
+			else if (inverse.containsKey(searchTerm)) {
+				searchResult.add(inverse.get(searchTerm));
+				it.remove();
 			}
 		}
 
@@ -178,23 +178,25 @@ public class ConceptsProcessor {
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
-		log.trace("Searching for for the term \"{}\". (Page = {}, Items = {})", text, pageNumber, itemsPerPage);
 
-		List<FEValue> fullResult = null;
 		try {
-			fullResult = searchCache.get(Pair.of(filter, text));
+			log.trace("Searching for for the term `{}`. (Page = {}, Items = {})", text, pageNumber, itemsPerPage);
+
+			List<FEValue> fullResult = searchCache.get(Pair.of(filter, text));
+
+			int startIncl = Math.min(itemsPerPage * pageNumber, fullResult.size());
+			int endExcl = Math.min(startIncl + itemsPerPage, fullResult.size());
+
+			log.trace("Preparing subresult for search term `{}` in the index range [{}-{})", text, startIncl, endExcl);
+
+			return new AutoCompleteResult(fullResult.subList(startIncl, endExcl), fullResult.size());
 		}
 		catch (ExecutionException e) {
 			log.warn("Failed to search for \"{}\".", text, (Throwable) (log.isTraceEnabled() ? e : null));
 			return new AutoCompleteResult(Collections.emptyList(), 0);
 		}
 
-		int startIncl = Math.min(itemsPerPage * pageNumber, fullResult.size());
-		int endExcl = Math.min(startIncl + itemsPerPage, fullResult.size());
 
-		log.trace("Preparing subresult for search term \"{}\" in the index range [{}-{})", text, startIncl, endExcl);
-
-		return new AutoCompleteResult(fullResult.subList(startIncl, endExcl), fullResult.size());
 	}
 
 	/**
@@ -217,7 +219,7 @@ public class ConceptsProcessor {
 			final Stream<FEValue> fromLabels = filter.getLabels().entrySet().stream().map(entry -> new FEValue(entry.getValue(), entry.getKey()));
 
 			return Stream.concat(fromLabels, fromSearch)
-					.sorted()
+						 .sorted()
 						 .collect(Collectors.toList());
 		}
 
