@@ -416,11 +416,12 @@
     "headline": "Ordner",
     "noFolders": "ohne",
     "allQueries": "Alle",
-    "add": "Ordner hinzufügen"
+    "add": "Neuer Ordner",
+    "addShort": "Neu"
   },
   "addFolderModal": {
     "headline": "Ordner hinzufügen",
-    "description": "Der Ordner wird temporär erstellt und wird erst für Andere sichtbar, wenn er mindestens eine Anfrage enthält.",
+    "description": "Der Ordner wird temporär erstellt und bleibt nur dann erhalten, wenn er eine Anfrage enthält. Ordner ohne Anfrage werden wieder entfernt.",
     "inputLabel": "Name des Ordners"
   },
   "editPreviousQueryFoldersModal": {

@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import { FC, useState } from "react";
+import { useResizeObserver } from "js/common/helpers/useResizeObserver";
+import { FC, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -43,8 +44,9 @@ const SxIconButton = styled(IconButton)`
   border-radius: 0;
 `;
 
-const AddButtonWithTooltip = styled(WithTooltip)`
-  margin-left: 10px;
+const AddFolderIconButton = styled(IconButton)`
+  text-align: left;
+  padding: 4px 6px;
 `;
 
 const SxWithTooltip = styled(WithTooltip)`
@@ -57,6 +59,9 @@ const SxWithTooltip = styled(WithTooltip)`
 const Row = styled("div")`
   display: flex;
   align-items: flex-start;
+  margin-bottom: 12px;
+  min-width: 100px;
+  width: 100%;
 `;
 
 const SxDropzone = styled(Dropzone)`
@@ -74,7 +79,7 @@ const SxDropzone = styled(Dropzone)`
 `;
 
 const SxPreviousQueriesFolder = styled(PreviousQueriesFolder)`
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 `;
 
 const SmallLabel = styled("p")`
@@ -95,6 +100,27 @@ const ScrollContainer = styled("div")`
   align-items: flex-start;
   flex-direction: column;
 `;
+
+const NARROW_WIDTH = 120;
+const useIsParentNarrow = () => {
+  // TODO: Once https://caniuse.com/css-container-queries ships, use those instead
+  const parentRef = useRef<HTMLDivElement | null>(null);
+  const [parentWidth, setParentWidth] = useState<number>(0);
+  const isNarrow = parentWidth < NARROW_WIDTH;
+  useResizeObserver(
+    useCallback((entry: ResizeObserverEntry) => {
+      if (entry) {
+        setParentWidth(entry.contentRect.width);
+      }
+    }, []),
+    parentRef.current,
+  );
+
+  return {
+    isNarrow,
+    parentRef,
+  };
+};
 
 interface Props {
   className?: string;
@@ -138,8 +164,9 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
   };
 
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
-
   const [showAddFolderModal, setShowAddFolderModal] = useState<boolean>(false);
+
+  const { isNarrow, parentRef } = useIsParentNarrow();
 
   return (
     <Folders className={className}>
@@ -153,15 +180,16 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
           }}
         />
       )}
-      <Row>
-        <SmallLabel>{t("folders.headline")}</SmallLabel>
-        <AddButtonWithTooltip text={t("folders.add")}>
-          <IconButton
-            icon="plus"
-            bare
-            onClick={() => setShowAddFolderModal(true)}
-          />
-        </AddButtonWithTooltip>
+      <SmallLabel>{t("folders.headline")}</SmallLabel>
+      <Row ref={parentRef}>
+        <AddFolderIconButton
+          icon="plus"
+          frame
+          tight
+          onClick={() => setShowAddFolderModal(true)}
+        >
+          {isNarrow ? t("folders.addShort") : t("folders.add")}
+        </AddFolderIconButton>
       </Row>
       {showAddFolderModal && (
         <AddFolderModal
