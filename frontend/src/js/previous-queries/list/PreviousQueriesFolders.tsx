@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import { useResizeObserver } from "js/common/helpers/useResizeObserver";
 import { FC, useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../../button/IconButton";
 import { DNDType } from "../../common/constants/dndTypes";
+import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
 import Dropzone from "../../ui-components/Dropzone";
