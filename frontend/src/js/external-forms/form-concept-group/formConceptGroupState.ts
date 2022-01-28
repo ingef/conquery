@@ -23,6 +23,7 @@ import type {
   DragItemConceptTreeNode,
   TableWithFilterValueT,
   FilterWithValueType,
+  SelectedSelectorT,
 } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
@@ -249,10 +250,14 @@ export const createQueryNodeFromConceptListUploadResult = (
 
   return lookupResult
     ? {
+        type: DNDType.CONCEPT_TREE_NODE as const,
+        dragContext: { width: 0, height: 0 },
+        matchingEntities: lookupResult.concepts[0].matchingEntities,
+        matchingEntries: lookupResult.concepts[0].matchingEntries,
         label,
         ids: resolvedConcepts,
-        tables: lookupResult.tables,
-        selects: lookupResult.selects,
+        tables: lookupResult.tables as TableWithFilterValueT[], // TODO: Convert this better
+        selects: lookupResult.selects as SelectedSelectorT[], // TODO: Convert this better
         tree: lookupResult.root,
       }
     : null;
