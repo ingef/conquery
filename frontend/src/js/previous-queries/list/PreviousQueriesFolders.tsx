@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import { FC, useCallback, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -144,7 +144,10 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const onToggleNoFoldersActive = () => dispatch(toggleNoFoldersFilter());
-  const onResetFolderFilter = () => dispatch(setFolderFilter([]));
+  const onResetFolderFilter = useCallback(
+    () => dispatch(setFolderFilter([])),
+    [dispatch],
+  );
 
   const onClickFolder = (folder: string) => {
     if (!folderFilter.includes(folder)) {
@@ -167,6 +170,19 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
   const [showAddFolderModal, setShowAddFolderModal] = useState<boolean>(false);
 
   const { isNarrow, parentRef } = useIsParentNarrow();
+
+  useEffect(
+    function resetFolderFilterWhenFolderNotVisible() {
+      const isSomeActiveFolderInvisible = folderFilter.some(
+        (folder) => !folders.includes(folder),
+      );
+
+      if (isSomeActiveFolderInvisible) {
+        onResetFolderFilter();
+      }
+    },
+    [folders, onResetFolderFilter, folderFilter],
+  );
 
   return (
     <Folders className={className}>
