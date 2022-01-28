@@ -416,7 +416,8 @@
     "headline": "Folders",
     "noFolders": "none",
     "allQueries": "All",
-    "add": "Add folder"
+    "add": "New folder",
+    "addShort": "New"
   },
   "addFolderModal": {
     "headline": "Add folder",
