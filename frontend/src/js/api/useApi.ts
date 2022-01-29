@@ -7,6 +7,7 @@ import {
   getCachedEtagResource,
   storeEtagResource,
 } from "../common/helpers/etagCache";
+import { useIsCacheEnabled } from "../common/useIsCacheEnabled";
 import { isIDPEnabled, isLoginDisabled } from "../environment";
 
 export const useApiUnauthorized = <T>(
@@ -25,6 +26,7 @@ interface CustomCacheConfig {
 
 export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
   const history = useHistory();
+  const cacheEnabled = useIsCacheEnabled();
   const { authToken } = useContext(AuthTokenContext);
 
   // In order to always have the up to date token,
@@ -54,7 +56,7 @@ export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
 
       const response = await fetchJsonUnauthorized(
         axiosRequestConfig,
-        cacheConfig,
+        cacheEnabled ? cacheConfig : {},
       );
 
       return response;
@@ -82,7 +84,7 @@ async function getCacheHeaders(cacheConfig: CustomCacheConfig) {
   return item ? { "If-None-Match": item.etag } : {};
 }
 
-function handleResponseCache(
+function maybeCacheResponse(
   response: AxiosResponse<Object>,
   cacheConfig: CustomCacheConfig,
 ) {
@@ -149,7 +151,7 @@ export async function fetchJsonUnauthorized(
     // Also handle empty responses
     (!response.data || (!!response.data && !response.data.error))
   ) {
-    handleResponseCache(response, cacheConfig);
+    maybeCacheResponse(response, cacheConfig);
 
     return response.data;
   } else {
