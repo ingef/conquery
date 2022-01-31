@@ -33,9 +33,15 @@ const DB = openIndexedDB({
   objectStoreName: OBJECT_STORE_NAME,
 });
 
-export const clearIndexedDBCache = () => {
+export const clearIndexedDBCache = async () => {
+  const db = await DB;
+
   return new Promise<void>((resolve, reject) => {
-    const req = indexedDB.deleteDatabase(DB_NAME);
+    const transaction = db.transaction([OBJECT_STORE_NAME], "readwrite");
+    const req = transaction.objectStore(OBJECT_STORE_NAME).clear();
+
+    // The following sometimes got stuck, so avoid for now.
+    // const req = indexedDB.deleteDatabase(DB_NAME);
 
     req.onsuccess = () => resolve();
     req.onerror = () => reject();
