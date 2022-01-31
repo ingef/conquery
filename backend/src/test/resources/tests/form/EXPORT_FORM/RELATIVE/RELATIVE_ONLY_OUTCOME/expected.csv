@@ -1,4 +1,4 @@
-result,resolution,index,event_date,outcome_date_range,Alter,Alter - Ausgabe Alter
+result,resolution,index,event_date,outcome_date_range,Alter,Alter_1
 1,complete,,2012-01-01,2012-04-01/2013-03-31,1,56
 1,year,1,2012-01-01,2012-04-01/2013-03-31,1,56
 1,quarter,1,2012-01-01,2012-04-01/2012-06-30,1,55

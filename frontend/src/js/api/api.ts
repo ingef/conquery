@@ -62,9 +62,14 @@ export const useGetConcept = () => {
   const api = useApi<GetConceptResponseT>({});
 
   return (datasetId: DatasetIdT, conceptId: ConceptIdT) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}`),
-    });
+    api(
+      {
+        url: getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}`),
+      },
+      {
+        etagCacheKey: `${datasetId}-${conceptId}`,
+      },
+    );
 };
 
 // Same signature as postFormQueries

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.integration;
 
+import java.io.File;
+
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -8,16 +10,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.function.Executable;
 
-import java.io.File;
-
 public interface IntegrationTest {
 
 	void execute(String name, TestConquery testConquery) throws Exception;
 
 
 
-	public default void overrideConfig(final ConqueryConfig conf, final File workdir){
-
+	public default ConqueryConfig overrideConfig(final ConqueryConfig conf, final File workdir){
+		return conf;
 	}
 
 	abstract class Simple implements IntegrationTest {

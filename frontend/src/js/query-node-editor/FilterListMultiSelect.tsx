@@ -4,6 +4,7 @@ import { usePostFilterValuesResolve } from "../api/api";
 import type {
   FilterIdT,
   PostFilterResolveResponseT,
+  PostFilterSuggestionsResponseT,
   SelectOptionT,
 } from "../api/types";
 import { exists } from "../common/helpers/exists";
@@ -11,6 +12,7 @@ import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect
 
 import type { FiltersContextT } from "./TableFilter";
 import UploadFilterListModal from "./UploadFilterListModal";
+import { filterSuggestionToSelectOption } from "./suggestionsHelper";
 
 interface FilterContextT extends FiltersContextT {
   filterId: FilterIdT;
@@ -27,7 +29,12 @@ interface PropsT {
   allowDropFile?: boolean;
 
   total?: number;
-  onLoad?: (prefix: string, page: number, pageSize: number) => Promise<void>;
+  onLoad?: (
+    prefix: string,
+    page: number,
+    pageSize: number,
+    config?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
 
   value: SelectOptionT[];
   onChange: (value: SelectOptionT[]) => void;
@@ -83,23 +90,41 @@ const FilterListMultiSelect: FC<PropsT> = ({
     prefix: string,
     { shouldReset }: { shouldReset?: boolean } = {},
   ) => {
-    if (onLoad && !loading) {
-      const pageToLoad = shouldReset
-        ? 0
-        : getPageToLoad(prevPageLoaded, options.length, total);
+    if (!onLoad || loading) return;
 
-      if (pageToLoad === null) return;
+    const pageToLoad = shouldReset
+      ? 0
+      : getPageToLoad(prevPageLoaded, options.length, total);
 
-      setLoading(true);
-      try {
-        await onLoad(prefix, pageToLoad, PAGE_SIZE);
-        setPrevPageLoaded(pageToLoad);
-      } catch (e) {
-        // fail silently
-        console.error(e);
-      }
-      setLoading(false);
+    if (pageToLoad === null) return;
+
+    setLoading(true);
+    try {
+      await onLoad(prefix, pageToLoad, PAGE_SIZE);
+      setPrevPageLoaded(pageToLoad);
+    } catch (e) {
+      // fail silently
+      console.error(e);
     }
+    setLoading(false);
+  };
+
+  const onLoadAndInsertAll = async (prefix: string) => {
+    if (!onLoad || loading || !exists(total)) return;
+
+    setLoading(true);
+    try {
+      const suggestions = await onLoad(prefix, 0, total, { returnOnly: true });
+      const options = suggestions?.values.map(filterSuggestionToSelectOption);
+
+      if (options) {
+        onChange(options);
+      }
+    } catch (e) {
+      // fail silently
+      console.error(e);
+    }
+    setLoading(false);
   };
 
   const onDropFile = async (rows: string[]) => {
@@ -151,6 +176,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
         disabled={disabled}
         indexPrefix={indexPrefix}
         onLoadMore={onLoad ? onLoadMore : undefined}
+        onLoadAndInsertAll={onLoad ? onLoadAndInsertAll : undefined}
         onResolve={allowDropFile ? onDropFile : undefined}
       />
     </>

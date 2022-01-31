@@ -7,7 +7,7 @@ import EditableTagsForm from "../../ui-components/EditableTagsForm";
 
 import { useRetagQuery } from "./actions";
 import type { PreviousQueryT } from "./reducer";
-import { usePreviousQueriesTags } from "./selector";
+import { useFolders } from "./selector";
 
 const SxEditableTagsForm = styled(EditableTagsForm)`
   min-width: 300px;
@@ -27,7 +27,7 @@ const EditPreviousQueryFoldersModal: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
   const retagQuery = useRetagQuery();
-  const folders = usePreviousQueriesTags();
+  const folders = useFolders();
 
   return (
     <Modal

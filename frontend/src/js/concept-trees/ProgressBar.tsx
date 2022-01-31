@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 
 import FaIcon from "../icon/FaIcon";
 
-import { getConceptById } from "./globalTreeStoreHelper";
 import type { TreesT } from "./reducer";
 
 const Root = styled("div")`
@@ -41,8 +40,8 @@ type PropsT = {
 const ProgressBar = ({ trees }: PropsT) => {
   const { t } = useTranslation();
 
-  const treeIds = Object.keys(trees);
-  const doneCount = treeIds.map(getConceptById).filter((c) => !!c).length;
+  const treeIds = Object.entries(trees);
+  const doneCount = treeIds.filter(([, tree]) => tree.success).length;
 
   const donePercent = (doneCount / treeIds.length) * 100;
 

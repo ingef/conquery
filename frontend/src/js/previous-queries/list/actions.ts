@@ -28,6 +28,8 @@ export type PreviousQueryListActions = ActionType<
   | typeof retagQuery
   | typeof shareQuerySuccess
   | typeof deleteQuerySuccess
+  | typeof addFolder
+  | typeof removeFolder
 >;
 
 export const loadQueries = createAsyncAction(
@@ -154,6 +156,13 @@ export const useRetagQuery = () => {
     );
   };
 };
+
+export const addFolder = createAction("queries/ADD_FOLDER")<{
+  folderName: string;
+}>();
+export const removeFolder = createAction("queries/REMOVE_FOLDER")<{
+  folderName: string;
+}>();
 
 export const shareQuerySuccess = createAction(
   "queries/TOGGLE_SHARE_QUERY_SUCCESS",

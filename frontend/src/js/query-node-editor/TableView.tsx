@@ -6,6 +6,7 @@ import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
   CurrencyConfigT,
   DatasetIdT,
+  PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
@@ -48,7 +49,8 @@ interface PropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-  ) => Promise<void>;
+    { returnOnly }?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
 }
 
 const TableView: FC<PropsT> = ({
@@ -129,6 +131,7 @@ const TableView: FC<PropsT> = ({
               prefix,
               page,
               pageSize,
+              config,
             ) =>
               onLoadFilterSuggestions(
                 {
@@ -142,6 +145,7 @@ const TableView: FC<PropsT> = ({
                 },
                 tableIdx,
                 filterIdx,
+                config,
               )
             }
             onShowDescription={onShowDescription}

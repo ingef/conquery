@@ -6,7 +6,7 @@ import { usePatchQuery } from "../../api/api";
 import type { DatasetIdT } from "../../api/types";
 import { setMessage } from "../../snack-message/actions";
 
-import { useLoadQueries } from "./actions";
+import { removeFolder, useLoadQueries } from "./actions";
 import type { PreviousQueryT } from "./reducer";
 
 export const useDeletePreviousQueryFolder = (
@@ -25,8 +25,20 @@ export const useDeletePreviousQueryFolder = (
     (state) => state.previousQueries.queries,
   );
 
+  const localFolders = useSelector<StateT, string[]>(
+    (state) => state.previousQueries.localFolders,
+  );
+
   return async () => {
     if (!datasetId) return;
+
+    if (localFolders.includes(folder)) {
+      dispatch(removeFolder({ folderName: folder }));
+      if (onSuccess) {
+        onSuccess();
+      }
+      return;
+    }
 
     try {
       await Promise.all(

@@ -1,11 +1,12 @@
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import { FC, useState } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import IconButton from "../../button/IconButton";
 import { DNDType } from "../../common/constants/dndTypes";
+import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
 import Dropzone from "../../ui-components/Dropzone";
@@ -15,10 +16,11 @@ import {
   toggleNoFoldersFilter,
 } from "../folderFilter/actions";
 
+import AddFolderModal from "./AddFolderModal";
 import DeletePreviousQueryFolderModal from "./DeletePreviousQueryFolderModal";
 import PreviousQueriesFolder from "./PreviousQueriesFolder";
-import { useRetagQuery } from "./actions";
-import { usePreviousQueriesTags } from "./selector";
+import { addFolder, useRetagQuery } from "./actions";
+import { useFolders } from "./selector";
 
 const DROP_TYPES = [
   DNDType.PREVIOUS_QUERY,
@@ -42,11 +44,24 @@ const SxIconButton = styled(IconButton)`
   border-radius: 0;
 `;
 
+const AddFolderIconButton = styled(IconButton)`
+  text-align: left;
+  padding: 4px 6px;
+`;
+
 const SxWithTooltip = styled(WithTooltip)`
   position: absolute;
   right: 0px;
   top: 0px;
   display: none !important; /* to override display: inline */
+`;
+
+const Row = styled("div")`
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  min-width: 100px;
+  width: 100%;
 `;
 
 const SxDropzone = styled(Dropzone)`
@@ -64,7 +79,7 @@ const SxDropzone = styled(Dropzone)`
 `;
 
 const SxPreviousQueriesFolder = styled(PreviousQueriesFolder)`
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 `;
 
 const SmallLabel = styled("p")`
@@ -86,12 +101,33 @@ const ScrollContainer = styled("div")`
   flex-direction: column;
 `;
 
+const NARROW_WIDTH = 120;
+const useIsParentNarrow = () => {
+  // TODO: Once https://caniuse.com/css-container-queries ships, use those instead
+  const parentRef = useRef<HTMLDivElement | null>(null);
+  const [parentWidth, setParentWidth] = useState<number>(0);
+  const isNarrow = parentWidth < NARROW_WIDTH;
+  useResizeObserver(
+    useCallback((entry: ResizeObserverEntry) => {
+      if (entry) {
+        setParentWidth(entry.contentRect.width);
+      }
+    }, []),
+    parentRef.current,
+  );
+
+  return {
+    isNarrow,
+    parentRef,
+  };
+};
+
 interface Props {
   className?: string;
 }
 
 const PreviousQueriesFolders: FC<Props> = ({ className }) => {
-  const folders = usePreviousQueriesTags();
+  const folders = useFolders();
   const folderFilter = useSelector<StateT, string[]>(
     (state) => state.previousQueriesFolderFilter.folders,
   );
@@ -108,7 +144,10 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const onToggleNoFoldersActive = () => dispatch(toggleNoFoldersFilter());
-  const onResetFolderFilter = () => dispatch(setFolderFilter([]));
+  const onResetFolderFilter = useCallback(
+    () => dispatch(setFolderFilter([])),
+    [dispatch],
+  );
 
   const onClickFolder = (folder: string) => {
     if (!folderFilter.includes(folder)) {
@@ -128,6 +167,22 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
   };
 
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+  const [showAddFolderModal, setShowAddFolderModal] = useState<boolean>(false);
+
+  const { isNarrow, parentRef } = useIsParentNarrow();
+
+  useEffect(
+    function resetFolderFilterWhenFolderNotVisible() {
+      const isSomeActiveFolderInvisible = folderFilter.some(
+        (folder) => !folders.includes(folder),
+      );
+
+      if (isSomeActiveFolderInvisible) {
+        onResetFolderFilter();
+      }
+    },
+    [folders, onResetFolderFilter, folderFilter],
+  );
 
   return (
     <Folders className={className}>
@@ -142,6 +197,28 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
         />
       )}
       <SmallLabel>{t("folders.headline")}</SmallLabel>
+      <Row ref={parentRef}>
+        <AddFolderIconButton
+          icon="plus"
+          frame
+          tight
+          onClick={() => setShowAddFolderModal(true)}
+        >
+          {isNarrow ? t("folders.addShort") : t("folders.add")}
+        </AddFolderIconButton>
+      </Row>
+      {showAddFolderModal && (
+        <AddFolderModal
+          onClose={() => setShowAddFolderModal(false)}
+          isValidName={(v) => v.length > 0 && !folders.includes(v)}
+          onSubmit={(v) => {
+            if (v.length > 0) {
+              setShowAddFolderModal(false);
+              dispatch(addFolder({ folderName: v }));
+            }
+          }}
+        />
+      )}
       <ScrollContainer>
         <SxPreviousQueriesFolder
           key="all-queries"
