@@ -1,5 +1,8 @@
 import styled from "@emotion/styled";
+import { useState } from "react";
 
+import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
+import { useIsCacheEnabled } from "../common/useIsCacheEnabled";
 import Header from "../header/Header";
 import SnackMessage from "../snack-message/SnackMessage";
 import { useStartup } from "../startup/useStartup";
@@ -12,7 +15,18 @@ const Root = styled("div")`
   position: relative;
 `;
 
+const useCacheClear = () => {
+  const [cacheClearedOnce, setCacheClearedOnce] = useState<boolean>(false);
+  const cacheEnabled = useIsCacheEnabled();
+
+  if (!cacheEnabled && !cacheClearedOnce) {
+    clearIndexedDBCache();
+    setCacheClearedOnce(true);
+  }
+};
+
 const App = (props: ContentPropsT) => {
+  useCacheClear();
   useStartup();
 
   return (
