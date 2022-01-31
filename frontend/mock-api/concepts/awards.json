@@ -2,6 +2,7 @@
   "academy_award": {
     "parent": "awards",
     "label": "Academy Award",
+    "description": "Here comes a description of the award.",
     "children": [
       "best_picture_award",
       "best_actor_award",
