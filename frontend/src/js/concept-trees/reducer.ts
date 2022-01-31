@@ -14,7 +14,11 @@ import {
 } from "./actions";
 import { setTree } from "./globalTreeStoreHelper";
 
-export type LoadedConcept = ConceptT & { loading?: boolean; error?: string };
+export type LoadedConcept = ConceptT & {
+  loading?: boolean;
+  error?: string;
+  success?: boolean;
+};
 
 export interface TreesT {
   [treeId: string]: LoadedConcept;
@@ -131,7 +135,7 @@ const setTreeSuccess = (
   // Side effect in a reducer.
   // Globally store the huge (1-5 MB) trees for read only
   // - keeps the redux store free from huge data
-  const newState = updateTree(state, treeId, { loading: false });
+  const newState = updateTree(state, treeId, { loading: false, success: true });
 
   const rootConcept = newState.trees[treeId];
 
