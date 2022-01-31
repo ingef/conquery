@@ -6,6 +6,22 @@ interface CachedResourceWithEtag {
   resource: Object;
 }
 
+const encode = (obj: Object) => {
+  // TODO: Use strings directly, not objs.
+  // Since this is used to cache responses, we could use the raw string returned from the API call,
+  // before axios calls JSON.parse on it.
+  const str = JSON.stringify(obj);
+  const encoder = new TextEncoder();
+
+  return encoder.encode(str);
+};
+const decode = (buf: Uint8Array) => {
+  const decoder = new TextDecoder();
+  const str = decoder.decode(buf);
+
+  return JSON.parse(str);
+};
+
 export const storeEtagResource = (
   key: string,
   etag: string,
@@ -13,13 +29,13 @@ export const storeEtagResource = (
 ) => {
   const item = { etag, resource };
 
-  return setIndexedDBCache(key, item);
+  return setIndexedDBCache(key, encode(item));
 };
 
 export const getCachedEtagResource = async (
   key: string,
 ): Promise<CachedResourceWithEtag | null> => {
-  const cachedItem = await getIndexedDBCache<CachedResourceWithEtag>(key);
+  const cachedItem = await getIndexedDBCache<Uint8Array>(key);
 
-  return cachedItem || null;
+  return cachedItem ? decode(cachedItem) : null;
 };
