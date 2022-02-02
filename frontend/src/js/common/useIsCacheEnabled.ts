@@ -6,7 +6,7 @@ export const useIsCacheEnabled = () => {
   // Store the token from the URL if it is present.
   const { search } = location;
   const params = new URLSearchParams(search);
-  const noCache = params.get("noCache");
+  const cache = params.get("cache");
 
-  return !noCache || noCache !== "1";
+  return !!cache && cache === "1";
 };
