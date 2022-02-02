@@ -102,6 +102,7 @@
     "body-parser": "^1.18.2",
     "cors": "^2.8.5",
     "customize-cra": "^1.0.0",
+    "cypress": "^9.4.1",
     "express": "^4.16.2",
     "flux-standard-action": "^2.0.1",
     "ie-version": "^0.1.0",
