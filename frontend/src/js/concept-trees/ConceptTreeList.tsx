@@ -22,6 +22,7 @@ const Root = styled("div")<{ show?: boolean }>`
   -webkit-overflow-scrolling: touch;
   padding: 0 10px 0;
   white-space: nowrap;
+  margin-bottom: 10px;
 
   ${
     ""
