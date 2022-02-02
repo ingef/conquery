@@ -10,7 +10,7 @@ import StandardQueryNodeEditor from "./StandardQueryNodeEditor";
 const Root = styled("div")`
   flex-grow: 1;
   height: 100%;
-  padding: 0 10px 10px 10px;
+  padding: 8px 10px 10px 10px;
   overflow: hidden;
 `;
 

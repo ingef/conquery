@@ -10,7 +10,7 @@ import { anyConditionFilled } from "./helpers";
 
 const Root = styled("div")`
   margin-bottom: 20px;
-  padding: 0 20px 0 10px;
+  padding: 8px 20px 0 10px;
 `;
 
 const TimebasedQueryClearButton = () => {

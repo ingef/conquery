@@ -83,6 +83,10 @@ const SxFaIcon = styled(FaIcon)`
   margin-right: 5px;
 `;
 
+const SxWithTooltip = styled(WithTooltip)`
+  flex-shrink: 0;
+`;
+
 const DROP_TYPES = [DNDType.FORM_CONFIG];
 
 const hasChanged = (a: any, b: any) => {
@@ -311,7 +315,10 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
                 )}
               </Row>
             </div>
-            <WithTooltip lazy text={t("externalForms.config.saveDescription")}>
+            <SxWithTooltip
+              lazy
+              text={t("externalForms.config.saveDescription")}
+            >
               <IconButton
                 frame
                 icon={isSaving ? "spinner" : "save"}
@@ -319,7 +326,7 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
               >
                 {t("externalForms.config.save")}
               </IconButton>
-            </WithTooltip>
+            </SxWithTooltip>
           </SpacedRow>
         )}
       </SxDropzone>

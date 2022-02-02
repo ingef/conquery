@@ -15,8 +15,9 @@ import type { QueryRunnerStateT } from "./reducer";
 
 const Root = styled("div")`
   flex-shrink: 0;
-  padding: 10px 20px 0 10px;
+  padding: 10px 20px 10px 10px;
   border-top: 1px solid ${({ theme }) => theme.col.grayLight};
+  background-color: ${({ theme }) => theme.col.bg};
   display: flex;
   align-items: center;
   width: 100%;
