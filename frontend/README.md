@@ -80,17 +80,14 @@ When queried for login:
 
 This is documented in [the mock-API](https://github.com/bakdata/conquery/blob/develop/frontend/mock-api/index.js).
 
-**Code Formating**  [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)  
+**Code Formating**  [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+
 The frontend JavaScript/TypeScript code is formatted using `prettier`.
 It can be invoked on the command line through `yarn`:
 ```
 yarn prettier --write /path/to/file
 ```
 or convieniently through a plugin in VS Code (see https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode).
-
-**Testing**
-
-The projects consits of isolated frontend and backend tests, and end-to-end tests powered by cypress. Please refer to the corresponding [CI configuration](https://github.com/bakdata/conquery/tree/develop/.github/workflows) to learn about invoking the tests.
 
 ## Glossary
 
