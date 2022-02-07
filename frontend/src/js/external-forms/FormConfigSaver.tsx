@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
+import type { StateT } from "app-types";
 import { FC, useState, useEffect, memo } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -10,7 +10,7 @@ import {
   useGetFormConfig,
   usePostFormConfig,
 } from "../api/api";
-import { SelectOptionT } from "../api/types";
+import type { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { DNDType } from "../common/constants/dndTypes";
 import { usePrevious } from "../common/helpers/usePrevious";
@@ -24,7 +24,8 @@ import EditableText from "../ui-components/EditableText";
 import Label from "../ui-components/Label";
 
 import { setExternalForm } from "./actions";
-import { Form, FormField } from "./config-types";
+import type { Form, FormField } from "./config-types";
+import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 import type { DragItemFormConfig } from "./form-configs/FormConfig";
 import type { FormConfigT } from "./form-configs/reducer";
 import { useLoadFormConfigs } from "./form-configs/selectors";
@@ -94,9 +95,12 @@ const hasChanged = (a: any, b: any) => {
 };
 
 // Potentially transform the stored field value to support older saved form configs
+//
 // because we changed the SELECT values:
 // from string, e.g. 'next'
 // to SelectValueT, e.g. { value: 'next', label: 'Next' }
+//
+// and because we introduced the DNDTypes (CONCEPT_LIST)
 const transformLoadedFieldValue = (
   field: FormField,
   value: unknown,
@@ -106,6 +110,14 @@ const transformLoadedFieldValue = (
   }: { activeLang: Language; datasetOptions: SelectOptionT[] },
 ) => {
   switch (field.type) {
+    case "CONCEPT_LIST":
+      return (value as FormConceptGroupT[]).map((group) => ({
+        ...group,
+        concepts: group.concepts.map((concept) => ({
+          ...concept,
+          type: DNDType.CONCEPT_TREE_NODE,
+        })),
+      }));
     case "DATASET_SELECT":
       if (typeof value === "object") return value as SelectOptionT;
       if (typeof value === "string") {

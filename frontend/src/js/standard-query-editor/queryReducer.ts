@@ -656,7 +656,6 @@ const expandNode = (
         ),
       };
     case "SAVED_QUERY":
-      debugger;
       return {
         ...node,
         type: DNDType.PREVIOUS_QUERY,
