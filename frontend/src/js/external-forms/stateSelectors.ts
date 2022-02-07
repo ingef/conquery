@@ -5,13 +5,7 @@ import { useSelector } from "react-redux";
 import { exists } from "../common/helpers/exists";
 import { useActiveLang } from "../localization/useActiveLang";
 
-import {
-  ConceptListField,
-  Form,
-  GeneralField,
-  Group,
-  Tabs,
-} from "./config-types";
+import { ConceptListField, Form, GeneralField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
 export const selectFormContextState = (state: StateT, formType: string) =>
