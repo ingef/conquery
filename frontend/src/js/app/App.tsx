@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
+import { clearCache } from "mustache";
+import { useEffect, useState } from "react";
 
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import { useIsCacheEnabled } from "../common/useIsCacheEnabled";
@@ -16,18 +17,29 @@ const Root = styled("div")`
 `;
 
 const useCacheClear = () => {
-  const [cacheClearedOnce, setCacheClearedOnce] = useState<boolean>(false);
+  const [cacheReady, setCacheReady] = useState<boolean>(false);
   const cacheEnabled = useIsCacheEnabled();
 
-  if (!cacheEnabled && !cacheClearedOnce) {
-    clearIndexedDBCache();
-    setCacheClearedOnce(true);
-  }
+  useEffect(() => {
+    async function maybeClearCache() {
+      if (!cacheEnabled && !cacheReady) {
+        await clearIndexedDBCache();
+        setCacheReady(true);
+      } else {
+        setCacheReady(true);
+      }
+    }
+
+    maybeClearCache();
+  }, [cacheEnabled, cacheReady]);
+
+  return cacheReady;
 };
 
 const App = (props: ContentPropsT) => {
-  useCacheClear();
-  useStartup();
+  const cacheReady = useCacheClear();
+
+  useStartup({ ready: cacheReady });
 
   return (
     <Root>
