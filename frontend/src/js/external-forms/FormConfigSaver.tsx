@@ -28,7 +28,7 @@ import { Form, FormField } from "./config-types";
 import type { DragItemFormConfig } from "./form-configs/FormConfig";
 import type { FormConfigT } from "./form-configs/reducer";
 import { useLoadFormConfigs } from "./form-configs/selectors";
-import { isFormField } from "./helper";
+import { collectAllFormFields } from "./helper";
 import {
   useSelectActiveFormName,
   selectActiveFormType,
@@ -203,9 +203,9 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
           // because we changed the SELECT values:
           // from string, e.g. 'next'
           // to SelectValueT, e.g. { value: 'next', label: 'Next' }
-          const field = formConfig.fields
-            .filter(isFormField)
-            .find((f) => f.type !== "GROUP" && f.name === fieldname);
+          const field = collectAllFormFields(formConfig.fields).find(
+            (f) => f.type !== "GROUP" && f.name === fieldname,
+          );
 
           if (!field) continue;
 
