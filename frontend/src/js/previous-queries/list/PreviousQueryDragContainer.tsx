@@ -41,11 +41,13 @@ const PreviousQueryDragContainer: FC<PropsT> = ({ query, ...props }) => {
   };
 
   const [, drag] = useDrag<DragItemQuery, void, {}>({
-    item,
-    begin: () => ({
+    type: item.type,
+    item: () => ({
       ...item,
-      type: getDragType(query),
-      ...getWidthAndHeight(ref),
+      dragContext: {
+        ...item.dragContext,
+        ...getWidthAndHeight(ref),
+      },
     }),
   });
 

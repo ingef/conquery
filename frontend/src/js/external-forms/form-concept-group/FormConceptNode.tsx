@@ -106,13 +106,14 @@ const FormConceptNode: FC<PropsT> = ({
     },
   };
   const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
-    item,
-    begin: () => {
-      return {
-        ...item,
+    type: item.type,
+    item: () => ({
+      ...item,
+      dragContext: {
+        ...item.dragContext,
         ...getWidthAndHeight(ref),
-      };
-    },
+      },
+    }),
   });
 
   const tooltipText = hasNonDefaultSettings
