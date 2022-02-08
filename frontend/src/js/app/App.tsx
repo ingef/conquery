@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { clearCache } from "mustache";
 import { useEffect, useState } from "react";
 
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";

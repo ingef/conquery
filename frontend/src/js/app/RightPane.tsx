@@ -22,6 +22,10 @@ const Tab = styled("div")<{ isActive: boolean }>`
   display: ${({ isActive }) => (isActive ? "flex" : "none")};
 `;
 
+const SxPane = styled(Pane)`
+  background-color: ${({ theme }) => theme.col.bgAlt};
+`;
+
 const RightPane: FC<PropsT> = ({ tabs }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -34,7 +38,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
   }, [dispatch, tabs]);
 
   return (
-    <Pane
+    <SxPane
       right
       tabs={tabs.map((tab) => ({
         key: tab.key,
@@ -53,7 +57,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
           </Tab>
         );
       })}
-    </Pane>
+    </SxPane>
   );
 };
 

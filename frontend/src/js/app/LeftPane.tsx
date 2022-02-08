@@ -13,7 +13,7 @@ import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
 import { StateT } from "./reducers";
 
 const SxConceptTreeSearchBox = styled(ConceptTreeSearchBox)`
-  margin: 0 10px 5px;
+  margin: 8px 10px 5px;
 `;
 
 const LeftPane = () => {

@@ -9,7 +9,7 @@ import InputMultiSelect from "../../../ui-components/InputMultiSelect/InputMulti
 import { setFormConfigsSearch } from "./actions";
 
 const Root = styled("div")`
-  margin: 0 10px 5px;
+  margin: 8px 10px 5px;
   position: relative;
 `;
 

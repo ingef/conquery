@@ -4,11 +4,11 @@ import { FC } from "react";
 import PaneTabNavigation from "./PaneTabNavigation";
 import { TabNavigationTab } from "./TabNavigation";
 
-const Root = styled("div")<{ left?: boolean; right?: boolean }>`
+const Root = styled("div")`
   width: 100%;
   height: 100%;
 
-  padding: ${({ left, right }) => (left || right ? "40px 0 10px" : "0")};
+  padding: 40px 0 0;
 `;
 
 const Container = styled("div")`
@@ -23,18 +23,24 @@ interface PropsT {
   tabs: TabNavigationTab[];
   right?: boolean;
   left?: boolean;
+  className?: string;
   dataTestId: string;
-
 }
 
-const Pane: FC<PropsT> = ({ tabs, left, right, children, dataTestId }) => {
+const Pane: FC<PropsT> = ({ tabs, left, children, className, dataTestId }) => {
   const paneType = left ? "left" : "right";
 
   return (
-    <Root left={left} right={right}>
+    <Root className={className}>
       <Container>
-        <PaneTabNavigation tabs={tabs} paneType={paneType} dataTestId={dataTestId}/>
-        <Container data-test-id={dataTestId + "Container" } >{children}</Container>
+        <PaneTabNavigation
+          tabs={tabs}
+          paneType={paneType}
+          dataTestId={dataTestId}
+        />
+        <Container data-test-id={dataTestId + "Container"}>
+          {children}
+        </Container>
       </Container>
     </Root>
   );

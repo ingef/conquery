@@ -7,7 +7,7 @@ import spinner from "./images/spinner.png";
 export const theme: Theme = {
   col: {
     bg: "#fafafa",
-    bgAlt: "#f3f6f4",
+    bgAlt: "#f4f6f5",
     black: "#222",
     gray: "#888",
     grayMediumLight: "#aaa",
