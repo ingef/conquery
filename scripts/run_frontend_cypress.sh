@@ -11,5 +11,5 @@ export REACT_APP_IDP_ENABLE=false
 export REACT_APP_IDP_REALM=Myrealm
 export REACT_APP_IDP_CLIENT_ID=frontend
 
-yarn start 
+yarn --ignore-platform start 
 popd
