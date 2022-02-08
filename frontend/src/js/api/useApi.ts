@@ -76,7 +76,9 @@ export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
   };
 };
 
-async function getCacheHeaders(cacheConfig: CustomCacheConfig) {
+async function getCacheHeaders(
+  cacheConfig: CustomCacheConfig,
+): Promise<{ "If-None-Match": string } | {}> {
   if (!cacheConfig.etagCacheKey) return {};
 
   const item = await getCachedEtagResource(cacheConfig.etagCacheKey);
