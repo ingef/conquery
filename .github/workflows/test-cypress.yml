@@ -22,17 +22,10 @@ jobs:
           java-version: 11
       - name: Build Backend
         run: ./scripts/build_version.sh
-      - name: Run backend
-        run: ./scripts/run_backend_cypress.sh &
-        
-      - name: Load test data
-        run: sleep 15; ./scripts/load_test_data_cypress.sh
 
-      - name: Go to frontend
-        run: cd frontend
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
-          project: ./frontend
-          build: npm run build
-          start: npm start
+          working-directory: ./frontend
+          start: ../sctipts/run_conquery_cypress.sh
+          wait-on: 'npx wait-on --timeout 5000 http://localhost:3000; ../scripts/load_test_data_cypress.sh'
