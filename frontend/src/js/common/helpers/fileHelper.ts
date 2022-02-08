@@ -1,8 +1,14 @@
 export const readFileAsText = (file: File) =>
-  new Promise((resolve, reject) => {
+  new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = (evt) => resolve(evt.target.result);
+    reader.onload = (evt) => {
+      if (evt.target) {
+        resolve(evt.target.result as string);
+      } else {
+        reject(new Error("Failed to read file"));
+      }
+    };
     reader.onerror = (err) => reject(err);
 
     reader.readAsText(file);

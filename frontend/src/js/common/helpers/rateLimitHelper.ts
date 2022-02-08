@@ -1,11 +1,20 @@
 /*
 
-This has been taken from
+Much of this code has been extracted from
 https://github.com/zeit/async-sema/blob/master/src/index.ts
 
-Originally, this library was only made for node.
-To make it work in the browser, 'events' has been installed.
+in compliance with the following license:
 
+The MIT License (MIT)
+
+Copyright (c) 2021 Vercel, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+*/
+
+/*
+  Originally, this library was only made for node.
+  To make it work in the browser, 'events' has been installed.
 */
 import EventEmitter from "events";
 
@@ -128,8 +137,8 @@ export class Sema {
   waiting: Deque;
   releaseEmitter: EventEmitter;
   noTokens: boolean;
-  pauseFn: () => void;
-  resumeFn: () => void;
+  pauseFn?: () => void;
+  resumeFn?: () => void;
   paused: boolean;
 
   constructor(
