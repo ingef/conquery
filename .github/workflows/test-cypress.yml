@@ -1,0 +1,37 @@
+name: "End-To-End Tests"
+
+on: [push]
+jobs:
+  end-to-end-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build Backend
+        run: ./scripts/build_version.sh
+      - name: Run backend
+        run: ./scripts/run_backend_cypress.sh &
+        
+      - name: Load test data
+        run: sleep 15; ./scripts/load_test_data_cypress.sh
+
+      - name: Go to frontend
+        run: cd frontend
+      - name: Cypress run
+        uses: cypress-io/github-action@v2
+        with:
+          build: npm run build
+          start: npm start
