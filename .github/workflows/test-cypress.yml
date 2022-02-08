@@ -28,5 +28,6 @@ jobs:
         with:
           working-directory: ./frontend
           build: 
+          install-command: yarn --ignore-platform --frozen-lockfile
           start: ./sctipts/run_conquery_cypress.sh
           wait-on: 'npx wait-on --timeout 5000 http://localhost:3000; ../scripts/load_test_data_cypress.sh'
