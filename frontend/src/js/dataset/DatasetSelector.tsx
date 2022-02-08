@@ -54,7 +54,7 @@ const DatasetSelector: FC = () => {
 
   return (
     <WithTooltip text={t("help.datasetSelector")} lazy>
-      <Root data-test-id="datasetSelector" >
+      <Root data-test-id="dataset-selector" >
         <Headline>{t("datasetSelector.label")}</Headline>
         <SxInputSelect
           value={selected || null}

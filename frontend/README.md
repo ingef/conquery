@@ -80,14 +80,16 @@ When queried for login:
 
 This is documented in [the mock-API](https://github.com/bakdata/conquery/blob/develop/frontend/mock-api/index.js).
 
-**Code Formating**  [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+**Code formatting**  [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
-The frontend JavaScript/TypeScript code is formatted using `prettier`.
-It can be invoked on the command line through `yarn`:
+The frontend TypeScript code is formatted using `prettier`.
+
+We recommend you configure your editor to auto-format on save. If you're using VS-Code, for example, there's a plugin: [Prettier – Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode).
+
+You could also invoke prettier on the command line:
 ```
 yarn prettier --write /path/to/file
 ```
-or convieniently through a plugin in VS Code (see https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode).
 
 ## Glossary
 

@@ -38,7 +38,7 @@ const Pane: FC<PropsT> = ({ tabs, left, children, className, dataTestId }) => {
           paneType={paneType}
           dataTestId={dataTestId}
         />
-        <Container data-test-id={dataTestId + "Container"}>
+        <Container data-test-id={dataTestId + "-container"}>
           {children}
         </Container>
       </Container>

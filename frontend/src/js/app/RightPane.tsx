@@ -45,7 +45,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
         label: t(tab.labelKey), // TODO: Somehow make this non-dynamic
         tooltip: t(tab.tooltipKey), // TODO: Somehow make this non-dynamic
       }))}
-      dataTestId="rightPane"
+      dataTestId="right-pane"
     >
       {tabs.map((tab) => {
         const isActive = tab.key === activeTab;

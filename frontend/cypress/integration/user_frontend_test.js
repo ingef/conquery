@@ -22,19 +22,19 @@ context("Visit conquery as users with different permissions", () => {
     });
 
     it("Cannot see concepts", () => {
-      cy.get('[data-test-id="leftPane"]').contains("Konzepte");
+      cy.get('[data-test-id="left-pane"]').contains("Konzepte");
 
       cy.contains("Keine Konzepte");
     });
 
     it("Cannot see queries", () => {
-      cy.get('[data-test-id="leftPane"]').contains("Anfragen").click();
+      cy.get('[data-test-id="left-pane"]').contains("Anfragen").click();
 
       cy.contains("Keine Anfragen gefunden");
     });
 
     it("Cannot see forms", () => {
-      cy.get('[data-test-id="leftPane"]').contains("Formulare").click();
+      cy.get('[data-test-id="left-pane"]').contains("Formulare").click();
 
       cy.contains("Keine Formular-Konfigurationen gefunden");
     });
@@ -61,7 +61,7 @@ context("Visit conquery as users with different permissions", () => {
     });
 
     it("Can see dataset", () => {
-      cy.get('[data-test-id="datasetSelector"]')
+      cy.get('[data-test-id="dataset-selector"]')
         .get("input")
         .invoke("attr", "value")
         .should("eq", "Dataset1");
@@ -73,7 +73,7 @@ context("Visit conquery as users with different permissions", () => {
 
     it("Can execute query", () => {
 
-      cy.get('[data-test-id="rightPaneContainer"]')
+      cy.get('[data-test-id="right-pane-container"]')
         .find('>div')
         .filter(':visible')
         .as('queryEditor')
@@ -86,7 +86,7 @@ context("Visit conquery as users with different permissions", () => {
         .trigger("dragend");
 
       cy.get('@queryEditor')
-        .find('[data-test-id="queryRunnerButton"]').click()
+        .find('[data-test-id="query-runner-button"]').click()
 
       
       cy.get('@queryEditor').contains("Ergebnisse")
