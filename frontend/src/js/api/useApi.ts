@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { useContext, useEffect, useRef } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import {
@@ -25,7 +25,7 @@ interface CustomCacheConfig {
 }
 
 export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const cacheEnabled = useIsCacheEnabled();
   const { authToken } = useContext(AuthTokenContext);
 
@@ -67,7 +67,7 @@ export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
         (error as { status?: number }).status &&
         (error as { status?: number }).status === 401
       ) {
-        history.push("/login");
+        navigate("/login");
       }
 
       console.error(error);

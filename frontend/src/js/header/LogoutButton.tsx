@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { useKeycloak } from "@react-keycloak/web";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { deleteStoredAuthToken } from "../authorization/helper";
 import IconButton from "../button/IconButton";
@@ -19,9 +19,9 @@ interface PropsT {
 
 const LogoutButton: FC<PropsT> = ({ className }) => {
   const { t } = useTranslation();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { keycloak } = useKeycloak();
-  const goToLogin = () => history.push("/login");
+  const goToLogin = () => navigate("/login");
 
   const onLogout = () => {
     deleteStoredAuthToken();

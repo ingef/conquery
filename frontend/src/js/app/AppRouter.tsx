@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import {
   AuthTokenContextProvider,
@@ -31,17 +31,17 @@ const AppRouter = (props: PropsT) => {
   return (
     <Router basename={basename}>
       <ContextProviders>
-        <Switch>
-          <Route path="/login" component={LoginPage} />
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
           <Route
             path="/*"
-            render={(routeProps) => (
-              <WithAuthToken {...routeProps}>
+            element={
+              <WithAuthToken>
                 <App {...props} />
               </WithAuthToken>
-            )}
+            }
           />
-        </Switch>
+        </Routes>
       </ContextProviders>
     </Router>
   );
