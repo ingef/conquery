@@ -66,7 +66,7 @@ const QueryRunnerButton = ({
   const icon = getIcon(isStartStopLoading, isQueryRunning);
 
   return (
-    <StyledBasicButton type="button" onClick={onClick} disabled={disabled}>
+    <StyledBasicButton type="button" onClick={onClick} disabled={disabled} data-test-id="queryRunnerButton">
       <Left running={isQueryRunning}>
         <FaIcon white={!isQueryRunning} icon={icon} />
       </Left>

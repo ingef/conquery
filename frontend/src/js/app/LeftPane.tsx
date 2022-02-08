@@ -50,6 +50,7 @@ const LeftPane = () => {
           tooltip: t("help.tabFormConfigs"),
         },
       ]}
+      dataTestId="leftPane"
     >
       {activeTab === "conceptTrees" && areTreesAvailable && (
         <SxConceptTreeSearchBox />

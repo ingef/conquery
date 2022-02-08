@@ -12,10 +12,11 @@ interface PropsT {
   tabs: TabT[];
 }
 
+// Shrink to size 0 so jQuery/cypress can differentiate between :hidden and :visible
 const Tab = styled("div")<{ isActive: boolean }>`
-  height: 100%;
+  height: ${(isActive) => (isActive ? "100%" : 0 )};
+  width: ${(isActive) => (isActive ? "100%" : 0 )};
   flex-grow: 1;
-  display: flex;
   flex-direction: column;
 
   display: ${({ isActive }) => (isActive ? "flex" : "none")};
@@ -40,6 +41,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
         label: t(tab.labelKey), // TODO: Somehow make this non-dynamic
         tooltip: t(tab.tooltipKey), // TODO: Somehow make this non-dynamic
       }))}
+      dataTestId="rightPane"
     >
       {tabs.map((tab) => {
         const isActive = tab.key === activeTab;

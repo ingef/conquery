@@ -5,15 +5,15 @@ context("Visit conquery as users with different permissions", () => {
     before(() => {
       cy.intercept({
         method: "GET",
-        url: "http://localhost:8080/api/config/frontend",
+        url: "/api/config/frontend",
       }).as("config");
       cy.intercept({
         method: "GET",
-        url: "http://localhost:8080/api/datasets",
+        url: "/api/datasets",
       }).as("datasets");
       cy.intercept({
         method: "GET",
-        url: "http://localhost:8080/api/me",
+        url: "/api/me",
       }).as("meInfo");
 
       cy.visit("http://localhost:3000/?access_token=user.user1");
@@ -22,17 +22,19 @@ context("Visit conquery as users with different permissions", () => {
     });
 
     it("Cannot see concepts", () => {
+      cy.get('[data-test-id="leftPane"]').contains("Konzepte");
+
       cy.contains("Keine Konzepte");
     });
 
     it("Cannot see queries", () => {
-      cy.get(".Pane1").contains("Anfragen").click();
+      cy.get('[data-test-id="leftPane"]').contains("Anfragen").click();
 
       cy.contains("Keine Anfragen gefunden");
     });
 
     it("Cannot see forms", () => {
-      cy.get(".Pane1").contains("Formulare").click();
+      cy.get('[data-test-id="leftPane"]').contains("Formulare").click();
 
       cy.contains("Keine Formular-Konfigurationen gefunden");
     });
@@ -42,15 +44,15 @@ context("Visit conquery as users with different permissions", () => {
     before(() => {
       cy.intercept({
         method: "GET",
-        url: "http://localhost:8080/api/config/frontend",
+        url: "/api/config/frontend",
       }).as("config");
       cy.intercept({
         method: "GET",
-        url: "http://localhost:8080/api/datasets",
+        url: "/api/datasets",
       }).as("datasets");
       cy.intercept({
         method: "GET",
-        url: "http://localhost:8080/api/me",
+        url: "/api/me",
       }).as("meInfo");
 
       cy.visit("http://localhost:3000/?access_token=user.user2");
@@ -59,13 +61,35 @@ context("Visit conquery as users with different permissions", () => {
     });
 
     it("Can see dataset", () => {
-      cy.get("#downshift-0-input")
+      cy.get('[data-test-id="datasetSelector"]')
+        .get("input")
         .invoke("attr", "value")
         .should("eq", "Dataset1");
     });
 
     it("Can see concepts", () => {
       cy.contains("Concept1");
+    });
+
+    it("Can execute query", () => {
+
+      cy.get('[data-test-id="rightPaneContainer"]')
+        .find('>div')
+        .filter(':visible')
+        .as('queryEditor')
+
+      cy.contains("Concept1").trigger("dragstart").trigger("dragleave");
+      cy.get('@queryEditor')
+        .trigger("dragenter")
+        .trigger("dragover")
+        .trigger("drop")
+        .trigger("dragend");
+
+      cy.get('@queryEditor')
+        .find('[data-test-id="queryRunnerButton"]').click()
+
+      
+      cy.get('@queryEditor').contains("Ergebnisse")
     });
   });
 });
