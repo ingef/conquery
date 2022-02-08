@@ -41,6 +41,7 @@ interface PropsT<DroppableObject> {
     monitor: DropTargetMonitor,
   ) => void;
   acceptedDropTypes?: string[];
+  accept?: string;
   disableClick?: boolean;
   showFileSelectButton?: boolean;
   isInitial?: boolean;
@@ -66,6 +67,7 @@ const DropzoneWithFileInput = <
   onDrop,
   isInitial,
   className,
+  accept,
 }: PropsT<DroppableObject>) => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -107,6 +109,7 @@ const DropzoneWithFileInput = <
           <FileInput
             ref={fileInputRef}
             type="file"
+            accept={accept}
             onChange={(e) => {
               if (e.target.files) {
                 onSelectFile(e.target.files[0]);

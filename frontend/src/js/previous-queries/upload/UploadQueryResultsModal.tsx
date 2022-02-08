@@ -108,6 +108,7 @@ const UploadQueryResultsModal: FC<PropsT> = ({
                   }
                 }}
                 onSelectFile={setFile}
+                accept="text/csv"
               >
                 {() => t("uploadQueryResultsModal.dropzone")}
               </SxDropzoneWithFileInput>
