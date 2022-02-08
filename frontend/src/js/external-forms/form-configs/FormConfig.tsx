@@ -192,10 +192,13 @@ const FormConfig: FC<PropsT> = ({
     label: config.label,
   };
   const [, drag] = useDrag<DragItemFormConfig, void, {}>({
-    item,
-    begin: () => ({
+    type: item.type,
+    item: () => ({
       ...item,
-      ...getWidthAndHeight(ref),
+      dragContext: {
+        ...item.dragContext,
+        ...getWidthAndHeight(ref),
+      },
     }),
   });
 
