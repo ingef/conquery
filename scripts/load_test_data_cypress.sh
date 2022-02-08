@@ -14,6 +14,8 @@ curl -X POST  "$admin_api/permissions/user.user2" -H "$h_ct" -H "$h_auth" -d 'co
 
 #create dataset
 curl -X POST  "$admin_api/datasets/" -H "$h_ct" -H "$h_auth" -d '{"name": "dataset1", "label": "Dataset1"}'
+sleep 3
  # TODO secondary ID
 curl -X POST  "$admin_api/datasets/dataset1/tables" -H "$h_ct" -H "$h_auth" -d "@$proj_dir/frontend/cypress/support/test_data/all_types.table.json"
+sleep 3
 curl -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@$proj_dir/frontend/cypress/support/test_data/all_types.concept.json"
