@@ -35,7 +35,7 @@ import { createQueryNodeEditorActions } from "./actions";
 import { QueryNodeEditorStateT } from "./reducer";
 
 const Root = styled("div")`
-  padding: 0 20px 10px;
+  padding: 10px;
   left: 0;
   top: 0;
   right: 0;
