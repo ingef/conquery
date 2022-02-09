@@ -1,24 +1,7 @@
 #!/bin/env bash
 script_dir=`dirname $0`
 
-config=$(cat << EOF
- {
-    "server": {
-        "applicationConnectors": [
-            {
-                "type": "http",
-                "port": "8080"
-            }
-        ],
-		"adminConnectors": [
-			{
-				"type": "http",
-				"port": "8081"
-			}
-		]
-    }
-}
-EOF
-)
+jar="$(readlink -f $script_dir/../executable/target/executable*.jar)"
+config="$(readlink -f $script_dir/../frontend/cypress/support/backend_config.json)"
 
-java -jar "$(readlink -f $script_dir/../executable/target/executable*.jar)" standalone 
+java -jar $jar standalone $config
