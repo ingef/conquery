@@ -19,7 +19,7 @@ public class SelectFilter extends AbstractSelectFilter<String> {
 
 	
 	public SelectFilter() {
-		super(128, FEFilterType.SELECT);
+		super(128, FEFilterType.Fields.SELECT);
 	}
 
 	@Override

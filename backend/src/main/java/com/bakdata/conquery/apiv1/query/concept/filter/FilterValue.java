@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -42,7 +43,7 @@ public abstract class FilterValue<VALUE> {
 
 
 	@NoArgsConstructor
-	@CPSType(id = "MULTI_SELECT", base = FilterValue.class)
+	@CPSType(id = FEFilterType.Fields.MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQMultiSelectFilter extends FilterValue<String[]> {
 		public CQMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
@@ -51,7 +52,7 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = "BIG_MULTI_SELECT", base = FilterValue.class)
+	@CPSType(id = FEFilterType.Fields.BIG_MULTI_SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQBigMultiSelectFilter extends FilterValue<String[]> {
 		public CQBigMultiSelectFilter(@NsIdRef Filter<String[]> filter, String[] value) {
@@ -60,7 +61,7 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = "SELECT", base = FilterValue.class)
+	@CPSType(id = FEFilterType.Fields.SELECT, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQSelectFilter extends FilterValue<String> {
 		public CQSelectFilter(@NsIdRef Filter<String> filter, String value) {
@@ -69,7 +70,7 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = "STRING", base = FilterValue.class)
+	@CPSType(id = FEFilterType.Fields.STRING, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQStringFilter extends FilterValue<String> {
 		public CQStringFilter(@NsIdRef Filter<String> filter, String value) {
@@ -78,7 +79,7 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = "INTEGER_RANGE", base = FilterValue.class)
+	@CPSType(id = FEFilterType.Fields.INTEGER_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
 		public CQIntegerRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {
@@ -91,7 +92,7 @@ public abstract class FilterValue<VALUE> {
 	 * it became an INTEGER_RANGE, which is handled differently by the frontend.
 	 */
 	@NoArgsConstructor
-	@CPSType(id = "MONEY_RANGE", base = FilterValue.class)
+	@CPSType(id = FEFilterType.Fields.MONEY_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQMoneyRangeFilter extends FilterValue<LongRange> {
 		public CQMoneyRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {	super(filter, value);
@@ -99,11 +100,25 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	@NoArgsConstructor
-	@CPSType(id = "REAL_RANGE", base = FilterValue.class)
+	@CPSType(id = FEFilterType.Fields.REAL_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQRealRangeFilter extends FilterValue<Range<BigDecimal>> {
 		public CQRealRangeFilter(@NsIdRef Filter<Range<BigDecimal>> filter, Range<BigDecimal> value) {
 			super(filter, value);
 		}
+	}
+
+	@NoArgsConstructor
+	@CPSType(id = FEFilterType.Fields.GROUP, base = FilterValue.class)
+	@ToString(callSuper = true)
+	public static class CompoundFilter<T extends ValueCompound> extends FilterValue<T> {
+		public CompoundFilter(@NsIdRef Filter<T> filter, T value) {
+			super(filter, value);
+		}
+	}
+
+	@CPSBase
+	public interface ValueCompound {
+
 	}
 }

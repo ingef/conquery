@@ -17,7 +17,7 @@ import lombok.Setter;
 public class BigMultiSelectFilter extends AbstractSelectFilter<String[]> {
 
 	public BigMultiSelectFilter() {
-		super(-1, FEFilterType.BIG_MULTI_SELECT);
+		super(-1, FEFilterType.Fields.BIG_MULTI_SELECT);
 	}
 
 	@Override
