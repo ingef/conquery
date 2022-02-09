@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 import { deleteStoredAuthToken } from "../authorization/helper";
 import IconButton from "../button/IconButton";
+import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
 import { isIDPEnabled } from "../environment";
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -23,7 +24,9 @@ const LogoutButton: FC<PropsT> = ({ className }) => {
   const { keycloak } = useKeycloak();
   const goToLogin = () => navigate("/login");
 
-  const onLogout = () => {
+  const onLogout = async () => {
+    await clearIndexedDBCache();
+
     deleteStoredAuthToken();
 
     if (isIDPEnabled) {
