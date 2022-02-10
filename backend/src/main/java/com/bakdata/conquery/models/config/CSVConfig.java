@@ -37,7 +37,7 @@ public class CSVConfig {
 	 * Helper method to generate parser settings from the provided options in this class.
 	 * @return Setting object that can be passed into a {@link CsvParser}.
 	 */
-	private CsvParserSettings createCsvParserSettings() {
+	public CsvParserSettings createCsvParserSettings() {
 		CsvParserSettings settings = new CsvParserSettings();
 		settings.setFormat(createCsvFormat());
 		settings.setHeaderExtractionEnabled(parseHeaders);
