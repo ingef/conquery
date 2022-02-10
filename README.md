@@ -46,7 +46,7 @@ When the frontend finished its build, you should be able to access it at http://
 ## Development
 
 ### Testing
-The projects consits of isolated frontend and backend tests, and end-to-end tests powered by cypress. Please refer to the corresponding [CI configuration](https://github.com/bakdata/conquery/tree/develop/.github/workflows) to learn about invoking the tests.
+Apart from separate frontend and backend tests, the project also contains end-to-end tests powered by cypress. Please refer to the corresponding [CI configuration](https://github.com/bakdata/conquery/tree/develop/.github/workflows) to learn about invoking the tests.
 
 ## Acknowledgements
 
