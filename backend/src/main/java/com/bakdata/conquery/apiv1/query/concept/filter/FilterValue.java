@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.filter;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 
 import javax.annotation.Nonnull;
@@ -13,12 +14,20 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.esotericsoftware.kryo.DefaultSerializer;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.poi.ss.formula.functions.T;
 
 @Getter
 @Setter
@@ -108,16 +117,17 @@ public abstract class FilterValue<VALUE> {
 		}
 	}
 
-	@NoArgsConstructor
 	@CPSType(id = FEFilterType.Fields.GROUP, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CompoundFilter<T extends ValueCompound> extends FilterValue<T> {
+		@JsonCreator
 		public CompoundFilter(@NsIdRef Filter<T> filter, T value) {
 			super(filter, value);
 		}
 	}
 
 	@CPSBase
+	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 	public interface ValueCompound {
 
 	}

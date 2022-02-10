@@ -16,7 +16,9 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 
 @CPSType(id = "TEST_COMPOUND_FILTER", base = Filter.class)
 public class TestCompoundFilter extends Filter<TestCompoundFilter.CompoundFilterValue> {
@@ -39,14 +41,15 @@ public class TestCompoundFilter extends Filter<TestCompoundFilter.CompoundFilter
 	}
 
 
-	@Data
-	@CPSType(id = "TEST_COMPOUND", base = FilterValue.ValueCompound.class)
+	@CPSType(id = "TEST_COMPOUND_VALUE", base = FilterValue.ValueCompound.class)
+	@Getter
+	@AllArgsConstructor
 	public static class CompoundFilterValue implements FilterValue.ValueCompound {
 		@CompoundValue(FEFilterType.Fields.MULTI_SELECT)
 		private String[] zipCodes;
 
 		@CompoundValue(FEFilterType.Fields.REAL_RANGE)
-		private int radius;
+		private float radius;
 
 	}
 

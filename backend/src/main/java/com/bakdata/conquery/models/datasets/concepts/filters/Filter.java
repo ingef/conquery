@@ -46,7 +46,21 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 		return getConnector().getDataset();
 	}
 
-	public abstract void configureFrontend(FEFilter f) throws ConceptConfigurationException;
+	public FEFilter createFrontendConfig() throws ConceptConfigurationException {
+		FEFilter f = FEFilter.builder()
+							 .id(getId())
+							 .label(getLabel())
+							 .description(getDescription())
+							 .unit(getUnit())
+							 .allowDropFile(getAllowDropFile())
+							 .pattern(getPattern())
+							 .defaultValue(getDefaultValue())
+							 .build();
+		configureFrontend(f);
+		return f;
+	}
+
+	protected abstract void configureFrontend(FEFilter f) throws ConceptConfigurationException;
 
 	@JsonIgnore
 	public abstract Column[] getRequiredColumns();

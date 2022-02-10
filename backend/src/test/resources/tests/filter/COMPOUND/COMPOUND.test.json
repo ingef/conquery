@@ -1,0 +1,42 @@
+{
+  "type": "FILTER_TEST",
+  "label": "COMPOUND Test",
+  "expectedCsv": "tests/filter/COMPOUND/expected.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/COMPOUND/content.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "plus",
+          "type": "INTEGER"
+        },
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filters": {
+      "type": "TEST_COMPOUND_FILTER"
+    }
+  },
+  "filterValue": {
+    "type": "GROUP",
+    "value": {
+      "type": "TEST_COMPOUND_VALUE",
+      "zipCodes": ["12345", "45678"],
+      "radius": 10.1
+
+    }
+  }
+}
