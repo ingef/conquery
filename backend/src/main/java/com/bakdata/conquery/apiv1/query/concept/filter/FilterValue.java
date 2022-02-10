@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.esotericsoftware.kryo.DefaultSerializer;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -45,6 +46,9 @@ public abstract class FilterValue<VALUE> {
 	@NotNull
 	@Nonnull
 	private VALUE value;
+
+
+	public void resolve(QueryResolveContext context) {};
 
 	public FilterNode<?> createNode() {
 		return getFilter().createFilterNode(getValue());
@@ -124,11 +128,18 @@ public abstract class FilterValue<VALUE> {
 		public CompoundFilter(@NsIdRef Filter<T> filter, T value) {
 			super(filter, value);
 		}
+
+		@Override
+		public void resolve(QueryResolveContext context) {
+			getValue().resolve(context);
+		}
 	}
 
 	@CPSBase
 	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 	public interface ValueCompound {
+
+		default void resolve(QueryResolveContext context){};
 
 	}
 }
