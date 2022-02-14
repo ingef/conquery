@@ -123,9 +123,9 @@ public abstract class FilterValue<VALUE> {
 
 	@CPSType(id = FEFilterType.Fields.GROUP, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CompoundFilter<T extends ValueCompound> extends FilterValue<T> {
+	public static class CompoundFilter extends FilterValue<ValueCompound> {
 		@JsonCreator
-		public CompoundFilter(@NsIdRef Filter<T> filter, T value) {
+		public CompoundFilter(@NsIdRef Filter<ValueCompound> filter, ValueCompound value) {
 			super(filter, value);
 		}
 
