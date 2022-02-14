@@ -46,7 +46,9 @@ public abstract class ConqueryTestSpec {
 	public ConqueryConfig overrideConfig(ConqueryConfig config) {
 
 		if (getConfig() != null) {
-			return getConfig().withStorage(new NonPersistentStoreFactory());
+			final ConqueryConfig conqueryConfig = getConfig().withStorage(new NonPersistentStoreFactory());
+			conqueryConfig.setLoggingFactory(config.getLoggingFactory());
+			return conqueryConfig;
 		}
 
 		return config.withStorage(new NonPersistentStoreFactory());
