@@ -38,4 +38,4 @@ jobs:
           build: yarn run react-app-rewired build
           install-command: yarn --ignore-platform --frozen-lockfile
           start: bash ../scripts/run_conquery_cypress.sh
-          wait-on: 'http://localhost:3000'
+          wait-on: 'http://localhost:4242'
