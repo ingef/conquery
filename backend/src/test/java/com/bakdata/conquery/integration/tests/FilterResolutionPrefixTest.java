@@ -35,6 +35,7 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 			"a",
 			"aab",
 			"aaa",
+			"baaa",
 			"b"
 	};
 
@@ -68,7 +69,8 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 		filter.setSearchType(FilterSearch.FilterSearchType.PREFIX);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
 
-		conquery.getNamespace().getFilterSearch().createSourceSearch(filter, csvConf);
+
+		filter.initializeSourceSearch(csvConf);
 
 		assertThat(filter.getSourceSearch()).isNotNull();
 
@@ -88,7 +90,8 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 			ResolvedConceptsResult resolved = processor.resolveFilterValues(filter, List.of("f", "unknown"));
 
 			//check the resolved values
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactlyInAnyOrder("f");
+			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue))
+					.containsExactlyInAnyOrder("f", "fm");
 			assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
 		}
 	}

@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
@@ -13,6 +14,7 @@ import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -25,6 +27,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
+import com.univocity.parsers.common.IterableResult;
+import com.univocity.parsers.common.ParsingContext;
+import com.univocity.parsers.common.record.Record;
+import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -44,8 +50,12 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 	@JsonIgnore
 	protected Set<String> values = new HashSet<>();
-	@JsonIgnore @NotNull
-	protected transient QuickSearch<FilterSearchItem> sourceSearch;
+	@JsonIgnore
+	protected transient QuickSearch<FilterSearchItem> sourceSearch = new QuickSearch.QuickSearchBuilder()
+			.withUnmatchedPolicy(QuickSearch.UnmatchedPolicy.IGNORE)
+			.withMergePolicy(QuickSearch.MergePolicy.UNION)
+			.withKeywordMatchScorer(FilterSearch.FilterSearchType.CONTAINS::score)
+			.build();
 
 	@JsonIgnore
 	private final int maximumSize;
@@ -76,12 +86,12 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			f.setType(FEFilterType.BIG_MULTI_SELECT);
 		}
 
-		if(this.filterType != FEFilterType.BIG_MULTI_SELECT) {
+		if (filterType != FEFilterType.BIG_MULTI_SELECT) {
 			f.setOptions(
-				values
-					.stream()
-					.map(v->new FEValue(getLabelFor(v), v))
-					.collect(Collectors.toList())
+					values
+							.stream()
+							.map(v -> new FEValue(getLabelFor(v), v))
+							.collect(Collectors.toList())
 			);
 		}
 	}
@@ -100,14 +110,104 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	public String getLabelFor(String value) {
 		return labels.getOrDefault(value, value);
 	}
-	
+
 	public String getValueFor(String label) {
 		String value = labels.inverse().get(label);
-		if(value == null) {
-			if(values.contains(label)) {
+		if (value == null) {
+			if (values.contains(label)) {
 				return label;
 			}
 		}
 		return null;
+	}
+
+
+	public void initializeSourceSearch(CSVConfig parserConfig) {
+		sourceSearch.clear(); //TODO might not be necessary
+
+		Set<String> bag = new HashSet<>();
+
+		if(getTemplate() != null) {
+			collectTemplateSearchItems(parserConfig, bag);
+		}
+
+		collectRawSearchItems(getValues(), bag);
+	}
+
+	private void collectTemplateSearchItems(CSVConfig parserConfig, Set<String> items) {
+
+		List<String> templateColumns = new ArrayList<>(template.getColumns());
+		templateColumns.add(template.getColumnValue());
+
+
+		log.info("BEGIN Processing template {}", getTemplate());
+		final long time = System.currentTimeMillis();
+
+		final CsvParser parser = parserConfig.createParser();
+
+		try {
+			File file = new File(template.getFilePath());
+
+			final IterableResult<Record, ParsingContext> records = parser.iterateRecords(file);
+
+
+			for (Record row : records) {
+
+				final String rowId = row.getString(template.getColumnValue());
+
+				if (items.contains(rowId)) {
+					log.error("Duplicate reference for value `{}`", rowId);
+				}
+
+				FilterSearchItem item = new FilterSearchItem();
+				item.setLabel(template.getValue());
+
+				item.setOptionValue(template.getOptionValue());
+
+				item.setValue(rowId);
+
+				for (String column : templateColumns) {
+					final String value = row.getString(column);
+
+					item.getTemplateValues().put(column, value);
+
+					// A bit odd, but we eagerly register the mutable record for all columns,
+					// this saves us iterating twice over the record's columns
+					getSourceSearch().addItem(item, value);
+				}
+
+				items.add(rowId);
+			}
+
+			final long duration = System.currentTimeMillis() - time;
+
+			log.info("DONE Processing reference for {} in {} ms ({} Items in {} Lines)",
+					 getTemplate(), duration, getSourceSearch().getStats().getItems(), records.getContext().currentLine()
+			);
+
+		}
+		catch (Exception e) {
+			// TODO what do?
+		}
+		finally {
+			parser.stopParsing();
+		}
+	}
+
+	private void collectRawSearchItems(Set<String> values, Set<String> items) {
+
+		for (String value : values) {
+			// This means we've already registered the value by a template.
+			if(items.contains(value)){
+				continue;
+			}
+
+			final FilterSearchItem item = new FilterSearchItem();
+			item.setLabel(value);
+			item.setValue(value);
+			item.setOptionValue(value);
+
+			getSourceSearch().addItem(item, value);
+		}
 	}
 }

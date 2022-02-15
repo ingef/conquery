@@ -3,7 +3,6 @@ package com.bakdata.conquery.apiv1;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +15,6 @@ public class FilterSearchItem implements Comparable<FilterSearchItem>, Serializa
 
 	private static final long serialVersionUID = 1L;
 
-	private String id = UUID.randomUUID().toString().substring(0, 8);
 	private String label;
 	private String value;
 	private String optionValue;
@@ -24,7 +22,7 @@ public class FilterSearchItem implements Comparable<FilterSearchItem>, Serializa
 
 	@Override
 	public int compareTo(FilterSearchItem o) {
-		return id.compareTo(o.getId());
+		return getLabel().compareTo(o.getLabel());
 	}
 
 }

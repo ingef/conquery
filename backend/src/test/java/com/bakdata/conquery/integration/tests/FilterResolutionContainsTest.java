@@ -31,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FilterResolutionContainsTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private String[] lines = new String[]{
+	private final String[] lines = new String[]{
 			"HEADER",
 			"a",
 			"aab",
@@ -43,19 +43,25 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test sepcification
-		String testJson = In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json").withUTF8().readAll();
-		
+		String
+				testJson =
+				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
+				  .withUTF8()
+				  .readAll();
+
 		DatasetId dataset = conquery.getDataset().getId();
-		
+
 		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
-		
+
 		test.importRequiredData(conquery);
 		CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		conquery.getNamespace().getFilterSearch()
-			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf);
+				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace()
+																									 .getDataset()), conquery.getDatasetsProcessor()
+																															 .getJobManager(), csvConf);
 
 		conquery.waitUntilWorkDone();
 
@@ -67,12 +73,15 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 		final Path tmpCSv = Files.createTempFile("conquery_search", ".csv");
 		Out.file(tmpCSv.toFile()).withUTF8().writeLines(lines);
 
-		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines).getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
+								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
 		filter.setSearchType(FilterSearch.FilterSearchType.CONTAINS);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
 
-		conquery.getNamespace().getFilterSearch().createSourceSearch(filter, csvConf);
+		//TODO construct all this manually!
+
+		filter.initializeSourceSearch(csvConf);
 
 		assertThat(filter.getSourceSearch()).isNotNull();
 
@@ -92,7 +101,8 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 			ResolvedConceptsResult resolved = processor.resolveFilterValues(filter, List.of("f", "unknown"));
 
 			//check the resolved values
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactlyInAnyOrder("f");
+			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue))
+					.containsExactlyInAnyOrder("f", "fm", "mf");
 			assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
 		}
 	}

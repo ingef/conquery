@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -223,17 +222,17 @@ public class ConceptsProcessor {
 						 .collect(Collectors.toList());
 		}
 
-		List<FEValue> result = new LinkedList<>();
+		List<FEValue> result = new ArrayList<>();
 
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 
 		if (search != null) {
-			result = createSourceSearchResult(
+			result.addAll(createSourceSearchResult(
 					filter.getSourceSearch(),
 					Collections.singletonList(text),
 					OptionalInt.empty(),
 					FilterSearch.FilterSearchType.CONTAINS::score
-			);
+			));
 		}
 
 		String value = filter.getValueFor(text);
@@ -249,13 +248,14 @@ public class ConceptsProcessor {
 	 */
 	private static List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values, OptionalInt numberOfTopItems, SearchScorer scorer) {
 		if (search == null) {
-			return new ArrayList<>();
+			return Collections.emptyList();
 		}
 
 		// Quicksearch can split and also schedule for us.
 		List<FilterSearchItem> result = search.findItems(String.join(" ", values), numberOfTopItems.orElse(Integer.MAX_VALUE), scorer);
 
 		if (numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
+			//TODO This looks odd, do we really expect QuickSearch to allocate that huge of a list for us?
 			log.warn("The quick search returned the maximum number of results ({}) which probably means not all possible results are returned.", Integer.MAX_VALUE);
 		}
 
@@ -269,14 +269,9 @@ public class ConceptsProcessor {
 		List<ConceptElementId<?>> resolvedCodes = new ArrayList<>();
 		List<String> unknownCodes = new ArrayList<>();
 
-		if (concept == null) {
-			return new ResolvedConceptsResult(null, null, conceptCodes);
-		}
-
 		for (String conceptCode : conceptCodes) {
-			ConceptTreeChild child;
 			try {
-				child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
+				ConceptTreeChild child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
 				if (child != null) {
 					resolvedCodes.add(child.getId());
 				}
