@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -74,12 +75,12 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			f.setType(FEFilterType.Fields.BIG_MULTI_SELECT);
 		}
 
-		if(this.filterType != FEFilterType.Fields.BIG_MULTI_SELECT) {
+		if (!Objects.equals(this.filterType, FEFilterType.Fields.BIG_MULTI_SELECT)) {
 			f.setOptions(
-				values
-					.stream()
-					.map(v->new FEValue(getLabelFor(v), v))
-					.collect(Collectors.toList())
+					values
+							.stream()
+							.map(v -> new FEValue(getLabelFor(v), v))
+							.collect(Collectors.toList())
 			);
 		}
 	}

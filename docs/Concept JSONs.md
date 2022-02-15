@@ -445,7 +445,7 @@ Supported Fields:
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.specific.TestCompoundFilter`
+Java Type: `com.bakdata.conquery.models.datasets.concepts.filters.TestCompoundFilter`
 
 Supported Fields:
 

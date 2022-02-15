@@ -1,42 +1,45 @@
 {
-  "type": "FILTER_TEST",
-  "label": "COMPOUND Test",
-  "expectedCsv": "tests/filter/COMPOUND/expected.csv",
-  "content": {
-    "tables": {
-      "csv": "tests/filter/COMPOUND/content.csv",
-      "primaryColumn": {
-        "name": "pid",
-        "type": "STRING"
-      },
-      "columns": [
-        {
-          "name": "plus",
-          "type": "INTEGER"
-        },
-        {
-          "name": "datum",
-          "type": "DATE"
+    "type": "FILTER_TEST",
+    "label": "COMPOUND Test",
+    "expectedCsv": "tests/filter/COMPOUND/expected.csv",
+    "content": {
+        "tables": {
+            "csv": "tests/filter/COMPOUND/content.csv",
+            "primaryColumn": {
+                "name": "pid",
+                "type": "STRING"
+            },
+            "columns": [
+                {
+                    "name": "datum",
+                    "type": "DATE"
+                },
+                {
+                    "name": "value",
+                    "type": "STRING"
+                }
+            ]
         }
-      ]
-    }
-  },
-  "connector": {
-    "validityDates": {
-      "label": "Datum",
-      "column": "table.datum"
     },
-    "filters": {
-      "type": "TEST_COMPOUND_FILTER"
+    "connector": {
+        "validityDates": {
+            "label": "Datum",
+            "column": "table.datum"
+        },
+        "filters": {
+            "type": "TEST_COMPOUND_FILTER",
+            "column": "table.value"
+        }
+    },
+    "filterValue": {
+        "type": "GROUP",
+        "value": {
+            "type": "TEST_COMPOUND_VALUE",
+            "strings": [
+                "a",
+                "ab"
+            ],
+            "repetitions": 2
+        }
     }
-  },
-  "filterValue": {
-    "type": "GROUP",
-    "value": {
-      "type": "TEST_COMPOUND_VALUE",
-      "zipCodes": ["12345", "45678"],
-      "radius": 10.1
-
-    }
-  }
 }
