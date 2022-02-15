@@ -85,10 +85,6 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	}
 
 
-	@Override
-	public void addImport(Import imp) {
-	}
-
 	private final Set<String> bag = new HashSet<>();
 
 	/**
