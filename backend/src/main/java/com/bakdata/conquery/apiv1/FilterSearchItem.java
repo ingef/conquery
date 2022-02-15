@@ -15,6 +15,9 @@ public class FilterSearchItem implements Comparable<FilterSearchItem>, Serializa
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Template string to be populated by templateValues.
+	 */
 	private String label;
 	private String value;
 	private String optionValue;

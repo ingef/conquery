@@ -70,7 +70,7 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
 
 
-		filter.initializeSourceSearch(csvConf);
+		filter.initializeSourceSearch(csvConf, conquery.getNamespaceStorage());
 
 		assertThat(filter.getSourceSearch()).isNotNull();
 

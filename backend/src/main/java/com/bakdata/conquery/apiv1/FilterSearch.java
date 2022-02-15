@@ -80,12 +80,15 @@ public class FilterSearch {
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
 	public void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager, CSVConfig parser) {
+		//TODO FK: pull datasets to update into outer loop
 		datasetsToUpdate.stream()
 						.flatMap(ds -> datasets.get(ds.getId()).getStorage().getAllConcepts().stream())
 						.flatMap(c -> c.getConnectors().stream())
 						.flatMap(co -> co.collectAllFilters().stream())
 						.filter(f -> f instanceof AbstractSelectFilter)
 						.map(AbstractSelectFilter.class::cast)
-						.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> ((AbstractSelectFilter<?>) f).initializeSourceSearch(parser))));
+						.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> ((AbstractSelectFilter<?>) f).initializeSourceSearch(parser, datasets.get(f.getDataset()
+																																																		 .getId())
+																																																   .getStorage()))));
 	}
 }

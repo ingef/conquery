@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -13,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
@@ -44,7 +42,6 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.BiMap;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -124,29 +121,11 @@ public class ConceptsProcessor {
 	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
 
 		// search in the full text engine
-		final Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms, OptionalInt.empty(), filter.getSearchType()::score)
-				.stream()
-				.map(FEValue::getValue)
-				.collect(Collectors.toSet());
+		final List<FEValue> searchResult =
+				createSourceSearchResult(filter.getSourceSearch(), searchTerms, OptionalInt.empty(), filter.getSearchType()::score);
 
 		Set<String> openSearchTerms = new HashSet<>(searchTerms);
-		openSearchTerms.removeAll(searchResult);
-
-		final BiMap<String, String> inverse = filter.getLabels().inverse();
-
-		// Iterate over all unresolved search terms. Gather all that match labels into searchResults. Keep the unresolvable ones.
-		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext(); ) {
-			String searchTerm = it.next();
-			// Test if any of the values occurs directly in the filter's values or their labels (for when we don't have a provided file).
-			if (filter.getValues().contains(searchTerm)) {
-				searchResult.add(searchTerm);
-				it.remove();
-			}
-			else if (inverse.containsKey(searchTerm)) {
-				searchResult.add(inverse.get(searchTerm));
-				it.remove();
-			}
-		}
+		searchResult.forEach(result -> openSearchTerms.remove(result.getValue()));
 
 		return new ResolvedConceptsResult(
 				null,
@@ -154,11 +133,8 @@ public class ConceptsProcessor {
 						filter.getConnector().getId(),
 						filter.getId(),
 						searchResult
-								.stream()
-								.map(v -> new FEValue(filter.getLabelFor(v), v))
-								.collect(Collectors.toList())
 				),
-				new ArrayList<>(openSearchTerms)
+				openSearchTerms
 		);
 	}
 
@@ -205,40 +181,22 @@ public class ConceptsProcessor {
 	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
 		if (Strings.isNullOrEmpty(text)) {
 			// If no text provided, we just list them
-			// Filter might not have a source search (since none might be defined).
-
-			//TODO unify these code paths, they are quite the mess, maybe also create source search for key-value also
-
-			final Stream<FEValue> fromSearch =
+			final List<FEValue> fromSearch =
 					filter.getSourceSearch().listItems()
 						  .stream()
-						  .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()));
+						  .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+							.collect(Collectors.toList());
 
 
-			final Stream<FEValue> fromLabels = filter.getLabels().entrySet().stream().map(entry -> new FEValue(entry.getValue(), entry.getKey()));
-
-			return Stream.concat(fromLabels, fromSearch)
-						 .sorted()
-						 .collect(Collectors.toList());
+			return fromSearch;
 		}
 
-		List<FEValue> result = new ArrayList<>();
-
-		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
-
-		if (search != null) {
-			result.addAll(createSourceSearchResult(
-					filter.getSourceSearch(),
-					Collections.singletonList(text),
-					OptionalInt.empty(),
-					FilterSearch.FilterSearchType.CONTAINS::score
-			));
-		}
-
-		String value = filter.getValueFor(text);
-		if (value != null) {
-			result.add(new FEValue(text, value));
-		}
+		List<FEValue> result = createSourceSearchResult(
+				filter.getSourceSearch(),
+				Collections.singletonList(text),
+				OptionalInt.empty(),
+				FilterSearch.FilterSearchType.CONTAINS::score
+		);
 
 		return result;
 	}
@@ -266,12 +224,14 @@ public class ConceptsProcessor {
 	}
 
 	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
-		List<ConceptElementId<?>> resolvedCodes = new ArrayList<>();
-		List<String> unknownCodes = new ArrayList<>();
+
+		final List<ConceptElementId<?>> resolvedCodes = new ArrayList<>();
+		final List<String> unknownCodes = new ArrayList<>();
 
 		for (String conceptCode : conceptCodes) {
 			try {
 				ConceptTreeChild child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
+
 				if (child != null) {
 					resolvedCodes.add(child.getId());
 				}
@@ -293,7 +253,7 @@ public class ConceptsProcessor {
 	public static class ResolvedFilterResult {
 		private ConnectorId tableId;
 		private FilterId filterId;
-		private List<FEValue> value;
+		private Collection<FEValue> value;
 	}
 
 	@Getter
@@ -303,6 +263,6 @@ public class ConceptsProcessor {
 	public static class ResolvedConceptsResult {
 		private List<ConceptElementId<?>> resolvedConcepts;
 		private ResolvedFilterResult resolvedFilter;
-		private List<String> unknownCodes;
+		private Collection<String> unknownCodes;
 	}
 }
