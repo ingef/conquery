@@ -11,6 +11,4 @@ public interface CompoundValueContainer {
 	default void resolve(QueryResolveContext context) {
 	}
 
-	;
-
 }
