@@ -27,6 +27,7 @@
             "column": "table.datum"
         },
         "filters": {
+            "label": "test filter",
             "type": "TEST_COMPOUND_FILTER",
             "column": "table.value"
         }
@@ -41,5 +42,23 @@
             ],
             "repetitions": 2
         }
+    },
+    "expectedFrontendConfig": {
+        "label": "test filter",
+        "type": "GROUP",
+        "groupType": "TEST_COMPOUND_VALUE",
+        "filters": {
+            "strings": {
+                "type": "MULTI_SELECT",
+                "label": "Elements",
+                "options": []
+            },
+            "repetitions": {
+                "type": "INTEGER_RANGE",
+                "label": "Maximum Repetitions",
+                "options": []
+            }
+        },
+        "options": []
     }
 }
