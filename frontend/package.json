@@ -18,7 +18,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "server": "nodemon --watch mock-api* --exec \"ts-node mock-api/server\"",
     "storybook": "start-storybook -p 6006 -s public",
-    "build-storybook": "build-storybook -s public"
+    "build-storybook": "build-storybook -s public",
+    "serve": "node server.js"
   },
   "dependencies": {
     "@emotion/babel-plugin": "^11.7.2",
