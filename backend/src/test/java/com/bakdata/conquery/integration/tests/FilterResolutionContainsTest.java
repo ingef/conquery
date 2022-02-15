@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
@@ -59,9 +58,7 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 		CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		conquery.getNamespace().getFilterSearch()
-				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace()
-																									 .getDataset()), conquery.getDatasetsProcessor()
-																															 .getJobManager(), csvConf);
+				.updateSearch(conquery.getNamespaceStorage(), conquery.getNamespace().getJobManager(), conquery.getConfig().getCsv());
 
 		conquery.waitUntilWorkDone();
 

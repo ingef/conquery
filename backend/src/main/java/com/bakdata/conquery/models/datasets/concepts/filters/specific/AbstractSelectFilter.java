@@ -88,7 +88,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	private final Set<String> bag = new HashSet<>();
 
 	/**
-	 * Adds an item to the FilterSearch associating it with word.
+	 * Adds an item to the FilterSearch associating it with containing words.
 	 * <p>
 	 * The item is not added, if we've already collected an item with the same {@link FilterSearchItem#getValue()}.
 	 */
@@ -175,9 +175,6 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 					final String value = row.getString(column);
 
 					item.getTemplateValues().put(column, value);
-
-					// A bit odd, but we eagerly register the mutable record for all columns,
-					// this saves us iterating twice over the record's columns
 				}
 
 				addSearchItem(item);

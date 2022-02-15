@@ -2,10 +2,8 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -75,18 +73,9 @@ public class Namespace implements Closeable {
 
 	public Namespace(NamespaceStorage storage, boolean failOnError, ObjectWriter objectWriter) {
 		this.storage = storage;
-		this.executionManager = new ExecutionManager(this);
-		this.jobManager = new JobManager(storage.getDataset().getName(), failOnError);
+		executionManager = new ExecutionManager(this);
+		jobManager = new JobManager(storage.getDataset().getName(), failOnError);
 		this.objectWriter = objectWriter;
-	}
-
-	public void checkConnections() {
-		List<WorkerInformation> l = new ArrayList<>(workers);
-		l.removeIf(w -> w.getConnectedShardNode() != null);
-
-		if (!l.isEmpty()) {
-			throw new IllegalStateException("Not all known ShardNodes are connected. Missing " + l);
-		}
 	}
 
 	public void sendToAll(WorkerMessage msg) {
@@ -185,6 +174,7 @@ public class Namespace implements Closeable {
 		if (workerBuckets == null){
 			workerBuckets = createWorkerBucketsMap();
 		}
+
 		return workerBuckets;
 	}
 

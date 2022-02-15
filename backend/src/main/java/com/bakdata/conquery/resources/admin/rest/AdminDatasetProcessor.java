@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -95,11 +94,11 @@ public class AdminDatasetProcessor {
 
 		Namespace ns =
 				new Namespace(
-				datasetStorage,
-				config.isFailOnError(),
-				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
-																			.writerWithView(InternalOnly.class)
-		);
+						datasetStorage,
+						config.isFailOnError(),
+						config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
+							  .writerWithView(InternalOnly.class)
+				);
 
 		datasetRegistry.add(ns);
 
@@ -359,7 +358,7 @@ public class AdminDatasetProcessor {
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
 					ns.sendToAll(new UpdateMatchingStatsMessage());
-					ns.getFilterSearch().updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv());
+					ns.getFilterSearch().updateSearch(ns.getStorage(), getJobManager(), config.getCsv());
 				}
 		));
 	}

@@ -2,7 +2,6 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -25,27 +24,27 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test sepcification
 		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
-		
+
 		DatasetId dataset = conquery.getDataset().getId();
-		
+
 		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
-		
+
 		test.importRequiredData(conquery);
 		conquery.getNamespace().getFilterSearch()
-			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), conquery.getConfig().getCsv());
+				.updateSearch(conquery.getNamespaceStorage(), conquery.getNamespace().getJobManager(), conquery.getConfig().getCsv());
 
 		conquery.waitUntilWorkDone();
 
 		ConceptsProcessor processor = new ConceptsProcessor(conquery.getNamespace().getNamespaces());
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
-		
+
 		ResolvedConceptsResult resolved = processor.resolveConceptElements(concept, List.of("A1", "unknown"));
-		
+
 		//check the resolved values
 		assertThat(resolved).isNotNull();
 		assertThat(resolved.getResolvedConcepts().stream().map(IId::toString)).containsExactlyInAnyOrder("ConceptResolutionTest.test_tree.test_child1");
 		assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
-		
+
 	}
 }

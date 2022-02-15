@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
@@ -42,19 +41,23 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test specification
-		String testJson = In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json").withUTF8().readAll();
-		
+		String
+				testJson =
+				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
+				  .withUTF8()
+				  .readAll();
+
 		DatasetId dataset = conquery.getDataset().getId();
-		
+
 		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
-		
+
 		test.importRequiredData(conquery);
 		CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		conquery.getNamespace().getFilterSearch()
-				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager(), csvConf);
+				.updateSearch(conquery.getNamespaceStorage(), conquery.getNamespace().getJobManager(), conquery.getConfig().getCsv());
 
 		conquery.waitUntilWorkDone();
 
@@ -64,7 +67,8 @@ public class FilterResolutionPrefixTest extends IntegrationTest.Simple implement
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
-		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines).getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
+								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
 		filter.setSearchType(FilterSearch.FilterSearchType.PREFIX);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));

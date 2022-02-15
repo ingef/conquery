@@ -1,13 +1,10 @@
 package com.bakdata.conquery.apiv1;
 
-import java.util.Collection;
-
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.search.QuickSearch;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -79,16 +76,12 @@ public class FilterSearch {
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
-	public void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager, CSVConfig parser) {
-		//TODO FK: pull datasets to update into outer loop
-		datasetsToUpdate.stream()
-						.flatMap(ds -> datasets.get(ds.getId()).getStorage().getAllConcepts().stream())
-						.flatMap(c -> c.getConnectors().stream())
-						.flatMap(co -> co.collectAllFilters().stream())
-						.filter(f -> f instanceof AbstractSelectFilter)
-						.map(AbstractSelectFilter.class::cast)
-						.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> ((AbstractSelectFilter<?>) f).initializeSourceSearch(parser, datasets.get(f.getDataset()
-																																																		 .getId())
-																																																   .getStorage()))));
+	public void updateSearch(NamespaceStorage storage, JobManager jobManager, CSVConfig parser) {
+		storage.getAllConcepts().stream()
+			   .flatMap(c -> c.getConnectors().stream())
+			   .flatMap(co -> co.collectAllFilters().stream())
+			   .filter(f -> f instanceof AbstractSelectFilter)
+			   .map(AbstractSelectFilter.class::cast)
+			   .forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> ((AbstractSelectFilter<?>) f).initializeSourceSearch(parser, storage))));
 	}
 }
