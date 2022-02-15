@@ -16,7 +16,7 @@ context("Visit conquery as users with different permissions", () => {
         url: "/api/me",
       }).as("meInfo");
 
-      cy.visit("http://localhost:3000/?access_token=user.user1");
+      cy.visit("http://localhost:4242/?access_token=user.user1");
 
       cy.wait(["@config", "@datasets", "@meInfo"]);
     });
@@ -55,7 +55,7 @@ context("Visit conquery as users with different permissions", () => {
         url: "/api/me",
       }).as("meInfo");
 
-      cy.visit("http://localhost:3000/?access_token=user.user2");
+      cy.visit("http://localhost:4242/?access_token=user.user2");
 
       cy.wait(["@config", "@datasets", "@meInfo"]);
     });
