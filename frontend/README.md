@@ -42,7 +42,7 @@ You can also adjust the docker run command, to pass env variables at runtime.
 Example:
 
 ```bash
-docker run -d -e REACT_APP_API_URL=https://some-other-conquery-api.com -p 8000:8000 -name frontend frontend
+docker run -d -e REACT_APP_API_URL=https://some-other-conquery-api.com -p 8000:80 -name frontend frontend
 ```
 
 **Windows**

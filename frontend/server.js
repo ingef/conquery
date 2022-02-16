@@ -9,7 +9,7 @@ const helmet = require("helmet");
 const cors = require("cors");
 const path = require("path");
 
-const PORT = process.env.PORT || 4242;
+const PORT = process.env.PORT || 8000;
 
 app.use(
   helmet({

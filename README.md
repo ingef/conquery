@@ -37,14 +37,15 @@ First build the backend using `conquery/scripts/build_version.sh` or download a 
 Build the frontend by running:
 ```
 $ cd frontend
-$ TSC_COMPILE_ON_ERROR=true yarn build
+$ cp .env.example .env
+$ yarn build
 ```
 
 You can then run `conquery/scripts/run_conquery_cypress.sh` to start frontend and backend, and also load the test data required by cypress end-to-end test or you can run `conquery/scripts/run_backend_cypress.sh` and `conquery/scripts/run_frontend_cypress.sh` separately without loading any data.
 
 After that, you can visit http://localhost:8081/admin-ui and explore the Admin Panel.
 
-The frontend is accessible at http://localhost:4242 as the default "superuser" implicitly. Since the backend uses a development authentication, you can switch users by passing another users "UserId" as the access token in the query string when accessing the frontend, e.g.: http://localhost:4242/?access_token=user.user2.
+The frontend is accessible at http://localhost:8000 as the default "superuser" implicitly. Since the backend uses a development authentication, you can switch users by passing another users "UserId" as the access token in the query string when accessing the frontend, e.g.: http://localhost:8000/?access_token=user.user2.
 
 ## Development
 
