@@ -46,14 +46,6 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 
-
-	@JsonIgnore
-	protected final transient QuickSearch<FilterSearchItem> sourceSearch = new QuickSearch.QuickSearchBuilder()
-			.withUnmatchedPolicy(QuickSearch.UnmatchedPolicy.IGNORE)
-			.withMergePolicy(QuickSearch.MergePolicy.UNION)
-			.withKeywordMatchScorer(FilterSearch.FilterSearchType.CONTAINS::score)
-			.build();
-
 	@JsonIgnore
 	private final int maximumSize;
 	@JsonIgnore
@@ -102,6 +94,19 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		}
 	}
 
+	@JsonIgnore
+	public List<String> getSearchReferences() {
+		final List<String> references = new ArrayList<>(3);
+
+		if (getTemplate() != null) {
+			references.add(getTemplate().getFilePath());
+		}
+
+		references.add(getId().toString());
+		references.add(getColumn().getId().toString());
+
+		return references;
+	}
 
 	public void initializeSourceSearch(CSVConfig parserConfig, NamespacedStorage storage, FilterSearch cache) {
 

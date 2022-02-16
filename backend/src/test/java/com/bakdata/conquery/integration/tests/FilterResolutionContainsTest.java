@@ -80,7 +80,6 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 
 		filter.initializeSourceSearch(csvConf, conquery.getNamespaceStorage(), conquery.getNamespace().getFilterSearch());
 
-		assertThat(filter.getSourceSearch()).isNotNull();
 
 		ConceptsProcessor processor = new ConceptsProcessor(conquery.getNamespace().getNamespaces());
 

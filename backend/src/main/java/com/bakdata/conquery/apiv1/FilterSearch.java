@@ -19,6 +19,11 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 public class FilterSearch {
 
+	private final QuickSearch.QuickSearchBuilder searchBuilder = new QuickSearch.QuickSearchBuilder()
+			.withUnmatchedPolicy(QuickSearch.UnmatchedPolicy.IGNORE)
+			.withMergePolicy(QuickSearch.MergePolicy.UNION)
+			.withKeywordMatchScorer(FilterSearchType.CONTAINS::score);
+
 	/**
 	 * Enum to specify a scorer function in {@link QuickSearch}. Used for resolvers in {@link AbstractSelectFilter}.
 	 */
@@ -79,7 +84,7 @@ public class FilterSearch {
 	private final Map<String, QuickSearch<FilterSearchItem>> searchCache = new HashMap<>();
 
 	public QuickSearch<FilterSearchItem> getSearchFor(String reference) {
-		return searchCache.computeIfAbsent(reference, (ignored) -> new QuickSearch<>());
+		return searchCache.computeIfAbsent(reference, (ignored) -> searchBuilder.build());
 	}
 
 	public boolean hasSearchFor(String reference) {

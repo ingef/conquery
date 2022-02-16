@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.search.QuickSearch;
 import com.bakdata.conquery.util.search.SearchScorer;
@@ -81,7 +82,12 @@ public class ConceptsProcessor {
 
 								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
 
+								if (Strings.isNullOrEmpty(searchTerm)) {
+									return listAllValues(filter);
+								}
+
 								final List<FEValue> result = autocompleteTextFilter(filter, searchTerm);
+
 
 								log.debug("Got {} results for {}", result.size(), filterAndSearch);
 
@@ -89,6 +95,7 @@ public class ConceptsProcessor {
 							}
 
 						});
+
 
 	public FERoot getRoot(NamespaceStorage storage, Subject subject) {
 
@@ -121,18 +128,28 @@ public class ConceptsProcessor {
 	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
 
 		// search in the full text engine
-		final List<FEValue> searchResult =
-				createSourceSearchResult(filter.getSourceSearch(), searchTerms, OptionalInt.empty(), filter.getSearchType()::score);
-
 		Set<String> openSearchTerms = new HashSet<>(searchTerms);
-		searchResult.forEach(result -> openSearchTerms.remove(result.getValue()));
+
+		final Namespace namespace = namespaces.get(filter.getDataset().getId());
+
+		List<FEValue> out = new ArrayList<>();
+
+		for (String reference : filter.getSearchReferences()) {
+			final List<FEValue> searchResult =
+					createSourceSearchResult(namespace.getFilterSearch()
+													  .getSearchFor(reference), openSearchTerms, OptionalInt.empty(), filter.getSearchType()::score);
+
+			searchResult.forEach(result -> openSearchTerms.remove(result.getValue()));
+
+			out.addAll(searchResult);
+		}
 
 		return new ResolvedConceptsResult(
 				null,
 				new ResolvedFilterResult(
 						filter.getConnector().getId(),
 						filter.getId(),
-						searchResult
+						out
 				),
 				openSearchTerms
 		);
@@ -174,31 +191,45 @@ public class ConceptsProcessor {
 
 	}
 
+
+	private List<FEValue> listAllValues(AbstractSelectFilter<?> filter) {
+		final Namespace namespace = namespaces.get(filter.getDataset().getId());
+
+		List<FEValue> out = new ArrayList<>();
+
+		for (String reference : filter.getSearchReferences()) {
+			final QuickSearch<FilterSearchItem> search = namespace.getFilterSearch().getSearchFor(reference);
+			search.listItems()
+				  .stream()
+				  .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+				  .forEach(out::add);
+		}
+
+		return out;
+	}
+
 	/**
 	 * Autocompletion for search terms. For values of {@link AbstractSelectFilter<?>}.
 	 * Is used by the serach cache to load missing items
 	 */
-	private static List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
-		if (Strings.isNullOrEmpty(text)) {
-			// If no text provided, we just list them
-			final List<FEValue> fromSearch =
-					filter.getSourceSearch().listItems()
-						  .stream()
-						  .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-							.collect(Collectors.toList());
+	private List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
+		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
+		List<FEValue> out = new ArrayList<>();
 
-			return fromSearch;
+		for (String reference : filter.getSearchReferences()) {
+
+			List<FEValue> result = createSourceSearchResult(
+					namespace.getFilterSearch().getSearchFor(reference),
+					Collections.singletonList(text),
+					OptionalInt.empty(),
+					FilterSearch.FilterSearchType.CONTAINS::score
+			);
+
+			out.addAll(result);
 		}
 
-		List<FEValue> result = createSourceSearchResult(
-				filter.getSourceSearch(),
-				Collections.singletonList(text),
-				OptionalInt.empty(),
-				FilterSearch.FilterSearchType.CONTAINS::score
-		);
-
-		return result;
+		return out;
 	}
 
 	/**
