@@ -95,7 +95,7 @@ public class FilterSearch {
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
 	public void updateSearch(NamespacedStorage storage, JobManager jobManager, CSVConfig parser) {
-		searchCache.clear();
+		searchCache.clear();//TODO this is dangerous with shared cache
 
 		storage.getAllConcepts().stream()
 			   .flatMap(c -> c.getConnectors().stream())

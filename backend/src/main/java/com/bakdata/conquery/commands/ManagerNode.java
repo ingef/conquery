@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
+import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -91,6 +92,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	// For registering form providers
 	private FormScanner formScanner;
 
+	private final FilterSearch filterSearch = new FilterSearch();
+
 
 	public ManagerNode() {
 		this(DEFAULT_NAME);
@@ -105,7 +108,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		validator = environment.getValidator();
 
 		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
-				.build(getName());
+													 .build(getName());
 
 		// Instantiate DatasetRegistry and MetaStorage so they are ready for injection into the object mapper (API + Storage)
 		// The validator is already injected at this point see Conquery.java
@@ -158,8 +161,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				ResourcesProvider provider = resourceProvider.getConstructor().newInstance();
 				provider.registerResources(this);
 				providers.add(provider);
-			} catch (Exception e) {
-				log.error("Failed to register Resource {}",resourceProvider, e);
+			}
+			catch (Exception e) {
+				log.error("Failed to register Resource {}", resourceProvider, e);
 			}
 		}
 
@@ -199,18 +203,22 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void loadNamespaces() {
-		final Collection<NamespaceStorage > storages = config.getStorage().loadNamespaceStorages();
-		final ObjectWriter objectWriter = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
+		final Collection<NamespaceStorage> storages = config.getStorage().loadNamespaceStorages();
+		final ObjectWriter
+				objectWriter =
+				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
 
-		for(NamespaceStorage namespaceStorage : storages) {
+		for (NamespaceStorage namespaceStorage : storages) {
 			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), objectWriter);
+			ns.setFilterSearch(filterSearch);
+
 			datasetRegistry.add(ns);
 		}
 	}
 
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("ManagerNode["+session.getLocalAddress().toString()+"]");
+		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
@@ -232,20 +240,24 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		if (message instanceof MessageToManagerNode) {
 			MessageToManagerNode mrm = (MessageToManagerNode) message;
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
-					jobManager,
-					new NetworkSession(session),
-					datasetRegistry, config.getCluster().getBackpressure()
-			));
+			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext>
+					job =
+					new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
+							jobManager,
+							new NetworkSession(session),
+							datasetRegistry, config.getCluster().getBackpressure()
+					));
 
 			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)
 			if (mrm.isSlowMessage()) {
 				((SlowMessage) mrm).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
-			} else {
+			}
+			else {
 				jobManager.addFastJob(job);
 			}
-		} else {
+		}
+		else {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 		}
 	}
@@ -273,21 +285,24 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		try {
 			acceptor.dispose();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);
 		}
 
 		for (ResourcesProvider provider : providers) {
 			try {
 				provider.close();
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.error(provider + " could not be closed", e);
 			}
 
 		}
 		try {
 			storage.close();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error(storage + " could not be closed", e);
 		}
 

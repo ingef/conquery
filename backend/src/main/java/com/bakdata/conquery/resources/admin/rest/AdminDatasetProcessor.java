@@ -14,6 +14,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -73,6 +74,7 @@ public class AdminDatasetProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
+	private final FilterSearch filterSearch;
 
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
@@ -94,11 +96,12 @@ public class AdminDatasetProcessor {
 
 		Namespace ns =
 				new Namespace(
-						datasetStorage,
-						config.isFailOnError(),
+						datasetStorage, config.isFailOnError(),
 						config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
 							  .writerWithView(InternalOnly.class)
 				);
+
+		ns.setFilterSearch(filterSearch);
 
 		datasetRegistry.add(ns);
 

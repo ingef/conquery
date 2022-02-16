@@ -1,5 +1,8 @@
 package com.bakdata.conquery.resources.admin;
-import static com.bakdata.conquery.resources.ResourceConstants.*;
+
+import static com.bakdata.conquery.resources.ResourceConstants.ADMIN_SERVLET_PATH;
+import static com.bakdata.conquery.resources.ResourceConstants.ADMIN_UI_SERVLET_PATH;
+
 import java.util.Collections;
 
 import com.bakdata.conquery.commands.ManagerNode;
@@ -8,7 +11,19 @@ import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
-import com.bakdata.conquery.resources.admin.rest.*;
+import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminResource;
+import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
+import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
+import com.bakdata.conquery.resources.admin.rest.GroupResource;
+import com.bakdata.conquery.resources.admin.rest.PermissionResource;
+import com.bakdata.conquery.resources.admin.rest.RoleResource;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
+import com.bakdata.conquery.resources.admin.rest.UserResource;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.AuthOverviewUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
@@ -70,7 +85,8 @@ public class AdminServlet {
                 manager.getConfig(),
                 manager.getValidator(),
                 manager.getDatasetRegistry(),
-                manager.getJobManager()
+                manager.getJobManager(),
+				manager.getFilterSearch()
         );
 
 

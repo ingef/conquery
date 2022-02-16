@@ -69,7 +69,7 @@ public class Namespace implements Closeable {
 	private transient DatasetRegistry namespaces;
 
 	@JsonIgnore
-	private final FilterSearch filterSearch = new FilterSearch();
+	private FilterSearch filterSearch;
 
 	public Namespace(NamespaceStorage storage, boolean failOnError, ObjectWriter objectWriter) {
 		this.storage = storage;
