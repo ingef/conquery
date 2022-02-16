@@ -78,7 +78,7 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 
 		//TODO construct all this manually!
 
-		filter.initializeSourceSearch(csvConf, conquery.getNamespaceStorage());
+		filter.initializeSourceSearch(csvConf, conquery.getNamespaceStorage(), conquery.getNamespace().getFilterSearch());
 
 		assertThat(filter.getSourceSearch()).isNotNull();
 

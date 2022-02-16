@@ -1,6 +1,9 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.io.storage.NamespaceStorage;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -73,15 +76,28 @@ public class FilterSearch {
 		public abstract double score(String candidate, String match);
 	}
 
+	private final Map<String, QuickSearch<FilterSearchItem>> searchCache = new HashMap<>();
+
+	public QuickSearch<FilterSearchItem> getSearchFor(String reference) {
+		return searchCache.computeIfAbsent(reference, (ignored) -> new QuickSearch<>());
+	}
+
+	public boolean hasSearchFor(String reference) {
+		return searchCache.containsKey(reference);
+	}
+
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
-	public void updateSearch(NamespaceStorage storage, JobManager jobManager, CSVConfig parser) {
+	public void updateSearch(NamespacedStorage storage, JobManager jobManager, CSVConfig parser) {
+		searchCache.clear();
+
 		storage.getAllConcepts().stream()
 			   .flatMap(c -> c.getConnectors().stream())
 			   .flatMap(co -> co.collectAllFilters().stream())
 			   .filter(f -> f instanceof AbstractSelectFilter)
 			   .map(AbstractSelectFilter.class::cast)
-			   .forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> ((AbstractSelectFilter<?>) f).initializeSourceSearch(parser, storage))));
+			   .map(f -> new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> f.initializeSourceSearch(parser, storage, this)))
+			   .forEach(jobManager::addSlowJob);
 	}
 }

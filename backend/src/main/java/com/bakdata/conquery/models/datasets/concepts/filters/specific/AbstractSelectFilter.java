@@ -3,10 +3,8 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
@@ -85,61 +83,60 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	}
 
 
-	private final Set<String> bag = new HashSet<>();
-
 	/**
 	 * Adds an item to the FilterSearch associating it with containing words.
 	 * <p>
 	 * The item is not added, if we've already collected an item with the same {@link FilterSearchItem#getValue()}.
 	 */
-	private void addSearchItem(FilterSearchItem item) {
-		if (bag.contains(item.getValue())) {
-			return;
-		}
+	private void addSearchItem(FilterSearchItem item, QuickSearch<FilterSearchItem> search) {
 
-		getSourceSearch().addItem(item, item.getValue());
+		search.addItem(item, item.getValue());
 
 		// If templateValues is empty, we can assume that label is not a template.
 		if (item.getTemplateValues().isEmpty()) {
-			getSourceSearch().addItem(item, item.getLabel());
+			search.addItem(item, item.getLabel());
 		}
 		else {
 			item.getTemplateValues().values()
-				.forEach(value -> getSourceSearch().addItem(item, value));
+				.forEach(value -> search.addItem(item, value));
+		}
+	}
+
+
+	public void initializeSourceSearch(CSVConfig parserConfig, NamespacedStorage storage, FilterSearch cache) {
+
+		if (getTemplate() != null && !cache.hasSearchFor(getTemplate().getFilePath())) {
+			collectTemplateSearchItems(parserConfig, cache.getSearchFor(getTemplate().getFilePath()));
 		}
 
-		bag.add(item.getValue());
+		if (!cache.hasSearchFor(getId().toString())) {
+			collectLabeledSearchItems(getLabels(), cache.getSearchFor(getId().toString()));
+		}
+
+		if (!cache.hasSearchFor(getColumn().getId().toString())) {
+			collectRawSearchItems(storage, cache.getSearchFor(getColumn().getId().toString()));
+		}
 	}
 
-
-	public void initializeSourceSearch(CSVConfig parserConfig, NamespacedStorage storage) {
-		sourceSearch.clear(); //TODO might not be necessary
-		bag.clear();
-
-		collectTemplateSearchItems(parserConfig);
-		collectLabeledSearchItems(getLabels());
-
-		collectRawSearchItems(storage);
-	}
-
-	private void collectLabeledSearchItems(Map<String, String> labels) {
-		labels.forEach((value, label) -> {
-			// This means we've already registered the value by a template.
+	private void collectLabeledSearchItems(Map<String, String> labels, QuickSearch<FilterSearchItem> search) {
+		for (Map.Entry<String, String> entry : labels.entrySet()) {
+			String value = entry.getKey();
+			String label = entry.getValue();
 
 			final FilterSearchItem item = new FilterSearchItem();
 			item.setLabel(label);
 			item.setValue(value);
 			item.setOptionValue(value);
 
-			addSearchItem(item);
-		});
+			addSearchItem(item, search);
+		}
 
 	}
 
 	/**
 	 * Collect search results based on provided CSV with prepopulated values.
 	 */
-	private void collectTemplateSearchItems(CSVConfig parserConfig) {
+	private void collectTemplateSearchItems(CSVConfig parserConfig, QuickSearch<FilterSearchItem> search) {
 
 		if (getTemplate() == null) {
 			return;
@@ -177,13 +174,13 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 					item.getTemplateValues().put(column, value);
 				}
 
-				addSearchItem(item);
+				addSearchItem(item, search);
 			}
 
 			final long duration = System.currentTimeMillis() - time;
 
 			log.info("DONE Processing reference for {} in {} ms ({} Items in {} Lines)",
-					 getTemplate(), duration, getSourceSearch().getStats().getItems(), records.getContext().currentLine()
+					 getTemplate(), duration, search.getStats().getItems(), records.getContext().currentLine()
 			);
 
 		}
@@ -195,7 +192,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	/**
 	 * Collect search Items from raw data.
 	 */
-	private void collectRawSearchItems(NamespacedStorage storage) {
+	private void collectRawSearchItems(NamespacedStorage storage, QuickSearch<FilterSearchItem> search) {
 
 
 		for (Import imp : storage.getAllImports()) {
@@ -209,7 +206,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 				item.setValue(value);
 				item.setOptionValue(value);
 
-				addSearchItem(item);
+				addSearchItem(item, search);
 			}
 		}
 	}
