@@ -124,6 +124,12 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	}
 
 	private void collectLabeledSearchItems(Map<String, String> labels, QuickSearch<FilterSearchItem> search) {
+		if (labels.isEmpty()) {
+			return;
+		}
+
+		log.info("BEGIN processing {} labels for {}", labels.size(), getId());
+
 		for (Map.Entry<String, String> entry : labels.entrySet()) {
 			String value = entry.getKey();
 			String label = entry.getValue();
@@ -136,6 +142,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			addSearchItem(item, search);
 		}
 
+		log.debug("DONE processing {} labels for {}", labels.size(), getId());
 	}
 
 	/**
@@ -198,6 +205,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	 * Collect search Items from raw data.
 	 */
 	private void collectRawSearchItems(NamespacedStorage storage, QuickSearch<FilterSearchItem> search) {
+		log.info("BEGIN processing values for {}", getColumn().getId());
 
 
 		for (Import imp : storage.getAllImports()) {
@@ -214,5 +222,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 				addSearchItem(item, search);
 			}
 		}
+
+		log.debug("DONE processing values for {}", getColumn().getId());
 	}
 }
