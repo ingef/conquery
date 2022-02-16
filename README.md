@@ -2,8 +2,6 @@
 *fast & efficient analysis*
 
 [![Last Release](https://img.shields.io/github/release-date/bakdata/conquery.svg?logo=github)](https://github.com/bakdata/conquery/releases/latest)
-[![Build Status](https://dev.azure.com/bakdata/public/_apis/build/status/Conquery%20CI?branchName=develop)](https://dev.azure.com/bakdata/public/_build/latest?definitionId=7&branchName=develop)
-[![CodeFactor](https://www.codefactor.io/repository/github/bakdata/conquery/badge/develop)](https://www.codefactor.io/repository/github/bakdata/conquery)
 ![Code Size](https://img.shields.io/github/languages/code-size/bakdata/conquery.svg)
 [![License](https://img.shields.io/github/license/bakdata/conquery.svg)](https://github.com/bakdata/conquery/blob/develop/LICENSE)
 
@@ -24,24 +22,29 @@ This repository includes the Conquery frontend along with a non-functional backe
 
 Check the README in `/frontend` for details.
 
-### Conquery (Frontend + Backend)
-#### **Requirements**
+### Frontend + Backend
+#### Requirements
 - Maven 3 (optional for building)
 - Java JDK 11
 - Node.js 16 + Yarn
+- curl (to import the test data)
 
-#### **Steps**
+#### Steps
 To test frontend and backend together you can start the setup that is used for end-to-end tests.
 
-First build the backend using `scripts/build_version.sh` or download a JAR from the [release page](https://github.com/bakdata/conquery/releases).
+First build the backend using `conquery/scripts/build_version.sh` or download a JAR from the [release page](https://github.com/bakdata/conquery/releases) and place it in `conquery/executable/target/`.
 
-Then start frontend and backend by running `scripts/run_backend_cypress.sh`.
+Build the frontend by running:
+```
+$ cd frontend
+$ TSC_COMPILE_ON_ERROR=true yarn build
+```
 
-As soon as the backend is up (after a few seconds), run `scripts/load_test_data_cypress.sh` to populate some test data.
+You can then run `conquery/scripts/run_conquery_cypress.sh` to start frontend and backend, and also load the test data required by cypress end-to-end test or you can run `conquery/scripts/run_backend_cypress.sh` and `conquery/scripts/run_frontend_cypress.sh` separately without loading any data.
 
-After that, you can visit http://localhost:8081/admin-ui and explore the Admin Panel. Here you can see the test datasets and users that were populated.
+After that, you can visit http://localhost:8081/admin-ui and explore the Admin Panel.
 
-When the frontend finished its build, you should be able to access it at http://localhost:3000 as the default "superuser" implicitly. Since the backend uses a development authentication, you can switch users by passing another users "UserId" as the access token in the query string when accessing the frontend, e.g.: http://localhost:3000/?access_token=user.user2.
+The frontend is accessible at http://localhost:4242 as the default "superuser" implicitly. Since the backend uses a development authentication, you can switch users by passing another users "UserId" as the access token in the query string when accessing the frontend, e.g.: http://localhost:4242/?access_token=user.user2.
 
 ## Development
 
