@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.util.search.QuickSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -115,15 +116,18 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			collectTemplateSearchItems(parserConfig, cache.getSearchFor(getTemplate().getFilePath()));
 		}
 
-		if (!cache.hasSearchFor(getId().toString())) {
-			collectLabeledSearchItems(getLabels(), cache.getSearchFor(getId().toString()));
+		final FilterId filterRefId = getId();
+
+		if (!cache.hasSearchFor(filterRefId.toString())) {
+			collectLabeledSearchItems(getLabels(), cache.getSearchFor(filterRefId.toString()));
 		}
 
-		if (!cache.hasSearchFor(getColumn().getId().toString())) {
-			// If we have a secondaryId, we can share the quicksearch for that
-			IId<?> refId = getColumn().getSecondaryId() != null ? getColumn().getSecondaryId().getId() : getColumn().getId();
+		IId<?> columnRefId = getColumn().getSecondaryId() != null ? getColumn().getSecondaryId().getId() : getColumn().getId();
 
-			collectRawSearchItems(storage, cache.getSearchFor(refId.toString()));
+		if (!cache.hasSearchFor(columnRefId.toString())) {
+			// If we have a secondaryId, we can share the quicksearch for that
+
+			collectRawSearchItems(storage, cache.getSearchFor(columnRefId.toString()));
 		}
 	}
 
