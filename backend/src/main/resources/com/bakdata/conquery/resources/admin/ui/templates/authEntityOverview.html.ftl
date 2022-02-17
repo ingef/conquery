@@ -1,6 +1,16 @@
 <#macro entityOverview uiPathBase adminPathBase entities entityName>
     <div class="row">
 		<div class="col">
+			<form>
+				<div class="form-group">
+					<h3>Create ${entityName}</h3>
+				  <label for="entity_name">Name:</label>
+				  <input id="entity_name" name="entity_name" class="form-control text-monospace" style="font-family:monospace;">
+				  <label for="entity_id">ID:</label>
+				  <input id="entity_id" name="entity_id"  class="form-control text-monospace" style="font-family:monospace;">
+				  <input class="btn btn-primary" type="submit" onclick="createEntity()"/>
+				</div>
+			</form>
             <table class="table table-striped">
                 <thead>
                     <td>Label</td>
@@ -18,16 +28,6 @@
                 </tbody>
             </table>
 			<button class="btn btn-primary" onclick="downloadEntities()">Download</button>
-			<form>
-				<div class="form-group">
-					<h3>Create ${entityName}</h3>
-				  <label for="entity_name">Name:</label>
-				  <input id="entity_name" name="entity_name" class="form-control text-monospace" style="font-family:monospace;">
-				  <label for="entity_id">ID:</label>
-				  <input id="entity_id" name="entity_id"  class="form-control text-monospace" style="font-family:monospace;">
-				  <input class="btn btn-primary" type="submit" onclick="createEntity()"/>
-				</div> 
-			</form>
 
 		</div>
 	</div>
