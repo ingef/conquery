@@ -85,7 +85,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		search.addItem(item, item.getValue());
 
 		// If templateValues is empty, we can assume that label is not a template.
-		if (item.getTemplateValues().isEmpty()) {
+		if (item.getTemplateValues() == null) {
 			search.addItem(item, item.getLabel());
 		}
 		else {
@@ -183,7 +183,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 				for (String column : templateColumns) {
 					final String value = row.getString(column);
 
-					item.getTemplateValues().put(column, value);
+					item.addTemplateColumn(column, value);
 				}
 
 				addSearchItem(item, search);
