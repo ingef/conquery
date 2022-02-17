@@ -30,34 +30,44 @@
 				<@permissionCreator.permissionCreator ownerId=c.owner.getId() permissionTemplateMap=c.permissionTemplateMap />
 			</div>
 			<div class="tab-pane fade" id="member" role="tabpanel" aria-labelledby="member-tab">
-				<table class="table table-striped">
-					<thead>
-						<tr>
-						<th scope="col">Member</th>
-						<th scope="col"></th>
-						</tr>
-					</thead>
-					<tbody>
-					<#list c.members as member>
-						<tr>
-							<td><a href="/admin-ui/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}">${member.label}</a></td>
-							<td><a href="#" onclick="removeMember('/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}/${c.owner.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}')">Remove from ${c.owner.label}<i class="fas fa-trash-alt text-danger"></i></a></td>
-						</tr>
-					</#list>
-					</tbody>
-				</table>
-				<h4>Add Member</h4>
-				<form>
-					<div class="form-group col">
-						<label for="member_id">Member:</label>
-						<select class="form-control" id="member_id" name="member_id">
-							<#list c.availableMembers as member>
-								<option value="${member.id}">${member.label}</option>
-							</#list>
-						</select>
-						<input class="btn btn-primary" type="submit" onclick="addMember()"/>
-					</div>
-				</form>
+
+                <div class="col bg-light pt-3 pb-3 rounded">
+                    <form>
+                        <h4>Add Member</h4>
+                        <div class="form-group">
+                            <label for="member_id">Member:</label>
+                            <select class="form-control" id="member_id" name="member_id">
+                                <#list c.availableMembers as member>
+                                    <option value="${member.id}">${member.label} - ${member.id}</option>
+                                </#list>
+                            </select>
+                        </div>
+
+                        <input class="btn btn-primary" type="submit" onclick="addMember()"/>
+
+                    </form>
+                </div>
+
+                <div class="col pt-3 pb-3">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                            <th scope="col">Member</th>
+                            <th scope="col">Id</th>
+                            <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <#list c.members as member>
+                            <tr>
+                                <td><a href="/admin-ui/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}">${member.label}</a></td>
+                                <td><a href="/admin-ui/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}">${member.id}</a></td>
+                                <td><a href="#" onclick="removeMember('/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}/${c.owner.id}/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}')">Remove from ${c.owner.label}<i class="fas fa-trash-alt text-danger"></i></a></td>
+                            </tr>
+                        </#list>
+                        </tbody>
+                    </table>
+			    </div>
 			</div>
 			<div class="tab-pane fade" id="roles" role="tabpanel" aria-labelledby="roles-tab">
 				<@roleHandler.roleHandler c=c adminPathBase="/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}" />
@@ -88,5 +98,6 @@
 			})
 			.then(function(){location.reload();});
 	}
+
 	</script>
 </@layout.layout>
