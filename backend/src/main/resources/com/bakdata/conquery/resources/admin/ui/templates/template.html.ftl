@@ -85,7 +85,9 @@
 		</div>
 	  </div>
 
+      <div class="pl-2">
       <button type="button" class="btn btn-secondary" onclick="logout()">Logout</button>
+      </div>
 	</nav>
 	
 	<div class="container">
