@@ -1,12 +1,12 @@
 package com.bakdata.conquery.apiv1;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.collections4.map.Flat3Map;
 
 @Getter
 @Setter
@@ -26,7 +26,7 @@ public class FilterSearchItem implements Comparable<FilterSearchItem>, Serializa
 
 	public void addTemplateColumn(String column, String value) {
 		if (templateValues == null){
-			templateValues = new HashMap<>(3);
+			templateValues = new Flat3Map<>(); //TODO verify this is useful
 		}
 
 		templateValues.put(column, value);
