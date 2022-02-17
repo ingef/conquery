@@ -13,7 +13,7 @@
                     <div class="form-group">
                       <label for="entity_id">ID:</label>
                       <input id="entity_id" name="entity_id"  class="form-control text-monospace" style="font-family:monospace;">
-                      <small id="nameHelp" class="form-text text-muted">The internal id used to distinguish ${entityName}s (must be unique) </small>
+                      <small id="idHelp" class="form-text text-muted">The internal id used to distinguish ${entityName}s (must be unique) </small>
                     </div>
                     <input class="btn btn-primary" type="submit" onclick="createEntity()"/>
 			</form>
