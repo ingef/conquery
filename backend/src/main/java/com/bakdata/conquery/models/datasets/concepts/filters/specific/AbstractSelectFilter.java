@@ -35,6 +35,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.trie.PatriciaTrie;
 
 @Getter
 @Setter
@@ -209,6 +210,9 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		}
 	}
 
+	@JsonIgnore
+	private final PatriciaTrie<FilterSearchItem> raw = new PatriciaTrie<>(); //TODO this is just to gauge memory usage when not indexing raw data
+
 	/**
 	 * Collect search Items from raw data.
 	 */
@@ -227,10 +231,10 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 				item.setValue(value);
 				item.setOptionValue(value);
 
-				addSearchItem(item, search);
+				raw.put(value, item);
 			}
 		}
 
-		log.debug("DONE processing values for {}", getColumn().getId());
+		log.debug("DONE processing values for {} with {} Items", getColumn().getId(), search.getStats().getItems());
 	}
 }
