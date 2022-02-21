@@ -22,7 +22,7 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.util.search.QuickSearch;
+import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
@@ -35,7 +35,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.trie.PatriciaTrie;
 
 @Getter
 @Setter
@@ -83,18 +82,21 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	 * <p>
 	 * The item is not added, if we've already collected an item with the same {@link FilterSearchItem#getValue()}.
 	 */
-	private void addSearchItem(FilterSearchItem item, QuickSearch<FilterSearchItem> search) {
+	private void addSearchItem(FilterSearchItem item, TrieSearch<FilterSearchItem> search) {
 
-		search.addItem(item, item.getValue());
+		final List<String> keywords = new ArrayList<>();
+
+		keywords.add(item.getValue());
 
 		// If templateValues is empty, we can assume that label is not a template.
 		if (item.getTemplateValues() == null) {
-			search.addItem(item, item.getLabel());
+			keywords.add(item.getLabel());
 		}
 		else {
-			item.getTemplateValues().values()
-				.forEach(value -> search.addItem(item, value));
+			keywords.addAll(item.getTemplateValues().values());
 		}
+
+		search.addItem(item, keywords);
 	}
 
 	@JsonIgnore
@@ -132,7 +134,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		}
 	}
 
-	private void collectLabeledSearchItems(Map<String, String> labels, QuickSearch<FilterSearchItem> search) {
+	private void collectLabeledSearchItems(Map<String, String> labels, TrieSearch<FilterSearchItem> search) {
 		if (labels.isEmpty()) {
 			return;
 		}
@@ -157,7 +159,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	/**
 	 * Collect search results based on provided CSV with prepopulated values.
 	 */
-	private void collectTemplateSearchItems(CSVConfig parserConfig, QuickSearch<FilterSearchItem> search) {
+	private void collectTemplateSearchItems(CSVConfig parserConfig, TrieSearch<FilterSearchItem> search) {
 
 		if (getTemplate() == null) {
 			return;
@@ -201,7 +203,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			final long duration = System.currentTimeMillis() - time;
 
 			log.info("DONE Processing reference for {} in {} ms ({} Items in {} Lines)",
-					 getTemplate(), duration, search.getStats().getItems(), records.getContext().currentLine()
+					 getTemplate(), duration, search.calculateSize(), records.getContext().currentLine()
 			);
 
 		}
@@ -210,13 +212,11 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		}
 	}
 
-	@JsonIgnore
-	private final PatriciaTrie<FilterSearchItem> raw = new PatriciaTrie<>(); //TODO this is just to gauge memory usage when not indexing raw data
 
 	/**
 	 * Collect search Items from raw data.
 	 */
-	private void collectRawSearchItems(NamespacedStorage storage, QuickSearch<FilterSearchItem> search) {
+	private void collectRawSearchItems(NamespacedStorage storage, TrieSearch<FilterSearchItem> search) {
 		log.info("BEGIN processing values for {}", getColumn().getId());
 
 
@@ -231,10 +231,10 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 				item.setValue(value);
 				item.setOptionValue(value);
 
-				raw.put(value, item);
+				addSearchItem(item, search);
 			}
 		}
 
-		log.debug("DONE processing values for {} with {} Items", getColumn().getId(), search.getStats().getItems());
+		log.debug("DONE processing values for {} with {} Items", getColumn().getId(), search.calculateSize());
 	}
 }

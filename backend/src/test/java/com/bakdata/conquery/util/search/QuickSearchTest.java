@@ -46,7 +46,7 @@ class QuickSearchTest {
 		quickSearch.addItem("def ghiabc", List.of("def ghiabc"));
 
 		quickSearch.listItems();
-		log.info("{}", quickSearch.findItems("d"));
+		log.info("{}", quickSearch.findItems(List.of("d"), Integer.MAX_VALUE));
 	}
 
 }

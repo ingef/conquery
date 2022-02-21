@@ -36,8 +36,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
-import com.bakdata.conquery.util.search.QuickSearch;
 import com.bakdata.conquery.util.search.SearchScorer;
+import com.bakdata.conquery.util.search.TrieSearch;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
@@ -198,7 +198,7 @@ public class ConceptsProcessor {
 		List<FEValue> out = new ArrayList<>();
 
 		for (String reference : filter.getSearchReferences()) {
-			final QuickSearch<FilterSearchItem> search = namespace.getFilterSearch().getSearchFor(reference);
+			final TrieSearch<FilterSearchItem> search = namespace.getFilterSearch().getSearchFor(reference);
 			search.listItems()
 				  .stream()
 				  .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
@@ -235,13 +235,13 @@ public class ConceptsProcessor {
 	/**
 	 * Do a search with the supplied values.
 	 */
-	private static List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values, OptionalInt numberOfTopItems, SearchScorer scorer) {
+	private static List<FEValue> createSourceSearchResult(TrieSearch<FilterSearchItem> search, Collection<String> values, OptionalInt numberOfTopItems, SearchScorer scorer) {
 		if (search == null) {
 			return Collections.emptyList();
 		}
 
 		// Quicksearch can split and also schedule for us.
-		List<FilterSearchItem> result = search.findItems(String.join(" ", values), numberOfTopItems.orElse(Integer.MAX_VALUE), scorer);
+		List<FilterSearchItem> result = search.findItems(values, numberOfTopItems.orElse(Integer.MAX_VALUE));
 
 		if (numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
 			//TODO This looks odd, do we really expect QuickSearch to allocate that huge of a list for us?

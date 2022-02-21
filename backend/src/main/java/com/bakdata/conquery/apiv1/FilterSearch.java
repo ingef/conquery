@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSe
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.util.search.QuickSearch;
+import com.bakdata.conquery.util.search.TrieSearch;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -81,10 +82,10 @@ public class FilterSearch {
 		public abstract double score(String candidate, String match);
 	}
 
-	private final Map<String, QuickSearch<FilterSearchItem>> searchCache = new HashMap<>();
+	private final Map<String, TrieSearch<FilterSearchItem>> searchCache = new HashMap<>();
 
-	public QuickSearch<FilterSearchItem> getSearchFor(String reference) {
-		return searchCache.computeIfAbsent(reference, (ignored) -> searchBuilder.build());
+	public TrieSearch<FilterSearchItem> getSearchFor(String reference) {
+		return searchCache.computeIfAbsent(reference, (ignored) -> new TrieSearch<>());
 	}
 
 	public boolean hasSearchFor(String reference) {
