@@ -201,7 +201,7 @@ public class ConceptsProcessor {
 			final TrieSearch<FilterSearchItem> search = namespace.getFilterSearch().getSearchFor(reference);
 			search.listItems()
 				  .stream()
-				  .map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+				  .map(item -> new FEValue(item.getLabel(), item.getValue(), null, item.getOptionValue()))
 				  .forEach(out::add);
 		}
 
@@ -250,7 +250,7 @@ public class ConceptsProcessor {
 
 		return result
 				.stream()
-				.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+				.map(item -> new FEValue(item.getLabel(), item.getValue(), null, item.getOptionValue()))
 				.collect(Collectors.toList());
 	}
 
