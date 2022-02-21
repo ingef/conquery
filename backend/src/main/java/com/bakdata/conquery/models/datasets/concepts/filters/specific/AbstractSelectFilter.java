@@ -89,12 +89,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		keywords.add(item.getValue());
 
 		// If templateValues is empty, we can assume that label is not a template.
-		if (item.getTemplateValues() == null) {
-			keywords.add(item.getLabel());
-		}
-		else {
-			keywords.addAll(item.getTemplateValues().values());
-		}
+		keywords.add(item.getLabel());
 
 		search.addItem(item, keywords);
 	}
@@ -185,18 +180,20 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 				final String rowId = row.getString(template.getColumnValue());
 
 				FilterSearchItem item = new FilterSearchItem();
-				item.setLabel(template.getValue());
 
 				item.setOptionValue(template.getOptionValue());
 
 				item.setValue(rowId);
 
+				StringBuilder templateString = new StringBuilder(); // TODO actually render the template; I'm just trying to estimate how much I save not using hashmaps
+
 				for (String column : templateColumns) {
 					final String value = row.getString(column);
 
-					item.addTemplateColumn(column, value);
+					templateString.append(value);
 				}
 
+				item.setLabel(templateString.toString());
 				addSearchItem(item, search);
 			}
 
