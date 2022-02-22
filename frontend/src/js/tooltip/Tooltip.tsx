@@ -4,6 +4,7 @@ import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
+import remarkGfm from "remark-gfm";
 
 import IconButton from "../button/IconButton";
 import type { SearchT } from "../concept-trees/reducer";
@@ -214,6 +215,7 @@ const Tooltip = () => {
               <PieceOfInfo key={info.key + i}>
                 <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
                 <Markdown
+                  remarkPlugins={[remarkGfm]}
                   components={
                     {
                       // TODO: Won't work anymore with the latest react-markdown, because
