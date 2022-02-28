@@ -34,6 +34,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.lookup.StringLookup;
 
 @Getter
 @Setter
@@ -84,8 +86,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		final List<String> keywords = new ArrayList<>();
 
 		keywords.add(item.getValue());
-
-		// If templateValues is empty, we can assume that label is not a template.
+		keywords.add(item.getOptionValue());
 		keywords.add(item.getLabel());
 
 		search.addItem(item, keywords);
@@ -145,6 +146,17 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		log.debug("DONE processing {} labels for {}", labels.size(), getId());
 	}
 
+	@Setter
+	@Getter
+	private static class MutableRecordBackedLookup implements StringLookup {
+		private Record record;
+
+		@Override
+		public String lookup(String key) {
+			return record.getString(key);
+		}
+	}
+
 	/**
 	 * Collect search results based on provided CSV with prepopulated values.
 	 */
@@ -154,14 +166,13 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			return;
 		}
 
-		List<String> templateColumns = new ArrayList<>(template.getColumns());
-		templateColumns.add(template.getColumnValue());
-
-
 		log.info("BEGIN Processing template {}", getTemplate());
 		final long time = System.currentTimeMillis();
 
 		final CsvParser parser = parserConfig.createParser();
+
+		final MutableRecordBackedLookup lookup = new MutableRecordBackedLookup();
+		final StringSubstitutor substitutor = new StringSubstitutor(lookup, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
 		try {
 			File file = new File(template.getFilePath());
@@ -171,19 +182,16 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 			for (Record row : records) {
 
+				lookup.setRecord(row);
+
 				final String rowId = row.getString(template.getColumnValue());
 
 				//TODO render label and optionvalue!
 				// TODO actually render the template; I'm just trying to estimate how much I save not using hashmaps
-				StringBuilder templateString = new StringBuilder();
+				final String label = substitutor.replace(template.getValue());
+				final String optionValue = substitutor.replace(template.getOptionValue());
 
-				for (String column : templateColumns) {
-					final String value = row.getString(column);
-
-					templateString.append(value);
-				}
-
-				FEValue item = new FEValue(templateString.toString(), rowId, templateString.toString());
+				FEValue item = new FEValue(label, rowId, optionValue);
 
 				addSearchItem(item, search);
 			}

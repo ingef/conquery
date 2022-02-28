@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
 import java.io.Serializable;
-import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,10 +15,7 @@ public class FilterTemplate implements Serializable {
 	 * Path to CSV File.
 	 */
 	private String filePath;
-	/**
-	 * Columns to search see {@link FilterSearch}.
-	 */
-	private List<String> columns;
+
 	/**
 	 * Value to Filter.
 	 */

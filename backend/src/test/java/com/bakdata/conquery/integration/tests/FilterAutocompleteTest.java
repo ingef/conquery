@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -28,13 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FilterAutocompleteTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private String[] lines = new String[]{
-			"HEADER",
-			"a",
-			"aab",
-			"aaa",
-			"baaa",
-			"b"
+	private static String[] RAW_LINES = {
+			"id,label,option",
+			"a,label-1,ov-1",
+			"aab,label-2,ov-2",
+			"aaa,label-3 and label-4,ov-4",
+			"baaa,label-5,ov-5",
+			"b,label-6,ov-6"
 	};
 
 	@Override
@@ -66,10 +65,14 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
-		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
-								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), List.of("HEADER"), "HEADER", "", ""));
+		Files.write(
+				tmpCSv,
+				String.join(csvConf.getLineSeparator(), RAW_LINES).getBytes(),
+				StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
+		);
+
+		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "id", "{{label}}", "Hello this is {{option}}"));
 
 
 		filter.initializeSourceSearch(csvConf, conquery.getNamespaceStorage(), conquery.getNamespace().getFilterSearch());
@@ -79,7 +82,9 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		// from csv
 		{
-			ConceptsProcessor.AutoCompleteResult resolved = processor.autocompleteTextFilter(filter, Optional.of("a"), OptionalInt.empty(), OptionalInt.empty());
+			ConceptsProcessor.AutoCompleteResult
+					resolved =
+					processor.autocompleteTextFilter(filter, Optional.of("a"), OptionalInt.empty(), OptionalInt.empty());
 
 			//check the resolved values
 			assertThat(resolved.getValues().stream().map(FEValue::getValue)).containsExactlyInAnyOrder("a", "aaa", "aab");
@@ -87,7 +92,9 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		// from column values
 		{
-			ConceptsProcessor.AutoCompleteResult resolved = processor.autocompleteTextFilter(filter, Optional.of("f"), OptionalInt.empty(), OptionalInt.empty());
+			ConceptsProcessor.AutoCompleteResult
+					resolved =
+					processor.autocompleteTextFilter(filter, Optional.of("f"), OptionalInt.empty(), OptionalInt.empty());
 
 			//check the resolved values
 			assertThat(resolved.getValues().stream().map(FEValue::getValue))

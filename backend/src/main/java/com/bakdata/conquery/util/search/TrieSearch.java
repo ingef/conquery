@@ -26,7 +26,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	 */
 	private static final double MATCH_THRESHOLD = 0.05d;
 
-	private static final Pattern SPLIT = Pattern.compile("[\\s()_,:-]+");
+	private static final Pattern SPLIT = Pattern.compile("[\\s()_,:\"'-]+");
 	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
 
 	public void clear() {
@@ -34,6 +34,10 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	private Stream<String> split(String keyword) {
+		if (Strings.isNullOrEmpty(keyword)) {
+			return Stream.empty();
+		}
+
 		return SPLIT.splitAsStream(keyword.trim())
 					.map(String::trim)
 					.filter(Predicate.not(Strings::isNullOrEmpty))

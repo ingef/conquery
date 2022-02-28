@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -39,32 +38,37 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		//read test sepcification
-		String testJson = In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json").withUTF8().readAll();
-		
+		String
+				testJson =
+				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
+				  .withUTF8()
+				  .readAll();
+
 		DatasetId dataset = conquery.getDataset().getId();
-		
+
 		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
 		CSVConfig csvConf = conquery.getConfig().getCsv();
-		
+
 		test.importRequiredData(conquery);
 		conquery.getNamespace().getFilterSearch()
 				.updateSearch(conquery.getNamespaceStorage(), conquery.getNamespace().getJobManager(), conquery.getConfig().getCsv());
 
 		conquery.waitUntilWorkDone();
 
-		
+
 		Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 		Connector connector = concept.getConnectors().iterator().next();
 		AbstractSelectFilter<?> filter = (AbstractSelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
-		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines).getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
+								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
+		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "HEADER", "", ""));
 
 
 		filter.initializeSourceSearch(csvConf, conquery.getNamespaceStorage(), conquery.getNamespace().getFilterSearch());
