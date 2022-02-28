@@ -5,7 +5,6 @@ import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
-  margin-bottom: 8px;
   border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
   padding: 0 20px;
   background-color: white;

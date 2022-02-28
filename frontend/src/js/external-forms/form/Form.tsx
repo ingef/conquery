@@ -35,7 +35,10 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
       )}
       <FormConfigSaver datasetOptions={datasetOptions} />
       {config.fields.map((field, i) => {
-        const key = isFormField(field) ? field.name : field.type + i;
+        const key =
+          isFormField(field) && field.type !== "GROUP"
+            ? field.name
+            : field.type + i;
         const optional = isOptionalField(field);
 
         return (

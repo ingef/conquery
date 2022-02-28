@@ -289,6 +289,7 @@ const InputMultiSelect = ({
               inputPropsRef(instance);
             }}
             disabled={disabled}
+            spellCheck={false}
             placeholder={
               selectedItems.length > 0
                 ? null

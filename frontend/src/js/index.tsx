@@ -3,6 +3,8 @@ import { StateT } from "app-types";
 import ReactDOM from "react-dom";
 import { Store } from "redux";
 
+import "../fonts.css";
+
 import AppRoot from "./AppRoot";
 import GlobalStyles from "./GlobalStyles";
 import "./browserShimsAndPolyfills";

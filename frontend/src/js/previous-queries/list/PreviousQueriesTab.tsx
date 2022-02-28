@@ -32,7 +32,7 @@ const ScrollContainer = styled("div")`
 const Row = styled("div")`
   display: flex;
   align-items: flex-start;
-  margin: 0 10px;
+  margin: 8px 10px 0;
 `;
 const FoldersAndQueries = styled(Row)`
   flex-grow: 1;

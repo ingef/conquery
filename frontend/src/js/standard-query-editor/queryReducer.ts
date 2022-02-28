@@ -552,7 +552,7 @@ const mergeFiltersFromSavedConcept = (
             }
           })
           .filter(exists),
-        // For BIG MULTI SELECT only, to be able to load all non-loaded options form the defaultValue later
+        // For BIG MULTI SELECT only, to be able to load all non-loaded options from the defaultValue later
         defaultValue: matchingFilter.value.filter((val) => {
           if (!isMultiSelectFilter(savedFilter)) {
             console.error(
@@ -656,7 +656,6 @@ const expandNode = (
         ),
       };
     case "SAVED_QUERY":
-      debugger;
       return {
         ...node,
         type: DNDType.PREVIOUS_QUERY,

@@ -232,6 +232,7 @@ const InputSelect = ({
               inputRef.current = instance;
             }}
             type="text"
+            spellCheck={false}
             disabled={disabled}
             placeholder={placeholder || t("inputSelect.placeholder")}
             onClick={(e) => {

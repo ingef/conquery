@@ -80,6 +80,7 @@ const TooltipText = styled("div")`
   flex-direction: column;
   align-items: flex-start;
 `;
+
 const ActiveFolders = styled("ul")`
   margin: 6px 0 0;
   text-align: left;
@@ -226,11 +227,15 @@ const PreviousQuery = forwardRef<HTMLDivElement, PropsT>(
             )}
             {query.own && (
               <StyledWithTooltip
-                text={isShared ? t("common.shared") : t("common.share")}
+                html={
+                  <TooltipText>
+                    {isShared ? t("common.shared") : t("common.share")}
+                  </TooltipText>
+                }
               >
                 <IconButton
-                  icon="user-friends"
-                  active={isShared}
+                  icon="user"
+                  regular={!isShared}
                   bare
                   onClick={onIndicateShare}
                 />

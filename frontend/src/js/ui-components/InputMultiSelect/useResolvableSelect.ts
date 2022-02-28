@@ -14,6 +14,9 @@ export const useResolvableSelect = ({
   const previousDefaultValue = usePrevious(defaultValue);
 
   useEffect(
+    // TODO: Check, if we really need this effect,
+    // since resolving default values (that are part of a big multi select filter
+    // inside of an edited query node) is also taken care of by FilterListMultiSelect
     function resolveDefault() {
       if (!onResolve) {
         return;

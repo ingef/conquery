@@ -180,7 +180,7 @@ export interface FilterConfigT {
     | "SELECT"
     | "MULTI_SELECT"
     | "BIG_MULTI_SELECT";
-  value: RangeFilterValueT | SelectFilterValueT | FilterIdT[]; // Multi select
+  value: RangeFilterValueT | SelectFilterValueT | string | string[];
 }
 
 export interface DateColumnConfigT {

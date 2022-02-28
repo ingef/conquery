@@ -190,11 +190,14 @@ const QueryNode: FC<PropsT> = ({
         }),
   };
   const [, drag] = useDrag<StandardQueryNodeT, void, {}>({
-    item,
-    begin: () =>
+    type: item.type,
+    item: () =>
       ({
         ...item,
-        ...getWidthAndHeight(ref),
+        dragContext: {
+          ...item.dragContext,
+          ...getWidthAndHeight(ref),
+        },
       } as StandardQueryNodeT),
   });
 
