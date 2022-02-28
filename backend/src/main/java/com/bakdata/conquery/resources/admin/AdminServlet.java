@@ -5,6 +5,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.ADMIN_UI_SERVLET_
 
 import java.util.Collections;
 
+import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
@@ -86,7 +87,7 @@ public class AdminServlet {
                 manager.getValidator(),
                 manager.getDatasetRegistry(),
                 manager.getJobManager(),
-				manager.getFilterSearch()
+				new FilterSearch()
         );
 
 

@@ -6,16 +6,16 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.frontend.FETable;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Table;
 import org.junit.jupiter.api.Test;
 
-public class FEValueTest {
+public class FilterSearchItemTest {
 
 	@Test
 	public void sortedValidityDates() {

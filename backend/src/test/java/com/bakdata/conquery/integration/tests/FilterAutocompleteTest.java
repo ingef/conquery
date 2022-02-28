@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -21,16 +21,14 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSe
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
-import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
-import com.github.powerlibraries.io.Out;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FilterResolutionContainsTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
+public class FilterAutocompleteTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private final String[] lines = new String[]{
+	private String[] lines = new String[]{
 			"HEADER",
 			"a",
 			"aab",
@@ -41,7 +39,7 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		//read test sepcification
+		//read test specification
 		String
 				testJson =
 				In.resource("/tests/query/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY/MULTI_SELECT_DATE_RESTRICTION_OR_CONCEPT_QUERY.test.json")
@@ -67,16 +65,12 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 		AbstractSelectFilter<?> filter = (AbstractSelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
-		final Path tmpCSv = Files.createTempFile("conquery_search", ".csv");
-		Out.file(tmpCSv.toFile()).withUTF8().writeLines(lines);
-
+		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
 		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
 								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-		filter.setSearchType(FilterSearch.FilterSearchType.CONTAINS);
-		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
+		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), List.of("HEADER"), "HEADER", "", ""));
 
-		//TODO construct all this manually!
 
 		filter.initializeSourceSearch(csvConf, conquery.getNamespaceStorage(), conquery.getNamespace().getFilterSearch());
 
@@ -85,21 +79,19 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 
 		// from csv
 		{
-			ResolvedConceptsResult resolved = processor.resolveFilterValues(filter, List.of("a", "unknown"));
+			ConceptsProcessor.AutoCompleteResult resolved = processor.autocompleteTextFilter(filter, Optional.of("a"), OptionalInt.empty(), OptionalInt.empty());
 
 			//check the resolved values
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactlyInAnyOrder("a", "aaa", "aab", "baaa");
-			assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
+			assertThat(resolved.getValues().stream().map(FEValue::getValue)).containsExactlyInAnyOrder("a", "aaa", "aab");
 		}
 
 		// from column values
 		{
-			ResolvedConceptsResult resolved = processor.resolveFilterValues(filter, List.of("f", "unknown"));
+			ConceptsProcessor.AutoCompleteResult resolved = processor.autocompleteTextFilter(filter, Optional.of("f"), OptionalInt.empty(), OptionalInt.empty());
 
 			//check the resolved values
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue))
-					.containsExactlyInAnyOrder("f", "fm", "mf");
-			assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
+			assertThat(resolved.getValues().stream().map(FEValue::getValue))
+					.containsExactlyInAnyOrder("f", "fm");
 		}
 	}
 }

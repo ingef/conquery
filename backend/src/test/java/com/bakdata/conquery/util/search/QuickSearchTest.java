@@ -21,32 +21,38 @@ class QuickSearchTest {
 				.containsExactly(0, 1, 2);
 	}
 
-	@Test
-	public void insertAndSearch() {
-		final QuickSearch<String> quickSearch = new QuickSearch<>();
 
-		quickSearch.addItem("a b c", "a b c");
-
-		quickSearch.addItem("abc def", "abc def");
-
-		quickSearch.addItem("def ghiabc", "def ghiabc");
-
-		quickSearch.listItems();
-		log.info("{}", quickSearch.findItems("h", 10));
+	private void fill(TrieSearch<String> search, List<String> items) {
+		for (String item : items) {
+			search.addItem(item, List.of(item));
+		}
 	}
 
 	@Test
 	public void trieInsertAndSearch() {
 		final TrieSearch<String> quickSearch = new TrieSearch<>();
 
-		quickSearch.addItem("a b c", List.of("a b c"));
+		List<String> items = List.of(
+				"a",
+				"aa",
+				"aaa",
+				"aab",
+				"b",
+				"c",
+				"c aa"
+		);
 
-		quickSearch.addItem("abc def", List.of("abc def"));
+		fill(quickSearch, items);
 
-		quickSearch.addItem("def ghiabc", List.of("def ghiabc"));
 
-		quickSearch.listItems();
-		log.info("{}", quickSearch.findItems(List.of("d"), Integer.MAX_VALUE));
+		// Exact matches should be first
+		assertThat(quickSearch.findItems(List.of("a"), 1)).containsExactly("a");
+		assertThat(quickSearch.findItems(List.of("aa"), 1)).containsExactly("aa");
+
+		// The more hits an item has, the more do we favor it.
+		assertThat(quickSearch.findItems(List.of("aa", "c"), 3)).containsExactly("c aa", "aa", "c");
+		// However negative matches are not considered
+		assertThat(quickSearch.findItems(List.of("aa"), 4)).containsExactly("aa", "c aa", "aaa", "aab");
+
 	}
-
 }

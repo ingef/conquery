@@ -13,8 +13,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
-import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FEList;
 import com.bakdata.conquery.apiv1.frontend.FERoot;
@@ -36,7 +34,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
-import com.bakdata.conquery.util.search.SearchScorer;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -135,9 +132,8 @@ public class ConceptsProcessor {
 		List<FEValue> out = new ArrayList<>();
 
 		for (String reference : filter.getSearchReferences()) {
-			final List<FEValue> searchResult =
-					createSourceSearchResult(namespace.getFilterSearch()
-													  .getSearchFor(reference), openSearchTerms, OptionalInt.empty(), filter.getSearchType()::score);
+			final List<FEValue> searchResult = namespace.getFilterSearch()
+														.getSearchFor(reference).findExact(openSearchTerms, Integer.MAX_VALUE);
 
 			searchResult.forEach(result -> openSearchTerms.remove(result.getValue()));
 
@@ -198,11 +194,8 @@ public class ConceptsProcessor {
 		List<FEValue> out = new ArrayList<>();
 
 		for (String reference : filter.getSearchReferences()) {
-			final TrieSearch<FilterSearchItem> search = namespace.getFilterSearch().getSearchFor(reference);
-			search.listItems()
-				  .stream()
-				  .map(item -> new FEValue(item.getLabel(), item.getValue(), null, item.getOptionValue()))
-				  .forEach(out::add);
+			final TrieSearch<FEValue> search = namespace.getFilterSearch().getSearchFor(reference);
+			out.addAll(search.listItems());
 		}
 
 		return out;
@@ -222,8 +215,7 @@ public class ConceptsProcessor {
 			List<FEValue> result = createSourceSearchResult(
 					namespace.getFilterSearch().getSearchFor(reference),
 					Collections.singletonList(text),
-					OptionalInt.empty(),
-					FilterSearch.FilterSearchType.CONTAINS::score
+					OptionalInt.empty()
 			);
 
 			out.addAll(result);
@@ -235,23 +227,20 @@ public class ConceptsProcessor {
 	/**
 	 * Do a search with the supplied values.
 	 */
-	private static List<FEValue> createSourceSearchResult(TrieSearch<FilterSearchItem> search, Collection<String> values, OptionalInt numberOfTopItems, SearchScorer scorer) {
+	private static List<FEValue> createSourceSearchResult(TrieSearch<FEValue> search, Collection<String> values, OptionalInt numberOfTopItems) {
 		if (search == null) {
 			return Collections.emptyList();
 		}
 
 		// Quicksearch can split and also schedule for us.
-		List<FilterSearchItem> result = search.findItems(values, numberOfTopItems.orElse(Integer.MAX_VALUE));
+		List<FEValue> result = search.findItems(values, numberOfTopItems.orElse(Integer.MAX_VALUE));
 
 		if (numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
 			//TODO This looks odd, do we really expect QuickSearch to allocate that huge of a list for us?
 			log.warn("The quick search returned the maximum number of results ({}) which probably means not all possible results are returned.", Integer.MAX_VALUE);
 		}
 
-		return result
-				.stream()
-				.map(item -> new FEValue(item.getLabel(), item.getValue(), null, item.getOptionValue()))
-				.collect(Collectors.toList());
+		return result;
 	}
 
 	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {

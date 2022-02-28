@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
-import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
@@ -61,8 +60,6 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		return EnumSet.of(MajorTypeId.STRING);
 	}
 
-	public FilterSearch.FilterSearchType searchType = FilterSearch.FilterSearchType.EXACT;
-
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
@@ -71,7 +68,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 		f.setOptions(
 				labels.entrySet().stream()
-					  .map(entry -> new FEValue(entry.getValue(), entry.getKey()))
+					  .map(entry -> new com.bakdata.conquery.apiv1.frontend.FEValue(entry.getValue(), entry.getKey()))
 					  .collect(Collectors.toList())
 		);
 	}
@@ -80,9 +77,9 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	/**
 	 * Adds an item to the FilterSearch associating it with containing words.
 	 * <p>
-	 * The item is not added, if we've already collected an item with the same {@link FilterSearchItem#getValue()}.
+	 * The item is not added, if we've already collected an item with the same {@link FEValue#getValue()}.
 	 */
-	private void addSearchItem(FilterSearchItem item, TrieSearch<FilterSearchItem> search) {
+	private void addSearchItem(FEValue item, TrieSearch<FEValue> search) {
 
 		final List<String> keywords = new ArrayList<>();
 
@@ -129,7 +126,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		}
 	}
 
-	private void collectLabeledSearchItems(Map<String, String> labels, TrieSearch<FilterSearchItem> search) {
+	private void collectLabeledSearchItems(Map<String, String> labels, TrieSearch<FEValue> search) {
 		if (labels.isEmpty()) {
 			return;
 		}
@@ -140,10 +137,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			String value = entry.getKey();
 			String label = entry.getValue();
 
-			final FilterSearchItem item = new FilterSearchItem();
-			item.setLabel(label);
-			item.setValue(value);
-			item.setOptionValue(value);
+			final FEValue item = new FEValue(label, value, null);
 
 			addSearchItem(item, search);
 		}
@@ -154,7 +148,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	/**
 	 * Collect search results based on provided CSV with prepopulated values.
 	 */
-	private void collectTemplateSearchItems(CSVConfig parserConfig, TrieSearch<FilterSearchItem> search) {
+	private void collectTemplateSearchItems(CSVConfig parserConfig, TrieSearch<FEValue> search) {
 
 		if (getTemplate() == null) {
 			return;
@@ -179,13 +173,9 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 				final String rowId = row.getString(template.getColumnValue());
 
-				FilterSearchItem item = new FilterSearchItem();
-
-				item.setOptionValue(template.getOptionValue());
-
-				item.setValue(rowId);
-
-				StringBuilder templateString = new StringBuilder(); // TODO actually render the template; I'm just trying to estimate how much I save not using hashmaps
+				//TODO render label and optionvalue!
+				// TODO actually render the template; I'm just trying to estimate how much I save not using hashmaps
+				StringBuilder templateString = new StringBuilder();
 
 				for (String column : templateColumns) {
 					final String value = row.getString(column);
@@ -193,7 +183,8 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 					templateString.append(value);
 				}
 
-				item.setLabel(templateString.toString());
+				FEValue item = new FEValue(templateString.toString(), rowId, templateString.toString());
+
 				addSearchItem(item, search);
 			}
 
@@ -213,7 +204,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	/**
 	 * Collect search Items from raw data.
 	 */
-	private void collectRawSearchItems(NamespacedStorage storage, TrieSearch<FilterSearchItem> search) {
+	private void collectRawSearchItems(NamespacedStorage storage, TrieSearch<FEValue> search) {
 		log.info("BEGIN processing values for {}", getColumn().getId());
 
 
@@ -223,11 +214,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			}
 
 			for (String value : ((StringStore) getColumn().getTypeFor(imp))) {
-				final FilterSearchItem item = new FilterSearchItem();
-				item.setLabel(value);
-				item.setValue(value);
-				item.setOptionValue(value);
-
+				final FEValue item = new FEValue(value, value, value);
 				addSearchItem(item, search);
 			}
 		}

@@ -8,7 +8,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.List;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -27,7 +26,7 @@ import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FilterResolutionExactTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
+public class FilterResolutionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	private String[] lines = new String[]{
 			"HEADER",
@@ -65,7 +64,6 @@ public class FilterResolutionExactTest extends IntegrationTest.Simple implements
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
 		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines).getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-		filter.setSearchType(FilterSearch.FilterSearchType.EXACT);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
 
 
