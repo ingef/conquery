@@ -1,6 +1,10 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
+import {
+  useFilteredFormConfigs,
+  useLoadFormConfigs,
+} from "js/external-forms/form-configs/selectors";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -76,68 +80,25 @@ interface PropsT {
 
 const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   const { t } = useTranslation();
-  const allQueries = useSelector<StateT, PreviousQueryT[]>(
-    (state) => state.previousQueries.queries,
-  );
-  const searchTerm = useSelector<StateT, string | null>(
-    (state) => state.previousQueriesSearch.searchTerm,
-  );
-  const filter = useSelector<StateT, PreviousQueriesFilterStateT>(
-    (state) => state.previousQueriesFilter,
-  );
-  const folders = useSelector<StateT, string[]>(
-    (state) => state.previousQueriesFolderFilter.folders,
-  );
-  const noFoldersActive = useSelector<StateT, boolean>(
-    (state) => state.previousQueriesFolderFilter.noFoldersActive,
-  );
-  const queries = selectPreviousQueries(
-    allQueries,
-    searchTerm,
-    filter,
-    folders,
-    noFoldersActive,
-  );
-
-  const loading = useSelector<StateT, boolean>(
-    (state) => state.previousQueries.loading,
-  );
   const hasPermissionToUpload = useSelector<StateT, boolean>((state) =>
     canUploadResult(state),
   );
 
-  const loadQueries = useLoadQueries();
+  const { queries, loading: loadingQueries } = useQueries({ datasetId });
+  const { formConfigs, loading: loadingFormConfigs } = useFormConfigs({
+    datasetId,
+  });
 
-  useEffect(() => {
-    if (datasetId) {
-      loadQueries(datasetId);
-    }
-  }, [datasetId]);
+  const loading = loadingQueries || loadingFormConfigs;
 
   const areFoldersOpen = useSelector<StateT, boolean>(
     (state) => state.previousQueriesFolderFilter.areFoldersOpen,
   );
 
-  const wereFoldersOpen = usePrevious(areFoldersOpen);
+  const { leftPaneSize, setLeftPaneSize } = useLeftPaneSize({ areFoldersOpen });
 
   const dispatch = useDispatch();
   const onToggleFoldersOpen = () => dispatch(toggleFoldersOpen());
-
-  const [leftPaneSize, setLeftPaneSize] = useState<number | string>(0);
-  const [storedPaneSize, setStoredPaneSize] = useState<number | string>(0);
-
-  useEffect(() => {
-    if (areFoldersOpen === wereFoldersOpen) {
-      return;
-    }
-
-    if (!areFoldersOpen) {
-      setStoredPaneSize(leftPaneSize);
-      setLeftPaneSize(0);
-    } else {
-      setLeftPaneSize(storedPaneSize || "25%");
-    }
-  }, [leftPaneSize, storedPaneSize, areFoldersOpen, wereFoldersOpen]);
 
   return (
     <>
@@ -183,3 +144,86 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
 };
 
 export default PreviousQueryEditorTab;
+
+const useLeftPaneSize = ({ areFoldersOpen }: { areFoldersOpen?: boolean }) => {
+  const wereFoldersOpen = usePrevious(areFoldersOpen);
+
+  const [leftPaneSize, setLeftPaneSize] = useState<number | string>(0);
+  const [storedPaneSize, setStoredPaneSize] = useState<number | string>(0);
+
+  useEffect(() => {
+    if (areFoldersOpen === wereFoldersOpen) {
+      return;
+    }
+
+    if (!areFoldersOpen) {
+      setStoredPaneSize(leftPaneSize);
+      setLeftPaneSize(0);
+    } else {
+      setLeftPaneSize(storedPaneSize || "25%");
+    }
+  }, [leftPaneSize, storedPaneSize, areFoldersOpen, wereFoldersOpen]);
+
+  return {
+    leftPaneSize,
+    setLeftPaneSize,
+  };
+};
+
+const useQueries = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
+  const allQueries = useSelector<StateT, PreviousQueryT[]>(
+    (state) => state.previousQueries.queries,
+  );
+  const searchTerm = useSelector<StateT, string | null>(
+    (state) => state.previousQueriesSearch.searchTerm,
+  );
+  const filter = useSelector<StateT, PreviousQueriesFilterStateT>(
+    (state) => state.previousQueriesFilter,
+  );
+  const folders = useSelector<StateT, string[]>(
+    (state) => state.previousQueriesFolderFilter.folders,
+  );
+  const noFoldersActive = useSelector<StateT, boolean>(
+    (state) => state.previousQueriesFolderFilter.noFoldersActive,
+  );
+  const queries = selectPreviousQueries(
+    allQueries,
+    searchTerm,
+    filter,
+    folders,
+    noFoldersActive,
+  );
+
+  const loading = useSelector<StateT, boolean>(
+    (state) => state.previousQueries.loading,
+  );
+
+  const loadQueries = useLoadQueries();
+
+  useEffect(() => {
+    if (datasetId) {
+      loadQueries(datasetId);
+    }
+  }, [datasetId]);
+
+  return {
+    queries,
+    loading,
+  };
+};
+
+const useFormConfigs = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
+  const formConfigs = useFilteredFormConfigs();
+  const { loading, loadFormConfigs } = useLoadFormConfigs();
+
+  useEffect(() => {
+    if (datasetId) {
+      loadFormConfigs(datasetId);
+    }
+  }, [datasetId, loadFormConfigs]);
+
+  return {
+    formConfigs,
+    loading,
+  };
+};

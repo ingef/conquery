@@ -7,8 +7,7 @@
   },
   "leftPane": {
     "conceptTrees": "Konzepte",
-    "previousQueries": "Anfragen",
-    "formConfigs": "Formulare"
+    "previousQueries": "Anfragen und Formulare"
   },
   "rightPane": {
     "queryEditor": "Editor",
@@ -429,8 +428,7 @@
   },
   "help": {
     "tabConceptTrees": "Auswahl der Konzepte zur Verwendung im Editor oder Formular-Editor.",
-    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung im Editor, Zeit-Editor oder Formular-Editor.",
-    "tabFormConfigs": "Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
+    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung im Editor, Zeit-Editor oder Formular-Editor. Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
     "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
     "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",
     "tabFormEditor": "Hier können Auswertungen und Analysen zu bestehenden Anfragen erstellt werden.",

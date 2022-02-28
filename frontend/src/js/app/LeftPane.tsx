@@ -6,7 +6,6 @@ import type { DatasetIdT } from "../api/types";
 import ConceptTreeList from "../concept-trees/ConceptTreeList";
 import ConceptTreeSearchBox from "../concept-trees/ConceptTreeSearchBox";
 import { useAreTreesAvailable } from "../concept-trees/selectors";
-import FormConfigsTab from "../external-forms/form-configs/FormConfigsTab";
 import Pane from "../pane/Pane";
 import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
 
@@ -44,11 +43,6 @@ const LeftPane = () => {
           tooltip: t("help.tabPreviousQueries"),
           loading: previousQueriesLoading,
         },
-        {
-          label: t("leftPane.formConfigs"),
-          key: "formConfigs",
-          tooltip: t("help.tabFormConfigs"),
-        },
       ]}
     >
       {activeTab === "conceptTrees" && areTreesAvailable && (
@@ -57,9 +51,6 @@ const LeftPane = () => {
       <ConceptTreeList datasetId={selectedDatasetId} />
       {activeTab === "previousQueries" && (
         <PreviousQueriesTab datasetId={selectedDatasetId} />
-      )}
-      {activeTab === "formConfigs" && (
-        <FormConfigsTab datasetId={selectedDatasetId} />
       )}
     </Pane>
   );
