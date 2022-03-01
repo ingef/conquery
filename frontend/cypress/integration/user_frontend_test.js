@@ -73,9 +73,7 @@ context("Visit conquery as users with different permissions", () => {
 
     it("Can execute query", () => {
 
-      cy.get('[data-test-id="right-pane-container"]')
-        .find('>div')
-        .filter(':visible')
+      cy.get('[data-test-id="right-pane-container"] >div:visible')
         .as('queryEditor')
 
       cy.contains("Concept1").trigger("dragstart").trigger("dragleave");
