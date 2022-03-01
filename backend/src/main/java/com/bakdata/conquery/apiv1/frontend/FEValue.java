@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.frontend;
 
 import java.util.Comparator;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  * This class represents a values of a SELECT filter.
  */
 @Data
-@AllArgsConstructor
+@AllArgsConstructor(onConstructor_ = {@JsonCreator})
 public class FEValue implements Comparable<FEValue> {
 	private static final Comparator<FEValue> COMPARATOR = Comparator.comparing(FEValue::getValue)
 																	.thenComparing(FEValue::getLabel);

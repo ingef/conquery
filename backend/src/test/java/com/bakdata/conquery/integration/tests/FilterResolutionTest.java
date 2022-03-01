@@ -1,11 +1,18 @@
 package com.bakdata.conquery.integration.tests;
 
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
@@ -18,8 +25,10 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.resources.api.ConceptsProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
+import com.bakdata.conquery.resources.api.FilterResource;
+import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
@@ -53,8 +62,6 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		test.importRequiredData(conquery);
-		conquery.getNamespace().getFilterSearch()
-				.updateSearch(conquery.getNamespaceStorage(), conquery.getNamespace().getJobManager(), conquery.getConfig().getCsv());
 
 		conquery.waitUntilWorkDone();
 
@@ -70,27 +77,52 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "HEADER", "", ""));
 
+		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
+															, AdminDatasetResource.class, "updateMatchingStats")
+													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
 
-		filter.initializeSourceSearch(csvConf, conquery.getNamespaceStorage(), conquery.getNamespace().getFilterSearch());
+		conquery.getClient().target(matchingStatsUri)
+				.request(MediaType.APPLICATION_JSON_TYPE)
+				.post(null);
 
+		conquery.waitUntilWorkDone();
 
-		ConceptsProcessor processor = new ConceptsProcessor(conquery.getNamespace().getNamespaces());
+		final URI resolveUri =
+				HierarchyHelper.hierarchicalPath(
+									   conquery.defaultApiURIBuilder(),
+									   FilterResource.class, "resolveFilterValues"
+							   )
+							   .buildFromMap(
+									   Map.of(
+											   DATASET, conquery.getDataset().getId(),
+											   CONCEPT, concept.getId(),
+											   TABLE, filter.getConnector().getTable().getId(),
+											   FILTER, filter.getId()
+									   )
+							   );
 
 		// from csv
 		{
-			ResolvedConceptsResult resolved = processor.resolveFilterValues(filter, List.of("a", "aaa", "unknown"));
+			final Response fromCsvResponse = conquery.getClient().target(resolveUri)
+													 .request(MediaType.APPLICATION_JSON_TYPE)
+													 .post(Entity.entity(new FilterResource.FilterValues(List.of("a", "aaa", "unknown")), MediaType.APPLICATION_JSON_TYPE));
+			ResolvedConceptsResult resolved = fromCsvResponse.readEntity(ResolvedConceptsResult.class);
 
 			//check the resolved values
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactlyInAnyOrder("a", "aaa");
+			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactly("a", "aaa");
 			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
 		}
 
 		// from column values
 		{
-			ResolvedConceptsResult resolved = processor.resolveFilterValues(filter, List.of("f", "unknown"));
+			final Response fromCsvResponse = conquery.getClient().target(resolveUri)
+													 .request(MediaType.APPLICATION_JSON_TYPE)
+													 .post(Entity.entity(new FilterResource.FilterValues(List.of("f", "unknown")), MediaType.APPLICATION_JSON_TYPE));
+
+			ResolvedConceptsResult resolved = fromCsvResponse.readEntity(ResolvedConceptsResult.class);
 
 			//check the resolved values
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactlyInAnyOrder("f");
+			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).contains("f");
 			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
 		}
 	}

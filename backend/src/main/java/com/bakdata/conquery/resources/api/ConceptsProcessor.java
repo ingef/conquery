@@ -35,6 +35,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.search.TrieSearch;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
@@ -152,6 +153,8 @@ public class ConceptsProcessor {
 	}
 
 	@Data
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+	@Getter
 	public static class AutoCompleteResult {
 		private final List<FEValue> values;
 		private final long total;
