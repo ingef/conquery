@@ -26,7 +26,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	 */
 	private static final double MATCH_THRESHOLD = 0.05d;
 
-	private static final Pattern SPLIT = Pattern.compile("[\\s()_,:\"'-]+");
+	private static final Pattern SPLIT = Pattern.compile("[\\s()_,:\"'-]+"); //TODO FK: Investigate better split patterns
 	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
 
 	public void clear() {

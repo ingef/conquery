@@ -14,7 +14,6 @@ import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -81,15 +80,8 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	 * <p>
 	 * The item is not added, if we've already collected an item with the same {@link FEValue#getValue()}.
 	 */
-	private void addSearchItem(FEValue item, TrieSearch<FEValue> search) {
-
-		final List<String> keywords = new ArrayList<>();
-
-		keywords.add(item.getValue());
-		keywords.add(item.getOptionValue());
-		keywords.add(item.getLabel());
-
-		search.addItem(item, keywords);
+	private List<String> extractKeywords(FEValue item) {
+		return List.of(item.getValue(), item.getOptionValue(), item.getLabel());
 	}
 
 	@JsonIgnore
@@ -140,7 +132,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 			final FEValue item = new FEValue(label, value, null);
 
-			addSearchItem(item, search);
+			search.addItem(item, extractKeywords(item));
 		}
 
 		log.debug("DONE processing {} labels for {}", labels.size(), getId());
@@ -193,7 +185,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 				FEValue item = new FEValue(label, rowId, optionValue);
 
-				addSearchItem(item, search);
+				search.addItem(item, extractKeywords(item));
 			}
 
 			final long duration = System.currentTimeMillis() - time;
@@ -216,16 +208,15 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		log.info("BEGIN processing values for {}", getColumn().getId());
 
 
-		for (Import imp : storage.getAllImports()) {
-			if (!imp.getTable().equals(getConnector().getTable())) {
-				continue;
-			}
-
-			for (String value : ((StringStore) getColumn().getTypeFor(imp))) {
-				final FEValue item = new FEValue(value, value, value);
-				addSearchItem(item, search);
-			}
-		}
+		getConnector().getTable().findImports(storage)
+					  .forEach(
+							  imp -> {
+								  for (String value : ((StringStore) getColumn().getTypeFor(imp))) {
+									  final FEValue item = new FEValue(value, value, value);
+									  search.addItem(item, extractKeywords(item));
+								  }
+							  }
+					  );
 
 		log.debug("DONE processing values for {} with {} Items", getColumn().getId(), search.calculateSize());
 	}
