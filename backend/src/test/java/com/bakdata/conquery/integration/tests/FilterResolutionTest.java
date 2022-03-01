@@ -82,7 +82,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 			//check the resolved values
 			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactlyInAnyOrder("a", "aaa");
-			assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
+			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
 		}
 
 		// from column values
@@ -91,7 +91,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 			//check the resolved values
 			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactlyInAnyOrder("f");
-			assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
+			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
 		}
 	}
 }

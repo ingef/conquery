@@ -87,7 +87,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 					processor.autocompleteTextFilter(filter, Optional.of("a"), OptionalInt.empty(), OptionalInt.empty());
 
 			//check the resolved values
-			assertThat(resolved.getValues().stream().map(FEValue::getValue)).containsExactlyInAnyOrder("a", "aaa", "aab");
+			assertThat(resolved.getValues().stream().map(FEValue::getValue)).containsExactly("a", "aab", "aaa");
 		}
 
 		// from column values
@@ -98,7 +98,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 			//check the resolved values
 			assertThat(resolved.getValues().stream().map(FEValue::getValue))
-					.containsExactlyInAnyOrder("f", "fm");
+					.containsExactly("f", "fm");
 		}
 	}
 }

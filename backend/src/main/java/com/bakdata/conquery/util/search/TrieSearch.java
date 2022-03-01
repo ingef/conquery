@@ -18,15 +18,16 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import lombok.NoArgsConstructor;
 import org.apache.commons.collections4.trie.PatriciaTrie;
+import org.apache.commons.lang3.StringUtils;
 
 @NoArgsConstructor
 public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * We saturate matches here to avoid favoring very short keywords, when multiple keywords are used.
 	 */
-	private static final double MATCH_THRESHOLD = 0.05d;
+	private static final double MATCH_THRESHOLD = 1d / 20d;
 
-	private static final Pattern SPLIT = Pattern.compile("[\\s()_,:\"'-]+"); //TODO FK: Investigate better split patterns
+	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"']+"); //TODO FK: Investigate better split patterns
 	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
 
 	public void clear() {
@@ -40,10 +41,13 @@ public class TrieSearch<T extends Comparable<T>> {
 
 		return SPLIT.splitAsStream(keyword.trim())
 					.map(String::trim)
-					.filter(Predicate.not(Strings::isNullOrEmpty))
+					.filter(StringUtils::isNotBlank)
 					.map(String::toLowerCase);
 	}
 
+	/**
+	 * A lower weight implies more relevant words.
+	 */
 	private double weightWord(String keyword, String itemWord) {
 		final double keywordLength = keyword.length();
 		final double itemLength = itemWord.length();
@@ -83,6 +87,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 
 		// Sort items according to their weight, then limit.
+		// Note that sorting is in ascending order, meaning lower-scores are better.
 		return itemWeights.object2DoubleEntrySet()
 						  .stream()
 						  .sorted(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
