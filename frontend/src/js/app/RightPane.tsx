@@ -12,7 +12,6 @@ interface PropsT {
   tabs: TabT[];
 }
 
-// Shrink to size 0 so jQuery/cypress can differentiate between :hidden and :visible
 const Tab = styled("div")<{ isActive: boolean }>`
   height: 100%;
   flex-grow: 1;
