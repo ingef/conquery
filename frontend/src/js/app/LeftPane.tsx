@@ -7,7 +7,7 @@ import ConceptTreeList from "../concept-trees/ConceptTreeList";
 import ConceptTreeSearchBox from "../concept-trees/ConceptTreeSearchBox";
 import { useAreTreesAvailable } from "../concept-trees/selectors";
 import Pane from "../pane/Pane";
-import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
+import ProjectItemsTab from "../previous-queries/list/ProjectItemsTab";
 
 import { StateT } from "./reducers";
 
@@ -50,7 +50,7 @@ const LeftPane = () => {
       )}
       <ConceptTreeList datasetId={selectedDatasetId} />
       {activeTab === "previousQueries" && (
-        <PreviousQueriesTab datasetId={selectedDatasetId} />
+        <ProjectItemsTab datasetId={selectedDatasetId} />
       )}
     </Pane>
   );

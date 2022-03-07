@@ -2,9 +2,9 @@ import FaIcon from "../icon/FaIcon";
 
 import { InABox } from "./InABox";
 
-const FormSymbol = () => {
+const FormSymbol = ({ className }: { className?: string }) => {
   return (
-    <InABox>
+    <InABox className={className}>
       <FaIcon icon="chart-column" active />
     </InABox>
   );

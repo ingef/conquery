@@ -7,13 +7,13 @@ import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
 import EditPreviousQueryFoldersModal from "./EditPreviousQueryFoldersModal";
-import PreviousQueryDragContainer from "./PreviousQueryDragContainer";
+import type { ProjectItemT } from "./ProjectItem";
+import ProjectItemDragContainer from "./ProjectItemDragContainer";
 import SharePreviousQueryModal from "./SharePreviousQueryModal";
-import { PreviousQueryT } from "./reducer";
 
 interface PropsT {
   datasetId: DatasetIdT | null;
-  queries: PreviousQueryT[];
+  items: ProjectItemT[];
 }
 
 const ROW_SIZE = 62;
@@ -24,9 +24,8 @@ const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
   padding: ${ROOT_PADDING_Y}px 0;
 `;
-const Container = styled("div")``;
 
-const PreviousQueries: FC<PropsT> = ({ datasetId, queries }) => {
+const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
   const [previousQueryToDelete, setPreviousQueryToDelete] = useState<
     string | null
   >(null);
@@ -34,7 +33,7 @@ const PreviousQueries: FC<PropsT> = ({ datasetId, queries }) => {
     string | null
   >(null);
   const [previousQueryToEditFolders, setPreviousQueryToEditFolders] =
-    useState<PreviousQueryT | null>(null);
+    useState<ProjectItemT | null>(null);
 
   const onCloseDeleteModal = () => setPreviousQueryToDelete(null);
   const onCloseShareModal = () => setPreviousQueryToShare(null);
@@ -94,29 +93,29 @@ const PreviousQueries: FC<PropsT> = ({ datasetId, queries }) => {
       )}
       {datasetId && (
         <FixedSizeList
-          key={queries.length}
+          key={items.length}
           itemSize={ROW_SIZE}
-          itemCount={queries.length}
+          itemCount={items.length}
           height={height}
           width="100%"
         >
           {({ index, style }) => {
             return (
-              <Container style={style}>
-                <PreviousQueryDragContainer
-                  query={queries[index]}
+              <div style={style}>
+                <ProjectItemDragContainer
+                  item={items[index]}
                   datasetId={datasetId}
                   onIndicateDeletion={() =>
-                    setPreviousQueryToDelete(queries[index].id)
+                    setPreviousQueryToDelete(items[index].id)
                   }
                   onIndicateShare={() =>
-                    setPreviousQueryToShare(queries[index].id)
+                    setPreviousQueryToShare(items[index].id)
                   }
                   onIndicateEditFolders={() =>
-                    setPreviousQueryToEditFolders(queries[index])
+                    setPreviousQueryToEditFolders(items[index])
                   }
                 />
-              </Container>
+              </div>
             );
           }}
         </FixedSizeList>
@@ -125,4 +124,4 @@ const PreviousQueries: FC<PropsT> = ({ datasetId, queries }) => {
   );
 };
 
-export default PreviousQueries;
+export default ProjectItems;

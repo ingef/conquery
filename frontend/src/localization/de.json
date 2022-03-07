@@ -210,7 +210,7 @@
     "error": "Konnte Anfragen nicht laden",
     "results": "Ergebnisse",
     "noQueriesFound": "Keine Anfragen gefunden",
-    "searchPlaceholder": "Anfragen durchsuchen ..."
+    "searchPlaceholder": "Anfragen und Formulare durchsuchen ..."
   },
   "previousQuery": {
     "notExecuted": "Noch nicht ausgeführt",

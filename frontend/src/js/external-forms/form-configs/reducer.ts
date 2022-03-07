@@ -21,6 +21,7 @@ export interface FormConfigT extends BaseFormConfigT {
   shared: boolean;
   system: boolean;
   ownerName: string;
+  isPristineLabel?: boolean;
   groups?: UserGroupIdT[];
 }
 

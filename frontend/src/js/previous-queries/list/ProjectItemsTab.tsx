@@ -1,10 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import {
-  useFilteredFormConfigs,
-  useLoadFormConfigs,
-} from "js/external-forms/form-configs/selectors";
+import { FormConfigT } from "js/external-forms/form-configs/reducer";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,6 +9,10 @@ import SplitPane from "react-split-pane";
 
 import type { DatasetIdT } from "../../api/types";
 import { usePrevious } from "../../common/helpers/usePrevious";
+import {
+  selectFormConfigs,
+  useLoadFormConfigs,
+} from "../../external-forms/form-configs/selectors";
 import EmptyList from "../../list/EmptyList";
 import { canUploadResult } from "../../user/selectors";
 import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
@@ -20,9 +21,10 @@ import { toggleFoldersOpen } from "../folderFilter/actions";
 import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
-import PreviousQueries from "./PreviousQueries";
 import PreviousQueriesFolderButton from "./PreviousQueriesFolderButton";
 import PreviousQueriesFolders from "./PreviousQueriesFolders";
+import { ProjectItemT } from "./ProjectItem";
+import PreviousQueries from "./ProjectItems";
 import { useLoadQueries } from "./actions";
 import type { PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
@@ -78,18 +80,11 @@ interface PropsT {
   datasetId: DatasetIdT | null;
 }
 
-const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
+const ProjectItemsTab = ({ datasetId }: PropsT) => {
   const { t } = useTranslation();
   const hasPermissionToUpload = useSelector<StateT, boolean>((state) =>
     canUploadResult(state),
   );
-
-  const { queries, loading: loadingQueries } = useQueries({ datasetId });
-  const { formConfigs, loading: loadingFormConfigs } = useFormConfigs({
-    datasetId,
-  });
-
-  const loading = loadingQueries || loadingFormConfigs;
 
   const areFoldersOpen = useSelector<StateT, boolean>(
     (state) => state.previousQueriesFolderFilter.areFoldersOpen,
@@ -99,6 +94,10 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
 
   const dispatch = useDispatch();
   const onToggleFoldersOpen = () => dispatch(toggleFoldersOpen());
+
+  const { items, loading } = useProjectItems({ datasetId });
+
+  console.log(items);
 
   return (
     <>
@@ -131,11 +130,11 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
           <Expand areFoldersOpen={areFoldersOpen}>
             <SxPreviousQueriesFilter />
             <ScrollContainer>
-              {queries.length === 0 && !loading && (
+              {items.length === 0 && !loading && (
                 <EmptyList emptyMessage={t("previousQueries.noQueriesFound")} />
               )}
             </ScrollContainer>
-            <PreviousQueries queries={queries} datasetId={datasetId} />
+            <PreviousQueries items={items} datasetId={datasetId} />
           </Expand>
         </SplitPane>
       </FoldersAndQueries>
@@ -143,7 +142,7 @@ const PreviousQueryEditorTab = ({ datasetId }: PropsT) => {
   );
 };
 
-export default PreviousQueryEditorTab;
+export default ProjectItemsTab;
 
 const useLeftPaneSize = ({ areFoldersOpen }: { areFoldersOpen?: boolean }) => {
   const wereFoldersOpen = usePrevious(areFoldersOpen);
@@ -170,10 +169,15 @@ const useLeftPaneSize = ({ areFoldersOpen }: { areFoldersOpen?: boolean }) => {
   };
 };
 
-const useQueries = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
-  const allQueries = useSelector<StateT, PreviousQueryT[]>(
-    (state) => state.previousQueries.queries,
-  );
+interface FilterAndFetchConfig {
+  datasetId: DatasetIdT | null;
+  searchTerm: string | null;
+  filter: PreviousQueriesFilterStateT;
+  folders: string[];
+  noFoldersActive: boolean;
+}
+
+const useProjectItems = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   const searchTerm = useSelector<StateT, string | null>(
     (state) => state.previousQueriesSearch.searchTerm,
   );
@@ -185,6 +189,42 @@ const useQueries = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   );
   const noFoldersActive = useSelector<StateT, boolean>(
     (state) => state.previousQueriesFolderFilter.noFoldersActive,
+  );
+
+  const config: FilterAndFetchConfig = {
+    datasetId,
+    searchTerm,
+    filter,
+    folders,
+    noFoldersActive,
+  };
+
+  const { queries, loading: loadingQueries } = useQueries(config);
+  const { formConfigs, loading: loadingFormConfigs } = useFormConfigs(config);
+
+  const items: ProjectItemT[] = [...queries, ...formConfigs].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+
+  console.log(queries.length, formConfigs.length, items.length);
+
+  const loading = loadingQueries || loadingFormConfigs;
+
+  return {
+    items,
+    loading,
+  };
+};
+
+const useQueries = ({
+  datasetId,
+  searchTerm,
+  filter,
+  folders,
+  noFoldersActive,
+}: FilterAndFetchConfig) => {
+  const allQueries = useSelector<StateT, PreviousQueryT[]>(
+    (state) => state.previousQueries.queries,
   );
   const queries = selectPreviousQueries(
     allQueries,
@@ -212,8 +252,20 @@ const useQueries = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   };
 };
 
-const useFormConfigs = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
-  const formConfigs = useFilteredFormConfigs();
+const useFormConfigs = ({
+  datasetId,
+  searchTerm,
+  filter,
+}: FilterAndFetchConfig) => {
+  const allFormConfigs = useSelector<StateT, FormConfigT[]>(
+    (state) => state.formConfigs.data,
+  );
+
+  // TODO: Implement
+  // const activeFormType = useActiveFormType();
+
+  const formConfigs = selectFormConfigs(allFormConfigs, searchTerm, filter);
+
   const { loading, loadFormConfigs } = useLoadFormConfigs();
 
   useEffect(() => {

@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { useGetFormConfig, useGetFormConfigs } from "../../api/api";
 import type { DatasetIdT } from "../../api/types";
+import { exists } from "../../common/helpers/exists";
 import { setMessage } from "../../snack-message/actions";
-import { useActiveFormType } from "../stateSelectors";
 
 import {
   loadFormConfigsError,
@@ -55,31 +55,28 @@ const configHasFilterType = (
   return false;
 };
 
-export const useFilteredFormConfigs = () => {
-  const formConfigs = useSelector<StateT, FormConfigT[]>(
-    (state) => state.formConfigs.data,
-  );
-  const search = useSelector<StateT, string[]>(
-    (state) => state.formConfigsSearch,
-  );
-  const filter = useSelector<StateT, string>(
-    (state) => state.formConfigsFilter,
-  );
+const configMatchesSearch = (config: FormConfigT, searchTerm: string | null) =>
+  !exists(searchTerm) ||
+  configHasId(config, searchTerm) ||
+  configHasLabel(config, searchTerm) ||
+  configHasTag(config, searchTerm);
 
-  const activeFormType = useActiveFormType();
+export const selectFormConfigs = (
+  formConfigs: FormConfigT[],
+  searchTerm: string | null,
+  filter: string,
+) => {
+  if ((!searchTerm || searchTerm.length === 0) && filter === "all") {
+    return formConfigs;
+  }
 
-  if (search.length === 0 && filter === "all") return formConfigs;
+  // TODO: Implement
+  const activeFormType = null;
 
   return formConfigs.filter((config) => {
     return (
       configHasFilterType(config, filter, { activeFormType }) &&
-      search.every((searchTerm) => {
-        return (
-          configHasId(config, searchTerm) ||
-          configHasLabel(config, searchTerm) ||
-          configHasTag(config, searchTerm)
-        );
-      })
+      configMatchesSearch(config, searchTerm)
     );
   });
 };

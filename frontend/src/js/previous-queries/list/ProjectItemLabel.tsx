@@ -37,7 +37,7 @@ interface PropsT {
   setIsEditing: (value: boolean) => void;
 }
 
-const PreviousQueriesLabel: FC<PropsT> = ({
+const ProjectItemLabel: FC<PropsT> = ({
   mayEditQuery,
   loading,
   selectTextOnMount,
@@ -75,4 +75,4 @@ const PreviousQueriesLabel: FC<PropsT> = ({
   );
 };
 
-export default PreviousQueriesLabel;
+export default ProjectItemLabel;

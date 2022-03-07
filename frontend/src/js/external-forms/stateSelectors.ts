@@ -104,11 +104,13 @@ export const useAllowExtendedCopying = (
   return otherConceptListFields.some(fieldHasFilledConcept);
 };
 
-export const useFormLabelByType = (formType: string) => {
+export const useFormLabelByType = (formType: string | null) => {
   const availableForms = useSelector<StateT, { [formName: string]: Form }>(
     (state) => selectAvailableForms(state),
   );
   const activeLang = useActiveLang();
+
+  if (!formType) return null;
 
   return availableForms[formType]
     ? availableForms[formType].title[activeLang]

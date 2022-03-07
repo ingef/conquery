@@ -98,16 +98,6 @@ const StyledWithTooltip = styled(WithTooltip)`
   margin-left: 10px;
 `;
 
-export interface DragItemFormConfig {
-  dragContext: {
-    width: number;
-    height: number;
-  };
-  type: DNDType.FORM_CONFIG;
-  id: string;
-  label: string;
-}
-
 interface PropsT {
   config: FormConfigT;
   onIndicateDeletion: () => void;

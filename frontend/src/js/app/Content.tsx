@@ -45,7 +45,7 @@ const Content = ({ rightTabs }: ContentPropsT) => {
           allowResize={displayTooltip}
           minSize={displayTooltip ? 200 : 30}
           maxSize={600}
-          defaultSize={displayTooltip ? "18%" : 30}
+          defaultSize={displayTooltip ? "15%" : 30}
           className={!displayTooltip ? "SplitPane--tooltip-fixed" : ""}
         >
           {displayTooltip ? <Tooltip /> : <ActivateTooltip />}

@@ -26,7 +26,6 @@ import Label from "../ui-components/Label";
 import { setExternalForm } from "./actions";
 import type { Form, FormField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
-import type { DragItemFormConfig } from "./form-configs/FormConfig";
 import type { FormConfigT } from "./form-configs/reducer";
 import { useLoadFormConfigs } from "./form-configs/selectors";
 import { collectAllFormFields } from "./helper";
@@ -35,6 +34,7 @@ import {
   selectActiveFormType,
   selectFormConfig,
 } from "./stateSelectors";
+import type { DragItemFormConfig } from "./types";
 
 const Root = styled("div")`
   display: flex;
