@@ -98,8 +98,6 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
 
   const { items, loading } = useProjectItems({ datasetId });
 
-  console.log(items);
-
   return (
     <>
       <Row>
@@ -206,8 +204,6 @@ const useProjectItems = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   const items: ProjectItemT[] = [...queries, ...formConfigs].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
-
-  console.log(queries.length, formConfigs.length, items.length);
 
   const loading = loadingQueries || loadingFormConfigs;
 
