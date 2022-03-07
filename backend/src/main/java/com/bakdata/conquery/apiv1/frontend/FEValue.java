@@ -1,6 +1,8 @@
 package com.bakdata.conquery.apiv1.frontend;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
@@ -27,6 +29,23 @@ public class FEValue implements Comparable<FEValue> {
 	public FEValue(String label, String value) {
 		this.label = label;
 		this.value = value;
+	}
+
+	/**
+	 * Adds an item to the FilterSearch associating it with containing words.
+	 * <p>
+	 * The item is not added, if we've already collected an item with the same {@link FEValue#getValue()}.
+	 */
+	public List<String> extractKeywords() {
+		final List<String> keywords = new ArrayList<>(3);
+
+		keywords.add(getLabel());
+		keywords.add(getValue());
+
+		if (getOptionValue() != null) {
+			keywords.add(getOptionValue());
+		}
+		return keywords;
 	}
 
 	@Override

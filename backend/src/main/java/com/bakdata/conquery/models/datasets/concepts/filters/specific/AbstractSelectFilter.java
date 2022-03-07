@@ -75,15 +75,6 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	}
 
 
-	/**
-	 * Adds an item to the FilterSearch associating it with containing words.
-	 * <p>
-	 * The item is not added, if we've already collected an item with the same {@link FEValue#getValue()}.
-	 */
-	private List<String> extractKeywords(FEValue item) {
-		return List.of(item.getValue(), item.getOptionValue(), item.getLabel());
-	}
-
 	@JsonIgnore
 	public List<String> getSearchReferences() {
 		final List<String> references = new ArrayList<>(3);
@@ -132,7 +123,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 			final FEValue item = new FEValue(label, value, null);
 
-			search.addItem(item, extractKeywords(item));
+			search.addItem(item, item.extractKeywords());
 		}
 
 		log.debug("DONE processing {} labels for {}", labels.size(), getId());
@@ -185,7 +176,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 				FEValue item = new FEValue(label, rowId, optionValue);
 
-				search.addItem(item, extractKeywords(item));
+				search.addItem(item, item.extractKeywords());
 			}
 
 			final long duration = System.currentTimeMillis() - time;
@@ -213,7 +204,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 							  imp -> {
 								  for (String value : ((StringStore) getColumn().getTypeFor(imp))) {
 									  final FEValue item = new FEValue(value, value, value);
-									  search.addItem(item, extractKeywords(item));
+									  search.addItem(item, item.extractKeywords());
 								  }
 							  }
 					  );
