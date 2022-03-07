@@ -5,8 +5,9 @@ import { useTranslation } from "react-i18next";
 import Modal from "../../modal/Modal";
 import EditableTagsForm from "../../ui-components/EditableTagsForm";
 
-import { useRetagQuery } from "./actions";
-import type { PreviousQueryT } from "./reducer";
+import { ProjectItemT } from "./ProjectItem";
+import { useRetagQuery, useUpdateFormConfig } from "./actions";
+import { isFormConfig } from "./helpers";
 import { useFolders } from "./selector";
 
 const SxEditableTagsForm = styled(EditableTagsForm)`
@@ -15,19 +16,23 @@ const SxEditableTagsForm = styled(EditableTagsForm)`
 `;
 
 interface PropsT {
-  previousQuery: PreviousQueryT;
+  item: ProjectItemT;
   onClose: () => void;
   onEditSuccess: () => void;
 }
 
-const EditPreviousQueryFoldersModal: FC<PropsT> = ({
-  previousQuery,
+const EditProjectItemFoldersModal: FC<PropsT> = ({
+  item,
   onClose,
   onEditSuccess,
 }) => {
   const { t } = useTranslation();
   const retagQuery = useRetagQuery();
   const folders = useFolders();
+  const { loading: formConfigLoading, updateFormConfig } =
+    useUpdateFormConfig();
+
+  const loading = isFormConfig(item) ? formConfigLoading : item.loading;
 
   return (
     <Modal
@@ -35,13 +40,19 @@ const EditPreviousQueryFoldersModal: FC<PropsT> = ({
       headline={t("editPreviousQueryFoldersModal.headline")}
     >
       <SxEditableTagsForm
-        tags={previousQuery.tags}
-        loading={previousQuery.loading}
+        tags={item.tags}
+        loading={loading}
         onSubmit={async (tags) => {
-          try {
-            await retagQuery(previousQuery.id, tags);
-            onEditSuccess();
-          } catch (e) {}
+          if (isFormConfig(item)) {
+            await updateFormConfig(
+              item.id,
+              { tags },
+              t("formConfig.retagError"),
+            );
+          } else {
+            await retagQuery(item.id, tags);
+          }
+          onEditSuccess();
         }}
         availableTags={folders}
       />
@@ -49,4 +60,4 @@ const EditPreviousQueryFoldersModal: FC<PropsT> = ({
   );
 };
 
-export default EditPreviousQueryFoldersModal;
+export default EditProjectItemFoldersModal;

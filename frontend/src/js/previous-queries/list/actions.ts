@@ -1,4 +1,6 @@
 import { StateT } from "app-types";
+import { patchFormConfigSuccess } from "js/external-forms/form-configs/actions";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
@@ -8,6 +10,7 @@ import {
   usePatchQuery,
   useGetQuery,
   useDeleteQuery,
+  usePatchFormConfig,
 } from "../../api/api";
 import {
   DatasetIdT,
@@ -201,4 +204,35 @@ export const useRemoveQuery = (
       dispatch(setMessage({ message: t("previousQuery.deleteError") }));
     }
   };
+};
+
+export const useUpdateFormConfig = () => {
+  const datasetId = useDatasetId();
+  const dispatch = useDispatch();
+  const patchFormConfig = usePatchFormConfig();
+
+  const [loading, setLoading] = useState(false);
+
+  const updateFormConfig = async (
+    configId: string,
+    attributes: {
+      shared?: boolean;
+      label?: string;
+      tags?: string[];
+    },
+    errorMessage: string,
+  ) => {
+    if (!datasetId) return;
+    setLoading(true);
+    try {
+      await patchFormConfig(datasetId, configId, attributes);
+
+      dispatch(patchFormConfigSuccess(configId, attributes));
+    } catch (e) {
+      dispatch(setMessage({ message: errorMessage }));
+    }
+    setLoading(false);
+  };
+
+  return { loading, updateFormConfig };
 };

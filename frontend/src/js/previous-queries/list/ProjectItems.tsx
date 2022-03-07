@@ -6,7 +6,7 @@ import { DatasetIdT } from "../../api/types";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 
 import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
-import EditPreviousQueryFoldersModal from "./EditPreviousQueryFoldersModal";
+import EditProjectItemFoldersModal from "./EditProjectItemFoldersModal";
 import type { ProjectItemT } from "./ProjectItem";
 import ProjectItemDragContainer from "./ProjectItemDragContainer";
 import SharePreviousQueryModal from "./SharePreviousQueryModal";
@@ -27,17 +27,17 @@ const Root = styled("div")`
 
 const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
   const [previousQueryToDelete, setPreviousQueryToDelete] = useState<
-    string | null
+    ProjectItemT["id"] | null
   >(null);
   const [previousQueryToShare, setPreviousQueryToShare] = useState<
-    string | null
+    ProjectItemT["id"] | null
   >(null);
-  const [previousQueryToEditFolders, setPreviousQueryToEditFolders] =
+  const [itemToEditFolders, setItemToEditFolders] =
     useState<ProjectItemT | null>(null);
 
   const onCloseDeleteModal = () => setPreviousQueryToDelete(null);
   const onCloseShareModal = () => setPreviousQueryToShare(null);
-  const onCloseEditFoldersModal = () => setPreviousQueryToEditFolders(null);
+  const onCloseEditFoldersModal = () => setItemToEditFolders(null);
 
   const container = useRef<HTMLDivElement | null>(null);
   const [height, setHeight] = useState<number>(0);
@@ -84,9 +84,9 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
           onDeleteSuccess={onCloseDeleteModal}
         />
       )}
-      {!!previousQueryToEditFolders && (
-        <EditPreviousQueryFoldersModal
-          previousQuery={previousQueryToEditFolders}
+      {!!itemToEditFolders && (
+        <EditProjectItemFoldersModal
+          item={itemToEditFolders}
           onClose={onCloseEditFoldersModal}
           onEditSuccess={onCloseEditFoldersModal}
         />
@@ -112,7 +112,7 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
                     setPreviousQueryToShare(items[index].id)
                   }
                   onIndicateEditFolders={() =>
-                    setPreviousQueryToEditFolders(items[index])
+                    setItemToEditFolders(items[index])
                   }
                 />
               </div>
