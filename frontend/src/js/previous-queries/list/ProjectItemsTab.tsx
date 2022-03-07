@@ -42,7 +42,7 @@ const Row = styled("div")`
 `;
 const FoldersAndQueries = styled(Row)`
   flex-grow: 1;
-  margin-top: 8px;
+  margin: 8px 8px 0 10px;
   overflow: hidden;
   position: relative;
 `;
@@ -69,6 +69,7 @@ const Expand = styled("div")<{ areFoldersOpen?: boolean }>`
   display: flex;
   flex-direction: column;
   height: 100%;
+  padding-right: 2px;
   ${({ areFoldersOpen }) =>
     areFoldersOpen &&
     css`
