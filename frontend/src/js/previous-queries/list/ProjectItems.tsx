@@ -5,7 +5,7 @@ import { FixedSizeList } from "react-window";
 import { DatasetIdT } from "../../api/types";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 
-import DeletePreviousQueryModal from "./DeletePreviousQueryModal";
+import DeleteProjectItemModal from "./DeleteProjectItemModal";
 import EditProjectItemFoldersModal from "./EditProjectItemFoldersModal";
 import type { ProjectItemT } from "./ProjectItem";
 import ProjectItemDragContainer from "./ProjectItemDragContainer";
@@ -26,17 +26,13 @@ const Root = styled("div")`
 `;
 
 const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
-  const [previousQueryToDelete, setPreviousQueryToDelete] = useState<
-    ProjectItemT["id"] | null
-  >(null);
-  const [previousQueryToShare, setPreviousQueryToShare] = useState<
-    ProjectItemT["id"] | null
-  >(null);
+  const [itemToDelete, setItemToDelete] = useState<ProjectItemT | null>(null);
+  const [itemToShare, setItemToShare] = useState<ProjectItemT | null>(null);
   const [itemToEditFolders, setItemToEditFolders] =
     useState<ProjectItemT | null>(null);
 
-  const onCloseDeleteModal = () => setPreviousQueryToDelete(null);
-  const onCloseShareModal = () => setPreviousQueryToShare(null);
+  const onCloseDeleteModal = () => setItemToDelete(null);
+  const onCloseShareModal = () => setItemToShare(null);
   const onCloseEditFoldersModal = () => setItemToEditFolders(null);
 
   const container = useRef<HTMLDivElement | null>(null);
@@ -70,16 +66,16 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
         container.current = instance;
       }}
     >
-      {!!previousQueryToShare && (
+      {!!itemToShare && (
         <SharePreviousQueryModal
-          previousQueryId={previousQueryToShare}
+          previousQueryId={itemToShare}
           onClose={onCloseShareModal}
           onShareSuccess={onCloseShareModal}
         />
       )}
-      {!!previousQueryToDelete && (
-        <DeletePreviousQueryModal
-          previousQueryId={previousQueryToDelete}
+      {!!itemToDelete && (
+        <DeleteProjectItemModal
+          item={itemToDelete}
           onClose={onCloseDeleteModal}
           onDeleteSuccess={onCloseDeleteModal}
         />
@@ -105,12 +101,8 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
                 <ProjectItemDragContainer
                   item={items[index]}
                   datasetId={datasetId}
-                  onIndicateDeletion={() =>
-                    setPreviousQueryToDelete(items[index].id)
-                  }
-                  onIndicateShare={() =>
-                    setPreviousQueryToShare(items[index].id)
-                  }
+                  onIndicateDeletion={() => setItemToDelete(items[index])}
+                  onIndicateShare={() => setItemToShare(items[index])}
                   onIndicateEditFolders={() =>
                     setItemToEditFolders(items[index])
                   }

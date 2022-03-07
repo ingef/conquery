@@ -1,5 +1,4 @@
 import { StateT } from "app-types";
-import { patchFormConfigSuccess } from "js/external-forms/form-configs/actions";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -11,6 +10,7 @@ import {
   useGetQuery,
   useDeleteQuery,
   usePatchFormConfig,
+  useDeleteFormConfig,
 } from "../../api/api";
 import {
   DatasetIdT,
@@ -20,6 +20,10 @@ import {
 } from "../../api/types";
 import { ErrorObject, errorPayload } from "../../common/actions";
 import { useDatasetId } from "../../dataset/selectors";
+import {
+  deleteFormConfigSuccess,
+  patchFormConfigSuccess,
+} from "../../external-forms/form-configs/actions";
 import { setMessage } from "../../snack-message/actions";
 
 import { PreviousQueryIdT } from "./reducer";
@@ -223,6 +227,7 @@ export const useUpdateFormConfig = () => {
     errorMessage: string,
   ) => {
     if (!datasetId) return;
+
     setLoading(true);
     try {
       await patchFormConfig(datasetId, configId, attributes);
@@ -235,4 +240,29 @@ export const useUpdateFormConfig = () => {
   };
 
   return { loading, updateFormConfig };
+};
+
+export const useRemoveFormConfig = () => {
+  const { t } = useTranslation();
+  const datasetId = useDatasetId();
+  const dispatch = useDispatch();
+  const deleteFormConfig = useDeleteFormConfig();
+
+  const [loading, setLoading] = useState(false);
+
+  const removeFormConfig = async (configId: string) => {
+    if (!datasetId) return;
+
+    setLoading(true);
+    try {
+      await deleteFormConfig(datasetId, configId);
+
+      dispatch(deleteFormConfigSuccess(configId));
+    } catch (e) {
+      dispatch(setMessage({ message: t("formConfig.deleteError") }));
+    }
+    setLoading(false);
+  };
+
+  return { loading, removeFormConfig };
 };
