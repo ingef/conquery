@@ -360,6 +360,7 @@ public class AdminDatasetProcessor {
 		ns.getJobManager().addSlowJob(new SimpleJob(
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
+
 					ns.sendToAll(new UpdateMatchingStatsMessage());
 					ns.getFilterSearch().updateSearch(ns.getStorage(), getJobManager(), config.getCsv());
 				}

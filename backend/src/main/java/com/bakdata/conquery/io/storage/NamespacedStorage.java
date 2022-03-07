@@ -271,7 +271,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 		concepts.remove(id);
 	}
 
-	public Collection<? extends Concept<?>> getAllConcepts() {
+	public Collection<Concept<?>> getAllConcepts() {
 		return concepts.getAll();
 	}
 

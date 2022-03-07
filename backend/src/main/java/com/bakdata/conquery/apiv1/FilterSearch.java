@@ -1,10 +1,16 @@
 package com.bakdata.conquery.apiv1;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
-import com.bakdata.conquery.io.storage.NamespacedStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -31,15 +37,36 @@ public class FilterSearch {
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
-	public void updateSearch(NamespacedStorage storage, JobManager jobManager, CSVConfig parser) {
+	public void updateSearch(NamespaceStorage storage, JobManager jobManager, CSVConfig parser) {
 		searchCache.clear();//TODO this is dangerous with shared cache
 
-		storage.getAllConcepts().stream()
-			   .flatMap(c -> c.getConnectors().stream())
-			   .flatMap(co -> co.collectAllFilters().stream())
-			   .filter(f -> f instanceof AbstractSelectFilter)
-			   .map(AbstractSelectFilter.class::cast)
-			   .map(f -> new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> f.initializeSourceSearch(parser, storage, this)))
-			   .forEach(jobManager::addSlowJob);
+
+		final Map<String, Supplier<TrieSearch<FEValue>>> suppliers =
+				storage.getAllConcepts().stream()
+					   .flatMap(c -> c.getConnectors().stream())
+					   .flatMap(co -> co.collectAllFilters().stream())
+					   .filter(f -> f instanceof AbstractSelectFilter)
+					   .map(AbstractSelectFilter.class::cast)
+					   .map(f -> ((Map<String, Supplier<TrieSearch<FEValue>>>) f.initializeSourceSearch(parser, storage, this)))
+
+					   .map(Map::entrySet)
+					   .flatMap(Collection::stream)
+					   .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (left, right) -> left));
+
+		jobManager.addSlowJob(new SimpleJob("Initialize Source Search", () -> {
+			ExecutorService service = Executors.newCachedThreadPool();
+
+			suppliers.forEach((id, supplier) -> {
+				service.submit(() -> {
+					searchCache.put(id, supplier.get());
+				});
+			});
+
+			service.shutdown();
+
+			service.awaitTermination(10, TimeUnit.HOURS);
+		}));
+
+
 	}
 }
