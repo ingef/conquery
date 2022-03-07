@@ -11,6 +11,7 @@ import java.util.SortedMap;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.google.common.base.Strings;
@@ -26,12 +27,18 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * We saturate matches here to avoid favoring very short keywords, when multiple keywords are used.
 	 */
 	private static final double MATCH_THRESHOLD = 1d / 20d;
+	private static final int SUFFIX_CUTOFF = 3;
 
 	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"']+"); //TODO FK: Investigate better split patterns
 	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
 
 	public void clear() {
 		trie.clear();
+	}
+
+	private Stream<String> suffixes(String word) {
+		return IntStream.range(0, Math.max(0, word.length() - SUFFIX_CUTOFF))
+						.mapToObj(word::substring);
 	}
 
 	private Stream<String> split(String keyword) {
@@ -42,7 +49,9 @@ public class TrieSearch<T extends Comparable<T>> {
 		return SPLIT.splitAsStream(keyword.trim())
 					.map(String::trim)
 					.filter(StringUtils::isNotBlank)
-					.map(String::toLowerCase);
+					.filter(kw -> kw.length() >= SUFFIX_CUTOFF)
+					.map(String::toLowerCase)
+					.flatMap(this::suffixes);
 	}
 
 	/**
