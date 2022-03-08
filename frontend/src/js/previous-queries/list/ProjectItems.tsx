@@ -1,5 +1,12 @@
 import styled from "@emotion/styled";
-import { useRef, useState, useCallback, useLayoutEffect, FC } from "react";
+import {
+  useRef,
+  useState,
+  useCallback,
+  useLayoutEffect,
+  FC,
+  useEffect,
+} from "react";
 import { FixedSizeList } from "react-window";
 
 import { DatasetIdT } from "../../api/types";
@@ -9,7 +16,7 @@ import DeleteProjectItemModal from "./DeleteProjectItemModal";
 import EditProjectItemFoldersModal from "./EditProjectItemFoldersModal";
 import type { ProjectItemT } from "./ProjectItem";
 import ProjectItemDragContainer from "./ProjectItemDragContainer";
-import SharePreviousQueryModal from "./SharePreviousQueryModal";
+import ShareProjectItemModal from "./ShareProjectItemModal";
 
 interface PropsT {
   datasetId: DatasetIdT | null;
@@ -37,6 +44,29 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
 
   const container = useRef<HTMLDivElement | null>(null);
   const [height, setHeight] = useState<number>(0);
+
+  useEffect(
+    function updateSelectedItemsOnListUpdate() {
+      if (itemToDelete) {
+        const updatedItem = items.find((i) => i.id === itemToDelete.id);
+
+        if (updatedItem) setItemToDelete(updatedItem);
+      }
+
+      if (itemToEditFolders) {
+        const updatedItem = items.find((i) => i.id === itemToEditFolders.id);
+
+        if (updatedItem) setItemToEditFolders(updatedItem);
+      }
+
+      if (itemToShare) {
+        const updatedItem = items.find((i) => i.id === itemToShare.id);
+
+        if (updatedItem) setItemToShare(updatedItem);
+      }
+    },
+    [items, itemToDelete, itemToEditFolders, itemToShare],
+  );
 
   useResizeObserver(
     useCallback((entry: ResizeObserverEntry) => {
@@ -67,24 +97,18 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
       }}
     >
       {!!itemToShare && (
-        <SharePreviousQueryModal
-          previousQueryId={itemToShare}
-          onClose={onCloseShareModal}
-          onShareSuccess={onCloseShareModal}
-        />
+        <ShareProjectItemModal item={itemToShare} onClose={onCloseShareModal} />
       )}
       {!!itemToDelete && (
         <DeleteProjectItemModal
           item={itemToDelete}
           onClose={onCloseDeleteModal}
-          onDeleteSuccess={onCloseDeleteModal}
         />
       )}
       {!!itemToEditFolders && (
         <EditProjectItemFoldersModal
           item={itemToEditFolders}
           onClose={onCloseEditFoldersModal}
-          onEditSuccess={onCloseEditFoldersModal}
         />
       )}
       {datasetId && (
@@ -100,7 +124,6 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
               <div style={style}>
                 <ProjectItemDragContainer
                   item={items[index]}
-                  datasetId={datasetId}
                   onIndicateDeletion={() => setItemToDelete(items[index])}
                   onIndicateShare={() => setItemToShare(items[index])}
                   onIndicateEditFolders={() =>

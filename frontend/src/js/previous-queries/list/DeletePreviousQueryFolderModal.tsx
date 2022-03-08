@@ -26,7 +26,7 @@ const DeletePreviousQueryFolderModal: FC<PropsT> = ({
     <DeleteModal
       onClose={onClose}
       headline={t("deletePreviousQueryFolderModal.areYouSure")}
-      description={t("deletePreviousQueryFolderModal.description")}
+      description={t("deletePreviousQueryFolderModal.description", { folder })}
       onDelete={onDeletePreviousQuery}
     />
   );

@@ -1,7 +1,6 @@
 import { FC, useRef } from "react";
 import { useDrag } from "react-dnd";
 
-import type { DatasetIdT } from "../../api/types";
 import { getWidthAndHeight } from "../../app/DndProvider";
 import { DNDType } from "../../common/constants/dndTypes";
 import type { DragItemFormConfig } from "../../external-forms/types";
@@ -13,7 +12,6 @@ import { PreviousQueryT } from "./reducer";
 
 interface PropsT {
   item: ProjectItemT;
-  datasetId: DatasetIdT;
   onIndicateDeletion: () => void;
   onIndicateShare: () => void;
   onIndicateEditFolders: () => void;

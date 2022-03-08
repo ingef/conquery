@@ -6,7 +6,7 @@ import Modal from "../../modal/Modal";
 import EditableTagsForm from "../../ui-components/EditableTagsForm";
 
 import { ProjectItemT } from "./ProjectItem";
-import { useRetagQuery, useUpdateFormConfig } from "./actions";
+import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { isFormConfig } from "./helpers";
 import { useFolders } from "./selector";
 
@@ -18,21 +18,25 @@ const SxEditableTagsForm = styled(EditableTagsForm)`
 interface PropsT {
   item: ProjectItemT;
   onClose: () => void;
-  onEditSuccess: () => void;
 }
 
-const EditProjectItemFoldersModal: FC<PropsT> = ({
-  item,
-  onClose,
-  onEditSuccess,
-}) => {
+const EditProjectItemFoldersModal: FC<PropsT> = ({ item, onClose }) => {
   const { t } = useTranslation();
-  const retagQuery = useRetagQuery();
   const folders = useFolders();
+  const { loading: queryLoading, updateQuery } = useUpdateQuery();
   const { loading: formConfigLoading, updateFormConfig } =
     useUpdateFormConfig();
 
-  const loading = isFormConfig(item) ? formConfigLoading : item.loading;
+  const loading = queryLoading || formConfigLoading;
+
+  const onSubmit = async (tags: string[]) => {
+    if (isFormConfig(item)) {
+      await updateFormConfig(item.id, { tags }, t("formConfig.retagError"));
+    } else {
+      await updateQuery(item.id, { tags }, t("previousQuery.retagError"));
+    }
+    onClose();
+  };
 
   return (
     <Modal
@@ -42,18 +46,7 @@ const EditProjectItemFoldersModal: FC<PropsT> = ({
       <SxEditableTagsForm
         tags={item.tags}
         loading={loading}
-        onSubmit={async (tags) => {
-          if (isFormConfig(item)) {
-            await updateFormConfig(
-              item.id,
-              { tags },
-              t("formConfig.retagError"),
-            );
-          } else {
-            await retagQuery(item.id, tags);
-          }
-          onEditSuccess();
-        }}
+        onSubmit={onSubmit}
         availableTags={folders}
       />
     </Modal>

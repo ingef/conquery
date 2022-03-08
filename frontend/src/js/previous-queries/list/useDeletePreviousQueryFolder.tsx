@@ -19,7 +19,7 @@ export const useDeletePreviousQueryFolder = (
   );
   const dispatch = useDispatch();
   const patchQuery = usePatchQuery();
-  const loadQueries = useLoadQueries();
+  const { loadQueries } = useLoadQueries();
 
   const queries = useSelector<StateT, PreviousQueryT[]>(
     (state) => state.previousQueries.queries,

@@ -25,7 +25,7 @@ import { isMultiSelectFilter, mergeFilterOptions } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { resetSelects } from "../model/select";
 import { resetAllTableSettings, tableWithDefaults } from "../model/table";
-import { loadQuery, renameQuery } from "../previous-queries/list/actions";
+import { loadQuerySuccess } from "../previous-queries/list/actions";
 import {
   queryGroupModalResetAllDates,
   queryGroupModalSetDate,
@@ -742,10 +742,10 @@ const findPreviousQueries = (state: StandardQueryStateT, queryId: string) => {
 
 const updatePreviousQueries = (
   state: StandardQueryStateT,
-  action: { payload: { queryId: string } },
+  action: { payload: { id: string } },
   attributes: Partial<DragItemQuery>,
 ) => {
-  const queries = findPreviousQueries(state, action.payload.queryId);
+  const queries = findPreviousQueries(state, action.payload.id);
 
   return queries.reduce((nextState, query) => {
     const { node, andIdx, orIdx } = query;
@@ -768,15 +768,9 @@ const updatePreviousQueries = (
   }, state);
 };
 
-const loadPreviousQueryStart = (
-  state: StandardQueryStateT,
-  action: ActionType<typeof loadQuery.request>,
-) => {
-  return updatePreviousQueries(state, action, { loading: true });
-};
 const loadPreviousQuerySuccess = (
   state: StandardQueryStateT,
-  action: ActionType<typeof loadQuery.success>,
+  action: ActionType<typeof loadQuerySuccess>,
 ) => {
   const { data } = action.payload;
 
@@ -789,24 +783,6 @@ const loadPreviousQuerySuccess = (
     query: data.query,
     canExpand: data.canExpand,
     availableSecondaryIds: data.availableSecondaryIds,
-  });
-};
-const loadPreviousQueryError = (
-  state: StandardQueryStateT,
-  action: ActionType<typeof loadQuery.failure>,
-) => {
-  return updatePreviousQueries(state, action, {
-    loading: false,
-    error: action.payload.message,
-  });
-};
-const onRenamePreviousQuery = (
-  state: StandardQueryStateT,
-  action: ActionType<typeof renameQuery.success>,
-) => {
-  return updatePreviousQueries(state, action, {
-    loading: false,
-    label: action.payload.label,
   });
 };
 
@@ -1049,14 +1025,8 @@ const query = (
       return resetGroupDates(state, action.payload);
     case getType(expandPreviousQuery):
       return onExpandPreviousQuery(action.payload);
-    case getType(loadQuery.request):
-      return loadPreviousQueryStart(state, action);
-    case getType(loadQuery.success):
+    case getType(loadQuerySuccess):
       return loadPreviousQuerySuccess(state, action);
-    case getType(loadQuery.failure):
-      return loadPreviousQueryError(state, action);
-    case getType(renameQuery.success):
-      return onRenamePreviousQuery(state, action);
     case getType(loadFilterSuggestionsSuccess):
       return onLoadFilterSuggestionsSuccess(state, action.payload);
     case getType(acceptQueryUploadConceptListModal):

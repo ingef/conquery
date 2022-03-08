@@ -28,17 +28,17 @@ const useHighlightedWords = () => {
 };
 
 interface PropsT {
-  mayEditQuery?: boolean;
+  mayEdit?: boolean;
   label: string;
   selectTextOnMount: boolean;
-  loading: boolean;
+  loading?: boolean;
   onSubmit: (text: string) => void;
   isEditing: boolean;
   setIsEditing: (value: boolean) => void;
 }
 
 const ProjectItemLabel: FC<PropsT> = ({
-  mayEditQuery,
+  mayEdit,
   loading,
   selectTextOnMount,
   label,
@@ -49,7 +49,7 @@ const ProjectItemLabel: FC<PropsT> = ({
   const highlightedWords = useHighlightedWords();
   const { t } = useTranslation();
 
-  return mayEditQuery ? (
+  return mayEdit ? (
     <SxEditableText
       loading={loading}
       text={label}

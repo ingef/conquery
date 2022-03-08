@@ -10,28 +10,26 @@ import { isFormConfig } from "./helpers";
 interface PropsT {
   item: ProjectItemT;
   onClose: () => void;
-  onDeleteSuccess: () => void;
 }
 
-const DeleteProjectItemModal: FC<PropsT> = ({
-  item,
-  onClose,
-  onDeleteSuccess,
-}) => {
+const DeleteProjectItemModal: FC<PropsT> = ({ item, onClose }) => {
   const { t } = useTranslation();
-  const removeQuery = useRemoveQuery(item.id, onDeleteSuccess);
+  const { removeQuery } = useRemoveQuery();
   const { removeFormConfig } = useRemoveFormConfig();
   const props = isFormConfig(item)
     ? {
         headline: t("deleteFormConfigModal.areYouSure"),
         onDelete: async () => {
           await removeFormConfig(item.id);
-          onDeleteSuccess();
+          onClose();
         },
       }
     : {
         headline: t("deletePreviousQueryModal.areYouSure"),
-        onDelete: removeQuery,
+        onDelete: async () => {
+          await removeQuery(item.id);
+          onClose();
+        },
       };
 
   return <DeleteModal onClose={onClose} {...props} />;

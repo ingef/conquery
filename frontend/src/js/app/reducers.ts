@@ -5,15 +5,6 @@ import conceptTreesOpen, {
 } from "../concept-trees-open/reducer";
 import conceptTrees, { ConceptTreesStateT } from "../concept-trees/reducer";
 import datasets, { DatasetStateT } from "../dataset/reducer";
-import formConfigsFilter, {
-  FormConfigsFilterStateT,
-} from "../external-forms/form-configs/filter/reducer";
-import formConfigs, {
-  FormConfigsStateT,
-} from "../external-forms/form-configs/reducer";
-import formConfigsSearch, {
-  FormConfigsSearchStateT,
-} from "../external-forms/form-configs/search/reducer";
 import panes, { PanesStateT } from "../pane/reducer";
 import type { TabT } from "../pane/types";
 import preview, { PreviewStateT } from "../preview/reducer";
@@ -62,9 +53,6 @@ export type StateT = {
   previousQueriesSearch: QueriesSearchStateT;
   previousQueriesFilter: PreviousQueriesFilterStateT;
   previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
-  formConfigs: FormConfigsStateT;
-  formConfigsSearch: FormConfigsSearchStateT;
-  formConfigsFilter: FormConfigsFilterStateT;
   preview: PreviewStateT;
   snackMessage: SnackMessageStateT;
 };
@@ -87,9 +75,6 @@ const buildAppReducer = (tabs: TabT[]) => {
     snackMessage,
     preview,
     user,
-    formConfigs,
-    formConfigsSearch,
-    formConfigsFilter,
     ...tabs.reduce((all, tab) => {
       all[tab.key] = tab.reducer;
       return all;

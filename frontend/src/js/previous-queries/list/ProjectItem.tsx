@@ -1,27 +1,29 @@
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
 import { parseISO } from "date-fns";
-import { FormConfigT } from "js/external-forms/form-configs/reducer";
-import { useFormLabelByType } from "js/external-forms/stateSelectors";
-import FormSymbol from "js/symbols/FormSymbol";
-import QuerySymbol from "js/symbols/QuerySymbol";
 import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import type { DatasetIdT, SecondaryId } from "../../api/types";
+import type { SecondaryId } from "../../api/types";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
 import { formatDate } from "../../common/helpers";
 import { exists } from "../../common/helpers/exists";
-import ErrorMessage from "../../error-message/ErrorMessage";
-import FaIcon from "../../icon/FaIcon";
+import { useFormLabelByType } from "../../external-forms/stateSelectors";
+import FormSymbol from "../../symbols/FormSymbol";
+import QuerySymbol from "../../symbols/QuerySymbol";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import ProjectItemLabel from "./ProjectItemLabel";
-import { useRemoveQuery, useRenameQuery } from "./actions";
+import {
+  useRemoveQuery,
+  useUpdateQuery,
+  useUpdateFormConfig,
+  useRemoveFormConfig,
+} from "./actions";
 import { isFormConfig } from "./helpers";
-import { PreviousQueryT } from "./reducer";
+import type { FormConfigT, PreviousQueryT } from "./reducer";
 
 export type ProjectItemT = PreviousQueryT | FormConfigT;
 
@@ -100,13 +102,6 @@ const LabelRow = styled("div")`
   line-height: 24px;
   margin: 2px 0;
 `;
-const StyledErrorMessage = styled(ErrorMessage)`
-  margin: 0;
-`;
-
-const StyledFaIcon = styled(FaIcon)`
-  margin: 0 6px;
-`;
 
 const StyledWithTooltip = styled(WithTooltip)`
   margin-left: 10px;
@@ -138,7 +133,6 @@ const FoldersButton = styled(IconButton)`
 
 interface PropsT {
   item: ProjectItemT;
-  datasetId: DatasetIdT;
   onIndicateDeletion: () => void;
   onIndicateShare: () => void;
   onIndicateEditFolders: () => void;
@@ -146,13 +140,7 @@ interface PropsT {
 
 const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
   function PreviousQueryComponent(
-    {
-      item,
-      datasetId,
-      onIndicateDeletion,
-      onIndicateShare,
-      onIndicateEditFolders,
-    },
+    { item, onIndicateDeletion, onIndicateShare, onIndicateEditFolders },
     ref,
   ) {
     const { t } = useTranslation();
@@ -161,14 +149,12 @@ const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
       (state) => state.conceptTrees.secondaryIds,
     );
 
-    const renameQuery = useRenameQuery();
-    const removeQuery = useRemoveQuery(item.id);
+    const { updateQuery } = useUpdateQuery();
+    const { updateFormConfig } = useUpdateFormConfig();
+    const { removeQuery } = useRemoveQuery();
+    const { removeFormConfig } = useRemoveFormConfig();
 
-    const mayDeleteQueryRightAway =
-      item.tags.length === 0 && !!item.isPristineLabel;
-    const onDeleteClick = mayDeleteQueryRightAway
-      ? removeQuery
-      : onIndicateDeletion;
+    const mayDeleteRightAway = item.tags.length === 0 && !!item.isPristineLabel;
 
     const formLabel = useFormLabelByType(
       isFormConfig(item) ? item.formType : null,
@@ -185,7 +171,7 @@ const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
 
     const isShared = item.shared || (item.groups && item.groups.length > 0);
     const label = item.label || item.id.toString();
-    const mayEditQuery = item.own || isShared;
+    const mayEdit = item.own || isShared;
 
     const secondaryId =
       !isFormConfig(item) && item.secondaryId
@@ -195,6 +181,14 @@ const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
     const [isEditingLabel, setIsEditingLabel] = useState<boolean>(false);
 
     const folders = item.tags;
+
+    const onRenameLabel = (label: string) => {
+      if (isFormConfig(item)) {
+        updateFormConfig(item.id, { label }, t("formConfig.renameError"));
+      } else {
+        updateQuery(item.id, { label }, t("previousQuery.renameError"));
+      }
+    };
 
     return (
       <Root ref={ref}>
@@ -226,7 +220,7 @@ const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
                   small
                   bare
                   onClick={onIndicateEditFolders}
-                  disabled={!mayEditQuery}
+                  disabled={!mayEdit}
                 />
               </WithTooltip>
               {!isFormConfig(item) && item.resultUrls.length > 0 ? (
@@ -268,32 +262,38 @@ const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
                   />
                 </StyledWithTooltip>
               )}
-              {!isFormConfig(item) && item.loading ? (
-                <StyledFaIcon icon="spinner" />
-              ) : (
-                item.own && (
-                  <StyledWithTooltip text={t("common.delete")}>
-                    <IconButton icon="times" bare onClick={onDeleteClick} />
-                  </StyledWithTooltip>
-                )
+              {item.own && (
+                <StyledWithTooltip text={t("common.delete")}>
+                  <IconButton
+                    icon="times"
+                    bare
+                    onClick={() => {
+                      if (mayDeleteRightAway) {
+                        if (isFormConfig(item)) {
+                          removeFormConfig(item.id);
+                        } else {
+                          removeQuery(item.id);
+                        }
+                      } else {
+                        onIndicateDeletion();
+                      }
+                    }}
+                  />
+                </StyledWithTooltip>
               )}
             </TopRight>
           </TopInfos>
           <LabelRow>
             <ProjectItemLabel
-              mayEditQuery={mayEditQuery}
-              loading={!isFormConfig(item) && !!item.loading}
+              mayEdit={mayEdit}
               label={label}
               selectTextOnMount={true}
-              onSubmit={(label) => renameQuery(datasetId, item.id, label)}
+              onSubmit={onRenameLabel}
               isEditing={isEditingLabel}
               setIsEditing={setIsEditingLabel}
             />
             <OwnerName>{item.ownerName}</OwnerName>
           </LabelRow>
-          {!isFormConfig(item) && !!item.error && (
-            <StyledErrorMessage message={item.error} />
-          )}
         </Content>
       </Root>
     );

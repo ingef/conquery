@@ -2,20 +2,23 @@ import styled from "@emotion/styled";
 import { StateT } from "app-types";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
-import { usePatchQuery } from "../../api/api";
 import type { DatasetIdT, SelectOptionT, UserGroupT } from "../../api/types";
 import PrimaryButton from "../../button/PrimaryButton";
 import { TransparentButton } from "../../button/TransparentButton";
 import { exists } from "../../common/helpers/exists";
-import { usePrevious } from "../../common/helpers/usePrevious";
 import Modal from "../../modal/Modal";
-import { setMessage } from "../../snack-message/actions";
 import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
 
-import { useLoadQuery, shareQuerySuccess } from "./actions";
-import { PreviousQueryT } from "./reducer";
+import type { ProjectItemT } from "./ProjectItem";
+import {
+  useLoadQuery,
+  useLoadFormConfig,
+  useUpdateQuery,
+  useUpdateFormConfig,
+} from "./actions";
+import { isFormConfig } from "./helpers";
 
 const Buttons = styled("div")`
   width: 100%;
@@ -37,19 +40,13 @@ const QueryName = styled("p")`
   margin: -15px 0 20px;
 `;
 
-interface PropsT {
-  previousQueryId: string;
-  onClose: () => void;
-  onShareSuccess: () => void;
-}
-
 const getUserGroupsValue = (
   userGroups: UserGroupT[],
-  previousQuery?: PreviousQueryT,
+  projectItem?: ProjectItemT,
 ) => {
-  return previousQuery && previousQuery.groups
+  return projectItem && projectItem.groups
     ? userGroups
-        .filter((group) => previousQuery.groups?.includes(group.id))
+        .filter((group) => projectItem.groups?.includes(group.id))
         .map((group) => ({
           label: group.label,
           value: group.id,
@@ -57,11 +54,12 @@ const getUserGroupsValue = (
     : [];
 };
 
-const SharePreviousQueryModal = ({
-  previousQueryId,
-  onClose,
-  onShareSuccess,
-}: PropsT) => {
+interface PropsT {
+  item: ProjectItemT;
+  onClose: () => void;
+}
+
+const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
   const { t } = useTranslation();
   const datasetId = useSelector<StateT, DatasetIdT | null>(
     (state) => state.datasets.selectedDatasetId,
@@ -69,51 +67,52 @@ const SharePreviousQueryModal = ({
   const userGroups = useSelector<StateT, UserGroupT[]>((state) =>
     state.user.me ? state.user.me.groups : [],
   );
-  const previousQuery = useSelector<StateT, PreviousQueryT | undefined>(
-    (state) =>
-      state.previousQueries.queries.find(
-        (query) => query.id === previousQueryId,
-      ),
-  );
-  const initialUserGroupsValue = getUserGroupsValue(userGroups, previousQuery);
+
+  const initialUserGroupsValue = getUserGroupsValue(userGroups, item);
 
   const [userGroupsValue, setUserGroupsValue] = useState<SelectOptionT[]>(
     initialUserGroupsValue,
   );
 
-  const previousPreviousQueryId = usePrevious(previousQueryId);
+  const [loadedOnce, setLoadedOnce] = useState(false);
 
-  const patchQuery = usePatchQuery();
+  const { loadQuery } = useLoadQuery();
+  const { loadFormConfig } = useLoadFormConfig();
+  const { updateQuery } = useUpdateQuery();
+  const { updateFormConfig } = useUpdateFormConfig();
 
-  const dispatch = useDispatch();
-  const loadQuery = useLoadQuery();
+  useEffect(
+    function loadItemOnce() {
+      if (exists(datasetId) && !loadedOnce) {
+        setLoadedOnce(true);
+
+        if (isFormConfig(item)) {
+          loadFormConfig(item.id);
+        } else {
+          loadQuery(item.id);
+        }
+      }
+    },
+    [loadQuery, loadFormConfig, loadedOnce, item],
+  );
 
   useEffect(() => {
-    if (
-      exists(datasetId) &&
-      !exists(previousPreviousQueryId) &&
-      exists(previousQueryId)
-    ) {
-      loadQuery(datasetId, previousQueryId);
-    }
-  }, [datasetId, previousPreviousQueryId, previousQueryId]);
-
-  useEffect(() => {
-    setUserGroupsValue(getUserGroupsValue(userGroups, previousQuery));
-  }, [userGroups, previousQuery]);
+    setUserGroupsValue(getUserGroupsValue(userGroups, item));
+  }, [userGroups, item]);
 
   const onSetUserGroupsValue = (value: SelectOptionT[] | null) => {
     setUserGroupsValue(value ? value : []);
   };
 
-  if (!previousQuery) {
-    return null;
-  }
-
   const userGroupOptions = userGroups.map((group) => ({
     label: group.label,
     value: group.id,
   }));
+
+  const shareLabel =
+    item.shared && userGroupsValue.length === 0
+      ? t("sharePreviousQueryModal.unshare")
+      : t("common.share");
 
   async function onShareClicked() {
     if (!datasetId) return;
@@ -122,27 +121,28 @@ const SharePreviousQueryModal = ({
       (group) => group.value as string,
     );
 
-    try {
-      await patchQuery(datasetId, previousQueryId, {
-        groups: userGroupsToShare,
-      });
-
-      dispatch(
-        shareQuerySuccess({
-          queryId: previousQueryId,
+    if (isFormConfig(item)) {
+      updateFormConfig(
+        item.id,
+        {
           groups: userGroupsToShare,
-        }),
+        },
+        t("formConfig.shareError"),
       );
-
-      onShareSuccess();
-    } catch (e) {
-      dispatch(setMessage({ message: t("previousQuery.shareError") }));
+    } else {
+      updateQuery(
+        item.id,
+        {
+          groups: userGroupsToShare,
+        },
+        t("previousQuery.shareError"),
+      );
     }
   }
 
   return (
     <Modal onClose={onClose} headline={t("sharePreviousQueryModal.headline")}>
-      <QueryName>{previousQuery.label}</QueryName>
+      <QueryName>{item.label}</QueryName>
       <SxInputMultiSelect
         value={userGroupsValue}
         onChange={onSetUserGroupsValue}
@@ -153,14 +153,10 @@ const SharePreviousQueryModal = ({
         <TransparentButton onClick={onClose}>
           {t("common.cancel")}
         </TransparentButton>
-        <SxPrimaryButton onClick={onShareClicked}>
-          {previousQuery.shared && userGroupsValue.length === 0
-            ? t("sharePreviousQueryModal.unshare")
-            : t("common.share")}
-        </SxPrimaryButton>
+        <SxPrimaryButton onClick={onShareClicked}>{shareLabel}</SxPrimaryButton>
       </Buttons>
     </Modal>
   );
 };
 
-export default SharePreviousQueryModal;
+export default ShareProjectItemModal;

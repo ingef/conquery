@@ -38,7 +38,7 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
 
   const dispatch = useDispatch();
   const postQueryUpload = usePostQueryUpload();
-  const loadQueries = useLoadQueries();
+  const { loadQueries } = useLoadQueries();
 
   const queryUploadConfig = useSelector<StateT, QueryUploadConfigT>(
     (state) => state.startup.config.queryUpload,

@@ -1,7 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { StateT } from "app-types";
-import { FormConfigT } from "js/external-forms/form-configs/reducer";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,10 +8,7 @@ import SplitPane from "react-split-pane";
 
 import type { DatasetIdT } from "../../api/types";
 import { usePrevious } from "../../common/helpers/usePrevious";
-import {
-  selectFormConfigs,
-  useLoadFormConfigs,
-} from "../../external-forms/form-configs/selectors";
+import { selectFormConfigs } from "../../external-forms/form-configs/selectors";
 import EmptyList from "../../list/EmptyList";
 import { canUploadResult } from "../../user/selectors";
 import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
@@ -25,8 +21,8 @@ import PreviousQueriesFolderButton from "./PreviousQueriesFolderButton";
 import PreviousQueriesFolders from "./PreviousQueriesFolders";
 import { ProjectItemT } from "./ProjectItem";
 import PreviousQueries from "./ProjectItems";
-import { useLoadQueries } from "./actions";
-import type { PreviousQueryT } from "./reducer";
+import { useLoadFormConfigs, useLoadQueries } from "./actions";
+import type { FormConfigT, PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
 
 const ScrollContainer = styled("div")`
@@ -231,11 +227,7 @@ const useQueries = ({
     noFoldersActive,
   );
 
-  const loading = useSelector<StateT, boolean>(
-    (state) => state.previousQueries.loading,
-  );
-
-  const loadQueries = useLoadQueries();
+  const { loading, loadQueries } = useLoadQueries();
 
   useEffect(() => {
     if (datasetId) {
@@ -253,15 +245,23 @@ const useFormConfigs = ({
   datasetId,
   searchTerm,
   filter,
+  folders,
+  noFoldersActive,
 }: FilterAndFetchConfig) => {
   const allFormConfigs = useSelector<StateT, FormConfigT[]>(
-    (state) => state.formConfigs.data,
+    (state) => state.previousQueries.formConfigs,
   );
 
   // TODO: Implement
   // const activeFormType = useActiveFormType();
 
-  const formConfigs = selectFormConfigs(allFormConfigs, searchTerm, filter);
+  const formConfigs = selectFormConfigs(
+    allFormConfigs,
+    searchTerm,
+    filter,
+    folders,
+    noFoldersActive,
+  );
 
   const { loading, loadFormConfigs } = useLoadFormConfigs();
 
@@ -269,7 +269,7 @@ const useFormConfigs = ({
     if (datasetId) {
       loadFormConfigs(datasetId);
     }
-  }, [datasetId, loadFormConfigs]);
+  }, [datasetId]);
 
   return {
     formConfigs,
