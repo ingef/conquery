@@ -11,7 +11,7 @@ interface PropsT {
   onDeleteSuccess: () => void;
 }
 
-const DeletePreviousQueryFolderModal: FC<PropsT> = ({
+const DeleteFolderModal: FC<PropsT> = ({
   folder,
   onClose,
   onDeleteSuccess,
@@ -29,4 +29,4 @@ const DeletePreviousQueryFolderModal: FC<PropsT> = ({
   );
 };
 
-export default DeletePreviousQueryFolderModal;
+export default DeleteFolderModal;

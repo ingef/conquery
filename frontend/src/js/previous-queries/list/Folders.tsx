@@ -18,7 +18,7 @@ import {
 } from "../folderFilter/actions";
 
 import AddFolderModal from "./AddFolderModal";
-import DeletePreviousQueryFolderModal from "./DeletePreviousQueryFolderModal";
+import DeleteFolderModal from "./DeleteFolderModal";
 import Folder from "./Folder";
 import { addFolder, useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { useFolders } from "./selector";
@@ -205,7 +205,7 @@ const Folders: FC<Props> = ({ className }) => {
   return (
     <Root className={className}>
       {folderToDelete && (
-        <DeletePreviousQueryFolderModal
+        <DeleteFolderModal
           folder={folderToDelete}
           onClose={() => setFolderToDelete(null)}
           onDeleteSuccess={() => {
