@@ -206,11 +206,11 @@
     "createTag": "Create folder: {{label}}"
   },
   "previousQueries": {
-    "loading": "Loading queries",
+    "loading": "Loading queries and forms",
     "error": "Could not load queries",
     "results": "results",
-    "noQueriesFound": "No queries found",
-    "searchPlaceholder": "Search queries ..."
+    "noQueriesFound": "No queries and forms found",
+    "searchPlaceholder": "Search queries and forms ..."
   },
   "previousQuery": {
     "notExecuted": "Not executed yet",
