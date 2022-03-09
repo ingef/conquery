@@ -9,7 +9,7 @@ const SxFaIcon = styled(FaIcon)`
   margin-right: 8px;
 `;
 
-const Folder = styled("div")<{ active?: boolean; special?: boolean }>`
+const Root = styled("div")<{ active?: boolean; special?: boolean }>`
   display: inline-flex;
   align-items: flex-start;
   padding: 2px 7px;
@@ -55,7 +55,7 @@ interface Props {
   onClick: () => void;
 }
 
-const PreviousQueriesFolder: FC<Props> = ({
+const Folder: FC<Props> = ({
   className,
   resultCount,
   resultWords,
@@ -66,7 +66,7 @@ const PreviousQueriesFolder: FC<Props> = ({
   onClick,
 }) => {
   return (
-    <Folder
+    <Root
       key={folder}
       active={active}
       special={special}
@@ -87,7 +87,7 @@ const PreviousQueriesFolder: FC<Props> = ({
           folder
         )}
       </Text>
-    </Folder>
+    </Root>
   );
 };
-export default PreviousQueriesFolder;
+export default Folder;

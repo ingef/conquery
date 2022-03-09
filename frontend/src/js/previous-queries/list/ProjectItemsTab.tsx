@@ -17,8 +17,8 @@ import { toggleFoldersOpen } from "../folderFilter/actions";
 import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
-import PreviousQueriesFolderButton from "./PreviousQueriesFolderButton";
-import PreviousQueriesFolders from "./PreviousQueriesFolders";
+import Folders from "./Folders";
+import FoldersToggleButton from "./FoldersToggleButton";
 import { ProjectItemT } from "./ProjectItem";
 import PreviousQueries from "./ProjectItems";
 import { useLoadFormConfigs, useLoadQueries } from "./actions";
@@ -56,7 +56,7 @@ const SxUploadQueryResults = styled(UploadQueryResults)`
   margin-left: 5px;
 `;
 
-const SxPreviousQueriesFolders = styled(PreviousQueriesFolders)`
+const SxFolders = styled(Folders)`
   padding: 8px 8px 8px 0;
 `;
 
@@ -97,7 +97,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
   return (
     <>
       <Row>
-        <PreviousQueriesFolderButton
+        <FoldersToggleButton
           active={areFoldersOpen}
           onClick={onToggleFoldersOpen}
         />
@@ -121,7 +121,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
             display: areFoldersOpen ? "inherit" : "none",
           }}
         >
-          <SxPreviousQueriesFolders />
+          <SxFolders />
           <Expand areFoldersOpen={areFoldersOpen}>
             <SxPreviousQueriesFilter />
             <ScrollContainer>

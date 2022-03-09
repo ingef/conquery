@@ -18,7 +18,7 @@ import {
 
 import AddFolderModal from "./AddFolderModal";
 import DeletePreviousQueryFolderModal from "./DeletePreviousQueryFolderModal";
-import PreviousQueriesFolder from "./PreviousQueriesFolder";
+import Folder from "./Folder";
 import { addFolder, useUpdateQuery } from "./actions";
 import { useFolders } from "./selector";
 
@@ -27,7 +27,7 @@ const DROP_TYPES = [
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
-const Folders = styled("div")`
+const Root = styled("div")`
   flex-shrink: 0;
   height: 100%;
   overflow: hidden;
@@ -78,7 +78,7 @@ const SxDropzone = styled(Dropzone)`
   }
 `;
 
-const SxPreviousQueriesFolder = styled(PreviousQueriesFolder)`
+const SxPreviousQueriesFolder = styled(Folder)`
   margin-bottom: 5px;
 `;
 
@@ -126,7 +126,7 @@ interface Props {
   className?: string;
 }
 
-const PreviousQueriesFolders: FC<Props> = ({ className }) => {
+const Folders: FC<Props> = ({ className }) => {
   const folders = useFolders();
   const folderFilter = useSelector<StateT, string[]>(
     (state) => state.previousQueriesFolderFilter.folders,
@@ -189,7 +189,7 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
   );
 
   return (
-    <Folders className={className}>
+    <Root className={className}>
       {folderToDelete && (
         <DeletePreviousQueryFolderModal
           folder={folderToDelete}
@@ -257,7 +257,7 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
             >
               {() => (
                 <>
-                  <PreviousQueriesFolder
+                  <Folder
                     key={folder}
                     folder={folder}
                     active={folderFilter.includes(folder)}
@@ -280,7 +280,7 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
           );
         })}
       </ScrollContainer>
-    </Folders>
+    </Root>
   );
 };
-export default PreviousQueriesFolders;
+export default Folders;
