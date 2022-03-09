@@ -3,10 +3,15 @@
 <#import "templates/permissionCreator.html.ftl" as permissionCreator>
 
 <@layout.layout>
+<div class="container">
 	<div class="row">
 		<div class="col">
-			<h2>Role: ${c.owner.label}</h2>
-			<h3>Id: ${c.owner.id}</h3>
+		<h2>Role ${c.owner.label}</h2>
+		<small class="text-muted">${c.owner.id}</small>
+		</div>
+	</div>
+	<div class="row pt-3">
+		<div class="col">
 
 			<ul class="nav nav-tabs" id="myTab" role="tablist">
 				<li class="nav-item">
@@ -78,4 +83,6 @@
 				</div>
 			</div>
 		</div>
+	</div>
+</div>
 </@layout.layout>
