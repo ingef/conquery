@@ -8,7 +8,7 @@ import {
   configHasFilterType,
   configMatchesSearch,
 } from "../../external-forms/form-configs/selectors";
-import type { PreviousQueriesFilterStateT } from "../filter/reducer";
+import type { ProjectItemsFilterStateT } from "../filter/reducer";
 import type { ProjectItemT } from "../list/ProjectItem";
 import { isFormConfig } from "../list/helpers";
 import type { FormConfigT, PreviousQueryT } from "../list/reducer";
@@ -63,8 +63,8 @@ export const useSearchItems = () => {
   const formConfigs = useSelector<StateT, FormConfigT[]>(
     (state) => state.previousQueries.formConfigs,
   );
-  const filter = useSelector<StateT, PreviousQueriesFilterStateT>(
-    (state) => state.previousQueriesFilter,
+  const filter = useSelector<StateT, ProjectItemsFilterStateT>(
+    (state) => state.projectItemsFilter,
   );
   const filteredItems = useMemo(
     () => [

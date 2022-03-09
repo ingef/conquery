@@ -222,7 +222,7 @@
     "deleteError": "Could not delete query",
     "editFolders": "Edit folders"
   },
-  "previousQueriesFilter": {
+  "projectItemsFilter": {
     "all": "All",
     "own": "Own",
     "shared": "Shared",

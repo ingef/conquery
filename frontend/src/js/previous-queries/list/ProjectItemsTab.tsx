@@ -11,8 +11,8 @@ import { usePrevious } from "../../common/helpers/usePrevious";
 import { selectFormConfigs } from "../../external-forms/form-configs/selectors";
 import EmptyList from "../../list/EmptyList";
 import { canUploadResult } from "../../user/selectors";
-import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
-import type { PreviousQueriesFilterStateT } from "../filter/reducer";
+import ProjectItemsFilter from "../filter/ProjectItemsFilter";
+import type { ProjectItemsFilterStateT } from "../filter/reducer";
 import { toggleFoldersOpen } from "../folderFilter/actions";
 import ProjectItemsSearchBox from "../search/ProjectItemsSearchBox";
 import UploadQueryResults from "../upload/UploadQueryResults";
@@ -46,7 +46,7 @@ const SxProjectItemsSearchBox = styled(ProjectItemsSearchBox)`
   flex-grow: 1;
 `;
 
-const SxPreviousQueriesFilter = styled(PreviousQueriesFilter)`
+const SxProjectItemsFilter = styled(ProjectItemsFilter)`
   margin-top: 5px;
   display: flex;
   align-items: flex-start;
@@ -123,7 +123,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
         >
           <SxFolders />
           <Expand areFoldersOpen={areFoldersOpen}>
-            <SxPreviousQueriesFilter />
+            <SxProjectItemsFilter />
             <ScrollContainer>
               {items.length === 0 && !loading && (
                 <EmptyList emptyMessage={t("previousQueries.noQueriesFound")} />
@@ -167,7 +167,7 @@ const useLeftPaneSize = ({ areFoldersOpen }: { areFoldersOpen?: boolean }) => {
 interface FilterAndFetchConfig {
   datasetId: DatasetIdT | null;
   searchTerm: string | null;
-  filter: PreviousQueriesFilterStateT;
+  filter: ProjectItemsFilterStateT;
   folders: string[];
   noFoldersActive: boolean;
 }
@@ -176,8 +176,8 @@ const useProjectItems = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   const searchTerm = useSelector<StateT, string | null>(
     (state) => state.projectItemsSearch.searchTerm,
   );
-  const filter = useSelector<StateT, PreviousQueriesFilterStateT>(
-    (state) => state.previousQueriesFilter,
+  const filter = useSelector<StateT, ProjectItemsFilterStateT>(
+    (state) => state.projectItemsFilter,
   );
   const folders = useSelector<StateT, string[]>(
     (state) => state.previousQueriesFolderFilter.folders,

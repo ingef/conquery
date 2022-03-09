@@ -8,8 +8,8 @@ import datasets, { DatasetStateT } from "../dataset/reducer";
 import panes, { PanesStateT } from "../pane/reducer";
 import type { TabT } from "../pane/types";
 import preview, { PreviewStateT } from "../preview/reducer";
-import previousQueriesFilter, {
-  PreviousQueriesFilterStateT,
+import projectItemsFilter, {
+  ProjectItemsFilterStateT,
 } from "../previous-queries/filter/reducer";
 import previousQueriesFolderFilter, {
   PreviousQueriesFolderFilterStateT,
@@ -51,7 +51,7 @@ export type StateT = {
   startup: StartupStateT;
   previousQueries: PreviousQueriesStateT;
   projectItemsSearch: ProjectItemsSearchStateT;
-  previousQueriesFilter: PreviousQueriesFilterStateT;
+  projectItemsFilter: ProjectItemsFilterStateT;
   previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
   preview: PreviewStateT;
   snackMessage: SnackMessageStateT;
@@ -70,7 +70,7 @@ const buildAppReducer = (tabs: TabT[]) => {
     panes,
     previousQueries,
     projectItemsSearch,
-    previousQueriesFilter,
+    projectItemsFilter,
     previousQueriesFolderFilter,
     snackMessage,
     preview,

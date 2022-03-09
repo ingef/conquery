@@ -222,7 +222,7 @@
     "deleteError": "Konnte Anfrage nicht löschen",
     "editFolders": "Ordner bearbeiten"
   },
-  "previousQueriesFilter": {
+  "projectItemsFilter": {
     "all": "Alle",
     "own": "Eigene",
     "shared": "Freigegeben",

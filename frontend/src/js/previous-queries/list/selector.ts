@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 
 import { exists } from "../../common/helpers/exists";
 import { configHasFilterType } from "../../external-forms/form-configs/selectors";
-import type { PreviousQueriesFilterStateT } from "../filter/reducer";
+import type { ProjectItemsFilterStateT } from "../filter/reducer";
 
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
@@ -34,7 +34,7 @@ const queryHasId = (query: PreviousQueryT, searchTerm: string) => {
 
 export const queryHasFilterType = (
   query: PreviousQueryT,
-  filter: PreviousQueriesFilterStateT,
+  filter: ProjectItemsFilterStateT,
 ) => {
   if (filter === "all") return true;
 
@@ -63,7 +63,7 @@ export const queryMatchesSearch = (
 export const selectPreviousQueries = (
   queries: PreviousQueryT[],
   searchTerm: string | null,
-  filter: PreviousQueriesFilterStateT,
+  filter: ProjectItemsFilterStateT,
   folderFilter: string[],
   noFoldersActive: boolean,
 ) => {
@@ -87,8 +87,8 @@ export const selectPreviousQueries = (
 };
 
 export const useFolders = () => {
-  const filter = useSelector<StateT, PreviousQueriesFilterStateT>(
-    (state) => state.previousQueriesFilter,
+  const filter = useSelector<StateT, ProjectItemsFilterStateT>(
+    (state) => state.projectItemsFilter,
   );
   const queries = useSelector<StateT, PreviousQueryT[]>(
     (state) => state.previousQueries.queries,

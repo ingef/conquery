@@ -24,9 +24,11 @@ const LeftPane = () => {
     (state) => state.datasets.selectedDatasetId,
   );
   const areTreesAvailable = useAreTreesAvailable();
-  const previousQueriesLoading = useSelector<StateT, boolean>(
-    (state) => state.previousQueries.loading,
-  );
+
+  // TODO: Re-implement
+  // const previousQueriesLoading = useSelector<StateT, boolean>(
+  //   (state) => state.previousQueries.loading,
+  // );
 
   return (
     <Pane
@@ -41,7 +43,8 @@ const LeftPane = () => {
           label: t("leftPane.previousQueries"),
           key: "previousQueries",
           tooltip: t("help.tabPreviousQueries"),
-          loading: previousQueriesLoading,
+          // TODO: Re-implement
+          // loading: previousQueriesLoading,
         },
       ]}
     >
