@@ -21,7 +21,7 @@ const configHasId = (config: FormConfigT, searchTerm: string) => {
   return config.id.toString() === searchTerm;
 };
 
-const configHasFilterType = (
+export const configHasFilterType = (
   config: FormConfigT,
   filter: string,
   { activeFormType }: { activeFormType: string | null },

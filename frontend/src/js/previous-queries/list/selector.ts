@@ -3,9 +3,10 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { exists } from "../../common/helpers/exists";
+import { configHasFilterType } from "../../external-forms/form-configs/selectors";
 import type { PreviousQueriesFilterStateT } from "../filter/reducer";
 
-import type { PreviousQueryT } from "./reducer";
+import type { FormConfigT, PreviousQueryT } from "./reducer";
 
 const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
   return (
@@ -92,7 +93,9 @@ export const useFolders = () => {
   const queries = useSelector<StateT, PreviousQueryT[]>(
     (state) => state.previousQueries.queries,
   );
-
+  const formConfigs = useSelector<StateT, FormConfigT[]>(
+    (state) => state.previousQueries.formConfigs,
+  );
   const localFolders = useSelector<StateT, string[]>(
     (state) => state.previousQueries.localFolders,
   );
@@ -104,9 +107,14 @@ export const useFolders = () => {
           ...queries
             .filter((query) => queryHasFilterType(query, filter))
             .flatMap((query) => query.tags),
+          ...formConfigs
+            .filter((config) =>
+              configHasFilterType(config, filter, { activeFormType: null }),
+            )
+            .flatMap((config) => config.tags),
           ...localFolders,
         ]),
       ).sort(),
-    [queries, localFolders, filter],
+    [queries, formConfigs, localFolders, filter],
   );
 };
