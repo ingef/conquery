@@ -9,7 +9,8 @@ const Button = styled("button")<{
   border: 0;
   background-color: transparent;
   margin: 0 2px;
-  padding: ${({ size }) => (size === "L" ? "5px 8px" : "5px 4px")};
+  height: 30px;
+  padding: ${({ size }) => (size === "L" ? "0px 8px" : "0px 4px")};
   font-size: ${({ theme, size }) =>
     size === "L" ? theme.font.sm : theme.font.xs};
 

@@ -13,8 +13,10 @@ import EmptyList from "../../list/EmptyList";
 import { canUploadResult } from "../../user/selectors";
 import ProjectItemsFilter from "../filter/ProjectItemsFilter";
 import type { ProjectItemsFilterStateT } from "../filter/reducer";
-import { toggleFoldersOpen } from "../folderFilter/actions";
+import { toggleFoldersOpen } from "../folder-filter/actions";
 import ProjectItemsSearchBox from "../search/ProjectItemsSearchBox";
+import ProjectItemsTypeFilter from "../type-filter/ProjectItemsTypeFilter";
+import { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
 import Folders from "./Folders";
@@ -36,6 +38,7 @@ const Row = styled("div")`
   align-items: flex-start;
   margin: 8px 10px 0;
 `;
+
 const FoldersAndQueries = styled(Row)`
   flex-grow: 1;
   margin: 8px 8px 0 10px;
@@ -46,10 +49,20 @@ const SxProjectItemsSearchBox = styled(ProjectItemsSearchBox)`
   flex-grow: 1;
 `;
 
-const SxProjectItemsFilter = styled(ProjectItemsFilter)`
-  margin-top: 5px;
+const Filters = styled("div")`
   display: flex;
   align-items: flex-start;
+`;
+const SxProjectItemsFilter = styled(ProjectItemsFilter)`
+  display: flex;
+  align-items: flex-start;
+`;
+
+const SxProjectItemsTypeFilter = styled(ProjectItemsTypeFilter)`
+  display: flex;
+  align-items: flex-start;
+  margin-right: 10px;
+  padding-right: 10px;
 `;
 
 const SxUploadQueryResults = styled(UploadQueryResults)`
@@ -123,7 +136,10 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
         >
           <SxFolders />
           <Expand areFoldersOpen={areFoldersOpen}>
-            <SxProjectItemsFilter />
+            <Filters>
+              <SxProjectItemsTypeFilter />
+              <SxProjectItemsFilter />
+            </Filters>
             <ScrollContainer>
               {items.length === 0 && !loading && (
                 <EmptyList emptyMessage={t("previousQueries.noQueriesFound")} />
@@ -168,6 +184,7 @@ interface FilterAndFetchConfig {
   datasetId: DatasetIdT | null;
   searchTerm: string | null;
   filter: ProjectItemsFilterStateT;
+  typeFilter: ProjectItemsTypeFilterStateT;
   folders: string[];
   noFoldersActive: boolean;
 }
@@ -178,6 +195,9 @@ const useProjectItems = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   );
   const filter = useSelector<StateT, ProjectItemsFilterStateT>(
     (state) => state.projectItemsFilter,
+  );
+  const typeFilter = useSelector<StateT, ProjectItemsTypeFilterStateT>(
+    (state) => state.projectItemsTypeFilter,
   );
   const folders = useSelector<StateT, string[]>(
     (state) => state.previousQueriesFolderFilter.folders,
@@ -190,6 +210,7 @@ const useProjectItems = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
     datasetId,
     searchTerm,
     filter,
+    typeFilter,
     folders,
     noFoldersActive,
   };
@@ -197,7 +218,14 @@ const useProjectItems = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   const { queries, loading: loadingQueries } = useQueries(config);
   const { formConfigs, loading: loadingFormConfigs } = useFormConfigs(config);
 
-  const items: ProjectItemT[] = [...queries, ...formConfigs].sort(
+  const baseItems =
+    typeFilter === "queries"
+      ? queries
+      : typeFilter === "configs"
+      ? formConfigs
+      : [...queries, ...formConfigs];
+
+  const items: ProjectItemT[] = baseItems.sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 

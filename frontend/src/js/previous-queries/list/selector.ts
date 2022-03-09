@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { exists } from "../../common/helpers/exists";
 import { configHasFilterType } from "../../external-forms/form-configs/selectors";
 import type { ProjectItemsFilterStateT } from "../filter/reducer";
+import { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
 
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 

@@ -228,6 +228,10 @@
     "shared": "Shared",
     "system": "SYSTEM"
   },
+  "projectItemsTypeFilter": {
+    "queries": "Queries only",
+    "configs": "Forms only"
+  },
   "formConfigsFilter": {
     "activeForm": "Active form"
   },

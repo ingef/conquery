@@ -15,7 +15,7 @@ import {
   removeFolderFromFilter,
   setFolderFilter,
   toggleNoFoldersFilter,
-} from "../folderFilter/actions";
+} from "../folder-filter/actions";
 
 import AddFolderModal from "./AddFolderModal";
 import DeleteFolderModal from "./DeleteFolderModal";

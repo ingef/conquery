@@ -13,13 +13,16 @@ import projectItemsFilter, {
 } from "../previous-queries/filter/reducer";
 import previousQueriesFolderFilter, {
   PreviousQueriesFolderFilterStateT,
-} from "../previous-queries/folderFilter/reducer";
+} from "../previous-queries/folder-filter/reducer";
 import previousQueries, {
   PreviousQueriesStateT,
 } from "../previous-queries/list/reducer";
 import projectItemsSearch, {
   ProjectItemsSearchStateT,
 } from "../previous-queries/search/reducer";
+import projectItemsTypeFilter, {
+  ProjectItemsTypeFilterStateT,
+} from "../previous-queries/type-filter/reducer";
 import {
   createQueryNodeEditorReducer,
   QueryNodeEditorStateT,
@@ -52,6 +55,7 @@ export type StateT = {
   previousQueries: PreviousQueriesStateT;
   projectItemsSearch: ProjectItemsSearchStateT;
   projectItemsFilter: ProjectItemsFilterStateT;
+  projectItemsTypeFilter: ProjectItemsTypeFilterStateT;
   previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
   preview: PreviewStateT;
   snackMessage: SnackMessageStateT;
@@ -71,6 +75,7 @@ const buildAppReducer = (tabs: TabT[]) => {
     previousQueries,
     projectItemsSearch,
     projectItemsFilter,
+    projectItemsTypeFilter,
     previousQueriesFolderFilter,
     snackMessage,
     preview,

@@ -228,6 +228,10 @@
     "shared": "Freigegeben",
     "system": "SYSTEM"
   },
+  "projectItemsTypeFilter": {
+    "queries": "Nur Anfragen",
+    "configs": "Nur Formulare"
+  },
   "formConfigsFilter": {
     "activeForm": "Aktives Formular"
   },
