@@ -1,8 +1,7 @@
-#!/bin/env bash
-proj_dir=$(readlink -f `dirname $0`/..)
+#!/bin/bash
 
-pushd "$proj_dir/frontend"
+pushd "./frontend"
 
-yarn serve 
+yarn serve
 
 popd
