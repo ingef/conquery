@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import DeleteModal from "../../modal/DeleteModal";
 
-import { useDeletePreviousQueryFolder } from "./useDeletePreviousQueryFolder";
+import { useDeleteProjectItemFolder } from "./useDeleteProjectItemFolder";
 
 interface PropsT {
   folder: string;
@@ -17,17 +17,14 @@ const DeletePreviousQueryFolderModal: FC<PropsT> = ({
   onDeleteSuccess,
 }) => {
   const { t } = useTranslation();
-  const onDeletePreviousQuery = useDeletePreviousQueryFolder(
-    folder,
-    onDeleteSuccess,
-  );
+  const onDeleteFolder = useDeleteProjectItemFolder(folder, onDeleteSuccess);
 
   return (
     <DeleteModal
       onClose={onClose}
       headline={t("deletePreviousQueryFolderModal.areYouSure")}
       description={t("deletePreviousQueryFolderModal.description", { folder })}
-      onDelete={onDeletePreviousQuery}
+      onDelete={onDeleteFolder}
     />
   );
 };

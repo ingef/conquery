@@ -179,7 +179,7 @@ const Folders: FC<Props> = ({ className }) => {
       updateQuery(
         item.id,
         { tags: [...item.tags, folder] },
-        t("previousQueries.retagError"),
+        t("previousQuery.retagError"),
       );
     }
   };
