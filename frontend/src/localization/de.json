@@ -206,10 +206,10 @@
     "createTag": "Zu Ordner hinzufügen: {{label}}"
   },
   "previousQueries": {
-    "loading": "Lade Anfragen",
+    "loading": "Lade Anfragen und Formulare",
     "error": "Konnte Anfragen nicht laden",
     "results": "Ergebnisse",
-    "noQueriesFound": "Keine Anfragen gefunden",
+    "noQueriesFound": "Keine Anfragen oder Formulare gefunden",
     "searchPlaceholder": "Anfragen und Formulare durchsuchen ..."
   },
   "previousQuery": {
