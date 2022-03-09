@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import type { DatasetIdT, SelectOptionT, UserGroupT } from "../../api/types";
+import type { SelectOptionT, UserGroupT } from "../../api/types";
 import PrimaryButton from "../../button/PrimaryButton";
 import { TransparentButton } from "../../button/TransparentButton";
-import { exists } from "../../common/helpers/exists";
 import Modal from "../../modal/Modal";
 import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
 
@@ -61,9 +60,6 @@ interface PropsT {
 
 const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
   const { t } = useTranslation();
-  const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId,
-  );
   const userGroups = useSelector<StateT, UserGroupT[]>((state) =>
     state.user.me ? state.user.me.groups : [],
   );
@@ -83,7 +79,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
 
   useEffect(
     function loadItemOnce() {
-      if (exists(datasetId) && !loadedOnce) {
+      if (!loadedOnce) {
         setLoadedOnce(true);
 
         if (isFormConfig(item)) {
@@ -115,8 +111,6 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
       : t("common.share");
 
   async function onShareClicked() {
-    if (!datasetId) return;
-
     const userGroupsToShare = userGroupsValue.map(
       (group) => group.value as string,
     );

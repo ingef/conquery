@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import IconButton from "../../button/IconButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
+import { DragItemFormConfig } from "../../external-forms/types";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
 import Dropzone from "../../ui-components/Dropzone";
@@ -19,10 +20,11 @@ import {
 import AddFolderModal from "./AddFolderModal";
 import DeletePreviousQueryFolderModal from "./DeletePreviousQueryFolderModal";
 import Folder from "./Folder";
-import { addFolder, useUpdateQuery } from "./actions";
+import { addFolder, useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { useFolders } from "./selector";
 
 const DROP_TYPES = [
+  DNDType.FORM_CONFIG,
   DNDType.PREVIOUS_QUERY,
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
@@ -158,16 +160,28 @@ const Folders: FC<Props> = ({ className }) => {
   };
 
   const { updateQuery } = useUpdateQuery();
-  const onDropIntoFolder = (query: DragItemQuery, folder: string) => {
-    if (query.tags.includes(folder)) {
+  const { updateFormConfig } = useUpdateFormConfig();
+  const onDropIntoFolder = (
+    item: DragItemQuery | DragItemFormConfig,
+    folder: string,
+  ) => {
+    if (item.tags.includes(folder)) {
       return;
     }
 
-    updateQuery(
-      query.id,
-      { tags: [...query.tags, folder] },
-      t("previousQueries.retagError"),
-    );
+    if (item.type === DNDType.FORM_CONFIG) {
+      updateFormConfig(
+        item.id,
+        { tags: [...item.tags, folder] },
+        t("formConfig.retagError"),
+      );
+    } else {
+      updateQuery(
+        item.id,
+        { tags: [...item.tags, folder] },
+        t("previousQueries.retagError"),
+      );
+    }
   };
 
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
@@ -246,10 +260,16 @@ const Folders: FC<Props> = ({ className }) => {
             <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
               key={`${folder}-${i}`}
               naked
-              onDrop={(item) => onDropIntoFolder(item as DragItemQuery, folder)}
+              onDrop={(item) =>
+                onDropIntoFolder(
+                  item as DragItemQuery | DragItemFormConfig,
+                  folder,
+                )
+              }
               acceptedDropTypes={DROP_TYPES}
               canDrop={(item) =>
-                (item.type === DNDType.PREVIOUS_QUERY ||
+                (item.type === DNDType.FORM_CONFIG ||
+                  item.type === DNDType.PREVIOUS_QUERY ||
                   item.type === DNDType.PREVIOUS_SECONDARY_ID_QUERY) &&
                 !!(item.own || item.shared)
               }

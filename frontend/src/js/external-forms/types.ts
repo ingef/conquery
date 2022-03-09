@@ -13,4 +13,7 @@ export interface DragItemFormConfig {
   type: DNDType.FORM_CONFIG;
   id: string;
   label: string;
+  tags: string[];
+  own: boolean;
+  shared: boolean;
 }
