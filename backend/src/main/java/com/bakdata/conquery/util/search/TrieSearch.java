@@ -2,7 +2,9 @@ package com.bakdata.conquery.util.search;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.IntSummaryStatistics;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +19,12 @@ import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2DoubleAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 
 @NoArgsConstructor
+@Slf4j
 public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * We saturate matches here to avoid favoring very short keywords, when multiple keywords are used.
@@ -29,10 +33,8 @@ public class TrieSearch<T extends Comparable<T>> {
 	private static final int SUFFIX_CUTOFF = 1;
 
 	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"']+"); //TODO FK: Investigate better split patterns
-	/**
-	 * @implSpec the underlying type of the trie is a union of T or List<T>, please never access it directly.
-	 */
-	private final PatriciaTrie<Object> trie = new PatriciaTrie<>();
+
+	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
 
 	public void clear() {
 		trie.clear();
@@ -80,21 +82,21 @@ public class TrieSearch<T extends Comparable<T>> {
 
 		for (String keyword : keywords) {
 			// Query trie for all items associated with extensions of keywords
-			final SortedMap<String, Object> hits = trie.prefixMap(keyword);
+			final SortedMap<String, List<T>> hits = trie.prefixMap(keyword);
 
-			for (Map.Entry<String, Object> entry : hits.entrySet()) {
+			for (Map.Entry<String, List<T>> entry : hits.entrySet()) {
 
 				// calculate and update weights for all queried items
 				final String itemWord = entry.getKey();
 				final double weight = weightWord(keyword, itemWord);
 
-				raise(entry.getValue())
-						.forEach(item ->
-								 {
-									 // We combine hits multiplicative to favor items with multiple hits
-									 final double currentWeight = itemWeights.getOrDefault(item, 1);
-									 itemWeights.put(item, currentWeight * weight);
-								 });
+				entry.getValue()
+					 .forEach(item ->
+							  {
+								  // We combine hits multiplicative to favor items with multiple hits
+								  final double currentWeight = itemWeights.getOrDefault(item, 1);
+								  itemWeights.put(item, currentWeight * weight);
+							  });
 			}
 		}
 
@@ -118,39 +120,29 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	private Stream<T> doGet(String kw) {
-		final Object maybeItems = trie.get(kw);
-
-		return raise(maybeItems);
+		return trie.getOrDefault(kw, Collections.emptyList()).stream();
 	}
 
-	private Stream<T> raise(Object maybeItems) {
-		if (maybeItems == null) {
-			return Stream.empty();
-		}
-
-		if (maybeItems instanceof ArrayList) {
-			return ((ArrayList<T>) maybeItems).stream();
-		}
-
-		return Stream.of(((T) maybeItems));
-	}
 
 	private void doPut(String kw, T item) {
 		trie.compute(kw, (ignored, prior) -> {
-			if (prior instanceof ArrayList) {
-
-				((ArrayList) prior).add(item);
-
-				return prior;
+			if (prior == null) {
+				return Collections.singletonList(item);
 			}
-			if (prior != null) {
-				final List items = new ArrayList<>(2);
-				items.add(prior);
+
+			if (prior.size() == 1) {
+				final List<T> items = new ArrayList<>(2);
+				items.add(prior.get(0));
 				items.add(item);
 
 				return items;
 			}
-			return item;
+
+			prior.add(item);
+
+			return prior;
+
+
 		});
 	}
 
@@ -169,7 +161,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	public Collection<T> listItems() {
 		return trie.values().stream()
-				   .flatMap(this::raise)
+				   .flatMap(Collection::stream)
 				   .distinct()
 				   .sorted()
 				   .collect(Collectors.toList());
@@ -177,6 +169,22 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	public long calculateSize() {
 		return trie.values().stream().distinct().count();
+	}
+
+	public void logStats() {
+		final IntSummaryStatistics statistics =
+				trie.values()
+					.stream()
+					.mapToInt(List::size)
+					.summaryStatistics();
+
+		final long singletons =
+				trie.values().stream()
+					.mapToInt(List::size)
+					.filter(length -> length == 1)
+					.count();
+
+		log.info("Stats= `{}`, with {} singletons.", statistics, singletons);
 	}
 
 }

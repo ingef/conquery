@@ -38,16 +38,13 @@ public class FilterSearch {
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
 	public void updateSearch(NamespaceStorage storage, JobManager jobManager, CSVConfig parser) {
-		searchCache.clear();//TODO this is dangerous with shared cache
-
-
 		final Map<String, Supplier<TrieSearch<FEValue>>> suppliers =
 				storage.getAllConcepts().stream()
 					   .flatMap(c -> c.getConnectors().stream())
 					   .flatMap(co -> co.collectAllFilters().stream())
 					   .filter(f -> f instanceof AbstractSelectFilter)
-					   .map(AbstractSelectFilter.class::cast)
-					   .map(f -> ((Map<String, Supplier<TrieSearch<FEValue>>>) f.initializeSourceSearch(parser, storage, this)))
+					   .map(f -> ((AbstractSelectFilter<?>) f))
+					   .map(f -> f.initializeSourceSearch(parser, storage, this))
 
 					   .map(Map::entrySet)
 					   .flatMap(Collection::stream)
@@ -58,7 +55,11 @@ public class FilterSearch {
 
 			suppliers.forEach((id, supplier) -> {
 				service.submit(() -> {
-					searchCache.put(id, supplier.get());
+					final TrieSearch<FEValue> search = supplier.get();
+					searchCache.put(id, search);
+
+					log.info("Stats for `{}`", id);
+					search.logStats();
 				});
 			});
 

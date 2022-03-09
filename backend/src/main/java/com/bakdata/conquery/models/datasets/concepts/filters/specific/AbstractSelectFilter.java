@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -105,8 +104,16 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		}
 
 		{
-			IId<?> columnRefId = getColumn().getSecondaryId() != null ? getColumn().getSecondaryId().getId() : getColumn().getId();
-			out.put(columnRefId.toString(), () -> collectRawSearchItems(storage));
+			String id = getColumn().getId().toString();
+
+			if (getColumn().getSharedDictionary() != null) {
+				id = getColumn().getSharedDictionary();
+			}
+			else if (getColumn().getSecondaryId() != null) {
+				id = getColumn().getSecondaryId().toString();
+			}
+
+			out.put(id, () -> collectRawSearchItems(storage));
 		}
 
 		return out;
