@@ -17,8 +17,8 @@ import previousQueriesFolderFilter, {
 import previousQueries, {
   PreviousQueriesStateT,
 } from "../previous-queries/list/reducer";
-import previousQueriesSearch, {
-  QueriesSearchStateT,
+import projectItemsSearch, {
+  ProjectItemsSearchStateT,
 } from "../previous-queries/search/reducer";
 import {
   createQueryNodeEditorReducer,
@@ -50,7 +50,7 @@ export type StateT = {
   queryNodeEditor: QueryNodeEditorStateT;
   startup: StartupStateT;
   previousQueries: PreviousQueriesStateT;
-  previousQueriesSearch: QueriesSearchStateT;
+  projectItemsSearch: ProjectItemsSearchStateT;
   previousQueriesFilter: PreviousQueriesFilterStateT;
   previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
   preview: PreviewStateT;
@@ -69,7 +69,7 @@ const buildAppReducer = (tabs: TabT[]) => {
     tooltip,
     panes,
     previousQueries,
-    previousQueriesSearch,
+    projectItemsSearch,
     previousQueriesFilter,
     previousQueriesFolderFilter,
     snackMessage,

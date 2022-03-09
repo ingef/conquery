@@ -5,23 +5,23 @@ import { useSelector, useDispatch } from "react-redux";
 
 import SearchBar from "../../search-bar/SearchBar";
 
-import { clearQueriesSearch, useSearchQueries } from "./actions";
-import type { QueriesSearchStateT } from "./reducer";
+import { clearSearch, useSearchItems } from "./actions";
+import type { ProjectItemsSearchStateT } from "./reducer";
 
 interface Props {
   className?: string;
 }
 
-const PreviousQueriesSearchBox: FC<Props> = ({ className }) => {
+const ProjectItemsSearchBox: FC<Props> = ({ className }) => {
   const { t } = useTranslation();
-  const search = useSelector<StateT, QueriesSearchStateT>(
-    (state) => state.previousQueriesSearch,
+  const search = useSelector<StateT, ProjectItemsSearchStateT>(
+    (state) => state.projectItemsSearch,
   );
 
   const dispatch = useDispatch();
-  const searchQueries = useSearchQueries();
+  const searchItems = useSearchItems();
 
-  const onClear = () => dispatch(clearQueriesSearch());
+  const onClear = () => dispatch(clearSearch());
 
   return (
     <SearchBar
@@ -29,9 +29,9 @@ const PreviousQueriesSearchBox: FC<Props> = ({ className }) => {
       searchTerm={search.searchTerm}
       placeholder={t("previousQueries.searchPlaceholder")}
       onClear={onClear}
-      onSearch={searchQueries}
+      onSearch={searchItems}
     />
   );
 };
 
-export default PreviousQueriesSearchBox;
+export default ProjectItemsSearchBox;

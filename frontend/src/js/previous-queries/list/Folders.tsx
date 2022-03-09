@@ -137,10 +137,10 @@ const Folders: FC<Props> = ({ className }) => {
     (state) => state.previousQueriesFolderFilter.noFoldersActive,
   );
   const searchResult = useSelector<StateT, Record<string, number> | null>(
-    (state) => state.previousQueriesSearch.result,
+    (state) => state.projectItemsSearch.result,
   );
   const searchResultWords = useSelector<StateT, string[]>(
-    (state) => state.previousQueriesSearch.words,
+    (state) => state.projectItemsSearch.words,
   );
 
   const { t } = useTranslation();

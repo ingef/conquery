@@ -23,7 +23,7 @@ const SxEditableText = styled(EditableText)`
 
 const useHighlightedWords = () => {
   return useSelector<StateT, string[]>(
-    (state) => state.previousQueriesSearch.words,
+    (state) => state.projectItemsSearch.words,
   );
 };
 

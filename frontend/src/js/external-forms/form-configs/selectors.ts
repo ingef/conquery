@@ -54,7 +54,10 @@ const configMatchesFolderFilter = (
     : folders.every((folder) => configHasFolder(config, folder));
 };
 
-const configMatchesSearch = (config: FormConfigT, searchTerm: string | null) =>
+export const configMatchesSearch = (
+  config: FormConfigT,
+  searchTerm: string | null,
+) =>
   !exists(searchTerm) ||
   configHasId(config, searchTerm) ||
   configHasLabel(config, searchTerm) ||

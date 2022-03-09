@@ -14,7 +14,7 @@ import { canUploadResult } from "../../user/selectors";
 import PreviousQueriesFilter from "../filter/PreviousQueriesFilter";
 import type { PreviousQueriesFilterStateT } from "../filter/reducer";
 import { toggleFoldersOpen } from "../folderFilter/actions";
-import PreviousQueriesSearchBox from "../search/PreviousQueriesSearchBox";
+import ProjectItemsSearchBox from "../search/ProjectItemsSearchBox";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
 import Folders from "./Folders";
@@ -42,7 +42,7 @@ const FoldersAndQueries = styled(Row)`
   overflow: hidden;
   position: relative;
 `;
-const SxPreviousQueriesSearchBox = styled(PreviousQueriesSearchBox)`
+const SxProjectItemsSearchBox = styled(ProjectItemsSearchBox)`
   flex-grow: 1;
 `;
 
@@ -101,7 +101,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
           active={areFoldersOpen}
           onClick={onToggleFoldersOpen}
         />
-        <SxPreviousQueriesSearchBox />
+        <SxProjectItemsSearchBox />
         {hasPermissionToUpload && (
           <SxUploadQueryResults datasetId={datasetId} />
         )}
@@ -174,7 +174,7 @@ interface FilterAndFetchConfig {
 
 const useProjectItems = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   const searchTerm = useSelector<StateT, string | null>(
-    (state) => state.previousQueriesSearch.searchTerm,
+    (state) => state.projectItemsSearch.searchTerm,
   );
   const filter = useSelector<StateT, PreviousQueriesFilterStateT>(
     (state) => state.previousQueriesFilter,
