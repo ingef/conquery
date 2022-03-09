@@ -2,15 +2,25 @@ import { useTheme, Theme, css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { FC } from "react";
 
+const bottomBorderBase = css`
+  content: "";
+  position: absolute;
+  left: 0px;
+  right: 0px;
+  height: 3px;
+  bottom: 0px;
+`;
 const Button = styled("button")<{
   selected?: boolean;
+  highlightColor: string;
   size?: "M" | "L";
 }>`
+  position: relative;
   border: 0;
   background-color: transparent;
   margin: 0 2px;
-  height: 30px;
-  padding: ${({ size }) => (size === "L" ? "0px 8px" : "0px 4px")};
+  height: 26px;
+  padding: ${({ size }) => (size === "L" ? "0px 6px" : "0px 3px")};
   font-size: ${({ theme, size }) =>
     size === "L" ? theme.font.sm : theme.font.xs};
 
@@ -20,17 +30,23 @@ const Button = styled("button")<{
       text-transform: uppercase;
     `};
 
-  ${({ theme, selected }) =>
+  ${({ selected, highlightColor }) =>
     selected &&
     css`
-      border-bottom: 3px solid ${theme.col.blueGrayLight};
-    `};
+      &::after {
+        ${bottomBorderBase};
+        background-color: ${highlightColor};
+      }
+    `}
   ${({ theme, selected }) =>
     !selected &&
     css`
       color: ${theme.col.gray};
       &:hover {
-        border-bottom: 3px solid ${theme.col.grayLight} !important;
+        &::after {
+          ${bottomBorderBase};
+          background-color: ${theme.col.grayLight};
+        }
       }
     `};
 `;
@@ -61,11 +77,11 @@ const SmallTabNavigationButton: FC<PropsT> = ({
   onClick,
 }) => {
   const theme = useTheme();
-  const borderColor = valueToColor(theme, value);
+  const highlightColor = valueToColor(theme, value);
 
   return (
     <Button
-      style={{ borderColor }}
+      highlightColor={highlightColor}
       type="button"
       size={size}
       selected={isSelected}

@@ -52,6 +52,7 @@ const SxProjectItemsSearchBox = styled(ProjectItemsSearchBox)`
 const Filters = styled("div")`
   display: flex;
   align-items: flex-start;
+  margin: 8px 0;
 `;
 const SxProjectItemsFilter = styled(ProjectItemsFilter)`
   display: flex;
@@ -61,7 +62,7 @@ const SxProjectItemsFilter = styled(ProjectItemsFilter)`
 const SxProjectItemsTypeFilter = styled(ProjectItemsTypeFilter)`
   display: flex;
   align-items: flex-start;
-  margin-right: 10px;
+  margin-right: 20px;
   padding-right: 10px;
 `;
 
@@ -130,7 +131,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
           onDragFinished={(newSize) => setLeftPaneSize(newSize)}
           resizerStyle={{
             zIndex: 0, // To set below overlaying dropdowns
-            marginTop: "35px",
+            marginTop: "46px",
             display: areFoldersOpen ? "inherit" : "none",
           }}
         >

@@ -84,14 +84,6 @@ const SxPreviousQueriesFolder = styled(Folder)`
   margin-bottom: 5px;
 `;
 
-const SmallLabel = styled("p")`
-  margin: 0;
-  padding: 0 5px 10px;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-  font-weight: 400;
-`;
-
 const ScrollContainer = styled("div")`
   overflow-y: auto;
   overflow-x: hidden;
@@ -214,7 +206,6 @@ const Folders: FC<Props> = ({ className }) => {
           }}
         />
       )}
-      <SmallLabel>{t("folders.headline")}</SmallLabel>
       <Row ref={parentRef}>
         <AddFolderIconButton
           icon="plus"
