@@ -209,7 +209,7 @@
     "loading": "Lade Anfragen und Formulare",
     "error": "Konnte Anfragen nicht laden",
     "results": "Ergebnisse",
-    "noQueriesFound": "Keine Anfragen oder Formulare gefunden",
+    "noQueriesFound": "Keine Anfragen / Formulare gefunden",
     "searchPlaceholder": "Anfragen und Formulare durchsuchen ..."
   },
   "previousQuery": {
