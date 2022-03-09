@@ -26,7 +26,7 @@ public class FEValue implements Comparable<FEValue> {
 
 	private String optionValue;
 
-	public FEValue(String label, String value) {
+	public FEValue(@NotNull String label, @NotNull String value) {
 		this.label = label;
 		this.value = value;
 	}
