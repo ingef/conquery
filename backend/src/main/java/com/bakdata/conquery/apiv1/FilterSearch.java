@@ -49,17 +49,22 @@ public class FilterSearch {
 
 			suppliers.forEach((id, fillers) -> {
 				service.submit(() -> {
-					final TrieSearch<FEValue> search = new TrieSearch<>();
+					try {
+						final TrieSearch<FEValue> search = new TrieSearch<>();
 
-					fillers.stream()
-						   .flatMap(Function.identity())
-						   .distinct()
-						   .forEach(item -> search.addItem(item, item.extractKeywords()));
+						fillers.stream()
+							   .flatMap(Function.identity())
+							   .distinct()
+							   .forEach(item -> search.addItem(item, item.extractKeywords()));
 
-					searchCache.put(id, search);
+						searchCache.put(id, search);
 
-					log.info("Stats for `{}`", id);
-					search.logStats();
+						log.info("Stats for `{}`", id);
+						search.logStats();
+					}
+					catch (Exception e) {
+						log.error("Failed to create search for {}", id, e);
+					}
 				});
 			});
 

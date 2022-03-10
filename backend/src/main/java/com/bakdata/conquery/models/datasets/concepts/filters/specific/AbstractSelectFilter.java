@@ -107,7 +107,6 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		}
 
 		// Collect data from raw underlying data, try to unify among columns if at all possible
-		//TODO this is not right: Search has to be reused here since columns are not necessarily filled with identical data!
 		{
 			String id = getColumn().getId().toString();
 
