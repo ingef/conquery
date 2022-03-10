@@ -39,11 +39,11 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 	private static String[] RAW_LINES = {
 			"id,label,option",
-			"a,label-1,ov-1",
-			"aab,label-2,ov-2",
-			"aaa,label-3 and label-4,ov-4",
-			"baaa,label-5,ov-5",
-			"b,label-6,ov-6"
+			"a,lbl-1,ov-1",
+			"aab,lbl-2,ov-2",
+			"aaa,lbl-3 & lbl-4,ov-4",
+			"baaa,lbl-5,ov-5",
+			"b,lbl-6,ov-6"
 	};
 
 	@Override
@@ -116,7 +116,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 													 ), MediaType.APPLICATION_JSON_TYPE));
 
 			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
-			assertThat(resolvedFromCsv.getValues().stream().map(FEValue::getValue)).containsExactly("a", "aab", "aaa");
+			assertThat(resolvedFromCsv.getValues().stream().map(FEValue::getValue)).containsExactly("a", "aaa", "aab", "baaa");
 		}
 
 

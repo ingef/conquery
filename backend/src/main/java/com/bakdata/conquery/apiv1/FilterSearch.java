@@ -6,7 +6,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -33,7 +34,7 @@ public class FilterSearch {
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
 	public void updateSearch(NamespaceStorage storage, JobManager jobManager, CSVConfig parser) {
-		final Map<String, List<Consumer<TrieSearch<FEValue>>>> suppliers = new HashMap<>();
+		final Map<String, List<Stream<FEValue>>> suppliers = new HashMap<>();
 
 		storage.getAllConcepts().stream()
 			   .flatMap(c -> c.getConnectors().stream())
@@ -48,12 +49,12 @@ public class FilterSearch {
 
 			suppliers.forEach((id, fillers) -> {
 				service.submit(() -> {
-
 					final TrieSearch<FEValue> search = new TrieSearch<>();
 
-					for (Consumer<TrieSearch<FEValue>> filler : fillers) {
-						filler.accept(search);
-					}
+					fillers.stream()
+						   .flatMap(Function.identity())
+						   .distinct()
+						   .forEach(item -> search.addItem(item, item.extractKeywords()));
 
 					searchCache.put(id, search);
 

@@ -41,7 +41,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	private Stream<String> suffixes(String word) {
-		return IntStream.range(0, Math.max(0, word.length() - SUFFIX_CUTOFF))
+		return IntStream.range(0, Math.max(1, word.length() - SUFFIX_CUTOFF))
 						.mapToObj(word::substring);
 	}
 
@@ -141,8 +141,6 @@ public class TrieSearch<T extends Comparable<T>> {
 			prior.add(item);
 
 			return prior;
-
-
 		});
 	}
 
@@ -169,6 +167,10 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	public long calculateSize() {
 		return trie.values().stream().distinct().count();
+	}
+
+	public void shrink() {
+		//TODO allocate lists of optimal length for all keys and make them readonly
 	}
 
 	public void logStats() {

@@ -7,8 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
@@ -20,7 +21,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
@@ -91,19 +91,19 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	}
 
 
-	public void collectSourceSearchTasks(CSVConfig parserConfig, NamespacedStorage storage, Map<String, List<Consumer<TrieSearch<FEValue>>>> suppliers) {
+	public void collectSourceSearchTasks(CSVConfig parserConfig, NamespacedStorage storage, Map<String, List<Stream<FEValue>>> suppliers) {
 
 		// Collect data from csv template
 		if (getTemplate() != null) {
 			String id = getTemplate().getFilePath();
-			suppliers.put(id, List.of((search) -> collectTemplateSearchItems(parserConfig, search)));
+			suppliers.put(id, List.of(collectTemplateSearchItems(parserConfig)));
 		}
 
 
 		// Collect data from labels
 		if (!getLabels().isEmpty()) {
 			String id = getId().toString();
-			suppliers.put(id, List.of(this::collectLabeledSearchItems));
+			suppliers.put(id, List.of(collectLabeledSearchItems()));
 		}
 
 		// Collect data from raw underlying data, try to unify among columns if at all possible
@@ -119,35 +119,23 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			}
 
 			suppliers.computeIfAbsent(id, (ignored) -> new ArrayList<>())
-					 .add((search) -> collectRawSearchItems(storage, search));
+					 .add(collectRawSearchItems(storage));
 		}
 	}
 
 	/**
 	 * Generate search from provided labels.
-	 *
-	 * @param search
 	 */
-	private TrieSearch<FEValue> collectLabeledSearchItems(TrieSearch<FEValue> search) {
+	private Stream<FEValue> collectLabeledSearchItems() {
 
 		if (labels.isEmpty()) {
-			return search;
+			return Stream.empty();
 		}
 
-		log.info("BEGIN processing {} labels for {}", labels.size(), getId());
+		return labels.entrySet().stream()
+					 .map(entry -> new FEValue(entry.getValue(), entry.getKey()))
+					 .onClose(() -> log.debug("DONE processing {} labels for {}", labels.size(), getId()));
 
-		for (Map.Entry<String, String> entry : labels.entrySet()) {
-			String value = entry.getKey();
-			String label = entry.getValue();
-
-			final FEValue item = new FEValue(label, value, null);
-
-			search.addItem(item, item.extractKeywords());
-		}
-
-		log.debug("DONE processing {} labels for {}", labels.size(), getId());
-
-		return search;
 	}
 
 	/**
@@ -166,7 +154,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	/**
 	 * Collect search results based on provided CSV with prepopulated values.
 	 */
-	private TrieSearch<FEValue> collectTemplateSearchItems(CSVConfig parserConfig, TrieSearch<FEValue> search) {
+	private Stream<FEValue> collectTemplateSearchItems(CSVConfig parserConfig) {
 
 		final Set<String> ids = new HashSet<>();
 
@@ -180,6 +168,8 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		final StringSubstitutor substitutor = new StringSubstitutor(lookup, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
 		try {
+			final List<FEValue> out = new ArrayList<>();
+
 			File file = new File(template.getFilePath());
 
 			final IterableResult<Record, ParsingContext> records = parser.iterateRecords(file);
@@ -201,16 +191,16 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 				FEValue item = new FEValue(label, rowId, optionValue);
 
-				search.addItem(item, item.extractKeywords());
+				out.add(item);
 			}
 
 			final long duration = System.currentTimeMillis() - time;
 
 			log.info("DONE Processing reference for {} in {} ms ({} Items in {} Lines)",
-					 getTemplate(), duration, search.calculateSize(), records.getContext().currentLine()
+					 getTemplate(), duration, out.size(), records.getContext().currentLine()
 			);
 
-			return search;
+			return out.stream();
 		}
 		finally {
 			parser.stopParsing();
@@ -222,31 +212,11 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	/**
 	 * Collect search Items from raw data in.
 	 */
-	private TrieSearch<FEValue> collectRawSearchItems(NamespacedStorage storage, TrieSearch<FEValue> search) {
-		//TODO explain this really bananas thing
-		log.info("BEGIN processing values for {}", getColumn().getId());
+	private Stream<FEValue> collectRawSearchItems(NamespacedStorage storage) {
 
-
-		getConnector().getTable().findImports(storage)
-					  .forEach(
-							  imp -> {
-								  Set<String> items = search.listItems().stream()
-															.map(FEValue::getValue)
-															.collect(Collectors.toSet());
-
-								  for (String value : ((StringStore) getColumn().getTypeFor(imp))) {
-									  if (items.contains(value)) {
-										  continue;
-									  }
-
-									  final FEValue item = new FEValue(value, value);
-									  search.addItem(item, item.extractKeywords());
-								  }
-							  }
-					  );
-
-		log.debug("DONE processing values for {} with {} Items", getColumn().getId(), search.calculateSize());
-
-		return search;
+		return getConnector().getTable().findImports(storage)
+							 .onClose(() -> log.debug("DONE processing values for {}", getColumn().getId()))
+							 .flatMap(imp -> StreamSupport.stream(((StringStore) getColumn().getTypeFor(imp)).spliterator(), false))
+							 .map(value -> new FEValue(value, value));
 	}
 }

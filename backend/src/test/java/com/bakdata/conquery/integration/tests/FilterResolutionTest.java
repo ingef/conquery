@@ -106,10 +106,12 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 			final Response fromCsvResponse = conquery.getClient().target(resolveUri)
 													 .request(MediaType.APPLICATION_JSON_TYPE)
 													 .post(Entity.entity(new FilterResource.FilterValues(List.of("a", "aaa", "unknown")), MediaType.APPLICATION_JSON_TYPE));
+
 			ResolvedConceptsResult resolved = fromCsvResponse.readEntity(ResolvedConceptsResult.class);
 
 			//check the resolved values
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactly("a", "aaa");
+			// "aaa" is hit by "a" and "aaa" therefore should be first
+			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactly("aaa", "a");
 			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
 		}
 
