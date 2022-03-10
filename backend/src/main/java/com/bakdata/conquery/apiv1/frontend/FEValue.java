@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1.frontend;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
@@ -27,8 +28,8 @@ public class FEValue implements Comparable<FEValue> {
 	private String optionValue;
 
 	public FEValue(@NotNull String label, @NotNull String value) {
-		this.label = label;
 		this.value = value;
+		this.label = Objects.requireNonNullElse(label, value);
 	}
 
 	/**
