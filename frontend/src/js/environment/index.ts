@@ -1,7 +1,7 @@
 import { TFunction } from "react-i18next";
 
 // See index.html for an inject marker, that we use to inject env vars
-// at caontainer runtime
+// at container runtime
 function runtimeVar(variable: string): string | null {
   return window.env && window.env[variable] !== "null"
     ? window.env[variable]
