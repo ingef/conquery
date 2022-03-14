@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/bin/bash
 proj_dir=$(readlink -f `dirname $0`/..)
 
 "$proj_dir/scripts/run_backend_cypress.sh" &

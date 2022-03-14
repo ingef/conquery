@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/bin/bash
 proj_dir=$(readlink -f `dirname $0`/..)
 
 admin_api="http://localhost:8081/admin"

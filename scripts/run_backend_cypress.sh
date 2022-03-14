@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/bin/bash
 script_dir=`dirname $0`
 
 jar="$(readlink -f $script_dir/../executable/target/executable*.jar)"
