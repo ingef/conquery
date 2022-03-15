@@ -87,8 +87,8 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = FEFilterType.Fields.INTEGER, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CQIntegerFilter extends FilterValue<Integer> {
-		public CQIntegerFilter(@NsIdRef Filter<Integer> filter, Integer value) {
+	public static class CQIntegerFilter extends FilterValue<Long> {
+		public CQIntegerFilter(@NsIdRef Filter<Long> filter, Long value) {
 			super(filter, value);
 		}
 	}
@@ -110,7 +110,18 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = FEFilterType.Fields.MONEY_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQMoneyRangeFilter extends FilterValue<LongRange> {
-		public CQMoneyRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {	super(filter, value);
+		public CQMoneyRangeFilter(@NsIdRef Filter<LongRange> filter, LongRange value) {
+			super(filter, value);
+		}
+	}
+
+
+	@NoArgsConstructor
+	@CPSType(id = FEFilterType.Fields.REAL, base = FilterValue.class)
+	@ToString(callSuper = true)
+	public static class CQRealFilter extends FilterValue<BigDecimal> {
+		public CQRealFilter(@NsIdRef Filter<BigDecimal> filter, BigDecimal value) {
+			super(filter, value);
 		}
 	}
 

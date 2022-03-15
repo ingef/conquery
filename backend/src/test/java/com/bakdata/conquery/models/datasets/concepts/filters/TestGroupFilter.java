@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -65,7 +66,7 @@ public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFil
 		private String[] strings;
 
 		@Min(1)
-		private int repetitions;
+		private long repetitions;
 
 		@InternalOnly
 		private String[] resolvedValues;
@@ -74,7 +75,11 @@ public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFil
 		public void resolve(QueryResolveContext context) {
 			ArrayList<String> values = new ArrayList<>();
 			for (String string : strings) {
-				IntStream.range(1, repetitions + 1).mapToObj(string::repeat).sequential().collect(Collectors.toCollection(() -> values));
+				LongStream.range(1, repetitions + 1)
+						  .mapToInt(Math::toIntExact)
+						  .mapToObj(string::repeat)
+						  .sequential()
+						  .collect(Collectors.toCollection(() -> values));
 			}
 			resolvedValues = values.toArray(String[]::new);
 		}

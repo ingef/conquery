@@ -15,6 +15,7 @@ public final class FEFilterType {
 	private int BIG_MULTI_SELECT;
 	private int INTEGER;
 	private int INTEGER_RANGE;
+	private int REAL;
 	private int REAL_RANGE;
 	private int NONE;
 	private int STRING;
