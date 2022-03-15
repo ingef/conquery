@@ -1,10 +1,10 @@
 {
     "type": "FILTER_TEST",
-    "label": "COMPOUND Test",
-    "expectedCsv": "tests/filter/COMPOUND/expected.csv",
+    "label": "GROUP Test",
+    "expectedCsv": "tests/filter/GROUP/expected.csv",
     "content": {
         "tables": {
-            "csv": "tests/filter/COMPOUND/content.csv",
+            "csv": "tests/filter/GROUP/content.csv",
             "primaryColumn": {
                 "name": "pid",
                 "type": "STRING"
@@ -28,14 +28,14 @@
         },
         "filters": {
             "label": "test filter",
-            "type": "TEST_COMPOUND_FILTER",
+            "type": "TEST_GROUP_FILTER",
             "column": "table.value"
         }
     },
     "filterValue": {
         "type": "GROUP",
         "value": {
-            "type": "TEST_COMPOUND_VALUE",
+            "type": "TEST_GROUP_VALUE",
             "strings": [
                 "a",
                 "ab"
@@ -46,7 +46,7 @@
     "expectedFrontendConfig": {
         "label": "test filter",
         "type": "GROUP",
-        "groupType": "TEST_COMPOUND_VALUE",
+        "groupType": "TEST_GROUP_VALUE",
         "filters": {
             "strings": {
                 "type": "MULTI_SELECT",
@@ -54,7 +54,7 @@
                 "options": []
             },
             "repetitions": {
-                "type": "INTEGER_RANGE",
+                "type": "INTEGER",
                 "label": "Maximum Repetitions",
                 "options": []
             }

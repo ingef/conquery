@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public interface CompoundValueContainer {
+public interface GroupedValueContainer {
 
 	default void resolve(QueryResolveContext context) {
 	}

@@ -9,9 +9,10 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.With;
 import lombok.experimental.Wither;
 
-@Wither
+@With
 @Getter
 @EqualsAndHashCode
 public class Range<T extends Comparable> implements IRange<T, Range<T>> {

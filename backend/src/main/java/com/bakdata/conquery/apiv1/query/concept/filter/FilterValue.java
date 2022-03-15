@@ -12,7 +12,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.CompoundValueContainer;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.GroupedValueContainer;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -85,6 +85,15 @@ public abstract class FilterValue<VALUE> {
 	}
 
 	@NoArgsConstructor
+	@CPSType(id = FEFilterType.Fields.INTEGER, base = FilterValue.class)
+	@ToString(callSuper = true)
+	public static class CQIntegerFilter extends FilterValue<Integer> {
+		public CQIntegerFilter(@NsIdRef Filter<Integer> filter, Integer value) {
+			super(filter, value);
+		}
+	}
+
+	@NoArgsConstructor
 	@CPSType(id = FEFilterType.Fields.INTEGER_RANGE, base = FilterValue.class)
 	@ToString(callSuper = true)
 	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
@@ -116,9 +125,9 @@ public abstract class FilterValue<VALUE> {
 
 	@CPSType(id = FEFilterType.Fields.GROUP, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class CompoundFilter extends FilterValue<CompoundValueContainer> {
+	public static class GroupFilter extends FilterValue<GroupedValueContainer> {
 		@JsonCreator
-		public CompoundFilter(@NsIdRef Filter<CompoundValueContainer> filter, CompoundValueContainer value) {
+		public GroupFilter(@NsIdRef Filter<GroupedValueContainer> filter, GroupedValueContainer value) {
 			super(filter, value);
 		}
 
