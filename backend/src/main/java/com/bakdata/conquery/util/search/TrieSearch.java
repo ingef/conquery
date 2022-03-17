@@ -31,7 +31,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * We saturate matches here to avoid favoring very short keywords, when multiple keywords are used.
 	 */
 	private static final double MATCH_THRESHOLD = 1d / 20d;
-	private static final int SUFFIX_CUTOFF = 1;
+	private static final int SUFFIX_CUTOFF = 3;
 
 	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"']+"); //TODO FK: Investigate better split patterns
 
