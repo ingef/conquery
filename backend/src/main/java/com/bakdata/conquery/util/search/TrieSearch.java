@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.IntSummaryStatistics;
 import java.util.Iterator;
 import java.util.List;
@@ -127,15 +128,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	private void doPut(String kw, T item) {
 		trie.compute(kw, (ignored, prior) -> {
 			if (prior == null) {
-				return Collections.singletonList(item);
-			}
-
-			if (prior.size() == 1) {
-				final List<T> items = new ArrayList<>(2);
-				items.add(prior.get(0));
-				items.add(item);
-
-				return items;
+				prior = new ArrayList<>();
 			}
 
 			prior.add(item);
@@ -171,7 +164,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	public void shrinkToFit() {
 		//TODO fk: should I make this even immutable?
-		trie.replaceAll((key, values) -> new ArrayList<>(values));
+		trie.replaceAll((key, values) -> new ArrayList<>(new HashSet<>(values)));
 	}
 
 	public void logStats() {
