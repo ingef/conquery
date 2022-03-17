@@ -169,8 +169,9 @@ public class TrieSearch<T extends Comparable<T>> {
 		return trie.values().stream().distinct().count();
 	}
 
-	public void shrink() {
-		//TODO allocate lists of optimal length for all keys and make them readonly
+	public void shrinkToFit() {
+		//TODO fk: should I make this even immutable?
+		trie.replaceAll((key, values) -> new ArrayList<>(values));
 	}
 
 	public void logStats() {

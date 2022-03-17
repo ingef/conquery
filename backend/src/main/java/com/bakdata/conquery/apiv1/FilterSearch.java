@@ -34,23 +34,31 @@ public class FilterSearch {
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
 	public void updateSearch(NamespaceStorage storage, JobManager jobManager, CSVConfig parser) {
-		final Map<String, List<Stream<FEValue>>> suppliers = new HashMap<>();
-
-		storage.getAllConcepts().stream()
-			   .flatMap(c -> c.getConnectors().stream())
-			   .flatMap(co -> co.collectAllFilters().stream())
-			   .filter(f -> f instanceof AbstractSelectFilter)
-			   .map(f -> ((AbstractSelectFilter<?>) f))
-			   .forEach(f -> f.collectSourceSearchTasks(parser, storage, suppliers));
-
 
 		jobManager.addSlowJob(new SimpleJob("Initialize Source Search", () -> {
-			ExecutorService service = Executors.newCachedThreadPool();
 
-			suppliers.forEach((id, fillers) -> {
+			final Map<String, List<Stream<FEValue>>> suppliers = new HashMap<>();
+
+			storage.getAllConcepts().stream()
+				   .flatMap(c -> c.getConnectors().stream())
+				   .flatMap(co -> co.collectAllFilters().stream())
+				   .filter(f -> f instanceof AbstractSelectFilter)
+				   .map(f -> ((AbstractSelectFilter<?>) f))
+				   .forEach(f -> f.collectSourceSearchTasks(parser, storage, suppliers));
+
+			final ExecutorService service = Executors.newCachedThreadPool();
+
+
+			for (Map.Entry<String, List<Stream<FEValue>>> entry : suppliers.entrySet()) {
+
 				service.submit(() -> {
+					final String id = entry.getKey();
+
 					try {
+						final List<Stream<FEValue>> fillers = entry.getValue();
+
 						final TrieSearch<FEValue> search = new TrieSearch<>();
+
 
 						fillers.stream()
 							   .flatMap(Function.identity())
@@ -61,12 +69,13 @@ public class FilterSearch {
 
 						log.info("Stats for `{}`", id);
 						search.logStats();
+						search.shrinkToFit();
 					}
 					catch (Exception e) {
 						log.error("Failed to create search for {}", id, e);
 					}
 				});
-			});
+			}
 
 			service.shutdown();
 
