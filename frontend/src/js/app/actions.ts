@@ -27,6 +27,7 @@ export type Action =
   | FolderFilterActions
   | ProjectItemsSearchActions
   | ProjectItemsFilterActions
+  | ProjectItemsTypeFilterActions
   | StandardQueryEditorActions
   | QueryGroupModalActions
   | QueryUploadConceptListModalActions
