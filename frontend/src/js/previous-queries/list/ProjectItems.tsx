@@ -50,19 +50,20 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
       if (itemToDelete) {
         const updatedItem = items.find((i) => i.id === itemToDelete.id);
 
-        if (updatedItem) setItemToDelete(updatedItem);
+        if (updatedItem) setItemToDelete((item) => (item ? updatedItem : null));
       }
 
       if (itemToEditFolders) {
         const updatedItem = items.find((i) => i.id === itemToEditFolders.id);
 
-        if (updatedItem) setItemToEditFolders(updatedItem);
+        if (updatedItem)
+          setItemToEditFolders((item) => (item ? updatedItem : null));
       }
 
       if (itemToShare) {
         const updatedItem = items.find((i) => i.id === itemToShare.id);
 
-        if (updatedItem) setItemToShare(updatedItem);
+        if (updatedItem) setItemToShare((item) => (item ? updatedItem : null));
       }
     },
     [items, itemToDelete, itemToEditFolders, itemToShare],
