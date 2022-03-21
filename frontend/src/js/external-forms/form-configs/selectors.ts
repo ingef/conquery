@@ -21,15 +21,8 @@ const configHasId = (config: FormConfigT, searchTerm: string) => {
   return config.id.toString() === searchTerm;
 };
 
-export const configHasFilterType = (
-  config: FormConfigT,
-  filter: string,
-  { activeFormType }: { activeFormType: string | null },
-) => {
+export const configHasFilterType = (config: FormConfigT, filter: string) => {
   if (filter === "all") return true;
-
-  if (filter === "activeForm")
-    return !!activeFormType && config.formType === activeFormType;
 
   // Checks config.own, config.shared or config.system
   if (config[filter]) return true;
@@ -74,13 +67,10 @@ export const selectFormConfigs = (
     return formConfigs;
   }
 
-  // TODO: Implement
-  const activeFormType = null;
-
   return formConfigs.filter((config) => {
     return (
       configMatchesFolderFilter(config, folders, noFoldersActive) &&
-      configHasFilterType(config, filter, { activeFormType }) &&
+      configHasFilterType(config, filter) &&
       configMatchesSearch(config, searchTerm)
     );
   });

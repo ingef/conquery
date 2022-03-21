@@ -17,9 +17,6 @@ export const selectAvailableForms = (state: StateT) =>
 export const selectActiveFormType = (state: StateT) =>
   state.externalForms ? state.externalForms.activeForm : null;
 
-export const useActiveFormType = () =>
-  useSelector<StateT, string | null>((state) => selectActiveFormType(state));
-
 export const selectFormConfig = (state: StateT): Form | null => {
   const availableForms = selectAvailableForms(state);
   const activeFormType = selectActiveFormType(state);

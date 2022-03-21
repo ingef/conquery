@@ -109,9 +109,7 @@ export const useFolders = () => {
             .filter((query) => queryHasFilterType(query, filter))
             .flatMap((query) => query.tags),
           ...formConfigs
-            .filter((config) =>
-              configHasFilterType(config, filter, { activeFormType: null }),
-            )
+            .filter((config) => configHasFilterType(config, filter))
             .flatMap((config) => config.tags),
           ...localFolders,
         ]),

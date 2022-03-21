@@ -281,9 +281,6 @@ const useFormConfigs = ({
     (state) => state.previousQueries.formConfigs,
   );
 
-  // TODO: Implement
-  // const activeFormType = useActiveFormType();
-
   const formConfigs = selectFormConfigs(
     allFormConfigs,
     searchTerm,

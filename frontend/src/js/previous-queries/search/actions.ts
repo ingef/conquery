@@ -69,9 +69,7 @@ export const useSearchItems = () => {
   const filteredItems = useMemo(
     () => [
       ...previousQueries.filter((query) => queryHasFilterType(query, filter)),
-      ...formConfigs.filter((config) =>
-        configHasFilterType(config, filter, { activeFormType: null }),
-      ),
+      ...formConfigs.filter((config) => configHasFilterType(config, filter)),
     ],
     [previousQueries, formConfigs, filter],
   );
