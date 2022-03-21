@@ -27,6 +27,7 @@ interface Props {
 
 const MenuActionBar = ({ optionsCount, total, onInsertAllClick }: Props) => {
   const { t } = useTranslation();
+
   return (
     <Row>
       <InfoText>
