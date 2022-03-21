@@ -27,6 +27,8 @@ export const setSearch = createAction("project-items/SET_SEARCH")<
 export const clearSearch = createAction("project-items/CLEAR_SEARCH")();
 
 function searchItems(term: string, items: ProjectItemT[]) {
+  // Using "__" as prefix & suffix to avoid accidentally matching a folder called "all",
+  // assuming noone names their folders with "__" prefix & suffix
   const result: Record<string, number> = {
     __all__: 0,
     __without_folder__: 0,
