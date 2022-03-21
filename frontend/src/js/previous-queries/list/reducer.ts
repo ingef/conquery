@@ -68,11 +68,11 @@ const findItem = <T extends PreviousQueryT | FormConfigT>(
   items: T[],
   itemId: string | number,
 ) => {
-  const item = items.find((i) => i.id === itemId);
+  const idx = items.findIndex((i) => i.id === itemId);
 
   return {
-    item,
-    itemIdx: item ? items.indexOf(item) : -1,
+    item: idx === -1 ? undefined : items[idx],
+    itemIdx: idx,
   };
 };
 
