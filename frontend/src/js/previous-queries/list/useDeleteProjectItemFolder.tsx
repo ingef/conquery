@@ -14,10 +14,7 @@ import {
 } from "./actions";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
-export const useDeleteProjectItemFolder = (
-  folder: string,
-  onSuccess?: () => void,
-) => {
+export const useDeleteProjectItemFolder = (folder: string) => {
   const { t } = useTranslation();
   const datasetId = useDatasetId();
   const dispatch = useDispatch();
@@ -42,9 +39,6 @@ export const useDeleteProjectItemFolder = (
 
     if (localFolders.includes(folder)) {
       dispatch(removeFolder({ folderName: folder }));
-      if (onSuccess) {
-        onSuccess();
-      }
       return;
     }
 
@@ -74,13 +68,10 @@ export const useDeleteProjectItemFolder = (
           }),
       ]);
 
-      await Promise.all([loadQueries(datasetId), loadFormConfigs(datasetId)]);
-
-      if (onSuccess) {
-        onSuccess();
-      }
+      return Promise.all([loadQueries(datasetId), loadFormConfigs(datasetId)]);
     } catch (e) {
       dispatch(setMessage({ message: t("previousQuery.retagError") }));
+      return Promise.reject();
     }
   };
 };

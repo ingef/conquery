@@ -17,14 +17,17 @@ const DeleteFolderModal: FC<PropsT> = ({
   onDeleteSuccess,
 }) => {
   const { t } = useTranslation();
-  const onDeleteFolder = useDeleteProjectItemFolder(folder, onDeleteSuccess);
+  const onDeleteFolder = useDeleteProjectItemFolder(folder);
 
   return (
     <DeleteModal
       onClose={onClose}
       headline={t("deletePreviousQueryFolderModal.areYouSure")}
       description={t("deletePreviousQueryFolderModal.description", { folder })}
-      onDelete={onDeleteFolder}
+      onDelete={async () => {
+        await onDeleteFolder();
+        onDeleteSuccess();
+      }}
     />
   );
 };
