@@ -248,6 +248,11 @@ const InputMultiSelect = ({
     }
   };
 
+  const filterOptionsCount =
+    creatable && inputValue.length > 0
+      ? filteredOptions.length - 1
+      : filteredOptions.length;
+
   const Select = (
     <SelectContainer
       onBlur={clearStaleSearch}
@@ -348,15 +353,21 @@ const InputMultiSelect = ({
         >
           <MenuActionBar
             total={total}
-            optionsCount={filteredOptions.length}
+            optionsCount={filterOptionsCount}
             onInsertAllClick={() => {
               const moreInsertableThanCurrentlyLoaded =
-                exists(total) && total > filteredOptions.length;
+                exists(total) && total > filterOptionsCount;
 
               if (!!onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
                 onLoadAndInsertAll(inputValue);
               } else {
-                setSelectedItems(filteredOptions);
+                const optionsWithoutCreatable =
+                  creatable && inputValue.length > 0
+                    ? filteredOptions.slice(1)
+                    : filteredOptions;
+
+                setSelectedItems(optionsWithoutCreatable);
+                setInputValue("");
               }
             }}
           />
