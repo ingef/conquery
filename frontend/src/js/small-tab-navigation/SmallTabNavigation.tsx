@@ -1,11 +1,11 @@
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 
-import InfoTooltip from "../tooltip/InfoTooltip";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import SmallTabNavigationButton from "./SmallTabNavigationButton";
 
 interface TabOption {
-  label: string;
+  label: ReactNode;
   value: string;
   tooltip?: string;
 }
@@ -28,16 +28,17 @@ const SmallTabNavigation: FC<PropsT> = ({
   return (
     <div className={className}>
       {options.map((option) => (
-        <SmallTabNavigationButton
-          key={option.value}
-          value={option.value}
-          size={size}
-          isSelected={selectedTab === option.value}
-          onClick={() => onSelectTab(option.value)}
-        >
-          {option.label}
-          {option.tooltip && <InfoTooltip text={option.tooltip} />}
-        </SmallTabNavigationButton>
+        <WithTooltip key={option.value} text={option.tooltip}>
+          <SmallTabNavigationButton
+            key={option.value}
+            value={option.value}
+            size={size}
+            isSelected={selectedTab === option.value}
+            onClick={() => onSelectTab(option.value)}
+          >
+            {option.label}
+          </SmallTabNavigationButton>
+        </WithTooltip>
       ))}
     </div>
   );

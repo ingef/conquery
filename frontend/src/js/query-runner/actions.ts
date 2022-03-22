@@ -198,7 +198,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const getQuery = useGetQuery();
-  const loadQueries = useLoadQueries();
+  const { loadQueries } = useLoadQueries();
 
   const queryResult = (datasetId: DatasetIdT, queryId: QueryIdT) => {
     dispatch(queryResultStart({ queryType }));

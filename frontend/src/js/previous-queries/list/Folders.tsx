@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import IconButton from "../../button/IconButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
+import { DragItemFormConfig } from "../../external-forms/types";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
 import Dropzone from "../../ui-components/Dropzone";
@@ -14,20 +15,21 @@ import {
   removeFolderFromFilter,
   setFolderFilter,
   toggleNoFoldersFilter,
-} from "../folderFilter/actions";
+} from "../folder-filter/actions";
 
 import AddFolderModal from "./AddFolderModal";
-import DeletePreviousQueryFolderModal from "./DeletePreviousQueryFolderModal";
-import PreviousQueriesFolder from "./PreviousQueriesFolder";
-import { addFolder, useRetagQuery } from "./actions";
+import DeleteFolderModal from "./DeleteFolderModal";
+import Folder from "./Folder";
+import { addFolder, useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { useFolders } from "./selector";
 
 const DROP_TYPES = [
+  DNDType.FORM_CONFIG,
   DNDType.PREVIOUS_QUERY,
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
-const Folders = styled("div")`
+const Root = styled("div")`
   flex-shrink: 0;
   height: 100%;
   overflow: hidden;
@@ -78,16 +80,8 @@ const SxDropzone = styled(Dropzone)`
   }
 `;
 
-const SxPreviousQueriesFolder = styled(PreviousQueriesFolder)`
+const SxPreviousQueriesFolder = styled(Folder)`
   margin-bottom: 5px;
-`;
-
-const SmallLabel = styled("p")`
-  margin: 0;
-  padding: 0 5px 10px;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-  font-weight: 400;
 `;
 
 const ScrollContainer = styled("div")`
@@ -126,7 +120,7 @@ interface Props {
   className?: string;
 }
 
-const PreviousQueriesFolders: FC<Props> = ({ className }) => {
+const Folders: FC<Props> = ({ className }) => {
   const folders = useFolders();
   const folderFilter = useSelector<StateT, string[]>(
     (state) => state.previousQueriesFolderFilter.folders,
@@ -135,10 +129,10 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
     (state) => state.previousQueriesFolderFilter.noFoldersActive,
   );
   const searchResult = useSelector<StateT, Record<string, number> | null>(
-    (state) => state.previousQueriesSearch.result,
+    (state) => state.projectItemsSearch.result,
   );
   const searchResultWords = useSelector<StateT, string[]>(
-    (state) => state.previousQueriesSearch.words,
+    (state) => state.projectItemsSearch.words,
   );
 
   const { t } = useTranslation();
@@ -157,13 +151,29 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
     }
   };
 
-  const retagQuery = useRetagQuery();
-  const onDropIntoFolder = (query: DragItemQuery, folder: string) => {
-    if (query.tags.includes(folder)) {
+  const { updateQuery } = useUpdateQuery();
+  const { updateFormConfig } = useUpdateFormConfig();
+  const onDropIntoFolder = (
+    item: DragItemQuery | DragItemFormConfig,
+    folder: string,
+  ) => {
+    if (item.tags.includes(folder)) {
       return;
     }
 
-    retagQuery(query.id, [...query.tags, folder]);
+    if (item.type === DNDType.FORM_CONFIG) {
+      updateFormConfig(
+        item.id,
+        { tags: [...item.tags, folder] },
+        t("formConfig.retagError"),
+      );
+    } else {
+      updateQuery(
+        item.id,
+        { tags: [...item.tags, folder] },
+        t("previousQuery.retagError"),
+      );
+    }
   };
 
   const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
@@ -185,9 +195,9 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
   );
 
   return (
-    <Folders className={className}>
+    <Root className={className}>
       {folderToDelete && (
-        <DeletePreviousQueryFolderModal
+        <DeleteFolderModal
           folder={folderToDelete}
           onClose={() => setFolderToDelete(null)}
           onDeleteSuccess={() => {
@@ -196,7 +206,6 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
           }}
         />
       )}
-      <SmallLabel>{t("folders.headline")}</SmallLabel>
       <Row ref={parentRef}>
         <AddFolderIconButton
           icon="plus"
@@ -242,10 +251,16 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
             <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
               key={`${folder}-${i}`}
               naked
-              onDrop={(item) => onDropIntoFolder(item as DragItemQuery, folder)}
+              onDrop={(item) =>
+                onDropIntoFolder(
+                  item as DragItemQuery | DragItemFormConfig,
+                  folder,
+                )
+              }
               acceptedDropTypes={DROP_TYPES}
               canDrop={(item) =>
-                (item.type === DNDType.PREVIOUS_QUERY ||
+                (item.type === DNDType.FORM_CONFIG ||
+                  item.type === DNDType.PREVIOUS_QUERY ||
                   item.type === DNDType.PREVIOUS_SECONDARY_ID_QUERY) &&
                 !!(item.own || item.shared)
               }
@@ -253,7 +268,7 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
             >
               {() => (
                 <>
-                  <PreviousQueriesFolder
+                  <Folder
                     key={folder}
                     folder={folder}
                     active={folderFilter.includes(folder)}
@@ -276,7 +291,7 @@ const PreviousQueriesFolders: FC<Props> = ({ className }) => {
           );
         })}
       </ScrollContainer>
-    </Folders>
+    </Root>
   );
 };
-export default PreviousQueriesFolders;
+export default Folders;

@@ -3,9 +3,11 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { exists } from "../../common/helpers/exists";
-import type { PreviousQueriesFilterStateT } from "../filter/reducer";
+import { configHasFilterType } from "../../external-forms/form-configs/selectors";
+import type { ProjectItemsFilterStateT } from "../filter/reducer";
+import { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
 
-import type { PreviousQueryT } from "./reducer";
+import type { FormConfigT, PreviousQueryT } from "./reducer";
 
 const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
   return (
@@ -33,7 +35,7 @@ const queryHasId = (query: PreviousQueryT, searchTerm: string) => {
 
 export const queryHasFilterType = (
   query: PreviousQueryT,
-  filter: PreviousQueriesFilterStateT,
+  filter: ProjectItemsFilterStateT,
 ) => {
   if (filter === "all") return true;
 
@@ -62,7 +64,7 @@ export const queryMatchesSearch = (
 export const selectPreviousQueries = (
   queries: PreviousQueryT[],
   searchTerm: string | null,
-  filter: PreviousQueriesFilterStateT,
+  filter: ProjectItemsFilterStateT,
   folderFilter: string[],
   noFoldersActive: boolean,
 ) => {
@@ -86,13 +88,15 @@ export const selectPreviousQueries = (
 };
 
 export const useFolders = () => {
-  const filter = useSelector<StateT, PreviousQueriesFilterStateT>(
-    (state) => state.previousQueriesFilter,
+  const filter = useSelector<StateT, ProjectItemsFilterStateT>(
+    (state) => state.projectItemsFilter,
   );
   const queries = useSelector<StateT, PreviousQueryT[]>(
     (state) => state.previousQueries.queries,
   );
-
+  const formConfigs = useSelector<StateT, FormConfigT[]>(
+    (state) => state.previousQueries.formConfigs,
+  );
   const localFolders = useSelector<StateT, string[]>(
     (state) => state.previousQueries.localFolders,
   );
@@ -104,9 +108,12 @@ export const useFolders = () => {
           ...queries
             .filter((query) => queryHasFilterType(query, filter))
             .flatMap((query) => query.tags),
+          ...formConfigs
+            .filter((config) => configHasFilterType(config, filter))
+            .flatMap((config) => config.tags),
           ...localFolders,
         ]),
       ).sort(),
-    [queries, localFolders, filter],
+    [queries, formConfigs, localFolders, filter],
   );
 };

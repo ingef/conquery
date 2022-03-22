@@ -114,10 +114,10 @@ const isAndQuery = (query: QueryT): query is AndQueryT => {
 */
 export const useExpandPreviousQuery = () => {
   const dispatch = useDispatch();
-  const loadQuery = useLoadQuery();
+  const { loadQuery } = useLoadQuery();
   const { t } = useTranslation();
 
-  return async (datasetId: DatasetIdT, rootConcepts: TreesT, query: QueryT) => {
+  return async (rootConcepts: TreesT, query: QueryT) => {
     if (!isAndQuery(query)) {
       throw new Error("Cant expand query, because root is not AND");
     }
@@ -133,7 +133,7 @@ export const useExpandPreviousQuery = () => {
     );
 
     await Promise.all(
-      nestedPreviousQueryIds.map((queryId) => loadQuery(datasetId, queryId)),
+      nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),
     );
 
     dispatch(
