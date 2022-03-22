@@ -1,12 +1,13 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
-import { useEffect, useState } from "react";
+import type { StateT } from "app-types";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { SelectOptionT, UserGroupT } from "../../api/types";
 import PrimaryButton from "../../button/PrimaryButton";
 import { TransparentButton } from "../../button/TransparentButton";
+import FaIcon from "../../icon/FaIcon";
 import Modal from "../../modal/Modal";
 import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
 
@@ -39,7 +40,7 @@ const QueryName = styled("p")`
   margin: -15px 0 20px;
 `;
 
-const getUserGroupsValue = (
+const getInitialUserGroupsValue = (
   userGroups: UserGroupT[],
   projectItem?: ProjectItemT,
 ) => {
@@ -64,7 +65,10 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
     state.user.me ? state.user.me.groups : [],
   );
 
-  const initialUserGroupsValue = getUserGroupsValue(userGroups, item);
+  const initialUserGroupsValue = useMemo(
+    () => getInitialUserGroupsValue(userGroups, item),
+    [item, userGroups],
+  );
 
   const [userGroupsValue, setUserGroupsValue] = useState<SelectOptionT[]>(
     initialUserGroupsValue,
@@ -74,8 +78,11 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
 
   const { loadQuery } = useLoadQuery();
   const { loadFormConfig } = useLoadFormConfig();
-  const { updateQuery } = useUpdateQuery();
-  const { updateFormConfig } = useUpdateFormConfig();
+  const { updateQuery, loading: queryLoading } = useUpdateQuery();
+  const { updateFormConfig, loading: formConfigLoading } =
+    useUpdateFormConfig();
+
+  const loading = queryLoading || formConfigLoading;
 
   useEffect(
     function loadItemOnce() {
@@ -93,7 +100,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
   );
 
   useEffect(() => {
-    setUserGroupsValue(getUserGroupsValue(userGroups, item));
+    setUserGroupsValue(getInitialUserGroupsValue(userGroups, item));
   }, [userGroups, item]);
 
   const onSetUserGroupsValue = (value: SelectOptionT[] | null) => {
@@ -110,13 +117,16 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
       ? t("sharePreviousQueryModal.unshare")
       : t("common.share");
 
+  const buttonDisabled =
+    JSON.stringify(initialUserGroupsValue) === JSON.stringify(userGroupsValue);
+
   async function onShareClicked() {
     const userGroupsToShare = userGroupsValue.map(
       (group) => group.value as string,
     );
 
     if (isFormConfig(item)) {
-      updateFormConfig(
+      await updateFormConfig(
         item.id,
         {
           groups: userGroupsToShare,
@@ -124,7 +134,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
         t("formConfig.shareError"),
       );
     } else {
-      updateQuery(
+      await updateQuery(
         item.id,
         {
           groups: userGroupsToShare,
@@ -132,6 +142,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
         t("previousQuery.shareError"),
       );
     }
+    onClose();
   }
 
   return (
@@ -147,7 +158,16 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
         <TransparentButton onClick={onClose}>
           {t("common.cancel")}
         </TransparentButton>
-        <SxPrimaryButton onClick={onShareClicked}>{shareLabel}</SxPrimaryButton>
+        <SxPrimaryButton onClick={onShareClicked} disabled={buttonDisabled}>
+          <>
+            {loading && (
+              <>
+                <FaIcon white icon="spinner" />{" "}
+              </>
+            )}
+            {shareLabel}
+          </>
+        </SxPrimaryButton>
       </Buttons>
     </Modal>
   );
