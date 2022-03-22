@@ -14,6 +14,12 @@ Event data sets typically associate events with a certain subject (i.e. a person
 
 Conquery supplies a powerful interface to group event types in a hierarchical *concept tree* structure. Elements of this tree represent a group of similar subjects. Those subjects can be composed into a powerful query that runs against the data set.
 
+## Requirements
+- Maven 3 (optional for building)
+- Java JDK 11
+- Node.js 16 + Yarn
+- curl (to import the test data)
+
 ## Starting the demo
 
 ### Frontend only
@@ -23,11 +29,6 @@ This repository includes the Conquery frontend along with a non-functional backe
 Check the README in `/frontend` for details.
 
 ### Frontend + Backend
-#### Requirements
-- Maven 3 (optional for building)
-- Java JDK 11
-- Node.js 16 + Yarn
-- curl (to import the test data)
 
 #### Steps
 To test frontend and backend together you can start the setup that is used for end-to-end tests.
@@ -50,7 +51,16 @@ The frontend is accessible at http://localhost:8000 as the default "superuser" i
 ## Development
 
 ### Testing
-Apart from separate frontend and backend tests, the project also contains end-to-end tests powered by cypress. Please refer to the corresponding [CI configuration](https://github.com/bakdata/conquery/tree/develop/.github/workflows) to learn about invoking the tests.
+Apart from separate frontend and backend tests, the project also contains end-to-end tests powered by cypress. 
+
+To run the end-to-end test locally:
+1. Make sure you installed all [requirements](#requirements)
+2. From the repo root folder run  `conquery/scripts/run_conquery_cypress.sh`
+3. Wait until the output: `Node server listening on port: 8000` appears
+4. Start cypress from the `conquery/frontend` folder in another terminal: `$ yarn cypress open`
+5. Then chose a test suite and start it.
+
+For further informations on this and other tests, please refer to the corresponding [CI configuration](https://github.com/bakdata/conquery/tree/develop/.github/workflows).
 
 ## Acknowledgements
 

@@ -1,7 +1,12 @@
 #!/bin/bash
-script_dir=`dirname $0`
 
-jar="$(readlink -f $script_dir/../executable/target/executable*.jar)"
-config="$(readlink -f $script_dir/../frontend/cypress/support/backend_config.json)"
+jar="./executable/target/executable-0.0.0-SNAPSHOT.jar"
+config="./frontend/cypress/support/backend_config.json"
+
+if [ ! -e $jar ]
+then
+    echo "Backend executable not found. Trying to build it"
+    ./scripts/build_no_version.sh
+fi
 
 java -jar $jar standalone $config

@@ -21,7 +21,7 @@ jobs:
         with:
           java-version: 11
       - name: Build Backend
-        run: ./scripts/build_version.sh
+        run: ./scripts/build_no_version.sh
 
       - name: Cypress run
         uses: cypress-io/github-action@v2
@@ -34,8 +34,8 @@ jobs:
           REACT_APP_IDP_REALM: Myrealm
           REACT_APP_IDP_CLIENT_ID: frontend
         with:
-          working-directory: ./frontend
-          build: yarn run react-app-rewired build
-          install-command: yarn --ignore-platform --frozen-lockfile
-          start: bash ../scripts/run_conquery_cypress.sh
+          working-directory: .
+          build: bash ./scripts/build_frontend.sh
+          install-command: bash ./scripts/install_frontend.sh
+          start: bash ./scripts/run_conquery_cypress.sh
           wait-on: 'http://localhost:8000'
