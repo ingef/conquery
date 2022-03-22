@@ -100,19 +100,25 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			suppliers.put(id, List.of(collectLabeledSearchItems()));
 		}
 
-		// Collect data from raw underlying data, try to unify among columns if at all possible
+		// Collect data from raw underlying data, try to unify among columns if at all possible (either via SharedDict or SecondaryId)
 		{
-			String id = getColumn().getId().toString();
-
 			if (getColumn().getSharedDictionary() != null) {
-				id = getColumn().getSharedDictionary();
+				String id = getColumn().getSharedDictionary();
+
+				suppliers.computeIfAbsent(id, (ignored) -> new ArrayList<>())
+						 .add(collectRawSearchItems(storage));
 			}
 			else if (getColumn().getSecondaryId() != null) {
-				id = getColumn().getSecondaryId().getId().toString();
+				String id = getColumn().getSecondaryId().getId().toString();
+
+				suppliers.computeIfAbsent(id, (ignored) -> new ArrayList<>())
+						 .add(collectRawSearchItems(storage));
+			}
+			else {
+				suppliers.put(getColumn().getId().toString(), List.of(collectRawSearchItems(storage)));
 			}
 
-			suppliers.computeIfAbsent(id, (ignored) -> new ArrayList<>())
-					 .add(collectRawSearchItems(storage));
+
 		}
 	}
 
