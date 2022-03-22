@@ -5,7 +5,7 @@ import { InABox } from "./InABox";
 const QuerySymbol = ({ className }: { className?: string }) => {
   return (
     <InABox className={className}>
-      <FaIcon icon="message" regular active className={className} />
+      <FaIcon icon="diagram-project" active className={className} />
     </InABox>
   );
 };
