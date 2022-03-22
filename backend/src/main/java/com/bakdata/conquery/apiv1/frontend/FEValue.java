@@ -1,10 +1,11 @@
 package com.bakdata.conquery.apiv1.frontend;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableList;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,6 +24,7 @@ public class FEValue implements Comparable<FEValue> {
 
 	private final String optionValue;
 
+	@JsonCreator
 	public FEValue(String label, String value, String optionValue) {
 		this.value = value;
 		this.label = Objects.requireNonNullElse(label, value);
@@ -39,15 +41,16 @@ public class FEValue implements Comparable<FEValue> {
 	 * The item is not added, if we've already collected an item with the same {@link FEValue#getValue()}.
 	 */
 	public List<String> extractKeywords() {
-		final List<String> keywords = new ArrayList<>(3);
+		final ImmutableList.Builder<String> builder = ImmutableList.builderWithExpectedSize(3);
 
-		keywords.add(getLabel());
-		keywords.add(getValue());
+		builder.add(getLabel())
+			   .add(getValue());
 
 		if (getOptionValue() != null) {
-			keywords.add(getOptionValue());
+			builder.add(getOptionValue());
 		}
-		return keywords;
+
+		return builder.build();
 	}
 
 	@Override
