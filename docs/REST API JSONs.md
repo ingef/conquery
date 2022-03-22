@@ -828,15 +828,20 @@ No fields can be set for this type.
 
 </p></details>
 
-### Type FEValue<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/frontend/FEValue.java#L11-L13)</sup></sub></sup>
+### Type FEValue<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/frontend/FEValue.java#L12-L14)</sup></sub></sup>
 This class represents a values of a SELECT filter.
 
 <details><summary>Details</summary><p>
 
 Java Type: `com.bakdata.conquery.apiv1.frontend.FEValue`
 
-No fields can be set for this type.
+Supported Fields:
 
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/frontend/FEValue.java#L20) | label | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/frontend/FEValue.java#L25) | optionValue | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/frontend/FEValue.java#L22) | value | `String` | ? |  |  | 
 </p></details>
 
 ### Type FilterValues<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L60)</sup></sub></sup>
