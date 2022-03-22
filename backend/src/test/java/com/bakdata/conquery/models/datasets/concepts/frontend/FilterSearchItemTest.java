@@ -49,9 +49,9 @@ public class FilterSearchItemTest {
 		FETable feTable = FrontEndConceptBuilder.createTable(connector);
 		
 		assertThat(feTable.getDateColumn().getOptions()).containsExactly(
-				new FEValue("val0", val0.getId().toString()),
-				new FEValue("val1", val1.getId().toString()),
-				new FEValue("val2", val2.getId().toString())
+				new FEValue(val0.getId().toString(), "val0"),
+				new FEValue(val1.getId().toString(), "val1"),
+				new FEValue(val2.getId().toString(), "val2")
 			);
 	}
 }

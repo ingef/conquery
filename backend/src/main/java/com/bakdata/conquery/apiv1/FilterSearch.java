@@ -37,6 +37,8 @@ public class FilterSearch {
 
 		jobManager.addSlowJob(new SimpleJob("Initialize Source Search", () -> {
 
+			log.info("BEGIN loading SourceSearch");
+
 			final Map<String, List<Stream<FEValue>>> suppliers = new HashMap<>();
 
 			storage.getAllConcepts().stream()
@@ -48,11 +50,13 @@ public class FilterSearch {
 
 			final ExecutorService service = Executors.newCachedThreadPool();
 
+			log.debug("Found {} search suppliers", suppliers.size());
 
 			for (Map.Entry<String, List<Stream<FEValue>>> entry : suppliers.entrySet()) {
 
 				service.submit(() -> {
 					final String id = entry.getKey();
+					log.info("BEGIN collecting entries for `{}`", id);
 
 					try {
 						final List<Stream<FEValue>> fillers = entry.getValue();
@@ -80,6 +84,9 @@ public class FilterSearch {
 			service.shutdown();
 
 			service.awaitTermination(10, TimeUnit.HOURS);
+
+
+			log.debug("DONE loading SourceSearch");
 		}));
 
 

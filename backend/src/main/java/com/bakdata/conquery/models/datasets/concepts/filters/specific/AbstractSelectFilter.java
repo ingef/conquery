@@ -63,7 +63,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 		f.setOptions(
 				labels.entrySet().stream()
-					  .map(entry -> new com.bakdata.conquery.apiv1.frontend.FEValue(entry.getValue(), entry.getKey()))
+					  .map(entry -> new com.bakdata.conquery.apiv1.frontend.FEValue(entry.getKey(), entry.getValue()))
 					  .collect(Collectors.toList())
 		);
 	}
@@ -107,7 +107,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 				id = getColumn().getSharedDictionary();
 			}
 			else if (getColumn().getSecondaryId() != null) {
-				id = getColumn().getSecondaryId().toString();
+				id = getColumn().getSecondaryId().getId().toString();
 			}
 
 			suppliers.computeIfAbsent(id, (ignored) -> new ArrayList<>())
@@ -125,7 +125,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		}
 
 		return labels.entrySet().stream()
-					 .map(entry -> new FEValue(entry.getValue(), entry.getKey()))
+					 .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
 					 .onClose(() -> log.debug("DONE processing {} labels for {}", labels.size(), getId()));
 
 	}
@@ -151,7 +151,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 						 final String label = substitutor.replace(template.getValue());
 						 final String optionValue = substitutor.replace(template.getOptionValue());
 
-						 return new FEValue(label, rowId, optionValue);
+						 return new FEValue(rowId, label, optionValue);
 					 })
 					 .distinct()
 				;
