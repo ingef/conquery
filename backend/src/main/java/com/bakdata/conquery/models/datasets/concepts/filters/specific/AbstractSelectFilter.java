@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -145,14 +146,19 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 					 .map(row -> {
 						 final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
-
 						 final String rowId = row.getString(template.getColumnValue());
 
 						 final String label = substitutor.replace(template.getValue());
 						 final String optionValue = substitutor.replace(template.getOptionValue());
 
+						 // TODO log the line and give feedback to suppliers of reference
+						 if (rowId == null || label == null) {
+							 return null;
+						 }
+
 						 return new FEValue(rowId, label, optionValue);
 					 })
+					 .filter(Objects::nonNull)
 					 .distinct()
 				;
 
