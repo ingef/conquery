@@ -3,10 +3,8 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -25,17 +23,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import com.univocity.parsers.common.IterableResult;
-import com.univocity.parsers.common.ParsingContext;
-import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
-import org.apache.commons.text.lookup.StringLookup;
 
 @Getter
 @Setter
@@ -138,72 +131,31 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	}
 
 	/**
-	 * Helper class to be used with {@link StringSubstitutor} and {@link CsvParser}.
-	 */
-	@Data
-	private static class MutableRecordBackedLookup implements StringLookup {
-		private Record record;
-
-		@Override
-		public String lookup(String key) {
-			return record.getString(key);
-		}
-	}
-
-	/**
 	 * Collect search results based on provided CSV with prepopulated values.
 	 */
 	private Stream<FEValue> collectTemplateSearchItems(CSVConfig parserConfig) {
 
-		final Set<String> ids = new HashSet<>();
-
-
-		log.info("BEGIN Processing template {}", getTemplate());
-		final long time = System.currentTimeMillis();
-
 		final CsvParser parser = parserConfig.createParser();
-
-		final MutableRecordBackedLookup lookup = new MutableRecordBackedLookup();
-		final StringSubstitutor substitutor = new StringSubstitutor(lookup, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
-
-		try {
-			final List<FEValue> out = new ArrayList<>();
-
-			File file = new File(template.getFilePath());
-
-			final IterableResult<Record, ParsingContext> records = parser.iterateRecords(file);
+		// It is likely that multiple Filters reference the same file+config. However we want to ensure it is read only once to avoid wasting computation.
+		// We use Streams below to ensure a completely transparent lazy execution of parsing reference files
+		return Stream.of(new File(template.getFilePath()))
+					 .map(parser::iterateRecords)
+					 // Univocity parser does not support streams, so we create one manually using their spliterator.
+					 .flatMap(iter -> StreamSupport.stream(iter.spliterator(), false))
+					 .map(row -> {
+						 final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
 
-			for (Record row : records) {
+						 final String rowId = row.getString(template.getColumnValue());
 
-				lookup.setRecord(row);
+						 final String label = substitutor.replace(template.getValue());
+						 final String optionValue = substitutor.replace(template.getOptionValue());
 
-				final String rowId = row.getString(template.getColumnValue());
+						 return new FEValue(label, rowId, optionValue);
+					 })
+					 .distinct()
+				;
 
-				if (!ids.add(rowId)) {
-					log.error("Source file ({}) contains multiple entries for `{}`", file, rowId);
-					continue;
-				}
-
-				final String label = substitutor.replace(template.getValue());
-				final String optionValue = substitutor.replace(template.getOptionValue());
-
-				FEValue item = new FEValue(label, rowId, optionValue);
-
-				out.add(item);
-			}
-
-			final long duration = System.currentTimeMillis() - time;
-
-			log.info("DONE Processing reference for {} in {} ms ({} Items in {} Lines)",
-					 getTemplate(), duration, out.size(), records.getContext().currentLine()
-			);
-
-			return out.stream();
-		}
-		finally {
-			parser.stopParsing();
-		}
 
 	}
 
