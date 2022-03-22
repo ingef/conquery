@@ -5,7 +5,6 @@ import { useSelector } from "react-redux";
 import { exists } from "../../common/helpers/exists";
 import { configHasFilterType } from "../../external-forms/form-configs/selectors";
 import type { ProjectItemsFilterStateT } from "../filter/reducer";
-import { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
 
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
@@ -20,6 +19,16 @@ const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
 
 const queryHasFolder = (query: PreviousQueryT, folder: string) => {
   return !!query.tags && query.tags.some((tag) => tag === folder);
+};
+
+const queryMatchesFolderFilter = (
+  query: PreviousQueryT,
+  folders: string[],
+  noFoldersActive: boolean,
+) => {
+  return noFoldersActive
+    ? query.tags.length === 0
+    : folders.every((folder) => queryHasFolder(query, folder));
 };
 
 const queryHasLabel = (query: PreviousQueryT, searchTerm: string) => {
@@ -65,26 +74,25 @@ export const selectPreviousQueries = (
   queries: PreviousQueryT[],
   searchTerm: string | null,
   filter: ProjectItemsFilterStateT,
-  folderFilter: string[],
+  folders: string[],
   noFoldersActive: boolean,
 ) => {
-  if (
-    !exists(searchTerm) &&
+  const noFilterSet =
+    (!exists(searchTerm) || searchTerm.length === 0) &&
     filter === "all" &&
-    folderFilter.length === 0 &&
-    !noFoldersActive
-  )
+    folders.length === 0 &&
+    !noFoldersActive;
+
+  if (noFilterSet) {
     return queries;
+  }
 
-  return queries.filter((query) => {
-    const matchesFilter = queryHasFilterType(query, filter);
-    const matchesFolderFilter = noFoldersActive
-      ? query.tags.length === 0
-      : folderFilter.every((folder) => queryHasFolder(query, folder));
-    const matchesSearch = queryMatchesSearch(query, searchTerm);
-
-    return matchesFilter && matchesFolderFilter && matchesSearch;
-  });
+  return queries.filter(
+    (query) =>
+      queryHasFilterType(query, filter) &&
+      queryMatchesFolderFilter(query, folders, noFoldersActive) &&
+      queryMatchesSearch(query, searchTerm),
+  );
 };
 
 export const useFolders = () => {
