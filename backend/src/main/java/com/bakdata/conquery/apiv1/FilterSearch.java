@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,8 @@ public class FilterSearch {
 
 				service.submit(() -> {
 					final String id = entry.getKey();
+					final long begin = System.currentTimeMillis();
+
 					log.info("BEGIN collecting entries for `{}`", id);
 
 					try {
@@ -71,9 +74,13 @@ public class FilterSearch {
 
 						searchCache.put(id, search);
 
-						log.info("Stats for `{}`", id);
-						search.logStats();
+						log.trace("Stats for `{}`", id);
+
 						search.shrinkToFit();
+
+						final long end = System.currentTimeMillis();
+
+						log.debug("DONE collecting entries for `{}`, within {} ({} Items)", id, Duration.ofMillis(end - begin), search.calculateSize());
 					}
 					catch (Exception e) {
 						log.error("Failed to create search for {}", id, e);
