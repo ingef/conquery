@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.filter;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 
 import javax.annotation.Nonnull;
@@ -9,18 +10,27 @@ import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
+import com.bakdata.conquery.models.datasets.concepts.filters.GroupFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.GroupedValueContainer;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.TreeNode;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.ToString;
 
 @Getter
@@ -136,9 +146,10 @@ public abstract class FilterValue<VALUE> {
 
 	@CPSType(id = FEFilterType.Fields.GROUP, base = FilterValue.class)
 	@ToString(callSuper = true)
-	public static class GroupFilter extends FilterValue<GroupedValueContainer> {
-		@JsonCreator
-		public GroupFilter(@NsIdRef Filter<GroupedValueContainer> filter, GroupedValueContainer value) {
+	@JsonDeserialize(using = GroupFilterDeserializer.class)
+	public static class GroupFilterValue extends FilterValue<GroupedValueContainer> {
+
+		public GroupFilterValue(Filter<GroupedValueContainer> filter, GroupedValueContainer value) {
 			super(filter, value);
 		}
 
@@ -146,5 +157,33 @@ public abstract class FilterValue<VALUE> {
 		public void resolve(QueryResolveContext context) {
 			getValue().resolve(context);
 		}
+	}
+
+	public static class GroupFilterDeserializer extends StdDeserializer<GroupFilterValue> {
+		private final NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer = new NsIdReferenceDeserializer<>(Filter.class, null, FilterId.class);
+
+		protected GroupFilterDeserializer() {
+			super(GroupFilterValue.class);
+		}
+
+
+		@Override
+		@SneakyThrows
+		public GroupFilterValue deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+			final TreeNode treeNode = p.getCodec().readTree(p);
+			final TreeNode filterNode = treeNode.get("filter");
+			final JsonParser filterTraverse = filterNode.traverse();
+			filterTraverse.nextToken();
+			final Filter<GroupedValueContainer> filter = (Filter<GroupedValueContainer>) nsIdDeserializer.deserialize(filterTraverse, ctxt);
+
+
+			final TreeNode valueNode = treeNode.get("value");
+			final JsonParser valueTraverse = valueNode.traverse();
+			valueTraverse.nextToken();
+			final GroupedValueContainer value = ctxt.readValue(valueTraverse, ((GroupFilter) filter).getFilterValueType(ctxt.getTypeFactory()));
+
+			return new GroupFilterValue(filter, value);
+		}
+
 	}
 }

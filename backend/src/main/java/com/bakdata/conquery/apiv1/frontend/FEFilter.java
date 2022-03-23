@@ -33,6 +33,5 @@ public class FEFilter {
 	@Nullable
 	private Object defaultValue;
 
-	private String groupType;
 	private Map<String, FEFilter> filters;
 }

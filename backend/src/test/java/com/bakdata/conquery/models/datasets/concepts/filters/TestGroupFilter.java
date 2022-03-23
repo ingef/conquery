@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.datasets.concepts.filters;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import javax.validation.constraints.Min;
@@ -18,18 +17,19 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.GroupedVal
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 
 @CPSType(id = "TEST_GROUP_FILTER", base = Filter.class)
-public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFilterValue> {
+public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFilterValue> implements GroupFilter {
 
 	@Override
 	public void configureFrontend(FEFilter f) {
 		f.setType(FEFilterType.Fields.GROUP);
 		f.setFilters(getFEFilter());
-		f.setGroupType(GroupFilterValue.class.getAnnotation(CPSType.class).id());
 	}
 
 	@Override
@@ -56,8 +56,11 @@ public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFil
 		);
 	}
 
+	@Override
+	public JavaType getFilterValueType(TypeFactory tf) {
+		return tf.constructSimpleType(TestGroupFilter.GroupFilterValue.class, null);
+	}
 
-	@CPSType(id = "TEST_COMPOUND_VALUE", base = GroupedValueContainer.class)
 	@Getter
 	@AllArgsConstructor
 	@FieldNameConstants

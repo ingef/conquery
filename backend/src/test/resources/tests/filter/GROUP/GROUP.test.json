@@ -35,7 +35,6 @@
     "filterValue": {
         "type": "GROUP",
         "value": {
-            "type": "TEST_GROUP_VALUE",
             "strings": [
                 "a",
                 "ab"
@@ -46,7 +45,6 @@
     "expectedFrontendConfig": {
         "label": "test filter",
         "type": "GROUP",
-        "groupType": "TEST_GROUP_VALUE",
         "filters": {
             "strings": {
                 "type": "MULTI_SELECT",
