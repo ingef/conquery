@@ -63,15 +63,20 @@ export const selectFormConfigs = (
   folders: string[],
   noFoldersActive: boolean,
 ) => {
-  if ((!searchTerm || searchTerm.length === 0) && filter === "all") {
+  const noFilterSet =
+    (!searchTerm || searchTerm.length === 0) &&
+    filter === "all" &&
+    folders.length === 0 &&
+    !noFoldersActive;
+
+  if (noFilterSet) {
     return formConfigs;
   }
 
-  return formConfigs.filter((config) => {
-    return (
+  return formConfigs.filter(
+    (config) =>
       configMatchesFolderFilter(config, folders, noFoldersActive) &&
       configHasFilterType(config, filter) &&
-      configMatchesSearch(config, searchTerm)
-    );
-  });
+      configMatchesSearch(config, searchTerm),
+  );
 };
