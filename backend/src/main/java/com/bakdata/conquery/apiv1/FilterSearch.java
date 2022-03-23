@@ -2,13 +2,14 @@ package com.bakdata.conquery.apiv1;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -40,20 +41,24 @@ public class FilterSearch {
 
 			log.info("BEGIN loading SourceSearch");
 
-			final Map<String, List<Stream<FEValue>>> suppliers = new HashMap<>();
+			final List<AbstractSelectFilter.SourceSearchTask> tasks =
+					storage.getAllConcepts().stream()
+						   .flatMap(c -> c.getConnectors().stream())
+						   .flatMap(co -> co.collectAllFilters().stream())
+						   .filter(f -> f instanceof AbstractSelectFilter)
+						   .map(f -> ((AbstractSelectFilter<?>) f))
+						   .map(f -> f.collectSourceSearchTasks(parser, storage))
+						   .flatMap(List::stream)
+						   .collect(Collectors.toList());
 
-			storage.getAllConcepts().stream()
-				   .flatMap(c -> c.getConnectors().stream())
-				   .flatMap(co -> co.collectAllFilters().stream())
-				   .filter(f -> f instanceof AbstractSelectFilter)
-				   .map(f -> ((AbstractSelectFilter<?>) f))
-				   .forEach(f -> f.collectSourceSearchTasks(parser, storage, suppliers));
+			Map<String, List<AbstractSelectFilter.SourceSearchTask>> suppliers =
+					tasks.stream().collect(Collectors.groupingBy(AbstractSelectFilter.SourceSearchTask::getTargetId));
 
 			final ExecutorService service = Executors.newCachedThreadPool();
 
 			log.debug("Found {} search suppliers", suppliers.size());
 
-			for (Map.Entry<String, List<Stream<FEValue>>> entry : suppliers.entrySet()) {
+			for (Map.Entry<String, List<AbstractSelectFilter.SourceSearchTask>> entry : suppliers.entrySet()) {
 
 				service.submit(() -> {
 					final String id = entry.getKey();
@@ -62,13 +67,16 @@ public class FilterSearch {
 					log.info("BEGIN collecting entries for `{}`", id);
 
 					try {
-						final List<Stream<FEValue>> fillers = entry.getValue();
+						final List<AbstractSelectFilter.SourceSearchTask> fillers = entry.getValue();
+
+						final Set<String> seenSources = new HashSet<>(fillers.size());
 
 						final TrieSearch<FEValue> search = new TrieSearch<>();
 
 
 						fillers.stream()
-							   .flatMap(Function.identity())
+							   .filter(task -> seenSources.add(task.getSourceId()))
+							   .flatMap(AbstractSelectFilter.SourceSearchTask::values)
 							   .distinct()
 							   .forEach(item -> search.addItem(item, item.extractKeywords()));
 

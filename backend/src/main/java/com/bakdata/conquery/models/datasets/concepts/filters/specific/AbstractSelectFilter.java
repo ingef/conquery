@@ -16,6 +16,8 @@ import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -25,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.univocity.parsers.csv.CsvParser;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -84,102 +87,126 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		return references;
 	}
 
+	@RequiredArgsConstructor
+	@Data
+	public abstract static class SourceSearchTask {
+		private final String sourceId;
+		private final String targetId;
 
-	public void collectSourceSearchTasks(CSVConfig parserConfig, NamespacedStorage storage, Map<String, List<Stream<FEValue>>> suppliers) {
+		public abstract Stream<FEValue> values();
+
+		public static class FromLabels extends SourceSearchTask {
+			private final Map<String, String> labels;
+
+			public FromLabels(AbstractSelectFilter<?> filter, Map<String, String> labels) {
+				super(filter.getId().toString(), filter.getId().toString());
+				this.labels = labels;
+			}
+
+			@Override
+			public Stream<FEValue> values() {
+				return labels.entrySet().stream()
+							 .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
+							 .onClose(() -> log.debug("DONE processing {} labels for {}", labels.size(), getSourceId()));
+			}
+		}
+
+		public static class FromTemplate extends SourceSearchTask {
+
+			private final CSVConfig parserConfig;
+			private final FilterTemplate template;
+
+			public FromTemplate(CSVConfig parserConfig, FilterTemplate template) {
+				super(template.getFilePath(), template.getFilePath());
+
+				this.parserConfig = parserConfig;
+				this.template = template;
+			}
+
+			@Override
+			public Stream<FEValue> values() {
+				final CsvParser parser = parserConfig.createParser();
+				// It is likely that multiple Filters reference the same file+config. However we want to ensure it is read only once to avoid wasting computation.
+				// We use Streams below to ensure a completely transparent lazy execution of parsing reference files
+				return Stream.of(new File(template.getFilePath()))
+							 .map(parser::iterateRecords)
+							 // Univocity parser does not support streams, so we create one manually using their spliterator.
+							 .flatMap(iter -> StreamSupport.stream(iter.spliterator(), false))
+							 .map(row -> {
+								 final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
+
+								 final String rowId = row.getString(template.getColumnValue());
+
+								 final String label = substitutor.replace(template.getValue());
+								 final String optionValue = substitutor.replace(template.getOptionValue());
+
+								 // TODO log the line and give feedback to suppliers of reference
+								 if (rowId == null || label == null) {
+									 return null;
+								 }
+
+								 return new FEValue(rowId, label, optionValue);
+							 })
+							 .filter(Objects::nonNull)
+							 .distinct();
+			}
+		}
+
+		@Getter
+		public static class FromColumn extends SourceSearchTask {
+			private final List<Import> imports;
+			private final Column column;
+
+			public FromColumn(List<Import> imports, Column column, String targetId) {
+				super(column.getId().toString(), targetId);
+				this.imports = imports;
+				this.column = column;
+			}
+
+			@Override
+			public Stream<FEValue> values() {
+				return imports.stream()
+							  .onClose(() -> log.debug("DONE processing values for {}", getColumn().getId()))
+							  .flatMap(imp -> StreamSupport.stream(((StringStore) getColumn().getTypeFor(imp)).spliterator(), false))
+							  .map(value -> new FEValue(value, value));
+			}
+		}
+
+
+	}
+
+	public List<SourceSearchTask> collectSourceSearchTasks(CSVConfig parserConfig, NamespacedStorage storage) {
+		List<SourceSearchTask> out = new ArrayList<>(3);
 
 		// Collect data from csv template
 		if (getTemplate() != null) {
-			String id = getTemplate().getFilePath();
-			suppliers.put(id, List.of(collectTemplateSearchItems(parserConfig)));
+			out.add(new SourceSearchTask.FromTemplate(parserConfig, getTemplate()));
 		}
 
 
 		// Collect data from labels
 		if (!getLabels().isEmpty()) {
-			String id = getId().toString();
-			suppliers.put(id, List.of(collectLabeledSearchItems()));
+			out.add(new SourceSearchTask.FromLabels(this, getLabels()));
 		}
 
 		// Collect data from raw underlying data, try to unify among columns if at all possible (either via SharedDict or SecondaryId)
 		{
+			String id;
 			if (getColumn().getSharedDictionary() != null) {
-				String id = getColumn().getSharedDictionary();
-
-				suppliers.computeIfAbsent(id, (ignored) -> new ArrayList<>())
-						 .add(collectRawSearchItems(storage));
+				id = getColumn().getSharedDictionary();
 			}
 			else if (getColumn().getSecondaryId() != null) {
-				String id = getColumn().getSecondaryId().getId().toString();
-
-				suppliers.computeIfAbsent(id, (ignored) -> new ArrayList<>())
-						 .add(collectRawSearchItems(storage));
+				id = getColumn().getSecondaryId().getId().toString();
 			}
 			else {
-				suppliers.put(getColumn().getId().toString(), List.of(collectRawSearchItems(storage)));
+				id = getColumn().getId().toString();
 			}
 
+			final List<Import> imports = getConnector().getTable().findImports(storage).collect(Collectors.toList());
 
-		}
-	}
-
-	/**
-	 * Generate search from provided labels.
-	 */
-	private Stream<FEValue> collectLabeledSearchItems() {
-
-		if (labels.isEmpty()) {
-			return Stream.empty();
+			out.add(new SourceSearchTask.FromColumn(imports, getColumn(), id));
 		}
 
-		return labels.entrySet().stream()
-					 .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
-					 .onClose(() -> log.debug("DONE processing {} labels for {}", labels.size(), getId()));
-
-	}
-
-	/**
-	 * Collect search results based on provided CSV with prepopulated values.
-	 */
-	private Stream<FEValue> collectTemplateSearchItems(CSVConfig parserConfig) {
-
-		final CsvParser parser = parserConfig.createParser();
-		// It is likely that multiple Filters reference the same file+config. However we want to ensure it is read only once to avoid wasting computation.
-		// We use Streams below to ensure a completely transparent lazy execution of parsing reference files
-		return Stream.of(new File(template.getFilePath()))
-					 .map(parser::iterateRecords)
-					 // Univocity parser does not support streams, so we create one manually using their spliterator.
-					 .flatMap(iter -> StreamSupport.stream(iter.spliterator(), false))
-					 .map(row -> {
-						 final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
-
-						 final String rowId = row.getString(template.getColumnValue());
-
-						 final String label = substitutor.replace(template.getValue());
-						 final String optionValue = substitutor.replace(template.getOptionValue());
-
-						 // TODO log the line and give feedback to suppliers of reference
-						 if (rowId == null || label == null) {
-							 return null;
-						 }
-
-						 return new FEValue(rowId, label, optionValue);
-					 })
-					 .filter(Objects::nonNull)
-					 .distinct()
-				;
-
-
-	}
-
-
-	/**
-	 * Collect search Items from raw data in.
-	 */
-	private Stream<FEValue> collectRawSearchItems(NamespacedStorage storage) {
-
-		return getConnector().getTable().findImports(storage)
-							 .onClose(() -> log.debug("DONE processing values for {} (Source: {})", getColumn().getId(), getId()))
-							 .flatMap(imp -> StreamSupport.stream(((StringStore) getColumn().getTypeFor(imp)).spliterator(), false))
-							 .map(value -> new FEValue(value, value));
+		return out;
 	}
 }
