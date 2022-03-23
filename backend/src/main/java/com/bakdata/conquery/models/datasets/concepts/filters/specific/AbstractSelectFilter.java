@@ -178,7 +178,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	private Stream<FEValue> collectRawSearchItems(NamespacedStorage storage) {
 
 		return getConnector().getTable().findImports(storage)
-							 .onClose(() -> log.debug("DONE processing values for {}", getColumn().getId()))
+							 .onClose(() -> log.debug("DONE processing values for {} (Source: {})", getColumn().getId(), getId()))
 							 .flatMap(imp -> StreamSupport.stream(((StringStore) getColumn().getTypeFor(imp)).spliterator(), false))
 							 .map(value -> new FEValue(value, value));
 	}
