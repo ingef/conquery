@@ -61,7 +61,6 @@ public class FilterSearch {
 						   .collect(Collectors.toList());
 
 
-			// Generate SourceSearchTasks, then group them by their targetId (i.e. the Ids used in getSearchReferences to search for in a filter from multiple sources)
 			final Map<String, Stream<FEValue>> suppliers = new HashMap<>();
 
 			collectLabelTasks(allSelectFilters, suppliers);
@@ -131,9 +130,9 @@ public class FilterSearch {
 						   .map(value -> new FEValue(value, value))
 						   .onClose(() -> log.debug("DONE processing values for {}", column.getId()));
 
+			// Data for columns can grouped by secondaryId or sharedDict therefore we have to concatenate them instead of simply supplying them
+			// We group the values because it drastically reduces memory usage, shared dicts and secondaryids mostly contain the same data over a lot of columns
 			final Stream<FEValue> prior = suppliers.getOrDefault(reference, Stream.empty());
-
-
 			suppliers.put(reference, Stream.concat(prior, fromColumn));
 
 		}
@@ -176,6 +175,7 @@ public class FilterSearch {
 			if (suppliers.containsKey(filter.getTemplate().getFilePath())) {
 				continue;
 			}
+			//TODO if templates have proper Ids we can make this more stringent (also the search references)
 
 			suppliers.put(filter.getTemplate().getFilePath(), fromTemplate(filter.getTemplate(), parser));
 		}
@@ -188,9 +188,12 @@ public class FilterSearch {
 			}
 			final Map<String, String> labels = filter.getLabels();
 
-			suppliers.put(filter.getId().toString(), labels.entrySet().stream()
-														   .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
-														   .onClose(() -> log.debug("DONE processing {} labels for {}", labels.size(), filter.getId())));
+			suppliers.put(
+					filter.getId().toString(),
+					labels.entrySet().stream()
+						  .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
+						  .onClose(() -> log.debug("DONE processing {} labels for {}", labels.size(), filter.getId()))
+			);
 
 		}
 	}
