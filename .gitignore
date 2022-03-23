@@ -65,3 +65,10 @@ nbactions.xml
 *.iml
 
 /workspace.code-workspace
+**/Lib/
+**/Scripts/
+**/Include/
+**/etc/
+**/share/
+**/*-checkpoint.ipynb
+**/pyvenv.cfg
