@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -41,22 +42,24 @@ public class FilterSearch {
 
 			log.info("BEGIN loading SourceSearch");
 
-			final List<AbstractSelectFilter.SourceSearchTask> tasks =
+
+			final Stream<AbstractSelectFilter<?>> allSelectFilters =
 					storage.getAllConcepts().stream()
 						   .flatMap(c -> c.getConnectors().stream())
 						   .flatMap(co -> co.collectAllFilters().stream())
-						   .filter(f -> f instanceof AbstractSelectFilter)
-						   .map(f -> ((AbstractSelectFilter<?>) f))
-						   .map(f -> f.collectSourceSearchTasks(parser, storage))
-						   .flatMap(List::stream)
-						   .collect(Collectors.toList());
+						   .filter(AbstractSelectFilter.class::isInstance)
+						   .map(AbstractSelectFilter.class::cast);
 
-			Map<String, List<AbstractSelectFilter.SourceSearchTask>> suppliers =
-					tasks.stream().collect(Collectors.groupingBy(AbstractSelectFilter.SourceSearchTask::getTargetId));
+			// Generate SourceSearchTasks, then group them by their targetId (i.e. the Ids used in getSearchReferences to search for in a filter from multiple sources)
+			final Map<String, List<AbstractSelectFilter.SourceSearchTask>> suppliers =
+					allSelectFilters.map(f -> f.collectSourceSearchTasks(parser, storage))
+									.flatMap(List::stream)
+									.collect(Collectors.groupingBy(AbstractSelectFilter.SourceSearchTask::getTargetId));
 
 			final ExecutorService service = Executors.newCachedThreadPool();
 
 			log.debug("Found {} search suppliers", suppliers.size());
+
 
 			for (Map.Entry<String, List<AbstractSelectFilter.SourceSearchTask>> entry : suppliers.entrySet()) {
 
@@ -68,7 +71,9 @@ public class FilterSearch {
 
 					try {
 						final List<AbstractSelectFilter.SourceSearchTask> fillers = entry.getValue();
-
+						// Sources can be referenced multiple times (e.g. columns used in many concepts), we want to process them just once.
+						// We use seenSources to deduplicate the sources.
+						// The duplication can occur because columns might either use a shared-dictionary or a secondaryId which we use as search references.
 						final Set<String> seenSources = new HashSet<>(fillers.size());
 
 						final TrieSearch<FEValue> search = new TrieSearch<>();
@@ -98,6 +103,7 @@ public class FilterSearch {
 
 			service.shutdown();
 
+			//TODO await properly
 			service.awaitTermination(10, TimeUnit.HOURS);
 
 

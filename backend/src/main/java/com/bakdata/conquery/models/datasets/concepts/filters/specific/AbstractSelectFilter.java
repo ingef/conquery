@@ -73,6 +73,19 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	}
 
 
+	private static String decideColumnReference(Column column) {
+
+		if (column.getSharedDictionary() != null) {
+			return column.getSharedDictionary();
+		}
+
+		if (column.getSecondaryId() != null) {
+			return column.getSecondaryId().getId().toString();
+		}
+
+		return column.getId().toString();
+	}
+
 	@JsonIgnore
 	public List<String> getSearchReferences() {
 		final List<String> references = new ArrayList<>(3);
@@ -82,7 +95,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		}
 
 		references.add(getId().toString());
-		references.add(getColumn().getId().toString());
+		references.add(decideColumnReference(getColumn()));
 
 		return references;
 	}
@@ -166,9 +179,9 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 			@Override
 			public Stream<FEValue> values() {
 				return imports.stream()
-							  .onClose(() -> log.debug("DONE processing values for {}", getColumn().getId()))
 							  .flatMap(imp -> StreamSupport.stream(((StringStore) getColumn().getTypeFor(imp)).spliterator(), false))
-							  .map(value -> new FEValue(value, value));
+							  .map(value -> new FEValue(value, value))
+							  .onClose(() -> log.debug("DONE processing values for {}", getColumn().getId()));
 			}
 		}
 
@@ -191,16 +204,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 		// Collect data from raw underlying data, try to unify among columns if at all possible (either via SharedDict or SecondaryId)
 		{
-			String id;
-			if (getColumn().getSharedDictionary() != null) {
-				id = getColumn().getSharedDictionary();
-			}
-			else if (getColumn().getSecondaryId() != null) {
-				id = getColumn().getSecondaryId().getId().toString();
-			}
-			else {
-				id = getColumn().getId().toString();
-			}
+			String id = decideColumnReference(getColumn());
 
 			final List<Import> imports = getConnector().getTable().findImports(storage).collect(Collectors.toList());
 
