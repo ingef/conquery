@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.GroupFilter;
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.GroupedValueContainer;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.QueryContextResolvable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -147,15 +147,17 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = FEFilterType.Fields.GROUP, base = FilterValue.class)
 	@ToString(callSuper = true)
 	@JsonDeserialize(using = GroupFilterDeserializer.class)
-	public static class GroupFilterValue extends FilterValue<GroupedValueContainer> {
+	public static class GroupFilterValue extends FilterValue<Object> {
 
-		public GroupFilterValue(Filter<GroupedValueContainer> filter, GroupedValueContainer value) {
+		public GroupFilterValue(Filter<Object> filter, Object value) {
 			super(filter, value);
 		}
 
 		@Override
 		public void resolve(QueryResolveContext context) {
-			getValue().resolve(context);
+			if (getValue() instanceof QueryContextResolvable) {
+				((QueryContextResolvable) getValue()).resolve(context);
+			}
 		}
 	}
 
@@ -174,13 +176,13 @@ public abstract class FilterValue<VALUE> {
 			final TreeNode filterNode = treeNode.get("filter");
 			final JsonParser filterTraverse = filterNode.traverse();
 			filterTraverse.nextToken();
-			final Filter<GroupedValueContainer> filter = (Filter<GroupedValueContainer>) nsIdDeserializer.deserialize(filterTraverse, ctxt);
+			final Filter<Object> filter = (Filter<Object>) nsIdDeserializer.deserialize(filterTraverse, ctxt);
 
 
 			final TreeNode valueNode = treeNode.get("value");
 			final JsonParser valueTraverse = valueNode.traverse();
 			valueTraverse.nextToken();
-			final GroupedValueContainer value = ctxt.readValue(valueTraverse, ((GroupFilter) filter).getFilterValueType(ctxt.getTypeFactory()));
+			final QueryContextResolvable value = ctxt.readValue(valueTraverse, ((GroupFilter) filter).getFilterValueType(ctxt.getTypeFactory()));
 
 			return new GroupFilterValue(filter, value);
 		}

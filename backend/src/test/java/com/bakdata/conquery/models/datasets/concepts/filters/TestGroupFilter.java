@@ -13,7 +13,7 @@ import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.GroupedValueContainer;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.QueryContextResolvable;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -64,7 +64,7 @@ public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFil
 	@Getter
 	@AllArgsConstructor
 	@FieldNameConstants
-	public static class GroupFilterValue implements GroupedValueContainer {
+	public static class GroupFilterValue implements QueryContextResolvable {
 		@NotEmpty
 		private String[] strings;
 
