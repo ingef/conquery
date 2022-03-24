@@ -24,13 +24,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * Trie based keyword search for autocompletion and resolving.
+ *
+ * We store not only whole words but suffixes up to length of SUFFIX_CUTOFF to enable a sort of fuzzy and partial search with longer and compound search terms.
+ */
 @NoArgsConstructor
 @Slf4j
 public class TrieSearch<T extends Comparable<T>> {
 	/**
-	 * We saturate matches here to avoid favoring very short keywords, when multiple keywords are used.
+	 * We saturate matches to avoid favoring very short keywords, when multiple keywords are used.
 	 */
-	private static final double MATCH_THRESHOLD = 1d / 20d;
+	private static final double MATCH_THRESHOLD = 1d / 10d;
 	private static final int SUFFIX_CUTOFF = 3;
 
 	/**
@@ -70,7 +75,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		// keyword is prefix of itemWord
 		assert itemLength >= keywordLength;
 
-		// We saturate the weight to avoid favoring short matches.
+		// We saturate the weight to avoid favoring extremely short matches.
 		if (keywordLength == itemLength) {
 			return MATCH_THRESHOLD;
 		}
@@ -115,12 +120,11 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public List<T> findExact(Collection<String> keywords, int limit) {
-		return
-				keywords.stream().flatMap(this::split)
-						.flatMap(this::doGet)
-						.distinct()
-						.limit(limit)
-						.collect(Collectors.toList());
+		return keywords.stream().flatMap(this::split)
+					   .flatMap(this::doGet)
+					   .distinct()
+					   .limit(limit)
+					   .collect(Collectors.toList());
 	}
 
 	private Stream<T> doGet(String kw) {
@@ -129,15 +133,8 @@ public class TrieSearch<T extends Comparable<T>> {
 
 
 	private void doPut(String kw, T item) {
-		trie.compute(kw, (ignored, prior) -> {
-			if (prior == null) {
-				prior = new ArrayList<>();
-			}
-
-			prior.add(item);
-
-			return prior;
-		});
+		trie.computeIfAbsent(kw, (ignored) -> new ArrayList<>())
+			.add(item);
 	}
 
 	public void addItem(T item, List<String> keywords) {
@@ -154,6 +151,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public Collection<T> listItems() {
+		//TODO this a pretty dangerous operation, I'd rather see a session based iterator instead
 		return trie.values().stream()
 				   .flatMap(Collection::stream)
 				   .distinct()
@@ -183,7 +181,7 @@ public class TrieSearch<T extends Comparable<T>> {
 					.filter(length -> length == 1)
 					.count();
 
-		log.info("Stats= `{}`, with {} singletons.", statistics, singletons);
+		log.info("Stats=`{}`, with {} singletons.", statistics, singletons);
 	}
 
 }

@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -37,8 +37,16 @@ import org.apache.commons.text.StringSubstitutor;
 @NoArgsConstructor
 public class FilterSearch {
 
+	/**
+	 * We tag our searches based on references collected in getSearchReferences. We do not mash them all together to allow for sharing and prioritising different sources.
+	 * <p>
+	 * In the code below, the keys of this map will usually be called "reference".
+	 */
 	private final Map<String, TrieSearch<FEValue>> searchCache = new HashMap<>();
 
+	/**
+	 * From a given {@link FEValue} extract all relevant keywords.
+	 */
 	private static List<String> extractKeywords(FEValue value) {
 		final ImmutableList.Builder<String> builder = ImmutableList.builderWithExpectedSize(3);
 
@@ -52,6 +60,13 @@ public class FilterSearch {
 		return builder.build();
 	}
 
+	/**
+	 * To facilitate sharing/reuse among a dataset, we try to combine multiple columns into a single search:
+	 * If the column is part of a shared-Dictionary, we use that as reference.
+	 * Usually {@link Column}s of a {@link com.bakdata.conquery.models.datasets.SecondaryIdDescription} is also backed by a shared-Dictionary, but in the case it is not, we use the secondaryId as common reference name.
+	 * <p>
+	 * Lastly if the column is not shared or of a secondaryId we use the {@link com.bakdata.conquery.models.identifiable.ids.specific.ColumnId} itself.
+	 */
 	private static String decideColumnReference(Column column) {
 
 		if (column.getSharedDictionary() != null) {
@@ -65,7 +80,10 @@ public class FilterSearch {
 		return column.getId().toString();
 	}
 
-	private static List<String> getSearchReferences(AbstractSelectFilter<?> filter) {
+	/**
+	 * For a {@link SelectFilter}, decide which references to use for searching.
+	 */
+	private static List<String> getSearchReferences(SelectFilter<?> filter) {
 		final List<String> references = new ArrayList<>(3);
 
 		if (filter.getTemplate() != null) {
@@ -78,9 +96,13 @@ public class FilterSearch {
 		return references;
 	}
 
-	public List<TrieSearch<FEValue>> getSearchesFor(AbstractSelectFilter<?> filter) {
+	/**
+	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
+	 */
+	public List<TrieSearch<FEValue>> getSearchesFor(SelectFilter<?> filter) {
 		return getSearchReferences(filter).stream()
-										  .map(reference -> searchCache.getOrDefault(reference, new TrieSearch<>()))
+										  .map(searchCache::get)
+										  .filter(Objects::nonNull)
 										  .collect(Collectors.toList());
 	}
 
@@ -94,33 +116,38 @@ public class FilterSearch {
 
 			log.info("BEGIN loading SourceSearch");
 
-
-			final List<AbstractSelectFilter<?>> allSelectFilters =
+			// collect all SelectFilters to the create searches for them
+			final List<SelectFilter<?>> allSelectFilters =
 					storage.getAllConcepts().stream()
 						   .flatMap(c -> c.getConnectors().stream())
 						   .flatMap(co -> co.collectAllFilters().stream())
-						   .filter(AbstractSelectFilter.class::isInstance)
-						   .map(f -> ((AbstractSelectFilter<?>) f))
+						   .filter(SelectFilter.class::isInstance)
+						   .map(f -> ((SelectFilter<?>) f))
 						   .collect(Collectors.toList());
 
 
 			final Map<String, Stream<FEValue>> suppliers = new HashMap<>();
 
+			// collect all tasks that are based on the filters configured label mappings
 			collectLabelTasks(allSelectFilters, suppliers);
 
+			// collect all tasks based on the filters optionally configured templates based on csvs
 			collectTemplateTasks(parser, allSelectFilters, suppliers);
 
+			// collect all tasks that are based on the raw data in the columns, these have no reference or template for mapping
 			collectColumnTasks(storage, allSelectFilters, suppliers);
 
+			// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 			final ExecutorService service = Executors.newCachedThreadPool();
 
 			log.debug("Found {} search suppliers", suppliers.size());
-
 
 			for (Map.Entry<String, Stream<FEValue>> entry : suppliers.entrySet()) {
 
 				service.submit(() -> {
 					final String id = entry.getKey();
+					final Stream<FEValue> values = entry.getValue();
+
 					final long begin = System.currentTimeMillis();
 
 					log.info("BEGIN collecting entries for `{}`", id);
@@ -128,13 +155,10 @@ public class FilterSearch {
 					try {
 						final TrieSearch<FEValue> search = new TrieSearch<>();
 
-						entry.getValue()
-							 .distinct()
-							 .forEach(item -> search.addItem(item, extractKeywords(item)));
+						values.distinct()
+							  .forEach(item -> search.addItem(item, extractKeywords(item)));
 
 						searchCache.put(id, search);
-
-						log.trace("Stats for `{}`", id);
 
 						search.shrinkToFit();
 
@@ -150,9 +174,10 @@ public class FilterSearch {
 
 			service.shutdown();
 
-			//TODO await properly
-			service.awaitTermination(10, TimeUnit.HOURS);
 
+			while (!service.awaitTermination(30, TimeUnit.SECONDS)) {
+				log.trace("Still waiting for {} to finish.", suppliers.size());
+			}
 
 			log.debug("DONE loading SourceSearch");
 		}));
@@ -160,7 +185,10 @@ public class FilterSearch {
 
 	}
 
-	private void collectColumnTasks(NamespaceStorage storage, List<AbstractSelectFilter<?>> allSelectFilters, Map<String, Stream<FEValue>> suppliers) {
+	/**
+	 * Create Streams extracting data from raw data in columns.
+	 */
+	private void collectColumnTasks(NamespaceStorage storage, List<SelectFilter<?>> allSelectFilters, Map<String, Stream<FEValue>> suppliers) {
 		final Set<Column> columns = allSelectFilters.stream().map(SingleColumnFilter::getColumn).collect(Collectors.toSet());
 
 		for (Column column : columns) {
@@ -208,9 +236,11 @@ public class FilterSearch {
 					 .distinct();
 	}
 
-
-	private void collectTemplateTasks(CSVConfig parser, List<AbstractSelectFilter<?>> allSelectFilters, Map<String, Stream<FEValue>> suppliers) {
-		for (AbstractSelectFilter<?> filter : allSelectFilters) {
+	/**
+	 * Create streams for all templates referenced in the filters
+	 */
+	private void collectTemplateTasks(CSVConfig parser, List<SelectFilter<?>> allSelectFilters, Map<String, Stream<FEValue>> suppliers) {
+		for (SelectFilter<?> filter : allSelectFilters) {
 			if (filter.getTemplate() == null) {
 				continue;
 			}
@@ -220,14 +250,17 @@ public class FilterSearch {
 			if (suppliers.containsKey(reference)) {
 				continue;
 			}
-			//TODO if templates have proper Ids we can make this more stringent (also the search references)
+			//TODO FK: if templates have proper Ids we can make this more stringent (also the search references)
 
 			suppliers.put(reference, fromTemplate(filter.getTemplate(), parser));
 		}
 	}
 
-	private void collectLabelTasks(List<AbstractSelectFilter<?>> allSelectFilters, Map<String, Stream<FEValue>> suppliers) {
-		for (AbstractSelectFilter<?> filter : allSelectFilters) {
+	/**
+	 * Create Streams extracting data from filter labels
+	 */
+	private void collectLabelTasks(List<SelectFilter<?>> allSelectFilters, Map<String, Stream<FEValue>> suppliers) {
+		for (SelectFilter<?> filter : allSelectFilters) {
 			if (filter.getLabels().isEmpty()) {
 				continue;
 			}

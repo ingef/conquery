@@ -23,7 +23,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -68,15 +68,15 @@ public class ConceptsProcessor {
 							}
 						});
 
-	private final LoadingCache<Pair<AbstractSelectFilter<?>, String>, List<FEValue>> searchCache =
+	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchCache =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.build(new CacheLoader<>() {
 
 							@Override
-							public List<FEValue> load(Pair<AbstractSelectFilter<?>, String> filterAndSearch) {
+							public List<FEValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
 								String searchTerm = filterAndSearch.getValue();
-								AbstractSelectFilter<?> filter = filterAndSearch.getKey();
+								SelectFilter<?> filter = filterAndSearch.getKey();
 
 								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
 
@@ -123,7 +123,7 @@ public class ConceptsProcessor {
 	 * Search for all search terms at once, with stricter scoring.
 	 * The user will upload a file and expect only well-corresponding resolutions.
 	 */
-	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
+	public ResolvedConceptsResult resolveFilterValues(SelectFilter<?> filter, List<String> searchTerms) {
 
 		// search in the full text engine
 		Set<String> openSearchTerms = new HashSet<>(searchTerms);
@@ -159,7 +159,7 @@ public class ConceptsProcessor {
 		private final long total;
 	}
 
-	public AutoCompleteResult autocompleteTextFilter(AbstractSelectFilter<?> filter, Optional<String> maybeText, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
+	public AutoCompleteResult autocompleteTextFilter(SelectFilter<?> filter, Optional<String> maybeText, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
 		final int pageNumber = pageNumberOpt.orElse(0);
 		final int itemsPerPage = itemsPerPageOpt.orElse(50);
 
@@ -185,12 +185,10 @@ public class ConceptsProcessor {
 			log.warn("Failed to search for \"{}\".", text, (Throwable) (log.isTraceEnabled() ? e : null));
 			return new AutoCompleteResult(Collections.emptyList(), 0);
 		}
-
-
 	}
 
 
-	private List<FEValue> listAllValues(AbstractSelectFilter<?> filter) {
+	private List<FEValue> listAllValues(SelectFilter<?> filter) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
 		List<FEValue> out = new ArrayList<>();
@@ -203,10 +201,10 @@ public class ConceptsProcessor {
 	}
 
 	/**
-	 * Autocompletion for search terms. For values of {@link AbstractSelectFilter<?>}.
+	 * Autocompletion for search terms. For values of {@link SelectFilter <?>}.
 	 * Is used by the serach cache to load missing items
 	 */
-	private List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
+	private List<FEValue> autocompleteTextFilter(SelectFilter<?> filter, String text) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
 		List<FEValue> out = new ArrayList<>();
