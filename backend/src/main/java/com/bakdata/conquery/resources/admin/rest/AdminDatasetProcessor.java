@@ -74,7 +74,6 @@ public class AdminDatasetProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
-	private final FilterSearch filterSearch;
 
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
@@ -101,7 +100,7 @@ public class AdminDatasetProcessor {
 							  .writerWithView(InternalOnly.class)
 				);
 
-		ns.setFilterSearch(filterSearch);
+		ns.setFilterSearch(new FilterSearch());
 
 		datasetRegistry.add(ns);
 

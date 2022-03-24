@@ -132,9 +132,8 @@ public class ConceptsProcessor {
 
 		List<FEValue> out = new ArrayList<>();
 
-		for (String reference : filter.getSearchReferences()) {
-			final List<FEValue> searchResult = namespace.getFilterSearch()
-														.getSearchFor(reference).findExact(openSearchTerms, Integer.MAX_VALUE);
+		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
+			final List<FEValue> searchResult = search.findExact(openSearchTerms, Integer.MAX_VALUE);
 
 			searchResult.forEach(result -> openSearchTerms.remove(result.getValue()));
 
@@ -196,8 +195,7 @@ public class ConceptsProcessor {
 
 		List<FEValue> out = new ArrayList<>();
 
-		for (String reference : filter.getSearchReferences()) {
-			final TrieSearch<FEValue> search = namespace.getFilterSearch().getSearchFor(reference);
+		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
 			out.addAll(search.listItems());
 		}
 
@@ -213,10 +211,10 @@ public class ConceptsProcessor {
 
 		List<FEValue> out = new ArrayList<>();
 
-		for (String reference : filter.getSearchReferences()) {
+		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
 
 			List<FEValue> result = createSourceSearchResult(
-					namespace.getFilterSearch().getSearchFor(reference),
+					search,
 					Collections.singletonList(text),
 					OptionalInt.empty()
 			);

@@ -1,14 +1,12 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
-import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -54,36 +52,10 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 		f.setOptions(
 				labels.entrySet().stream()
-					  .map(entry -> new com.bakdata.conquery.apiv1.frontend.FEValue(entry.getKey(), entry.getValue()))
+					  .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
 					  .collect(Collectors.toList())
 		);
 	}
 
 
-	public static String decideColumnReference(Column column) {
-
-		if (column.getSharedDictionary() != null) {
-			return column.getSharedDictionary();
-		}
-
-		if (column.getSecondaryId() != null) {
-			return column.getSecondaryId().getId().toString();
-		}
-
-		return column.getId().toString();
-	}
-
-	@JsonIgnore
-	public List<String> getSearchReferences() {
-		final List<String> references = new ArrayList<>(3);
-
-		if (getTemplate() != null) {
-			references.add(getTemplate().getFilePath());
-		}
-
-		references.add(getId().toString());
-		references.add(decideColumnReference(getColumn()));
-
-		return references;
-	}
 }

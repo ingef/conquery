@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.util.search.TrieSearch;
+import com.google.common.collect.ImmutableList;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,8 +39,49 @@ public class FilterSearch {
 
 	private final Map<String, TrieSearch<FEValue>> searchCache = new HashMap<>();
 
-	public TrieSearch<FEValue> getSearchFor(String reference) {
-		return searchCache.getOrDefault(reference, new TrieSearch<>());
+	private static List<String> extractKeywords(FEValue value) {
+		final ImmutableList.Builder<String> builder = ImmutableList.builderWithExpectedSize(3);
+
+		builder.add(value.getLabel())
+			   .add(value.getValue());
+
+		if (value.getOptionValue() != null) {
+			builder.add(value.getOptionValue());
+		}
+
+		return builder.build();
+	}
+
+	private static String decideColumnReference(Column column) {
+
+		if (column.getSharedDictionary() != null) {
+			return column.getSharedDictionary();
+		}
+
+		if (column.getSecondaryId() != null) {
+			return column.getSecondaryId().getId().toString();
+		}
+
+		return column.getId().toString();
+	}
+
+	private static List<String> getSearchReferences(AbstractSelectFilter<?> filter) {
+		final List<String> references = new ArrayList<>(3);
+
+		if (filter.getTemplate() != null) {
+			references.add(filter.getTemplate().getFilePath());
+		}
+
+		references.add(filter.getId().toString());
+		references.add(decideColumnReference(filter.getColumn()));
+
+		return references;
+	}
+
+	public List<TrieSearch<FEValue>> getSearchesFor(AbstractSelectFilter<?> filter) {
+		return getSearchReferences(filter).stream()
+										  .map(reference -> searchCache.getOrDefault(reference, new TrieSearch<>()))
+										  .collect(Collectors.toList());
 	}
 
 
@@ -87,7 +130,7 @@ public class FilterSearch {
 
 						entry.getValue()
 							 .distinct()
-							 .forEach(item -> search.addItem(item, item.extractKeywords()));
+							 .forEach(item -> search.addItem(item, extractKeywords(item)));
 
 						searchCache.put(id, search);
 
@@ -122,7 +165,7 @@ public class FilterSearch {
 
 		for (Column column : columns) {
 			final List<Import> imports = column.getTable().findImports(storage).collect(Collectors.toList());
-			final String reference = AbstractSelectFilter.decideColumnReference(column);
+			final String reference = decideColumnReference(column);
 
 			final Stream<FEValue> fromColumn =
 					imports.stream()
@@ -172,12 +215,14 @@ public class FilterSearch {
 				continue;
 			}
 
-			if (suppliers.containsKey(filter.getTemplate().getFilePath())) {
+			final String reference = filter.getTemplate().getFilePath();
+
+			if (suppliers.containsKey(reference)) {
 				continue;
 			}
 			//TODO if templates have proper Ids we can make this more stringent (also the search references)
 
-			suppliers.put(filter.getTemplate().getFilePath(), fromTemplate(filter.getTemplate(), parser));
+			suppliers.put(reference, fromTemplate(filter.getTemplate(), parser));
 		}
 	}
 

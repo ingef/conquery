@@ -33,7 +33,10 @@ public class TrieSearch<T extends Comparable<T>> {
 	private static final double MATCH_THRESHOLD = 1d / 20d;
 	private static final int SUFFIX_CUTOFF = 3;
 
-	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"']+"); //TODO FK: Investigate better split patterns
+	/**
+	 * @implNote to be used in this pattern, "_" must always be the last entry.
+	 */
+	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"'_-]+"); //TODO FK: Investigate better split patterns
 
 	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
 
