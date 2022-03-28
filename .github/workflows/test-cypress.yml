@@ -1,6 +1,10 @@
 name: "End-To-End Tests"
 
-on: [push]
+on:
+  pull_request:
+    paths:
+      - "**"
+
 jobs:
   end-to-end-test:
     runs-on: ubuntu-latest
@@ -34,8 +38,18 @@ jobs:
           REACT_APP_IDP_REALM: Myrealm
           REACT_APP_IDP_CLIENT_ID: frontend
         with:
-          working-directory: .
-          build: bash ./scripts/build_frontend.sh
-          install-command: bash ./scripts/install_frontend.sh
-          start: bash ./scripts/run_conquery_cypress.sh
+          working-directory: ./frontend
+          install-command: yarn --ignore-platform --frozen-lockfile
+          build: yarn run react-app-rewired build
+          start: bash ./cypress/support/run_conquery_cypress.sh
           wait-on: 'http://localhost:8000'
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: frontend/cypress/screenshots
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-videos
+          path: frontend/cypress/videos
