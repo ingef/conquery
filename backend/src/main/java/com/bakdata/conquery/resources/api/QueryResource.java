@@ -4,6 +4,7 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
+import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -36,12 +37,14 @@ import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Path("datasets/{" + DATASET + "}/queries")
@@ -140,10 +143,19 @@ public class QueryResource {
 		return processor.uploadEntities(subject, dataset, upload);
 	}
 
-	@GET
+	@Data
+	public static class EntityPreview {
+		private final String entity;
+		private final CDateRange time;
+		private final List<Connector> sources;
+	}
+
+	@POST
 	@Path("/entity")
-	public FullExecutionStatus getEntityData(@Auth Subject subject, @QueryParam("entity") String entity, @QueryParam("sources") List<Connector> sources) {
-		return processor.getSingleEntityExport(subject, entity, sources);
+	public FullExecutionStatus getEntityData(@Auth Subject subject, EntityPreview query, @Context HttpServletRequest request) throws MalformedURLException {
+
+		processor.getSingleEntityExport(subject, query.getEntity(), query.getSources());
+		return null;//TODO send redirect?
 	}
 
 

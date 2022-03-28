@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1;
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -52,6 +53,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
@@ -384,7 +386,7 @@ public class QueryProcessor {
 		);
 	}
 
-	public FullExecutionStatus getSingleEntityExport(Subject subject, String entity, List<Connector> sources) {
+	public URL getSingleEntityExport(Subject subject, String entity, List<Connector> sources) throws MalformedURLException {
 		//TODO Authorize for query
 
 		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQExternal(List.of("ID"), new String[][]{{entity}}));
@@ -396,11 +398,12 @@ public class QueryProcessor {
 					   .collect(Collectors.toList())
 		);
 
-		final ManagedExecution<?> execution = postQuery(sources.get(0).getDataset(), exportQuery, subject);
+		final ManagedQuery execution = (ManagedQuery) postQuery(sources.get(0).getDataset(), exportQuery, subject);
 
-		execution.awaitDone(10, TimeUnit.SECONDS);
+		while (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+			log.trace("Still waiting for {}", execution.getId());
+		}
 
-		return  execution.buildStatusFull(storage, subject, datasetRegistry, config);
-
+		return ResultCsvResource.getDownloadURL(null, execution);
 	}
 }

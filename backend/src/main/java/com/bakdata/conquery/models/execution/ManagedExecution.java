@@ -26,8 +26,8 @@ import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
@@ -232,11 +232,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Blocks until a execution finished of the specified timeout is reached. Return immediately if the execution is not running
 	 */
-	public void awaitDone(int time, TimeUnit unit) {
+	public ExecutionState awaitDone(int time, TimeUnit unit) {
 		if (getState() != ExecutionState.RUNNING) {
-			return;
+			return ExecutionState.RUNNING;
 		}
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+
+		return getState();
 	}
 
 	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
