@@ -48,6 +48,10 @@ const Headline = styled("h3")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
+const Subtitle = styled(`p`)`
+  margin: -15px 0 20px;
+`;
+
 const ModalContent: FC<{ onClose: () => void; scrollable?: boolean }> = ({
   children,
   scrollable,
@@ -67,6 +71,7 @@ const ModalContent: FC<{ onClose: () => void; scrollable?: boolean }> = ({
 interface PropsT {
   className?: string;
   headline?: ReactNode;
+  subtitle?: ReactNode;
   doneButton?: boolean;
   closeIcon?: boolean;
   scrollable?: boolean;
@@ -81,6 +86,7 @@ const Modal: FC<PropsT> = ({
   className,
   children,
   headline,
+  subtitle,
   doneButton,
   closeIcon,
   scrollable,
@@ -109,6 +115,7 @@ const Modal: FC<PropsT> = ({
             </WithTooltip>
           )}
         </TopRow>
+        {subtitle && <Subtitle>{subtitle}</Subtitle>}
         {children}
       </ModalContent>
     </Root>

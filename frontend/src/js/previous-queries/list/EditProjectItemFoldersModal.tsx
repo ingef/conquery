@@ -42,6 +42,7 @@ const EditProjectItemFoldersModal: FC<PropsT> = ({ item, onClose }) => {
     <Modal
       onClose={onClose}
       headline={t("editPreviousQueryFoldersModal.headline")}
+      subtitle={item.label}
     >
       <SxEditableTagsForm
         tags={item.tags}

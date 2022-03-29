@@ -5,10 +5,9 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { SelectOptionT, UserGroupT } from "../../api/types";
-import PrimaryButton from "../../button/PrimaryButton";
-import { TransparentButton } from "../../button/TransparentButton";
-import FaIcon from "../../icon/FaIcon";
+import IconButton from "../../button/IconButton";
 import Modal from "../../modal/Modal";
+import WithTooltip from "../../tooltip/WithTooltip";
 import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
 
 import type { ProjectItemT } from "./ProjectItem";
@@ -20,24 +19,15 @@ import {
 } from "./actions";
 import { isFormConfig } from "./helpers";
 
-const Buttons = styled("div")`
+const Row = styled("div")`
   width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-end;
 `;
 
-const SxPrimaryButton = styled(PrimaryButton)`
-  margin-left: 20px;
-`;
-
-const SxInputMultiSelect = styled(InputMultiSelect)`
-  display: block;
-  margin-bottom: 20px;
-`;
-
-const QueryName = styled("p")`
-  margin: -15px 0 20px;
+const SxIconButton = styled(IconButton)`
+  padding: 6px 10px;
+  margin-left: 3px;
 `;
 
 const getInitialUserGroupsValue = (
@@ -116,6 +106,9 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
     item.shared && userGroupsValue.length === 0
       ? t("sharePreviousQueryModal.unshare")
       : t("common.share");
+  const groupsLabel = isFormConfig(item)
+    ? t("sharePreviousQueryModal.groupsLabelConfig")
+    : t("sharePreviousQueryModal.groupsLabelQuery");
 
   const buttonDisabled =
     JSON.stringify(initialUserGroupsValue) === JSON.stringify(userGroupsValue);
@@ -146,29 +139,35 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
   }
 
   return (
-    <Modal onClose={onClose} headline={t("sharePreviousQueryModal.headline")}>
-      <QueryName>{item.label}</QueryName>
-      <SxInputMultiSelect
-        value={userGroupsValue}
-        onChange={onSetUserGroupsValue}
-        label={t("sharePreviousQueryModal.groupsLabel")}
-        options={userGroupOptions}
-      />
-      <Buttons>
-        <TransparentButton onClick={onClose}>
-          {t("common.cancel")}
-        </TransparentButton>
-        <SxPrimaryButton onClick={onShareClicked} disabled={buttonDisabled}>
-          <>
-            {loading && (
-              <>
-                <FaIcon white icon="spinner" />{" "}
-              </>
-            )}
-            {shareLabel}
-          </>
-        </SxPrimaryButton>
-      </Buttons>
+    <Modal
+      onClose={onClose}
+      headline={t("sharePreviousQueryModal.headline")}
+      subtitle={item.label}
+    >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onShareClicked();
+        }}
+      >
+        <Row>
+          <InputMultiSelect
+            autoFocus
+            value={userGroupsValue}
+            onChange={onSetUserGroupsValue}
+            label={groupsLabel}
+            options={userGroupOptions}
+          />
+          <WithTooltip text={shareLabel}>
+            <SxIconButton
+              type="submit"
+              frame
+              disabled={buttonDisabled}
+              icon={loading ? "spinner" : "check"}
+            />
+          </WithTooltip>
+        </Row>
+      </form>
     </Modal>
   );
 };
