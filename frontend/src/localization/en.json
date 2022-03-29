@@ -123,8 +123,10 @@
     "description": "All queries from the folder {{folder}} will be removed from the folder, but will remain stored."
   },
   "sharePreviousQueryModal": {
-    "headline": "Sharing query: ",
+    "headline": "Edit sharing",
     "groupsLabel": "Groups to share the query with",
+    "groupsLabelQuery": "Groups to share the query with",
+    "groupsLabelConfig": "Groups to share the form config with",
     "unshare": "Revoke sharing"
   },
   "common": {
