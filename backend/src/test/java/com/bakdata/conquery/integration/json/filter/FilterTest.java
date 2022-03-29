@@ -156,21 +156,17 @@ public class FilterTest extends AbstractQueryEngineTest {
 		return query;
 	}
 
-	private void importTables(StandaloneSupport support) throws JSONException {
-		LoadingUtil.importTables(support, content.getTables());
-	}
-
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
-		if (expectedFrontendConfig != null) {
-			try {
-				final FEFilter actual = connector.getFilters().iterator().next().createFrontendConfig();
+		try {
+			final FEFilter actual = connector.getFilters().iterator().next().createFrontendConfig();
+
+			if (expectedFrontendConfig != null) {
 				assertThat(actual).usingRecursiveComparison().isEqualTo(expectedFrontendConfig);
 			}
-			catch (ConceptConfigurationException e) {
-				throw new IllegalStateException(e);
-			}
-
+		}
+		catch (ConceptConfigurationException e) {
+			throw new IllegalStateException(e);
 		}
 
 		super.executeTest(standaloneSupport);

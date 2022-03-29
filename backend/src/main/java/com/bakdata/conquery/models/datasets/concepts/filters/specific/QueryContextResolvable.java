@@ -4,7 +4,6 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 
 public interface QueryContextResolvable {
 
-	default void resolve(QueryResolveContext context) {
-	}
+	void resolve(QueryResolveContext context);
 
 }
