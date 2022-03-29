@@ -302,7 +302,7 @@ export interface SecondaryId {
 export interface GetConceptsResponseT {
   secondaryIds: SecondaryId[];
   concepts: {
-    [conceptId: string]: ConceptStructT | ConceptElementT;
+    [conceptId: ConceptIdT]: ConceptStructT | ConceptElementT;
   };
 }
 

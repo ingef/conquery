@@ -88,8 +88,9 @@ export const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
     });
 };
 
-export const transformElementsToApi = (conceptGroup: any) =>
-  conceptGroup.map(createConcept);
+export const transformElementsToApi = (
+  conceptGroup: DragItemConceptTreeNode[],
+) => conceptGroup.map(createConcept);
 
 const transformStandardQueryToApi = (
   query: StandardQueryStateT,
