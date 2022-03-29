@@ -4,7 +4,7 @@ import { DropTargetMonitor, useDrop } from "react-dnd";
 
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
-import type { DragItemFormConfig } from "../external-forms/form-configs/FormConfig";
+import { DragItemFormConfig } from "../external-forms/types";
 import type {
   DragItemConceptTreeNode,
   DragItemQuery,

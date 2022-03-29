@@ -67,7 +67,7 @@ export const saveQuery = createAction("dataset/SAVE_QUERY")<{
 export const useSelectDataset = () => {
   const dispatch = useDispatch();
   const loadTrees = useLoadTrees();
-  const loadQueries = useLoadQueries();
+  const { loadQueries } = useLoadQueries();
 
   return (
     datasets: DatasetT[],

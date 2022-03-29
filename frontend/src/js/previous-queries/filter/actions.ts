@@ -1,11 +1,9 @@
 import { ActionType, createAction } from "typesafe-actions";
 
-import type { PreviousQueriesFilterStateT } from "./reducer";
+import type { ProjectItemsFilterStateT } from "./reducer";
 
-export type PreviousQueriesFilterActions = ActionType<
-  typeof setPreviousQueriesFilter
->;
+export type ProjectItemsFilterActions = ActionType<typeof setFilter>;
 
-export const setPreviousQueriesFilter = createAction(
-  "previous-queries/SET_FILTER",
-)<PreviousQueriesFilterStateT>();
+export const setFilter = createAction(
+  "project-items/SET_FILTER",
+)<ProjectItemsFilterStateT>();

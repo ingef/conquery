@@ -23,22 +23,22 @@ const SxEditableText = styled(EditableText)`
 
 const useHighlightedWords = () => {
   return useSelector<StateT, string[]>(
-    (state) => state.previousQueriesSearch.words,
+    (state) => state.projectItemsSearch.words,
   );
 };
 
 interface PropsT {
-  mayEditQuery?: boolean;
+  mayEdit?: boolean;
   label: string;
   selectTextOnMount: boolean;
-  loading: boolean;
+  loading?: boolean;
   onSubmit: (text: string) => void;
   isEditing: boolean;
   setIsEditing: (value: boolean) => void;
 }
 
-const PreviousQueriesLabel: FC<PropsT> = ({
-  mayEditQuery,
+const ProjectItemLabel: FC<PropsT> = ({
+  mayEdit,
   loading,
   selectTextOnMount,
   label,
@@ -49,7 +49,7 @@ const PreviousQueriesLabel: FC<PropsT> = ({
   const highlightedWords = useHighlightedWords();
   const { t } = useTranslation();
 
-  return mayEditQuery ? (
+  return mayEdit ? (
     <SxEditableText
       loading={loading}
       text={label}
@@ -75,4 +75,4 @@ const PreviousQueriesLabel: FC<PropsT> = ({
   );
 };
 
-export default PreviousQueriesLabel;
+export default ProjectItemLabel;

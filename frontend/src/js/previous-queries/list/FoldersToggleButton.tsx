@@ -16,11 +16,7 @@ interface Props {
   onClick: () => void;
 }
 
-const PreviousQueriesFolderButton: FC<Props> = ({
-  className,
-  active,
-  onClick,
-}) => {
+const FoldersToggleButton: FC<Props> = ({ className, active, onClick }) => {
   const { t } = useTranslation();
 
   return (
@@ -32,4 +28,4 @@ const PreviousQueriesFolderButton: FC<Props> = ({
     </WithTooltip>
   );
 };
-export default PreviousQueriesFolderButton;
+export default FoldersToggleButton;
