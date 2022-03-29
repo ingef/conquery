@@ -92,6 +92,7 @@ const updatePreviousQuery = (
       {
         ...item,
         ...attributes,
+        shared: attributes.groups ? attributes.groups.length > 0 : false,
       },
       ...state.queries.slice(itemIdx + 1),
     ],
@@ -114,6 +115,7 @@ const updateFormConfig = (
       {
         ...item,
         ...attributes,
+        shared: attributes.groups ? attributes.groups.length > 0 : false,
       },
       ...state.formConfigs.slice(itemIdx + 1),
     ],
