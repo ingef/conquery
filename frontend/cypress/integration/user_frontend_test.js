@@ -30,13 +30,7 @@ context("Visit conquery as users with different permissions", () => {
     it("Cannot see queries", () => {
       cy.get('[data-test-id="left-pane"]').contains("Anfragen").click();
 
-      cy.contains("Keine Anfragen gefunden");
-    });
-
-    it("Cannot see forms", () => {
-      cy.get('[data-test-id="left-pane"]').contains("Formulare").click();
-
-      cy.contains("Keine Formular-Konfigurationen gefunden");
+      cy.contains("Keine Anfragen / Formulare gefunden");
     });
   });
 
