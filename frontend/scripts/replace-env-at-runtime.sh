@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# check first argument, if it is an existing file
+if [ -r $1 ]
+then
+    # if so, we asume it is an env-file and we source it
+    . $1
+fi
+
 ENVSTRING=""
 ENVSTRING+="REACT_APP_API_URL: \"${REACT_APP_API_URL:-null}\","
 ENVSTRING+="REACT_APP_DISABLE_LOGIN: \"${REACT_APP_DISABLE_LOGIN:-null}\"," 

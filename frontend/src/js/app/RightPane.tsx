@@ -15,7 +15,6 @@ interface PropsT {
 const Tab = styled("div")<{ isActive: boolean }>`
   height: 100%;
   flex-grow: 1;
-  display: flex;
   flex-direction: column;
 
   display: ${({ isActive }) => (isActive ? "flex" : "none")};
@@ -44,6 +43,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
         label: t(tab.labelKey), // TODO: Somehow make this non-dynamic
         tooltip: t(tab.tooltipKey), // TODO: Somehow make this non-dynamic
       }))}
+      dataTestId="right-pane"
     >
       {tabs.map((tab) => {
         const isActive = tab.key === activeTab;

@@ -59,11 +59,12 @@ interface PropsT {
   onClickTab: (tab: string) => void;
   activeTab: string | null;
   tabs: TabNavigationTab[];
+  dataTestId: string;
 }
 
-const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab }) => {
+const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab, dataTestId }) => {
   return (
-    <Root>
+    <Root data-test-id={dataTestId}>
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
           <SxWithTooltip text={tooltip} lazy key={key}>

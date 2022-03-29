@@ -1,0 +1,41 @@
+{
+    "name": "table",
+    "columns": [
+        {
+            "name": "id",
+            "type": "STRING"
+        },
+        {
+            "name": "STRING",
+            "type": "STRING"
+        },
+        {
+            "name": "INTEGER",
+            "type": "INTEGER"
+        },
+        {
+            "name": "BOOLEAN",
+            "type": "BOOLEAN"
+        },
+        {
+            "name": "REAL",
+            "type": "REAL"
+        },
+        {
+            "name": "DECIMAL",
+            "type": "DECIMAL"
+        },
+        {
+            "name": "MONEY",
+            "type": "MONEY"
+        },
+        {
+            "name": "DATE",
+            "type": "DATE"
+        },
+        {
+            "name": "DATE_RANGE",
+            "type": "DATE_RANGE"
+        }
+    ]
+}
