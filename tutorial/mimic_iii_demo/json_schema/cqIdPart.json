@@ -1,4 +1,4 @@
 {
   "type": "string",
-  "pattern": "^[a-z_0-9]+$"
+  "pattern": "^[a-zA-Z_0-9]+$"
 }
