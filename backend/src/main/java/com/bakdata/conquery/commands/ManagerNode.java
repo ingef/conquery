@@ -91,7 +91,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	// For registering form providers
 	private FormScanner formScanner;
 
-	private final FilterSearch filterSearch = new FilterSearch();
+	private FilterSearch filterSearch;
 
 
 	public ManagerNode() {
@@ -207,10 +207,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
 
 		for (NamespaceStorage namespaceStorage : storages) {
-			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), objectWriter);
-			ns.setFilterSearch(filterSearch);
+			Namespace ns = new Namespace(datasetRegistry, namespaceStorage, config.isFailOnError(), objectWriter, config.getCsv());
 
-			datasetRegistry.add(ns);
+
 		}
 	}
 

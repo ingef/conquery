@@ -14,7 +14,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -95,12 +94,12 @@ public class AdminDatasetProcessor {
 
 		Namespace ns =
 				new Namespace(
-						datasetStorage, config.isFailOnError(),
+						datasetRegistry, datasetStorage, config.isFailOnError(),
 						config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
-							  .writerWithView(InternalOnly.class)
+							  .writerWithView(InternalOnly.class),
+						config.getCsv()
 				);
 
-		ns.setFilterSearch(new FilterSearch());
 
 		datasetRegistry.add(ns);
 
@@ -361,7 +360,7 @@ public class AdminDatasetProcessor {
 				() -> {
 
 					ns.sendToAll(new UpdateMatchingStatsMessage());
-					ns.getFilterSearch().updateSearch(ns.getStorage(), getJobManager(), config.getCsv());
+					ns.getFilterSearch().updateSearch();
 				}
 		));
 	}

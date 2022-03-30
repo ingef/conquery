@@ -28,14 +28,18 @@ import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.google.common.collect.ImmutableList;
 import com.univocity.parsers.csv.CsvParser;
-import lombok.NoArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
 
 
 @Slf4j
-@NoArgsConstructor
+@Value
 public class FilterSearch {
+
+	private final NamespaceStorage storage;
+	private final JobManager jobManager;
+	private final CSVConfig parser;
 
 	/**
 	 * We tag our searches based on references collected in getSearchReferences. We do not mash them all together to allow for sharing and prioritising different sources.
@@ -110,7 +114,7 @@ public class FilterSearch {
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
-	public void updateSearch(NamespaceStorage storage, JobManager jobManager, CSVConfig parser) {
+	public void updateSearch() {
 
 		jobManager.addSlowJob(new SimpleJob("Initialize Source Search", () -> {
 
