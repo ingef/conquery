@@ -1,10 +1,34 @@
 package com.bakdata.conquery.models.jobs;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IntSummaryStatistics;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.*;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
+import com.bakdata.conquery.models.dictionary.Encoding;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -12,8 +36,16 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdMutex;
-import com.bakdata.conquery.models.identifiable.ids.specific.*;
-import com.bakdata.conquery.models.messages.namespaces.specific.*;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
+import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
@@ -25,6 +57,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -32,15 +65,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This is the main routine to load data into Conquery.
@@ -160,13 +184,11 @@ public class ImportJob extends Job {
 				continue;
 			}
 
-			if (column.getSharedDictionary() != null) {
-				column.createSharedDictionaryReplacement(dicts, storage, out, sharedDictionaryLocks);
-			}
-			else {
-				// Its a normal dictionary (only valid for this column in this import)
-				column.createSingleColumnDictionaryReplacement(dicts, importName, out);
-			}
+			final Dictionary dictionary =
+					createSharedDictionaryReplacement(column, storage, sharedDictionaryLocks);
+
+			//TODO could this also just be dicts.get(column.getName()).getId()
+			out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dicts.get(column.getName()).getName()), dictionary);
 		}
 
 		return out;
@@ -196,50 +218,84 @@ public class ImportJob extends Job {
 
 			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
 			// but could also be an error :/ Most likely the former
-			final Dictionary importDictionary = dicts.get(column.getName());
-			if (importDictionary == null) {
+			if (!dicts.containsKey(column.getName())) {
 				log.trace("No Dictionary for {}", column);
 				continue;
 			}
 
+			final Dictionary importDictionary = dicts.get(column.getName());
 
-			if (column.getSharedDictionary() == null) {
-				// Normal Dictionary -> no merge necessary, just distribute
-				distributeDictionary(namespace, importDictionary);
+
+			final String sharedDictionaryName = computeDictionaryName(column);
+
+			log.trace("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
+
+			final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
+			final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
+
+			// This should never fail, becaus the dictionary is pre-created in the replacement generation step
+			ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
+
+			log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
+
+
+			DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
+
+			if (mapping.getNumberOfNewIds() != 0) {
+				distributeDictionary(namespace, mapping.getTargetDictionary());
 			}
-			else {
-				// It's a shared dictionary
 
-				final String sharedDictionaryName = column.getSharedDictionary();
-
-				log.trace("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
-
-				final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
-				final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
-
-				// This should never fail, becaus the dictionary is pre-created in the replacement generation step
-				ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
-
-				log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
-
-
-				DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
-
-				if (mapping.getNumberOfNewIds() != 0) {
-					distributeDictionary(namespace, mapping.getTargetDictionary());
-				}
-
-				out.put(column.getName(), mapping);
-			}
+			out.put(column.getName(), mapping);
 		}
 
 		return out;
+	}
+
+	private static String computeDictionaryName(Column column) {
+		if (column.getSharedDictionary() != null) {
+			return column.getSharedDictionary();
+		}
+
+		return column.getId().toStringWithoutDataset();
 	}
 
 	private static void distributeDictionary(Namespace namespace, Dictionary dictionary) {
 		log.trace("Sending {} to all Workers", dictionary);
 		namespace.getStorage().updateDictionary(dictionary);
 		namespace.sendToAll(new UpdateDictionary(dictionary));
+	}
+
+	/**
+	 * Creates an id-replacement mapping for shared dictionaries for an {@link Import}.
+	 * Because Imports are bound to a {@link Namespace} but the {@link com.bakdata.conquery.models.preproc.Preprocessed} files are not
+	 * they contain dummy-{@link NsIdRef}. These References are mapped to actual object with valid ids through this
+	 * generated mapping.
+	 * <p>
+	 * In this method for shared dictionaries, it is ensured, that the shared dictionary exists in the storage and it is
+	 * created if not.
+	 *
+	 * @param column
+	 * @param storage               The {@link NamespaceStorage} that backs the dictionaries
+	 * @param sharedDictionaryLocks A collection of locks used for the synchronized creation of shared dictionaries.
+	 * @return
+	 */
+	public static Dictionary createSharedDictionaryReplacement(Column column, NamespaceStorage storage, IdMutex<DictionaryId> sharedDictionaryLocks) {
+		Preconditions.checkArgument(column.getType().equals(MajorTypeId.STRING), "Not a STRING Column.");
+
+		final String dictionaryName = computeDictionaryName(column);
+
+		final DictionaryId sharedDictId = new DictionaryId(storage.getDataset().getId(), dictionaryName);
+
+		try (IdMutex.Locked lock = sharedDictionaryLocks.acquire(sharedDictId)) {
+			Dictionary sharedDict = storage.getDictionary(sharedDictId);
+			// Create dictionary if not yet present
+			if (sharedDict == null) {
+				sharedDict = new MapDictionary(storage.getDataset(), dictionaryName, Encoding.UTF8); //TODO use prior dict
+				storage.updateDictionary(sharedDict);
+			}
+			return sharedDict;
+		}
+
 	}
 
 
@@ -512,28 +568,7 @@ public class ImportJob extends Job {
 		imp.setColumns(importColumns);
 
 		Set<DictionaryId> dictionaries = new HashSet<>();
-
-		for (Column column : columns) {
-			// only non-shared dictionaries need to be registered here
-			if (column.getType() != MajorTypeId.STRING) {
-				continue;
-			}
-
-			// shared dictionaries are not related to a specific import.
-			if (column.getSharedDictionary() != null) {
-				continue;
-			}
-
-			// Some StringStores don't have Dictionaries.
-			final StringStore stringStore = (StringStore) stores.get(column.getName());
-
-			if (!stringStore.isDictionaryHolding()) {
-				continue;
-			}
-
-			dictionaries.add(stringStore.getUnderlyingDictionary().getId());
-		}
-
+		//TODO what do with dictionaries now?
 		imp.setDictionaries(dictionaries);
 		namespace.sendToAll(new AddImport(imp));
 		return imp;
