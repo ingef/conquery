@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.IntSummaryStatistics;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -51,7 +52,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 	//TODO FK: this field is not used at the moment, but we want to use it to prune unused values, this would mean cleaning up strings and allowing Dictionary to set a specific valuie, not just setting it.
 	private IntSet registered = new IntOpenHashSet();
 
-	private List<byte[]> decoded;
+	private List<String> decoded;
 	private Encoding encoding;
 	private String prefix;
 	private String suffix;
@@ -177,7 +178,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 		this.encoding = encoding;
 		decoded = strings.object2IntEntrySet().stream()
 						 .sorted(Comparator.comparing(Object2IntMap.Entry::getIntValue))
-						 .map(entry -> encoding.encode(entry.getKey()))
+						 .map(Map.Entry::getKey)
 						 .collect(Collectors.toList());
 	}
 

@@ -44,7 +44,7 @@ public class StringTypeDictionary implements ColumnStore {
 		return numberType.getLines();
 	}
 
-	public byte[] getElement(int value) {
+	public String getElement(int value) {
 		return dictionary.getElement(value);
 	}
 
@@ -58,11 +58,11 @@ public class StringTypeDictionary implements ColumnStore {
 		return dictionary.size();
 	}
 
-	public int getId(byte[] value) {
+	public int getId(String value) {
 		return dictionary.getId(value);
 	}
 
-	public Iterator<byte[]> iterator() {
+	public Iterator<String> iterator() {
 		if (dictionary == null) {
 			return Collections.emptyIterator();
 		}

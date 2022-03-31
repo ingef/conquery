@@ -26,7 +26,7 @@ public class MapTypeGuesser extends StringTypeGuesser {
 		StringTypeDictionary type = new StringTypeDictionary(indexType, null);
 		long mapSize = MapDictionary.estimateMemoryConsumption(
 				parser.getStrings().size(),
-				parser.getDecoded().stream().mapToLong(s -> s.length).sum()
+				parser.getDecoded().stream().mapToLong(String::length).sum()
 		);
 
 
@@ -40,7 +40,7 @@ public class MapTypeGuesser extends StringTypeGuesser {
 			@Override
 			public StringStore getType() {
 				MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, UUID.randomUUID().toString(), parser.getEncoding());
-				for (byte[] v : parser.getDecoded()) {
+				for (String v : parser.getDecoded()) {
 					map.add(v);
 				}
 				type.setDictionary(map);

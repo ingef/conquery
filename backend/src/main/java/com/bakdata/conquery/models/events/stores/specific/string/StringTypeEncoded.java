@@ -53,7 +53,7 @@ public class StringTypeEncoded implements StringStore {
 					@Override
 					@ParametersAreNonnullByDefault
 					public String load(Integer key) throws Exception {
-						return encoding.decode(subType.getElement(key));
+						return subType.getElement(key);
 					}
 				});
 	}
@@ -87,12 +87,12 @@ public class StringTypeEncoded implements StringStore {
 			return -1;
 		}
 
-		return subType.getId(encoding.encode(value));
+		return subType.getId(value);
 	}
 
 	@Override
 	public Iterator<String> iterator() {
-		Iterator<byte[]> subIt = subType.iterator();
+		Iterator<String> subIt = subType.iterator();
 		return new Iterator<>() {
 			@Override
 			public boolean hasNext() {
@@ -101,7 +101,7 @@ public class StringTypeEncoded implements StringStore {
 
 			@Override
 			public String next() {
-				return encoding.decode(subIt.next());
+				return subIt.next();
 			}
 		};
 	}

@@ -32,15 +32,23 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 		return new DictionaryId(dataset.getId(), getName());
 	}
 
-	public abstract int add(byte[] bytes);
+	public abstract int add(String bytes);
 	
-	public abstract int put(byte[] bytes);
+	public abstract int put(String bytes);
 
-	public abstract int getId(byte[] bytes);
+	public abstract int getId(String bytes);
 
-	public abstract byte[] getElement(int id);
+	public abstract String getElement(int id);
 
 	public abstract int size();
+
+	protected String decode(byte[] elements) {
+		return getEncoding().decode(elements);
+	}
+
+	protected byte[] encode(String value) {
+		return getEncoding().encode(value);
+	}
 
 	@Override
 	public String toString() {

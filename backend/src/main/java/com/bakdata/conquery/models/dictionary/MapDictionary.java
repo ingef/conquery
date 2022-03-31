@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.dictionary;
 
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -20,6 +19,9 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 @CPSType(id = "MAP_DICTIONARY", base = Dictionary.class)
 public class MapDictionary extends Dictionary {
+
+	//TODO just store strings and reencode them on addition?
+	//TODO afaik we only use ByteArrayList for its equals/hashcode?
 
 	private Object2IntOpenHashMap<ByteArrayList> value2Id;
 	private List<ByteArrayList> id2Value;
@@ -58,40 +60,41 @@ public class MapDictionary extends Dictionary {
 	}
 
 	@Override
-	public int add(byte[] bytes) {
-		ByteArrayList value = new ByteArrayList(bytes);
+	public int add(String bytes) {
+		ByteArrayList value = new ByteArrayList(encode(bytes));
+
+		if (getId(bytes) != -1) {
+			throw new IllegalStateException("there already was an element " + bytes);
+		}
+
+		int id = id2Value.size();
+		value2Id.put(value, id);
+		id2Value.add(value);
+		return id;
+	}
+
+	@Override
+	public int put(String bytes) {
+		ByteArrayList value = new ByteArrayList(encode(bytes));
+
 		int id = value2Id.getInt(value);
+
 		if (id == -1) {
 			id = id2Value.size();
 			value2Id.put(value, id);
 			id2Value.add(value);
 		}
-		else {
-			throw new IllegalStateException("there already was an element " + Arrays.toString(bytes));
-		}
 		return id;
 	}
 
 	@Override
-	public int put(byte[] bytes) {
-		ByteArrayList value = new ByteArrayList(bytes);
-		int id = value2Id.getInt(value);
-		if (id == -1) {
-			id = id2Value.size();
-			value2Id.put(value, id);
-			id2Value.add(value);
-		}
-		return id;
+	public int getId(String bytes) {
+		return value2Id.getInt(new ByteArrayList(encode(bytes)));
 	}
 
 	@Override
-	public int getId(byte[] bytes) {
-		return value2Id.getInt(new ByteArrayList(bytes));
-	}
-
-	@Override
-	public byte[] getElement(int id) {
-		return id2Value.get(id).elements();
+	public String getElement(int id) {
+		return decode(id2Value.get(id).elements());
 	}
 
 	@Override
@@ -101,11 +104,13 @@ public class MapDictionary extends Dictionary {
 
 	@Override
 	public Iterator<DictionaryEntry> iterator() {
+
+
 		ListIterator<ByteArrayList> it = id2Value.listIterator();
-		return new Iterator<DictionaryEntry>() {
+		return new Iterator<>() {
 			@Override
 			public DictionaryEntry next() {
-				return new DictionaryEntry(it.nextIndex(), it.next().elements());
+				return new DictionaryEntry(it.nextIndex(), decode(it.next().elements()));
 			}
 
 			@Override
@@ -114,6 +119,8 @@ public class MapDictionary extends Dictionary {
 			}
 		};
 	}
+
+
 
 	public static long estimateMemoryConsumption(long entries, long totalBytes) {
 		return DoubleMath.roundToLong(

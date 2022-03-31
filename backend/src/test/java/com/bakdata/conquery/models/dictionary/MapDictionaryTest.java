@@ -19,9 +19,9 @@ class MapDictionaryTest {
 
 		MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, "dictionary", Encoding.UTF8);
 
-		map.add("a".getBytes());
-		map.add("b".getBytes());
-		map.add("c".getBytes());
+		map.add("a");
+		map.add("b");
+		map.add("c");
 
 		final CentralRegistry registry = new CentralRegistry();
 		registry.register(Dataset.PLACEHOLDER);

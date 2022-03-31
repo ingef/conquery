@@ -41,7 +41,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 	public EncodedDictionary getPrimaryDictionary() {
-		return new EncodedDictionary(getPrimaryDictionaryRaw(), Encoding.UTF8);
+		return new EncodedDictionary(getPrimaryDictionaryRaw());
 	}
 
 	@NonNull

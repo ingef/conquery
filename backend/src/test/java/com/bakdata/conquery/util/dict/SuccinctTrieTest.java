@@ -53,7 +53,7 @@ public class SuccinctTrieTest {
 
 		int distinctValues = 0;
 		for (String entry : words) {
-			int id = direct.put(entry.getBytes());
+			int id = direct.put(entry);
 			if (id > distinctValues) {
 				distinctValues++;
 			}
@@ -61,13 +61,13 @@ public class SuccinctTrieTest {
 
 		direct.compress();
 
-		assertThat(direct.getElement(0)).isEqualTo("hat".getBytes());
-		assertThat(direct.getElement(1)).isEqualTo("it".getBytes());
-		assertThat(direct.getElement(2)).isEqualTo("is".getBytes());
-		assertThat(direct.getElement(3)).isEqualTo("a".getBytes());
-		assertThat(direct.getId("is".getBytes())).isEqualTo(2);
-		assertThat(direct.getId("ha".getBytes())).isEqualTo(4);
-		assertThat(direct.getId("h".getBytes())).isEqualTo(-1);
+		assertThat(direct.getElement(0)).isEqualTo("hat");
+		assertThat(direct.getElement(1)).isEqualTo("it");
+		assertThat(direct.getElement(2)).isEqualTo("is");
+		assertThat(direct.getElement(3)).isEqualTo("a");
+		assertThat(direct.getId("is")).isEqualTo(2);
+		assertThat(direct.getId("ha")).isEqualTo(4);
+		assertThat(direct.getId("h")).isEqualTo(-1);
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class SuccinctTrieTest {
 
 		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "testDict", Encoding.UTF8);
 
-		data().forEach(value -> dict.put(value.getBytes()));
+		data().forEach(value -> dict.put(value));
 
 		dict.compress();
 		SerializationTestUtil
@@ -92,7 +92,7 @@ public class SuccinctTrieTest {
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
 		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "name", Encoding.UTF8);
-		EncodedDictionary direct = new EncodedDictionary(dict, Encoding.UTF8);
+		EncodedDictionary direct = new EncodedDictionary(dict);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 
 		AtomicInteger count = new AtomicInteger(0);
@@ -107,7 +107,7 @@ public class SuccinctTrieTest {
 					final String prefix = Integer.toString(rep, 26);
 
 					reference.put(prefix, count.get());
-					dict.add(prefix.getBytes());
+					dict.add(prefix);
 					count.incrementAndGet();
 				});
 
@@ -125,7 +125,7 @@ public class SuccinctTrieTest {
 		//assert reverse lookup
 		assertThat(reference.inverse().entrySet().stream()).allSatisfy(entry -> {
 			assertThat(dict.getElement(entry.getKey()))
-					.isEqualTo(entry.getValue().getBytes());
+					.isEqualTo(entry.getValue());
 		});
 		log.info("reverse lookup done");
 	}

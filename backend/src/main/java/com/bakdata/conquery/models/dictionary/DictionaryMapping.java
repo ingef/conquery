@@ -48,7 +48,7 @@ public class DictionaryMapping {
 
 		for (int id = 0; id < from.size(); id++) {
 
-			byte[] value = from.getElement(id);
+			String value = from.getElement(id);
 			int targetId = to.getId(value);
 
 			//if id was unknown until now

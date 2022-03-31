@@ -72,7 +72,7 @@ public class BigStoreTest {
 		Dictionary nDict = new MapDictionary(Dataset.PLACEHOLDER, "dict", Encoding.UTF8);
 
 		for (int v = 0; v < 1000000; v++) {
-			nDict.add(Integer.toHexString(v).getBytes());
+			nDict.add(Integer.toHexString(v));
 		}
 
 		// check if manual serialization deserialization works
@@ -83,7 +83,7 @@ public class BigStoreTest {
 
 
 		for (int v = 0; v < 1000000; v++) {
-			assertThat(simpleCopy.getId(Integer.toHexString(v).getBytes())).isEqualTo(v);
+			assertThat(simpleCopy.getId(Integer.toHexString(v))).isEqualTo(v);
 		}
 
 		// check if store works
@@ -95,7 +95,7 @@ public class BigStoreTest {
 				store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore()).map(ByteArrayInputStream::new).iterator())))
 					.hasSameContentAs(new ByteArrayInputStream(bytes));
 
-		EncodedDictionary copy = new EncodedDictionary(store.get(nDict.getId()), Encoding.UTF8);
+		EncodedDictionary copy = new EncodedDictionary(store.get(nDict.getId()));
 		for (int v = 0; v < 1000000; v++) {
 			assertThat(copy.getId(Integer.toHexString(v))).isEqualTo(v);
 		}
