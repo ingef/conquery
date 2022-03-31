@@ -17,7 +17,11 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.io.BaseEncoding;
-import lombok.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.SneakyThrows;
 
 /**
  * Compacted String store, that uses two methods to reduce memory footprint:
@@ -131,6 +135,11 @@ public class StringTypeEncoded implements StringStore {
 	}
 
 	@Override
+	public void setUnderlyingDictionary(Dictionary dictionary) {
+		subType.setDictionary(dictionary);
+	}
+
+	@Override
 	public boolean isDictionaryHolding() {
 		return true;
 	}
@@ -183,6 +192,7 @@ public class StringTypeEncoded implements StringStore {
 		Base32HexLowerCase(8, BaseEncoding.base32Hex().lowerCase().omitPadding()),
 		Base32HexUpperCase(8, BaseEncoding.base32Hex().upperCase().omitPadding()),
 		Base64(4, BaseEncoding.base64().omitPadding()),
+
 		UTF8(1, null) {
 			@Override
 			public String decode(byte[] bytes) {
