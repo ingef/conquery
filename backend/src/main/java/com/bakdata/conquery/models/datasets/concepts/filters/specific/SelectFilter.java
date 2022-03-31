@@ -13,13 +13,14 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter
 @Setter
+@Getter
 @RequiredArgsConstructor
 @Slf4j
 public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
@@ -29,13 +30,11 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 
-	@JsonIgnore
-	private final int maximumSize;
-	@JsonIgnore
-	private final FEFilterType filterType;
 
 	private FilterTemplate template;
 
+	@JsonIgnore
+	public abstract FEFilterType getFilterType();
 
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
@@ -45,7 +44,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
-		f.setType(filterType);
+		f.setType(getFilterType());
 
 
 		f.setOptions(
@@ -55,5 +54,11 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		);
 	}
 
+	@ValidationMethod(message = "Cannot use both labels and template.")
+	public boolean isNotBothTemplateAndLabels() {
+		// Technically it's possible it just doesn't make much sense and would lead to sPoT confusion.
+		return (getTemplate() == null && labels.isEmpty())
+			   || ((getTemplate() == null) != labels.isEmpty());
+	}
 
 }

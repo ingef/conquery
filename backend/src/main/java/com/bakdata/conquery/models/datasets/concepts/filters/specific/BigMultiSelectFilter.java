@@ -10,14 +10,18 @@ import lombok.Setter;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
+ *
+ * This Filter can use optional labels or a template for displaying, same as {@link MultiSelectFilter}.
+ * However, the frontend will fetch and display data beyond the  defined values for {@link BigMultiSelectFilter}/BIG_MULTI_SELECT.
  */
 @Getter
 @Setter
 @CPSType(id = "BIG_MULTI_SELECT", base = Filter.class)
 public class BigMultiSelectFilter extends SelectFilter<String[]> {
 
-	public BigMultiSelectFilter() {
-		super(-1, FEFilterType.BIG_MULTI_SELECT);
+	@Override
+	public FEFilterType getFilterType() {
+		return FEFilterType.BIG_MULTI_SELECT;
 	}
 
 	@Override
