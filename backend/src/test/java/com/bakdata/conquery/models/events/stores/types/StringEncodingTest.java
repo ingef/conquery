@@ -7,7 +7,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
+import com.bakdata.conquery.models.dictionary.Encoding;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
@@ -23,7 +23,7 @@ public class StringEncodingTest {
 	@TestFactory
 	public Stream<DynamicTest> testEncodings() {
 
-		StringTypeEncoded.Encoding encoding = StringTypeEncoded.Encoding.Base64;
+		Encoding encoding = Encoding.Base64;
 
 		return Stream.generate(() -> UUID.randomUUID().toString().replace("-", ""))
 					 .map(uuid -> DynamicTest.dynamicTest(uuid, () -> {
@@ -58,6 +58,6 @@ public class StringEncodingTest {
 
 		assertThat(subType)
 				.isInstanceOf(StringTypeEncoded.class);
-		assertThat(subType.getEncoding()).isEqualByComparingTo(StringTypeEncoded.Encoding.Base16UpperCase);
+		assertThat(subType.getEncoding()).isEqualByComparingTo(Encoding.Base16UpperCase);
 	}
 }

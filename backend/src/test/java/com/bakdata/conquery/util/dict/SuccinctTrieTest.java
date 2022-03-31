@@ -14,7 +14,7 @@ import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.dictionary.Encoding;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.github.powerlibraries.io.In;
@@ -92,7 +92,7 @@ public class SuccinctTrieTest {
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
 		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER,"name");
-		EncodedDictionary direct = new EncodedDictionary(dict, StringTypeEncoded.Encoding.UTF8);
+		EncodedDictionary direct = new EncodedDictionary(dict, Encoding.UTF8);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 
 		AtomicInteger count = new AtomicInteger(0);

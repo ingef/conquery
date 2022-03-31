@@ -11,8 +11,8 @@ import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
+import com.bakdata.conquery.models.dictionary.Encoding;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import lombok.Getter;
@@ -41,7 +41,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 	public EncodedDictionary getPrimaryDictionary() {
-		return new EncodedDictionary(getPrimaryDictionaryRaw(), StringTypeEncoded.Encoding.UTF8);
+		return new EncodedDictionary(getPrimaryDictionaryRaw(), Encoding.UTF8);
 	}
 
 	@NonNull
