@@ -13,7 +13,7 @@
           "type": { "$ref": "cqType.json" }
         }
       },
-      "minItems": 2,
+      "minItems": 1,
       "uniqueItems": true
     }
   },
