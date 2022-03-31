@@ -17,7 +17,7 @@ class MapDictionaryTest {
 	@Test
 	void testSerializationAsList() throws IOException, JSONException {
 
-		MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, "dictionary");
+		MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, "dictionary", Encoding.UTF8);
 
 		map.add("a".getBytes());
 		map.add("b".getBytes());

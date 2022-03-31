@@ -48,7 +48,7 @@ public class SuccinctTrieTest {
 		words.add("ha");
 		words.add("hat");
 
-		SuccinctTrie direct = new SuccinctTrie(Dataset.PLACEHOLDER,"name");
+		SuccinctTrie direct = new SuccinctTrie(Dataset.PLACEHOLDER, "name", Encoding.UTF8);
 
 
 		int distinctValues = 0;
@@ -77,7 +77,7 @@ public class SuccinctTrieTest {
 		final CentralRegistry registry = new CentralRegistry();
 		registry.register(Dataset.PLACEHOLDER);
 
-		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER,"testDict");
+		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "testDict", Encoding.UTF8);
 
 		data().forEach(value -> dict.put(value.getBytes()));
 
@@ -91,7 +91,7 @@ public class SuccinctTrieTest {
 	@ParameterizedTest(name = "seed: {0}")
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
-		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER,"name");
+		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "name", Encoding.UTF8);
 		EncodedDictionary direct = new EncodedDictionary(dict, Encoding.UTF8);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 

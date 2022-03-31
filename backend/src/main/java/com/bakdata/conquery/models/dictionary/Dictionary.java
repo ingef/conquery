@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.dictionary;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -19,8 +17,12 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 	@Getter @Setter
 	@NsIdRef
 	private Dataset dataset;
+
+	@Getter
+	private final Encoding encoding;
 	
-	public Dictionary(Dataset dataset, @NotNull String name) {
+	public Dictionary(Dataset dataset, String name, Encoding encoding) {
+		this.encoding = encoding;
 		this.setName(name);
 		this.dataset = dataset;
 	}
@@ -46,7 +48,7 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 	}
 
 	public static MapDictionary copyUncompressed(Dictionary dict) {
-		MapDictionary newDict = new MapDictionary(dict.getDataset(), dict.getName());
+		MapDictionary newDict = new MapDictionary(dict.getDataset(), dict.getName(), dict.getEncoding());
 		for(DictionaryEntry e:dict) {
 			newDict.add(e.getValue());
 		}

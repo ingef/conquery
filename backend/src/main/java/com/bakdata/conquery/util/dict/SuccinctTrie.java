@@ -10,6 +10,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
+import com.bakdata.conquery.models.dictionary.Encoding;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.AbstractIterator;
@@ -62,8 +63,8 @@ public class SuccinctTrie extends Dictionary {
 	@JsonIgnore
 	private boolean compressed;
 
-	public SuccinctTrie(Dataset dataset, String name) {
-		super(dataset, name);
+	public SuccinctTrie(Dataset dataset, String name, Encoding encoding) {
+		super(dataset, name, encoding);
 		this.root = new HelpNode(null, (byte) 0);
 		this.root.setPositionInArray(0);
 		this.nodeCount = 2;
@@ -81,8 +82,8 @@ public class SuccinctTrie extends Dictionary {
 						byte[] keyPartArray,
 						int[] selectZeroCache,
 						long totalBytesStored,
-						int depth) {
-		super(dataset, name);
+						int depth, Encoding encoding) {
+		super(dataset, name, encoding);
 		this.nodeCount = nodeCount;
 		this.entryCount = entryCount;
 		this.reverseLookup = reverseLookup;

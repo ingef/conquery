@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.Encoding;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -115,7 +116,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 			sharedDict = storage.getDictionary(sharedDictId);
 			// Create dictionary if not yet present
 			if (sharedDict == null) {
-				sharedDict = new MapDictionary(table.getDataset(), getSharedDictionary());
+				sharedDict = new MapDictionary(table.getDataset(), getSharedDictionary(), Encoding.UTF8); //TODO use prior dict
 				storage.updateDictionary(sharedDict);
 			}
 		}

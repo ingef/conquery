@@ -17,20 +17,20 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MapTypeGuesser extends StringTypeGuesser {
 
-	private final StringParser p;
+	private final StringParser parser;
 
 	@Override
 	public Guess createGuess() {
-		IntegerStore indexType = p.decideIndexType();
+		IntegerStore indexType = parser.decideIndexType();
 
 		StringTypeDictionary type = new StringTypeDictionary(indexType, null);
 		long mapSize = MapDictionary.estimateMemoryConsumption(
-				p.getStrings().size(),
-				p.getDecoded().stream().mapToLong(s -> s.length).sum()
+				parser.getStrings().size(),
+				parser.getDecoded().stream().mapToLong(s -> s.length).sum()
 		);
 
 
-		StringTypeEncoded result = new StringTypeEncoded(type, p.getEncoding());
+		StringTypeEncoded result = new StringTypeEncoded(type, parser.getEncoding());
 
 		return new Guess(
 				result,
@@ -39,8 +39,8 @@ public class MapTypeGuesser extends StringTypeGuesser {
 		) {
 			@Override
 			public StringStore getType() {
-				MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, UUID.randomUUID().toString());
-				for (byte[] v : p.getDecoded()) {
+				MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, UUID.randomUUID().toString(), parser.getEncoding());
+				for (byte[] v : parser.getDecoded()) {
 					map.add(v);
 				}
 				type.setDictionary(map);

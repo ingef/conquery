@@ -69,7 +69,7 @@ public class BigStoreTest {
 
 		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
-		Dictionary nDict = new MapDictionary(Dataset.PLACEHOLDER, "dict");
+		Dictionary nDict = new MapDictionary(Dataset.PLACEHOLDER, "dict", Encoding.UTF8);
 
 		for (int v = 0; v < 1000000; v++) {
 			nDict.add(Integer.toHexString(v).getBytes());
@@ -109,7 +109,7 @@ public class BigStoreTest {
 		);
 		store.setChunkByteSize(Ints.checkedCast(DataSize.megabytes(1).toBytes()));
 
-		Dictionary nDict = new MapDictionary(Dataset.PLACEHOLDER,"dict");
+		Dictionary nDict = new MapDictionary(Dataset.PLACEHOLDER, "dict", Encoding.UTF8);
 
 		// check if manual serialization deserialization works
 		byte[] bytes = MAPPER.writeValueAsBytes(nDict);

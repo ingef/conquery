@@ -24,16 +24,16 @@ public class MapDictionary extends Dictionary {
 	private Object2IntOpenHashMap<ByteArrayList> value2Id;
 	private List<ByteArrayList> id2Value;
 
-	public MapDictionary(Dataset dataset, @NotNull String name) {
-		super(dataset, name);
+	public MapDictionary(Dataset dataset, @NotNull String name, Encoding encoding) {
+		super(dataset, name, encoding);
 		value2Id = new Object2IntOpenHashMap<>();
 		value2Id.defaultReturnValue(-1);
 		id2Value = new ArrayList<>();
 	}
 
 	@JsonCreator
-	public MapDictionary(Dataset dataset, String name, byte[][] id2Value) {
-		super(dataset, name);
+	public MapDictionary(Dataset dataset, String name, byte[][] id2Value, Encoding encoding) {
+		super(dataset, name, encoding);
 		if (id2Value == null) {
 			id2Value = new byte[0][];
 		}

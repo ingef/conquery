@@ -50,7 +50,7 @@ public class NamespaceStorage extends NamespacedStorage {
 
 		if(dictionary == null){
 			log.trace("No prior PrimaryDictionary, creating one");
-			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY);
+			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY, Encoding.UTF8);
 
 			primaryDictionary.update(newPrimary);
 

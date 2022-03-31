@@ -17,21 +17,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TrieTypeGuesser extends StringTypeGuesser {
 
-	private final StringParser p;
+	private final StringParser parser;
 
 	@Override
 	public Guess createGuess() {
-		IntegerStore indexType = p.decideIndexType();
+		IntegerStore indexType = parser.decideIndexType();
 
-		SuccinctTrie trie = new SuccinctTrie(Dataset.PLACEHOLDER, UUID.randomUUID().toString());
+		SuccinctTrie trie = new SuccinctTrie(Dataset.PLACEHOLDER, UUID.randomUUID().toString(), parser.getEncoding());
 		StringTypeDictionary type = new StringTypeDictionary(indexType, trie);
 
-		for (byte[] v : p.getDecoded()) {
+		for (byte[] v : parser.getDecoded()) {
 			trie.add(v);
 		}
 
 
-		StringTypeEncoded result = new StringTypeEncoded(type, p.getEncoding());
+		StringTypeEncoded result = new StringTypeEncoded(type, parser.getEncoding());
 
 		return new Guess(
 				result,
