@@ -33,7 +33,6 @@ import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
 import com.bakdata.conquery.models.events.stores.specific.MoneyIntStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumber;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefixSuffix;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
@@ -48,15 +47,13 @@ import org.junit.jupiter.params.provider.MethodSource;
 public class ColumnStoreSerializationTests {
 
 	/**
-	 *
 	 * Set of {@link ColumnStore}-Types that cannot be tested because it needs more inputs than just one class.
 	 * For {@link DateRangeTypeCompound} a manual test is done in {@link com.bakdata.conquery.models.SerializationTests}
-	 *
 	 */
 	private static final Set<Class<? extends ColumnStore>> EXCLUDING = Set.of(DateRangeTypeCompound.class);
 
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
-	private static final Dictionary DICTIONARY = new MapDictionary(Dataset.PLACEHOLDER, "dictionary",  Encoding.UTF8);
+	private static final Dictionary DICTIONARY = new MapDictionary(Dataset.PLACEHOLDER, "dictionary", Encoding.UTF8);
 
 	@BeforeAll
 	public static void setupRegistry() {
@@ -89,8 +86,7 @@ public class ColumnStoreSerializationTests {
 				new DecimalTypeScaled(13, IntArrayStore.create(10)),
 				new MoneyIntStore(IntArrayStore.create(10)),
 				new StringTypeDictionary(IntArrayStore.create(10), DICTIONARY),
-				new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), DICTIONARY), Encoding.Base16LowerCase),
-				new StringTypePrefixSuffix(new StringTypeEncoded(new StringTypeDictionary(IntArrayStore.create(10), DICTIONARY), Encoding.Base16LowerCase), "a", "b"),
+				new StringTypePrefixSuffix(new StringTypeDictionary(IntArrayStore.create(10), DICTIONARY), "a", "b"),
 
 				new StringTypeNumber(new IntegerRange(0, 7), ByteArrayStore.create(10)),
 				new StringTypeSingleton("a", BitSetStore.create(10)),

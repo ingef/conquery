@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import lombok.RequiredArgsConstructor;
 
@@ -30,10 +29,9 @@ public class MapTypeGuesser extends StringTypeGuesser {
 		);
 
 
-		StringTypeEncoded result = new StringTypeEncoded(type, parser.getEncoding());
 
 		return new Guess(
-				result,
+				type,
 				indexType.estimateMemoryConsumptionBytes(),
 				mapSize
 		) {

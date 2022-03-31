@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Encoding;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import lombok.extern.slf4j.Slf4j;
@@ -54,10 +54,10 @@ public class StringEncodingTest {
 			  .forEach(parser::addLine);
 
 
-		StringTypeEncoded subType = (StringTypeEncoded) parser.findBestType();
+		StringTypeDictionary subType = (StringTypeDictionary) parser.findBestType();
 
 		assertThat(subType)
-				.isInstanceOf(StringTypeEncoded.class);
-		assertThat(subType.getEncoding()).isEqualByComparingTo(Encoding.Base16UpperCase);
+				.isInstanceOf(StringTypeDictionary.class);
+		assertThat(subType.getDictionary().getEncoding()).isEqualByComparingTo(Encoding.Base16UpperCase);
 	}
 }
