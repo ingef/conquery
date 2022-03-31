@@ -59,7 +59,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 		this.pathName = pathName;
 	}
 
-	public void openStores(StoreFactory storageFactory){
+	public void openStores(StoreFactory storageFactory) {
 		dataset = storageFactory.createDatasetStore(pathName);
 		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName);
 		tables = storageFactory.createTableStore(centralRegistry, pathName);
@@ -126,17 +126,16 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	}
 
 	private void decorateTableStore(IdentifiableStore<Table> store) {
-		store
-				.onAdd(table -> {
-					for (Column c : table.getColumns()) {
-						getCentralRegistry().register(c);
-					}
-				})
-				.onRemove(table -> {
-					for (Column c : table.getColumns()) {
-						getCentralRegistry().remove(c);
-					}
-				});
+		store.onAdd(table -> {
+				 for (Column c : table.getColumns()) {
+					 getCentralRegistry().register(c);
+				 }
+			 })
+			 .onRemove(table -> {
+				 for (Column c : table.getColumns()) {
+					 getCentralRegistry().remove(c);
+				 }
+			 });
 	}
 
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {

@@ -1,13 +1,13 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
-import { useEffect, useState } from "react";
+import type { StateT } from "app-types";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { SelectOptionT, UserGroupT } from "../../api/types";
-import PrimaryButton from "../../button/PrimaryButton";
-import { TransparentButton } from "../../button/TransparentButton";
+import IconButton from "../../button/IconButton";
 import Modal from "../../modal/Modal";
+import WithTooltip from "../../tooltip/WithTooltip";
 import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSelect";
 
 import type { ProjectItemT } from "./ProjectItem";
@@ -19,27 +19,18 @@ import {
 } from "./actions";
 import { isFormConfig } from "./helpers";
 
-const Buttons = styled("div")`
+const Row = styled("div")`
   width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: flex-end;
 `;
 
-const SxPrimaryButton = styled(PrimaryButton)`
-  margin-left: 20px;
+const SxIconButton = styled(IconButton)`
+  padding: 6px 10px;
+  margin-left: 3px;
 `;
 
-const SxInputMultiSelect = styled(InputMultiSelect)`
-  display: block;
-  margin-bottom: 20px;
-`;
-
-const QueryName = styled("p")`
-  margin: -15px 0 20px;
-`;
-
-const getUserGroupsValue = (
+const getInitialUserGroupsValue = (
   userGroups: UserGroupT[],
   projectItem?: ProjectItemT,
 ) => {
@@ -64,7 +55,10 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
     state.user.me ? state.user.me.groups : [],
   );
 
-  const initialUserGroupsValue = getUserGroupsValue(userGroups, item);
+  const initialUserGroupsValue = useMemo(
+    () => getInitialUserGroupsValue(userGroups, item),
+    [item, userGroups],
+  );
 
   const [userGroupsValue, setUserGroupsValue] = useState<SelectOptionT[]>(
     initialUserGroupsValue,
@@ -74,8 +68,11 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
 
   const { loadQuery } = useLoadQuery();
   const { loadFormConfig } = useLoadFormConfig();
-  const { updateQuery } = useUpdateQuery();
-  const { updateFormConfig } = useUpdateFormConfig();
+  const { updateQuery, loading: queryLoading } = useUpdateQuery();
+  const { updateFormConfig, loading: formConfigLoading } =
+    useUpdateFormConfig();
+
+  const loading = queryLoading || formConfigLoading;
 
   useEffect(
     function loadItemOnce() {
@@ -93,7 +90,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
   );
 
   useEffect(() => {
-    setUserGroupsValue(getUserGroupsValue(userGroups, item));
+    setUserGroupsValue(getInitialUserGroupsValue(userGroups, item));
   }, [userGroups, item]);
 
   const onSetUserGroupsValue = (value: SelectOptionT[] | null) => {
@@ -109,6 +106,12 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
     item.shared && userGroupsValue.length === 0
       ? t("sharePreviousQueryModal.unshare")
       : t("common.share");
+  const groupsLabel = isFormConfig(item)
+    ? t("sharePreviousQueryModal.groupsLabelConfig")
+    : t("sharePreviousQueryModal.groupsLabelQuery");
+
+  const buttonDisabled =
+    JSON.stringify(initialUserGroupsValue) === JSON.stringify(userGroupsValue);
 
   async function onShareClicked() {
     const userGroupsToShare = userGroupsValue.map(
@@ -116,7 +119,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
     );
 
     if (isFormConfig(item)) {
-      updateFormConfig(
+      await updateFormConfig(
         item.id,
         {
           groups: userGroupsToShare,
@@ -124,7 +127,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
         t("formConfig.shareError"),
       );
     } else {
-      updateQuery(
+      await updateQuery(
         item.id,
         {
           groups: userGroupsToShare,
@@ -132,23 +135,39 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
         t("previousQuery.shareError"),
       );
     }
+    onClose();
   }
 
   return (
-    <Modal onClose={onClose} headline={t("sharePreviousQueryModal.headline")}>
-      <QueryName>{item.label}</QueryName>
-      <SxInputMultiSelect
-        value={userGroupsValue}
-        onChange={onSetUserGroupsValue}
-        label={t("sharePreviousQueryModal.groupsLabel")}
-        options={userGroupOptions}
-      />
-      <Buttons>
-        <TransparentButton onClick={onClose}>
-          {t("common.cancel")}
-        </TransparentButton>
-        <SxPrimaryButton onClick={onShareClicked}>{shareLabel}</SxPrimaryButton>
-      </Buttons>
+    <Modal
+      onClose={onClose}
+      headline={t("sharePreviousQueryModal.headline")}
+      subtitle={item.label}
+    >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onShareClicked();
+        }}
+      >
+        <Row>
+          <InputMultiSelect
+            autoFocus
+            value={userGroupsValue}
+            onChange={onSetUserGroupsValue}
+            label={groupsLabel}
+            options={userGroupOptions}
+          />
+          <WithTooltip text={shareLabel}>
+            <SxIconButton
+              type="submit"
+              frame
+              disabled={buttonDisabled}
+              icon={loading ? "spinner" : "check"}
+            />
+          </WithTooltip>
+        </Row>
+      </form>
     </Modal>
   );
 };

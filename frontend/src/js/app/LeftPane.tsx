@@ -47,6 +47,7 @@ const LeftPane = () => {
           // loading: previousQueriesLoading,
         },
       ]}
+      dataTestId="left-pane"
     >
       {activeTab === "conceptTrees" && areTreesAvailable && (
         <SxConceptTreeSearchBox />

@@ -24,5 +24,6 @@ public class UpdateDictionary extends WorkerMessage.Slow {
 	public void react(Worker context) throws Exception {
 		log.debug("Received Dictionary[{}] of size {}.", dictionary.getId(), dictionary.size());
 		context.updateDictionary(dictionary);
+
 	}
 }
