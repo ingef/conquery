@@ -5,6 +5,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
@@ -12,6 +13,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 @CPSType(id = "SELECT", base = Filter.class)
 public class MultiSelectFilter extends SelectFilter<String[]> {
 
+	@JsonIgnore
 	@Override
 	public FEFilterType getFilterType() {
 		return FEFilterType.MULTI_SELECT;
