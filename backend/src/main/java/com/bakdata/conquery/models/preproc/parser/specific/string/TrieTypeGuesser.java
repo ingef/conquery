@@ -25,9 +25,7 @@ public class TrieTypeGuesser extends StringTypeGuesser {
 		SuccinctTrie trie = new SuccinctTrie(Dataset.PLACEHOLDER, UUID.randomUUID().toString(), parser.getEncoding());
 		StringTypeDictionary type = new StringTypeDictionary(indexType, trie);
 
-		for (String v : parser.getDecoded()) {
-			trie.add(v);
-		}
+		parser.valuesOrdered().forEach(trie::add);
 
 		return new Guess(
 				type,

@@ -3,10 +3,8 @@ package com.bakdata.conquery.models.preproc.parser.specific;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.IntSummaryStatistics;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -32,6 +30,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +51,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 	//TODO FK: this field is not used at the moment, but we want to use it to prune unused values, this would mean cleaning up strings and allowing Dictionary to set a specific valuie, not just setting it.
 	private IntSet registered = new IntOpenHashSet();
 
-	private List<String> decoded;
+	@Setter
 	private Encoding encoding;
 	private String prefix;
 	private String suffix;
@@ -149,7 +148,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 	private void decode() {
 		encoding = findEncoding();
 		log.debug("\tChosen encoding is {}", encoding);
-		applyEncoding(encoding);
+		setEncoding(encoding);
 	}
 
 	/**
@@ -174,12 +173,11 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	}
 
-	public void applyEncoding(Encoding encoding) {
-		this.encoding = encoding;
-		decoded = strings.object2IntEntrySet().stream()
+	public Stream<String> valuesOrdered() {
+		//TODO the reason we need this ordering is kind of bananas
+		return strings.object2IntEntrySet().stream()
 						 .sorted(Comparator.comparing(Object2IntMap.Entry::getIntValue))
-						 .map(Map.Entry::getKey)
-						 .collect(Collectors.toList());
+						 .map(Map.Entry::getKey);
 	}
 
 	@Override

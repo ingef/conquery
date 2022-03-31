@@ -216,7 +216,7 @@ public class Preprocessed {
 	private Dictionary encodePrimaryDictionary() {
 		log.debug("Encode primary Dictionary");
 
-		primaryColumn.applyEncoding(Encoding.UTF8);
+		primaryColumn.setEncoding(Encoding.UTF8);
 
 		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
 		log.trace("\tPrimaryColumn -> {}", primaryDictionary);
