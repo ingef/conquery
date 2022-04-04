@@ -123,8 +123,9 @@
     "description": "Alle Anfragen aus dem Ordner {{folder}} werden aus dem Ordner entfernt, bleiben aber gespeichert."
   },
   "sharePreviousQueryModal": {
-    "headline": "Anfrage freigeben: ",
-    "groupsLabel": "Gruppen mit denen die Anfrage geteilt werden soll",
+    "headline": "Freigabe bearbeiten",
+    "groupsLabelQuery": "Gruppen mit denen die Anfrage geteilt wird",
+    "groupsLabelConfig": "Gruppen mit denen die Formular-Einstellung geteilt wird",
     "unshare": "Freigabe aufheben"
   },
   "common": {

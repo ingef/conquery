@@ -10,14 +10,22 @@ import type { DynamicFormValues } from "./form/Form";
 import { isFormField } from "./helper";
 
 function transformElementGroupsToApi(elementGroups: FormConceptGroupT[]) {
-  return elementGroups.map(({ concepts, connector, ...rest }) =>
-    concepts.length > 1
-      ? {
-          type: connector,
-          children: transformElementsToApi(concepts.filter(exists)),
-          ...rest,
-        }
-      : { ...transformElementsToApi(concepts.filter(exists))[0], ...rest },
+  const elementGroupsWithAtLeastOneElement = elementGroups
+    .map(({ concepts, ...rest }) => ({
+      concepts: concepts.filter(exists),
+      ...rest,
+    }))
+    .filter(({ concepts }) => concepts.length > 0);
+
+  return elementGroupsWithAtLeastOneElement.map(
+    ({ concepts, connector, ...rest }) =>
+      concepts.length > 1
+        ? {
+            type: connector,
+            children: transformElementsToApi(concepts),
+            ...rest,
+          }
+        : { ...transformElementsToApi(concepts)[0], ...rest },
   );
 }
 

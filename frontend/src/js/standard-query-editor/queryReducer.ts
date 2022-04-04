@@ -677,6 +677,7 @@ const expandNode = (
       const lookupResult = getConceptsByIdsWithTablesAndSelects(
         rootConcepts,
         node.ids,
+        { useDefaults: false },
       );
 
       if (!lookupResult)
@@ -861,6 +862,7 @@ const createQueryNodeFromConceptListUploadResult = (
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
     rootConcepts,
     resolvedConcepts,
+    { useDefaults: true },
   );
 
   return lookupResult

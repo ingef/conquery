@@ -92,6 +92,11 @@ public class StringTypeSingleton implements StringStore {
 	}
 
 	@Override
+	public void setUnderlyingDictionary(Dictionary dictionary) {
+		// No underlying Dictionary
+	}
+
+	@Override
 	public boolean isDictionaryHolding() {
 		return false;
 	}
