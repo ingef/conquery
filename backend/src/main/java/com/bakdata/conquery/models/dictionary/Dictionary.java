@@ -10,30 +10,36 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public abstract class Dictionary extends NamedImpl<DictionaryId> implements NamespacedIdentifiable<DictionaryId>, Iterable<DictionaryEntry> {
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	@NsIdRef
 	private Dataset dataset;
 
 	@Getter
 	private final Encoding encoding;
-	
+
 	public Dictionary(Dataset dataset, String name, Encoding encoding) {
 		this.encoding = encoding;
 		this.setName(name);
 		this.dataset = dataset;
 	}
-	
+
+	public abstract Dictionary copyUncompressed();
+
+	public void compress() {
+	}
+
 	@Override
 	public DictionaryId createId() {
 		return new DictionaryId(dataset.getId(), getName());
 	}
 
 	public abstract int add(String bytes);
-	
+
 	public abstract int put(String bytes);
 
 	public abstract int getId(String bytes);
@@ -52,15 +58,7 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()+"[size=" + size() + "]";
-	}
-
-	public static MapDictionary copyUncompressed(Dictionary dict) {
-		MapDictionary newDict = new MapDictionary(dict.getDataset(), dict.getName(), dict.getEncoding());
-		for(DictionaryEntry e:dict) {
-			newDict.add(e.getValue());
-		}
-		return newDict;
+		return this.getClass().getSimpleName() + "[size=" + size() + "]";
 	}
 
 	public abstract long estimateMemoryConsumption();

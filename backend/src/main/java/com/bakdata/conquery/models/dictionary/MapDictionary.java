@@ -33,6 +33,19 @@ public class MapDictionary extends Dictionary {
 		id2Value = new ArrayList<>();
 	}
 
+	@Override
+	public Dictionary copyUncompressed() {
+		final Dictionary copy = new MapDictionary(getDataset(), getName(), getEncoding());
+
+		for (DictionaryEntry entry : this) {
+			if (copy.add(entry.getValue()) != entry.getId()) {
+				throw new IllegalStateException("Copy has different ordering than myself");
+			}
+		}
+
+		return copy;
+	}
+
 	@JsonCreator
 	public MapDictionary(Dataset dataset, String name, byte[][] id2Value, Encoding encoding) {
 		super(dataset, name, encoding);
@@ -119,7 +132,6 @@ public class MapDictionary extends Dictionary {
 			}
 		};
 	}
-
 
 
 	public static long estimateMemoryConsumption(long entries, long totalBytes) {

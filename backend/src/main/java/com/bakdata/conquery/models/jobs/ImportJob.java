@@ -27,8 +27,6 @@ import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
-import com.bakdata.conquery.models.dictionary.Encoding;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -132,7 +130,7 @@ public class ImportJob extends Job {
 
 			Map<DictionaryId, Dictionary>
 					dictReplacements =
-					createLocalIdReplacements(dictionaries.getDictionaries(), table, header.getName(), namespace.getStorage(), sharedDictionaryLocks);
+					createLocalIdReplacements(dictionaries.getDictionaries(), table, namespace.getStorage(), sharedDictionaryLocks);
 
 			// We inject the mappings into the parser, so that the incoming placeholder names are replaced with the new names of the dictionaries. This allows us to use NsIdRef in conjunction with shared-Dictionaries
 			parser.addAllReplacements(dictReplacements);
@@ -160,7 +158,7 @@ public class ImportJob extends Job {
 	/**
 	 * Collects all dictionaries that map only to columns of this import.
 	 */
-	private static Map<DictionaryId, Dictionary> createLocalIdReplacements(Map<String, Dictionary> dicts, Table table, String importName, NamespaceStorage storage, IdMutex<DictionaryId> sharedDictionaryLocks) {
+	private static Map<DictionaryId, Dictionary> createLocalIdReplacements(Map<String, Dictionary> dicts, Table table, NamespaceStorage storage, IdMutex<DictionaryId> sharedDictionaryLocks) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -179,16 +177,19 @@ public class ImportJob extends Job {
 
 			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
 			// but could also be an error :/ Most likely the former
-			if (!dicts.containsKey(column.getName()) || dicts.get(column.getName()) == null) {
+			final Dictionary prior = dicts.get(column.getName());
+			if (!dicts.containsKey(column.getName()) || prior == null) {
 				log.trace("No Dictionary for {}", column);
 				continue;
 			}
 
+
+
 			final Dictionary dictionary =
-					createSharedDictionaryReplacement(column, storage, sharedDictionaryLocks);
+					createSharedDictionaryReplacement(column, storage, prior, sharedDictionaryLocks);
 
 			//TODO could this also just be dicts.get(column.getName()).getId()
-			out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), dicts.get(column.getName()).getName()), dictionary);
+			out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), prior.getName()), dictionary);
 		}
 
 		return out;
@@ -225,7 +226,6 @@ public class ImportJob extends Job {
 
 			final Dictionary importDictionary = dicts.get(column.getName());
 
-
 			final String sharedDictionaryName = computeDictionaryName(column);
 
 			log.trace("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
@@ -233,13 +233,14 @@ public class ImportJob extends Job {
 			final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
 			final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
 
-			// This should never fail, becaus the dictionary is pre-created in the replacement generation step
+			// This should never fail, because the dictionary is pre-created in the replacement generation step
 			ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
 
 			log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
 
-
 			DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
+
+			sharedDictionary.compress();
 
 			if (mapping.getNumberOfNewIds() != 0) {
 				distributeDictionary(namespace, mapping.getTargetDictionary());
@@ -276,10 +277,11 @@ public class ImportJob extends Job {
 	 *
 	 * @param column
 	 * @param storage               The {@link NamespaceStorage} that backs the dictionaries
+	 * @param prior
 	 * @param sharedDictionaryLocks A collection of locks used for the synchronized creation of shared dictionaries.
 	 * @return
 	 */
-	public static Dictionary createSharedDictionaryReplacement(Column column, NamespaceStorage storage, IdMutex<DictionaryId> sharedDictionaryLocks) {
+	public static Dictionary createSharedDictionaryReplacement(Column column, NamespaceStorage storage, Dictionary prior, IdMutex<DictionaryId> sharedDictionaryLocks) {
 		Preconditions.checkArgument(column.getType().equals(MajorTypeId.STRING), "Not a STRING Column.");
 
 		final String dictionaryName = computeDictionaryName(column);
@@ -290,7 +292,11 @@ public class ImportJob extends Job {
 			Dictionary sharedDict = storage.getDictionary(sharedDictId);
 			// Create dictionary if not yet present
 			if (sharedDict == null) {
-				sharedDict = new MapDictionary(storage.getDataset(), dictionaryName, Encoding.UTF8); //TODO use prior dict
+				sharedDict = prior.copyUncompressed();
+
+				prior.setDataset(storage.getDataset());
+				prior.setName(dictionaryName);
+
 				storage.updateDictionary(sharedDict);
 			}
 			return sharedDict;
@@ -471,9 +477,11 @@ public class ImportJob extends Job {
 
 		Dictionary orig = namespace.getStorage().getPrimaryDictionaryRaw();
 
-		Dictionary primaryDict = Dictionary.copyUncompressed(orig);
+		Dictionary primaryDict = orig.copyUncompressed();
 
 		DictionaryMapping primaryMapping = DictionaryMapping.createAndImport(primaryDictionary, primaryDict);
+
+		primaryDict.compress();
 
 		log.debug("Mapped {} new ids", primaryMapping.getNumberOfNewIds());
 

@@ -99,6 +99,20 @@ public class SuccinctTrie extends Dictionary {
 	}
 
 	@Override
+	public Dictionary copyUncompressed() {
+		final Dictionary copy = new SuccinctTrie(getDataset(), getName(), getEncoding());
+
+		for (DictionaryEntry entry : this) {
+			final int newId = copy.add(entry.getValue());
+			if (newId != entry.getId()) {
+				throw new IllegalStateException("Copy has different ordering than myself");
+			}
+		}
+
+		return copy;
+	}
+
+	@Override
 	public int add(String bytes) {
 		return put(bytes, entryCount, true);
 	}
@@ -324,7 +338,7 @@ public class SuccinctTrie extends Dictionary {
 	@Override
 	public Iterator<DictionaryEntry> iterator() {
 
-		return new AbstractIterator<DictionaryEntry>() {
+		return new AbstractIterator<>() {
 
 			private ByteArrayList buf = new ByteArrayList(depth);
 			private int index = 0;
@@ -335,8 +349,11 @@ public class SuccinctTrie extends Dictionary {
 					return endOfData();
 				}
 				buf.clear();
-				get(index++, buf);
-				return new DictionaryEntry(index, decode(buf.toByteArray()));
+
+				final int id = index++;
+
+				get(id, buf);
+				return new DictionaryEntry(id, decode(buf.toByteArray()));
 			}
 		};
 	}

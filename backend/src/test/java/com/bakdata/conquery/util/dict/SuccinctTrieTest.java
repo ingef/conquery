@@ -61,6 +61,8 @@ public class SuccinctTrieTest {
 
 		direct.compress();
 
+		assertThat(direct.iterator().next().getId()).isEqualTo(0);
+
 		assertThat(direct.getElement(0)).isEqualTo("hat");
 		assertThat(direct.getElement(1)).isEqualTo("it");
 		assertThat(direct.getElement(2)).isEqualTo("is");
