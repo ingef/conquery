@@ -47,7 +47,7 @@ const AddFolderModal = ({ onClose, onSubmit, isValidName }: Props) => {
             label={t("addFolderModal.inputLabel")}
             value={folderName}
             inputType="text"
-            onChange={(value) => setFolderName(value as string)}
+            onChange={(value) => setFolderName((value as string | null) || "")}
             inputProps={{ autoFocus: true }}
           />
           <Buttons>

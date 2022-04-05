@@ -242,8 +242,15 @@ const InputMultiSelect = ({
     setSelectedItems,
   });
 
+  const clearStaleSearch = () => {
+    if (!isOpen) {
+      setInputValue("");
+    }
+  };
+
   const Select = (
     <SelectContainer
+      onBlur={clearStaleSearch}
       ref={(instance) => {
         if (!label) {
           clickOutsideRef.current = instance;
