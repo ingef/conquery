@@ -65,7 +65,7 @@ public class FilterSearch {
 	}
 
 	/**
-	 * To facilitate sharing/reuse among a dataset, we try to combine multiple columns into a single search:
+	 * To facilitate sharing/reuse within a dataset, we try to combine multiple columns into a single search:
 	 * If the column is part of a shared-Dictionary, we use that as reference.
 	 * Usually {@link Column}s of a {@link com.bakdata.conquery.models.datasets.SecondaryIdDescription} is also backed by a shared-Dictionary, but in the case it is not, we use the secondaryId as common reference name.
 	 * <p>
