@@ -5,6 +5,11 @@ import conceptTreesOpen, {
 } from "../concept-trees-open/reducer";
 import conceptTrees, { ConceptTreesStateT } from "../concept-trees/reducer";
 import datasets, { DatasetStateT } from "../dataset/reducer";
+import type { Form } from "../external-forms/config-types";
+import {
+  activeFormReducer,
+  availableFormsReducer,
+} from "../external-forms/reducer";
 import panes, { PanesStateT } from "../pane/reducer";
 import preview, { PreviewStateT } from "../preview/reducer";
 import projectItemsFilter, {
@@ -71,6 +76,13 @@ export type StateT = {
     timebasedQuery: TimebasedQueryStateT;
     timebasedQueryRunner: QueryRunnerStateT;
   };
+  externalForms: {
+    activeForm: string | null;
+    queryRunner: QueryRunnerStateT;
+    availableForms: {
+      [formName: string]: Form;
+    };
+  };
 };
 
 const buildAppReducer = () => {
@@ -99,6 +111,11 @@ const buildAppReducer = () => {
     timebasedQueryEditor: combineReducers({
       timebasedQuery: timebasedQueryReducer,
       timebasedQueryRunner: createQueryRunnerReducer("timebased"),
+    }),
+    externalForms: combineReducers({
+      activeForm: activeFormReducer,
+      availableForms: availableFormsReducer,
+      queryRunner: createQueryRunnerReducer("externalForms"),
     }),
   });
 };

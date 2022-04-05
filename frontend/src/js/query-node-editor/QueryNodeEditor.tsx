@@ -2,7 +2,6 @@ import styled from "@emotion/styled";
 import { useCallback, useRef, useState } from "react";
 import Hotkeys from "react-hot-keys";
 import { useTranslation } from "react-i18next";
-import { useDispatch } from "react-redux";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import {

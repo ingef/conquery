@@ -19,8 +19,6 @@ import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { EditedFormQueryNodePosition } from "../form-concept-group/FormConceptGroup";
-import { FormContextStateT } from "../reducer";
-import { selectFormContextState } from "../stateSelectors";
 import { initTables } from "../transformers";
 
 interface PropsT {

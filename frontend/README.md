@@ -116,6 +116,9 @@ Depending on the use-case, we're still calling the same concepts differently som
 
 - Migration from Flow to TypeScript is in progress. At the moment, Typescript errors are printed to console on server start and build, to see what they are and to fix them. To check how many errors are left: `yarn typecheck`. But type errors are ignored (see `.env`) to be able to still compile for now. Plan is to fix the errors step by step and then to enable failure on TS errors on start / build again.
 
+### Hooks
+- We're using react hooks extensively, but we're **not** using useCallback in a lot of places yet. So in general, we've been avoiding passing callbacks into the dependency arrays of useEffect / useMemo / etc. Probably, we should introduce more useCallback gradually, while making sure we don't introduce infinite loops.
+
 ### Styles
 
 - Emotion is used for theming and styles. The plan is to migrate (back) to styled-components or to another css-in-js solution, because emotion's "styled" is less TypeScript compatible in some edge cases like generic component props (see usage of Dropzone).
