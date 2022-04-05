@@ -3,9 +3,10 @@ import { StateT } from "app-types";
 import ReactDOM from "react-dom";
 import { Store } from "redux";
 
+import "../fonts.css";
+
 import AppRoot from "./AppRoot";
 import GlobalStyles from "./GlobalStyles";
-import "./browserShimsAndPolyfills";
 import { initializeEnvironment, CustomEnvironment } from "./environment";
 import { TabT } from "./pane/types";
 import { makeStore } from "./store";

@@ -33,9 +33,12 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
       {config.description && config.description[activeLang] && (
         <SxFormHeader description={config.description[activeLang]!} />
       )}
-      <FormConfigSaver />
+      <FormConfigSaver datasetOptions={datasetOptions} />
       {config.fields.map((field, i) => {
-        const key = isFormField(field) ? field.name : field.type + i;
+        const key =
+          isFormField(field) && field.type !== "GROUP"
+            ? field.name
+            : field.type + i;
         const optional = isOptionalField(field);
 
         return (

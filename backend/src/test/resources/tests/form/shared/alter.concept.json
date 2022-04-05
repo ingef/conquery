@@ -36,7 +36,7 @@
             {
                 "type": "DATE_DISTANCE",
                 "name": "alter_select",
-                "label": "Ausgabe Alter",
+                "label": "Alter",
                 "description": "Automatisch erzeugter Zusatzwert.",
                 "column": "vers_stamm.geburtsdatum",
                 "timeUnit": "YEARS",
@@ -44,7 +44,7 @@
             },
             {
                 "name": "liste_geburtsdatum",
-                "label": "Ausgabe Geburtsdatum",
+                "label": "Geburtsdatum",
                 "type": "FIRST",
                 "column": "vers_stamm.geburtsdatum"
             }

@@ -1,7 +1,7 @@
 import { ActionType, getType } from "typesafe-actions";
 
 import { Action } from "../app/actions";
-import { renameQuery } from "../previous-queries/list/actions";
+import type { DragItemQuery } from "../standard-query-editor/types";
 
 import {
   addTimebasedCondition,
@@ -59,6 +59,10 @@ export interface TimebasedQueryStateT {
   conditions: TimebasedConditionT[];
 }
 
+export interface ValidatedTimebasedQueryStateT extends TimebasedQueryStateT {
+  conditions: ValidatedTimebasedConditionT[];
+}
+
 const getEmptyNode = () => ({
   operator: "BEFORE" as const,
   result0: null,
@@ -87,13 +91,14 @@ const setNode = (
   state: TimebasedQueryStateT,
   resultIdx: number,
   conditionIdx: number,
-  node: TimebasedResultType,
+  node: TimebasedResultType | DragItemQuery,
 ) => {
   const attributes = {
     [`result${resultIdx}`]: {
-      ...node,
-      timestamp: node.timestamp || "EARLIEST",
-    },
+      id: node.id,
+      label: node.label,
+      timestamp: ("timestamp" in node && node.timestamp) || "EARLIEST",
+    } as TimebasedResultType,
   };
 
   return setTimebasedConditionAttributes(state, conditionIdx, attributes);
@@ -229,10 +234,12 @@ const onSetTimebasedConditionOperator = (
     operator,
   });
 
+  const { result0 } = state.conditions[conditionIdx];
+
   if (
     operator !== "DAYS_OR_NO_EVENT_BEFORE" ||
-    !state.conditions[conditionIdx].result0 ||
-    state.conditions[conditionIdx].result0.id !== state.indexResult
+    !result0 ||
+    result0.id !== state.indexResult
   )
     return nextState;
 
@@ -336,32 +343,6 @@ const onRemoveTimebasedCondition = (
   return ensureIndexResult({ ...nextState, indexResult: null });
 };
 
-const renameQueries = (
-  state: TimebasedQueryStateT,
-  { queryId, label }: ActionType<typeof renameQuery.success>["payload"],
-) => {
-  return {
-    ...state,
-    conditions: state.conditions.map((c) => {
-      const result0 =
-        c.result0 && c.result0.id === queryId
-          ? { ...c.result0, label: label }
-          : c.result0;
-
-      const result1 =
-        c.result1 && c.result1.id === queryId
-          ? { ...c.result1, label: label }
-          : c.result1;
-
-      return {
-        ...c,
-        result0,
-        result1,
-      };
-    }),
-  };
-};
-
 const initialState = {
   indexResult: null,
   conditions: [getEmptyNode()],
@@ -437,8 +418,6 @@ const timebasedQuery = (
       return onAddTimebasedCondition(state);
     case getType(removeTimebasedCondition):
       return onRemoveTimebasedCondition(state, action.payload);
-    case getType(renameQuery.success):
-      return renameQueries(state, action.payload);
     case getType(clearTimebasedQuery):
       return initialState;
     default:

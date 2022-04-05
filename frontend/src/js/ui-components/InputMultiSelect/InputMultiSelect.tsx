@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
@@ -35,7 +35,16 @@ import { useResolvableSelect } from "./useResolvableSelect";
 import { useSyncWithValueFromAbove } from "./useSyncWithValueFromAbove";
 
 const MAX_SELECTED_ITEMS_LIMIT = 200;
-const MIN_LOAD_MORE_LENGTH = 2;
+
+const SENTINEL_INSERT_INDEX_FROM_BOTTOM = 10;
+
+const getSentinelInsertIndex = (optionsLength: number) => {
+  if (optionsLength < SENTINEL_INSERT_INDEX_FROM_BOTTOM) {
+    return optionsLength - 1;
+  }
+
+  return optionsLength - SENTINEL_INSERT_INDEX_FROM_BOTTOM;
+};
 
 const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
@@ -50,6 +59,7 @@ interface Props {
   className?: string;
   disabled?: boolean;
   options: SelectOptionT[];
+  total?: number;
   tooltip?: string;
   indexPrefix?: number;
   creatable?: boolean;
@@ -60,13 +70,15 @@ interface Props {
   onChange: (value: SelectOptionT[]) => void;
   loading?: boolean;
   onResolve?: (csvFileLines: string[]) => void; // The assumption is that this will somehow update `options`
-  onLoadMore?: (inputValue: string) => void;
+  onLoadMore?: (inputValue: string, config?: { shouldReset?: boolean }) => void;
+  onLoadAndInsertAll?: (inputValue: string) => void;
 }
 
 const InputMultiSelect = ({
   options,
   className,
   label,
+  total,
   tooltip,
   indexPrefix,
   creatable,
@@ -79,6 +91,7 @@ const InputMultiSelect = ({
   loading,
   onResolve,
   onLoadMore,
+  onLoadAndInsertAll,
 }: Props) => {
   const { onDropFile } = useResolvableSelect({
     defaultValue,
@@ -108,8 +121,8 @@ const InputMultiSelect = ({
 
   useDebounce(
     () => {
-      if (onLoadMore && !loading && inputValue.length >= MIN_LOAD_MORE_LENGTH) {
-        onLoadMore(inputValue);
+      if (onLoadMore && !loading) {
+        onLoadMore(inputValue, { shouldReset: true });
       }
     },
     200,
@@ -213,9 +226,13 @@ const InputMultiSelect = ({
   useLoadMoreInitially({ onLoadMore, isOpen, optionsLength: options.length });
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
-  const inputProps = getInputProps(getDropdownProps({ autoFocus }));
+  const { ref: inputPropsRef, ...inputProps } = getInputProps(
+    getDropdownProps({ autoFocus }),
+  );
   const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
   const labelProps = getLabelProps({});
+
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
 
@@ -225,8 +242,20 @@ const InputMultiSelect = ({
     setSelectedItems,
   });
 
+  const clearStaleSearch = () => {
+    if (!isOpen) {
+      setInputValue("");
+    }
+  };
+
+  const filterOptionsCount =
+    creatable && inputValue.length > 0
+      ? filteredOptions.length - 1
+      : filteredOptions.length;
+
   const Select = (
     <SelectContainer
+      onBlur={clearStaleSearch}
       ref={(instance) => {
         if (!label) {
           clickOutsideRef.current = instance;
@@ -261,8 +290,18 @@ const InputMultiSelect = ({
           <Input
             type="text"
             value={inputValue}
+            onFocus={() => {
+              if (inputRef.current) {
+                inputRef.current.select();
+              }
+            }}
             {...inputProps}
+            ref={(instance) => {
+              inputRef.current = instance;
+              inputPropsRef(instance);
+            }}
             disabled={disabled}
+            spellCheck={false}
             placeholder={
               selectedItems.length > 0
                 ? null
@@ -313,9 +352,23 @@ const InputMultiSelect = ({
           }}
         >
           <MenuActionBar
-            optionsCount={filteredOptions.length}
+            total={total}
+            optionsCount={filterOptionsCount}
             onInsertAllClick={() => {
-              setSelectedItems(filteredOptions);
+              const moreInsertableThanCurrentlyLoaded =
+                exists(total) && total > filterOptionsCount;
+
+              if (!!onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
+                onLoadAndInsertAll(inputValue);
+              } else {
+                const optionsWithoutCreatable =
+                  creatable && inputValue.length > 0
+                    ? filteredOptions.slice(1)
+                    : filteredOptions;
+
+                setSelectedItems(optionsWithoutCreatable);
+                setInputValue("");
+              }
             }}
           />
           <List>
@@ -327,24 +380,26 @@ const InputMultiSelect = ({
               });
 
               return (
-                <SxSelectListOption
-                  key={`${option.value}`}
-                  active={highlightedIndex === index}
-                  option={option}
-                  {...itemProps}
-                  ref={itemPropsRef}
-                />
+                <Fragment key={`${option.value}${option.label}`}>
+                  <SxSelectListOption
+                    active={highlightedIndex === index}
+                    option={option}
+                    {...itemProps}
+                    ref={itemPropsRef}
+                  />
+                  {index === getSentinelInsertIndex(filteredOptions.length) &&
+                    exists(onLoadMore) && (
+                      <LoadMoreSentinel
+                        onLoadMore={() => {
+                          if (!loading) {
+                            onLoadMore(inputValue);
+                          }
+                        }}
+                      />
+                    )}
+                </Fragment>
               );
             })}
-            {exists(onLoadMore) && (
-              <LoadMoreSentinel
-                onLoadMore={() => {
-                  if (!loading && inputValue.length >= MIN_LOAD_MORE_LENGTH) {
-                    onLoadMore(inputValue);
-                  }
-                }}
-              />
-            )}
           </List>
         </Menu>
       ) : (

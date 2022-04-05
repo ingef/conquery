@@ -14,7 +14,7 @@ import {
   toggleTable,
   setFilterValue,
   switchFilterMode,
-  resetAllFilters,
+  resetAllSettings,
   resetTable,
   toggleTimestamps,
   setSelects,
@@ -85,30 +85,32 @@ const StandardQueryNodeEditor = ({ editedNode, setEditedNode }: Props) => {
       onRemoveConcept={(conceptId: ConceptIdT) =>
         dispatch(removeConceptFromNode({ andIdx, orIdx, conceptId }))
       }
-      onToggleTable={(tableIdx: number, isExcluded: boolean) =>
+      onToggleTable={(tableIdx, isExcluded) =>
         dispatch(toggleTable({ andIdx, orIdx, tableIdx, isExcluded }))
       }
       onSelectSelects={(value) => {
         dispatch(setSelects({ andIdx, orIdx, value }));
       }}
-      onSelectTableSelects={(tableIdx: number, value) =>
+      onSelectTableSelects={(tableIdx, value) =>
         dispatch(setTableSelects({ andIdx, orIdx, tableIdx, value }))
       }
-      onSetFilterValue={(tableIdx: number, filterIdx: number, value) =>
+      onSetFilterValue={(tableIdx, filterIdx, value) =>
         dispatch(setFilterValue({ andIdx, orIdx, tableIdx, filterIdx, value }))
       }
       onSwitchFilterMode={(tableIdx, filterIdx, mode) =>
         dispatch(switchFilterMode({ andIdx, orIdx, tableIdx, filterIdx, mode }))
       }
-      onResetAllFilters={() => dispatch(resetAllFilters({ andIdx, orIdx }))}
-      onResetTable={(tableIdx: number) =>
-        dispatch(resetTable({ andIdx, orIdx, tableIdx }))
+      onResetAllSettings={(config) =>
+        dispatch(resetAllSettings({ andIdx, orIdx, config }))
+      }
+      onResetTable={(tableIdx, config) =>
+        dispatch(resetTable({ andIdx, orIdx, tableIdx, config }))
       }
       onToggleTimestamps={() => dispatch(toggleTimestamps({ andIdx, orIdx }))}
       onToggleSecondaryIdExclude={() =>
         dispatch(toggleSecondaryIdExclude({ andIdx, orIdx }))
       }
-      onSetDateColumn={(tableIdx: number, value) =>
+      onSetDateColumn={(tableIdx, value) =>
         dispatch(setDateColumn({ andIdx, orIdx, tableIdx, value }))
       }
     />

@@ -7,17 +7,16 @@ import {
   ConceptIdT,
   CurrencyConfigT,
   DatasetIdT,
+  PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
 } from "../../api/types";
 import { toUpperCaseUnderscore } from "../../common/helpers";
 import { usePrevious } from "../../common/helpers/usePrevious";
+import type { NodeResetConfig } from "../../model/node";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
-import type {
-  ConceptQueryNodeType,
-  DragItemConceptTreeNode,
-} from "../../standard-query-editor/types";
+import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { EditedFormQueryNodePosition } from "../form-concept-group/FormConceptGroup";
 import { FormContextStateT } from "../reducer";
@@ -28,7 +27,7 @@ interface PropsT {
   formType: string;
   fieldName: string;
   nodePosition: EditedFormQueryNodePosition;
-  node: ConceptQueryNodeType;
+  node: DragItemConceptTreeNode;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
   allowlistedSelects?: SelectorResultType[];
@@ -48,8 +47,8 @@ interface PropsT {
     filterIdx: number,
     mode: ModeT,
   ) => void;
-  onResetAllFilters: () => void;
-  onResetTable: (tableIdx: number) => void;
+  onResetAllSettings: (config: NodeResetConfig) => void;
+  onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
   onSelectSelects: (selectedSelects: SelectOptionT[]) => void;
   onSelectTableSelects: (
     tableIdx: number,
@@ -59,8 +58,9 @@ interface PropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-  ) => Promise<void>;
-  onSetDateColumn: (tableIdx: number, dateColumnValue: string | null) => void;
+    config?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
+  onSetDateColumn: (tableIdx: number, dateColumnValue: string) => void;
 }
 
 const FormQueryNodeEditor = (props: PropsT) => {
@@ -140,7 +140,7 @@ const FormQueryNodeEditor = (props: PropsT) => {
       onSetFilterValue={props.onSetFilterValue}
       onSwitchFilterMode={props.onSwitchFilterMode}
       onResetTable={props.onResetTable}
-      onResetAllFilters={props.onResetAllFilters}
+      onResetAllSettings={props.onResetAllSettings}
       onSetDateColumn={props.onSetDateColumn}
     />
   );

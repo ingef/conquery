@@ -5,8 +5,8 @@ import { useSelector } from "react-redux";
 import { exists } from "../common/helpers/exists";
 import { useActiveLang } from "../localization/useActiveLang";
 
-import { ConceptListField, Form, GeneralField, Tabs } from "./config-types";
-import { FormConceptGroupT } from "./form-concept-group/FormConceptGroup";
+import { ConceptListField, Form, GeneralField } from "./config-types";
+import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
 export const selectFormContextState = (state: StateT, formType: string) =>
   state.externalForms ? state.externalForms.formsContext[formType] : null;
@@ -16,9 +16,6 @@ export const selectAvailableForms = (state: StateT) =>
 
 export const selectActiveFormType = (state: StateT) =>
   state.externalForms ? state.externalForms.activeForm : null;
-
-export const useActiveFormType = () =>
-  useSelector<StateT, string | null>((state) => selectActiveFormType(state));
 
 export const selectFormConfig = (state: StateT): Form | null => {
   const availableForms = selectAvailableForms(state);
@@ -49,28 +46,27 @@ function getVisibleConceptListFields(
   config: { fields: GeneralField[] },
   values: Record<string, any>,
 ): ConceptListField[] {
-  const topLevelFields = config.fields.filter(
-    (field): field is ConceptListField => field.type === "CONCEPT_LIST",
-  );
-  const tabFields = config.fields.filter(
-    (field): field is Tabs => field.type === "TABS",
-  );
+  return config.fields
+    .flatMap((field) => {
+      switch (field.type) {
+        case "GROUP":
+          return field.fields;
+        case "TABS":
+          const activeTabName = values[field.name];
+          const activeTab = field.tabs.find(
+            (tab) => tab.name === activeTabName,
+          );
 
-  const fieldsWithinVisibleTabs = tabFields.reduce<ConceptListField[]>(
-    (fields, tabField) => {
-      const activeTabName = values[tabField.name];
-      const activeTab = tabField.tabs.find((tab) => tab.name === activeTabName);
-
-      const activeTabConceptListFields = activeTab
-        ? getVisibleConceptListFields(activeTab, values)
-        : [];
-
-      return [...fields, ...activeTabConceptListFields];
-    },
-    [],
-  );
-
-  return [...topLevelFields, ...fieldsWithinVisibleTabs];
+          return activeTab
+            ? getVisibleConceptListFields(activeTab, values)
+            : [];
+        default:
+          return [field];
+      }
+    })
+    .filter(
+      (field): field is ConceptListField => field.type === "CONCEPT_LIST",
+    );
 }
 
 export const useVisibleConceptListFields = () => {
@@ -105,11 +101,13 @@ export const useAllowExtendedCopying = (
   return otherConceptListFields.some(fieldHasFilledConcept);
 };
 
-export const useFormLabelByType = (formType: string) => {
+export const useFormLabelByType = (formType: string | null) => {
   const availableForms = useSelector<StateT, { [formName: string]: Form }>(
     (state) => selectAvailableForms(state),
   );
   const activeLang = useActiveLang();
+
+  if (!formType) return null;
 
   return availableForms[formType]
     ? availableForms[formType].title[activeLang]

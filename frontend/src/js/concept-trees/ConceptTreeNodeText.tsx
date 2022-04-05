@@ -102,7 +102,7 @@ interface PropsT {
   onClick?: () => void;
 }
 
-export default forwardRef<HTMLDivElement, PropsT>(
+const ConceptTreeNodeText = forwardRef<HTMLDivElement, PropsT>(
   (
     {
       label,
@@ -182,3 +182,5 @@ export default forwardRef<HTMLDivElement, PropsT>(
     </Root>
   ),
 );
+
+export default ConceptTreeNodeText;

@@ -31,6 +31,7 @@ public class DurationSumFilter extends SingleColumnFilter<Range.LongRange> {
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		switch (getColumn().getType()) {
+			// TODO DATE is not supported according to getAcceptedColumnTypes
 			case DATE, DATE_RANGE -> {
 				f.setType(FEFilterType.INTEGER_RANGE);
 				f.setMin(0);

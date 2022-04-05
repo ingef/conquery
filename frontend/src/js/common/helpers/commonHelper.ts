@@ -3,14 +3,6 @@ export const concat = (arr: []) => arr.reduce((a, b) => a.concat(b), []);
 export const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
   fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);
 
-export const objectWithoutKey = (key: string) => (obj: Object) => {
-  if (!obj.hasOwnProperty(key)) return obj;
-
-  const { [key]: deleted, ...rest } = obj;
-
-  return rest;
-};
-
 export const isEmpty = (variable: any) => {
   return (
     typeof variable === "undefined" ||
@@ -63,20 +55,3 @@ export const toUpperCaseUnderscore = (str: string) => {
 
 export const isObject = (item: any) =>
   item && typeof item === "object" && !Array.isArray(item);
-
-/**
- * pass in your object structure as array elements
- * user = {
- *  name: 'Peter Lustig',
- *  address: {
- *    street: 'Am Loewenzahn 1'
- *  }
- * }
- * e.g.: const name = getNestedObject(user, ['address', 'street']);
- */
-export const getNestedObject = (nestedObj, pathArr) => {
-  return pathArr.reduce(
-    (obj, key) => (obj && obj[key] !== "undefined" ? obj[key] : undefined),
-    nestedObj,
-  );
-};

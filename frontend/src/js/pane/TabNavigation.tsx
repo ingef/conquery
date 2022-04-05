@@ -5,7 +5,6 @@ import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
-  margin-bottom: 8px;
   border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
   padding: 0 20px;
   background-color: white;
@@ -60,11 +59,12 @@ interface PropsT {
   onClickTab: (tab: string) => void;
   activeTab: string | null;
   tabs: TabNavigationTab[];
+  dataTestId: string;
 }
 
-const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab }) => {
+const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab, dataTestId }) => {
   return (
-    <Root>
+    <Root data-test-id={dataTestId}>
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
           <SxWithTooltip text={tooltip} lazy key={key}>

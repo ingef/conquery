@@ -2,32 +2,32 @@ import { getType } from "typesafe-actions";
 
 import { Action } from "../../app/actions";
 
-import { clearQueriesSearch, setQueriesSearch } from "./actions";
+import { clearSearch, setSearch } from "./actions";
 
-export interface QueriesSearchStateT {
+export interface ProjectItemsSearchStateT {
   searchTerm: string | null;
   result: Record<string, number> | null;
   words: string[];
 }
 
-const initialState: QueriesSearchStateT = {
+const initialState: ProjectItemsSearchStateT = {
   searchTerm: null,
   result: null,
   words: [],
 };
 
-const previousQueriesSearch = (
-  state: QueriesSearchStateT = initialState,
+const projectItemsSearch = (
+  state: ProjectItemsSearchStateT = initialState,
   action: Action,
-): QueriesSearchStateT => {
+): ProjectItemsSearchStateT => {
   switch (action.type) {
-    case getType(setQueriesSearch):
+    case getType(setSearch):
       return { ...state, ...action.payload };
-    case getType(clearQueriesSearch):
+    case getType(clearSearch):
       return initialState;
     default:
       return state;
   }
 };
 
-export default previousQueriesSearch;
+export default projectItemsSearch;

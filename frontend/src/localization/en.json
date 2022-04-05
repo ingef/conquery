@@ -7,8 +7,7 @@
   },
   "leftPane": {
     "conceptTrees": "Concepts",
-    "previousQueries": "Queries",
-    "formConfigs": "Forms"
+    "previousQueries": "Queries and Forms"
   },
   "rightPane": {
     "queryEditor": "Editor",
@@ -58,7 +57,9 @@
     "hasSecondaryId": "Analysis layer active",
     "removeNode": "Remove node",
     "removeColumn": "Remove column",
-    "clear": "Clear the Editor"
+    "clear": "Clear the Editor",
+    "hasDefaultSettings": "Uses default settings",
+    "hasNonDefaultSettings": "Has changed settings"
   },
   "expandPreviousQueryModal": {
     "headline": "Are you sure to expand the query?",
@@ -87,7 +88,9 @@
     "conceptNodeTables": "Input Tables",
     "properties": "Common properties",
     "reset": "Reset",
-    "resetSettings": "Reset all settings",
+    "resetSettings": "Reset to default settings",
+    "clearAllSettings": "Clear all fields",
+    "clearSettings": "Clear fields",
     "excludeTimestamps": "Exclude from time calculation",
     "excludingTimestamps": "Excluded from time calculation",
     "excludeFromSecondaryId": "Exclude from analysis layer",
@@ -120,8 +123,10 @@
     "description": "All queries from the folder {{folder}} will be removed from the folder, but will remain stored."
   },
   "sharePreviousQueryModal": {
-    "headline": "Sharing query: ",
+    "headline": "Edit sharing",
     "groupsLabel": "Groups to share the query with",
+    "groupsLabelQuery": "Groups to share the query with",
+    "groupsLabelConfig": "Groups to share the form config with",
     "unshare": "Revoke sharing"
   },
   "common": {
@@ -160,10 +165,10 @@
   "tooltip": {
     "headline": "Info",
     "placeholder": "More information on a concept ...",
-    "entitiesFound": "entity",
-    "entitiesFound_plural": "entities",
-    "entriesFound": "entry",
-    "entriesFound_plural": "entries",
+    "entitiesFound_one": "entity",
+    "entitiesFound_other": "entities",
+    "entriesFound_one": "entry",
+    "entriesFound_other": "entries",
     "date": {
       "daterange": "Date range",
       "from": "From",
@@ -196,17 +201,18 @@
     "dndPlaceholder": "Choose or drop file ...",
     "openFileDialog": "Select file",
     "insertAll": "Insert all",
-    "options": "1 Option",
-    "options_plural": "{{count}} Options",
+    "options_one": "1 Option",
+    "options_other": "{{count}} Options",
+    "ofTotal": " of {{count}}",
     "tagPlaceholder": "Folder ...",
     "createTag": "Create folder: {{label}}"
   },
   "previousQueries": {
-    "loading": "Loading queries",
+    "loading": "Loading queries and forms",
     "error": "Could not load queries",
     "results": "results",
-    "noQueriesFound": "No queries found",
-    "searchPlaceholder": "Search queries ..."
+    "noQueriesFound": "No queries and forms found",
+    "searchPlaceholder": "Search queries and forms ..."
   },
   "previousQuery": {
     "notExecuted": "Not executed yet",
@@ -218,11 +224,15 @@
     "deleteError": "Could not delete query",
     "editFolders": "Edit folders"
   },
-  "previousQueriesFilter": {
+  "projectItemsFilter": {
     "all": "All",
     "own": "Own",
     "shared": "Shared",
     "system": "SYSTEM"
+  },
+  "projectItemsTypeFilter": {
+    "queries": "Queries only",
+    "configs": "Forms only"
   },
   "formConfigsFilter": {
     "activeForm": "Active form"
@@ -308,13 +318,13 @@
     "upload": "Upload",
     "uploadAgain": "Upload again",
     "uploadFailed": "Could not upload file. Please check the file format and the network connection.",
-    "uploadSucceeded": "All lines (1 line) were successfully uploaded.",
-    "uploadSucceeded_plural": "All {{count}} lines were successfully uploaded.",
+    "uploadSucceeded_one": "All lines (1 line) were successfully uploaded.",
+    "uploadSucceeded_other": "All {{count}} lines were successfully uploaded.",
     "formatInfo": {
       "text": "File should contain one result per row, separated by ; (semicolon)"
     },
-    "downloadUnresolved": "Download unresolved line (CSV)",
-    "downloadUnresolved_plural": "Download {{count}} unresolved lines (CSV)"
+    "downloadUnresolved_one": "Download unresolved line (CSV)",
+    "downloadUnresolved_other": "Download {{count}} unresolved lines (CSV)"
   },
   "csvColumnPicker": {
     "loading": "Reading data ...",
@@ -329,12 +339,12 @@
     "extra": "Additional Column",
     "ignore": "IGNORE",
     "partialSuccess": "Upload partially successful.",
-    "resolved": "1 line resolved.",
-    "resolved_plural": "{{count}} lines resolved.",
-    "unreadableDate": "Couldn't read the date for the following line",
-    "unreadableDate_plural": "Couldn't read the date for the following {{count}} lines",
-    "unresolvedId": "Couldn't resolve ID for the following line",
-    "unresolvedId_plural": "Couldn't resolve ID for the following {{count}} lines"
+    "resolved_one": "1 line resolved.",
+    "resolved_other": "{{count}} lines resolved.",
+    "unreadableDate_one": "Couldn't read the date for the following line",
+    "unreadableDate_other": "Couldn't read the date for the following {{count}} lines",
+    "unresolvedId_one": "Couldn't resolve ID for the following line",
+    "unresolvedId_other": "Couldn't resolve ID for the following {{count}} lines"
   },
   "uploadConceptListModal": {
     "headline": "Upload concepts",
@@ -342,10 +352,10 @@
     "selectConceptRootNode": "Choose a concept tree root",
     "insertNode": "Insert now",
     "result": "Result",
-    "resolvedCodes": "1 value resolved.",
-    "resolvedCodes_plural": "{{count}} values resolved.",
-    "unknownCodes": "1 value not resolved",
-    "unknownCodes_plural": "{{count}} values not resolved",
+    "resolvedCodes_one": "1 value resolved.",
+    "resolvedCodes_other": "{{count}} values resolved.",
+    "unknownCodes_one": "1 value not resolved",
+    "unknownCodes_other": "{{count}} values not resolved",
     "error": "An error occurred when resolving the values.",
     "nothingResolved": "No concept resolved."
   },
@@ -410,15 +420,21 @@
   "folders": {
     "headline": "Folders",
     "noFolders": "none",
-    "allQueries": "All"
+    "allQueries": "All",
+    "add": "New folder",
+    "addShort": "New"
+  },
+  "addFolderModal": {
+    "headline": "Add folder",
+    "description": "The folder is created temporarily at first. Once there's a query within the folder, the folder will be saved permanently.",
+    "inputLabel": "Folder name"
   },
   "editPreviousQueryFoldersModal": {
     "headline": "Edit folders"
   },
   "help": {
     "tabConceptTrees": "Select concepts from concepts trees and use them in the Editor and Form Editor",
-    "tabPreviousQueries": "Select previous queries and use them in the Editor, Timebased Editor and Form Editor",
-    "tabFormConfigs": "Select the stored forms and use them in the Form Editor",
+    "tabPreviousQueries": "Select previous queries and use them in the Editor, Timebased Editor and Form Editor. Select stored forms and use them in the Form Editor.",
     "tabQueryEditor": "In the Editor, a query may be built and sent.",
     "tabTimebasedEditor": "In the Timebased Editor, a time-based query may be built and sent. That means, previous queries may be combined using time based relations, such as 'before' and 'after'.",
     "tabFormEditor": "The Form Editor allows for further analysis and statistics of previous queries.",

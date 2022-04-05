@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import type { DatasetIdT } from "../api/types";
+import type { QueryT } from "../api/types";
 import { getUniqueFileRows } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { TreesT } from "../concept-trees/reducer";
+import { useDatasetId } from "../dataset/selectors";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import { PreviousQueryIdT } from "../previous-queries/list/reducer";
 import QueryGroupModal from "../query-group-modal/QueryGroupModal";
@@ -31,12 +32,7 @@ import {
   toggleSecondaryIdExclude,
 } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
-import type {
-  DragItemConceptTreeNode,
-  DragItemNode,
-  DragItemQuery,
-  PreviousQueryQueryNodeType,
-} from "./types";
+import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
 const Container = styled("div")`
   height: 100%;
@@ -75,9 +71,7 @@ const Query = ({
   setEditedNode: (node: { andIdx: number; orIdx: number } | null) => void;
 }) => {
   const { t } = useTranslation();
-  const datasetId = useSelector<StateT, DatasetIdT | null>(
-    (state) => state.datasets.selectedDatasetId,
-  );
+  const datasetId = useDatasetId();
   const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query,
   );
@@ -91,12 +85,11 @@ const Query = ({
   );
 
   const dispatch = useDispatch();
-  const loadQuery = useLoadQuery();
+  const { loadQuery } = useLoadQuery();
   const expandPreviousQuery = useExpandPreviousQuery();
 
-  const onDropAndNode = (
-    item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
-  ) => dispatch(dropAndNode({ item }));
+  const onDropAndNode = (item: DragItemQuery | DragItemConceptTreeNode) =>
+    dispatch(dropAndNode({ item }));
   const onDropConceptListFile = async (file: File, andIdx: number | null) => {
     // Need to wait until file is processed.
     // Because if file is empty, modal would close automatically
@@ -107,7 +100,7 @@ const Query = ({
     return dispatch(openQueryUploadConceptListModal({ andIdx }));
   };
   const onDropOrNode = (
-    item: DragItemNode | DragItemQuery | DragItemConceptTreeNode,
+    item: DragItemQuery | DragItemConceptTreeNode,
     andIdx: number,
   ) => dispatch(dropOrNode({ item, andIdx }));
   const onDeleteNode = (andIdx: number, orIdx: number) =>
@@ -120,13 +113,10 @@ const Query = ({
   const onToggleSecondaryIdExclude = (andIdx: number, orIdx: number) =>
     dispatch(toggleSecondaryIdExclude({ andIdx, orIdx }));
   const onLoadQuery = (queryId: PreviousQueryIdT) => {
-    if (datasetId) {
-      loadQuery(datasetId, queryId);
-    }
+    loadQuery(queryId);
   };
 
-  const [queryToExpand, setQueryToExpand] =
-    useState<PreviousQueryQueryNodeType | null>(null);
+  const [queryToExpand, setQueryToExpand] = useState<QueryT | null>(null);
 
   const [queryGroupModalAndIx, setQueryGroupModalAndIdx] = useState<
     number | null
@@ -136,9 +126,9 @@ const Query = ({
     return null;
   }
 
-  const onExpandPreviousQuery = (q: PreviousQueryQueryNodeType) => {
+  const onExpandPreviousQuery = (q: QueryT) => {
     if (isQueryWithSingleElement) {
-      expandPreviousQuery(datasetId, rootConcepts, q);
+      expandPreviousQuery(rootConcepts, q);
     } else {
       setQueryToExpand(q);
     }
@@ -156,10 +146,8 @@ const Query = ({
         <ExpandPreviousQueryModal
           onClose={() => setQueryToExpand(null)}
           onAccept={() => {
-            if (datasetId) {
-              expandPreviousQuery(datasetId, rootConcepts, queryToExpand);
-              setQueryToExpand(null);
-            }
+            expandPreviousQuery(rootConcepts, queryToExpand);
+            setQueryToExpand(null);
           }}
         />
       )}

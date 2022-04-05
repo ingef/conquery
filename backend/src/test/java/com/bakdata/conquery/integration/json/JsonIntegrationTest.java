@@ -36,8 +36,8 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 	}
 
 	@Override
-	public void overrideConfig(final ConqueryConfig conf, final File workDir) {
-		testSpec.overrideConfig(conf);
+	public ConqueryConfig overrideConfig(final ConqueryConfig conf, final File workDir) {
+		return testSpec.overrideConfig(conf);
 	}
 
 	@Override

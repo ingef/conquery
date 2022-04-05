@@ -1,15 +1,20 @@
+import { StateT } from "app-types";
+import { useSelector } from "react-redux";
+
 import type { ConceptIdT } from "../api/types";
 
-import type { SearchT } from "./reducer";
+import type { SearchT, TreesT } from "./reducer";
 
-const isChildWithinResults = (children: [], search: SearchT) => {
-  return children.some((child) => search.result.hasOwnProperty(child));
+const isChildWithinResults = (children: ConceptIdT[], search: SearchT) => {
+  return children.some(
+    (child) => !!search.result && search.result.hasOwnProperty(child),
+  );
 };
 
 export const isNodeInSearchResult = (
   id: ConceptIdT,
-  children?: [],
   search: SearchT,
+  children?: ConceptIdT[],
 ) => {
   if (!search.result) return true;
 
@@ -21,9 +26,10 @@ export const isNodeInSearchResult = (
   return false;
 };
 
-export const getAreTreesAvailable = (state) => {
-  return (
-    !!state.conceptTrees.trees &&
-    Object.keys(state.conceptTrees.trees).length > 0
+export const useAreTreesAvailable = () => {
+  const trees = useSelector<StateT, TreesT>(
+    (state) => state.conceptTrees.trees,
   );
+
+  return !!trees && Object.keys(trees).length > 0;
 };

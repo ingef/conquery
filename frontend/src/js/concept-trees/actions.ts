@@ -1,36 +1,37 @@
 import { useDispatch } from "react-redux";
+import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
 import { useGetConcepts, useGetConcept } from "../api/api";
-import type { DatasetIdT, ConceptIdT } from "../api/types";
-import { defaultSuccess, defaultError, ErrorObject } from "../common/actions";
+import type {
+  DatasetIdT,
+  ConceptIdT,
+  GetConceptsResponseT,
+  GetConceptResponseT,
+} from "../api/types";
+import { ErrorObject, successPayload, errorPayload } from "../common/actions";
 import { isEmpty } from "../common/helpers";
 import { Sema } from "../common/helpers/rateLimitHelper";
 import { getDatasetId } from "../dataset/globalDatasetHelper";
 
-import {
-  LOAD_TREES_START,
-  LOAD_TREES_SUCCESS,
-  LOAD_TREES_ERROR,
-  LOAD_TREE_START,
-  LOAD_TREE_SUCCESS,
-  LOAD_TREE_ERROR,
-  CLEAR_TREES,
-  SEARCH_TREES_START,
-  SEARCH_TREES_SUCCESS,
-  SEARCH_TREES_ERROR,
-  CLEAR_SEARCH_QUERY,
-  TOGGLE_SHOW_MISMATCHES,
-} from "./actionTypes";
 import { resetAllTrees, globalSearch } from "./globalTreeStoreHelper";
 import type { TreesT } from "./reducer";
 
-export const clearTrees = () => ({ type: CLEAR_TREES });
+export type ConceptTreeActions = ActionType<
+  | typeof clearTrees
+  | typeof loadTrees
+  | typeof loadTree
+  | typeof clearSearchQuery
+  | typeof toggleShowMismatches
+  | typeof searchTrees
+>;
 
-export const loadTreesStart = () => ({ type: LOAD_TREES_START });
-export const loadTreesError = (err: ErrorObject) =>
-  defaultError(LOAD_TREES_ERROR, err);
-export const loadTreesSuccess = (res: any) =>
-  defaultSuccess(LOAD_TREES_SUCCESS, res);
+export const clearTrees = createAction("concept-trees/CLEAR_TREES")();
+
+export const loadTrees = createAsyncAction(
+  "concept-trees/LOAD_TREES_START",
+  "concept-trees/LOAD_TREES_SUCCESS",
+  "concept-trees/LOAD_TREES_ERROR",
+)<void, { data: GetConceptsResponseT }, ErrorObject>();
 
 export const useLoadTrees = () => {
   const dispatch = useDispatch();
@@ -42,12 +43,12 @@ export const useLoadTrees = () => {
     resetAllTrees();
 
     dispatch(clearTrees());
-    dispatch(loadTreesStart());
+    dispatch(loadTrees.request());
 
     try {
       const result = await getConcepts(datasetId);
 
-      dispatch(loadTreesSuccess(result));
+      dispatch(loadTrees.success(successPayload(result, {})));
 
       if (!result.concepts) return;
 
@@ -57,19 +58,20 @@ export const useLoadTrees = () => {
         }
       }
     } catch (e) {
-      dispatch(loadTreesError(e));
+      dispatch(loadTrees.failure(errorPayload(e as Error, {})));
     }
   };
 };
 
-export const loadTreeStart = (treeId: ConceptIdT) => ({
-  type: LOAD_TREE_START,
-  payload: { treeId },
-});
-export const loadTreeError = (treeId: ConceptIdT, err: any) =>
-  defaultError(LOAD_TREE_ERROR, err, { treeId });
-export const loadTreeSuccess = (treeId: ConceptIdT, res: any) =>
-  defaultSuccess(LOAD_TREE_SUCCESS, res, { treeId });
+export const loadTree = createAsyncAction(
+  "concept-trees/LOAD_TREE_START",
+  "concept-trees/LOAD_TREE_SUCCESS",
+  "concept-trees/LOAD_TREE_ERROR",
+)<
+  { treeId: ConceptIdT },
+  { data: GetConceptResponseT; treeId: ConceptIdT },
+  ErrorObject & { treeId: ConceptIdT }
+>();
 
 const TREES_TO_LOAD_IN_PARALLEL = 5;
 
@@ -89,49 +91,52 @@ export const useLoadTree = () => {
       return;
     }
 
-    dispatch(loadTreeStart(treeId));
+    dispatch(loadTree.request({ treeId }));
 
     try {
       const result = await getConcept(datasetId, treeId);
 
       semaphore.release();
-      dispatch(loadTreeSuccess(treeId, result));
+      dispatch(loadTree.success(successPayload(result, { treeId })));
     } catch (e) {
       semaphore.release();
-      dispatch(loadTreeError(treeId, e));
+      dispatch(loadTree.failure(errorPayload(e as Error, { treeId })));
     }
   };
 };
 
-export const searchTreesStart = (query: string) => ({
-  type: SEARCH_TREES_START,
-  payload: { query },
-});
-export const searchTreesSuccess = (query: string, result: Object) => ({
-  type: SEARCH_TREES_SUCCESS,
-  payload: { query, result },
-});
-export const searchTreesError = (query: string, err: any) =>
-  defaultError(SEARCH_TREES_ERROR, err, { query });
+export const searchTrees = createAsyncAction(
+  "concept-trees/SEARCH_TREES_START",
+  "concept-trees/SEARCH_TREES_SUCCESS",
+  "concept-trees/SEARCH_TREES_ERROR",
+)<
+  { query: string },
+  { query: string; result: Record<ConceptIdT, number> },
+  ErrorObject
+>();
 
 export const useSearchTrees = () => {
   const dispatch = useDispatch();
 
   return async (trees: TreesT, query: string) => {
-    dispatch(searchTreesStart(query));
+    dispatch(searchTrees.request({ query }));
 
     if (isEmpty(query)) return;
 
     try {
       const result = await globalSearch(trees, query);
 
-      dispatch(searchTreesSuccess(query, result));
+      dispatch(searchTrees.success({ query, result }));
     } catch (e) {
-      dispatch(searchTreesError(query, e));
+      dispatch(searchTrees.failure(errorPayload(e as Error, { query })));
     }
   };
 };
 
-export const clearSearchQuery = () => ({ type: CLEAR_SEARCH_QUERY });
+export const clearSearchQuery = createAction(
+  "concept-trees/CLEAR_SEARCH_QUERY",
+)();
 
-export const toggleShowMismatches = () => ({ type: TOGGLE_SHOW_MISMATCHES });
+export const toggleShowMismatches = createAction(
+  "concept-trees/TOGGLE_SHOW_MISMATCHES",
+)();

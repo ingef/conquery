@@ -55,6 +55,7 @@ export const List = styled("div")<{ small?: boolean }>`
       : "300px"}; /* remove this once we use usePopper / portals for this */
   overflow-y: auto;
   --webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 `;
 
 export const Input = styled("input")`

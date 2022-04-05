@@ -48,6 +48,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	@Getter
 	@JsonIgnore
 	private final transient ConcurrentMap<SocketAddress, ShardNodeInformation> shardNodes = new ConcurrentHashMap<>();
+
 	@Getter @Setter @JsonIgnore
 	private transient MetaStorage metaStorage;
 

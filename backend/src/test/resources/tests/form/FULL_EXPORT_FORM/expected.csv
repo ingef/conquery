@@ -1,4 +1,4 @@
-result,dates,secondary,table - column,vers_stamm - date,vers_stamm - date_end,vers_stamm - geburtsdatum,vers_stamm - geschlecht
+result,dates,secondary,table column,vers_stamm date,vers_stamm date_end,vers_stamm geburtsdatum,vers_stamm geschlecht
 1,{2012-03-01/2012-03-01},1,A,,,,
 1,{2012-03-02/2012-03-02},1,A,,,,
 1,{2012-03-04/2012-03-04},2,A,,,,

@@ -9,9 +9,12 @@ import com.bakdata.conquery.io.jackson.serializer.BitSetSerializer;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -20,8 +23,10 @@ import lombok.ToString;
 @CPSType(id = "BOOLEANS", base = ColumnStore.class)
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class BitSetStore implements BooleanStore {
 
+	//TODO now that this class is in use, consider using RoaringBitmaps
 	@JsonSerialize(using = BitSetSerializer.class)
 	@JsonDeserialize(using = BitSetDeserializer.class)
 	private final BitSet values;
@@ -30,20 +35,14 @@ public class BitSetStore implements BooleanStore {
 	@JsonDeserialize(using = BitSetDeserializer.class)
 	private final BitSet nullBits;
 
-	@JsonCreator
-	public BitSetStore(BitSet values, BitSet nullBits) {
-		this.values = values;
-		this.nullBits = nullBits;
-	}
+	@ToString.Include
+	@Getter(onMethod_ = @JsonIgnore(value = false))
+	private final int lines;
 
 	public static BitSetStore create(int size) {
-		return new BitSetStore(new BitSet(size), new BitSet(size));
+		return new BitSetStore(new BitSet(size), new BitSet(size), size);
 	}
 
-	@Override
-	public int getLines() {
-		return values.length();
-	}
 
 	@Override
 	public long estimateEventBits() {
@@ -52,9 +51,11 @@ public class BitSetStore implements BooleanStore {
 
 	@Override
 	public void setBoolean(int event, boolean value) {
+		nullBits.set(event, true);
 		values.set(event, value);
 	}
 
+	@Override
 	public BitSetStore select(int[] starts, int[] lengths) {
 		int length = Arrays.stream(lengths).sum();
 
@@ -65,19 +66,20 @@ public class BitSetStore implements BooleanStore {
 
 		for (int index = 0; index < starts.length; index++) {
 			for (int bit = 0; bit < lengths[index]; bit++) {
-				out.set(pos + bit, getValues().get(starts[index] + bit));
-				outNulls.set(pos + bit, getNullBits().get(starts[index] + bit));
+
+				out.set(pos + bit, getBoolean(starts[index] + bit));
+				outNulls.set(pos + bit, !has(starts[index] + bit));
 			}
 			pos += lengths[index];
 		}
 
-		return new BitSetStore(out, outNulls);
+		return new BitSetStore(out, outNulls, length);
 	}
 
 
 	@Override
 	public boolean has(int event) {
-		return nullBits.get(event);
+		return !safeGetFromStore(event, nullBits, getLines());
 	}
 
 	@Override
@@ -87,6 +89,28 @@ public class BitSetStore implements BooleanStore {
 
 	@Override
 	public boolean getBoolean(int event) {
-		return values.get(event);
+		return safeGetFromStore(event, values, getLines());
+	}
+
+	private static boolean safeGetFromStore(int event, BitSet bits, int lines) {
+		if (event >= lines) {
+			throw new IllegalArgumentException(String.format("Trying to access line %d beyond %d lines", event, lines));
+		}
+
+		// Dangling false causes issues
+		if (event + 1 > bits.length()) {
+			return false;
+		}
+		return bits.get(event);
+	}
+
+	@ValidationMethod(message = "Values are longer than actual lines.")
+	public boolean lengthsMatchValues() {
+		return values.length() < getLines();
+	}
+
+	@ValidationMethod(message = "NullBits are longer than actual lines.")
+	public boolean lengthsMatchNulls() {
+		return nullBits.length() < getLines();
 	}
 }

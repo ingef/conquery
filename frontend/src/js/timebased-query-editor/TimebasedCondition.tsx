@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import { isEmpty } from "../common/helpers";
+import type { DragItemQuery } from "../standard-query-editor/types";
 import VerticalToggleButton from "../ui-components/VerticalToggleButton";
 
 import TimebasedConditionDayRange from "./TimebasedConditionDayRange";
@@ -76,7 +77,7 @@ type PropsType = {
   onRemoveTimebasedNode: (idx: number, moved: boolean) => void;
   onDropTimebasedNode: (
     resultIdx: number,
-    node: TimebasedResultType,
+    node: TimebasedResultType | DragItemQuery,
     moved: boolean,
   ) => void;
   onSetTimebasedNodeTimestamp: (idx: number, timestamp: string) => void;
@@ -129,9 +130,10 @@ const TimebasedCondition = ({
       />
     ) : (
       <TimebasedQueryEditorDropzone
-        onDropNode={(node: TimebasedResultType, moved: boolean) =>
-          onDropTimebasedNode(idx, node, moved)
-        }
+        onDropNode={(
+          node: TimebasedResultType | DragItemQuery,
+          moved: boolean,
+        ) => onDropTimebasedNode(idx, node, moved)}
       />
     );
   };

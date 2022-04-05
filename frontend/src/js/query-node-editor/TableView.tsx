@@ -6,6 +6,7 @@ import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
   CurrencyConfigT,
   DatasetIdT,
+  PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
@@ -37,7 +38,7 @@ interface PropsT {
 
   onShowDescription: (filterIdx: number) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
-  onSetDateColumn: (tableIdx: number, dateColumnValue: string | null) => void;
+  onSetDateColumn: (tableIdx: number, dateColumnValue: string) => void;
   onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
   onSwitchFilterMode: (
     tableIdx: number,
@@ -48,7 +49,8 @@ interface PropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-  ) => Promise<void>;
+    { returnOnly }?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
 }
 
 const TableView: FC<PropsT> = ({
@@ -123,7 +125,14 @@ const TableView: FC<PropsT> = ({
             onSwitchFilterMode={(filterIdx, mode) =>
               onSwitchFilterMode(tableIdx, filterIdx, mode)
             }
-            onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
+            onLoadFilterSuggestions={(
+              filterIdx,
+              filterId,
+              prefix,
+              page,
+              pageSize,
+              config,
+            ) =>
               onLoadFilterSuggestions(
                 {
                   datasetId: datasetId,
@@ -131,11 +140,12 @@ const TableView: FC<PropsT> = ({
                   tableId: table.id,
                   filterId,
                   prefix,
-                  page: 0,
-                  pageSize: 200,
+                  page,
+                  pageSize,
                 },
                 tableIdx,
                 filterIdx,
+                config,
               )
             }
             onShowDescription={onShowDescription}

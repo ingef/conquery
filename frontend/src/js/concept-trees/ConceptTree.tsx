@@ -10,19 +10,6 @@ import ConceptTreeNode from "./ConceptTreeNode";
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import type { SearchT } from "./reducer";
 
-interface PropsT {
-  id: ConceptIdT;
-  tree: ConceptT | null;
-  treeId: ConceptIdT;
-  label: string;
-  description: string | null;
-  depth: number;
-  loading: boolean;
-  error: string | null;
-  search?: SearchT;
-  onLoadTree: (treeId: ConceptIdT) => void;
-}
-
 const LoadingTree = styled("p")`
   font-size: ${({ theme }) => theme.font.sm};
   margin: 2px 0;
@@ -44,14 +31,24 @@ const Spinner = styled("span")`
   margin-right: 6px;
 `;
 
+interface PropsT {
+  tree: ConceptT | null;
+  conceptId: ConceptIdT;
+  label: string;
+  depth: number;
+  loading?: boolean;
+  error?: string;
+  search: SearchT;
+  onLoadTree: (conceptId: ConceptIdT) => void;
+}
+
 const ConceptTree: FC<PropsT> = ({
-  id,
   depth,
   loading,
   label,
   error,
   tree,
-  treeId,
+  conceptId,
   search,
   onLoadTree,
 }) => {
@@ -69,15 +66,16 @@ const ConceptTree: FC<PropsT> = ({
   else if (error)
     return (
       <ErrorMessage style={{ paddingLeft: 12 + depth * 15 }}>
-        <ReloadButton red icon="redo" onClick={() => onLoadTree(treeId)} />
+        <ReloadButton red icon="redo" onClick={() => onLoadTree(conceptId)} />
         {t("conceptTreeList.error", { tree: label })}
       </ErrorMessage>
     );
   else if (tree)
     return (
       <ConceptTreeNode
-        id={id}
-        data={{ ...tree, tree: treeId }}
+        conceptId={conceptId}
+        rootConceptId={conceptId}
+        data={tree}
         depth={depth}
         search={search}
       />

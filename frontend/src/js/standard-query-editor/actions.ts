@@ -9,22 +9,19 @@ import {
 import type {
   AndQueryT,
   ConceptIdT,
-  DatasetIdT,
   QueryT,
   QueryNodeT,
   PostFilterSuggestionsResponseT,
+  SelectOptionT,
 } from "../api/types";
 import { successPayload } from "../common/actions";
 import type { TreesT } from "../concept-trees/reducer";
+import type { NodeResetConfig } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
 
 import { StandardQueryStateT } from "./queryReducer";
-import type {
-  DragItemConceptTreeNode,
-  DragItemNode,
-  DragItemQuery,
-} from "./types";
+import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
 export type StandardQueryEditorActions = ActionType<
   | typeof resetTable
@@ -40,7 +37,7 @@ export type StandardQueryEditorActions = ActionType<
   | typeof toggleExcludeGroup
   | typeof toggleSecondaryIdExclude
   | typeof toggleTimestamps
-  | typeof resetAllFilters
+  | typeof resetAllSettings
   | typeof removeConceptFromNode
   | typeof addConceptToNode
   | typeof switchFilterMode
@@ -53,11 +50,11 @@ export type StandardQueryEditorActions = ActionType<
 >;
 
 export const dropAndNode = createAction("query-editor/DROP_AND_NODE")<{
-  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode;
+  item: DragItemConceptTreeNode | DragItemQuery;
 }>();
 
 export const dropOrNode = createAction("query-editor/DROP_OR_NODE")<{
-  item: DragItemConceptTreeNode | DragItemQuery | DragItemNode;
+  item: DragItemConceptTreeNode | DragItemQuery;
   andIdx: number;
 }>();
 
@@ -117,10 +114,10 @@ const isAndQuery = (query: QueryT): query is AndQueryT => {
 */
 export const useExpandPreviousQuery = () => {
   const dispatch = useDispatch();
-  const loadQuery = useLoadQuery();
+  const { loadQuery } = useLoadQuery();
   const { t } = useTranslation();
 
-  return async (datasetId: DatasetIdT, rootConcepts: TreesT, query: QueryT) => {
+  return async (rootConcepts: TreesT, query: QueryT) => {
     if (!isAndQuery(query)) {
       throw new Error("Cant expand query, because root is not AND");
     }
@@ -136,7 +133,7 @@ export const useExpandPreviousQuery = () => {
     );
 
     await Promise.all(
-      nestedPreviousQueryIds.map((queryId) => loadQuery(datasetId, queryId)),
+      nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),
     );
 
     dispatch(
@@ -184,29 +181,33 @@ export const setTableSelects = createAction("query-editor/SET_TABLE_SELECTS")<{
   andIdx: number;
   orIdx: number;
   tableIdx: number;
-  value: unknown;
+  value: SelectOptionT[];
 }>();
 export const setSelects = createAction("query-editor/SET_SELECTS")<{
   andIdx: number;
   orIdx: number;
-  value: unknown;
+  value: SelectOptionT[];
 }>();
 export const setDateColumn = createAction("query-editor/SET_DATE_COLUMN")<{
   andIdx: number;
   orIdx: number;
   tableIdx: number;
-  value: unknown;
+  value: string;
 }>();
 
-export const resetAllFilters = createAction("query-editor/RESET_ALL_FILTERS")<{
+export const resetAllSettings = createAction(
+  "query-editor/RESET_ALL_SETTINGS",
+)<{
   andIdx: number;
   orIdx: number;
+  config: NodeResetConfig;
 }>();
 
 export const resetTable = createAction("query-editor/RESET_TABLE")<{
   andIdx: number;
   orIdx: number;
   tableIdx: number;
+  config: NodeResetConfig;
 }>();
 
 export const switchFilterMode = createAction(
@@ -233,12 +234,13 @@ interface FilterContext {
   orIdx: number;
   tableIdx: number;
   filterIdx: number;
+  page: number;
 }
 export const loadFilterSuggestionsSuccess = createAction(
   "query-editor/LOAD_FILTER_SUGGESTIONS_SUCCESS",
 )<
   FilterContext & {
-    data: PostFilterSuggestionsResponseT["values"];
+    data: PostFilterSuggestionsResponseT;
   }
 >();
 
@@ -252,16 +254,21 @@ export const useLoadFilterSuggestions = (
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
+    { returnOnly }: { returnOnly?: boolean } = {},
   ) => {
-    if (!editedNode) return;
+    if (!editedNode) return null;
 
-    const context = { ...editedNode, tableIdx, filterIdx };
+    const context = { ...editedNode, tableIdx, filterIdx, page: params.page };
 
     const suggestions = await postPrefixForSuggestions(params);
 
-    dispatch(
-      loadFilterSuggestionsSuccess(successPayload(suggestions.values, context)),
-    );
+    if (!returnOnly) {
+      dispatch(
+        loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
+      );
+    }
+
+    return suggestions;
   };
 };
 

@@ -34,31 +34,37 @@ const Row = styled("div")`
   align-items: center;
 `;
 
+interface WithFileProps<DroppableObject> extends PropsT<DroppableObject> {
+  onDrop: (
+    props: DroppableObject | DragItemFile,
+    monitor: DropTargetMonitor,
+  ) => void;
+  onDropFile: (file: File) => void;
+}
+
+interface WithoutFileProps<DroppableObject> extends PropsT<DroppableObject> {
+  onDrop: (props: DroppableObject, monitor: DropTargetMonitor) => void;
+  onDropFile: undefined;
+}
+
 interface PropsT<DroppableObject> {
   className?: string;
   label?: ReactNode;
   tooltip?: string;
   optional?: boolean;
-  dropzoneChildren: (args: ChildArgs) => ReactNode;
+  dropzoneChildren: (args: ChildArgs<DroppableObject>) => ReactNode;
   items: ReactNode[];
   acceptedDropTypes: string[];
-  onDrop: (
-    props: DroppableObject | DragItemFile,
-    monitor: DropTargetMonitor,
-  ) => void;
-  onDropFile?: (file: File) => void;
   onDelete: (idx: number) => void;
   disallowMultipleColumns?: boolean;
 }
 
 const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
-  props: PropsT<DroppableObject>,
+  props: WithFileProps<DroppableObject> | WithoutFileProps<DroppableObject>,
 ) => {
   // allow at least one column
   const showDropzone =
     (props.items && props.items.length === 0) || !props.disallowMultipleColumns;
-
-  const DropzoneClass = props.onDropFile ? DropzoneWithFileInput : Dropzone;
 
   return (
     <div className={props.className}>
@@ -84,15 +90,23 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
           ))}
         </div>
       )}
-      {showDropzone && (
-        <DropzoneClass
-          acceptedDropTypes={props.acceptedDropTypes}
-          onDrop={props.onDrop}
-          onSelectFile={props.onDropFile!}
-        >
-          {props.dropzoneChildren}
-        </DropzoneClass>
-      )}
+      {showDropzone &&
+        (props.onDropFile ? (
+          <DropzoneWithFileInput
+            acceptedDropTypes={props.acceptedDropTypes}
+            onDrop={props.onDrop}
+            onSelectFile={props.onDropFile}
+          >
+            {props.dropzoneChildren}
+          </DropzoneWithFileInput>
+        ) : (
+          <Dropzone
+            acceptedDropTypes={props.acceptedDropTypes}
+            onDrop={props.onDrop}
+          >
+            {props.dropzoneChildren}
+          </Dropzone>
+        ))}
     </div>
   );
 };

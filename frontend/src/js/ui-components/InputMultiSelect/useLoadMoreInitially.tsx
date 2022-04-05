@@ -7,7 +7,7 @@ export const useLoadMoreInitially = ({
   isOpen,
   optionsLength,
 }: {
-  onLoadMore?: (inputValue: string) => void;
+  onLoadMore?: (inputValue: string, config?: { shouldReset?: boolean }) => void;
   isOpen?: boolean;
   optionsLength?: number;
 }) => {
@@ -16,7 +16,7 @@ export const useLoadMoreInitially = ({
   useEffect(
     function loadInitialOptionsWithEmptySearch() {
       if (!!onLoadMore && optionsLength === 0 && !wasOpen && isOpen) {
-        onLoadMore("");
+        onLoadMore("", { shouldReset: true });
       }
     },
     [wasOpen, isOpen, optionsLength, onLoadMore],

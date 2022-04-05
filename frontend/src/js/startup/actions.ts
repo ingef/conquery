@@ -24,7 +24,7 @@ export const useLoadConfig = () => {
       const result = await getFrontendConfig();
       dispatch(loadConfig.success(successPayload(result, {})));
     } catch (error) {
-      dispatch(loadConfig.failure(errorPayload(error, {})));
+      dispatch(loadConfig.failure(errorPayload(error as Error, {})));
     }
   };
 };

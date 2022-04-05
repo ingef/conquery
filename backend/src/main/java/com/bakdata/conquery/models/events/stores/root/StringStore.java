@@ -35,15 +35,17 @@ public interface StringStore extends Iterable<String>, ColumnStore {
 
 	@JsonIgnore
 	Dictionary getUnderlyingDictionary();
+	@JsonIgnore
+	void setUnderlyingDictionary(Dictionary dictionary);
 
 	@JsonIgnore
 	boolean isDictionaryHolding();
+
 
 
 	/**
 	 * After applying DictionaryMapping a new store might be needed.
 	 */
 	void setIndexStore(IntegerStore newType);
-
 
 }

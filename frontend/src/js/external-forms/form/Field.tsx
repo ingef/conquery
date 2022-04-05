@@ -1,6 +1,5 @@
-import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { memo, ReactNode, useMemo } from "react";
+import { memo, ReactNode } from "react";
 import {
   Control,
   ControllerRenderProps,
@@ -21,12 +20,11 @@ import InputDateRange from "../../ui-components/InputDateRange";
 import InputPlain from "../../ui-components/InputPlain/InputPlain";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
 import ToggleButton from "../../ui-components/ToggleButton";
-import type { FormField, GeneralField } from "../config-types";
+import type { Field as FieldT, GeneralField, Tabs } from "../config-types";
 import { Description } from "../form-components/Description";
 import { Headline } from "../form-components/Headline";
-import FormConceptGroup, {
-  FormConceptGroupT,
-} from "../form-concept-group/FormConceptGroup";
+import FormConceptGroup from "../form-concept-group/FormConceptGroup";
+import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
 import {
   FormQueryDropzone,
   FormMultiQueryDropzone,
@@ -65,7 +63,7 @@ const BOTTOM_MARGIN = 7;
 type Props<T> = T & {
   children: (props: ControllerRenderProps<DynamicFormValues> & T) => ReactNode;
   control: Control<DynamicFormValues>;
-  formField: FormField;
+  formField: FieldT | Tabs;
   defaultValue?: any;
   noContainer?: boolean;
   noLabel?: boolean;
@@ -75,8 +73,7 @@ const FieldContainer = styled("div")<{ noLabel?: boolean }>`
   padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
   background-color: ${({ theme }) => theme.col.bg};
   border-radius: 3px;
-  box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.2);
-  border-left: 5px solid;
+  box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.2);
 `;
 const ConnectedField = <T extends Object>({
   children,
@@ -103,7 +100,7 @@ const ConnectedField = <T extends Object>({
   return noContainer ? (
     <div>{children({ ...field, ...props })}</div>
   ) : (
-    <FieldContainer style={{ borderColor: "#ccc" }} noLabel={noLabel}>
+    <FieldContainer noLabel={noLabel}>
       {children({ ...field, ...props })}
     </FieldContainer>
   );
@@ -117,11 +114,17 @@ const Spacer = styled("div")`
   margin-bottom: ${BOTTOM_MARGIN * 2}px;
 `;
 
+const Group = styled("div")`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+`;
+
 const NestedFields = styled("div")`
   padding: 12px 10px 5px;
-  box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
   background-color: ${({ theme }) => theme.col.bg};
-  border-radius: 3px;
+  border-radius: 5px;
   margin-bottom: ${BOTTOM_MARGIN * 2}px;
 `;
 
@@ -146,9 +149,10 @@ const Field = ({ field, ...commonProps }: PropsT) => {
   const { formType, optional, locale, availableDatasets, setValue, control } =
     commonProps;
   const { t } = useTranslation();
-  const defaultValue = isFormField(field)
-    ? getInitialValue(field, { availableDatasets, activeLang: locale })
-    : null;
+  const defaultValue =
+    isFormField(field) && field.type !== "GROUP"
+      ? getInitialValue(field, { availableDatasets, activeLang: locale })
+      : null;
 
   switch (field.type) {
     case "HEADLINE":
@@ -336,6 +340,39 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           )}
         </ConnectedField>
       );
+    case "GROUP":
+      return (
+        <>
+          {field.label && <Headline>{field.label[locale]}</Headline>}
+          {field.description && (
+            <Description>{field.description[locale]}</Description>
+          )}
+          <Group
+            style={{
+              display: (field.style && field.style.display) || "flex",
+              gap: field.style?.display === "grid" ? "0 12px" : "0 8px",
+              gridTemplateColumns: `repeat(${
+                field.style?.gridColumns || 1
+              }, 1fr)`,
+            }}
+          >
+            {field.fields.map((f, i) => {
+              const key =
+                isFormField(f) && f.type !== "GROUP" ? f.name : f.type + i;
+              const nestedFieldOptional = isOptionalField(f);
+
+              return (
+                <Field
+                  key={key}
+                  field={f}
+                  {...commonProps}
+                  optional={nestedFieldOptional}
+                />
+              );
+            })}
+          </Group>
+        </>
+      );
     case "TABS":
       return (
         <ConnectedField
@@ -365,7 +402,10 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 {tabToShow && tabToShow.fields.length > 0 ? (
                   <NestedFields>
                     {tabToShow.fields.map((f, i) => {
-                      const key = isFormField(f) ? f.name : f.type + i;
+                      const key =
+                        isFormField(f) && f.type !== "GROUP"
+                          ? f.name
+                          : f.type + i;
                       const nestedFieldOptional = isOptionalField(f);
 
                       return (

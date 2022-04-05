@@ -1,10 +1,10 @@
 import { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 
-import type { ConceptT } from "../api/types";
+import type { ConceptIdT, ConceptT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
-import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";
-import { isEmpty } from "../common/helpers";
+import { DNDType } from "../common/constants/dndTypes";
+import { exists } from "../common/helpers/exists";
 import type {
   ConceptQueryNodeType,
   DragItemConceptTreeNode,
@@ -16,26 +16,35 @@ import type { SearchT } from "./reducer";
 
 interface PropsT {
   node: ConceptT;
+  conceptId: ConceptIdT;
   open: boolean;
   depth: number;
   active?: boolean;
   onTextClick?: () => void;
-  createQueryElement: () => ConceptQueryNodeType;
+  createQueryElement?: () => ConceptQueryNodeType;
   search: SearchT;
   isStructFolder?: boolean;
 }
 
-function getResultCount(search, node) {
-  return search.result &&
-    search.result[node.id] > 0 &&
+function getResultCount(
+  search: SearchT,
+  node: ConceptT,
+  conceptId: ConceptIdT,
+) {
+  if (!search.result) {
+    return null;
+  }
+
+  return search.result[conceptId] > 0 &&
     node.children &&
-    node.children.some((child) => search.result[child] > 0)
-    ? search.result[node.id]
+    node.children.some((child) => search.result && search.result[child] > 0)
+    ? search.result[conceptId]
     : null;
 }
 
 const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   node,
+  conceptId,
   depth,
   search,
   active,
@@ -46,21 +55,36 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
-  const red = !isEmpty(node.matchingEntries) && node.matchingEntries === 0;
-  const resultCount = getResultCount(search, node);
+  const red = exists(node.matchingEntries) && node.matchingEntries === 0;
+  const resultCount = getResultCount(search, node, conceptId);
   const hasChildren = !!node.children && node.children.length > 0;
 
   const item: DragItemConceptTreeNode = {
-    height: 0,
-    width: 0,
-    type: CONCEPT_TREE_NODE,
-    ...createQueryElement(),
+    dragContext: {
+      height: 0,
+      width: 0,
+    },
+    type: DNDType.CONCEPT_TREE_NODE,
+    ...(createQueryElement
+      ? createQueryElement() // Should always be defined when draggable => when active === true
+      : {
+          ids: [],
+          tables: [],
+          selects: [],
+          tree: conceptId,
+          label: "",
+          matchingEntities: 0,
+          matchingEntries: 0,
+        }),
   };
   const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
-    item,
-    begin: () => ({
+    type: item.type,
+    item: () => ({
       ...item,
-      ...getWidthAndHeight(ref),
+      dragContext: {
+        ...item.dragContext,
+        ...getWidthAndHeight(ref),
+      },
     }),
   });
 

@@ -42,7 +42,7 @@ You can also adjust the docker run command, to pass env variables at runtime.
 Example:
 
 ```bash
-docker run -d -e REACT_APP_API_URL=https://some-other-conquery-api.com -p 8000:8000 -name frontend frontend
+docker run -d -e REACT_APP_API_URL=https://some-other-conquery-api.com -p 8000:80 -name frontend frontend
 ```
 
 **Windows**
@@ -80,6 +80,17 @@ When queried for login:
 
 This is documented in [the mock-API](https://github.com/bakdata/conquery/blob/develop/frontend/mock-api/index.js).
 
+**Code formatting**  [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
+
+The frontend TypeScript code is formatted using `prettier`.
+
+We recommend you configure your editor to auto-format on save. If you're using VS-Code, for example, there's a plugin: [Prettier – Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode).
+
+You could also invoke prettier on the command line:
+```
+yarn prettier --write /path/to/file
+```
+
 ## Glossary
 
 Depending on the use-case, we're still calling the same concepts differently sometimes. Here is an explanation.
@@ -99,14 +110,25 @@ Depending on the use-case, we're still calling the same concepts differently som
 - **Tooltip** – small area (below), that contains additional information on hovering over certain elements
 - **Additional Infos** – data (key-value pairs) that are part of concept nodes and can be displayed inside the tooltip
 
-## Various Technical Explanations
+## Technical Explanations (mini ADRs – "architectural decision records")
+
+### Types
 
 - Migration from Flow to TypeScript is in progress. At the moment, Typescript errors are printed to console on server start and build, to see what they are and to fix them. To check how many errors are left: `yarn typecheck`. But type errors are ignored (see `.env`) to be able to still compile for now. Plan is to fix the errors step by step and then to enable failure on TS errors on start / build again.
+
+### Styles
+
 - Emotion is used for theming and styles. The plan is to migrate (back) to styled-components or to another css-in-js solution, because emotion's "styled" is less TypeScript compatible in some edge cases like generic component props (see usage of Dropzone).
+
+### State
+
 - Redux actions aren't all typed well yet. Plan is to migrate fully to https://github.com/piotrwitek/typesafe-actions
-- We're moving away from redux middlewares like thunk (replaced by hooks) and multi 
-- We're still trying to support IE11. But this is phasing out, since most users are already using more modern Browsers.
+- We're moving away from redux-thunk (replaced mostly by hooks)
 - We've migrated from `redux-form` to `react-hook-form`. Still TODO: there's some form context stored in redux for every available form (e.g. for filter suggestions in concept fields). We should move this from redux to local state (e.g. into `FormConceptGroup`).
+
+### Browser support
+
+- We have been supporting IE11 in the past. Now we're supporting Chrome, Firefox. Safari should be compatible as well, but we rarely check that. Most remainders of IE-Support (polyfills / shims / workarounds) should be gone from the code base. We'll need to remove any remaining, if there are any.
 
 ### Drag and Drop
 

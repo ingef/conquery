@@ -3,9 +3,10 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import { exists } from "../../common/helpers/exists";
-import type { PreviousQueriesFilterStateT } from "../filter/reducer";
+import { configHasFilterType } from "../../external-forms/form-configs/selectors";
+import type { ProjectItemsFilterStateT } from "../filter/reducer";
 
-import type { PreviousQueryT } from "./reducer";
+import type { FormConfigT, PreviousQueryT } from "./reducer";
 
 const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
   return (
@@ -18,6 +19,16 @@ const queryHasTag = (query: PreviousQueryT, searchTerm: string) => {
 
 const queryHasFolder = (query: PreviousQueryT, folder: string) => {
   return !!query.tags && query.tags.some((tag) => tag === folder);
+};
+
+const queryMatchesFolderFilter = (
+  query: PreviousQueryT,
+  folders: string[],
+  noFoldersActive: boolean,
+) => {
+  return noFoldersActive
+    ? query.tags.length === 0
+    : folders.every((folder) => queryHasFolder(query, folder));
 };
 
 const queryHasLabel = (query: PreviousQueryT, searchTerm: string) => {
@@ -33,7 +44,7 @@ const queryHasId = (query: PreviousQueryT, searchTerm: string) => {
 
 export const queryHasFilterType = (
   query: PreviousQueryT,
-  filter: PreviousQueriesFilterStateT,
+  filter: ProjectItemsFilterStateT,
 ) => {
   if (filter === "all") return true;
 
@@ -62,36 +73,55 @@ export const queryMatchesSearch = (
 export const selectPreviousQueries = (
   queries: PreviousQueryT[],
   searchTerm: string | null,
-  filter: PreviousQueriesFilterStateT,
-  folderFilter: string[],
+  filter: ProjectItemsFilterStateT,
+  folders: string[],
   noFoldersActive: boolean,
 ) => {
-  if (
-    !exists(searchTerm) &&
+  const noFilterSet =
+    (!exists(searchTerm) || searchTerm.length === 0) &&
     filter === "all" &&
-    folderFilter.length === 0 &&
-    !noFoldersActive
-  )
+    folders.length === 0 &&
+    !noFoldersActive;
+
+  if (noFilterSet) {
     return queries;
+  }
 
-  return queries.filter((query) => {
-    const matchesFilter = queryHasFilterType(query, filter);
-    const matchesFolderFilter = noFoldersActive
-      ? query.tags.length === 0
-      : folderFilter.every((folder) => queryHasFolder(query, folder));
-    const matchesSearch = queryMatchesSearch(query, searchTerm);
-
-    return matchesFilter && matchesFolderFilter && matchesSearch;
-  });
+  return queries.filter(
+    (query) =>
+      queryHasFilterType(query, filter) &&
+      queryMatchesFolderFilter(query, folders, noFoldersActive) &&
+      queryMatchesSearch(query, searchTerm),
+  );
 };
 
-export const usePreviousQueriesTags = () => {
+export const useFolders = () => {
+  const filter = useSelector<StateT, ProjectItemsFilterStateT>(
+    (state) => state.projectItemsFilter,
+  );
   const queries = useSelector<StateT, PreviousQueryT[]>(
     (state) => state.previousQueries.queries,
   );
+  const formConfigs = useSelector<StateT, FormConfigT[]>(
+    (state) => state.previousQueries.formConfigs,
+  );
+  const localFolders = useSelector<StateT, string[]>(
+    (state) => state.previousQueries.localFolders,
+  );
 
   return useMemo(
-    () => Array.from(new Set(queries.flatMap((query) => query.tags))).sort(),
-    [queries],
+    () =>
+      Array.from(
+        new Set([
+          ...queries
+            .filter((query) => queryHasFilterType(query, filter))
+            .flatMap((query) => query.tags),
+          ...formConfigs
+            .filter((config) => configHasFilterType(config, filter))
+            .flatMap((config) => config.tags),
+          ...localFolders,
+        ]),
+      ).sort(),
+    [queries, formConfigs, localFolders, filter],
   );
 };

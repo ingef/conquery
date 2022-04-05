@@ -27,7 +27,7 @@ interface PropsType {
   headline: ReactNode;
   description?: ReactNode;
   onClose: () => void;
-  onDelete: () => void;
+  onDelete: () => Promise<any>;
 }
 
 const DeleteModal = ({

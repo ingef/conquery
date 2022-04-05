@@ -38,7 +38,7 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
 
   const dispatch = useDispatch();
   const postQueryUpload = usePostQueryUpload();
-  const loadQueries = useLoadQueries();
+  const { loadQueries } = useLoadQueries();
 
   const queryUploadConfig = useSelector<StateT, QueryUploadConfigT>(
     (state) => state.startup.config.queryUpload,
@@ -61,8 +61,8 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
 
       loadQueries(datasetId);
     } catch (e) {
-      if (e.status === 400) {
-        setUploadResult(e);
+      if ((e as { status?: number }).status === 400) {
+        setUploadResult(e as UploadQueryResponseT);
       } else {
         dispatch(
           setMessage({ message: t("uploadQueryResultsModal.uploadFailed") }),

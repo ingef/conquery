@@ -1,10 +1,12 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -30,6 +32,10 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import io.dropwizard.validation.ValidationMethod;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -45,7 +51,8 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
-@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+@AllArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator}, access = AccessLevel.PROTECTED)
 public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
 
 	@Min(0)
@@ -55,7 +62,11 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	@Min(0)
 	private final int numberOfEvents;
-	private final ColumnStore[] stores;
+
+
+	@JsonManagedReference
+	@Setter(AccessLevel.PROTECTED)
+	private ColumnStore[] stores;
 
 	//TODO consider usage of SortedSet but that would require custom deserializer, sorted set would have the benefit, that iteration of entities would also conform to layout of data giving some performance gains to CBlocks and Matching Stats
 	private final Set<Integer> entities;
@@ -72,6 +83,14 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 	@NsIdRef
 	private final Import imp;
+
+
+	@JsonIgnore
+	@ValidationMethod(message = "Number of events does not match to the number of stores")
+	public boolean isNumberOfEventsEqualsNumberOfStores() {
+		return Arrays.stream(stores).allMatch(columnStore -> columnStore.getLines() == getNumberOfEvents());
+	}
+
 
 	@JsonIgnore
 	public Table getTable() {
@@ -93,7 +112,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	public boolean containsEntity(int entity) {
 		return getEntityStart(entity) != -1;
 	}
-
 
 	public int getEntityStart(int entityId) {
 		return start[getEntityIndex(entityId)];
@@ -184,5 +202,9 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@Override
 	public Dataset getDataset() {
 		return getTable().getDataset();
+	}
+
+	public ColumnStore getStore(@NotNull String storeName) {
+		return getStore(getTable().getColumnByName(storeName));
 	}
 }

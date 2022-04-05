@@ -15,7 +15,7 @@ import TimebasedQueryEditorTab from "../timebased-query-editor";
 import FormContainer from "./FormContainer";
 import FormsNavigation from "./FormsNavigation";
 import FormsQueryRunner from "./FormsQueryRunner";
-import type { Form } from "./config-types";
+import type { Field, Form, Tabs } from "./config-types";
 import type { DynamicFormValues } from "./form/Form";
 import { collectAllFormFields, getInitialValue } from "./helper";
 import buildExternalFormsReducer from "./reducer";
@@ -55,13 +55,12 @@ const useLoadForms = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   }, [store, datasetId]);
 };
 
-const useInitializeForm = () => {
-  const activeLang = useActiveLang();
-  const config = useSelector<StateT, Form | null>(selectFormConfig);
+export const useDatasetOptions = () => {
   const availableDatasets = useSelector<StateT, DatasetT[]>(
     (state) => state.datasets.data,
   );
-  const datasetOptions = useMemo(
+
+  return useMemo(
     () =>
       availableDatasets.map((dataset) => ({
         label: dataset.label,
@@ -69,9 +68,20 @@ const useInitializeForm = () => {
       })),
     [availableDatasets],
   );
-  const allFields = useMemo(() => {
-    return config ? collectAllFormFields(config.fields) : [];
+};
+
+const useInitializeForm = () => {
+  const activeLang = useActiveLang();
+  const config = useSelector<StateT, Form | null>(selectFormConfig);
+  const allFields: (Field | Tabs)[] = useMemo(() => {
+    return config
+      ? collectAllFormFields(config.fields).filter(
+          (field): field is Field | Tabs => field.type !== "GROUP",
+        )
+      : [];
   }, [config]);
+
+  const datasetOptions = useDatasetOptions();
 
   const defaultValues = useMemo(
     () =>

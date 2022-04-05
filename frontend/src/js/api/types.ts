@@ -1,8 +1,9 @@
 // This file specifies
 // - response type provided by the backend API
 // - partial types that the reponses are built from
-import { Forms } from "../external-forms/config-types";
-import type { FormConfigT } from "../external-forms/form-configs/reducer";
+import type { Forms } from "../external-forms/config-types";
+import type { FormConfigT } from "../previous-queries/list/reducer";
+import type { ModeT } from "../ui-components/InputRange";
 
 export type DatasetIdT = string;
 export interface DatasetT {
@@ -48,7 +49,7 @@ export interface RangeFilterT extends FilterBaseT {
   value: RangeFilterValueT | null;
   defaultValue?: RangeFilterValueT;
   unit?: string;
-  mode: "range" | "exact";
+  mode?: ModeT; // Usually not sent, then default "range" is assumed
   precision?: number;
   min?: number;
   max?: number;
@@ -59,6 +60,7 @@ export type MultiSelectFilterValueT = SelectOptionT[];
 export interface MultiSelectFilterBaseT extends FilterBaseT {
   unit?: string;
   options: SelectOptionT[];
+  total?: number; // Not coming via the API yet, but may come soon, will be set when loading more options via autocomplete
   defaultValue?: string[];
   allowDropFile: boolean;
 }
@@ -106,8 +108,9 @@ export interface TableT {
   connectorId: string; // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string;
   exclude?: boolean;
-  filters?: FilterT[]; // Empty array: key not defined
-  selects?: SelectorT[]; // Empty array: key not defined
+  default?: boolean; // not excluded by default
+  filters: FilterT[]; // Empty array: key not defined
+  selects: SelectorT[]; // Empty array: key not defined
   supportedSecondaryIds?: string[];
 }
 
@@ -146,11 +149,11 @@ export type ConceptIdT = string;
 
 export interface ConceptBaseT {
   label: string;
-  active: boolean;
-  detailsAvailable: boolean;
-  codeListResolvable: boolean;
-  matchingEntries: number; // TODO: Don't send with struct nodes (even sent with 0)
-  matchingEntities: number; // TODO: Don't send with struct nodes (even sent with 0)
+  active?: boolean;
+  detailsAvailable?: boolean;
+  codeListResolvable?: boolean;
+  matchingEntries: number | null; // TODO: Don't send with struct nodes (even sent with 0)
+  matchingEntities: number | null; // TODO: Don't send with struct nodes (even sent with 0)
   children?: ConceptIdT[]; // Might be an empty struct or a "virtual node"
   description?: string; // Empty array: key not defined
   additionalInfos?: InfoT[]; // Empty array: key not defined
@@ -177,7 +180,7 @@ export interface FilterConfigT {
     | "SELECT"
     | "MULTI_SELECT"
     | "BIG_MULTI_SELECT";
-  value: RangeFilterValueT | SelectFilterValueT | FilterIdT[]; // Multi select
+  value: RangeFilterValueT | SelectFilterValueT | string | string[];
 }
 
 export interface DateColumnConfigT {
@@ -204,6 +207,7 @@ export interface QueryConceptNodeT {
 export type QueryIdT = string;
 export interface SavedQueryNodeT {
   type: "SAVED_QUERY";
+  excludeFromSecondaryId: boolean;
   query: QueryIdT; // TODO: rename this "id"
 }
 
@@ -231,6 +235,13 @@ interface BaseQueryT {
   type: "CONCEPT_QUERY";
 }
 
+export interface ExternalResolvedQueryT extends BaseQueryT {
+  // TODO: Add whatever other fields are here
+  root: {
+    type: "EXTERNAL_RESOLVED";
+  };
+}
+
 export interface AndQueryT extends BaseQueryT {
   secondaryId?: string;
   root: AndNodeT;
@@ -241,7 +252,11 @@ export interface NegationQueryT extends BaseQueryT {
 export interface DateRestrictionQueryT extends BaseQueryT {
   root: DateRestrictionNodeT;
 }
-export type QueryT = AndQueryT | NegationQueryT | DateRestrictionQueryT;
+export type QueryT =
+  | AndQueryT
+  | NegationQueryT
+  | DateRestrictionQueryT
+  | ExternalResolvedQueryT;
 export type QueryNodeT =
   | AndNodeT
   | NegationNodeT
@@ -287,9 +302,8 @@ export interface SecondaryId {
 export interface GetConceptsResponseT {
   secondaryIds: SecondaryId[];
   concepts: {
-    [conceptId: string]: ConceptStructT | ConceptElementT;
+    [conceptId: ConceptIdT]: ConceptStructT | ConceptElementT;
   };
-  version?: number; // TODO: Is this even sent anymore?
 }
 
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields

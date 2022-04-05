@@ -1,35 +1,23 @@
 import Papa, { ParseResult } from "papaparse";
 
 export function parseCSV(file: File, delimiter?: string) {
-  return new Promise<{ result: ParseResult<string[]>; file?: File }>(
-    (resolve) => {
-      Papa.parse<string[]>(file, {
-        header: false,
-        delimiter: delimiter || ";",
-        skipEmptyLines: true,
-        complete: (results, file) =>
-          resolve({
-            result: results,
-            file,
-          }),
-      });
-    },
-  );
+  return new Promise<ParseResult<string[]>>((resolve) => {
+    Papa.parse<string[]>(file, {
+      header: false,
+      delimiter: delimiter || ";",
+      skipEmptyLines: true,
+      complete: (results) => resolve(results),
+    });
+  });
 }
 
-export function loadCSV(
-  url: string,
-): Promise<{ result: ParseResult<unknown>; file?: File }> {
+export function loadCSV(url: string): Promise<ParseResult<string[]>> {
   return new Promise((resolve) => {
-    Papa.parse(url, {
+    Papa.parse<string[]>(url, {
       download: true,
       delimiter: ";",
       skipEmptyLines: true,
-      complete: (results, file) =>
-        resolve({
-          result: results,
-          file,
-        }),
+      complete: (results) => resolve(results),
     });
   });
 }

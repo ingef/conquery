@@ -5,6 +5,7 @@ import {
   CurrencyConfigT,
   DatasetIdT,
   FilterIdT,
+  PostFilterSuggestionsResponseT,
   TableIdT,
 } from "../api/types";
 import { FilterWithValueType } from "../standard-query-editor/types";
@@ -30,7 +31,10 @@ export interface BaseTableFilterProps {
     tableIdx: number,
     filterId: FilterIdT,
     prefix: string,
-  ) => Promise<void>;
+    page: number,
+    pageSize: number,
+    config?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
   onShowDescription: (filterIdx: number) => void;
 }
 
@@ -81,7 +85,6 @@ const TableFilter = ({
             context={filterContext}
             indexPrefix={filterIdx + 1}
             value={filter.value || []}
-            defaultValue={filter.defaultValue || []}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             options={filter.options}
@@ -95,14 +98,22 @@ const TableFilter = ({
             indexPrefix={filterIdx + 1}
             context={filterContext}
             value={filter.value || []}
-            defaultValue={filter.defaultValue || []}
+            defaultValue={filter.defaultValue}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             options={filter.options}
             disabled={!!excludeTable}
             allowDropFile={!!filter.allowDropFile}
-            onLoad={(prefix: string) =>
-              onLoadFilterSuggestions(filterIdx, filter.id, prefix)
+            total={filter.total}
+            onLoad={(prefix, page, pageSize, config) =>
+              onLoadFilterSuggestions(
+                filterIdx,
+                filter.id,
+                prefix,
+                page,
+                pageSize,
+                config,
+              )
             }
           />
         );

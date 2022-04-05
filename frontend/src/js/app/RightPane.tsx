@@ -15,10 +15,13 @@ interface PropsT {
 const Tab = styled("div")<{ isActive: boolean }>`
   height: 100%;
   flex-grow: 1;
-  display: flex;
   flex-direction: column;
 
   display: ${({ isActive }) => (isActive ? "flex" : "none")};
+`;
+
+const SxPane = styled(Pane)`
+  background-color: ${({ theme }) => theme.col.bgAlt};
 `;
 
 const RightPane: FC<PropsT> = ({ tabs }) => {
@@ -29,17 +32,18 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
   );
 
   useEffect(() => {
-    dispatch(clickPaneTab("right", tabs[0].key));
+    dispatch(clickPaneTab({ paneType: "right", tab: tabs[0].key }));
   }, [dispatch, tabs]);
 
   return (
-    <Pane
+    <SxPane
       right
       tabs={tabs.map((tab) => ({
         key: tab.key,
         label: t(tab.labelKey), // TODO: Somehow make this non-dynamic
         tooltip: t(tab.tooltipKey), // TODO: Somehow make this non-dynamic
       }))}
+      dataTestId="right-pane"
     >
       {tabs.map((tab) => {
         const isActive = tab.key === activeTab;
@@ -51,7 +55,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
           </Tab>
         );
       })}
-    </Pane>
+    </SxPane>
   );
 };
 

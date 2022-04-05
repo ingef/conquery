@@ -1,141 +1,93 @@
 version: 2
 updates:
-- package-ecosystem: maven
-  directory: "/"
-  schedule:
-    interval: daily
-    time: "04:00"
-  open-pull-requests-limit: 10
-  reviewers:
-  - awildturtok
-  - thoniTUB
-  assignees:
-  - awildturtok
-  - thoniTUB
-  labels:
-  - java
-  - dependencies
-  ignore:
-  - dependency-name: com.esotericsoftware:kryo
-    versions:
-    - "> 5.0.0"
-  - dependency-name: com.github.javaparser:javaparser-symbol-solver-core
-    versions:
-    - ">= 3.19.a, < 3.20"
-  - dependency-name: com.nimbusds:oauth2-oidc-sdk
-    versions:
-    - "> 8.32.2, < 8.33"
-  - dependency-name: com.nimbusds:oauth2-oidc-sdk
-    versions:
-    - "> 8.32.2, < 9"
-  - dependency-name: com.nimbusds:oauth2-oidc-sdk
-    versions:
-    - "> 9.1, < 10"
-  - dependency-name: io.github.classgraph:classgraph
-    versions:
-    - "> 4.8.97, < 4.9"
-  - dependency-name: javax.xml.bind:jaxb-api
-    versions:
-    - "> 2.3.0"
-  - dependency-name: org.apache.maven.plugins:maven-antrun-plugin
-    versions:
-    - "> 1.8"
-  - dependency-name: org.apache.mina:mina-core
-    versions:
-    - ">= 2.1.2.a, < 2.1.3"
-  - dependency-name: org.apache.shiro:shiro-core
-    versions:
-    - "> 1.7.0, < 1.8"
-  - dependency-name: org.keycloak:keycloak-authz-client
-    versions:
-    - "> 12.0.2, < 12.1"
-  - dependency-name: org.mock-server:mockserver-client-java
-    versions:
-    - "> 5.11.1, < 5.12"
-  - dependency-name: org.mock-server:mockserver-netty
-    versions:
-    - "> 5.11.1, < 5.12"
-  - dependency-name: com.auth0:java-jwt
-    versions:
-    - 3.13.0
-    - 3.14.0
-  - dependency-name: it.unimi.dsi:fastutil
-    versions:
-    - 8.5.1
-  - dependency-name: com.github.javaparser:javaparser-symbol-solver-core
-    versions:
-    - 3.20.0
-  - dependency-name: io.dropwizard:dropwizard-dependencies
-    versions:
-    - 2.0.19
-    - 2.0.20
-  - dependency-name: com.github.eirslett:frontend-maven-plugin
-    versions:
-    - 1.11.2
-  - dependency-name: org.apache.arrow:arrow-memory-netty
-    versions:
-    - 3.0.0
-  rebase-strategy: disabled
-- package-ecosystem: npm
-  directory: "/frontend"
-  schedule:
-    interval: daily
-    time: "04:00"
-  open-pull-requests-limit: 10
-  reviewers:
-  - Kadrian
-  assignees:
-  - Kadrian
-  labels:
-  - javascript
-  - dependencies
-  versioning-strategy: increase
-  ignore:
-  - dependency-name: date-fns
-    versions:
-    - "> 2.16.1, < 3"
-  - dependency-name: react-markdown
-    versions:
-    - 5.0.3
-    - 6.0.0
-  - dependency-name: "@emotion/babel-plugin"
-    versions:
-    - 11.2.0
-  - dependency-name: "@emotion/styled"
-    versions:
-    - 11.1.5
-  - dependency-name: "@types/react-dom"
-    versions:
-    - 17.0.0
-    - 17.0.1
-    - 17.0.2
-  - dependency-name: "@types/react"
-    versions:
-    - 17.0.0
-    - 17.0.1
-    - 17.0.2
-    - 17.0.3
-  - dependency-name: react-select
-    versions:
-    - 4.2.1
-  - dependency-name: nock
-    versions:
-    - 13.0.10
-    - 13.0.11
-    - 13.0.6
-    - 13.0.7
-    - 13.0.8
-    - 13.0.9
-  - dependency-name: cross-env
-    versions:
-    - 7.0.3
-  - dependency-name: mustache
-    versions:
-    - 4.1.0
-  - dependency-name: "@types/express"
-    versions:
-    - 4.17.11
-  - dependency-name: "@types/jest"
-    versions:
-    - 26.0.20
-  rebase-strategy: disabled
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "04:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - awildturtok
+      - thoniTUB
+    assignees:
+      - awildturtok
+      - thoniTUB
+    labels:
+      - java
+      - dependencies
+    ignore:
+      - dependency-name: com.esotericsoftware:kryo
+        versions:
+          - "> 5.0.0"
+      - dependency-name: com.github.javaparser:javaparser-symbol-solver-core
+        versions:
+          - ">= 3.19.a, < 3.20"
+      - dependency-name: com.nimbusds:oauth2-oidc-sdk
+        versions:
+          - "> 8.32.2, < 8.33"
+      - dependency-name: com.nimbusds:oauth2-oidc-sdk
+        versions:
+          - "> 8.32.2, < 9"
+      - dependency-name: com.nimbusds:oauth2-oidc-sdk
+        versions:
+          - "> 9.1, < 10"
+      - dependency-name: io.github.classgraph:classgraph
+        versions:
+          - "> 4.8.97, < 4.9"
+      - dependency-name: javax.xml.bind:jaxb-api
+        versions:
+          - "> 2.3.0"
+      - dependency-name: org.apache.maven.plugins:maven-antrun-plugin
+        versions:
+          - "> 1.8"
+      - dependency-name: org.apache.mina:mina-core
+        versions:
+          - ">= 2.1.2.a, < 2.1.3"
+      - dependency-name: org.apache.shiro:shiro-core
+        versions:
+          - "> 1.7.0, < 1.8"
+      - dependency-name: org.keycloak:keycloak-authz-client
+        versions:
+          - "> 12.0.2, < 12.1"
+      - dependency-name: org.mock-server:mockserver-client-java
+        versions:
+          - "> 5.11.1, < 5.12"
+      - dependency-name: org.mock-server:mockserver-netty
+        versions:
+          - "> 5.11.1, < 5.12"
+      - dependency-name: com.auth0:java-jwt
+        versions:
+          - 3.13.0
+          - 3.14.0
+      - dependency-name: it.unimi.dsi:fastutil
+        versions:
+          - 8.5.1
+      - dependency-name: com.github.javaparser:javaparser-symbol-solver-core
+        versions:
+          - 3.20.0
+      - dependency-name: io.dropwizard:dropwizard-dependencies
+        versions:
+          - 2.0.19
+          - 2.0.20
+      - dependency-name: com.github.eirslett:frontend-maven-plugin
+        versions:
+          - 1.11.2
+      - dependency-name: org.apache.arrow:arrow-memory-netty
+        versions:
+          - 3.0.0
+    rebase-strategy: disabled
+  - package-ecosystem: npm
+    directory: "/frontend"
+    schedule:
+      interval: daily
+      time: "04:00"
+    open-pull-requests-limit: 0
+    reviewers:
+      - Kadrian
+    assignees:
+      - Kadrian
+    labels:
+      - javascript
+      - dependencies
+    versioning-strategy: increase
+    rebase-strategy: disabled

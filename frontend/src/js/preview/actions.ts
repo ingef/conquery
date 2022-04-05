@@ -1,43 +1,34 @@
+import { useDispatch } from "react-redux";
+import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
+
 import type { ColumnDescription } from "../api/types";
-import { defaultError } from "../common/actions";
+import { ErrorObject, errorPayload } from "../common/actions";
 import { loadCSV } from "../file/csv";
 
-import {
-  OPEN_PREVIEW,
-  CLOSE_PREVIEW,
-  LOAD_CSV_START,
-  LOAD_CSV_ERROR,
-} from "./actionTypes";
+export type PreviewActions = ActionType<
+  typeof loadCSVForPreview | typeof closePreview
+>;
 
-export function closePreview() {
-  return {
-    type: CLOSE_PREVIEW,
-  };
-}
+export const closePreview = createAction("preview/CLOSE")();
 
-const loadCSVStart = () => ({ type: LOAD_CSV_START });
-const loadCSVError = (err: any) => defaultError(LOAD_CSV_ERROR, err);
-const loadCSVSuccess = (
-  parsed: { result: { data: string[][] } },
-  columns: ColumnDescription[],
-) => ({
-  type: OPEN_PREVIEW,
-  payload: {
-    csv: parsed.result.data,
-    columns,
-  },
-});
+export const loadCSVForPreview = createAsyncAction(
+  "preview/LOAD_CSV_START",
+  "preview/LOAD_CSV_SUCCESS",
+  "preview/LOAD_CSV_ERROR",
+)<void, { csv: string[][]; columns: ColumnDescription[] }, ErrorObject>();
 
-export function openPreview(url: string, columns: ColumnDescription[]) {
-  return async (dispatch) => {
-    dispatch(loadCSVStart());
+export function useOpenPreview() {
+  const dispatch = useDispatch();
+
+  return async (url: string, columns: ColumnDescription[]) => {
+    dispatch(loadCSVForPreview.request());
 
     try {
-      const parsed = await loadCSV(url);
+      const result = await loadCSV(url);
 
-      dispatch(loadCSVSuccess(parsed, columns));
+      dispatch(loadCSVForPreview.success({ csv: result.data, columns }));
     } catch (e) {
-      dispatch(loadCSVError(e));
+      dispatch(loadCSVForPreview.failure(errorPayload(e as Error, {})));
     }
   };
 }

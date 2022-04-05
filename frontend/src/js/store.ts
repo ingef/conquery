@@ -1,13 +1,12 @@
 import { applyMiddleware, createStore, Store } from "redux";
 import { composeWithDevTools } from "redux-devtools-extension";
-import multi from "redux-multi";
 import thunk from "redux-thunk";
 
 import buildAppReducer from "./app/reducers";
 import { TabT } from "./pane/types";
 
-export function makeStore(initialState: Object, tabs: Object) {
-  const middleware = applyMiddleware(thunk, multi);
+export function makeStore(initialState: Object, tabs: TabT[]) {
+  const middleware = applyMiddleware(thunk);
   const enhancer = composeWithDevTools(middleware);
 
   const store = createStore(buildAppReducer(tabs), initialState, enhancer);

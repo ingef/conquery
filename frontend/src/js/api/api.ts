@@ -1,9 +1,11 @@
 import { apiUrl } from "../environment";
 import type {
-  FormConfigT,
   BaseFormConfigT,
-} from "../external-forms/form-configs/reducer";
+  FormConfigT,
+} from "../previous-queries/list/reducer";
 import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker";
+import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
 import { transformFormQueryToApi } from "./apiExternalFormsHelper";
 import { transformQueryToApi } from "./apiHelper";
@@ -60,9 +62,14 @@ export const useGetConcept = () => {
   const api = useApi<GetConceptResponseT>({});
 
   return (datasetId: DatasetIdT, conceptId: ConceptIdT) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}`),
-    });
+    api(
+      {
+        url: getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}`),
+      },
+      {
+        etagCacheKey: `${datasetId}-${conceptId}`,
+      },
+    );
 };
 
 // Same signature as postFormQueries
@@ -71,7 +78,7 @@ export const usePostQueries = () => {
 
   return (
     datasetId: DatasetIdT,
-    query: Object,
+    query: StandardQueryStateT | ValidatedTimebasedQueryStateT,
     options: { queryType: string; selectedSecondaryId?: string | null },
   ) =>
     api({

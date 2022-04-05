@@ -11,8 +11,8 @@ export function useClickOutside(
         if (
           !event.target ||
           !ref.current ||
-          ref.current.contains(event.target) ||
-          !document.body.contains(event.target) // Element might be unmounted before the listener is triggered
+          ref.current.contains(event.target as Node) ||
+          !document.body.contains(event.target as Node) // Element might be unmounted before the listener is triggered
         ) {
           return;
         }

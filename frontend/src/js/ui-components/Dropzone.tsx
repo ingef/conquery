@@ -2,14 +2,13 @@ import styled from "@emotion/styled";
 import { ReactNode } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 
-import type { DragItemFormConceptNode } from "../external-forms/form-concept-group/FormConceptNode";
-import type { DragItemFormConfig } from "../external-forms/form-configs/FormConfig";
+import { DNDType } from "../common/constants/dndTypes";
+import { exists } from "../common/helpers/exists";
+import { DragItemFormConfig } from "../external-forms/types";
 import type {
   DragItemConceptTreeNode,
-  DragItemNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
-import type { DragItemTimebasedNode } from "../timebased-query-editor/TimebasedNode";
 
 import type { DragItemFile } from "./DropzoneWithFileInput";
 
@@ -46,10 +45,10 @@ const Root = styled("div")<{
       : theme.col.gray};
 `;
 
-export interface ChildArgs {
+export interface ChildArgs<DroppableObject> {
   isOver: boolean;
   canDrop: boolean;
-  itemType: string | symbol | null;
+  item: DroppableObject;
 }
 
 export interface DropzoneProps<DroppableObject> {
@@ -59,17 +58,34 @@ export interface DropzoneProps<DroppableObject> {
   onDrop: (props: DroppableObject, monitor: DropTargetMonitor) => void;
   canDrop?: (props: DroppableObject, monitor: DropTargetMonitor) => boolean;
   onClick?: () => void;
-  children?: (args: ChildArgs) => ReactNode;
+  children?: (args: ChildArgs<DroppableObject>) => ReactNode;
 }
 
 export type PossibleDroppableObject =
   | DragItemFile
-  | DragItemNode
-  | DragItemTimebasedNode
   | DragItemQuery
   | DragItemConceptTreeNode
-  | DragItemFormConfig
-  | DragItemFormConceptNode;
+  | DragItemFormConfig;
+
+export const isMovedObject = (
+  item: PossibleDroppableObject,
+): item is PossibleDroppableObject & {
+  dragContext: { movedFromAndIdx: number; movedFromOrIdx: number };
+} => {
+  switch (item.type) {
+    case "__NATIVE_FILE__":
+      return false;
+    case DNDType.FORM_CONFIG:
+      return false;
+    case DNDType.CONCEPT_TREE_NODE:
+    case DNDType.PREVIOUS_QUERY:
+    case DNDType.PREVIOUS_SECONDARY_ID_QUERY:
+      return (
+        exists(item.dragContext.movedFromAndIdx) &&
+        exists(item.dragContext.movedFromOrIdx)
+      );
+  }
+};
 
 const Dropzone = <DroppableObject extends PossibleDroppableObject>({
   className,
@@ -80,10 +96,11 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>({
   onClick,
   children,
 }: DropzoneProps<DroppableObject>) => {
-  const [{ canDrop: canDropResult, isOver, itemType }, dropRef] = useDrop<
+  /*  actually, not "any", but ChildArgs<DroppableObject>. But I can't get that to work in JSX */
+  const [{ canDrop: canDropResult, isOver, item }, dropRef] = useDrop<
     DroppableObject,
     void,
-    ChildArgs
+    any
   >({
     accept: acceptedDropTypes,
     drop: onDrop,
@@ -91,7 +108,7 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>({
     collect: (monitor) => ({
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop(),
-      itemType: monitor.getItemType(),
+      item: monitor.getItem(),
     }),
   });
 
@@ -104,7 +121,12 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>({
       onClick={onClick}
       naked={naked}
     >
-      {children && children({ isOver, canDrop: canDropResult, itemType })}
+      {children &&
+        children({
+          isOver,
+          canDrop: canDropResult,
+          item: item as DroppableObject, // Casting because see comment above
+        })}
     </Root>
   );
 };

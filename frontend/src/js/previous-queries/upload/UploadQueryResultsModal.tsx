@@ -103,11 +103,12 @@ const UploadQueryResultsModal: FC<PropsT> = ({
             {!file && (
               <SxDropzoneWithFileInput
                 onDrop={(item) => {
-                  if (item.files) {
+                  if (item.type === "__NATIVE_FILE__") {
                     setFile(item.files[0]);
                   }
                 }}
                 onSelectFile={setFile}
+                accept="text/csv"
               >
                 {() => t("uploadQueryResultsModal.dropzone")}
               </SxDropzoneWithFileInput>

@@ -6,26 +6,44 @@
 // Some keys are added (e.g. the query type attribute)
 import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
+import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
   TableWithFilterValueT,
   SelectedSelectorT,
   SelectedDateColumnT,
+  StandardQueryNodeT,
+  DragItemConceptTreeNode,
+  FilterWithValueType,
 } from "../standard-query-editor/types";
-import type { ValidatedTimebasedConditionT } from "../timebased-query-editor/reducer";
+import type {
+  ValidatedTimebasedConditionT,
+  ValidatedTimebasedQueryStateT,
+} from "../timebased-query-editor/reducer";
 
-export const transformFilterValueToApi = (filter: any) => {
-  const { value, mode } = filter;
+import { ConceptIdT, DateRangeT } from "./types";
 
-  if (value instanceof Array) {
-    return value.map((v) => (v.value ? v.value : v));
+export const transformFilterValueToApi = (
+  filter: FilterWithValueType,
+): {} | null /* aka: "not undefined", to ensure a type error when a new filter.type is added */ => {
+  switch (filter.type) {
+    case "BIG_MULTI_SELECT":
+    case "MULTI_SELECT":
+      return filter.value
+        ? filter.value.map((v) => (v.value ? v.value : v))
+        : null;
+    case "INTEGER_RANGE":
+    case "MONEY_RANGE":
+    case "REAL_RANGE":
+      return !exists(filter.mode) || filter.mode === "range"
+        ? filter.value
+        : filter.value
+        ? { min: filter.value.exact, max: filter.value.exact }
+        : null;
+    case "SELECT":
+      return filter.value;
   }
-
-  if (!!mode) {
-    return mode === "range" ? value : { min: value.exact, max: value.exact };
-  }
-
-  return value;
 };
 
 export const transformSelectsToApi = (selects?: SelectedSelectorT[] | null) => {
@@ -70,11 +88,12 @@ export const transformTablesToApi = (tables: TableWithFilterValueT[]) => {
     });
 };
 
-export const transformElementsToApi = (conceptGroup: any) =>
-  conceptGroup.map(createConcept);
+export const transformElementsToApi = (
+  conceptGroup: DragItemConceptTreeNode[],
+) => conceptGroup.map(createConcept);
 
 const transformStandardQueryToApi = (
-  query: any,
+  query: StandardQueryStateT,
   selectedSecondaryId?: string | null,
 ) => {
   const queryAnd = createAnd(createQueryConcepts(query));
@@ -84,45 +103,45 @@ const transformStandardQueryToApi = (
     : createConceptQuery(queryAnd);
 };
 
-const createSecondaryIdQuery = (root: any, secondaryId: string) => ({
-  type: "SECONDARY_ID_QUERY",
+const createSecondaryIdQuery = <T>(root: T, secondaryId: string) => ({
+  type: "SECONDARY_ID_QUERY" as const,
   secondaryId,
   root,
 });
 
-const createConceptQuery = (root: any) => ({
-  type: "CONCEPT_QUERY",
+const createConceptQuery = <T>(root: T) => ({
+  type: "CONCEPT_QUERY" as const,
   root,
 });
 
-const createAnd = (children: any) => ({
-  type: "AND",
+const createAnd = <T>(children: T) => ({
+  type: "AND" as const,
   children,
 });
 
-const createNegation = (group: any) => ({
-  type: "NEGATION",
+const createNegation = <T>(group: T) => ({
+  type: "NEGATION" as const,
   child: group,
 });
 
-const createDateRestriction = (dateRange: any, concept: any) => ({
-  type: "DATE_RESTRICTION",
+const createDateRestriction = <T>(dateRange: DateRangeT, concept: T) => ({
+  type: "DATE_RESTRICTION" as const,
   dateRange: dateRange,
   child: concept,
 });
 
-const createSavedQuery = (conceptId: any) => ({
-  type: "SAVED_QUERY",
+const createSavedQuery = (conceptId: ConceptIdT) => ({
+  type: "SAVED_QUERY" as const,
   query: conceptId,
 });
 
-const createQueryConcept = (concept: any) =>
-  concept.isPreviousQuery
-    ? createSavedQuery(concept.id)
-    : createConcept(concept);
+const createQueryConcept = (concept: StandardQueryNodeT) =>
+  nodeIsConceptQueryNode(concept)
+    ? createConcept(concept)
+    : createSavedQuery(concept.id);
 
-const createConcept = (concept: any) => ({
-  type: "CONCEPT",
+const createConcept = (concept: DragItemConceptTreeNode) => ({
+  type: "CONCEPT" as const,
   ids: concept.ids,
   label: isLabelPristine(concept) ? undefined : concept.label,
   excludeFromTimeAggregation: concept.excludeTimestamps,
@@ -131,8 +150,8 @@ const createConcept = (concept: any) => ({
   selects: transformSelectsToApi(concept.selects),
 });
 
-const createQueryConcepts = (query: any) => {
-  return query.map((group: any) => {
+const createQueryConcepts = (query: StandardQueryStateT) => {
+  return query.map((group) => {
     const concepts = group.elements.map(createQueryConcept);
     const orConcept = { type: "OR", children: [...concepts] };
 
@@ -163,7 +182,7 @@ const getDays = (condition: ValidatedTimebasedConditionT) => {
   }
 };
 
-const transformTimebasedQueryToApi = (query: any) =>
+const transformTimebasedQueryToApi = (query: ValidatedTimebasedQueryStateT) =>
   createConceptQuery(
     createAnd(
       query.conditions.map((condition: ValidatedTimebasedConditionT) => {
@@ -189,14 +208,19 @@ const transformTimebasedQueryToApi = (query: any) =>
 // But small additions are made (properties allowlisted), empty things filtered out
 // to make it compatible with the backend API
 export const transformQueryToApi = (
-  query: Object,
+  query: StandardQueryStateT | ValidatedTimebasedQueryStateT,
   options: { queryType: string; selectedSecondaryId?: string | null },
 ) => {
   switch (options.queryType) {
     case "timebased":
-      return transformTimebasedQueryToApi(query);
+      return transformTimebasedQueryToApi(
+        query as ValidatedTimebasedQueryStateT,
+      );
     case "standard":
-      return transformStandardQueryToApi(query, options.selectedSecondaryId);
+      return transformStandardQueryToApi(
+        query as StandardQueryStateT,
+        options.selectedSecondaryId,
+      );
     default:
       return null;
   }

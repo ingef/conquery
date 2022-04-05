@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { Heading3, Heading4 } from "../headings/Headings";
+import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
@@ -71,7 +72,7 @@ interface PropsT {
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
   onSelectTable: (tableIdx: number) => void;
-  onResetTable: (tableIdx: number) => void;
+  onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
 }
 
 const MenuColumn: FC<PropsT> = ({
@@ -90,13 +91,15 @@ const MenuColumn: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
   const isOnlyOneTableIncluded =
-    !node.isPreviousQuery &&
+    nodeIsConceptQueryNode(node) &&
     node.tables.filter((table) => !table.exclude).length === 1;
 
-  const rootConcept = !node.isPreviousQuery ? getConceptById(node.tree) : null;
+  const rootConcept = nodeIsConceptQueryNode(node)
+    ? getConceptById(node.tree)
+    : null;
 
   const isEmpty =
-    node.isPreviousQuery ||
+    !nodeIsConceptQueryNode(node) ||
     (!showTables &&
       (!rootConcept ||
         !rootConcept.children ||
@@ -107,7 +110,7 @@ const MenuColumn: FC<PropsT> = ({
       {isEmpty && (
         <DimmedNote>{t("queryNodeEditor.emptyMenuColumn")}</DimmedNote>
       )}
-      {!node.isPreviousQuery && showTables && (
+      {nodeIsConceptQueryNode(node) && showTables && (
         <div>
           <CommonSettingsLabel onClick={onCommonSettingsClick}>
             {t("queryNodeEditor.properties")}
@@ -129,12 +132,14 @@ const MenuColumn: FC<PropsT> = ({
                 }
               }}
               onToggleTable={(value) => onToggleTable(tableIdx, value)}
-              onResetTable={() => onResetTable(tableIdx)}
+              onResetTable={(config: NodeResetConfig) =>
+                onResetTable(tableIdx, config)
+              }
             />
           ))}
         </div>
       )}
-      {!node.isPreviousQuery &&
+      {nodeIsConceptQueryNode(node) &&
         rootConcept &&
         rootConcept.children &&
         rootConcept.children.length > 0 && (
