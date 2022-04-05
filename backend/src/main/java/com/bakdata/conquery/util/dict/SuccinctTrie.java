@@ -316,9 +316,9 @@ public class SuccinctTrie extends Dictionary {
 	@Override
 	public Iterator<DictionaryEntry> iterator() {
 
-		return new AbstractIterator<DictionaryEntry>() {
+		return new AbstractIterator<>() {
 
-			private ByteArrayList buf = new ByteArrayList(depth);
+			private final ByteArrayList buf = new ByteArrayList(depth);
 			private int index = 0;
 
 			@Override
@@ -327,8 +327,11 @@ public class SuccinctTrie extends Dictionary {
 					return endOfData();
 				}
 				buf.clear();
-				get(index++, buf);
-				return new DictionaryEntry(index, buf.toByteArray());
+
+				final int id = index++;
+
+				get(id, buf);
+				return new DictionaryEntry(id, buf.toByteArray());
 			}
 		};
 	}
