@@ -22,10 +22,6 @@ import projectItemsSearch, {
 import projectItemsTypeFilter, {
   ProjectItemsTypeFilterStateT,
 } from "../previous-queries/type-filter/reducer";
-import {
-  createQueryNodeEditorReducer,
-  QueryNodeEditorStateT,
-} from "../query-node-editor/reducer";
 import createQueryRunnerReducer, {
   QueryRunnerStateT,
 } from "../query-runner/reducer";
@@ -33,7 +29,12 @@ import queryUploadConceptListModal, {
   QueryUploadConceptListModalStateT,
 } from "../query-upload-concept-list-modal/reducer";
 import snackMessage, { SnackMessageStateT } from "../snack-message/reducer";
-import type { StandardQueryEditorStateT } from "../standard-query-editor";
+import queryReducer, {
+  StandardQueryStateT,
+} from "../standard-query-editor/queryReducer";
+import selectedSecondaryIdsReducer, {
+  SelectedSecondaryIdStateT,
+} from "../standard-query-editor/selectedSecondaryIdReducer";
 import startup, { StartupStateT } from "../startup/reducer";
 import timebasedQueryReducer, {
   TimebasedQueryStateT,
@@ -53,8 +54,6 @@ export type StateT = {
   uploadConceptListModal: UploadConceptListModalStateT;
   queryUploadConceptListModal: QueryUploadConceptListModalStateT;
   user: UserStateT;
-  queryEditor: StandardQueryEditorStateT;
-  queryNodeEditor: QueryNodeEditorStateT;
   startup: StartupStateT;
   previousQueries: PreviousQueriesStateT;
   projectItemsSearch: ProjectItemsSearchStateT;
@@ -63,6 +62,11 @@ export type StateT = {
   previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
   preview: PreviewStateT;
   snackMessage: SnackMessageStateT;
+  queryEditor: {
+    query: StandardQueryStateT;
+    selectedSecondaryId: SelectedSecondaryIdStateT;
+    queryRunner: QueryRunnerStateT;
+  };
   timebasedQueryEditor: {
     timebasedQuery: TimebasedQueryStateT;
     timebasedQueryRunner: QueryRunnerStateT;
@@ -76,7 +80,6 @@ const buildAppReducer = () => {
     conceptTreesOpen,
     uploadConceptListModal,
     queryUploadConceptListModal,
-    queryNodeEditor: createQueryNodeEditorReducer("standard"),
     datasets,
     tooltip,
     panes,
@@ -88,6 +91,11 @@ const buildAppReducer = () => {
     snackMessage,
     preview,
     user,
+    queryEditor: combineReducers({
+      query: queryReducer,
+      selectedSecondaryId: selectedSecondaryIdsReducer,
+      queryRunner: createQueryRunnerReducer("standard"),
+    }),
     timebasedQueryEditor: combineReducers({
       timebasedQuery: timebasedQueryReducer,
       timebasedQueryRunner: createQueryRunnerReducer("timebased"),

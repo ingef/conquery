@@ -31,8 +31,6 @@ import type { ModeT } from "../ui-components/InputRange";
 import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
 import ResetAllSettingsButton from "./ResetAllSettingsButton";
-import { createQueryNodeEditorActions } from "./actions";
-import { QueryNodeEditorStateT } from "./reducer";
 
 const Root = styled("div")`
   padding: 10px;
@@ -104,7 +102,6 @@ const NodeName = styled("div")`
 
 export interface QueryNodeEditorPropsT {
   name: string;
-  editorState: QueryNodeEditorStateT;
   node: StandardQueryNodeT;
   showTables: boolean;
   datasetId: DatasetIdT;
@@ -146,15 +143,8 @@ const RIGHT_SIDE_WIDTH_COMPACT = 150;
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
   const [editingLabel, setEditingLabel] = useState<boolean>(false);
   const [selectedTableIdx, setSelectedTableIdx] = useState<number | null>(null);
-
-  const { setFocusedInput, reset } = createQueryNodeEditorActions(props.name);
-
-  const onReset = () => dispatch(reset());
-  const onShowDescription = (filterIdx: number) =>
-    dispatch(setFocusedInput(filterIdx));
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const onCommonSettingsClick = () => {
@@ -167,7 +157,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     if (!node) return;
 
     props.onCloseModal();
-    onReset();
   }
 
   // To make sure that Close button is always visible and to consider
@@ -272,7 +261,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
               selectedTableIdx={selectedTableIdx}
               allowlistedSelects={props.allowlistedSelects}
               blocklistedSelects={props.blocklistedSelects}
-              onShowDescription={onShowDescription}
               onToggleTimestamps={props.onToggleTimestamps}
               onToggleSecondaryIdExclude={props.onToggleSecondaryIdExclude}
               onSelectSelects={props.onSelectSelects}

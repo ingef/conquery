@@ -36,7 +36,6 @@ interface PropsT {
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
 
-  onShowDescription: (filterIdx: number) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
   onSetDateColumn: (tableIdx: number, dateColumnValue: string) => void;
   onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
@@ -56,7 +55,6 @@ interface PropsT {
 const TableView: FC<PropsT> = ({
   node,
   tableIdx,
-  onShowDescription,
   datasetId,
   currencyConfig,
   allowlistedSelects,
@@ -148,7 +146,6 @@ const TableView: FC<PropsT> = ({
                 config,
               )
             }
-            onShowDescription={onShowDescription}
             currencyConfig={currencyConfig}
           />
         </MaximizedCell>
