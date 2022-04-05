@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
  * This class represents a values of a SELECT filter.
  */
 @Data
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class FEValue implements Comparable<FEValue> {
 	private static final Comparator<FEValue> COMPARATOR = Comparator.comparing(FEValue::getValue)
 																	.thenComparing(FEValue::getLabel);
@@ -24,11 +25,9 @@ public class FEValue implements Comparable<FEValue> {
 	@EqualsAndHashCode.Include
 	private final String value;
 
-	@EqualsAndHashCode.Exclude
 	@NotNull
 	private final String label;
 
-	@EqualsAndHashCode.Exclude
 	private final String optionValue;
 
 	@JsonCreator
