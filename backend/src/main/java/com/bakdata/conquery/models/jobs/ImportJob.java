@@ -178,15 +178,15 @@ public class ImportJob extends Job {
 			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
 			// but could also be an error :/ Most likely the former
 			final Dictionary prior = dicts.get(column.getName());
+
 			if (!dicts.containsKey(column.getName()) || prior == null) {
 				log.trace("No Dictionary for {}", column);
 				continue;
 			}
 
 
-
 			final Dictionary dictionary =
-					createSharedDictionaryReplacement(column, storage, prior, sharedDictionaryLocks);
+					createAndImportSharedDictionary(column, storage, prior, sharedDictionaryLocks);
 
 			//TODO could this also just be dicts.get(column.getName()).getId()
 			out.put(new DictionaryId(Dataset.PLACEHOLDER.getId(), prior.getName()), dictionary);
@@ -240,8 +240,6 @@ public class ImportJob extends Job {
 
 			DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
 
-			sharedDictionary.compress();
-
 			if (mapping.getNumberOfNewIds() != 0) {
 				distributeDictionary(namespace, mapping.getTargetDictionary());
 			}
@@ -281,7 +279,7 @@ public class ImportJob extends Job {
 	 * @param sharedDictionaryLocks A collection of locks used for the synchronized creation of shared dictionaries.
 	 * @return
 	 */
-	public static Dictionary createSharedDictionaryReplacement(Column column, NamespaceStorage storage, Dictionary prior, IdMutex<DictionaryId> sharedDictionaryLocks) {
+	public static Dictionary createAndImportSharedDictionary(Column column, NamespaceStorage storage, Dictionary prior, IdMutex<DictionaryId> sharedDictionaryLocks) {
 		Preconditions.checkArgument(column.getType().equals(MajorTypeId.STRING), "Not a STRING Column.");
 
 		final String dictionaryName = computeDictionaryName(column);
@@ -292,13 +290,16 @@ public class ImportJob extends Job {
 			Dictionary sharedDict = storage.getDictionary(sharedDictId);
 			// Create dictionary if not yet present
 			if (sharedDict == null) {
-				sharedDict = prior.copyUncompressed();
+				sharedDict = prior.copyEmpty();
 
-				prior.setDataset(storage.getDataset());
-				prior.setName(dictionaryName);
+				sharedDict.setDataset(storage.getDataset());
+				sharedDict.setName(dictionaryName);
+
+				sharedDict.compress();
 
 				storage.updateDictionary(sharedDict);
 			}
+
 			return sharedDict;
 		}
 
@@ -477,11 +478,9 @@ public class ImportJob extends Job {
 
 		Dictionary orig = namespace.getStorage().getPrimaryDictionaryRaw();
 
-		Dictionary primaryDict = orig.copyUncompressed();
 
-		DictionaryMapping primaryMapping = DictionaryMapping.createAndImport(primaryDictionary, primaryDict);
+		DictionaryMapping primaryMapping = DictionaryMapping.createAndImport(primaryDictionary, orig);
 
-		primaryDict.compress();
 
 		log.debug("Mapped {} new ids", primaryMapping.getNumberOfNewIds());
 
@@ -492,7 +491,7 @@ public class ImportJob extends Job {
 		}
 
 		namespace.getStorage()
-				 .updatePrimaryDictionary(primaryDict);
+				 .updatePrimaryDictionary(primaryMapping.getTargetDictionary());
 
 		return primaryMapping;
 	}

@@ -20,8 +20,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 @CPSType(id = "MAP_DICTIONARY", base = Dictionary.class)
 public class MapDictionary extends Dictionary {
 
-	//TODO just store strings and reencode them on addition?
 	//TODO afaik we only use ByteArrayList for its equals/hashcode?
+	//TODO make readonly after compress
 
 	private Object2IntOpenHashMap<ByteArrayList> value2Id;
 	private List<ByteArrayList> id2Value;
@@ -34,14 +34,8 @@ public class MapDictionary extends Dictionary {
 	}
 
 	@Override
-	public Dictionary copyUncompressed() {
+	public Dictionary copyEmpty() {
 		final Dictionary copy = new MapDictionary(getDataset(), getName(), getEncoding());
-
-		for (DictionaryEntry entry : this) {
-			if (copy.add(entry.getValue()) != entry.getId()) {
-				throw new IllegalStateException("Copy has different ordering than myself");
-			}
-		}
 
 		return copy;
 	}

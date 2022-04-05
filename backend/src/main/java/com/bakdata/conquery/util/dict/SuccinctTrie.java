@@ -99,15 +99,8 @@ public class SuccinctTrie extends Dictionary {
 	}
 
 	@Override
-	public Dictionary copyUncompressed() {
+	public Dictionary copyEmpty() {
 		final Dictionary copy = new SuccinctTrie(getDataset(), getName(), getEncoding());
-
-		for (DictionaryEntry entry : this) {
-			final int newId = copy.add(entry.getValue());
-			if (newId != entry.getId()) {
-				throw new IllegalStateException("Copy has different ordering than myself");
-			}
-		}
 
 		return copy;
 	}

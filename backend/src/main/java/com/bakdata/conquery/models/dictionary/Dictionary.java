@@ -14,6 +14,8 @@ import lombok.Setter;
 @CPSBase
 public abstract class Dictionary extends NamedImpl<DictionaryId> implements NamespacedIdentifiable<DictionaryId>, Iterable<DictionaryEntry> {
 
+	//TODO detangle Dictionary from Storages so that we can move Cache here
+
 	@Getter
 	@Setter
 	@NsIdRef
@@ -28,7 +30,7 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 		this.dataset = dataset;
 	}
 
-	public abstract Dictionary copyUncompressed();
+	public abstract Dictionary copyEmpty();
 
 	public void compress() {
 	}
