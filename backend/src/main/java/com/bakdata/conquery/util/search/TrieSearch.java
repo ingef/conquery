@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.IntSummaryStatistics;
 import java.util.Iterator;
 import java.util.List;
@@ -163,9 +162,12 @@ public class TrieSearch<T extends Comparable<T>> {
 		return trie.values().stream().distinct().count();
 	}
 
+	/**
+	 * Since growth of ArrayList might be excessive, we can shrink the internal lists to only required size instead.
+	 * @implSpec the TrieSearch is still mutable after this.
+	 */
 	public void shrinkToFit() {
-		//TODO fk: should I make this even immutable?
-		trie.replaceAll((key, values) -> new ArrayList<>(new HashSet<>(values)));
+		trie.replaceAll((key, values) -> values.stream().distinct().collect(Collectors.toList()));
 	}
 
 	public void logStats() {

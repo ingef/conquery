@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1;
 import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,6 +145,8 @@ public class FilterSearch {
 			// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 			final ExecutorService service = Executors.newCachedThreadPool();
 
+			final Map<String, TrieSearch<FEValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
+
 			log.debug("Found {} search suppliers", suppliers.size());
 
 			for (Map.Entry<String, Stream<FEValue>> entry : suppliers.entrySet()) {
@@ -162,9 +165,9 @@ public class FilterSearch {
 						values.distinct()
 							  .forEach(item -> search.addItem(item, extractKeywords(item)));
 
-						searchCache.put(id, search);
-
 						search.shrinkToFit();
+
+						synchronizedResult.put(id, search);
 
 						final long end = System.currentTimeMillis();
 
@@ -180,7 +183,7 @@ public class FilterSearch {
 
 
 			while (!service.awaitTermination(30, TimeUnit.SECONDS)) {
-				log.trace("Still waiting for {} to finish.", suppliers.size());
+				log.trace("Still waiting for {} to finish.", suppliers.size() - searchCache.size());
 			}
 
 			log.debug("DONE loading SourceSearch");

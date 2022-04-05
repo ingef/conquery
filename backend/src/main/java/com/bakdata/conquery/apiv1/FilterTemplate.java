@@ -17,15 +17,15 @@ public class FilterTemplate implements Serializable {
 	private String filePath;
 
 	/**
-	 * Value to Filter.
+	 * Value to be sent for filtering.
 	 */
 	private String columnValue;
 	/**
-	 * Selected value.
+	 * Value displayed in Select list. Usually concise display.
 	 */
 	private String value;
 	/**
-	 * Option value.
+	 * More detailed value. Displayed when value is selected.
 	 */
 	private String optionValue;
 

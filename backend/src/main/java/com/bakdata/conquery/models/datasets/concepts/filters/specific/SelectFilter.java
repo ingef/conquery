@@ -56,8 +56,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 
 	@JsonIgnore
 	@ValidationMethod(message = "Cannot use both labels and template.")
-	public boolean isNotBothTemplateAndLabels() {
-		// Technically it's possible it just doesn't make much sense and would lead to sPoT confusion.
+	public boolean isNotUsingTemplateAndLabels() {
+		// Technically it's possible it just doesn't make much sense and would lead to Single-Point-of-Truth confusion.
 		if (getTemplate() == null && labels.isEmpty()) {
 			return true;
 		}

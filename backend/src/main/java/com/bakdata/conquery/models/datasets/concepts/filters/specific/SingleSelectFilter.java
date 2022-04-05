@@ -10,7 +10,7 @@ import net.minidev.json.annotate.JsonIgnore;
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.",
  *
- * @jsonExample {"label":"gender","column":"reference_data.gender","type":"SELECT"}
+ * @jsonExample {"label":"gender","column":"reference_data.gender","type":"SINGLE_SELECT"}
  */
 @CPSType(id = "SINGLE_SELECT", base = Filter.class)
 public class SingleSelectFilter extends SelectFilter<String> {
