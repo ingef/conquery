@@ -7,8 +7,7 @@
   },
   "leftPane": {
     "conceptTrees": "Konzepte",
-    "previousQueries": "Anfragen",
-    "formConfigs": "Formulare"
+    "previousQueries": "Anfragen und Formulare"
   },
   "rightPane": {
     "queryEditor": "Editor",
@@ -124,8 +123,9 @@
     "description": "Alle Anfragen aus dem Ordner {{folder}} werden aus dem Ordner entfernt, bleiben aber gespeichert."
   },
   "sharePreviousQueryModal": {
-    "headline": "Anfrage freigeben: ",
-    "groupsLabel": "Gruppen mit denen die Anfrage geteilt werden soll",
+    "headline": "Freigabe bearbeiten",
+    "groupsLabelQuery": "Gruppen mit denen die Anfrage geteilt wird",
+    "groupsLabelConfig": "Gruppen mit denen die Formular-Einstellung geteilt wird",
     "unshare": "Freigabe aufheben"
   },
   "common": {
@@ -164,10 +164,10 @@
   "tooltip": {
     "headline": "Info",
     "placeholder": "Weitere Informationen zu Konzepten ...",
-    "entitiesFound": "Entität",
-    "entitiesFound_plural": "Entitäten",
-    "entriesFound": "Eintrag",
-    "entriesFound_plural": "Einträge",
+    "entitiesFound_one": "Entität",
+    "entitiesFound_other": "Entitäten",
+    "entriesFound_one": "Eintrag",
+    "entriesFound_other": "Einträge",
     "date": {
       "daterange": "Zeitraum",
       "from": "Von",
@@ -200,18 +200,18 @@
     "dndPlaceholder": "Auswählen oder Datei hochladen ...",
     "openFileDialog": "Datei auswählen",
     "insertAll": "Alle einfügen",
-    "options": "1 Wert",
-    "options_plural": "{{count}} Werte",
+    "options_one": "1 Wert",
+    "options_other": "{{count}} Werte",
     "ofTotal": " von {{count}}",
     "tagPlaceholder": "Ordner ...",
     "createTag": "Zu Ordner hinzufügen: {{label}}"
   },
   "previousQueries": {
-    "loading": "Lade Anfragen",
+    "loading": "Lade Anfragen und Formulare",
     "error": "Konnte Anfragen nicht laden",
     "results": "Ergebnisse",
-    "noQueriesFound": "Keine Anfragen gefunden",
-    "searchPlaceholder": "Anfragen durchsuchen ..."
+    "noQueriesFound": "Keine Anfragen / Formulare gefunden",
+    "searchPlaceholder": "Anfragen und Formulare durchsuchen ..."
   },
   "previousQuery": {
     "notExecuted": "Noch nicht ausgeführt",
@@ -223,11 +223,15 @@
     "deleteError": "Konnte Anfrage nicht löschen",
     "editFolders": "Ordner bearbeiten"
   },
-  "previousQueriesFilter": {
+  "projectItemsFilter": {
     "all": "Alle",
     "own": "Eigene",
     "shared": "Freigegeben",
     "system": "SYSTEM"
+  },
+  "projectItemsTypeFilter": {
+    "queries": "Nur Anfragen",
+    "configs": "Nur Formulare"
   },
   "formConfigsFilter": {
     "activeForm": "Aktives Formular"
@@ -313,13 +317,13 @@
     "upload": "Hochladen",
     "uploadAgain": "Erneut hochladen",
     "uploadFailed": "Datei konnte nicht hochgeladen werden. Bitte überprüfe das Dateiformat und die Netzwerkverbindung.",
-    "uploadSucceeded": "Alle Zeilen (1 Zeile) wurden erfolgreich hochgeladen.",
-    "uploadSucceeded_plural": "Alle {{count}} Zeilen wurden erfolgreich hochgeladen.",
+    "uploadSucceeded_one": "Alle Zeilen (1 Zeile) wurden erfolgreich hochgeladen.",
+    "uploadSucceeded_other": "Alle {{count}} Zeilen wurden erfolgreich hochgeladen.",
     "formatInfo": {
       "text": "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
     },
-    "downloadUnresolved": "Eine Unauflösbare Zeile herunterladen (CSV)",
-    "downloadUnresolved_plural": "{{ count }} Unauflösbare Zeilen herunterladen (CSV)"
+    "downloadUnresolved_one": "Eine Unauflösbare Zeile herunterladen (CSV)",
+    "downloadUnresolved_other": "{{ count }} Unauflösbare Zeilen herunterladen (CSV)"
   },
   "csvColumnPicker": {
     "loading": "Lese Daten ...",
@@ -334,12 +338,12 @@
     "extra": "Zusatzspalte",
     "ignore": "Ignorieren",
     "partialSuccess": "Hochladen teilweise erfolgreich.",
-    "resolved": "1 Zeile aufgelöst.",
-    "resolved_plural": "{{count}} Zeilen aufgelöst.",
-    "unreadableDate": "Datum nicht lesbar in der folgenden Zeile",
-    "unreadableDate_plural": "Datum nicht lesbar in den folgenden {{count}} Zeilen",
-    "unresolvedId": "ID nicht auflösbar in der folgenden Zeile",
-    "unresolvedId_plural": "ID nicht auflösbar in den folgenden {{count}} Zeilen"
+    "resolved_one": "1 Zeile aufgelöst.",
+    "resolved_other": "{{count}} Zeilen aufgelöst.",
+    "unreadableDate_one": "Datum nicht lesbar in der folgenden Zeile",
+    "unreadableDate_other": "Datum nicht lesbar in den folgenden {{count}} Zeilen",
+    "unresolvedId_one": "ID nicht auflösbar in der folgenden Zeile",
+    "unresolvedId_other": "ID nicht auflösbar in den folgenden {{count}} Zeilen"
   },
   "uploadConceptListModal": {
     "headline": "Konzepte aus Liste einfügen",
@@ -347,10 +351,10 @@
     "selectConceptRootNode": "Konzept-Wurzel auswählen",
     "insertNode": "Jetzt einfügen",
     "result": "Ergebnis",
-    "resolvedCodes": "1 Wert aufgelöst.",
-    "resolvedCodes_plural": "{{count}} Werte aufgelöst.",
-    "unknownCodes": "1 Wert nicht aufgelöst",
-    "unknownCodes_plural": "{{count}} Werte nicht aufgelöst",
+    "resolvedCodes_one": "1 Wert aufgelöst.",
+    "resolvedCodes_other": "{{count}} Werte aufgelöst.",
+    "unknownCodes_one": "1 Wert nicht aufgelöst",
+    "unknownCodes_other": "{{count}} Werte nicht aufgelöst",
     "error": "Beim Auflösen der Werte ist ein Fehler aufgetreten.",
     "nothingResolved": "Kein Konzept konnte aufgelöst werden."
   },
@@ -429,8 +433,7 @@
   },
   "help": {
     "tabConceptTrees": "Auswahl der Konzepte zur Verwendung im Editor oder Formular-Editor.",
-    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung im Editor, Zeit-Editor oder Formular-Editor.",
-    "tabFormConfigs": "Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
+    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung im Editor, Zeit-Editor oder Formular-Editor. Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
     "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
     "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",
     "tabFormEditor": "Hier können Auswertungen und Analysen zu bestehenden Anfragen erstellt werden.",

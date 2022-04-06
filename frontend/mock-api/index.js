@@ -244,7 +244,7 @@ module.exports = function (app, port) {
           ["Another very long long tagname, 2020", 0.001],
         ];
 
-        for (var i = 25600; i < 25700; i++) {
+        for (var i = 24700; i < 25700; i++) {
           const notExecuted = Math.random() < 0.1;
 
           ids.push({
@@ -527,7 +527,7 @@ module.exports = function (app, port) {
           "interesting",
         ];
 
-        for (var i = 55600; i < 85600; i++) {
+        for (var i = 84600; i < 85600; i++) {
           configs.push({
             id: i,
             label: "Saved Config",

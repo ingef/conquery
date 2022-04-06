@@ -17,6 +17,8 @@ import { usePrevious } from "../common/helpers/usePrevious";
 import { useDatasetId } from "../dataset/selectors";
 import FaIcon from "../icon/FaIcon";
 import { Language, useActiveLang } from "../localization/useActiveLang";
+import { useLoadFormConfigs } from "../previous-queries/list/actions";
+import type { FormConfigT } from "../previous-queries/list/reducer";
 import { setMessage } from "../snack-message/actions";
 import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone from "../ui-components/Dropzone";
@@ -26,15 +28,13 @@ import Label from "../ui-components/Label";
 import { setExternalForm } from "./actions";
 import type { Form, FormField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
-import type { DragItemFormConfig } from "./form-configs/FormConfig";
-import type { FormConfigT } from "./form-configs/reducer";
-import { useLoadFormConfigs } from "./form-configs/selectors";
 import { collectAllFormFields } from "./helper";
 import {
   useSelectActiveFormName,
   selectActiveFormType,
   selectFormConfig,
 } from "./stateSelectors";
+import type { DragItemFormConfig } from "./types";
 
 const Root = styled("div")`
   display: flex;

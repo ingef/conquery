@@ -9,7 +9,7 @@ import WithTooltip from "../tooltip/WithTooltip";
 interface PropsT {
   className?: string;
   text: string;
-  loading: boolean;
+  loading?: boolean;
   selectTextOnMount?: boolean;
   saveOnClickoutside?: boolean;
   onSubmit: (text: string) => void;

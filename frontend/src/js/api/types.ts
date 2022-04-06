@@ -2,7 +2,7 @@
 // - response type provided by the backend API
 // - partial types that the reponses are built from
 import type { Forms } from "../external-forms/config-types";
-import type { FormConfigT } from "../external-forms/form-configs/reducer";
+import type { FormConfigT } from "../previous-queries/list/reducer";
 import type { ModeT } from "../ui-components/InputRange";
 
 export type DatasetIdT = string;
@@ -302,7 +302,7 @@ export interface SecondaryId {
 export interface GetConceptsResponseT {
   secondaryIds: SecondaryId[];
   concepts: {
-    [conceptId: string]: ConceptStructT | ConceptElementT;
+    [conceptId: ConceptIdT]: ConceptStructT | ConceptElementT;
   };
 }
 

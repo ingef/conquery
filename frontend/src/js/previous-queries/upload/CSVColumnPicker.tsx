@@ -191,8 +191,7 @@ const CSVColumnPicker: FC<PropsT> = ({
       try {
         setCSVLoading(true);
 
-        const parsed = await parseCSV(file, delimiter);
-        const { result } = parsed;
+        const result = await parseCSV(file, delimiter);
 
         setCSVLoading(false);
 

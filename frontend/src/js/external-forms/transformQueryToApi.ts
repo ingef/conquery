@@ -1,21 +1,31 @@
 import { transformElementsToApi } from "../api/apiHelper";
 import type { SelectOptionT } from "../api/types";
 import type { DateStringMinMax } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
 import type { DragItemQuery } from "../standard-query-editor/types";
 
 import type { Form, GeneralField } from "./config-types";
+import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 import type { DynamicFormValues } from "./form/Form";
 import { isFormField } from "./helper";
 
-function transformElementGroupsToApi(elementGroups) {
-  return elementGroups.map(({ concepts, connector, ...rest }) =>
-    concepts.length > 1
-      ? {
-          type: connector,
-          children: transformElementsToApi(concepts),
-          ...rest,
-        }
-      : { ...transformElementsToApi(concepts)[0], ...rest },
+function transformElementGroupsToApi(elementGroups: FormConceptGroupT[]) {
+  const elementGroupsWithAtLeastOneElement = elementGroups
+    .map(({ concepts, ...rest }) => ({
+      concepts: concepts.filter(exists),
+      ...rest,
+    }))
+    .filter(({ concepts }) => concepts.length > 0);
+
+  return elementGroupsWithAtLeastOneElement.map(
+    ({ concepts, connector, ...rest }) =>
+      concepts.length > 1
+        ? {
+            type: connector,
+            children: transformElementsToApi(concepts),
+            ...rest,
+          }
+        : { ...transformElementsToApi(concepts)[0], ...rest },
   );
 }
 
@@ -67,7 +77,12 @@ function transformFieldToApiEntries(
         ],
       ];
     case "CONCEPT_LIST":
-      return [[fieldConfig.name, transformElementGroupsToApi(formValue)]];
+      return [
+        [
+          fieldConfig.name,
+          transformElementGroupsToApi(formValue as FormConceptGroupT[]),
+        ],
+      ];
     case "GROUP":
       return fieldConfig.fields.flatMap((f) =>
         transformFieldToApiEntries(f, formValues),

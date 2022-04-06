@@ -1,0 +1,221 @@
+{
+    "label": "Concept1",
+    "type": "TREE",
+    "connectors": {
+        "name": "column",
+        "column": "table.STRING",
+        "validityDates": [
+            {
+                "label": "DATE",
+                "column": "table.DATE"
+            },
+            {
+                "label": "DATE_RANGE",
+                "column": "table.DATE_RANGE"
+            }
+        ],
+        "filters": [
+            {
+                "type": "SUM",
+                "label": "SUM_MONEY",
+                "column": "table.MONEY"
+            },
+            {
+                "type": "SUM",
+                "label": "SUM_INTEGER",
+                "column": "table.INTEGER"
+            },
+            {
+                "type": "SUM",
+                "label": "SUM_DECIMAL",
+                "column": "table.DECIMAL"
+            },
+            {
+                "type": "SUM",
+                "label": "SUM_REAL",
+                "column": "table.REAL"
+            },
+            {
+                "type": "COUNT",
+                "label": "COUNT_MONEY",
+                "column": "table.MONEY"
+            },
+            {
+                "type": "COUNT",
+                "label": "COUNT_INTEGER",
+                "column": "table.INTEGER"
+            },
+            {
+                "type": "COUNT",
+                "label": "COUNT_DECIMAL",
+                "column": "table.DECIMAL"
+            },
+            {
+                "type": "COUNT",
+                "label": "COUNT_REAL",
+                "column": "table.REAL"
+            },
+            {
+                "type": "COUNT_QUARTERS",
+                "label": "COUNT_QUARTERS_DATE",
+                "column": "table.DATE"
+            },
+            {
+                "type": "COUNT_QUARTERS",
+                "label": "COUNT_QUARTERS_DATE_RANGE",
+                "column": "table.DATE_RANGE"
+            },
+            {
+                "label": "SINGLE_SELECT",
+                "column": "table.STRING",
+                "type": "SINGLE_SELECT"
+            },
+            {
+                "label": "SELECT",
+                "column": "table.STRING",
+                "type": "SELECT"
+            },
+            {
+                "label": "BIG_MULTI_SELECT",
+                "column": "table.STRING",
+                "type": "BIG_MULTI_SELECT"
+            },
+            {
+                "label": "DURATION_SUM",
+                "column": "table.DATE_RANGE",
+                "type": "DURATION_SUM"
+            },
+            {
+                "label": "QUARTERS_IN_YEAR",
+                "column": "table.DATE",
+                "type": "QUARTERS_IN_YEAR"
+            },
+            {
+                "label": "NUMBER_MONEY",
+                "column": "table.MONEY",
+                "type": "NUMBER"
+            },
+            {
+                "label": "NUMBER_INTEGER",
+                "column": "table.INTEGER",
+                "type": "NUMBER"
+            },
+            {
+                "label": "NUMBER_REAL",
+                "column": "table.REAL",
+                "type": "NUMBER"
+            },
+            {
+                "label": "PREFIX_TEXT",
+                "column": "table.STRING",
+                "type": "PREFIX_TEXT"
+            },
+            {
+                "label": "DATE_DISTANCE",
+                "column": "table.DATE",
+                "type": "DATE_DISTANCE"
+            }
+        ],
+        "selects": [
+            {
+                "label": "SUM",
+                "type": "SUM",
+                "column": "table.INTEGER"
+            },
+            {
+                "label": "COUNT",
+                "type": "COUNT",
+                "column": "table.INTEGER"
+            },
+            {
+                "label": "DISTINCT",
+                "type": "DISTINCT",
+                "column": "table.INTEGER"
+            },
+            {
+                "label": "LAST",
+                "type": "LAST",
+                "column": "table.INTEGER"
+            },
+            {
+                "label": "DURATION_SUM",
+                "type": "DURATION_SUM",
+                "column": "table.DATE"
+            },
+            {
+                "label": "DATE_UNION",
+                "type": "DATE_UNION",
+                "column": "table.DATE"
+            },
+            {
+                "label": "RANDOM",
+                "type": "RANDOM",
+                "column": "table.INTEGER"
+            },
+            {
+                "label": "COUNT_OCCURENCES",
+                "type": "COUNT_OCCURENCES",
+                "column": "table.STRING",
+                "selection": []
+            },
+            {
+                "label": "FIRST",
+                "type": "FIRST",
+                "column": "table.INTEGER"
+            },
+            {
+                "label": "QUARTERS_IN_YEAR",
+                "type": "QUARTERS_IN_YEAR",
+                "column": "table.DATE"
+            },
+            {
+                "label": "DATE_DISTANCE",
+                "type": "DATE_DISTANCE",
+                "column": "table.DATE"
+            },
+            {
+                "label": "PREFIX",
+                "type": "PREFIX",
+                "column": "table.STRING"
+            },
+            {
+                "label": "COUNT_QUARTERS",
+                "type": "COUNT_QUARTERS",
+                "column": "table.DATE"
+            },
+            {
+                "label": "EXISTS",
+                "type": "EXISTS"
+            },
+            {
+                "label": "EVENT_DATE_UNION",
+                "type": "EVENT_DATE_UNION"
+            },
+            {
+                "label": "EVENT_DURATION_SUM",
+                "type": "EVENT_DURATION_SUM"
+            }
+        ]
+    },
+    "children": {
+        "name": "a1",
+        "condition": {
+            "type": "EQUAL",
+            "values": "A1"
+        }
+    },
+    "selects": [
+        {
+            "label": "EXISTS",
+            "type": "EXISTS"
+        },
+        {
+            "label": "EVENT_DATE_UNION",
+            "type": "EVENT_DATE_UNION"
+        },
+        {
+            "label": "EVENT_DURATION_SUM",
+            "type": "EVENT_DURATION_SUM"
+        }
+    ]
+}

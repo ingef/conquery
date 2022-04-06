@@ -5,30 +5,24 @@ import conceptTreesOpen, {
 } from "../concept-trees-open/reducer";
 import conceptTrees, { ConceptTreesStateT } from "../concept-trees/reducer";
 import datasets, { DatasetStateT } from "../dataset/reducer";
-import formConfigsFilter, {
-  FormConfigsFilterStateT,
-} from "../external-forms/form-configs/filter/reducer";
-import formConfigs, {
-  FormConfigsStateT,
-} from "../external-forms/form-configs/reducer";
-import formConfigsSearch, {
-  FormConfigsSearchStateT,
-} from "../external-forms/form-configs/search/reducer";
 import panes, { PanesStateT } from "../pane/reducer";
 import type { TabT } from "../pane/types";
 import preview, { PreviewStateT } from "../preview/reducer";
-import previousQueriesFilter, {
-  PreviousQueriesFilterStateT,
+import projectItemsFilter, {
+  ProjectItemsFilterStateT,
 } from "../previous-queries/filter/reducer";
 import previousQueriesFolderFilter, {
   PreviousQueriesFolderFilterStateT,
-} from "../previous-queries/folderFilter/reducer";
+} from "../previous-queries/folder-filter/reducer";
 import previousQueries, {
   PreviousQueriesStateT,
 } from "../previous-queries/list/reducer";
-import previousQueriesSearch, {
-  QueriesSearchStateT,
+import projectItemsSearch, {
+  ProjectItemsSearchStateT,
 } from "../previous-queries/search/reducer";
+import projectItemsTypeFilter, {
+  ProjectItemsTypeFilterStateT,
+} from "../previous-queries/type-filter/reducer";
 import {
   createQueryNodeEditorReducer,
   QueryNodeEditorStateT,
@@ -59,12 +53,10 @@ export type StateT = {
   queryNodeEditor: QueryNodeEditorStateT;
   startup: StartupStateT;
   previousQueries: PreviousQueriesStateT;
-  previousQueriesSearch: QueriesSearchStateT;
-  previousQueriesFilter: PreviousQueriesFilterStateT;
+  projectItemsSearch: ProjectItemsSearchStateT;
+  projectItemsFilter: ProjectItemsFilterStateT;
+  projectItemsTypeFilter: ProjectItemsTypeFilterStateT;
   previousQueriesFolderFilter: PreviousQueriesFolderFilterStateT;
-  formConfigs: FormConfigsStateT;
-  formConfigsSearch: FormConfigsSearchStateT;
-  formConfigsFilter: FormConfigsFilterStateT;
   preview: PreviewStateT;
   snackMessage: SnackMessageStateT;
 };
@@ -81,15 +73,13 @@ const buildAppReducer = (tabs: TabT[]) => {
     tooltip,
     panes,
     previousQueries,
-    previousQueriesSearch,
-    previousQueriesFilter,
+    projectItemsSearch,
+    projectItemsFilter,
+    projectItemsTypeFilter,
     previousQueriesFolderFilter,
     snackMessage,
     preview,
     user,
-    formConfigs,
-    formConfigsSearch,
-    formConfigsFilter,
     ...tabs.reduce((all, tab) => {
       all[tab.key] = tab.reducer;
       return all;
