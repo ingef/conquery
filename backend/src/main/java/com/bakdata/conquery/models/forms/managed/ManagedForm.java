@@ -10,16 +10,17 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -47,7 +48,6 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @ToString
 @Slf4j
-@CPSType(base = ManagedExecution.class, id = "MANAGED_FORM")
 @NoArgsConstructor
 public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 
@@ -62,6 +62,9 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	 */
 	@JsonIgnore
 	protected Map<String, List<ManagedQuery>> subQueries;
+
+	@JsonIgnore
+	private MetaStorage storage;
 
 	/**
 	 * Subqueries that are send to the workers.
@@ -88,6 +91,19 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	public void start() {
 		synchronized (this) {
 			subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
+
+
+			if (submittedForm.getValues() != null) {
+				// save as formConfig
+				final FormConfigAPI build = FormConfigAPI.builder().formType(submittedForm.getFormType())
+														 .label(this.getLabel())
+														 .tags(this.getTags())
+														 .values(submittedForm.getValues()).build();
+
+				final FormConfig formConfig = build.intern(getOwner(), getDataset());
+
+				storage.addFormConfig(formConfig);
+			}
 		}
 		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
