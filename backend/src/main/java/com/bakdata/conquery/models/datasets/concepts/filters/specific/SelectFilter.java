@@ -34,7 +34,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	private FilterTemplate template;
 
 	@JsonIgnore
-	public abstract FEFilterType getFilterType();
+	public abstract String getFilterType();
 
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {

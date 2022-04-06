@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.frontend;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -19,7 +20,7 @@ public class FEFilter {
 
 	private FilterId id;
 	private String label;
-	private FEFilterType type;
+	private String type;
 	private String unit;
 	private String description;
 	@Builder.Default
@@ -31,4 +32,6 @@ public class FEFilter {
 	private Boolean allowDropFile;
 	@Nullable
 	private Object defaultValue;
+
+	private Map<String, FEFilter> filters;
 }

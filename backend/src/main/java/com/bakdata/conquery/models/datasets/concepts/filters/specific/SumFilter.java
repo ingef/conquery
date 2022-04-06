@@ -63,14 +63,14 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 		Column column = getColumn();
 		switch (column.getType()) {
 			case MONEY:
-				f.setType(FEFilterType.MONEY_RANGE);
+				f.setType(FEFilterType.Fields.MONEY_RANGE);
 				return;
 			case INTEGER:
-				f.setType(FEFilterType.INTEGER_RANGE);
+				f.setType(FEFilterType.Fields.INTEGER_RANGE);
 				return;
 			case DECIMAL:
 			case REAL: {
-				f.setType(FEFilterType.REAL_RANGE);
+				f.setType(FEFilterType.Fields.REAL_RANGE);
 				return;
 			}
 			default:

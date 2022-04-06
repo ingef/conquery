@@ -22,8 +22,8 @@ public class BigMultiSelectFilter extends SelectFilter<String[]> {
 
 	@JsonIgnore
 	@Override
-	public FEFilterType getFilterType() {
-		return FEFilterType.BIG_MULTI_SELECT;
+	public String getFilterType() {
+		return FEFilterType.Fields.BIG_MULTI_SELECT;
 	}
 
 	@Override

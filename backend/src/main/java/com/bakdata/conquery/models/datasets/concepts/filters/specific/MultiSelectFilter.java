@@ -15,8 +15,8 @@ public class MultiSelectFilter extends SelectFilter<String[]> {
 
 	@JsonIgnore
 	@Override
-	public FEFilterType getFilterType() {
-		return FEFilterType.MULTI_SELECT;
+	public String getFilterType() {
+		return FEFilterType.Fields.MULTI_SELECT;
 	}
 
 	@Override
