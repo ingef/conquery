@@ -13,15 +13,15 @@ import lombok.experimental.FieldNameConstants;
 @FieldNameConstants
 @NoArgsConstructor(access = AccessLevel.NONE)
 public final class FEFilterType {
-	private int SELECT;
-	private int MULTI_SELECT;
-	private int BIG_MULTI_SELECT;
-	private int INTEGER;
-	private int INTEGER_RANGE;
-	private int REAL;
-	private int REAL_RANGE;
-	private int NONE;
-	private int STRING;
-	private int MONEY_RANGE;
-	private int GROUP;
+	private Void SELECT;
+	private Void MULTI_SELECT;
+	private Void BIG_MULTI_SELECT;
+	private Void VoidEGER;
+	private Void VoidEGER_RANGE;
+	private Void REAL;
+	private Void REAL_RANGE;
+	private Void NONE;
+	private Void STRING;
+	private Void MONEY_RANGE;
+	private Void GROUP;
 }
