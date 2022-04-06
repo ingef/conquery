@@ -1,8 +1,8 @@
 import { apiUrl } from "../environment";
 import type {
-  FormConfigT,
   BaseFormConfigT,
-} from "../external-forms/form-configs/reducer";
+  FormConfigT,
+} from "../previous-queries/list/reducer";
 import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker";
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";

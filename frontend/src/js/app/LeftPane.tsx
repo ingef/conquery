@@ -6,9 +6,8 @@ import type { DatasetIdT } from "../api/types";
 import ConceptTreeList from "../concept-trees/ConceptTreeList";
 import ConceptTreeSearchBox from "../concept-trees/ConceptTreeSearchBox";
 import { useAreTreesAvailable } from "../concept-trees/selectors";
-import FormConfigsTab from "../external-forms/form-configs/FormConfigsTab";
 import Pane from "../pane/Pane";
-import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
+import ProjectItemsTab from "../previous-queries/list/ProjectItemsTab";
 
 import { StateT } from "./reducers";
 
@@ -25,9 +24,11 @@ const LeftPane = () => {
     (state) => state.datasets.selectedDatasetId,
   );
   const areTreesAvailable = useAreTreesAvailable();
-  const previousQueriesLoading = useSelector<StateT, boolean>(
-    (state) => state.previousQueries.loading,
-  );
+
+  // TODO: Re-implement
+  // const previousQueriesLoading = useSelector<StateT, boolean>(
+  //   (state) => state.previousQueries.loading,
+  // );
 
   return (
     <Pane
@@ -42,24 +43,18 @@ const LeftPane = () => {
           label: t("leftPane.previousQueries"),
           key: "previousQueries",
           tooltip: t("help.tabPreviousQueries"),
-          loading: previousQueriesLoading,
-        },
-        {
-          label: t("leftPane.formConfigs"),
-          key: "formConfigs",
-          tooltip: t("help.tabFormConfigs"),
+          // TODO: Re-implement
+          // loading: previousQueriesLoading,
         },
       ]}
+      dataTestId="left-pane"
     >
       {activeTab === "conceptTrees" && areTreesAvailable && (
         <SxConceptTreeSearchBox />
       )}
       <ConceptTreeList datasetId={selectedDatasetId} />
       {activeTab === "previousQueries" && (
-        <PreviousQueriesTab datasetId={selectedDatasetId} />
-      )}
-      {activeTab === "formConfigs" && (
-        <FormConfigsTab datasetId={selectedDatasetId} />
+        <ProjectItemsTab datasetId={selectedDatasetId} />
       )}
     </Pane>
   );

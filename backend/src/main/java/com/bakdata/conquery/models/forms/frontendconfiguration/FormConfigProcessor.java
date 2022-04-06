@@ -112,7 +112,7 @@ public class FormConfigProcessor {
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
 
-		FormConfig internalConfig = FormConfigAPI.intern(config, storage.getUser(subject.getId()), targetDataset);
+		FormConfig internalConfig = config.intern(storage.getUser(subject.getId()), targetDataset);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 

@@ -10,7 +10,7 @@ import EditableTextForm from "./EditableTextForm";
 
 interface PropsT {
   className?: string;
-  loading: boolean;
+  loading?: boolean;
   editing: boolean;
   text: string;
   tooltip?: string;

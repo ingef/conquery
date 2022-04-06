@@ -234,7 +234,7 @@ public class FrontEndConceptBuilder {
 						con
 						.getValidityDates()
 						.stream()
-							.map(vd -> new FEValue(vd.getLabel(), vd.getId().toString()))
+							.map(vd -> new FEValue(vd.getId().toString(), vd.getLabel()))
 							.collect(Collectors.toList())
 				)
 			);

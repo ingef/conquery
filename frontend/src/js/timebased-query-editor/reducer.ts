@@ -1,7 +1,6 @@
 import { ActionType, getType } from "typesafe-actions";
 
 import { Action } from "../app/actions";
-import { renameQuery } from "../previous-queries/list/actions";
 import type { DragItemQuery } from "../standard-query-editor/types";
 
 import {
@@ -344,32 +343,6 @@ const onRemoveTimebasedCondition = (
   return ensureIndexResult({ ...nextState, indexResult: null });
 };
 
-const renameQueries = (
-  state: TimebasedQueryStateT,
-  { queryId, label }: ActionType<typeof renameQuery.success>["payload"],
-) => {
-  return {
-    ...state,
-    conditions: state.conditions.map((c) => {
-      const result0 =
-        c.result0 && c.result0.id === queryId
-          ? { ...c.result0, label: label }
-          : c.result0;
-
-      const result1 =
-        c.result1 && c.result1.id === queryId
-          ? { ...c.result1, label: label }
-          : c.result1;
-
-      return {
-        ...c,
-        result0,
-        result1,
-      };
-    }),
-  };
-};
-
 const initialState = {
   indexResult: null,
   conditions: [getEmptyNode()],
@@ -445,8 +418,6 @@ const timebasedQuery = (
       return onAddTimebasedCondition(state);
     case getType(removeTimebasedCondition):
       return onRemoveTimebasedCondition(state, action.payload);
-    case getType(renameQuery.success):
-      return renameQueries(state, action.payload);
     case getType(clearTimebasedQuery):
       return initialState;
     default:

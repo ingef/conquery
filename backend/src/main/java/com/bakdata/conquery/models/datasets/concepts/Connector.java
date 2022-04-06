@@ -10,7 +10,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -108,12 +107,6 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 
 	@JsonIgnore
 	public abstract List<Filter<?>> collectAllFilters();
-
-	public synchronized void addImport(Import imp) {
-		for (Filter<?> f : collectAllFilters()) {
-			f.addImport(imp);
-		}
-	}
 
 	public static boolean isNotContained(int[] mostSpecificChildren) {
 		return Arrays.equals(mostSpecificChildren, NOT_CONTAINED);

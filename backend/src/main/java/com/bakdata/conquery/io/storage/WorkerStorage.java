@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import lombok.Getter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,9 +24,6 @@ public class WorkerStorage extends NamespacedStorage {
     private SingletonStore<WorkerInformation> worker;
     private IdentifiableStore<Bucket> buckets;
     private IdentifiableStore<CBlock> cBlocks;
-
-    @Getter
-    private final boolean registerImports = false;
 
     public WorkerStorage(Validator validator, String pathName) {
         super(validator, pathName);

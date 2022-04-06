@@ -24,16 +24,23 @@ interface PropsT {
   right?: boolean;
   left?: boolean;
   className?: string;
+  dataTestId: string;
 }
 
-const Pane: FC<PropsT> = ({ tabs, left, children, className }) => {
+const Pane: FC<PropsT> = ({ tabs, left, children, className, dataTestId }) => {
   const paneType = left ? "left" : "right";
 
   return (
     <Root className={className}>
       <Container>
-        <PaneTabNavigation tabs={tabs} paneType={paneType} />
-        <Container>{children}</Container>
+        <PaneTabNavigation
+          tabs={tabs}
+          paneType={paneType}
+          dataTestId={dataTestId}
+        />
+        <Container data-test-id={dataTestId + "-container"}>
+          {children}
+        </Container>
       </Container>
     </Root>
   );

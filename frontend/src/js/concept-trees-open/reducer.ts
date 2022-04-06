@@ -1,6 +1,7 @@
 import { getType } from "typesafe-actions";
 
-import { Action } from "../app/actions";
+import type { ConceptIdT } from "../api/types";
+import type { Action } from "../app/actions";
 import { searchTrees } from "../concept-trees/actions";
 
 import {
@@ -10,7 +11,7 @@ import {
 } from "./actions";
 
 export type ConceptTreesOpenStateT = {
-  [conceptId: string]: boolean;
+  [conceptId: ConceptIdT]: boolean;
 };
 
 const initialState: ConceptTreesOpenStateT = {};
@@ -26,10 +27,13 @@ const conceptTreesOpen = (
       return { ...state, [conceptId]: open };
     }
     case getType(closeAllConceptOpen):
-      return action.payload.rootConceptIds.reduce((all, conceptId) => {
-        all[conceptId] = false;
-        return all;
-      }, {});
+      return action.payload.rootConceptIds.reduce<ConceptTreesOpenStateT>(
+        (all, conceptId) => {
+          all[conceptId] = false;
+          return all;
+        },
+        {},
+      );
     case getType(searchTrees.success):
     case getType(resetAllConceptOpen):
       return initialState;

@@ -54,7 +54,6 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 	public void add(Namespace ns) {
 		datasets.put(ns.getStorage().getDataset().getId(), ns);
-		ns.setNamespaces(this);
 	}
 
 	public Namespace get(DatasetId dataset) {

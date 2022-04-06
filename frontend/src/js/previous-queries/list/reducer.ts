@@ -5,21 +5,38 @@ import { Action } from "../../app/actions";
 
 import {
   addFolder,
+  deleteFormConfigSuccess,
   deleteQuerySuccess,
-  loadQueries,
-  loadQuery,
+  loadFormConfigsSuccess,
+  loadQueriesSuccess,
+  loadQuerySuccess,
+  patchFormConfigSuccess,
+  patchQuerySuccess,
   removeFolder,
-  renameQuery,
-  retagQuery,
-  shareQuerySuccess,
 } from "./actions";
+
+export interface BaseFormConfigT {
+  formType: string;
+  values: Record<string, any>;
+  label: string;
+}
+
+export interface FormConfigT extends BaseFormConfigT {
+  id: string;
+  tags: string[];
+  createdAt: string; // Datetime
+  own: boolean;
+  shared: boolean;
+  system: boolean;
+  ownerName: string;
+  isPristineLabel?: boolean;
+  groups?: UserGroupIdT[];
+}
 
 export type PreviousQueryIdT = string;
 export interface PreviousQueryT {
   id: PreviousQueryIdT;
   label: string;
-  loading?: boolean;
-  error?: string | null;
   numberOfResults: number | null;
   createdAt: string;
   tags: string[];
@@ -38,49 +55,76 @@ export interface PreviousQueryT {
 export interface PreviousQueriesStateT {
   localFolders: string[];
   queries: PreviousQueryT[];
-  loading: boolean;
-  error: string | null;
+  formConfigs: FormConfigT[];
 }
 
 const initialState: PreviousQueriesStateT = {
   localFolders: [],
   queries: [],
-  loading: false,
-  error: null,
+  formConfigs: [],
 };
 
-const findQuery = (queries: PreviousQueryT[], queryId: string | number) => {
-  const query = queries.find((q) => q.id === queryId);
+const findItem = <T extends PreviousQueryT | FormConfigT>(
+  items: T[],
+  itemId: string | number,
+) => {
+  const idx = items.findIndex((i) => i.id === itemId);
 
   return {
-    query,
-    queryIdx: query ? queries.indexOf(query) : -1,
+    item: idx === -1 ? undefined : items[idx],
+    itemIdx: idx,
   };
 };
 
 const updatePreviousQuery = (
   state: PreviousQueriesStateT,
-  { payload: { queryId } }: { payload: { queryId: QueryIdT } },
+  { payload: { id } }: { payload: { id: QueryIdT } },
   attributes: Partial<PreviousQueryT>,
 ) => {
-  const { query, queryIdx } = findQuery(state.queries, queryId);
+  const { item, itemIdx } = findItem(state.queries, id);
 
-  if (!query) return state;
+  if (!item) return state;
 
   return {
     ...state,
     queries: [
-      ...state.queries.slice(0, queryIdx),
+      ...state.queries.slice(0, itemIdx),
       {
-        ...query,
+        ...item,
         ...attributes,
+        shared: attributes.groups ? attributes.groups.length > 0 : false,
       },
-      ...state.queries.slice(queryIdx + 1),
+      ...state.queries.slice(itemIdx + 1),
     ],
   };
 };
 
-const sortQueries = (queries: PreviousQueryT[]) => {
+const updateFormConfig = (
+  state: PreviousQueriesStateT,
+  { payload: { id } }: { payload: { id: FormConfigT["id"] } },
+  attributes: Partial<FormConfigT>,
+) => {
+  const { item, itemIdx } = findItem(state.formConfigs, id);
+
+  if (!item) return state;
+
+  return {
+    ...state,
+    formConfigs: [
+      ...state.formConfigs.slice(0, itemIdx),
+      {
+        ...item,
+        ...attributes,
+        shared: attributes.groups ? attributes.groups.length > 0 : false,
+      },
+      ...state.formConfigs.slice(itemIdx + 1),
+    ],
+  };
+};
+
+const sortProjectItems = <T extends PreviousQueryT | FormConfigT>(
+  queries: T[],
+) => {
   return queries.sort((a, b) => {
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
@@ -90,13 +134,28 @@ const deletePreviousQuery = (
   state: PreviousQueriesStateT,
   { queryId }: { queryId: QueryIdT },
 ) => {
-  const { queryIdx } = findQuery(state.queries, queryId);
+  const { itemIdx } = findItem(state.queries, queryId);
 
   return {
     ...state,
     queries: [
-      ...state.queries.slice(0, queryIdx),
-      ...state.queries.slice(queryIdx + 1),
+      ...state.queries.slice(0, itemIdx),
+      ...state.queries.slice(itemIdx + 1),
+    ],
+  };
+};
+
+const deleteFormConfig = (
+  state: PreviousQueriesStateT,
+  { configId }: { configId: FormConfigT["id"] },
+) => {
+  const { itemIdx } = findItem(state.formConfigs, configId);
+
+  return {
+    ...state,
+    formConfigs: [
+      ...state.formConfigs.slice(0, itemIdx),
+      ...state.formConfigs.slice(itemIdx + 1),
     ],
   };
 };
@@ -106,66 +165,37 @@ const previousQueriesReducer = (
   action: Action,
 ): PreviousQueriesStateT => {
   switch (action.type) {
-    case getType(loadQueries.request):
-      return { ...state, loading: true };
-    case getType(loadQueries.success):
+    case getType(loadQueriesSuccess):
       return {
         ...state,
-        loading: false,
-        queries: sortQueries(action.payload.data),
+        queries: sortProjectItems(action.payload.data),
       };
-    case getType(loadQueries.failure):
+    case getType(loadFormConfigsSuccess):
       return {
         ...state,
-        loading: false,
-        error: action.payload.message || null,
+        formConfigs: sortProjectItems(action.payload.data),
       };
-    case getType(loadQuery.request):
-    case getType(renameQuery.request):
-    case getType(retagQuery.request):
-      return updatePreviousQuery(state, action, { loading: true });
-    case getType(loadQuery.success):
-      return updatePreviousQuery(state, action, {
-        loading: false,
-        error: null,
-        ...action.payload.data,
-      });
-    case getType(renameQuery.success):
-      return updatePreviousQuery(state, action, {
-        loading: false,
-        error: null,
-        label: action.payload.label,
-        isPristineLabel: false,
-      });
-    case getType(retagQuery.success):
-      return {
-        ...updatePreviousQuery(state, action, {
-          loading: false,
-          error: null,
-          tags: action.payload.tags,
-        }),
-        localFolders: state.localFolders.filter(
-          (folder) => !action.payload.tags.includes(folder),
-        ),
-      };
-    case getType(shareQuerySuccess):
-      return updatePreviousQuery(state, action, {
-        loading: false,
-        error: null,
-        groups: action.payload.groups,
-        ...(!action.payload.groups || action.payload.groups.length === 0
-          ? { shared: false }
-          : { shared: true }),
-      });
+    case getType(loadQuerySuccess):
+    case getType(patchQuerySuccess):
+      return updatePreviousQuery(state, action, action.payload.data);
+    case getType(patchFormConfigSuccess):
+      return updateFormConfig(state, action, action.payload.data);
+    // TODO: VALIDATE THAT THIS WAS EVEN USEFUL
+    // localFolders: state.localFolders.filter(
+    //   (folder) => !action.payload.tags.includes(folder),
+    // ),
+    // TODO: VALIDATE THAT THIS IS DONE ALREADY BY THE BACKEND AND "UPDATE" IS ENOUGH
+    // case getType(shareQuerySuccess):
+    //   return updatePreviousQuery(state, action, {
+    //     groups: action.payload.groups,
+    //     ...(!action.payload.groups || action.payload.groups.length === 0
+    //       ? { shared: false }
+    //       : { shared: true }),
+    //   });
     case getType(deleteQuerySuccess):
       return deletePreviousQuery(state, action.payload);
-    case getType(loadQuery.failure):
-    case getType(renameQuery.failure):
-    case getType(retagQuery.failure):
-      return updatePreviousQuery(state, action, {
-        loading: false,
-        error: action.payload.message,
-      });
+    case getType(deleteFormConfigSuccess):
+      return deleteFormConfig(state, action.payload);
     case getType(addFolder):
       return {
         ...state,
