@@ -22,7 +22,7 @@ public class SingleSelectFilter extends SelectFilter<String> {
 
 	@Override
 	@JsonIgnore
-	public FEFilterType getFilterType() {
-		return FEFilterType.SELECT;
+	public String getFilterType() {
+		return FEFilterType.Fields.SELECT;
 	}
 }

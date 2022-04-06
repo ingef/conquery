@@ -271,6 +271,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@Override
 	public void resolve(QueryResolveContext context) {
 		this.aggregateEventDates = !(excludeFromTimeAggregation || DateAggregationMode.NONE.equals(context.getDateAggregationMode()));
+		tables.forEach(t -> t.resolve(context));
 	}
 
 	@Override

@@ -38,7 +38,7 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		switch (getColumn().getType()) {
 			case DATE: {
-				f.setType(FEFilterType.INTEGER_RANGE);
+				f.setType(FEFilterType.Fields.INTEGER_RANGE);
 				return;
 			}
 			default:

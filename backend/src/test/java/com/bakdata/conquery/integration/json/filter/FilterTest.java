@@ -1,11 +1,14 @@
 package com.bakdata.conquery.integration.json.filter;
 
+import static org.assertj.core.api.Assertions.*;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -24,7 +27,9 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,7 +39,9 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 
-@Slf4j @Getter @Setter
+@Slf4j
+@Getter
+@Setter
 @CPSType(id = "FILTER_TEST", base = ConqueryTestSpec.class)
 public class FilterTest extends AbstractQueryEngineTest {
 
@@ -47,6 +54,8 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@NotNull
 	@JsonProperty("content")
 	private ObjectNode rawContent;
+
+	private FEFilter expectedFrontendConfig;
 
 	@JsonIgnore
 	private RequiredData content;
@@ -78,12 +87,11 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		importConcepts(support);
 		support.waitUntilWorkDone();
-		
+
 		query = parseQuery(support);
 
 		LoadingUtil.importTableContents(support, content.getTables());
 	}
-
 
 
 	private void importConcepts(StandaloneSupport support) throws JSONException, IOException {
@@ -112,7 +120,12 @@ public class FilterTest extends AbstractQueryEngineTest {
 	}
 
 	private Query parseQuery(StandaloneSupport support) throws JSONException, IOException {
-		rawFilterValue.put("filter", support.getDataset().getName() + ".concept.connector.filter");
+		final String filterId = support.getDataset().getName() + ".concept.connector.filter";
+		rawFilterValue.put("filter", filterId);
+
+		if (expectedFrontendConfig != null) {
+			expectedFrontendConfig.setId(FilterId.Parser.INSTANCE.parse(filterId));
+		}
 
 
 		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class));
@@ -135,7 +148,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 			restriction.setChild(cqConcept);
 			return new ConceptQuery(restriction);
 		}
-		return  new ConceptQuery(cqConcept);
+		return new ConceptQuery(cqConcept);
 	}
 
 	@Override
@@ -143,7 +156,19 @@ public class FilterTest extends AbstractQueryEngineTest {
 		return query;
 	}
 
-	private void importTables(StandaloneSupport support) throws JSONException {
-		LoadingUtil.importTables(support, content.getTables());
+	@Override
+	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
+		try {
+			final FEFilter actual = connector.getFilters().iterator().next().createFrontendConfig();
+
+			if (expectedFrontendConfig != null) {
+				assertThat(actual).usingRecursiveComparison().isEqualTo(expectedFrontendConfig);
+			}
+		}
+		catch (ConceptConfigurationException e) {
+			throw new IllegalStateException(e);
+		}
+
+		super.executeTest(standaloneSupport);
 	}
 }
