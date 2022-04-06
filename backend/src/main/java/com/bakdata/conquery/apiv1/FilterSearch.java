@@ -243,7 +243,7 @@ public class FilterSearch {
 						 }
 						 catch (IllegalArgumentException exception) {
 							 log.warn("Missing template values for line `{}`", rowId, (Exception) (log.isTraceEnabled() ? exception : null));
-							 return null;
+							 return new FEValue(rowId, rowId, rowId);
 						 }
 					 })
 					 .filter(Objects::nonNull)
