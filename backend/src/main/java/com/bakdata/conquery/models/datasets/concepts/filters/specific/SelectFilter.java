@@ -53,7 +53,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		);
 
 		if (labels.isEmpty() || getTemplate() != null){
-			f.setType(FEFilterType.BIG_MULTI_SELECT);
+			f.setType(FEFilterType.Fields.BIG_MULTI_SELECT);
 		}
 	}
 
