@@ -253,7 +253,7 @@ public class FilterSearch {
 				continue;
 			}
 
-			final String reference = filter.getTemplate().getFilePath();
+			final String reference = Integer.toString(filter.getTemplate().hashCode());
 
 			if (suppliers.containsKey(reference)) {
 				continue;
