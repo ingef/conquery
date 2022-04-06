@@ -46,12 +46,15 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		f.setTemplate(getTemplate());
 		f.setType(getFilterType());
 
-
 		f.setOptions(
 				labels.entrySet().stream()
 					  .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
 					  .collect(Collectors.toList())
 		);
+
+		if (labels.isEmpty() || getTemplate() != null){
+			f.setType(FEFilterType.BIG_MULTI_SELECT);
+		}
 	}
 
 	@JsonIgnore
