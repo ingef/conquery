@@ -92,7 +92,8 @@ public class FilterSearch {
 		final List<String> references = new ArrayList<>(3);
 
 		if (filter.getTemplate() != null) {
-			references.add(filter.getTemplate().getFilePath());
+			// TODO when templates have Ids use those, but until then we use the hashcode because some files might be used multiple times
+			references.add(Integer.toString(filter.getTemplate().hashCode()));
 		}
 
 		references.add(filter.getId().toString());
