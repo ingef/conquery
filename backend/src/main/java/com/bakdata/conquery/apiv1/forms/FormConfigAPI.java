@@ -38,17 +38,17 @@ public class FormConfigAPI {
 	@VariableDefaultValue @Builder.Default
 	private LocalDateTime creationTime = LocalDateTime.now();
 	
-	public static FormConfig intern(FormConfigAPI extern, User owner, Dataset dataset) {
+	public FormConfig intern(User owner, Dataset dataset) {
 		FormConfig intern = new FormConfig();
-		intern.setFormId(extern.formId);
-		intern.setFormType(extern.formType);
-		intern.setLabel(extern.label);
-		intern.setTags(extern.tags);
-		intern.setValues(extern.values);
-		intern.setCreationTime(extern.creationTime);
+		intern.setFormId(formId);
+		intern.setFormType(formType);
+		intern.setLabel(label);
+		intern.setTags(tags);
+		intern.setValues(values);
+		intern.setCreationTime(creationTime);
 		intern.setOwner(owner);
 		intern.setDataset(dataset);
 		return intern;
-		
+
 	}
 }
