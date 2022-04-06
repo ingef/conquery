@@ -16,13 +16,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum Encoding {
 	// Order is for precedence, least specific encodings go last.
-	Base16LowerCase(2, BaseEncoding.base16().lowerCase().omitPadding()),
-	Base16UpperCase(2, BaseEncoding.base16().upperCase().omitPadding()),
-	Base32LowerCase(8, BaseEncoding.base32().lowerCase().omitPadding()),
-	Base32UpperCase(8, BaseEncoding.base32().upperCase().omitPadding()),
-	Base32HexLowerCase(8, BaseEncoding.base32Hex().lowerCase().omitPadding()),
-	Base32HexUpperCase(8, BaseEncoding.base32Hex().upperCase().omitPadding()),
-	Base64(4, BaseEncoding.base64().omitPadding()),
+//	Base16LowerCase(2, BaseEncoding.base16().lowerCase().omitPadding()),
+//	Base16UpperCase(2, BaseEncoding.base16().upperCase().omitPadding()),
+//	Base32LowerCase(8, BaseEncoding.base32().lowerCase().omitPadding()),
+//	Base32UpperCase(8, BaseEncoding.base32().upperCase().omitPadding()),
+//	Base32HexLowerCase(8, BaseEncoding.base32Hex().lowerCase().omitPadding()),
+//	Base32HexUpperCase(8, BaseEncoding.base32Hex().upperCase().omitPadding()),
+//	Base64(4, BaseEncoding.base64().omitPadding()),
 	UTF8(1, null) {
 		@Override
 		public String decode(byte[] bytes) {
