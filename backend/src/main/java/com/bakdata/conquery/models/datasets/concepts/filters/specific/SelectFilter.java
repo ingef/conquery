@@ -1,29 +1,68 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import com.bakdata.conquery.io.cps.CPSType;
+import java.util.EnumSet;
+import java.util.stream.Collectors;
+
+import com.bakdata.conquery.apiv1.FilterTemplate;
+import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
-import com.bakdata.conquery.models.query.filter.event.SelectFilterNode;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
-/**
- * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.",
- * 
- * @jsonExample {"label":"gender","column":"reference_data.gender","type":"SELECT"}
- */
-@Getter @Setter
-@CPSType(id = "SINGLE_SELECT", base = Filter.class)
-public class SelectFilter extends AbstractSelectFilter<String> {
+@Setter
+@Getter
+@RequiredArgsConstructor
+@Slf4j
+public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
 
-	
-	public SelectFilter() {
-		super(128, FEFilterType.SELECT);
+	/**
+	 * user given mapping from the values in the CSVs to shown labels
+	 */
+	protected BiMap<String, String> labels = ImmutableBiMap.of();
+
+
+	private FilterTemplate template;
+
+	@JsonIgnore
+	public abstract FEFilterType getFilterType();
+
+	@Override
+	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
+		return EnumSet.of(MajorTypeId.STRING);
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(String value) {
-		return new SelectFilterNode(getColumn(), value);
+	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+		f.setTemplate(getTemplate());
+		f.setType(getFilterType());
+
+
+		f.setOptions(
+				labels.entrySet().stream()
+					  .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
+					  .collect(Collectors.toList())
+		);
 	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Cannot use both labels and template.")
+	public boolean isNotUsingTemplateAndLabels() {
+		// Technically it's possible it just doesn't make much sense and would lead to Single-Point-of-Truth confusion.
+		if (getTemplate() == null && labels.isEmpty()) {
+			return true;
+		}
+
+		return (getTemplate() == null) != labels.isEmpty();
+	}
+
 }

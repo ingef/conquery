@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -15,7 +14,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -96,11 +94,12 @@ public class AdminDatasetProcessor {
 
 		Namespace ns =
 				new Namespace(
-				datasetStorage,
-				config.isFailOnError(),
-				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
-																			.writerWithView(InternalOnly.class)
-		);
+						datasetRegistry, datasetStorage, config.isFailOnError(),
+						config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
+							  .writerWithView(InternalOnly.class),
+						config.getCsv()
+				);
+
 
 		datasetRegistry.add(ns);
 
@@ -359,8 +358,9 @@ public class AdminDatasetProcessor {
 		ns.getJobManager().addSlowJob(new SimpleJob(
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
+
 					ns.sendToAll(new UpdateMatchingStatsMessage());
-					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv());
+					ns.getFilterSearch().updateSearch();
 				}
 		));
 	}
