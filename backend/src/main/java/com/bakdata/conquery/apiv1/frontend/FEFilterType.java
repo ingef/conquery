@@ -16,8 +16,8 @@ public final class FEFilterType {
 	private Void SELECT;
 	private Void MULTI_SELECT;
 	private Void BIG_MULTI_SELECT;
-	private Void VoidEGER;
-	private Void VoidEGER_RANGE;
+	private Void INTEGER;
+	private Void INTEGER_RANGE;
 	private Void REAL;
 	private Void REAL_RANGE;
 	private Void NONE;
