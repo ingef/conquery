@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -51,10 +50,6 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 					  .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
 					  .collect(Collectors.toList())
 		);
-
-		if (labels.isEmpty() || getTemplate() != null){
-			f.setType(FEFilterType.Fields.BIG_MULTI_SELECT);
-		}
 	}
 
 	@JsonIgnore

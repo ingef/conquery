@@ -87,6 +87,7 @@ public class FilterSearch {
 
 	/**
 	 * For a {@link SelectFilter}, decide which references to use for searching.
+	 * @implSpec the order defines the precedence in the output.
 	 */
 	private static List<String> getSearchReferences(SelectFilter<?> filter) {
 		final List<String> references = new ArrayList<>(3);
