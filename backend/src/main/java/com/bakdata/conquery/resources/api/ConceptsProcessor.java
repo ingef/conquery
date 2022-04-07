@@ -220,7 +220,11 @@ public class ConceptsProcessor {
 			out.addAll(result);
 		}
 
-		return out;
+		// The different sources might contain duplicate FEValue#values which we want to avoid
+		// They are already sorted in terms of information weight
+		return out.stream()
+				  .distinct()
+				  .collect(Collectors.toList());
 	}
 
 	/**
