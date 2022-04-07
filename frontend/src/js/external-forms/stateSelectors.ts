@@ -8,9 +8,6 @@ import { useActiveLang } from "../localization/useActiveLang";
 import { ConceptListField, Form, GeneralField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
-export const selectFormContextState = (state: StateT, formType: string) =>
-  state.externalForms ? state.externalForms.formsContext[formType] : null;
-
 export const selectAvailableForms = (state: StateT) =>
   state.externalForms ? state.externalForms.availableForms : {};
 
