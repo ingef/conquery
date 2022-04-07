@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class SuccinctTrie extends Dictionary {
 
-	private final Charset CHARSET = StandardCharsets.UTF_8;
+	private static final Charset CHARSET = StandardCharsets.UTF_8;
 
 	@Getter
 	private int nodeCount;
