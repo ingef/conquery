@@ -14,7 +14,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.math.DoubleMath;
 import it.unimi.dsi.fastutil.Hash;
-import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 @CPSType(id = "MAP_DICTIONARY", base = Dictionary.class)
@@ -23,8 +22,8 @@ public class MapDictionary extends Dictionary {
 	//TODO afaik we only use ByteArrayList for its equals/hashcode?
 	//TODO make readonly after compress
 
-	private Object2IntOpenHashMap<ByteArrayList> value2Id;
-	private List<ByteArrayList> id2Value;
+	private Object2IntOpenHashMap<String> value2Id;
+	private List<String> id2Value;
 
 	public MapDictionary(Dataset dataset, @NotNull String name) {
 		super(dataset, name);
@@ -41,38 +40,34 @@ public class MapDictionary extends Dictionary {
 	}
 
 	@JsonCreator
-	public MapDictionary(Dataset dataset, String name, byte[][] id2Value) {
+	public MapDictionary(Dataset dataset, String name, String[] id2Value) {
 		super(dataset, name);
 		if (id2Value == null) {
-			id2Value = new byte[0][];
+			id2Value = new String[0];
 		}
 		this.id2Value = new ArrayList<>(id2Value.length);
 		value2Id = new Object2IntOpenHashMap<>(id2Value.length);
 		value2Id.defaultReturnValue(-1);
 
 		for (int i = 0; i < id2Value.length; i++) {
-			ByteArrayList v = new ByteArrayList(id2Value[i]);
-			this.id2Value.add(v);
-			value2Id.put(v, i);
+			String value = id2Value[i].intern();
+			this.id2Value.add(value);
+			value2Id.put(value, i);
 		}
 	}
 
 	@JsonProperty
-	public byte[][] getId2Value() {
-		byte[][] result = new byte[id2Value.size()][];
-		for (int i = 0; i < id2Value.size(); i++) {
-			result[i] = id2Value.get(i).elements();
-		}
-		return result;
+	public String[] getId2Value() {
+		return id2Value.toArray(String[]::new);
 	}
 
 	@Override
-	public int add(String bytes) {
-		ByteArrayList value = new ByteArrayList(asBytes(bytes));
-
-		if (getId(bytes) != -1) {
-			throw new IllegalStateException("there already was an element " + bytes);
+	public int add(String value) {
+		if (getId(value) != -1) {
+			throw new IllegalStateException("there already was an element " + value);
 		}
+
+		value = value.intern();
 
 		int id = id2Value.size();
 		value2Id.put(value, id);
@@ -81,8 +76,8 @@ public class MapDictionary extends Dictionary {
 	}
 
 	@Override
-	public int put(String bytes) {
-		ByteArrayList value = new ByteArrayList(asBytes(bytes));
+	public int put(String value) {
+		value = value.intern();
 
 		int id = value2Id.getInt(value);
 
@@ -96,12 +91,12 @@ public class MapDictionary extends Dictionary {
 
 	@Override
 	public int getId(String bytes) {
-		return value2Id.getInt(new ByteArrayList(asBytes(bytes)));
+		return value2Id.getInt(bytes);
 	}
 
 	@Override
 	public String getElement(int id) {
-		return asString(id2Value.get(id).elements());
+		return id2Value.get(id);
 	}
 
 	@Override
@@ -113,11 +108,11 @@ public class MapDictionary extends Dictionary {
 	public Iterator<DictionaryEntry> iterator() {
 
 
-		ListIterator<ByteArrayList> it = id2Value.listIterator();
+		ListIterator<String> it = id2Value.listIterator();
 		return new Iterator<>() {
 			@Override
 			public DictionaryEntry next() {
-				return new DictionaryEntry(it.nextIndex(), asString(it.next().elements()));
+				return new DictionaryEntry(it.nextIndex(), it.next());
 			}
 
 			@Override
@@ -142,7 +137,7 @@ public class MapDictionary extends Dictionary {
 	public long estimateMemoryConsumption() {
 		return MapDictionary.estimateMemoryConsumption(
 				id2Value.size(),
-				id2Value.stream().mapToLong(ByteArrayList::size).sum()
+				id2Value.stream().mapToLong(String::length).sum()
 		);
 	}
 }

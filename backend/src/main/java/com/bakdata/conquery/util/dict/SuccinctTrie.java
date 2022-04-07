@@ -1,5 +1,6 @@
 package com.bakdata.conquery.util.dict;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +33,8 @@ import lombok.RequiredArgsConstructor;
 @CPSType(id = "SUCCINCT_TRIE", base = Dictionary.class)
 @Getter
 public class SuccinctTrie extends Dictionary {
+
+	private final Charset CHARSET = StandardCharsets.UTF_8;
 
 	@Getter
 	private int nodeCount;
@@ -102,6 +105,14 @@ public class SuccinctTrie extends Dictionary {
 		final Dictionary copy = new SuccinctTrie(getDataset(), getName());
 
 		return copy;
+	}
+
+	protected String asString(byte[] elements) {
+		return new String(elements, CHARSET);
+	}
+
+	protected byte[] asBytes(String value) {
+		return value.getBytes(CHARSET);
 	}
 
 	@Override
