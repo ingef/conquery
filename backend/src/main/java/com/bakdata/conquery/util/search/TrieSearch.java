@@ -51,6 +51,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	private Stream<String> suffixes(String word) {
 		return Stream.concat(
+				// We append a special character here marking original words as we want to favor them in weighing.
 				Stream.of(word + WHOLE_WORD_MARKER),
 				IntStream.range(1, Math.max(1, word.length() - SUFFIX_CUTOFF))
 						 .mapToObj(word::substring)
@@ -130,7 +131,9 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public List<T> findExact(Collection<String> keywords, int limit) {
-		return keywords.stream().flatMap(this::split)
+		return keywords.stream()
+					   .flatMap(this::split)
+					   .map(kw -> kw + WHOLE_WORD_MARKER)
 					   .flatMap(this::doGet)
 					   .distinct()
 					   .limit(limit)
