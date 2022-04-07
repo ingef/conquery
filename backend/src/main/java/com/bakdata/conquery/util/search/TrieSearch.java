@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * Trie based keyword search for autocompletion and resolving.
- *
+ * <p>
  * We store not only whole words but suffixes up to length of SUFFIX_CUTOFF to enable a sort of fuzzy and partial search with longer and compound search terms.
  */
 @NoArgsConstructor
@@ -36,11 +36,12 @@ public class TrieSearch<T extends Comparable<T>> {
 	 */
 	private static final double MATCH_THRESHOLD = 1d / 10d;
 	private static final int SUFFIX_CUTOFF = 3;
+	private static final String WHOLE_WORD_MARKER = "!";
 
 	/**
 	 * @implNote to be used in this pattern, "_" must always be the last entry.
 	 */
-	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"'_-]+"); //TODO FK: Investigate better split patterns
+	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"'_!-]+"); //TODO FK: Investigate better split patterns
 
 	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
 
@@ -49,8 +50,11 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	private Stream<String> suffixes(String word) {
-		return IntStream.range(0, Math.max(1, word.length() - SUFFIX_CUTOFF))
-						.mapToObj(word::substring);
+		return Stream.concat(
+				Stream.of(word + WHOLE_WORD_MARKER),
+				IntStream.range(1, Math.max(1, word.length() - SUFFIX_CUTOFF))
+						 .mapToObj(word::substring)
+		);
 	}
 
 	private Stream<String> split(String keyword) {
@@ -80,7 +84,14 @@ public class TrieSearch<T extends Comparable<T>> {
 		}
 
 		// We assume that less difference implies more relevant words
-		return (itemLength - keywordLength) / keywordLength;
+		final double weight = (itemLength - keywordLength) / keywordLength;
+
+		// If itemWord ends with WHOLE_WORD_MARKER, we are matching an original input from the beginning which are favorable.
+		if (itemWord.endsWith(WHOLE_WORD_MARKER)) {
+			return MATCH_THRESHOLD * weight;
+		}
+
+		return weight;
 	}
 
 	public List<T> findItems(Collection<String> keywords, int limit) {
@@ -164,6 +175,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	/**
 	 * Since growth of ArrayList might be excessive, we can shrink the internal lists to only required size instead.
+	 *
 	 * @implSpec the TrieSearch is still mutable after this.
 	 */
 	public void shrinkToFit() {
