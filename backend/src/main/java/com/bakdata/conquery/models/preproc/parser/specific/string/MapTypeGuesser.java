@@ -9,11 +9,13 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Map implementation using {@link MapDictionary} implementation.
  */
 @RequiredArgsConstructor
+@ToString
 public class MapTypeGuesser extends StringTypeGuesser {
 
 	private final StringParser parser;
@@ -27,8 +29,6 @@ public class MapTypeGuesser extends StringTypeGuesser {
 				parser.getStrings().size(),
 				parser.getStrings().keySet().stream().mapToLong(String::length).sum()
 		);
-
-
 
 		return new Guess(
 				type,

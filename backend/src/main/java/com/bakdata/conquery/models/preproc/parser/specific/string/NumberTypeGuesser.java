@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumber;
@@ -15,11 +14,13 @@ import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Guess, testing if all values can be represented as Integer Numbers without leading zeros. If selected, the values will be compressed using {@link IntegerParser}.
  */
 @RequiredArgsConstructor
+@ToString(of = "p")
 public class NumberTypeGuesser extends StringTypeGuesser {
 
 	private final StringParser p;

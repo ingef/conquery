@@ -9,11 +9,13 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDicti
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Construct a {@link SuccinctTrie} and estimate it's memory usage. Return
  */
 @RequiredArgsConstructor
+@ToString(of = "parser")
 public class TrieTypeGuesser extends StringTypeGuesser {
 
 	private final StringParser parser;

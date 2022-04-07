@@ -32,12 +32,14 @@ import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
 @Slf4j
 @CPSType(id = "SECONDARY_ID_QUERY", base = QueryDescription.class)
+@ToString(of = {"secondaryId", "dateAggregationMode", "root"})
 public class SecondaryIdQuery extends Query {
 
 	@NotNull
