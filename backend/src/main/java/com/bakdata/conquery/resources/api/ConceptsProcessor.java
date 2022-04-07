@@ -220,8 +220,9 @@ public class ConceptsProcessor {
 			out.addAll(result);
 		}
 
-		// The different sources might contain duplicate FEValue#values which we want to avoid
-		// They are already sorted in terms of information weight
+		// Note that FEValues is equals/hashcode only on value:
+		// The different sources might contain duplicate FEValue#values which we want to avoid as
+		// they are already sorted in terms of information weight by getSearchesFor
 		return out.stream()
 				  .distinct()
 				  .collect(Collectors.toList());

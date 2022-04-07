@@ -77,7 +77,10 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * A lower weight implies more relevant words.
 	 */
-	private double weightWord(String keyword, String itemWord, boolean isOriginal) {
+	private double weightWord(String keyword, String itemWord) {
+
+		// Test if the word is an original word and not a suffix.
+		final boolean isOriginal = itemWord.endsWith(WHOLE_WORD_MARKER);
 
 		final double keywordLength = keyword.length();
 		final double itemLength = itemWord.length() - (isOriginal ? 1 : 0);
@@ -116,8 +119,8 @@ public class TrieSearch<T extends Comparable<T>> {
 				// calculate and update weights for all queried items
 				final String itemWord = entry.getKey();
 
-				final boolean isOriginal = itemWord.endsWith(WHOLE_WORD_MARKER);
-				final double weight = weightWord(keyword, itemWord, isOriginal);
+
+				final double weight = weightWord(keyword, itemWord);
 
 				entry.getValue()
 					 .forEach(item ->
