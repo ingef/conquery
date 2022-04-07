@@ -128,8 +128,8 @@ export class Sema {
   waiting: Deque;
   releaseEmitter: EventEmitter;
   noTokens: boolean;
-  pauseFn: () => void;
-  resumeFn: () => void;
+  pauseFn?: () => void;
+  resumeFn?: () => void;
   paused: boolean;
 
   constructor(

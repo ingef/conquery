@@ -20,12 +20,14 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.apiv1.frontend.FEList;
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HConcepts;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Setter
@@ -63,8 +65,8 @@ public class ConceptResource extends HConcepts {
 
 	@Getter
 	@Setter
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class ConceptCodeList {
-
-		private List<String> concepts;
+		private final List<String> concepts;
 	}
 }

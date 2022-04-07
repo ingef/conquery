@@ -86,30 +86,24 @@ const useVersion = () => {
   //   const { execSync } = require('child_process');
   //   module.exports = execSync('git describe --all --exact-match \`git rev-parse HEAD\`').toString();
   // `;
+  const frontendVersion = `${frontendDateTimeStamp}`;
 
   return {
     backendVersion,
-    frontendGitCommit: "",
-    frontendDateTimeStamp,
-    frontendGitTag: "",
+    frontendVersion,
   };
 };
 
 const Header: FC = () => {
   const { t } = useTranslation();
-  const {
-    backendVersion,
-    frontendDateTimeStamp,
-    frontendGitTag,
-    frontendGitCommit,
-  } = useVersion();
+  const { backendVersion, frontendVersion } = useVersion();
   const hideLogoutButton = useHideLogoutButton();
 
-  const versionString = `BE: ${backendVersion}, FE: ${frontendGitTag} ${frontendGitCommit} ${frontendDateTimeStamp}`;
+  const versionString = `BE: ${backendVersion}, FE: ${frontendVersion}`;
 
   const copyVersionToClipboard = () => {
     navigator.clipboard.writeText(
-      `${backendVersion} ${frontendGitTag} ${frontendGitCommit}`,
+      `BE: ${backendVersion} FE: ${frontendVersion}`,
     );
   };
 

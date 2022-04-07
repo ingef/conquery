@@ -33,7 +33,7 @@ public class DurationSumFilter extends SingleColumnFilter<Range.LongRange> {
 		switch (getColumn().getType()) {
 			case DATE: // TODO DATE is not supported according to getAcceptedColumnTypes
 			case DATE_RANGE: {
-				f.setType(FEFilterType.INTEGER_RANGE);
+				f.setType(FEFilterType.Fields.INTEGER_RANGE);
 				f.setMin(0);
 				return;
 			}

@@ -6,16 +6,16 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.frontend.FETable;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Table;
 import org.junit.jupiter.api.Test;
 
-public class FEValueTest {
+public class FilterSearchItemTest {
 
 	@Test
 	public void sortedValidityDates() {
@@ -49,9 +49,9 @@ public class FEValueTest {
 		FETable feTable = FrontEndConceptBuilder.createTable(connector);
 		
 		assertThat(feTable.getDateColumn().getOptions()).containsExactly(
-				new FEValue("val0", val0.getId().toString()),
-				new FEValue("val1", val1.getId().toString()),
-				new FEValue("val2", val2.getId().toString())
+				new FEValue(val0.getId().toString(), "val0"),
+				new FEValue(val1.getId().toString(), "val1"),
+				new FEValue(val2.getId().toString(), "val2")
 			);
 	}
 }

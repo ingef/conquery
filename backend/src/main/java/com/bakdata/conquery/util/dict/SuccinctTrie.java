@@ -332,7 +332,7 @@ public class SuccinctTrie extends Dictionary {
 
 		return new AbstractIterator<>() {
 
-			private ByteArrayList buf = new ByteArrayList(depth);
+			private final ByteArrayList buf = new ByteArrayList(depth);
 			private int index = 0;
 
 			@Override
@@ -345,7 +345,7 @@ public class SuccinctTrie extends Dictionary {
 				final int id = index++;
 
 				get(id, buf);
-				return new DictionaryEntry(id, decode(buf.toByteArray()));
+				return new DictionaryEntry(id, buf.toByteArray());
 			}
 		};
 	}

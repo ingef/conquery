@@ -4,6 +4,6 @@ import lombok.Value;
 
 @Value
 public class DictionaryEntry {
-	private int id;
-	private String value;
+	private final int id;
+	private final String value;
 }

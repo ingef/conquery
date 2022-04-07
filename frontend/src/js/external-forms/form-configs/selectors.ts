@@ -75,8 +75,8 @@ export const selectFormConfigs = (
 
   return formConfigs.filter(
     (config) =>
-      configMatchesFolderFilter(config, folders, noFoldersActive) &&
       configHasFilterType(config, filter) &&
+      configMatchesFolderFilter(config, folders, noFoldersActive) &&
       configMatchesSearch(config, searchTerm),
   );
 };

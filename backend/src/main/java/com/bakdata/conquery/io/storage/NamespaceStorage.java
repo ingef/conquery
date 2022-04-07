@@ -31,9 +31,6 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	protected SingletonStore<Dictionary> primaryDictionary;
 
-	@Getter
-	private final boolean registerImports = true;
-
 	public NamespaceStorage(Validator validator, String pathName) {
 		super(validator, pathName);
 	}

@@ -574,7 +574,7 @@ const mergeFiltersFromSavedConcept = (
 
 const mergeSelects = (
   savedSelects?: SelectorT[],
-  conceptOrTable?: QueryConceptNodeT | TableT,
+  conceptOrTable?: QueryConceptNodeT | TableConfigT,
 ) => {
   if (!conceptOrTable || !conceptOrTable.selects) {
     return savedSelects || null;
@@ -582,8 +582,10 @@ const mergeSelects = (
 
   if (!savedSelects) return null;
 
+  console.log(conceptOrTable);
+
   return savedSelects.map((select) => {
-    const selectedSelect = conceptOrTable.selects.find(
+    const selectedSelect = (conceptOrTable.selects || []).find(
       (id) => id === select.id,
     );
 
@@ -591,7 +593,7 @@ const mergeSelects = (
   });
 };
 
-const mergeDateColumn = (savedTable: TableT, table: TableT) => {
+const mergeDateColumn = (savedTable: TableT, table?: TableConfigT) => {
   if (!table || !table.dateColumn || !savedTable.dateColumn)
     return savedTable.dateColumn;
 

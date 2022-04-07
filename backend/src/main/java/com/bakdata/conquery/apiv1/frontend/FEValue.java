@@ -1,33 +1,44 @@
 package com.bakdata.conquery.apiv1.frontend;
 
 import java.util.Comparator;
-import java.util.Map;
+import java.util.Objects;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * This class represents a values of a SELECT filter.
  */
 @Data
-@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class FEValue implements Comparable<FEValue> {
-	private static final Comparator<FEValue> COMPARATOR = Comparator.comparing(FEValue::getLabel).thenComparing(FEValue::getValue);
+	private static final Comparator<FEValue> COMPARATOR = Comparator.comparing(FEValue::getValue)
+																	.thenComparing(FEValue::getLabel);
+
+	/**
+	 * Value is the only relevant data-point for hashing/equality and searching from the service perspective.
+	 */
+	@NotNull
+	@EqualsAndHashCode.Include
+	private final String value;
 
 	@NotNull
 	private final String label;
 
-	@NotNull
-	private final String value;
+	private final String optionValue;
 
-	private Map<String, String> templateValues;
-
-	private String optionValue;
-
-	public FEValue(String label, String value) {
-		this.label = label;
+	@JsonCreator
+	public FEValue(@NonNull String value, @NonNull String label, String optionValue) {
 		this.value = value;
+		this.label = Objects.requireNonNullElse(label, value);
+		this.optionValue = optionValue;
+	}
+
+	public FEValue(String value, String label) {
+		this(value, label, null);
 	}
 
 	@Override
