@@ -13,7 +13,6 @@ import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.Encoding;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
@@ -53,7 +52,7 @@ public class ColumnStoreSerializationTests {
 	private static final Set<Class<? extends ColumnStore>> EXCLUDING = Set.of(DateRangeTypeCompound.class);
 
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
-	private static final Dictionary DICTIONARY = new MapDictionary(Dataset.PLACEHOLDER, "dictionary", Encoding.UTF8);
+	private static final Dictionary DICTIONARY = new MapDictionary(Dataset.PLACEHOLDER, "dictionary");
 
 	@BeforeAll
 	public static void setupRegistry() {

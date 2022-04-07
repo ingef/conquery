@@ -59,10 +59,6 @@ public class StringTypeDictionary implements StringStore {
 	}
 
 	public int getId(String value) {
-		if (!dictionary.getEncoding().canEncode(value)) {
-			return -1;
-		}
-
 		return dictionary.getId(value);
 	}
 

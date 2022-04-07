@@ -26,8 +26,8 @@ public class MapDictionary extends Dictionary {
 	private Object2IntOpenHashMap<ByteArrayList> value2Id;
 	private List<ByteArrayList> id2Value;
 
-	public MapDictionary(Dataset dataset, @NotNull String name, Encoding encoding) {
-		super(dataset, name, encoding);
+	public MapDictionary(Dataset dataset, @NotNull String name) {
+		super(dataset, name);
 		value2Id = new Object2IntOpenHashMap<>();
 		value2Id.defaultReturnValue(-1);
 		id2Value = new ArrayList<>();
@@ -35,14 +35,14 @@ public class MapDictionary extends Dictionary {
 
 	@Override
 	public Dictionary copyEmpty() {
-		final Dictionary copy = new MapDictionary(getDataset(), getName(), getEncoding());
+		final Dictionary copy = new MapDictionary(getDataset(), getName());
 
 		return copy;
 	}
 
 	@JsonCreator
-	public MapDictionary(Dataset dataset, String name, byte[][] id2Value, Encoding encoding) {
-		super(dataset, name, encoding);
+	public MapDictionary(Dataset dataset, String name, byte[][] id2Value) {
+		super(dataset, name);
 		if (id2Value == null) {
 			id2Value = new byte[0][];
 		}

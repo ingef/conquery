@@ -10,8 +10,6 @@ import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.dictionary.Encoding;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -40,8 +38,8 @@ public class NamespaceStorage extends NamespacedStorage {
 		super(validator, pathName);
 	}
 
-	public EncodedDictionary getPrimaryDictionary() {
-		return new EncodedDictionary(getPrimaryDictionaryRaw());
+	public Dictionary getPrimaryDictionary() {
+		return getPrimaryDictionaryRaw();
 	}
 
 	@NonNull
@@ -50,7 +48,7 @@ public class NamespaceStorage extends NamespacedStorage {
 
 		if(dictionary == null){
 			log.trace("No prior PrimaryDictionary, creating one");
-			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY, Encoding.UTF8);
+			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY);
 
 			primaryDictionary.update(newPrimary);
 

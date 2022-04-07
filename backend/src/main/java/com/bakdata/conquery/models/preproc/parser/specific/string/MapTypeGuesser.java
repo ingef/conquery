@@ -37,7 +37,7 @@ public class MapTypeGuesser extends StringTypeGuesser {
 		) {
 			@Override
 			public StringStore getType() {
-				MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, UUID.randomUUID().toString(), parser.getEncoding());
+				MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, UUID.randomUUID().toString());
 
 				parser.valuesOrdered().forEach(map::add);
 

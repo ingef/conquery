@@ -14,7 +14,6 @@ import java.util.zip.GZIPOutputStream;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.Encoding;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -215,8 +214,6 @@ public class Preprocessed {
 
 	private Dictionary encodePrimaryDictionary() {
 		log.debug("Encode primary Dictionary");
-
-		primaryColumn.setEncoding(Encoding.UTF8);
 
 		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
 		log.trace("\tPrimaryColumn -> {}", primaryDictionary);

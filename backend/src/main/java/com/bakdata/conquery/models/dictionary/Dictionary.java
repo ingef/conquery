@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.dictionary;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -13,6 +16,7 @@ import lombok.Setter;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public abstract class Dictionary extends NamedImpl<DictionaryId> implements NamespacedIdentifiable<DictionaryId>, Iterable<DictionaryEntry> {
+	private final Charset CHARSET = StandardCharsets.UTF_8;
 
 	//TODO detangle Dictionary from Storages so that we can move Cache here
 
@@ -21,11 +25,7 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 	@NsIdRef
 	private Dataset dataset;
 
-	@Getter
-	private final Encoding encoding;
-
-	public Dictionary(Dataset dataset, String name, Encoding encoding) {
-		this.encoding = encoding;
+	public Dictionary(Dataset dataset, String name) {
 		this.setName(name);
 		this.dataset = dataset;
 	}
@@ -51,11 +51,11 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 	public abstract int size();
 
 	protected String decode(byte[] elements) {
-		return getEncoding().decode(elements);
+		return new String(elements, CHARSET);
 	}
 
 	protected byte[] encode(String value) {
-		return getEncoding().encode(value);
+		return value.getBytes(CHARSET);
 	}
 
 	@Override

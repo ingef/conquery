@@ -213,6 +213,6 @@ public class Namespace implements Closeable {
 	}
 
 	public int getNumberOfEntities() {
-		return getStorage().getPrimaryDictionary().getSize();
+		return getStorage().getPrimaryDictionary().size();
 	}
 }

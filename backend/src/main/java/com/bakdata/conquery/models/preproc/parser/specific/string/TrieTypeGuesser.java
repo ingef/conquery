@@ -22,7 +22,7 @@ public class TrieTypeGuesser extends StringTypeGuesser {
 	public Guess createGuess() {
 		IntegerStore indexType = parser.decideIndexType();
 
-		SuccinctTrie trie = new SuccinctTrie(Dataset.PLACEHOLDER, UUID.randomUUID().toString(), parser.getEncoding());
+		SuccinctTrie trie = new SuccinctTrie(Dataset.PLACEHOLDER, UUID.randomUUID().toString());
 		StringTypeDictionary type = new StringTypeDictionary(indexType, trie);
 
 		parser.valuesOrdered().forEach(trie::add);

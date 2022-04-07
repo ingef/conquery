@@ -13,8 +13,6 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.dictionary.Encoding;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.github.powerlibraries.io.In;
@@ -48,7 +46,7 @@ public class SuccinctTrieTest {
 		words.add("ha");
 		words.add("hat");
 
-		SuccinctTrie direct = new SuccinctTrie(Dataset.PLACEHOLDER, "name", Encoding.UTF8);
+		SuccinctTrie direct = new SuccinctTrie(Dataset.PLACEHOLDER, "name");
 
 
 		int distinctValues = 0;
@@ -79,7 +77,7 @@ public class SuccinctTrieTest {
 		final CentralRegistry registry = new CentralRegistry();
 		registry.register(Dataset.PLACEHOLDER);
 
-		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "testDict", Encoding.UTF8);
+		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "testDict");
 
 		data().forEach(value -> dict.put(value));
 
@@ -93,8 +91,7 @@ public class SuccinctTrieTest {
 	@ParameterizedTest(name = "seed: {0}")
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
-		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "name", Encoding.UTF8);
-		EncodedDictionary direct = new EncodedDictionary(dict);
+		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "name");
 		final BiMap<String, Integer> reference = HashBiMap.create();
 
 		AtomicInteger count = new AtomicInteger(0);
@@ -118,7 +115,7 @@ public class SuccinctTrieTest {
 		log.info("trie compressed");
 		//assert key value lookup
 		assertThat(reference.entrySet().stream()).allSatisfy(entry -> {
-			assertThat(direct.getId(entry.getKey()))
+			assertThat(((Dictionary) dict).getId(entry.getKey()))
 					.isEqualTo(entry.getValue());
 		});
 

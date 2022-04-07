@@ -17,7 +17,7 @@ import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
@@ -122,7 +122,7 @@ public class CollectEntitiesCommand extends Command {
 
 				final PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
-				final EncodedDictionary primaryDictionary = new EncodedDictionary(dictionaries.getPrimaryDictionary());
+				final Dictionary primaryDictionary = dictionaries.getPrimaryDictionary();
 
 				add(primaryDictionary, new File(file.getParentFile(), "all_entities.csv"));
 				if (verbose) {
@@ -131,9 +131,9 @@ public class CollectEntitiesCommand extends Command {
 			}
 		}
 
-		private void add(EncodedDictionary primDict, File file) {
+		private void add(Dictionary primDict, File file) {
 			Set<String> list = entities.computeIfAbsent(file, f -> Sets.newConcurrentHashSet());
-			for (int id = 0; id < primDict.getSize(); id++) {
+			for (int id = 0; id < primDict.size(); id++) {
 				list.add(primDict.getElement(id));
 			}
 		}

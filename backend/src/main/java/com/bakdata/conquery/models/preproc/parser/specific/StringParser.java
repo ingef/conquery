@@ -1,14 +1,12 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
 import java.util.Comparator;
-import java.util.EnumSet;
 import java.util.IntSummaryStatistics;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.dictionary.Encoding;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
@@ -30,7 +28,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -51,8 +48,6 @@ public class StringParser extends Parser<Integer, StringStore> {
 	//TODO FK: this field is not used at the moment, but we want to use it to prune unused values, this would mean cleaning up strings and allowing Dictionary to set a specific valuie, not just setting it.
 	private IntSet registered = new IntOpenHashSet();
 
-	@Setter
-	private Encoding encoding;
 	private String prefix;
 	private String suffix;
 
@@ -111,8 +106,6 @@ public class StringParser extends Parser<Integer, StringStore> {
 			}
 		}
 
-		decode();
-
 		// Try all guesses and select the least memory intensive one.
 		//TODO FK: Simplify this, the guessers do a lot of weird lazy computation but implicit.
 		Guess guess = Stream.of(
@@ -140,37 +133,6 @@ public class StringParser extends Parser<Integer, StringStore> {
 		}
 
 		return result;
-	}
-
-	/**
-	 * Select the least memory intensive encoding and decode all values using it.
-	 */
-	private void decode() {
-		encoding = findEncoding();
-		log.debug("\tChosen encoding is {}", encoding);
-		setEncoding(encoding);
-	}
-
-	/**
-	 * Test all available encodings and of the ones that can decode all values, use the one using the least memory.
-	 */
-	private Encoding findEncoding() {
-		EnumSet<Encoding> bases = EnumSet.allOf(Encoding.class);
-		for (String value : strings.keySet()) {
-			bases.removeIf(encoding -> !encoding.canEncode(value));
-			if (bases.size() == 1) {
-				return bases.iterator().next();
-			}
-
-			if (bases.isEmpty()) {
-				throw new IllegalStateException("No Encoding can encode the values.");
-			}
-		}
-
-		return bases.stream()
-					.min(Encoding::compareTo)
-					.orElseThrow(() -> new IllegalStateException("No valid encoding."));
-
 	}
 
 	public Stream<String> valuesOrdered() {
