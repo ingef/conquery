@@ -68,6 +68,11 @@ public class StringTypeDictionary implements StringStore {
 	}
 
 	@Override
+	public void setUnderlyingDictionary(Dictionary dictionary) {
+		setDictionary(dictionary);
+	}
+
+	@Override
 	public boolean isDictionaryHolding() {
 		return true;
 	}

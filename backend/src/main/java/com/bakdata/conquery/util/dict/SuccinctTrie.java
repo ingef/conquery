@@ -129,7 +129,7 @@ public class SuccinctTrie extends Dictionary {
 	private int put(String keyRaw, int entryCount, boolean failOnDuplicate) {
 		checkUncompressed("No put allowed after compression");
 
-		final byte[] key = encode(keyRaw);
+		final byte[] key = asBytes(keyRaw);
 
 		// start at the end of the byte sequence and insert it reversed
 		int keyIndex = key.length - 1;
@@ -234,7 +234,7 @@ public class SuccinctTrie extends Dictionary {
 	@Override
 	@JsonIgnore
 	public int getId(String raw) {
-		final byte[] bytes = encode(raw);
+		final byte[] bytes = asBytes(raw);
 
 		if (!compressed) {
 			HelpNode node = root;
@@ -345,7 +345,7 @@ public class SuccinctTrie extends Dictionary {
 				final int id = index++;
 
 				get(id, buf);
-				return new DictionaryEntry(id, buf.toByteArray());
+				return new DictionaryEntry(id, asString(buf.toByteArray()));
 			}
 		};
 	}
@@ -376,7 +376,7 @@ public class SuccinctTrie extends Dictionary {
 	public String getElement(int id) {
 		ByteArrayList buf = new ByteArrayList(depth);
 		get(id, buf);
-		return decode(buf.toByteArray());
+		return asString(buf.toByteArray());
 	}
 
 	@Override

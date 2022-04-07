@@ -50,11 +50,11 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 
 	public abstract int size();
 
-	protected String decode(byte[] elements) {
+	protected String asString(byte[] elements) {
 		return new String(elements, CHARSET);
 	}
 
-	protected byte[] encode(String value) {
+	protected byte[] asBytes(String value) {
 		return value.getBytes(CHARSET);
 	}
 

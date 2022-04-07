@@ -68,7 +68,7 @@ public class MapDictionary extends Dictionary {
 
 	@Override
 	public int add(String bytes) {
-		ByteArrayList value = new ByteArrayList(encode(bytes));
+		ByteArrayList value = new ByteArrayList(asBytes(bytes));
 
 		if (getId(bytes) != -1) {
 			throw new IllegalStateException("there already was an element " + bytes);
@@ -82,7 +82,7 @@ public class MapDictionary extends Dictionary {
 
 	@Override
 	public int put(String bytes) {
-		ByteArrayList value = new ByteArrayList(encode(bytes));
+		ByteArrayList value = new ByteArrayList(asBytes(bytes));
 
 		int id = value2Id.getInt(value);
 
@@ -96,12 +96,12 @@ public class MapDictionary extends Dictionary {
 
 	@Override
 	public int getId(String bytes) {
-		return value2Id.getInt(new ByteArrayList(encode(bytes)));
+		return value2Id.getInt(new ByteArrayList(asBytes(bytes)));
 	}
 
 	@Override
 	public String getElement(int id) {
-		return decode(id2Value.get(id).elements());
+		return asString(id2Value.get(id).elements());
 	}
 
 	@Override
@@ -117,7 +117,7 @@ public class MapDictionary extends Dictionary {
 		return new Iterator<>() {
 			@Override
 			public DictionaryEntry next() {
-				return new DictionaryEntry(it.nextIndex(), decode(it.next().elements()));
+				return new DictionaryEntry(it.nextIndex(), asString(it.next().elements()));
 			}
 
 			@Override

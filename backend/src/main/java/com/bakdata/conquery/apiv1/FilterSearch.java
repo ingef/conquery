@@ -205,7 +205,7 @@ public class FilterSearch {
 
 			final Stream<FEValue> fromColumn =
 					imports.stream()
-						   .flatMap(imp -> StreamSupport.stream(((StringStore) column.getTypeFor(imp)).spliterator(), false))
+						   .flatMap(imp -> StreamSupport.stream(((StringStore) column.getStoreFor(imp)).spliterator(), false))
 						   .map(value -> new FEValue(value, value))
 						   .onClose(() -> log.debug("DONE processing values for {}", column.getId()));
 
