@@ -87,6 +87,7 @@ public class FilterSearch {
 
 	/**
 	 * For a {@link SelectFilter}, decide which references to use for searching.
+	 * @implSpec the order defines the precedence in the output.
 	 */
 	private static List<String> getSearchReferences(SelectFilter<?> filter) {
 		final List<String> references = new ArrayList<>(3);
@@ -228,17 +229,23 @@ public class FilterSearch {
 					 .map(row -> {
 						 final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
+						 substitutor.setEnableUndefinedVariableException(true);
 						 final String rowId = row.getString(template.getColumnValue());
 
-						 final String label = substitutor.replace(template.getValue());
-						 final String optionValue = substitutor.replace(template.getOptionValue());
-
-						 // TODO log the line and give feedback to suppliers of reference
-						 if (rowId == null || label == null) {
+						 if (rowId == null) {
 							 return null;
 						 }
 
-						 return new FEValue(rowId, label, optionValue);
+						 try {
+							 final String label = substitutor.replace(template.getValue());
+							 final String optionValue = substitutor.replace(template.getOptionValue());
+
+							 return new FEValue(rowId, label, optionValue);
+						 }
+						 catch (IllegalArgumentException exception) {
+							 log.warn("Missing template values for line `{}`", rowId, (Exception) (log.isTraceEnabled() ? exception : null));
+							 return new FEValue(rowId, rowId, rowId);
+						 }
 					 })
 					 .filter(Objects::nonNull)
 					 .distinct();

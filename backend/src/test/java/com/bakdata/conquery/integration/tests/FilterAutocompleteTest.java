@@ -116,7 +116,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 													 ), MediaType.APPLICATION_JSON_TYPE));
 
 			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
-			assertThat(resolvedFromCsv.getValues().stream().map(FEValue::getValue)).containsExactly("a", "aaa", "aab");
+			assertThat(resolvedFromCsv.getValues().stream().map(FEValue::getValue)).containsExactly("a", "aaa", "aab", "baaa");
 		}
 
 

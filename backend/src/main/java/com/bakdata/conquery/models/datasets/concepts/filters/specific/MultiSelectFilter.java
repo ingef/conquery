@@ -16,7 +16,13 @@ public class MultiSelectFilter extends SelectFilter<String[]> {
 	@JsonIgnore
 	@Override
 	public String getFilterType() {
-		return FEFilterType.Fields.MULTI_SELECT;
+		// If we have labels we don't need a big multi select.
+		if (!getLabels().isEmpty()) {
+			return FEFilterType.Fields.MULTI_SELECT;
+		}
+
+		return FEFilterType.Fields.BIG_MULTI_SELECT;
+
 	}
 
 	@Override

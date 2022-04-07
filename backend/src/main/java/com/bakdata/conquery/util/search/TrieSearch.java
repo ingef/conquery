@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * Trie based keyword search for autocompletion and resolving.
- *
+ * <p>
  * We store not only whole words but suffixes up to length of SUFFIX_CUTOFF to enable a sort of fuzzy and partial search with longer and compound search terms.
  */
 @NoArgsConstructor
@@ -34,13 +34,19 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * We saturate matches to avoid favoring very short keywords, when multiple keywords are used.
 	 */
-	private static final double MATCH_THRESHOLD = 1d / 10d;
-	private static final int SUFFIX_CUTOFF = 3;
+	private static final double EXACT_MATCH_WEIGHT = 1d / 10d;
+	/**
+	 * If we find original words in the search, we prefer them a bit.
+	 */
+	private static final double ORIGINAL_WORD_WEIGHT_FACTOR = 0.5d;
+
+	private static final int SUFFIX_CUTOFF = 2;
+	private static final String WHOLE_WORD_MARKER = "!";
 
 	/**
 	 * @implNote to be used in this pattern, "_" must always be the last entry.
 	 */
-	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"'_-]+"); //TODO FK: Investigate better split patterns
+	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"'_!-]+"); //TODO FK: Investigate better split patterns
 
 	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
 
@@ -48,9 +54,13 @@ public class TrieSearch<T extends Comparable<T>> {
 		trie.clear();
 	}
 
-	private Stream<String> suffixes(String word) {
-		return IntStream.range(0, Math.max(1, word.length() - SUFFIX_CUTOFF))
-						.mapToObj(word::substring);
+	static Stream<String> suffixes(String word) {
+		return Stream.concat(
+				// We append a special character here marking original words as we want to favor them in weighing.
+				Stream.of(word + WHOLE_WORD_MARKER),
+				IntStream.range(1, Math.max(1, word.length() - SUFFIX_CUTOFF))
+						 .mapToObj(word::substring)
+		);
 	}
 
 	private Stream<String> split(String keyword) {
@@ -68,19 +78,31 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * A lower weight implies more relevant words.
 	 */
 	private double weightWord(String keyword, String itemWord) {
+
+		// Test if the word is an original word and not a suffix.
+		final boolean isOriginal = itemWord.endsWith(WHOLE_WORD_MARKER);
+
 		final double keywordLength = keyword.length();
-		final double itemLength = itemWord.length();
+		final double itemLength = itemWord.length() - (isOriginal ? 1 : 0);
 
 		// keyword is prefix of itemWord
 		assert itemLength >= keywordLength;
 
+
 		// We saturate the weight to avoid favoring extremely short matches.
 		if (keywordLength == itemLength) {
-			return MATCH_THRESHOLD;
+			return EXACT_MATCH_WEIGHT;
 		}
 
 		// We assume that less difference implies more relevant words
-		return (itemLength - keywordLength) / keywordLength;
+		final double weight = (itemLength - keywordLength) / keywordLength;
+
+		// If itemWord ends with WHOLE_WORD_MARKER, we are matching an original input from the beginning which are favorable (but less than exact matches).
+		if (isOriginal) {
+			return ORIGINAL_WORD_WEIGHT_FACTOR * weight;
+		}
+
+		return weight;
 	}
 
 	public List<T> findItems(Collection<String> keywords, int limit) {
@@ -96,6 +118,8 @@ public class TrieSearch<T extends Comparable<T>> {
 
 				// calculate and update weights for all queried items
 				final String itemWord = entry.getKey();
+
+
 				final double weight = weightWord(keyword, itemWord);
 
 				entry.getValue()
@@ -119,7 +143,9 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public List<T> findExact(Collection<String> keywords, int limit) {
-		return keywords.stream().flatMap(this::split)
+		return keywords.stream()
+					   .flatMap(this::split)
+					   .map(kw -> kw + WHOLE_WORD_MARKER)
 					   .flatMap(this::doGet)
 					   .distinct()
 					   .limit(limit)
@@ -141,7 +167,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		keywords.stream()
 				.filter(Predicate.not(Strings::isNullOrEmpty))
 				.flatMap(this::split)
-				.flatMap(this::suffixes)
+				.flatMap(TrieSearch::suffixes)
 				.forEach(kw -> doPut(kw, item));
 	}
 
@@ -164,6 +190,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	/**
 	 * Since growth of ArrayList might be excessive, we can shrink the internal lists to only required size instead.
+	 *
 	 * @implSpec the TrieSearch is still mutable after this.
 	 */
 	public void shrinkToFit() {
