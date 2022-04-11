@@ -321,7 +321,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
       );
     case "DATASET_SELECT":
       const datasetDefaultValue =
-        availableDatasets.length > 0 ? availableDatasets[0] : undefined;
+        availableDatasets.length > 0 ? availableDatasets[0] : null;
 
       return (
         <ConnectedField formField={field} control={control}>
