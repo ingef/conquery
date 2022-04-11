@@ -10,16 +10,16 @@
                 {
                     "type": "CONCEPT",
                     "ids": [
-                        "icd.f00$2df99"
+                        "icd.f00%2df99"
                     ],
                     "label": "F00-F99",
                     "tables": [
                         {
-                            "id": "icd.kh$5fdiagnose$5ficd$5fcode",
+                            "id": "icd.kh%5fdiagnose%5ficd%5fcode",
                             "filters": []
                         },
                         {
-                            "id": "icd.au$5ffall",
+                            "id": "icd.au%5ffall",
                             "filters": []
                         }
                     ]
@@ -27,12 +27,12 @@
                 {
                     "type": "CONCEPT",
                     "ids": [
-                        "icd.f00$2df99.f20$2df29"
+                        "icd.f00%2df99.f20%2df29"
                     ],
                     "label": "F20-F29",
                     "tables": [
                         {
-                            "id": "icd.kh$5fdiagnose$5ficd$5fcode",
+                            "id": "icd.kh%5fdiagnose%5ficd%5fcode",
                             "filters": []
                         }
                     ]

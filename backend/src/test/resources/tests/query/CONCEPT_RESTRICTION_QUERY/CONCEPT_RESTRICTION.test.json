@@ -16,7 +16,7 @@
 					"child": {
 						"type": "CONCEPT",
 						"ids": [
-							"icd.f00$2df99.f20$2df29.f20"
+							"icd.f00%2df99.f20%2df29.f20"
 						],
 						"label": "F20",
 						"tables": [
