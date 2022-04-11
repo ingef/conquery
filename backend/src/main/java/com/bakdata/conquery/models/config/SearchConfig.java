@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class SearchConfig {
 	@Min(0)
-	private int suffixLength = 3;
+	private int suffixLength = 2;
 	@Nullable
 	private String split = "(),;.:\"'/";
 }

@@ -47,7 +47,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	public TrieSearch(int suffixCutoff, String split) {
 		this.suffixCutoff = suffixCutoff;
 
-		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, ""))));
+		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split + WHOLE_WORD_MARKER, ""))));
 	}
 
 	/**
@@ -59,7 +59,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		trie.clear();
 	}
 
-	static Stream<String> suffixes(String word) {
+	Stream<String> suffixes(String word) {
 		return Stream.concat(
 				// We append a special character here marking original words as we want to favor them in weighing.
 				Stream.of(word + WHOLE_WORD_MARKER),
@@ -172,7 +172,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		keywords.stream()
 				.filter(Predicate.not(Strings::isNullOrEmpty))
 				.flatMap(this::split)
-				.flatMap(TrieSearch::suffixes)
+				.flatMap(this::suffixes)
 				.forEach(kw -> doPut(kw, item));
 	}
 
