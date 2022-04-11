@@ -45,7 +45,7 @@ const TimebasedQueryRunner = () => {
   const stopTimebasedQuery = useStopQuery("timebased");
 
   const startQuery = () => {
-    if (datasetId) {
+    if (datasetId && allConditionsFilled(query)) {
       startTimebasedQuery(datasetId, query);
     }
   };

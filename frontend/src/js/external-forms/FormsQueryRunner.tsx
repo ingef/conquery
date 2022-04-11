@@ -45,7 +45,6 @@ const FormQueryRunner: FC = () => {
   );
   const queryId = useSelector<StateT, string | null>(selectRunningQuery);
   const isQueryRunning = exists(queryId);
-  const formName = useSelector<StateT, string | null>(selectActiveFormType);
   const formConfig = useSelector<StateT, Form | null>(selectFormConfig);
 
   const { getValues } = useFormContext();
@@ -59,21 +58,17 @@ const FormQueryRunner: FC = () => {
       isValid,
     });
 
-  const formQueryTransformation = formConfig
-    ? transformQueryToApi(formConfig)
-    : () => {};
-
   const startExternalFormsQuery = useStartQuery("externalForms");
   const stopExternalFormsQuery = useStopQuery("externalForms");
 
   const startQuery = () => {
-    if (datasetId) {
-      const form = getValues();
-      const query = { formName, form };
+    if (datasetId && exists(formConfig)) {
+      const values = getValues();
 
-      startExternalFormsQuery(datasetId, query, {
-        formQueryTransformation,
-      });
+      startExternalFormsQuery(
+        datasetId,
+        transformQueryToApi(formConfig, values),
+      );
     }
   };
   const stopQuery = () => {

@@ -256,11 +256,8 @@
   },
   "externalForms": {
     "forms": "Forms",
-    "config": {
-      "headline": "Form configuration",
-      "save": "Save",
-      "saveDescription": "Save all current form settings to load them later.",
-      "saveError": "Could not save form configuration"
+    "loader": {
+      "headline": "Drop a Form Configuration to load"
     },
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",

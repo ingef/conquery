@@ -1,39 +1,26 @@
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
 import { FC, useState, useEffect, memo } from "react";
-import { useFormContext, useWatch } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import {
-  usePatchFormConfig,
-  useGetFormConfig,
-  usePostFormConfig,
-} from "../api/api";
+import { useGetFormConfig } from "../api/api";
 import type { SelectOptionT } from "../api/types";
-import IconButton from "../button/IconButton";
 import { DNDType } from "../common/constants/dndTypes";
-import { usePrevious } from "../common/helpers/usePrevious";
 import { useDatasetId } from "../dataset/selectors";
 import FaIcon from "../icon/FaIcon";
 import { Language, useActiveLang } from "../localization/useActiveLang";
-import { useLoadFormConfigs } from "../previous-queries/list/actions";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import { setMessage } from "../snack-message/actions";
-import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone from "../ui-components/Dropzone";
-import EditableText from "../ui-components/EditableText";
 import Label from "../ui-components/Label";
 
 import { setExternalForm } from "./actions";
 import type { Form, FormField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 import { collectAllFormFields } from "./helper";
-import {
-  useSelectActiveFormName,
-  selectActiveFormType,
-  selectFormConfig,
-} from "./stateSelectors";
+import { selectActiveFormType, selectFormConfig } from "./stateSelectors";
 import type { DragItemFormConfig } from "./types";
 
 const Root = styled("div")`
@@ -47,11 +34,6 @@ const SxLabel = styled(Label)`
   margin: 0;
 `;
 
-const SxEditableText = styled(EditableText)<{ editing: boolean }>`
-  margin: ${({ editing }) => (editing ? "" : "5px 0 0px 8px")};
-  font-weight: 700;
-`;
-
 const Row = styled("div")`
   display: flex;
   align-items: center;
@@ -60,15 +42,6 @@ const Row = styled("div")`
 const SpacedRow = styled(Row)`
   justify-content: space-between;
   width: 100%;
-`;
-
-const DirtyFlag = styled("div")`
-  width: 7px;
-  height: 7px;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  border-radius: 50%;
-  margin: 0 4px;
-  flex-shrink: 0;
 `;
 
 const SxDropzone = styled(Dropzone)`
@@ -84,15 +57,7 @@ const SxFaIcon = styled(FaIcon)`
   margin-right: 5px;
 `;
 
-const SxWithTooltip = styled(WithTooltip)`
-  flex-shrink: 0;
-`;
-
 const DROP_TYPES = [DNDType.FORM_CONFIG];
-
-const hasChanged = (a: any, b: any) => {
-  return JSON.stringify(a) !== JSON.stringify(b);
-};
 
 // Potentially transform the stored field value to support older saved form configs
 //
@@ -150,52 +115,19 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
   const activeLang = useActiveLang();
   const dispatch = useDispatch();
   const datasetId = useDatasetId();
-  const [editing, setEditing] = useState<boolean>(false);
-  const [formConfigId, setFormConfigId] = useState<string | null>(null);
-  const [isDirty, setIsDirty] = useState<boolean>(true);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [formConfigToLoadNext, setFormConfigToLoadNext] =
     useState<FormConfigT | null>(null);
 
-  const activeFormName = useSelectActiveFormName();
   const activeFormType = useSelector<StateT, string | null>((state) =>
     selectActiveFormType(state),
   );
 
   const { setValue } = useFormContext();
-  const formValues = useWatch({});
-  const previousFormValues = usePrevious(formValues);
 
-  const { loadFormConfigs } = useLoadFormConfigs();
   const formConfig = useSelector<StateT, Form | null>(selectFormConfig);
 
-  const postFormConfig = usePostFormConfig();
   const getFormConfig = useGetFormConfig();
-  const patchFormConfig = usePatchFormConfig();
-
-  function getUntitledName(name: string) {
-    return `${name} ${new Date().toISOString().split("T")[0]}`;
-  }
-
-  const [configName, setConfigName] = useState<string>(
-    getUntitledName(activeFormName),
-  );
-
-  useEffect(() => {
-    setConfigName(getUntitledName(activeFormName));
-  }, [activeFormName]);
-
-  useEffect(() => {
-    setIsDirty(true);
-    setFormConfigId(null);
-  }, [configName]);
-
-  useEffect(() => {
-    if (hasChanged(previousFormValues, formValues)) {
-      setIsDirty(true);
-    }
-  }, [formValues, previousFormValues]);
 
   useEffect(
     function deferredLoadFormConfig() {
@@ -233,49 +165,15 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
             shouldTouch: true,
           });
         }
-
-        setConfigName(formConfigToLoadNext.label);
-        setIsDirty(false);
       }
     },
     [formConfigToLoadNext, formConfig, activeLang, datasetOptions, setValue],
   );
 
-  async function onSubmit() {
-    if (!datasetId) return;
-
-    setIsSaving(true);
-    try {
-      if (formConfigId) {
-        await patchFormConfig(datasetId, formConfigId, {
-          label: configName,
-          values: formValues,
-        });
-
-        setIsDirty(false);
-        loadFormConfigs(datasetId);
-      } else if (activeFormType) {
-        const result = await postFormConfig(datasetId, {
-          label: configName,
-          formType: activeFormType,
-          values: formValues,
-        });
-
-        setFormConfigId(result.id);
-        setIsDirty(false);
-        loadFormConfigs(datasetId);
-      }
-    } catch (e) {
-      dispatch(setMessage({ message: t("externalForms.config.saveError") }));
-    }
-    setIsSaving(false);
-  }
-
   async function onLoad(dragItem: DragItemFormConfig) {
     if (!datasetId) return;
 
     setIsLoading(true);
-    setIsDirty(false);
     try {
       const config = await getFormConfig(datasetId, dragItem.id);
       setIsLoading(false);
@@ -300,45 +198,20 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
         {() => (
           <SpacedRow>
             <div>
-              <SxLabel>{t("externalForms.config.headline")}</SxLabel>
-              <Row>
-                {isLoading ? (
-                  <LoadingText>
-                    <SxFaIcon icon="spinner" />
-                    {t("common.loading")}
-                  </LoadingText>
-                ) : (
-                  <>
-                    <SxEditableText
-                      loading={false}
-                      editing={editing}
-                      onToggleEdit={() => setEditing(!editing)}
-                      text={configName || ""}
-                      saveOnClickoutside
-                      onSubmit={(txt: string) => {
-                        if (txt) {
-                          setConfigName(txt);
-                        }
-                        setEditing(false);
-                      }}
-                    />
-                    {isDirty && <DirtyFlag />}
-                  </>
-                )}
-              </Row>
+              {formConfigToLoadNext ? (
+                <p>{formConfigToLoadNext.label}</p>
+              ) : (
+                <>
+                  <SxLabel>{t("externalForms.loader.headline")}</SxLabel>
+                  {isLoading && (
+                    <LoadingText>
+                      <SxFaIcon icon="spinner" />
+                      {t("common.loading")}
+                    </LoadingText>
+                  )}
+                </>
+              )}
             </div>
-            <SxWithTooltip
-              lazy
-              text={t("externalForms.config.saveDescription")}
-            >
-              <IconButton
-                frame
-                icon={isSaving ? "spinner" : "save"}
-                onClick={onSubmit}
-              >
-                {t("externalForms.config.save")}
-              </IconButton>
-            </SxWithTooltip>
           </SpacedRow>
         )}
       </SxDropzone>

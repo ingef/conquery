@@ -255,11 +255,8 @@
   },
   "externalForms": {
     "forms": "Formulare",
-    "config": {
-      "headline": "Formular-Konfiguration",
-      "save": "Speichern",
-      "saveDescription": "Aktuelle Formular-Einstellungen speichern, um sie später erneut zu laden.",
-      "saveError": "Konnte Formular-Konfiguration nicht speichern"
+    "loader": {
+      "headline": "Formular-Konfiguration zum Laden hineinziehen"
     },
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
