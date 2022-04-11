@@ -9,14 +9,12 @@ import { useActiveLang } from "../localization/useActiveLang";
 import WithTooltip from "../tooltip/WithTooltip";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
-import FormConfigLoader from "./FormConfigLoader";
 import { setExternalForm } from "./actions";
 import type { Form } from "./config-types";
 import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
 
 const Root = styled("div")`
   flex-shrink: 0;
-  margin-bottom: 10px;
   padding: 8px 20px 10px 10px;
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
@@ -27,10 +25,6 @@ const Row = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-`;
-
-const SxFormConfigLoader = styled(FormConfigLoader)`
-  margin-top: 14px;
 `;
 
 const SxInputSelect = styled(InputSelect)`
@@ -45,9 +39,8 @@ const SxIconButton = styled(IconButton)`
 
 interface Props {
   reset: () => void;
-  datasetOptions: SelectOptionT[];
 }
-const FormsNavigation = ({ reset, datasetOptions }: Props) => {
+const FormsNavigation = ({ reset }: Props) => {
   const language = useActiveLang();
   const { t } = useTranslation();
 
@@ -101,7 +94,6 @@ const FormsNavigation = ({ reset, datasetOptions }: Props) => {
           <SxIconButton frame regular icon="trash-alt" onClick={onClear} />
         </WithTooltip>
       </Row>
-      <SxFormConfigLoader datasetOptions={datasetOptions} />
     </Root>
   );
 };

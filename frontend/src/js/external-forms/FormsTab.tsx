@@ -126,7 +126,7 @@ const FormsTab = () => {
 
   return (
     <FormProvider {...methods}>
-      <FormsNavigation reset={onReset} datasetOptions={datasetOptions} />
+      <FormsNavigation reset={onReset} />
       <FormContainer
         methods={methods}
         config={config}

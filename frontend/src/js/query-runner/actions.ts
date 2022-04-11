@@ -19,7 +19,10 @@ import type {
 } from "../api/types";
 import { ErrorObject, errorPayload, successPayload } from "../common/actions";
 import { getExternalSupportedErrorMessage } from "../environment";
-import { useLoadQueries } from "../previous-queries/list/actions";
+import {
+  useLoadFormConfigs,
+  useLoadQueries,
+} from "../previous-queries/list/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
@@ -206,6 +209,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
   const dispatch = useDispatch();
   const getQuery = useGetQuery();
   const { loadQueries } = useLoadQueries();
+  const { loadFormConfigs } = useLoadFormConfigs();
 
   const queryResult = (datasetId: DatasetIdT, queryId: QueryIdT) => {
     dispatch(queryResultStart({ queryType }));
@@ -224,6 +228,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
 
             // Now there should be a new result that can be queried
             loadQueries(datasetId);
+            loadFormConfigs(datasetId);
             break;
           case "FAILED":
             dispatch(queryResultError(t, queryType, r));

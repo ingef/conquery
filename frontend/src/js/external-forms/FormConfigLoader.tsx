@@ -1,7 +1,6 @@
-import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
-import { FC, useState, useEffect, memo } from "react";
+import { FC, useState, useEffect, memo, ReactNode } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
@@ -10,12 +9,10 @@ import { useGetFormConfig } from "../api/api";
 import type { SelectOptionT } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
 import { useDatasetId } from "../dataset/selectors";
-import FaIcon from "../icon/FaIcon";
 import { Language, useActiveLang } from "../localization/useActiveLang";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import { setMessage } from "../snack-message/actions";
 import Dropzone from "../ui-components/Dropzone";
-import Label from "../ui-components/Label";
 
 import { setExternalForm } from "./actions";
 import type { Form, FormField } from "./config-types";
@@ -30,36 +27,9 @@ const Root = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-const SxLabel = styled(Label)<{ bold?: boolean }>`
-  margin: 0;
-  ${({ bold }) =>
-    bold &&
-    css`
-      font-weight: bold;
-    `}
-`;
-
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-
-const SpacedRow = styled(Row)`
-  justify-content: space-between;
-  width: 100%;
-`;
-
 const SxDropzone = styled(Dropzone)`
-  color: #333;
-`;
-
-const LoadingText = styled("p")`
-  font-weight: 400;
-  margin: 3px 0 0px 8px;
-`;
-
-const SxFaIcon = styled(FaIcon)`
-  margin-right: 5px;
+  padding: 10px 20px 20px 10px;
+  color: ${({ theme }) => theme.col.black};
 `;
 
 const DROP_TYPES = [DNDType.FORM_CONFIG];
@@ -114,31 +84,24 @@ const transformLoadedFieldValue = (
 interface Props {
   datasetOptions: SelectOptionT[];
   className?: string;
+  children: () => ReactNode;
 }
 
-const FormConfigLoader: FC<Props> = ({ className, datasetOptions }) => {
+const FormConfigLoader: FC<Props> = ({
+  className,
+  children,
+  datasetOptions,
+}) => {
   const { t } = useTranslation();
   const activeLang = useActiveLang();
   const dispatch = useDispatch();
   const datasetId = useDatasetId();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [formConfigToLoadNext, setFormConfigToLoadNext] =
     useState<FormConfigT | null>(null);
 
   const activeFormType = useSelector<StateT, string | null>((state) =>
     selectActiveFormType(state),
   );
-
-  useEffect(
-    function resetLoadedFormConfigLabel() {
-      setLoadedFormConfigLabel(null);
-    },
-    [activeFormType],
-  );
-
-  const [loadedFormConfigLabel, setLoadedFormConfigLabel] = useState<
-    string | null
-  >(null);
 
   const { setValue } = useFormContext();
 
@@ -154,9 +117,6 @@ const FormConfigLoader: FC<Props> = ({ className, datasetOptions }) => {
       if (!formConfig || !formConfigToLoadNext) return;
 
       const entries = Object.entries(formConfigToLoadNext.values);
-      const formConfigLabel = formConfigToLoadNext.label;
-
-      setFormConfigToLoadNext(null);
 
       for (const [fieldname, value] of entries) {
         // --------------------------
@@ -183,7 +143,7 @@ const FormConfigLoader: FC<Props> = ({ className, datasetOptions }) => {
         });
       }
 
-      setLoadedFormConfigLabel(formConfigLabel);
+      setFormConfigToLoadNext(null);
     },
     [formConfigToLoadNext, formConfig, activeLang, datasetOptions, setValue],
   );
@@ -191,10 +151,8 @@ const FormConfigLoader: FC<Props> = ({ className, datasetOptions }) => {
   async function onLoad(dragItem: DragItemFormConfig) {
     if (!datasetId) return;
 
-    setIsLoading(true);
     try {
       const config = await getFormConfig(datasetId, dragItem.id);
-      setIsLoading(false);
 
       if (config.formType !== activeFormType) {
         dispatch(setExternalForm({ form: config.formType }));
@@ -203,7 +161,6 @@ const FormConfigLoader: FC<Props> = ({ className, datasetOptions }) => {
       setFormConfigToLoadNext(config);
     } catch (e) {
       dispatch(setMessage({ message: t("formConfig.loadError") }));
-      setIsLoading(false);
     }
   }
 
@@ -212,26 +169,10 @@ const FormConfigLoader: FC<Props> = ({ className, datasetOptions }) => {
       <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemFormConfig>>> */
         onDrop={(item) => onLoad(item as DragItemFormConfig)}
         acceptedDropTypes={DROP_TYPES}
+        naked
+        transparent
       >
-        {() => (
-          <SpacedRow>
-            <div>
-              {loadedFormConfigLabel ? (
-                <SxLabel bold>{loadedFormConfigLabel}</SxLabel>
-              ) : (
-                <>
-                  <SxLabel>{t("externalForms.loader.headline")}</SxLabel>
-                  {isLoading && (
-                    <LoadingText>
-                      <SxFaIcon icon="spinner" />
-                      {t("common.loading")}
-                    </LoadingText>
-                  )}
-                </>
-              )}
-            </div>
-          </SpacedRow>
-        )}
+        {children}
       </SxDropzone>
     </Root>
   );

@@ -251,6 +251,7 @@ const Folders: FC<Props> = ({ className }) => {
             <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
               key={`${folder}-${i}`}
               naked
+              bare
               onDrop={(item) =>
                 onDropIntoFolder(
                   item as DragItemQuery | DragItemFormConfig,

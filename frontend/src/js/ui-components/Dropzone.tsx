@@ -15,6 +15,8 @@ import type { DragItemFile } from "./DropzoneWithFileInput";
 const Root = styled("div")<{
   isOver?: boolean;
   naked?: boolean;
+  bare?: boolean;
+  transparent?: boolean;
   canDrop?: boolean;
 }>`
   border: ${({ theme, isOver, canDrop, naked }) =>
@@ -26,15 +28,17 @@ const Root = styled("div")<{
       ? `3px solid ${theme.col.black}`
       : `3px dashed ${theme.col.grayMediumLight}`};
   border-radius: ${({ theme }) => theme.borderRadius};
-  padding: ${({ naked }) => (naked ? "0" : "10px")};
+  padding: ${({ bare }) => (bare ? "0" : "10px")};
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: ${({ theme, canDrop, naked, isOver }) =>
+  background-color: ${({ theme, canDrop, naked, isOver, transparent }) =>
     naked && isOver && canDrop
       ? theme.col.grayLight
       : canDrop
       ? theme.col.grayVeryLight
+      : transparent
+      ? "transparent"
       : theme.col.bg};
   width: 100%;
   color: ${({ theme, isOver, canDrop }) =>
@@ -55,6 +59,8 @@ export interface DropzoneProps<DroppableObject> {
   className?: string;
   acceptedDropTypes: string[];
   naked?: boolean;
+  bare?: boolean;
+  transparent?: boolean;
   onDrop: (props: DroppableObject, monitor: DropTargetMonitor) => void;
   canDrop?: (props: DroppableObject, monitor: DropTargetMonitor) => boolean;
   onClick?: () => void;
@@ -91,6 +97,8 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>({
   className,
   acceptedDropTypes,
   naked,
+  transparent,
+  bare,
   canDrop,
   onDrop,
   onClick,
@@ -120,6 +128,8 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>({
       className={className}
       onClick={onClick}
       naked={naked}
+      transparent={transparent}
+      bare={bare}
     >
       {children &&
         children({
