@@ -255,9 +255,6 @@
   },
   "externalForms": {
     "forms": "Formulare",
-    "loader": {
-      "headline": "Formular-Konfiguration zum Laden hineinziehen"
-    },
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
       "isRequired": "Erforderlich",

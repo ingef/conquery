@@ -256,9 +256,6 @@
   },
   "externalForms": {
     "forms": "Forms",
-    "loader": {
-      "headline": "Drop a Form Configuration to load"
-    },
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",
       "isRequired": "Required",
