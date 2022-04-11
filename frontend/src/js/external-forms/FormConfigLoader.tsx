@@ -1,3 +1,4 @@
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import type { StateT } from "app-types";
 import { FC, useState, useEffect, memo } from "react";
@@ -26,12 +27,16 @@ import type { DragItemFormConfig } from "./types";
 const Root = styled("div")`
   display: flex;
   align-items: center;
-  margin: 5px 0 20px;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-const SxLabel = styled(Label)`
+const SxLabel = styled(Label)<{ bold?: boolean }>`
   margin: 0;
+  ${({ bold }) =>
+    bold &&
+    css`
+      font-weight: bold;
+    `}
 `;
 
 const Row = styled("div")`
@@ -108,9 +113,10 @@ const transformLoadedFieldValue = (
 
 interface Props {
   datasetOptions: SelectOptionT[];
+  className?: string;
 }
 
-const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
+const FormConfigLoader: FC<Props> = ({ className, datasetOptions }) => {
   const { t } = useTranslation();
   const activeLang = useActiveLang();
   const dispatch = useDispatch();
@@ -123,6 +129,17 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
     selectActiveFormType(state),
   );
 
+  useEffect(
+    function resetLoadedFormConfigLabel() {
+      setLoadedFormConfigLabel(null);
+    },
+    [activeFormType],
+  );
+
+  const [loadedFormConfigLabel, setLoadedFormConfigLabel] = useState<
+    string | null
+  >(null);
+
   const { setValue } = useFormContext();
 
   const formConfig = useSelector<StateT, Form | null>(selectFormConfig);
@@ -134,38 +151,39 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
       // Needs to be deferred because the form type might get changed
       // and other effects will have to run to reset / initialize the form first
       // before we can load new values into it
-      if (!formConfig) return;
+      if (!formConfig || !formConfigToLoadNext) return;
 
-      if (formConfigToLoadNext) {
-        setFormConfigToLoadNext(null);
+      const entries = Object.entries(formConfigToLoadNext.values);
+      const formConfigLabel = formConfigToLoadNext.label;
 
-        const entries = Object.entries(formConfigToLoadNext.values);
+      setFormConfigToLoadNext(null);
 
-        for (const [fieldname, value] of entries) {
-          // --------------------------
-          // Potentially transform the stored field value to support older saved form configs
-          // because we changed the SELECT values:
-          // from string, e.g. 'next'
-          // to SelectValueT, e.g. { value: 'next', label: 'Next' }
-          const field = collectAllFormFields(formConfig.fields).find(
-            (f) => f.type !== "GROUP" && f.name === fieldname,
-          );
+      for (const [fieldname, value] of entries) {
+        // --------------------------
+        // Potentially transform the stored field value to support older saved form configs
+        // because we changed the SELECT values:
+        // from string, e.g. 'next'
+        // to SelectValueT, e.g. { value: 'next', label: 'Next' }
+        const field = collectAllFormFields(formConfig.fields).find(
+          (f) => f.type !== "GROUP" && f.name === fieldname,
+        );
 
-          if (!field) continue;
+        if (!field) continue;
 
-          const fieldValue = transformLoadedFieldValue(field, value, {
-            activeLang,
-            datasetOptions,
-          });
-          // --------------------------
+        const fieldValue = transformLoadedFieldValue(field, value, {
+          activeLang,
+          datasetOptions,
+        });
+        // --------------------------
 
-          setValue(fieldname, fieldValue, {
-            shouldValidate: true,
-            shouldDirty: true,
-            shouldTouch: true,
-          });
-        }
+        setValue(fieldname, fieldValue, {
+          shouldValidate: true,
+          shouldDirty: true,
+          shouldTouch: true,
+        });
       }
+
+      setLoadedFormConfigLabel(formConfigLabel);
     },
     [formConfigToLoadNext, formConfig, activeLang, datasetOptions, setValue],
   );
@@ -190,7 +208,7 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
   }
 
   return (
-    <Root>
+    <Root className={className}>
       <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemFormConfig>>> */
         onDrop={(item) => onLoad(item as DragItemFormConfig)}
         acceptedDropTypes={DROP_TYPES}
@@ -198,8 +216,8 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
         {() => (
           <SpacedRow>
             <div>
-              {formConfigToLoadNext ? (
-                <p>{formConfigToLoadNext.label}</p>
+              {loadedFormConfigLabel ? (
+                <SxLabel bold>{loadedFormConfigLabel}</SxLabel>
               ) : (
                 <>
                   <SxLabel>{t("externalForms.loader.headline")}</SxLabel>
@@ -219,4 +237,4 @@ const FormConfigSaver: FC<Props> = ({ datasetOptions }) => {
   );
 };
 
-export default memo(FormConfigSaver);
+export default memo(FormConfigLoader);

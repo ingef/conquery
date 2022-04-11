@@ -3,13 +3,15 @@ import type { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
+import type { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
 import WithTooltip from "../tooltip/WithTooltip";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
+import FormConfigLoader from "./FormConfigLoader";
 import { setExternalForm } from "./actions";
-import { Form } from "./config-types";
+import type { Form } from "./config-types";
 import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
 
 const Root = styled("div")`
@@ -18,10 +20,17 @@ const Root = styled("div")`
   padding: 8px 20px 10px 10px;
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
+  background-color: ${({ theme }) => theme.col.bg};
+`;
+
+const Row = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  background-color: ${({ theme }) => theme.col.bg};
+`;
+
+const SxFormConfigLoader = styled(FormConfigLoader)`
+  margin-top: 14px;
 `;
 
 const SxInputSelect = styled(InputSelect)`
@@ -36,8 +45,9 @@ const SxIconButton = styled(IconButton)`
 
 interface Props {
   reset: () => void;
+  datasetOptions: SelectOptionT[];
 }
-const FormsNavigation = ({ reset }: Props) => {
+const FormsNavigation = ({ reset, datasetOptions }: Props) => {
   const language = useActiveLang();
   const { t } = useTranslation();
 
@@ -76,19 +86,22 @@ const FormsNavigation = ({ reset }: Props) => {
 
   return (
     <Root>
-      <SxInputSelect
-        label={t("externalForms.forms")}
-        options={options}
-        value={options.find((o) => o.value === activeForm) || null}
-        onChange={(value) => {
-          if (value) {
-            onChangeToForm(value.value as string);
-          }
-        }}
-      />
-      <WithTooltip text={t("externalForms.common.clear")}>
-        <SxIconButton frame regular icon="trash-alt" onClick={onClear} />
-      </WithTooltip>
+      <Row>
+        <SxInputSelect
+          label={t("externalForms.forms")}
+          options={options}
+          value={options.find((o) => o.value === activeForm) || null}
+          onChange={(value) => {
+            if (value) {
+              onChangeToForm(value.value as string);
+            }
+          }}
+        />
+        <WithTooltip text={t("externalForms.common.clear")}>
+          <SxIconButton frame regular icon="trash-alt" onClick={onClear} />
+        </WithTooltip>
+      </Row>
+      <SxFormConfigLoader datasetOptions={datasetOptions} />
     </Root>
   );
 };
