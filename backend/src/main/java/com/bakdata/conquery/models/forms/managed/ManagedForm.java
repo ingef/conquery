@@ -85,6 +85,7 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, config, null));
 		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset());
 		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
+		storage = datasetRegistry.getMetaStorage();
 	}
 
 	@Override
