@@ -4,7 +4,7 @@ COPY . /app
 
 
 WORKDIR /app
-RUN ./build_version.sh
+RUN ./scripts/build_version.sh
 
 
 FROM openjdk:11.0.12-slim AS runner
