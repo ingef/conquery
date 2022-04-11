@@ -22,7 +22,7 @@ class QuickSearchTest {
 
 	@BeforeEach
 	public void setup() {
-		quickSearch.clear();
+		quickSearch.clear(3, "");
 
 		List<String> items = List.of(
 				"a",

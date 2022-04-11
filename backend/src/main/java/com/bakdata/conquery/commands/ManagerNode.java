@@ -207,7 +207,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
 
 		for (NamespaceStorage namespaceStorage : storages) {
-			Namespace ns = new Namespace(datasetRegistry, namespaceStorage, config.isFailOnError(), objectWriter, config.getCsv());
+			Namespace ns = new Namespace(datasetRegistry, namespaceStorage, config.isFailOnError(), objectWriter, config.getCsv(), config.getSearch());
 
 
 		}

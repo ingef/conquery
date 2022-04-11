@@ -97,11 +97,9 @@ public class AdminDatasetProcessor {
 						datasetRegistry, datasetStorage, config.isFailOnError(),
 						config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
 							  .writerWithView(InternalOnly.class),
-						config.getCsv()
+						config.getCsv(),
+						config.getSearch()
 				);
-
-
-		datasetRegistry.add(ns);
 
 		// for now we just add one worker to every ShardNode
 		for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {

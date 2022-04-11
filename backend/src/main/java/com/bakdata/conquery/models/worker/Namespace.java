@@ -10,6 +10,7 @@ import java.util.Set;
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.SearchConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -59,17 +60,17 @@ public class Namespace implements Closeable {
 
 	private final FilterSearch filterSearch;
 
-	public Namespace(DatasetRegistry datasetRegistry, NamespaceStorage storage, boolean failOnError, ObjectWriter objectWriter, CSVConfig csvConfig) {
+	public Namespace(DatasetRegistry datasetRegistry, NamespaceStorage storage, boolean failOnError, ObjectWriter objectWriter, CSVConfig csvConfig, SearchConfig searchConfig) {
 		namespaces = datasetRegistry;
 		this.storage = storage;
 		executionManager = new ExecutionManager(this);
 		jobManager = new JobManager(storage.getDataset().getName(), failOnError);
 
-		filterSearch = new FilterSearch(storage, jobManager, csvConfig);
+		filterSearch = new FilterSearch(storage, jobManager, csvConfig, searchConfig);
 
 		this.objectWriter = objectWriter;
 
-		namespaces.add(this);
+		datasetRegistry.add(this);
 	}
 
 	public void sendToAll(WorkerMessage msg) {
