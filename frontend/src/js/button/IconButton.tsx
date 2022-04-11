@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { forwardRef } from "react";
 
 import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
@@ -62,7 +63,7 @@ export interface IconButtonPropsT extends BasicButtonProps {
   active?: boolean;
   large?: boolean;
   small?: boolean;
-  icon: string;
+  icon: IconName;
   regular?: boolean;
   secondary?: boolean;
   tight?: boolean;
