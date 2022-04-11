@@ -42,7 +42,7 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	private final int suffixCutoff;
 
-	private final Pattern splitPattern; //TODO FK: Investigate better split patterns
+	private final Pattern splitPattern;
 
 	public TrieSearch(int suffixCutoff, String split) {
 		this.suffixCutoff = suffixCutoff;

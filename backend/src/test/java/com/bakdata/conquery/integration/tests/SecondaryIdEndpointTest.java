@@ -133,7 +133,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 											  .get(ObjectNode.class);
 
 		// The injection is necessary to deserialize the dataset.
-		ObjectMapper mapper = conquery.getNamespace().getNamespaces().injectIntoNew(Jackson.MAPPER);
+		ObjectMapper mapper = conquery.getDatasetRegistry().injectIntoNew(Jackson.MAPPER);
 		mapper = conquery.getDataset().injectIntoNew(mapper);
 
 		return objectNode.get("secondaryIds")

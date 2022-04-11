@@ -9,8 +9,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.CSVConfig;
-import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -22,8 +21,10 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Namespace implements Closeable {
 
 	private final ObjectWriter objectWriter;
@@ -56,22 +58,22 @@ public class Namespace implements Closeable {
 	 */
 	private final Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
 
-	private final DatasetRegistry namespaces;
-
 	private final FilterSearch filterSearch;
 
-	public Namespace(DatasetRegistry datasetRegistry, NamespaceStorage storage, boolean failOnError, ObjectWriter objectWriter, CSVConfig csvConfig, SearchConfig searchConfig) {
-		namespaces = datasetRegistry;
-		this.storage = storage;
-		executionManager = new ExecutionManager(this);
-		jobManager = new JobManager(storage.getDataset().getName(), failOnError);
+	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectWriter objectWriter){
 
-		filterSearch = new FilterSearch(storage, jobManager, csvConfig, searchConfig);
+		ExecutionManager executionManager = new ExecutionManager(storage.getMetaStorage());
+		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 
-		this.objectWriter = objectWriter;
+		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
 
-		datasetRegistry.add(this);
+		final Namespace namespace = new Namespace(objectWriter, storage, executionManager, jobManager, filterSearch);
+
+		datasetRegistry.add(namespace);
+
+		return namespace;
 	}
+
 
 	public void sendToAll(WorkerMessage msg) {
 		if (workers.isEmpty()) {

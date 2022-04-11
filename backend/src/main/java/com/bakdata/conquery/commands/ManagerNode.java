@@ -10,7 +10,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -90,9 +89,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	// For registering form providers
 	private FormScanner formScanner;
-
-	private FilterSearch filterSearch;
-
 
 	public ManagerNode() {
 		this(DEFAULT_NAME);
@@ -202,41 +198,39 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	public void loadNamespaces() {
 		final Collection<NamespaceStorage> storages = config.getStorage().loadNamespaceStorages();
-		final ObjectWriter
-				objectWriter =
+		final ObjectWriter objectWriter =
 				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
 
 		for (NamespaceStorage namespaceStorage : storages) {
-			Namespace ns = new Namespace(datasetRegistry, namespaceStorage, config.isFailOnError(), objectWriter, config.getCsv(), config.getSearch());
-
-
+			Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), objectWriter);
 		}
 	}
 
 	@Override
-	public void sessionOpened(IoSession session) throws Exception {
+	public void sessionOpened(IoSession session) {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
 	@Override
-	public void sessionClosed(IoSession session) throws Exception {
+	public void sessionClosed(IoSession session) {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("Client '{}' disconnected ", session.getAttribute(MinaAttributes.IDENTIFIER));
 	}
 
 	@Override
-	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
+	public void exceptionCaught(IoSession session, Throwable cause) {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.error("caught exception", cause);
 	}
 
 	@Override
-	public void messageReceived(IoSession session, Object message) throws Exception {
+	public void messageReceived(IoSession session, Object message) {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		if (message instanceof MessageToManagerNode) {
 			MessageToManagerNode mrm = (MessageToManagerNode) message;
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
+
 			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext>
 					job =
 					new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
@@ -245,7 +239,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 							datasetRegistry, config.getCluster().getBackpressure()
 					));
 
-			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)
 			if (mrm.isSlowMessage()) {
 				((SlowMessage) mrm).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);

@@ -50,6 +50,7 @@ import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.NonNull;
@@ -92,13 +93,13 @@ public class AdminDatasetProcessor {
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
 
-		Namespace ns =
-				new Namespace(
-						datasetRegistry, datasetStorage, config.isFailOnError(),
-						config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
-							  .writerWithView(InternalOnly.class),
-						config.getCsv(),
-						config.getSearch()
+		final ObjectWriter mapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
+										  .writerWithView(InternalOnly.class);
+		Namespace.createAndRegister(
+						getDatasetRegistry(),
+						datasetStorage,
+						config,
+						mapper
 				);
 
 		// for now we just add one worker to every ShardNode

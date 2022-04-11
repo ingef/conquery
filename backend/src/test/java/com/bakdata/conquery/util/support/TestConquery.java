@@ -1,5 +1,21 @@
 package com.bakdata.conquery.util.support;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
+
+import java.io.File;
+import java.net.ServerSocket;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.validation.Validator;
+import javax.ws.rs.client.Client;
+
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
@@ -30,21 +46,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.jupiter.api.extension.ExtensionContext;
-
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
-import java.io.File;
-import java.net.ServerSocket;
-import java.time.Duration;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Represents the test instance of Conquery.
@@ -157,7 +158,7 @@ public class TestConquery {
 			.total(Duration.ofSeconds(5))
 			.stepTime(Duration.ofMillis(5))
 			.build()
-			.until(() -> ns.getWorkers().size() == ns.getNamespaces().getShardNodes().size());
+			.until(() -> ns.getWorkers().size() == datasets.getShardNodes().size());
 
 		support.waitUntilWorkDone();
 		openSupports.add(support);
