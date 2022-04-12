@@ -88,14 +88,16 @@ public class TrieSearch<T extends Comparable<T>> {
 		// keyword is prefix of itemWord
 		assert itemLength >= keywordLength;
 
+		final double weight;
 
 		// We saturate the weight to avoid favoring extremely short matches.
 		if (keywordLength == itemLength) {
-			return EXACT_MATCH_WEIGHT;
+			weight = EXACT_MATCH_WEIGHT;
 		}
-
-		// We assume that less difference implies more relevant words
-		final double weight = (itemLength - keywordLength) / keywordLength;
+		else {
+			// We assume that less difference implies more relevant words
+			weight = (itemLength - keywordLength) / keywordLength;
+		}
 
 		// If itemWord ends with WHOLE_WORD_MARKER, we are matching an original input from the beginning which are favorable (but less than exact matches).
 		if (isOriginal) {
