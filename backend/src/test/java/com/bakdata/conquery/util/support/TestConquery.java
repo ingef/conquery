@@ -254,7 +254,7 @@ public class TestConquery {
 
 				if (Duration.ofNanos(System.nanoTime() - started).toSeconds() > 10) {
 					started = System.nanoTime();
-					log.warn("waiting for done work for a long time");
+					log.warn("waiting for done work for a long time", new Exception());
 				}
 
 			} while (true);

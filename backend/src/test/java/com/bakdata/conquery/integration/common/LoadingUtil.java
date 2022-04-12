@@ -53,6 +53,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.description.LazyTextDescription;
 
 @Slf4j
 @UtilityClass
@@ -168,7 +169,9 @@ public class LoadingUtil {
 										 .request(MediaType.APPLICATION_JSON)
 										 .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
 
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+		assertThat(response.getStatusInfo().getFamily())
+				.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+				.isEqualTo(Response.Status.Family.SUCCESSFUL);
 	}
 
 	public static void updateCqppFile(StandaloneSupport support, File cqpp, Response.Status.Family expectedResponseFamily, String expectedReason) {
