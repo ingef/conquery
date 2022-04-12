@@ -31,7 +31,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ExecutionManager {
 
-	private final MetaStorage metaStorage;
+	/**
+	 * @implNote DatasetRegistry serves as handle for {@link MetaStorage} which is loaded after {@link ExecutionManager}. Loading MetaStore however relies on setup and linked Namespace&Storage, which also contain an {@link ExecutionManager}.
+	 */
+	private final DatasetRegistry datasetRegistry;
 
 	private final Cache<ManagedExecution<?>, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
 																									  .softValues()
@@ -112,6 +115,8 @@ public class ExecutionManager {
 	 * @param result
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void handleQueryResult(R result) {
+
+		final MetaStorage metaStorage = datasetRegistry.getMetaStorage();
 
 		final E query = (E) metaStorage.getExecution(result.getQueryId());
 

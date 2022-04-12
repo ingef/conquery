@@ -89,7 +89,6 @@ public class AdminDatasetProcessor {
 
 		datasetStorage.openStores(config.getStorage());
 		datasetStorage.loadData();
-		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
 

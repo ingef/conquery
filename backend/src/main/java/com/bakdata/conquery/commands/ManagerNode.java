@@ -191,9 +191,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		log.info("MetaStorage loaded {}", storage);
 
 		datasetRegistry.setMetaStorage(storage);
-		for (Namespace sn : datasetRegistry.getDatasets()) {
-			sn.getStorage().setMetaStorage(storage);
-		}
 	}
 
 	public void loadNamespaces() {
