@@ -53,6 +53,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.description.LazyTextDescription;
 
 @Slf4j
 @UtilityClass
@@ -70,7 +71,7 @@ public class LoadingUtil {
 			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data));
 
 			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
-												 .createQuery(support.getNamespace().getNamespaces(), q, queryId, user, support.getNamespace().getDataset());
+												 .createQuery(support.getDatasetRegistry(), q, queryId, user, support.getNamespace().getDataset());
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -89,7 +90,7 @@ public class LoadingUtil {
 					managed =
 					support.getNamespace()
 						   .getExecutionManager()
-						   .createQuery(support.getNamespace().getNamespaces(), query, queryId, user, support.getNamespace().getDataset());
+						   .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset());
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
@@ -168,7 +169,9 @@ public class LoadingUtil {
 										 .request(MediaType.APPLICATION_JSON)
 										 .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
 
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+		assertThat(response.getStatusInfo().getFamily())
+				.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+				.isEqualTo(Response.Status.Family.SUCCESSFUL);
 	}
 
 	public static void updateCqppFile(StandaloneSupport support, File cqpp, Response.Status.Family expectedResponseFamily, String expectedReason) {

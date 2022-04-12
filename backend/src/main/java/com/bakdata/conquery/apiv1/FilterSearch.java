@@ -19,6 +19,7 @@ import java.util.stream.StreamSupport;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.SearchConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
@@ -40,7 +41,8 @@ public class FilterSearch {
 
 	private final NamespaceStorage storage;
 	private final JobManager jobManager;
-	private final CSVConfig parser;
+	private final CSVConfig parserConfig;
+	private final SearchConfig searchConfig;
 
 	/**
 	 * We tag our searches based on references collected in getSearchReferences. We do not mash them all together to allow for sharing and prioritising different sources.
@@ -139,7 +141,7 @@ public class FilterSearch {
 			collectLabelTasks(allSelectFilters, suppliers);
 
 			// collect all tasks based on the filters optionally configured templates based on csvs
-			collectTemplateTasks(parser, allSelectFilters, suppliers);
+			collectTemplateTasks(parserConfig, allSelectFilters, suppliers);
 
 			// collect all tasks that are based on the raw data in the columns, these have no reference or template for mapping
 			collectColumnTasks(storage, allSelectFilters, suppliers);
@@ -162,7 +164,7 @@ public class FilterSearch {
 					log.info("BEGIN collecting entries for `{}`", id);
 
 					try {
-						final TrieSearch<FEValue> search = new TrieSearch<>();
+						final TrieSearch<FEValue> search = new TrieSearch<>(searchConfig.getSuffixLength(), searchConfig.getSplit());
 
 						values.distinct()
 							  .forEach(item -> search.addItem(item, extractKeywords(item)));

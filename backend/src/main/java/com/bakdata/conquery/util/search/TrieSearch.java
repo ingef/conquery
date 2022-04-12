@@ -8,6 +8,7 @@ import java.util.IntSummaryStatistics;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -18,7 +19,6 @@ import java.util.stream.Stream;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2DoubleAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
  * <p>
  * We store not only whole words but suffixes up to length of SUFFIX_CUTOFF to enable a sort of fuzzy and partial search with longer and compound search terms.
  */
-@NoArgsConstructor
 @Slf4j
 public class TrieSearch<T extends Comparable<T>> {
 	/**
@@ -39,26 +38,32 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * If we find original words in the search, we prefer them a bit.
 	 */
 	private static final double ORIGINAL_WORD_WEIGHT_FACTOR = 0.5d;
-
-	private static final int SUFFIX_CUTOFF = 2;
 	private static final String WHOLE_WORD_MARKER = "!";
 
-	/**
-	 * @implNote to be used in this pattern, "_" must always be the last entry.
-	 */
-	private static final Pattern SPLIT = Pattern.compile("[\\s(),:\"'_!-]+"); //TODO FK: Investigate better split patterns
+	private final int suffixCutoff;
 
+	private final Pattern splitPattern;
+
+	public TrieSearch(int suffixCutoff, String split) {
+		this.suffixCutoff = suffixCutoff;
+
+		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split + WHOLE_WORD_MARKER, ""))));
+	}
+
+	/**
+	 * Maps from keywords to associated items.
+	 */
 	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
 
 	public void clear() {
 		trie.clear();
 	}
 
-	static Stream<String> suffixes(String word) {
+	Stream<String> suffixes(String word) {
 		return Stream.concat(
 				// We append a special character here marking original words as we want to favor them in weighing.
 				Stream.of(word + WHOLE_WORD_MARKER),
-				IntStream.range(1, Math.max(1, word.length() - SUFFIX_CUTOFF))
+				IntStream.range(1, Math.max(1, word.length() - suffixCutoff))
 						 .mapToObj(word::substring)
 		);
 	}
@@ -68,10 +73,10 @@ public class TrieSearch<T extends Comparable<T>> {
 			return Stream.empty();
 		}
 
-		return SPLIT.splitAsStream(keyword.trim())
-					.map(String::trim)
-					.filter(StringUtils::isNotBlank)
-					.map(String::toLowerCase);
+		return splitPattern.splitAsStream(keyword.trim())
+						   .map(String::trim)
+						   .filter(StringUtils::isNotBlank)
+						   .map(String::toLowerCase);
 	}
 
 	/**
@@ -167,7 +172,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		keywords.stream()
 				.filter(Predicate.not(Strings::isNullOrEmpty))
 				.flatMap(this::split)
-				.flatMap(TrieSearch::suffixes)
+				.flatMap(this::suffixes)
 				.forEach(kw -> doPut(kw, item));
 	}
 

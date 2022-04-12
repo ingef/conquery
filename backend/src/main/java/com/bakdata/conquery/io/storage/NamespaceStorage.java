@@ -15,18 +15,12 @@ import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class NamespaceStorage extends NamespacedStorage {
 
-	@Getter
-	@Setter
-	@NonNull
-	private MetaStorage metaStorage;
 	protected SingletonStore<EntityIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;

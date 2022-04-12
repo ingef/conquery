@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 class QuickSearchTest {
 
 
-	private final TrieSearch<String> quickSearch = new TrieSearch<>();
+	private final TrieSearch<String> search = new TrieSearch<>(2, "");
 
 	private void fill(TrieSearch<String> search, List<String> items) {
 		for (String item : items) {
@@ -22,7 +22,7 @@ class QuickSearchTest {
 
 	@BeforeEach
 	public void setup() {
-		quickSearch.clear();
+		search.clear();
 
 		List<String> items = List.of(
 				"a",
@@ -35,7 +35,7 @@ class QuickSearchTest {
 				"d baaacd"
 		);
 
-		fill(quickSearch, items);
+		fill(search, items);
 	}
 
 
@@ -44,7 +44,7 @@ class QuickSearchTest {
 
 		// The more hits an item has, the more do we favor it.
 
-		assertThat(quickSearch.findItems(List.of("aa", "c"), Integer.MAX_VALUE))
+		assertThat(search.findItems(List.of("aa", "c"), Integer.MAX_VALUE))
 				.containsExactly(
 						"c aa",		// Two exact matches
 						"aa",		// One exact match
@@ -55,22 +55,22 @@ class QuickSearchTest {
 				);
 
 		// However negative matches are not considered (ie "c" is not used to weigh against "c aa")
-		assertThat(quickSearch.findItems(List.of("aa"), 4)).containsExactly("aa", "c aa", "aaa", "aab");
+		assertThat(search.findItems(List.of("aa"), 4)).containsExactly("aa", "c aa", "aaa", "aab");
 	}
 
 	@Test
 	public void searchIdentities() {
 
 		// Exact matches should be first
-		assertThat(quickSearch.findItems(List.of("a"), 1)).containsExactly("a");
-		assertThat(quickSearch.findItems(List.of("aa"), 1)).containsExactly("aa");
-		assertThat(quickSearch.findItems(List.of("acd"), 1)).containsExactly("d baaacd");
+		assertThat(search.findItems(List.of("a"), 1)).containsExactly("a");
+		assertThat(search.findItems(List.of("aa"), 1)).containsExactly("aa");
+		assertThat(search.findItems(List.of("acd"), 1)).containsExactly("d baaacd");
 
 	}
 
 	@Test
 	public void testSuffixes() {
-		assertThat(TrieSearch.suffixes("baaacd"))
+		assertThat(search.suffixes("baaacd"))
 				.containsExactly(
 						"baaacd!",
 						"aaacd",
@@ -78,10 +78,10 @@ class QuickSearchTest {
 						"acd"
 				);
 
-		assertThat(TrieSearch.suffixes("acd"))
+		assertThat(search.suffixes("acd"))
 				.containsExactly("acd!");
 
-		assertThat(TrieSearch.suffixes("aacd"))
+		assertThat(search.suffixes("aacd"))
 				.containsExactly("aacd!", "acd");
 	}
 }

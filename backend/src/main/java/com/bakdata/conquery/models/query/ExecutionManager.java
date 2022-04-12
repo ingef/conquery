@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +31,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ExecutionManager {
 
-	@NonNull
-	private final Namespace namespace;
+	/**
+	 * @implNote DatasetRegistry serves as handle for {@link MetaStorage} which is loaded after {@link ExecutionManager}. Loading MetaStore however relies on setup and linked Namespace&Storage, which also contain an {@link ExecutionManager}.
+	 */
+	private final DatasetRegistry datasetRegistry;
 
 	private final Cache<ManagedExecution<?>, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
 																									  .softValues()
@@ -114,19 +115,20 @@ public class ExecutionManager {
 	 * @param result
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void handleQueryResult(R result) {
-		final MetaStorage storage = namespace.getNamespaces().getMetaStorage();
 
-		final E query = (E) storage.getExecution(result.getQueryId());
+		final MetaStorage metaStorage = datasetRegistry.getMetaStorage();
+
+		final E query = (E) metaStorage.getExecution(result.getQueryId());
 
 		if (query.getState() != ExecutionState.RUNNING) {
 			return;
 		}
 
-		query.addResult(storage, result);
+		query.addResult(metaStorage, result);
 
 		// State changed to DONE or FAILED
 		if (query.getState() != ExecutionState.RUNNING) {
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(query.getOwner(), storage).map(Group::getName).orElse("none");
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(query.getOwner(), metaStorage).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
 			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();

@@ -25,7 +25,6 @@ import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +34,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -58,7 +56,7 @@ public class IntegrationTests {
 	}
 
 
-	private static final Map<String, TestConquery> reusedInstances = new HashMap<>();
+	private final Map<String, TestConquery> reusedInstances = new HashMap<>();
 
 	private final String defaultTestRoot;
 	private final String defaultTestRootPackage;
@@ -118,20 +116,18 @@ public class IntegrationTests {
 	}
 
 	private DynamicTest createDynamicProgrammaticTestNode(ProgrammaticIntegrationTest test) {
-		TestConquery conquery = getCachedConqueryInstance(workDir, getConfigOverride(test, workDir));
-
 		return DynamicTest.dynamicTest(
 				test.getClass().getSimpleName(),
 				//classpath URI
 				URI.create("classpath:/" + test.getClass().getName().replace('.', '/') + ".java"),
-				new IntegrationTest.Wrapper(test.getClass().getSimpleName(), conquery, test)
+				new IntegrationTest.Wrapper(test.getClass().getSimpleName(), this, test)
 		);
 	}
 
 	private DynamicNode collectTests(ResourceTree currentDir) {
 
 		if (currentDir.getValue() != null) {
-			return readTest(currentDir.getValue(), currentDir.getName(), this);
+			return readTest(currentDir.getValue(), currentDir.getName());
 		}
 
 		List<DynamicNode> list = new ArrayList<>();
@@ -149,21 +145,18 @@ public class IntegrationTests {
 		);
 	}
 
-	private static DynamicTest readTest(Resource resource, String name, IntegrationTests integrationTests) {
+	private DynamicTest readTest(Resource resource, String name) {
 		try (InputStream in = resource.open()) {
 			JsonIntegrationTest test = new JsonIntegrationTest(in);
-			ConqueryConfig conf = getConfigOverride(test, integrationTests.getWorkDir());
 
 			name = test.getTestSpec().getLabel();
-
-			TestConquery conquery = getCachedConqueryInstance(integrationTests.getWorkDir(), conf);
 
 			return DynamicTest.dynamicTest(
 					name,
 					URI.create("classpath:/" + resource.getPath()),
 					new IntegrationTest.Wrapper(
 							name,
-							conquery,
+							this,
 							test
 					)
 			);
@@ -179,15 +172,8 @@ public class IntegrationTests {
 		}
 	}
 
-	@NotNull
-	private static ConqueryConfig getConfigOverride(IntegrationTest test, File workDir) {
-		ConqueryConfig conf = Cloner.clone(DEFAULT_CONFIG, Map.of(), MAPPER);
-		final ConqueryConfig newConf = test.overrideConfig(conf, workDir);
-		return newConf;
-	}
-
 	@SneakyThrows
-	private static synchronized TestConquery getCachedConqueryInstance(File workDir, ConqueryConfig conf) {
+	public synchronized TestConquery getCachedConqueryInstance(File workDir, ConqueryConfig conf) {
 		// This should be fast enough and a stable comparison
 		String confString = CONFIG_WRITER.writeValueAsString(conf);
 		if (!reusedInstances.containsKey(confString)) {
