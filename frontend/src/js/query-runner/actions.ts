@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
 import {
+  FormQueryPostPayload,
   useGetQuery,
   usePostFormQueries,
   usePostQueries,
@@ -18,9 +19,12 @@ import type {
 } from "../api/types";
 import { ErrorObject, errorPayload, successPayload } from "../common/actions";
 import { getExternalSupportedErrorMessage } from "../environment";
-import { useLoadQueries } from "../previous-queries/list/actions";
-import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
-import { TimebasedQueryStateT } from "../timebased-query-editor/reducer";
+import {
+  useLoadFormConfigs,
+  useLoadQueries,
+} from "../previous-queries/list/actions";
+import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import type { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
 import { QUERY_AGAIN_TIMEOUT } from "./constants";
 
@@ -69,24 +73,30 @@ export const useStartQuery = (queryType: QueryTypeT) => {
 
   return (
     datasetId: DatasetIdT,
-    query: StandardQueryStateT | TimebasedQueryStateT,
+    query:
+      | StandardQueryStateT
+      | ValidatedTimebasedQueryStateT
+      | FormQueryPostPayload,
     {
-      formQueryTransformation,
       selectedSecondaryId,
     }: {
-      formQueryTransformation?: Function;
       selectedSecondaryId?: string | null;
     } = {},
   ) => {
     dispatch(startQuery.request({ queryType }));
 
-    const apiMethod = formQueryTransformation
-      ? () => postFormQueries(datasetId, query, { formQueryTransformation })
-      : () =>
-          postQueries(datasetId, query, {
-            queryType,
-            selectedSecondaryId,
-          });
+    const apiMethod =
+      queryType === "externalForms"
+        ? () => postFormQueries(datasetId, query as FormQueryPostPayload)
+        : () =>
+            postQueries(
+              datasetId,
+              query as StandardQueryStateT | ValidatedTimebasedQueryStateT,
+              {
+                queryType,
+                selectedSecondaryId,
+              },
+            );
 
     return apiMethod().then(
       (r) => {
@@ -199,6 +209,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
   const dispatch = useDispatch();
   const getQuery = useGetQuery();
   const { loadQueries } = useLoadQueries();
+  const { loadFormConfigs } = useLoadFormConfigs();
 
   const queryResult = (datasetId: DatasetIdT, queryId: QueryIdT) => {
     dispatch(queryResultStart({ queryType }));
@@ -217,6 +228,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
 
             // Now there should be a new result that can be queried
             loadQueries(datasetId);
+            loadFormConfigs(datasetId);
             break;
           case "FAILED":
             dispatch(queryResultError(t, queryType, r));

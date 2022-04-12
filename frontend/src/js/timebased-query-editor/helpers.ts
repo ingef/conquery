@@ -1,6 +1,11 @@
-import type { TimebasedQueryStateT } from "./reducer";
+import type {
+  TimebasedQueryStateT,
+  ValidatedTimebasedQueryStateT,
+} from "./reducer";
 
-export const allConditionsFilled = (timebasedQuery: TimebasedQueryStateT) =>
+export const allConditionsFilled = (
+  timebasedQuery: TimebasedQueryStateT,
+): timebasedQuery is ValidatedTimebasedQueryStateT =>
   timebasedQuery.conditions.every(
     (condition) => !!condition.result0 && !!condition.result1,
   );
