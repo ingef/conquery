@@ -17,7 +17,7 @@ public class ConqueryEscapeTest {
 			"$24,%2424",
 			"PO!\"$%&/()=ß,PO%21%22%24%25%26%2F%28%29%3D%C3%9F",
 			"😈,%F0%9F%98%88",
-			"aa.aa,aa%2eaa",
+			"aa.aa,aa%2Eaa",
 			"a_a,a_a",
 			"a-a,a-a"
 	})
