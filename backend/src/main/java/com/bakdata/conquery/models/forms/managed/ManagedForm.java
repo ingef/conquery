@@ -229,7 +229,8 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	protected String makeDefaultLabel(PrintSettings cfg) {
 		return getSubmittedForm().getLocalizedTypeLabel()
 			   + " "
-			   + getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(I18n.LOCALE.get()));
+			   + getCreationTime().atZone(ZoneId.systemDefault())
+								  .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withLocale(I18n.LOCALE.get()));
 	}
 
 }
