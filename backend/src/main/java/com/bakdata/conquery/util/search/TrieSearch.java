@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2DoubleAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
@@ -27,17 +28,24 @@ import org.apache.commons.lang3.StringUtils;
  * Trie based keyword search for autocompletion and resolving.
  * <p>
  * We store not only whole words but suffixes up to length of SUFFIX_CUTOFF to enable a sort of fuzzy and partial search with longer and compound search terms.
+ * <p>
+ * The output result should be in the following order:
+ * 1) Original words (in order of difference)
+ * 2) Suffixes (in order of difference)
  */
 @Slf4j
+@ToString(of = {"suffixCutoff", "splitPattern"})
 public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * We saturate matches to avoid favoring very short keywords, when multiple keywords are used.
 	 */
-	private static final double EXACT_MATCH_WEIGHT = 1d / 10d;
+	private static final double EXACT_MATCH_WEIGHT = 0.1d;
 	/**
-	 * If we find original words in the search, we prefer them a bit.
+	 * We prefer original words in our results.
+	 *
+	 * @implNote they are marked by appending WHOLE_WORD_MARKER to them in the trie.
 	 */
-	private static final double ORIGINAL_WORD_WEIGHT_FACTOR = 0.5d;
+	private static final double ORIGINAL_WORD_WEIGHT_FACTOR = EXACT_MATCH_WEIGHT;
 	private static final String WHOLE_WORD_MARKER = "!";
 
 	private final int suffixCutoff;
@@ -47,7 +55,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	public TrieSearch(int suffixCutoff, String split) {
 		this.suffixCutoff = suffixCutoff;
 
-		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split + WHOLE_WORD_MARKER, ""))));
+		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, "") + WHOLE_WORD_MARKER)));
 	}
 
 	/**
@@ -85,7 +93,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	private double weightWord(String keyword, String itemWord) {
 
 		// Test if the word is an original word and not a suffix.
-		final boolean isOriginal = itemWord.endsWith(WHOLE_WORD_MARKER);
+		final boolean isOriginal = isOriginal(itemWord);
 
 		final double keywordLength = keyword.length();
 		final double itemLength = itemWord.length() - (isOriginal ? 1 : 0);
@@ -112,8 +120,13 @@ public class TrieSearch<T extends Comparable<T>> {
 		return weight;
 	}
 
+	private boolean isOriginal(String itemWord) {
+		return itemWord.endsWith(WHOLE_WORD_MARKER);
+	}
+
 	public List<T> findItems(Collection<String> keywords, int limit) {
 		final Object2DoubleMap<T> itemWeights = new Object2DoubleAVLTreeMap<>();
+
 		// We are not guaranteed to have split keywords incoming, so we normalize them for searching
 		keywords = keywords.stream().flatMap(this::split).collect(Collectors.toSet());
 
@@ -125,7 +138,6 @@ public class TrieSearch<T extends Comparable<T>> {
 
 				// calculate and update weights for all queried items
 				final String itemWord = entry.getKey();
-
 
 				final double weight = weightWord(keyword, itemWord);
 
@@ -175,6 +187,7 @@ public class TrieSearch<T extends Comparable<T>> {
 				.filter(Predicate.not(Strings::isNullOrEmpty))
 				.flatMap(this::split)
 				.flatMap(this::suffixes)
+				.distinct()
 				.forEach(kw -> doPut(kw, item));
 	}
 
