@@ -18,7 +18,8 @@ public class ConqueryEscape {
 
 
 	static {
-		// from java.net.UrlEncoder
+		// adapted from java.net.UrlEncoder
+
 		dontNeedEncoding = new BitSet(256);
 		int i;
 		for (i = 'a'; i <= 'z'; i++) {
@@ -118,11 +119,6 @@ public class ConqueryEscape {
 
 	protected boolean dontNeedEncoding(byte v) {
 		return v >= 0 && dontNeedEncoding.get(v);
-		//		return v>=(byte)'!'
-		//			   && v<=(byte)'~'
-		//			   && v!=ESCAPER
-		//			   && v!=(byte)'.'
-		//			   && v!=(byte)'/';
 	}
 
 }
