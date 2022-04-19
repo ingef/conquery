@@ -144,8 +144,23 @@ const FormConfigLoader: FC<Props> = ({
       }
 
       setFormConfigToLoadNext(null);
+      dispatch(
+        setMessage({
+          message: t("formConfig.loadSuccess", {
+            label: formConfigToLoadNext.label,
+          }),
+        }),
+      );
     },
-    [formConfigToLoadNext, formConfig, activeLang, datasetOptions, setValue],
+    [
+      formConfigToLoadNext,
+      formConfig,
+      activeLang,
+      datasetOptions,
+      setValue,
+      dispatch,
+      t,
+    ],
   );
 
   async function onLoad(dragItem: DragItemFormConfig) {

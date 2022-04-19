@@ -398,6 +398,7 @@
     "noneFound": "No form configurations found"
   },
   "formConfig": {
+    "loadSuccess": "Form configuration <strong>{{label}}</strong> was loaded successfully.",
     "loadError": "Could not load form configuration",
     "renameError": "Could not rename form configuration",
     "retagError": "Could not save folders",

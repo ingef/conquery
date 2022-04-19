@@ -397,14 +397,15 @@
     "noneFound": "Keine Formular-Konfigurationen gefunden"
   },
   "formConfig": {
-    "loadError": "Konnte Konfiguration nicht laden",
-    "renameError": "Konnte Konfiguration nicht umbenennen",
+    "loadSuccess": "Formular-Konfiguration <strong>{{label}}</strong> wurde erfolgreich geladen.",
+    "loadError": "Konnte Formular-Konfiguration nicht laden",
+    "renameError": "Konnte Formular-Konfiguration nicht umbenennen",
     "retagError": "Konnte Ordner nicht speichern",
-    "shareError": "Konnte Konfiguration nicht freigeben",
-    "deleteError": "Konnte Konfiguration nicht löschen"
+    "shareError": "Konnte Formular-Konfiguration nicht freigeben",
+    "deleteError": "Konnte Formular-Konfiguration nicht löschen"
   },
   "deleteFormConfigModal": {
-    "areYouSure": "Diese Konfiguration wirklich löschen?"
+    "areYouSure": "Diese Formular-Konfiguration wirklich löschen?"
   },
   "conceptTreesOpen": {
     "resetAll": "Zurück zu Standardansicht",
