@@ -38,7 +38,7 @@
 		</#list>
 		</tbody>
 	</table>
-	</div
+	</div>
 	<script type="application/javascript">
 	function submitPermission(domain) {
 		event.preventDefault();
