@@ -13,7 +13,7 @@ const Root = styled("div")`
   z-index: 10;
   bottom: 20px;
   right: 20px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.75);
   color: white;
   display: flex;
   flex-direction: row;
@@ -58,7 +58,7 @@ const SnackMessage: FC = memo(function SnackMessageComponent() {
       {message && (
         <Root>
           <Relative>
-            {message}
+            <div dangerouslySetInnerHTML={{ __html: message }} />
             <ClearZone onClick={resetMessage}>
               <FaIcon white large icon="times" />
             </ClearZone>
