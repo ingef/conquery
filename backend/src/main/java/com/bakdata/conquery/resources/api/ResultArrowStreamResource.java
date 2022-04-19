@@ -56,6 +56,7 @@ public class ResultArrowStreamResource {
 	{
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());
-		return processor.createResult(subject, execution, dataset, pretty.orElse(false), determineCharset(null, null));
+		return processor.createResult(subject, execution, dataset, pretty.orElse(false), determineCharset(null, null), () -> {
+		});
 	}
 }

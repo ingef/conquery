@@ -86,7 +86,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 	}
 
 	@Override
-	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, Charset charset) {
+	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, Charset charset, Runnable onClose) {
 		ConqueryMDC.setLocation(subject.getName());
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
@@ -107,11 +107,18 @@ public class ExcelResultProvider implements ResultRendererProvider {
 
 		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel(), settings);
 
-		StreamingOutput out = output -> excelRenderer.renderToStream(
-				config.getFrontend().getQueryUpload().getIdResultInfos(),
-				(ManagedExecution<?> & SingleTableResult) exec,
-				output
-		);
+		StreamingOutput out = output -> {
+			try {
+				excelRenderer.renderToStream(
+						config.getFrontend().getQueryUpload().getIdResultInfos(),
+						(ManagedExecution<?> & SingleTableResult) exec,
+						output
+				);
+			}
+			finally {
+				onClose.run();
+			}
+		};
 
 		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx", MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}

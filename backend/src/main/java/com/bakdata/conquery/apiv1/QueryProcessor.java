@@ -1,8 +1,8 @@
 package com.bakdata.conquery.apiv1;
 
+import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +30,7 @@ import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
@@ -53,7 +54,6 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
@@ -386,10 +386,9 @@ public class QueryProcessor {
 		);
 	}
 
-	public URL getSingleEntityExport(Subject subject, String entity, List<Connector> sources) throws MalformedURLException {
-		//TODO Authorize for query
+	public Response getSingleEntityExport(Subject subject, String idKind, String entity, List<Connector> sources, String format, Dataset dataset) {
 
-		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQExternal(List.of("ID"), new String[][]{{entity}}));
+		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{entity}}));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 		exportQuery.setTables(
@@ -398,12 +397,27 @@ public class QueryProcessor {
 					   .collect(Collectors.toList())
 		);
 
-		final ManagedQuery execution = (ManagedQuery) postQuery(sources.get(0).getDataset(), exportQuery, subject);
+		final ManagedQuery execution = (ManagedQuery) postQuery(dataset, exportQuery, subject);
+
+		// collect id immediately so it does not get sucked into closure
+		final ManagedExecutionId id = execution.getId();
 
 		while (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
-			log.trace("Still waiting for {}", execution.getId());
+			log.trace("Still waiting for {}", id);
 		}
 
-		return ResultCsvResource.getDownloadURL(null, execution);
+		// Use the provided format name to find the respective provider.
+		final ResultRendererProvider rendererProvider =
+				config.getResultProviders().stream()
+					  .filter(provider -> provider.getClass().getAnnotation(CPSType.class).id().equalsIgnoreCase(format))
+					  .findFirst()
+					  .orElseThrow(() -> new BadRequestException(String.format("No configured provider for `%s` found.", format)));
+
+		final Response response = rendererProvider.createResult(
+				subject, execution, dataset, true, determineCharset(null, null),
+				() -> storage.removeExecution(id)
+		);
+
+		return response;
 	}
 }

@@ -46,7 +46,8 @@ public class ResultArrowFileResource {
 		//TODO charset
 		checkSingleTableResult(query);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), dataset.getId(), subject.getId(), subject.getName());
-		return processor.createResult(subject, query, dataset, pretty.orElse(false), determineCharset(null, null));
+		return processor.createResult(subject, query, dataset, pretty.orElse(false), determineCharset(null, null), () -> {
+		});
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

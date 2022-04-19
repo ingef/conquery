@@ -60,7 +60,7 @@ public class ArrowFileResultProvider implements ResultRendererProvider {
 	}
 
 	@Override
-	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, Charset charset) {
+	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, Charset charset, Runnable onClose) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
@@ -70,7 +70,8 @@ public class ArrowFileResultProvider implements ResultRendererProvider {
 				pretty,
 				FILE_EXTENTION_ARROW_FILE,
 				MEDIA_TYPE,
-				config);
+				config, onClose
+		);
 	}
 
 	@Override

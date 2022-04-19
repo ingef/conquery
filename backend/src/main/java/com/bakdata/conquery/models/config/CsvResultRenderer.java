@@ -74,7 +74,7 @@ public class CsvResultRenderer implements ResultRendererProvider {
 	}
 
 	@Override
-	public Response createResult(Subject subject, ManagedExecution<?> execRaw, Dataset dataset, boolean pretty, Charset charset) {
+	public Response createResult(Subject subject, ManagedExecution<?> execRaw, Dataset dataset, boolean pretty, Charset charset, Runnable onClose) {
 
 		final ManagedQuery exec = (ManagedQuery) execRaw;
 
@@ -103,19 +103,22 @@ public class CsvResultRenderer implements ResultRendererProvider {
 				idPrinter::createId
 		);
 
-
 		StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
 				renderer.toCSV(config.getFrontend().getQueryUpload().getIdResultInfos(), exec.getResultInfos(), exec.streamResults());
 			}
 			catch (EofException e) {
-				log.info("User canceled download");
+				log.trace("User canceled download");
 			}
 			catch (Exception e) {
 				throw new WebApplicationException("Failed to load result", e);
 			}
+			finally {
+				onClose.run();
+			}
 		};
+
 		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv", new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);
 
 	}

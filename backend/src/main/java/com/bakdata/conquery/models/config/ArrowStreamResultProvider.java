@@ -58,7 +58,7 @@ public class ArrowStreamResultProvider implements ResultRendererProvider {
 	}
 
 	@Override
-	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, Charset charset) {
+	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, Charset charset, Runnable onClose) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				subject,
@@ -68,7 +68,8 @@ public class ArrowStreamResultProvider implements ResultRendererProvider {
 				pretty,
 				FILE_EXTENTION_ARROW_STREAM,
 				MEDIA_TYPE,
-				config
+				config,
+				onClose
 		);
 	}
 

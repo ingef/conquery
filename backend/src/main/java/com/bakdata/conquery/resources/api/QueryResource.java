@@ -4,7 +4,6 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
-import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -35,9 +34,12 @@ import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
 import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.CsvResultRenderer;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -145,17 +147,20 @@ public class QueryResource {
 
 	@Data
 	public static class EntityPreview {
+		private String idKind = "ID"; //TODO I think ID is fallback, but i dont currently know.
 		private final String entity;
 		private final CDateRange time;
+		@NsIdRefCollection
 		private final List<Connector> sources;
 	}
 
+	private static final String CSV_RESULT_ID = CsvResultRenderer.class.getAnnotation(CPSType.class).id();
+
 	@POST
 	@Path("/entity")
-	public FullExecutionStatus getEntityData(@Auth Subject subject, EntityPreview query, @Context HttpServletRequest request) throws MalformedURLException {
+	public Response getEntityData(@Auth Subject subject, EntityPreview query, @QueryParam("format") Optional<String> format, @Context HttpServletRequest request) {
 
-		processor.getSingleEntityExport(subject, query.getEntity(), query.getSources());
-		return null;//TODO send redirect?
+		return processor.getSingleEntityExport(subject, query.getIdKind(), query.getEntity(), query.getSources(), format.orElse(CSV_RESULT_ID), dataset);
 	}
 
 
