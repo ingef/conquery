@@ -386,6 +386,11 @@ public class QueryProcessor {
 		);
 	}
 
+	/**
+	 * Execute a {@link TableExportQuery} for a single Entity on some Connectors.
+	 *
+	 * @implNote we don't do anything special here, this request could also be made manually. We however want to encapsulate this behaviour to shield the frontend from knowing too much about the query engine.
+	 */
 	public Response getSingleEntityExport(Subject subject, String idKind, String entity, List<Connector> sources, String format, Dataset dataset) {
 
 		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{entity}}));
