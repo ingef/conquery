@@ -16,6 +16,11 @@
   },
   {
     "method": "POST",
+    "path": "/datasets/{dataset}/queries/entity",
+    "clazz": "QueryResource"
+  },
+  {
+    "method": "POST",
     "path": "/datasets/{dataset}/queries/upload",
     "clazz": "QueryResource"
   },
