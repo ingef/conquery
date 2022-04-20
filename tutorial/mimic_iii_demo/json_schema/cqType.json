@@ -1,4 +1,4 @@
 {
     "type": "string",
-    "pattern": "^(STRING|INTEGER|BOOL|REAL|DECIMAL|MONEY|DATE|DATE_RANGE)$"
+    "enum": ["STRING","INTEGER","BOOL","REAL","DECIMAL","MONEY","DATE","DATE_RANGE"]
 }
