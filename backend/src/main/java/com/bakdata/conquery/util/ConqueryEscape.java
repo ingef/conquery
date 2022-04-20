@@ -3,39 +3,37 @@ package com.bakdata.conquery.util;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
+import java.util.stream.IntStream;
 
+import com.bakdata.conquery.models.common.Range;
 import org.apache.commons.lang3.ArrayUtils;
 
 import lombok.NonNull;
 
-
+/**
+ * We use a custom escaping for the parts an {@link com.bakdata.conquery.models.identifiable.ids.IId} consists of.
+ * This way, we ensure, that the {@link com.bakdata.conquery.models.identifiable.ids.IId#JOIN_CHAR} is not confused and that the resulting id
+ * can be used safely in a URL path or query without further encoding.
+ */
 public class ConqueryEscape {
 
 	private static final byte ESCAPER = '$';
 	private static final ConqueryEscape INSTANCE = new ConqueryEscape();
 
-	static BitSet dontNeedEncoding;
+	private static final BitSet dontNeedEncoding;
 
 
 	static {
 		// adapted from java.net.UrlEncoder
-
 		dontNeedEncoding = new BitSet(256);
-		int i;
-		for (i = 'a'; i <= 'z'; i++) {
-			dontNeedEncoding.set(i);
-		}
-		for (i = 'A'; i <= 'Z'; i++) {
-			dontNeedEncoding.set(i);
-		}
-		for (i = '0'; i <= '9'; i++) {
-			dontNeedEncoding.set(i);
-		}
-		dontNeedEncoding.set(' '); /* encoding a space to a + is done
-		 * in the encode() method */
+
+		IntStream.range('a', 'z').forEach(dontNeedEncoding::set);
+		IntStream.range('A', 'Z').forEach(dontNeedEncoding::set);
+		IntStream.range('0', '9').forEach(dontNeedEncoding::set);
+
+		// We have only a few characters that won't encode unlike UrlEncode
 		dontNeedEncoding.set('-');
 		dontNeedEncoding.set('_');
-		dontNeedEncoding.set('*');
 
 		// Ensure that occurrences of the escaper are escaped
 		assert !dontNeedEncoding.get(ESCAPER);
@@ -51,13 +49,22 @@ public class ConqueryEscape {
 			return word;
 		}
 
-		byte[] bytes = word.getBytes(StandardCharsets.UTF_8);
 
 		// start escaping if a caracter is found that needs escaping
-		for (int i = 0; i < bytes.length; i++) {
-			if (!dontNeedEncoding(bytes[i])) {
+		for (int i = 0; i < word.length(); i++) {
+			final char c = word.charAt(i);
+
+			// Check if the character is larger than a byte or if that byte needs encoding
+			if ((c >>> 8) != 0 || !dontNeedEncoding((byte) (c & 0x00FF))) {
+				// Convert it to the encoding we expect to consume
+				byte[] bytes = word.getBytes(StandardCharsets.UTF_8);
+				// Prepare the buffer for the encoded word
 				ByteArrayOutputStream baos = new ByteArrayOutputStream(bytes.length + 5);
+				// Since we encountered the first character that needs encoding, we can assume
+				// that until here the byte index and the char index point to the same character
 				baos.write(bytes, 0, i);
+
+				// Then write the rest and escape
 				return escapeRequired(bytes, i, baos);
 			}
 		}

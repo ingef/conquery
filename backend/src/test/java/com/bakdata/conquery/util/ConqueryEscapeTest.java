@@ -20,7 +20,8 @@ public class ConqueryEscapeTest {
 			"aa.aa,aa$2eaa",
 			"a_a,a_a",
 			"a-a,a-a",
-			"a/a,a$2fa"
+			"a/a,a$2fa",
+			"a a,a$20a"
 	})
 	public void testEscaping(String in, String expectedEscaped) {
 		String escaped1 = ConqueryEscape.escape(in);
