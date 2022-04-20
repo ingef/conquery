@@ -5,20 +5,19 @@ import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
 import java.util.stream.IntStream;
 
-import com.bakdata.conquery.models.common.Range;
-import org.apache.commons.lang3.ArrayUtils;
-
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * We use a custom escaping for the parts an {@link com.bakdata.conquery.models.identifiable.ids.IId} consists of.
  * This way, we ensure, that the {@link com.bakdata.conquery.models.identifiable.ids.IId#JOIN_CHAR} is not confused and that the resulting id
  * can be used safely in a URL path or query without further encoding.
  */
+@UtilityClass
 public class ConqueryEscape {
 
 	private static final byte ESCAPER = '$';
-	private static final ConqueryEscape INSTANCE = new ConqueryEscape();
 
 	private static final BitSet dontNeedEncoding;
 
@@ -41,10 +40,6 @@ public class ConqueryEscape {
 	}
 
 	public static String escape(@NonNull String word) {
-		return INSTANCE.escapeString(word);
-	}
-
-	protected String escapeString(String word) {
 		if (word.isEmpty()) {
 			return word;
 		}
@@ -55,7 +50,7 @@ public class ConqueryEscape {
 			final char c = word.charAt(i);
 
 			// Check if the character is larger than a byte or if that byte needs encoding
-			if ((c >>> 8) != 0 || !dontNeedEncoding((byte) (c & 0x00FF))) {
+			if (((c >> 8) & 0xFF) != 0 || !dontNeedEncoding((byte) (c & 0x00FF))) {
 				// Convert it to the encoding we expect to consume
 				byte[] bytes = word.getBytes(StandardCharsets.UTF_8);
 				// Prepare the buffer for the encoded word
@@ -71,10 +66,10 @@ public class ConqueryEscape {
 
 		return word;
 	}
-	
-			
-	private String escapeRequired(byte[] bytes, int index, ByteArrayOutputStream baos) {
-		for(int i=index;i<bytes.length;i++) {
+
+
+	private static String escapeRequired(byte[] bytes, int index, ByteArrayOutputStream baos) {
+		for (int i = index; i < bytes.length; i++) {
 			if (dontNeedEncoding(bytes[i])) {
 				baos.write(bytes[i]);
 			}
@@ -86,10 +81,6 @@ public class ConqueryEscape {
 	}
 	
 	public static String unescape(@NonNull String word) {
-		return INSTANCE.unescapeString(word);
-	}
-	
-	protected String unescapeString(String word) {
 		if(word.isEmpty()) {
 			return word;
 		}
@@ -112,19 +103,19 @@ public class ConqueryEscape {
 
 		return out.toString(StandardCharsets.UTF_8);
 	}
-	
-	private void encode(byte b, ByteArrayOutputStream out) {
+
+	private static void encode(byte b, ByteArrayOutputStream out) {
 		out.write(ESCAPER);
 		out.write(Character.forDigit((b >> 4) & 0xF, 16));
 		out.write(Character.forDigit((b & 0xF), 16));
 	}
 
-	private int decode(byte[] bytes, int i, ByteArrayOutputStream out) {
+	private static int decode(byte[] bytes, int i, ByteArrayOutputStream out) {
 		out.write((Character.digit(bytes[i + 1], 16) << 4) + Character.digit(bytes[i + 2], 16));
 		return 2;
 	}
 
-	protected boolean dontNeedEncoding(byte v) {
+	private static boolean dontNeedEncoding(byte v) {
 		return v >= 0 && dontNeedEncoding.get(v);
 	}
 
