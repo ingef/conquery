@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
@@ -17,6 +19,7 @@ import javax.ws.rs.WebApplicationException;
 
 import com.bakdata.conquery.ConqueryConstants;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 
@@ -88,6 +91,44 @@ public class FileUtil {
 		}
 
 		return new FileInputStream(file);
+	}
+
+	/**
+	 * Adapted from https://howtodoinjava.com/java/java-security/sha-md5-file-checksum-hash/
+	 **/
+	@SneakyThrows(NoSuchAlgorithmException.class)
+	public static String getFileChecksum(File file) throws IOException {
+		//Use SHA-1 algorithm
+		MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+		//Get file input stream for reading the file content
+		FileInputStream fis = new FileInputStream(file);
+
+		//Create byte array to read data in chunks
+		byte[] byteArray = new byte[1024];
+		int bytesCount = 0;
+
+		//Read file data and update in message digest
+		while ((bytesCount = fis.read(byteArray)) != -1) {
+			digest.update(byteArray, 0, bytesCount);
+		}
+		;
+
+		//close the stream; We don't need it now.
+		fis.close();
+
+		//Get the hash's bytes
+		byte[] bytes = digest.digest();
+
+		//This bytes[] has bytes in decimal format;
+		//Convert it to hexadecimal format
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < bytes.length; i++) {
+			sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+		}
+
+		//return complete hash
+		return sb.toString();
 	}
 
 }

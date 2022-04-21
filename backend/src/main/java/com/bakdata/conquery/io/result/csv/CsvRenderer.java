@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.csv;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
@@ -48,7 +49,13 @@ public class CsvRenderer {
 		writer.addValues((Object[]) entity.getExternalId());
 		try {
 			for (int i = 0; i < infos.size(); i++) {
-				writer.addValue(infos.get(i).getType().printNullable(cfg, value[i]));
+				final ResultInfo info = infos.get(i);
+				if (info instanceof SelectResultInfo) {
+					SelectResultInfo selectResultInfo = (SelectResultInfo) info;
+					writer.addValue(selectResultInfo.getType().printNullable(cfg, selectResultInfo.transformValue(value[i])));
+					continue;
+				}
+				writer.addValue(info.getType().printNullable(cfg, value[i]));
 			}
 		} catch (Exception e) {
 			throw new IllegalStateException("Unable to print line " + Arrays.deepToString(value) + " with result infos " + infos, e);

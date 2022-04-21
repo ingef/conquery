@@ -76,8 +76,13 @@ public class SelectResultInfo extends ResultInfo {
 		return sb.toString();
 	}
 
+
+	public Object transformValue(Object intern) {
+		return select.transformValue(intern);
+	}
+
 	@Override
-	public String toString(){
+	public String toString() {
 		return "SelectResultInfo[" + select.getName() + ", " + select.getResultType() + "]";
 	}
 }

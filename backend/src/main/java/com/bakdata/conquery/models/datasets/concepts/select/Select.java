@@ -64,4 +64,8 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 			   + ' '
 			   + getLabel();
 	}
+
+	public Object transformValue(Object intern) {
+		return intern;
+	}
 }
