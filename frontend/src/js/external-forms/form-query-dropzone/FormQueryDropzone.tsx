@@ -9,7 +9,7 @@ import Dropzone from "../../ui-components/Dropzone";
 import Label from "../../ui-components/Label";
 import Optional from "../../ui-components/Optional";
 
-import FormQueryResult from "./FormQueryResult";
+import ValidatedFormQueryResult from "./ValidatedFormQueryResult";
 
 const DROP_TYPES = [
   DNDType.PREVIOUS_QUERY,
@@ -59,8 +59,9 @@ const FormQueryDropzone: FC<PropsT> = ({
           !value ? (
             dropzoneText
           ) : (
-            <FormQueryResult
+            <ValidatedFormQueryResult
               queryResult={value}
+              onInvalid={() => onChange(null)}
               onDelete={() => onChange(null)}
             />
           )
