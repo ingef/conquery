@@ -8,7 +8,7 @@ import DropzoneList from "../form-components/DropzoneList";
 import FormQueryResult from "./FormQueryResult";
 
 interface PropsT {
-  dropzoneChildren: (args: ChildArgs) => ReactNode;
+  dropzoneChildren: (args: ChildArgs<DragItemQuery>) => ReactNode;
   label: string;
   tooltip?: string;
   optional?: boolean;
