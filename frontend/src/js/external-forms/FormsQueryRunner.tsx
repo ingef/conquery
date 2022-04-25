@@ -15,7 +15,6 @@ import {
   selectFormConfig,
   selectQueryRunner,
   selectRunningQuery,
-  selectActiveFormType,
 } from "./stateSelectors";
 import transformQueryToApi from "./transformQueryToApi";
 

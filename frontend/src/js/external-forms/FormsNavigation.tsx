@@ -3,7 +3,6 @@ import type { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import type { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
 import WithTooltip from "../tooltip/WithTooltip";

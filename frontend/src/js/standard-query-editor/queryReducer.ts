@@ -64,6 +64,7 @@ import type {
   DragItemConceptTreeNode,
   FilterWithValueType,
   DragItemQuery,
+  TableWithFilterValueT,
 } from "./types";
 
 export type StandardQueryStateT = QueryGroupType[];
@@ -261,7 +262,7 @@ const updateNodeTables = (
   state: StandardQueryStateT,
   andIdx: number,
   orIdx: number,
-  tables,
+  tables: TableWithFilterValueT[],
 ) => {
   return setElementProperties(state, andIdx, orIdx, { tables });
 };
