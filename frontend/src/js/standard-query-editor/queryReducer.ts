@@ -664,7 +664,7 @@ const expandNode = (
 ): any /* This FN returns a QueryGroupType in the end  */ => {
   switch (node.type) {
     case "OR":
-      // The assumption is that
+      // The assumption is that the OR node is always the root of the tree.
       return {
         elements: node.children.map((c) =>
           expandNode(rootConcepts, c, expandErrorMessage),
