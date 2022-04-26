@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useGetQuery } from "../../api/api";
 import { useDatasetId } from "../../dataset/selectors";
@@ -10,13 +11,15 @@ interface PropsT {
   queryResult?: DragItemQuery;
   className?: string;
   onDelete?: () => void;
-  onInvalid: () => void;
+  onInvalid: (error: string) => void;
 }
 
 const ValidatedFormQueryResult = ({ onInvalid, ...props }: PropsT) => {
   const datasetId = useDatasetId();
   const getQuery = useGetQuery();
-  const [error, setError] = useState(false);
+  const { t } = useTranslation();
+
+  const [localError, setLocalError] = useState(false);
 
   useEffect(
     function validateQuery() {
@@ -24,10 +27,10 @@ const ValidatedFormQueryResult = ({ onInvalid, ...props }: PropsT) => {
         if (datasetId && props.queryResult) {
           try {
             await getQuery(datasetId, props.queryResult.id);
-            setError(false);
+            setLocalError(false);
           } catch (e) {
-            setError(true);
-            onInvalid();
+            setLocalError(true);
+            onInvalid(t("previousQuery.loadError"));
           }
         }
       };
@@ -37,7 +40,12 @@ const ValidatedFormQueryResult = ({ onInvalid, ...props }: PropsT) => {
     [datasetId, props.queryResult],
   );
 
-  return <FormQueryResult {...props} error={error} />;
+  return (
+    <FormQueryResult
+      {...props}
+      error={localError ? t("previousQuery.loadError") : undefined}
+    />
+  );
 };
 
 export default ValidatedFormQueryResult;

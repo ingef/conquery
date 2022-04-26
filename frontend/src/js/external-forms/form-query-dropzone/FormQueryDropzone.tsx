@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
+import { useFormContext } from "react-hook-form";
 
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
@@ -21,6 +22,7 @@ const SxDropzone = styled(Dropzone)<{ centered?: boolean }>`
 `;
 
 interface PropsT {
+  fieldName: string;
   label: string;
   tooltip?: string;
   optional?: boolean;
@@ -31,6 +33,7 @@ interface PropsT {
 }
 
 const FormQueryDropzone: FC<PropsT> = ({
+  fieldName,
   label,
   tooltip,
   optional,
@@ -39,6 +42,7 @@ const FormQueryDropzone: FC<PropsT> = ({
   value,
   onChange,
 }) => {
+  const { setError } = useFormContext();
   const onDrop = (item: DragItemQuery) => {
     onChange(item);
   };
@@ -61,7 +65,9 @@ const FormQueryDropzone: FC<PropsT> = ({
           ) : (
             <ValidatedFormQueryResult
               queryResult={value}
-              onInvalid={() => onChange(null)}
+              onInvalid={(error) =>
+                setError(fieldName, { type: "invalid", message: error })
+              }
               onDelete={() => onChange(null)}
             />
           )

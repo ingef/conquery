@@ -1,13 +1,13 @@
 import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
 
 import IconButton from "../../button/IconButton";
+import { exists } from "../../common/helpers/exists";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 
 interface PropsT {
   queryResult?: DragItemQuery;
   className?: string;
-  error?: boolean;
+  error?: string;
   onDelete?: () => void;
 }
 
@@ -32,14 +32,12 @@ const FormQueryResult = ({
   error,
   onDelete,
 }: PropsT) => {
-  const { t } = useTranslation();
-
   if (!queryResult) return null;
 
   return (
-    <Root className={className} error={error}>
+    <Root className={className} error={exists(error)}>
       {error ? (
-        <ErrorMessage>{t("previousQuery.loadError")}</ErrorMessage>
+        <ErrorMessage>{error}</ErrorMessage>
       ) : (
         queryResult.label || queryResult.id
       )}

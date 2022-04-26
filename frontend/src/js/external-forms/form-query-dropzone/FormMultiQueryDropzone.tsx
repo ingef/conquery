@@ -1,4 +1,5 @@
 import { FC, ReactNode } from "react";
+import { useFormContext } from "react-hook-form";
 
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
@@ -9,6 +10,7 @@ import DropzoneList from "../form-components/DropzoneList";
 import ValidatedFormQueryResult from "./ValidatedFormQueryResult";
 
 interface PropsT {
+  fieldName: string;
   dropzoneChildren: (args: ChildArgs<DragItemQuery>) => ReactNode;
   label: string;
   tooltip?: string;
@@ -23,6 +25,7 @@ const DROP_TYPES = [
 ];
 
 const FormMultiQueryDropzone: FC<PropsT> = ({
+  fieldName,
   label,
   tooltip,
   optional,
@@ -30,6 +33,7 @@ const FormMultiQueryDropzone: FC<PropsT> = ({
   value,
   onChange,
 }) => {
+  const { setError } = useFormContext();
   const addValue = (newItem: DragItemQuery) => {
     onChange([...value, newItem]);
   };
@@ -50,13 +54,9 @@ const FormMultiQueryDropzone: FC<PropsT> = ({
         <ValidatedFormQueryResult
           key={i}
           queryResult={query}
-          onInvalid={() =>
-            onChange(
-              [...value.slice(0, i), null, ...value.slice(i + 1)].filter(
-                exists,
-              ),
-            )
-          }
+          onInvalid={(error) => {
+            setError(fieldName, { type: "invalid", message: error });
+          }}
         />
       ))}
       onDrop={(item) => addValue(item)}
