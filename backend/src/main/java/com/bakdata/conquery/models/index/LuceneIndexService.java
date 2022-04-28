@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -33,7 +32,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.jetbrains.annotations.NotNull;
 
 @Slf4j
-public class IndexService implements Managed {
+public class LuceneIndexService implements Managed {
 
 
 	private Path indexDir = Path.of("./storage/index");

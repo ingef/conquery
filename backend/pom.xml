@@ -282,5 +282,10 @@
 			<artifactId>lucene-queryparser</artifactId>
 			<version>9.1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.auto.service</groupId>
+			<artifactId>auto-service</artifactId>
+			<version>1.0.1</version>
+		</dependency>
 	</dependencies>
 </project>

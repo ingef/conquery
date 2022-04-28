@@ -1,0 +1,71 @@
+{
+    "type": "QUERY_TEST",
+    "label": "FIRST_MAPPED_AGGREGATOR Test",
+    "expectedCsv": "tests/aggregator/FIRST_MAPPED_AGGREGATOR/expected.csv",
+    "query": {
+        "type": "CONCEPT_QUERY",
+        "root": {
+            "ids": [
+                "concept"
+            ],
+            "type": "CONCEPT",
+            "tables": [
+                {
+                    "id": "concept.connector",
+                    "selects": [
+                        "concept.connector.select"
+                    ]
+                }
+            ]
+        }
+    },
+    "concepts": [
+        {
+            "label": "concept",
+            "type": "TREE",
+            "connectors": [
+                {
+                    "label": "connector",
+                    "table": "table",
+                    "validityDates": {
+                        "label": "datum",
+                        "column": "table.datum"
+                    },
+                    "selects": {
+                        "name": "select",
+                        "type": "FIRST_MAPPED",
+                        "column": "table.value",
+                        "mapping": {
+                            "type": "CSV_MAP",
+                            "internalColumn": "internal",
+                            "externalColumn": "external",
+                            "csv": "classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "content": {
+        "tables": [
+            {
+                "csv": "tests/aggregator/FIRST_MAPPED_AGGREGATOR/content.csv",
+                "name": "table",
+                "primaryColumn": {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+                "columns": [
+                    {
+                        "name": "datum",
+                        "type": "DATE"
+                    },
+                    {
+                        "name": "value",
+                        "type": "STRING"
+                    }
+                ]
+            }
+        ]
+    }
+}

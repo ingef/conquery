@@ -3,23 +3,22 @@ package com.bakdata.conquery.models.index;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.xml.builders.TermQueryBuilder;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 @Slf4j
-public class InternToExternMapping {
+@CPSType(id = "CSV_LUCENE", base = InternToExternMapper.class)
+public class LuceneInternToExternMapper implements InternToExternMapper {
 
 	@JsonIgnore
 	private final IndexSearcher indexSearcher;
@@ -30,18 +29,19 @@ public class InternToExternMapping {
 
 
 	@JsonCreator
-	public InternToExternMapping(
-			@JacksonInject IndexService indexService,
+	public LuceneInternToExternMapper(
+			@JacksonInject LuceneIndexService luceneIndexService,
 			Path csv,
 			String internalColumn,
 			String externalColumn
 	) {
 		this.internalColumn = internalColumn;
 		this.externalColumn = externalColumn;
-		indexSearcher = indexService.getIndexSearcher(csv);
+		indexSearcher = luceneIndexService.getIndexSearcher(csv);
 	}
 
-	public String external(String internalValue) throws IOException {
+	@SneakyThrows(IOException.class)
+	public String external(String internalValue) {
 		final TermQuery termQuery = new TermQuery(new Term(internalColumn, internalValue));
 		final TopDocs search = indexSearcher.search(termQuery, 1);
 

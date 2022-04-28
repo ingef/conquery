@@ -4,28 +4,27 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.index.InternToExternMapping;
-import com.fasterxml.jackson.annotation.JacksonInject;
+import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.NonNull;
 
 @CPSType(id = "LAST_MAPPED", base = Select.class)
-public class LastValueMappedSelect extends FirstValueSelect implements SingleValueMappedSelect {
+public class LastValueMappedSelect extends FirstValueSelect implements MappedSelect {
 
 	@JsonIgnore
-	private final InternToExternMapping mapping;
+	@Getter
+	private final InternToExternMapper mapping;
 
-	public LastValueMappedSelect(@NsIdRef Column column, @JacksonInject InternToExternMapping mapping) {
+	@JsonCreator
+	public LastValueMappedSelect(@NsIdRef Column column, @NonNull InternToExternMapper mapping) {
 		super(column);
 		this.mapping = mapping;
 	}
 
 	@Override
-	public InternToExternMapping getMapping() {
-		return mapping;
-	}
-
-	@Override
-	public Object transformValue(Object intern) {
+	public String transformValue(Object intern) {
 		return doTransformValue(intern);
 	}
 }

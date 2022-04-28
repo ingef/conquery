@@ -95,19 +95,20 @@ public abstract class ConqueryTestSpec {
 	}
 	
 	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		ObjectMapper mapper = support.getDataset().injectIntoNew(
-			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
-				Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
-			)
-		);
+		ObjectMapper mapper = support.getNamespace().injectInto(support.getDataset().injectInto(
+				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
+						Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
+				)
+		));
+
 		List<T> result = new ArrayList<>(node.size());
-		for(var child : node) {
+		for (var child : node) {
 			T value;
 			try {
 				value = mapper.readerFor(expectedType).readValue(child);
 			}
-			catch(Exception e) {
-				if(child.isValueNode()) {
+			catch (Exception e) {
+				if (child.isValueNode()) {
 					String potentialPath = child.textValue();
 					try {
 						value = mapper.readerFor(expectedType).readValue(IntegrationTest.class.getResource(potentialPath));

@@ -123,7 +123,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Initialization of internationalization
 		I18n.init();
 
-		RESTServer.configure(config, environment.jersey().getResourceConfig());
+		RESTServer.configure(config, environment.jersey().getResourceConfig(), datasetRegistry);
 
 		maintenanceService = environment.lifecycle()
 										.scheduledExecutorService("Maintenance Service")

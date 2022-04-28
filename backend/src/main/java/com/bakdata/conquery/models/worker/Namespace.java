@@ -8,12 +8,15 @@ import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.index.MapIndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -37,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class Namespace implements Closeable {
+public class Namespace implements Injectable, Closeable {
 
 	private final ObjectWriter objectWriter;
 	@ToString.Include
@@ -60,16 +63,21 @@ public class Namespace implements Closeable {
 
 	private final FilterSearch filterSearch;
 
-	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectWriter objectWriter){
+	private final MapIndexService mapIndexService;
+
+	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectWriter objectWriter) {
 
 		ExecutionManager executionManager = new ExecutionManager(datasetRegistry);
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 
 		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
 
-		final Namespace namespace = new Namespace(objectWriter, storage, executionManager, jobManager, filterSearch);
+		final MapIndexService mapIndexService = new MapIndexService(config.getCsv().createCsvParserSettings());
+
+		final Namespace namespace = new Namespace(objectWriter, storage, executionManager, jobManager, filterSearch, mapIndexService);
 
 		datasetRegistry.add(namespace);
+
 
 		return namespace;
 	}
@@ -202,5 +210,10 @@ public class Namespace implements Closeable {
 
 	public int getNumberOfEntities() {
 		return getStorage().getPrimaryDictionary().getSize();
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(Namespace.class, this);
 	}
 }

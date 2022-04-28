@@ -61,7 +61,7 @@ public class AdminServlet {
 		jerseyConfigUI = new DropwizardResourceConfig(manager.getEnvironment().metrics());
 		jerseyConfigUI.setUrlPattern("/admin-ui");
 
-		RESTServer.configure(manager.getConfig(), jerseyConfig);
+		RESTServer.configure(manager.getConfig(), jerseyConfig, null);
 
 		manager.getEnvironment().admin().addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig)).addMapping("/" + ADMIN_SERVLET_PATH + "/*");
 		manager.getEnvironment().admin().addServlet(ADMIN_UI_SERVLET_PATH, new ServletContainer(jerseyConfigUI)).addMapping("/" + ADMIN_UI_SERVLET_PATH + "/*");

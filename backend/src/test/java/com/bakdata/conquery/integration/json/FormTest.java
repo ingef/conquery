@@ -5,12 +5,13 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -21,7 +22,7 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.result.CsvLineStreamRenderer;
+import com.bakdata.conquery.io.result.csv.CsvRenderer;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -41,6 +42,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.powerlibraries.io.In;
+import com.univocity.parsers.csv.CsvWriter;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -143,26 +145,32 @@ public class FormTest extends ConqueryTestSpec {
 						idPrinter::createId
 				);
 
-		CsvLineStreamRenderer renderer = new CsvLineStreamRenderer(config.getCsv().createWriter(), PRINT_SETTINGS);
 
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
 			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos();
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
-			List<String> actual =
-					renderer.toStream(
-							config.getFrontend().getQueryUpload().getIdResultInfos(),
-							resultInfos,
-							managed.getValue().stream().flatMap(ManagedQuery::streamResults)
-					)
-							.collect(Collectors.toList());
 
-			assertThat(actual)
-				.as("Checking result "+managed.getKey())
-				.containsExactlyInAnyOrderElementsOf(
-					In.stream(expectedCsv.get(managed.getKey()).stream())
-					.withUTF8()
-					.readLines()
-				);
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+			final CsvWriter writer = config.getCsv().createWriter(output);
+
+			CsvRenderer renderer =
+					new CsvRenderer(writer, PRINT_SETTINGS);
+
+			renderer.toCSV(config.getFrontend().getQueryUpload().getIdResultInfos(), resultInfos, managed.getValue()
+																										 .stream()
+																										 .flatMap(ManagedQuery::streamResults));
+
+			writer.close();
+			output.close();
+
+			assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
+					.as("Checking result " + managed.getKey())
+					.containsExactlyInAnyOrderElementsOf(
+							In.stream(expectedCsv.get(managed.getKey()).stream())
+							  .withUTF8()
+							  .readLines()
+					);
 		}
 	}
 

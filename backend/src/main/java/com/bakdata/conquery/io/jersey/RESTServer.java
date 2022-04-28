@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.auth.web.AuthorizationExceptionMapper;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
@@ -21,7 +22,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 @UtilityClass
 public class RESTServer {
 
-	public static void configure(ConqueryConfig config, ResourceConfig jersey) {
+	public static void configure(ConqueryConfig config, ResourceConfig jersey, DatasetRegistry datasetRegistry) {
 		// Bind User class to REST authentication
 		jersey.register(new AuthValueFactoryProvider.Binder<>(Subject.class));
 		//change exception mapper behavior because of JERSEY-2437
@@ -45,6 +46,6 @@ public class RESTServer {
 		jersey.register(CachingFilter.class);
 		jersey.register(LocaleFilter.class);
 
-		jersey.register(new PathParamInjector());
+		jersey.register(new PathParamInjector(datasetRegistry));
 	}
 }

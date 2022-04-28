@@ -1,6 +1,10 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.MappedSelect;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -77,8 +81,13 @@ public class SelectResultInfo extends ResultInfo {
 	}
 
 
-	public Object transformValue(Object intern) {
-		return select.transformValue(intern);
+	public Optional<Function<Object, String>> getValueMapper() {
+		if (select instanceof MappedSelect) {
+			MappedSelect mappedSelect = (MappedSelect) select;
+			return Optional.of(select::transformValue);
+
+		}
+		return Optional.empty();
 	}
 
 	@Override
