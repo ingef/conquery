@@ -1,5 +1,6 @@
 <#macro permissionTable ownerId permissions>
-    <table class="table table-striped">
+    <div class="table-responsive">
+    <table class="table table-sm table-striped">
         <thead>
             <tr>
             <th scope="col">Domains</th>
@@ -35,6 +36,7 @@
             </#list>
         </tbody>
     </table>
+    </div>
     <script type="application/javascript">
     function handleDeletePermission(permission){
         event.preventDefault();

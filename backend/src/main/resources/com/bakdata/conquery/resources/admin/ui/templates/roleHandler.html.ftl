@@ -15,8 +15,8 @@
 	</form>
 </div>
 
-<div class="col pt-3 pb-3">
-	<table class="table table-striped">
+<div class="col pt-3 pb-3 table-responsive">
+	<table class="table table-sm table-striped">
 		<thead>
 			<tr>
 				<th scope="col">Role</th>
