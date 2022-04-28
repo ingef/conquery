@@ -39,6 +39,7 @@ public class ApiV1 implements ResourcesProvider {
 
 		//inject required services
 		environment.register(new AbstractBinder() {
+			//TODO use DirectBinder instead?
 			@Override
 			protected void configure() {
 				bind(manager.getConfig()).to(ConqueryConfig.class);

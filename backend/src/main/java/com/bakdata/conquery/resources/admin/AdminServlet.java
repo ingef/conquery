@@ -100,14 +100,8 @@ public class AdminServlet {
 		});
 
 		// inject required services
-		jerseyConfigUI.register(new AbstractBinder() {
-
-			@Override
-			protected void configure() {
-				bind(new UIProcessor(adminProcessor)).to(UIProcessor.class);
-			}
-		});
-
+		jerseyConfigUI.register(new UIProcessor(adminProcessor));
+		
 		jerseyConfig.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
 		jerseyConfigUI.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
 	}

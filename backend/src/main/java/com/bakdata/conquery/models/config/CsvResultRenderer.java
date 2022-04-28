@@ -43,7 +43,6 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 @Slf4j
 @Data
@@ -128,16 +127,8 @@ public class CsvResultRenderer implements ResultRendererProvider {
 		setDatasetRegistry(manager.getDatasetRegistry());
 		setConfig(manager.getConfig());
 
-		CsvResultRenderer me = this;
 
-		//inject required services
-		environment.register(new AbstractBinder() {
-			@Override
-			protected void configure() {
-				bind(me).to(CsvResultRenderer.class);
-			}
-		});
-
+		environment.register(this);
 		environment.register(ResultCsvResource.class);
 	}
 }

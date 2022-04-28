@@ -30,7 +30,6 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.ipc.ArrowFileWriter;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 @Data
 @CPSType(base = ResultRendererProvider.class, id = "ARROW_FILE")
@@ -79,15 +78,8 @@ public class ArrowFileResultProvider implements ResultRendererProvider {
 		setConfig(manager.getConfig());
 		setDatasetRegistry(manager.getDatasetRegistry());
 
-		ArrowFileResultProvider me = this;
-
 		//inject required services
-		environment.register(new AbstractBinder() {
-			@Override
-			protected void configure() {
-				bind(me).to(ArrowFileResultProvider.class);
-			}
-		});
+		environment.register(this);
 
 		environment.register(ResultArrowFileResource.class);
 	}
