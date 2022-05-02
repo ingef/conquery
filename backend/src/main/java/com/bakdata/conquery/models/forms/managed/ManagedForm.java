@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -97,7 +98,7 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 			if (submittedForm.getValues() != null) {
 				// save as formConfig
 				final FormConfigAPI build = FormConfigAPI.builder().formType(submittedForm.getFormType())
-														 .label(this.getLabel())
+														 .label(this.getLabelWithoutAutoLabelSuffix())
 														 .tags(this.getTags())
 														 .values(submittedForm.getValues()).build();
 
@@ -228,7 +229,8 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	protected String makeDefaultLabel(PrintSettings cfg) {
 		return getSubmittedForm().getLocalizedTypeLabel()
 			   + " "
-			   + getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", I18n.LOCALE.get()));
+			   + getCreationTime().atZone(ZoneId.systemDefault())
+								  .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).withLocale(I18n.LOCALE.get()));
 	}
 
 }

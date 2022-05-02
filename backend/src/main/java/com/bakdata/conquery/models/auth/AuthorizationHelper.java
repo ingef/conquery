@@ -39,15 +39,10 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthorizationHelper {
 
 	public static List<Group> getGroupsOf(@NonNull Subject subject, @NonNull MetaStorage storage){
-
-		List<Group> userGroups = new ArrayList<>();
-
-		for (Group group : storage.getAllGroups()) {
-			if(group.containsMember(subject.getUser())) {
-				userGroups.add(group);
-			}
-		}
-		return userGroups;
+		return storage.getAllGroups().stream()
+					  .filter(g -> g.getMembers().contains(subject.getId()))
+					  .sorted()
+					  .collect(Collectors.toList());
 	}
 
 	/**

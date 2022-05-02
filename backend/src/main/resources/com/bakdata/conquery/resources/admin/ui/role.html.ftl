@@ -42,8 +42,8 @@
 				<div class="tab-pane fade" id="owners" role="tabpanel" aria-labelledby="owners-tab">
 
 					<div class="row">
-						<div class="col">
-							<table class="table table-striped">
+						<div class="col table-responsive">
+							<table class="table table-sm table-striped">
 								<thead>
 									<tr>
 										<th scope="col">User</th>
@@ -61,8 +61,8 @@
 							</table>
 						</div>
 
-						<div class="col">
-							<table class="table table-striped">
+						<div class="col table-responsive">
+							<table class="table table-sm table-striped">
 								<thead>
 									<tr>
 										<th scope="col">Groups</th>

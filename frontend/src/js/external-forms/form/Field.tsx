@@ -252,6 +252,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               optional={optional}
               value={fieldProps.value as DragItemQuery}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
+              fieldName={field.name}
             />
           )}
         </ConnectedField>
@@ -271,6 +272,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               optional={optional}
               value={fieldProps.value as DragItemQuery[]}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
+              fieldName={field.name}
             />
           )}
         </ConnectedField>
