@@ -2,7 +2,6 @@ import { FC, ReactNode } from "react";
 import { useFormContext } from "react-hook-form";
 
 import { DNDType } from "../../common/constants/dndTypes";
-import { exists } from "../../common/helpers/exists";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import type { ChildArgs } from "../../ui-components/Dropzone";
 import DropzoneList from "../form-components/DropzoneList";

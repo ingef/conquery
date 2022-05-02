@@ -25,10 +25,8 @@ import { Description } from "../form-components/Description";
 import { Headline } from "../form-components/Headline";
 import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
-import {
-  FormQueryDropzone,
-  FormMultiQueryDropzone,
-} from "../form-query-dropzone";
+import FormMultiQueryDropzone from "../form-query-dropzone/FormMultiQueryDropzone";
+import FormQueryDropzone from "../form-query-dropzone/FormQueryDropzone";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
 import { getInitialValue, isFormField, isOptionalField } from "../helper";
 import { getErrorForField } from "../validators";
@@ -61,7 +59,7 @@ const BOTTOM_MARGIN = 7;
 // };
 
 type Props<T> = T & {
-  children: (props: ControllerRenderProps<DynamicFormValues> & T) => ReactNode;
+  children: (props: ControllerRenderProps<DynamicFormValues>) => ReactNode;
   control: Control<DynamicFormValues>;
   formField: FieldT | Tabs;
   defaultValue?: any;
@@ -461,7 +459,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               allowlistedSelects={field.allowlistedSelects}
               defaults={field.defaults}
               optional={optional}
-              isValidConcept={(item: Object) =>
+              isValidConcept={(item) =>
                 !nodeIsInvalid(
                   item,
                   field.blocklistedConceptIds,
@@ -493,7 +491,13 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                             value: option.value,
                           }),
                         )}
-                        value={row[field.rowPrefixField!.name]}
+                        value={
+                          /* Because we're essentially adding an extra dynamic field to FormConceptGroupT
+                            with the key `field.rowPrefixField.name` */
+                          (row as unknown as Record<string, string>)[
+                            field.rowPrefixField!.name
+                          ]
+                        }
                         onChange={(value) =>
                           onChange([
                             ...fieldValue.slice(0, i),

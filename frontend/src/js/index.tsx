@@ -21,7 +21,7 @@ const initialState = {};
 
 // Render the App including Hot Module Replacement
 const renderRoot = (tabs: TabT[], theme: Theme) => {
-  store = store || makeStore(initialState, tabs);
+  store = store || makeStore(initialState);
 
   ReactDOM.render(
     <ThemeProvider theme={theme}>

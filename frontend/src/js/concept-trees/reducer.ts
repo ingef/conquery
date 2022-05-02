@@ -2,7 +2,6 @@ import { ActionType, getType } from "typesafe-actions";
 
 import type { ConceptT, ConceptIdT, SecondaryId } from "../api/types";
 import type { Action } from "../app/actions";
-import { nodeIsElement } from "../model/node";
 
 import {
   clearSearchQuery,
@@ -160,16 +159,6 @@ const setLoadTreesSuccess = (
     data: { concepts, secondaryIds },
   }: ActionType<typeof loadTrees.success>["payload"],
 ): ConceptTreesStateT => {
-  // Assign default select filter values
-  for (const concept of Object.values(concepts)) {
-    const tables = nodeIsElement(concept) ? concept.tables || [] : [];
-
-    for (const table of tables) {
-      for (const filter of table.filters || [])
-        if (filter.defaultValue) filter.value = filter.defaultValue;
-    }
-  }
-
   return {
     ...state,
     loading: false,
