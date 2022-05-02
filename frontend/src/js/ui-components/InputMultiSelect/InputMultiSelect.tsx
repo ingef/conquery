@@ -134,6 +134,7 @@ const InputMultiSelect = ({
     selectedItems,
     inputValue,
     creatable,
+    skipQueryMatching: !!onLoadMore,
   });
 
   const {
