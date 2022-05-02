@@ -234,7 +234,7 @@ public class FrontEndConceptBuilder {
 						con
 						.getValidityDates()
 						.stream()
-							.map(vd -> new FEValue(vd.getLabel(), vd.getId().toString()))
+							.map(vd -> new FEValue(vd.getId().toString(), vd.getLabel()))
 							.collect(Collectors.toList())
 				)
 			);
@@ -248,18 +248,8 @@ public class FrontEndConceptBuilder {
 	}
 
 	public static FEFilter createFilter(Filter<?> filter) {
-		FEFilter f = FEFilter.builder()
-							 .id(filter.getId())
-							 .label(filter.getLabel())
-							 .description(filter.getDescription())
-							 .unit(filter.getUnit())
-							 .allowDropFile(filter.getAllowDropFile())
-							 .pattern(filter.getPattern())
-							 .defaultValue(filter.getDefaultValue())
-							 .build();
 		try {
-			filter.configureFrontend(f);
-			return f;
+			return filter.createFrontendConfig();
 		}
 		catch (ConceptConfigurationException e) {
 			throw new IllegalStateException(e);

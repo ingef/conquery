@@ -62,7 +62,6 @@ interface PropsT {
   selectedTableIdx: number | null;
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
-  onShowDescription: (filterIdx: number) => void;
   onSelectSelects: (value: SelectOptionT[]) => void;
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
   onToggleTimestamps?: () => void;
@@ -93,7 +92,6 @@ const ContentColumn: FC<PropsT> = ({
   onSetDateColumn,
   onSetFilterValue,
   onSwitchFilterMode,
-  onShowDescription,
   onSelectSelects,
   onSelectTableSelects,
   onToggleTimestamps,
@@ -187,7 +185,6 @@ const ContentColumn: FC<PropsT> = ({
               tableIdx={idx}
               allowlistedSelects={allowlistedSelects}
               blocklistedSelects={blocklistedSelects}
-              onShowDescription={onShowDescription}
               onSelectTableSelects={onSelectTableSelects}
               onSetDateColumn={onSetDateColumn}
               onSetFilterValue={onSetFilterValue}

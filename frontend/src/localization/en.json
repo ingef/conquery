@@ -256,12 +256,6 @@
   },
   "externalForms": {
     "forms": "Forms",
-    "config": {
-      "headline": "Form configuration",
-      "save": "Save",
-      "saveDescription": "Save all current form settings to load them later.",
-      "saveError": "Could not save form configuration"
-    },
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",
       "isRequired": "Required",
@@ -404,6 +398,7 @@
     "noneFound": "No form configurations found"
   },
   "formConfig": {
+    "loadSuccess": "Form configuration <strong>{{label}}</strong> was loaded successfully.",
     "loadError": "Could not load form configuration",
     "renameError": "Could not rename form configuration",
     "retagError": "Could not save folders",

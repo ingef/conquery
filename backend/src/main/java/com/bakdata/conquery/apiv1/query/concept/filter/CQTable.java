@@ -11,6 +11,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,6 +63,10 @@ public class CQTable {
 	@ValidationMethod(message = "Not all Filters belong to Connector.")
 	public boolean isAllFiltersForConnector() {
 		return filters.stream().allMatch(filter -> filter.getFilter().getConnector().equals(connector));
+	}
+
+	public void resolve(QueryResolveContext context) {
+		filters.forEach(f -> f.resolve(context));
 	}
 
 }

@@ -1,14 +1,17 @@
 import { FC, ReactNode } from "react";
+import { useFormContext } from "react-hook-form";
 
 import { DNDType } from "../../common/constants/dndTypes";
+import { exists } from "../../common/helpers/exists";
 import type { DragItemQuery } from "../../standard-query-editor/types";
 import type { ChildArgs } from "../../ui-components/Dropzone";
 import DropzoneList from "../form-components/DropzoneList";
 
-import FormQueryResult from "./FormQueryResult";
+import ValidatedFormQueryResult from "./ValidatedFormQueryResult";
 
 interface PropsT {
-  dropzoneChildren: (args: ChildArgs) => ReactNode;
+  fieldName: string;
+  dropzoneChildren: (args: ChildArgs<DragItemQuery>) => ReactNode;
   label: string;
   tooltip?: string;
   optional?: boolean;
@@ -22,6 +25,7 @@ const DROP_TYPES = [
 ];
 
 const FormMultiQueryDropzone: FC<PropsT> = ({
+  fieldName,
   label,
   tooltip,
   optional,
@@ -29,6 +33,7 @@ const FormMultiQueryDropzone: FC<PropsT> = ({
   value,
   onChange,
 }) => {
+  const { setError } = useFormContext();
   const addValue = (newItem: DragItemQuery) => {
     onChange([...value, newItem]);
   };
@@ -46,7 +51,13 @@ const FormMultiQueryDropzone: FC<PropsT> = ({
       dropzoneChildren={dropzoneChildren}
       onDropFile={undefined}
       items={value.map((query: DragItemQuery, i: number) => (
-        <FormQueryResult key={i} queryResult={query} />
+        <ValidatedFormQueryResult
+          key={i}
+          queryResult={query}
+          onInvalid={(error) => {
+            setError(fieldName, { type: "invalid", message: error });
+          }}
+        />
       ))}
       onDrop={(item) => addValue(item)}
       onDelete={(i: number) => removeValue(i)}

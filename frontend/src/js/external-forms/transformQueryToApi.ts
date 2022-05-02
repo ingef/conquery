@@ -120,12 +120,13 @@ function transformFieldsToApi(
   );
 }
 
-const transformQueryToApi =
-  (formConfig: Form) => (formValues: DynamicFormValues) => {
-    return {
-      type: formConfig.type,
-      ...transformFieldsToApi(formConfig.fields, formValues),
-    };
-  };
+const transformQueryToApi = (
+  formConfig: Form,
+  formValues: DynamicFormValues,
+) => ({
+  type: formConfig.type,
+  values: formValues,
+  ...transformFieldsToApi(formConfig.fields, formValues),
+});
 
 export default transformQueryToApi;

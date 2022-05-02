@@ -27,7 +27,7 @@ public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public void configureFrontend(FEFilter f) {
-		f.setType(FEFilterType.INTEGER_RANGE);
+		f.setType(FEFilterType.Fields.INTEGER_RANGE);
 		f.setMin(1);
 	}
 

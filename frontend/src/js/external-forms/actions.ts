@@ -1,7 +1,15 @@
 import { ActionType, createAction } from "typesafe-actions";
 
-export type ExternalFormActions = ActionType<typeof setExternalForm>;
+import type { Forms } from "./config-types";
 
-export const setExternalForm = createAction("form/SET_EXTERNAL_FORM")<{
+export type ExternalFormActions = ActionType<
+  typeof setExternalForm | typeof loadFormsSuccess
+>;
+
+export const setExternalForm = createAction("forms/SET_EXTERNAL_FORM")<{
   form: string;
+}>();
+
+export const loadFormsSuccess = createAction("forms/LOAD_FORMS_SUCCESS")<{
+  forms: Forms;
 }>();

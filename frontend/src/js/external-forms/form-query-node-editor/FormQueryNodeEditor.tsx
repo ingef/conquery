@@ -19,8 +19,6 @@ import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { EditedFormQueryNodePosition } from "../form-concept-group/FormConceptGroup";
-import { FormContextStateT } from "../reducer";
-import { selectFormContextState } from "../stateSelectors";
 import { initTables } from "../transformers";
 
 interface PropsT {
@@ -104,16 +102,11 @@ const FormQueryNodeEditor = (props: PropsT) => {
     editedNode.tables.length > 1 &&
     editedNode.tables.some((table) => tableIsEditable(table));
 
-  const formState = useSelector<StateT, FormContextStateT | null>((state) =>
-    selectFormContextState(state, props.formType),
-  );
-
   const currencyConfig = useSelector<StateT, CurrencyConfigT>(
     (state) => state.startup.config.currency,
   );
-  const editorState = formState ? formState[props.fieldName] : null;
 
-  if (!datasetId || !editorState) {
+  if (!datasetId) {
     return null;
   }
 
@@ -123,7 +116,6 @@ const FormQueryNodeEditor = (props: PropsT) => {
       name={`${props.formType}_${toUpperCaseUnderscore(props.fieldName)}`}
       onLoadFilterSuggestions={props.onLoadFilterSuggestions}
       node={editedNode}
-      editorState={editorState}
       showTables={showTables}
       blocklistedTables={props.blocklistedTables}
       allowlistedTables={props.allowlistedTables}

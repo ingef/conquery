@@ -1,0 +1,62 @@
+{
+    "type": "FILTER_TEST",
+    "label": "GROUP Test",
+    "expectedCsv": "tests/filter/GROUP/expected.csv",
+    "content": {
+        "tables": {
+            "csv": "tests/filter/GROUP/content.csv",
+            "primaryColumn": {
+                "name": "pid",
+                "type": "STRING"
+            },
+            "columns": [
+                {
+                    "name": "datum",
+                    "type": "DATE"
+                },
+                {
+                    "name": "value",
+                    "type": "STRING"
+                }
+            ]
+        }
+    },
+    "connector": {
+        "validityDates": {
+            "label": "Datum",
+            "column": "table.datum"
+        },
+        "filters": {
+            "label": "test filter",
+            "type": "TEST_GROUP_FILTER",
+            "column": "table.value"
+        }
+    },
+    "filterValue": {
+        "type": "GROUP",
+        "value": {
+            "strings": [
+                "a",
+                "ab"
+            ],
+            "repetitions": 2
+        }
+    },
+    "expectedFrontendConfig": {
+        "label": "test filter",
+        "type": "GROUP",
+        "filters": {
+            "strings": {
+                "type": "MULTI_SELECT",
+                "label": "Elements",
+                "options": []
+            },
+            "repetitions": {
+                "type": "INTEGER",
+                "label": "Maximum Repetitions",
+                "options": []
+            }
+        },
+        "options": []
+    }
+}

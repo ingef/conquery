@@ -20,8 +20,8 @@
 		</div>
 	</div>
     <div class="row pt-5">
-        <div class="col">
-            <table class="table table-striped">
+        <div class="col table-responsive">
+            <table class="table table-sm table-striped">
                 <thead>
                     <td>Label</td>
                     <td>Id</td>

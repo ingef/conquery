@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,16 +11,17 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -47,7 +49,6 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @ToString
 @Slf4j
-@CPSType(base = ManagedExecution.class, id = "MANAGED_FORM")
 @NoArgsConstructor
 public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 
@@ -62,6 +63,9 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	 */
 	@JsonIgnore
 	protected Map<String, List<ManagedQuery>> subQueries;
+
+	@JsonIgnore
+	private MetaStorage storage;
 
 	/**
 	 * Subqueries that are send to the workers.
@@ -82,12 +86,26 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, config, null));
 		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset());
 		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
+		storage = datasetRegistry.getMetaStorage();
 	}
 
 	@Override
 	public void start() {
 		synchronized (this) {
 			subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
+
+
+			if (submittedForm.getValues() != null) {
+				// save as formConfig
+				final FormConfigAPI build = FormConfigAPI.builder().formType(submittedForm.getFormType())
+														 .label(this.getLabelWithoutAutoLabelSuffix())
+														 .tags(this.getTags())
+														 .values(submittedForm.getValues()).build();
+
+				final FormConfig formConfig = build.intern(getOwner(), getDataset());
+
+				storage.addFormConfig(formConfig);
+			}
 		}
 		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
@@ -209,9 +227,7 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 
 	@Override
 	protected String makeDefaultLabel(PrintSettings cfg) {
-		return getSubmittedForm().getLocalizedTypeLabel()
-			   + " "
-			   + getCreationTime().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm", I18n.LOCALE.get()));
+		return getSubmittedForm().getLocalizedTypeLabel();
 	}
 
 }

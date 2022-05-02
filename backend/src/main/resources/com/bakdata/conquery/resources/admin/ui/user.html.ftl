@@ -2,6 +2,7 @@
 <#import "templates/permissionTable.html.ftl" as permissionTable>
 <#import "templates/permissionCreator.html.ftl" as permissionCreator>
 <#import "templates/roleHandler.html.ftl" as roleHandler>
+<#import "templates/groupHandler.html.ftl" as groupHandler>
 <@layout.layout>
 <div class="container">
 	<div class="row">
@@ -21,6 +22,9 @@
                     <a class="nav-link" id="createPermission-tab" data-toggle="tab" href="#createPermission" role="tab" aria-controls="createPermission" aria-selected="false">Create Permission</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" id="groups-tab" data-toggle="tab" href="#groups" role="tab" aria-controls="groups" aria-selected="false">Groups</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link" id="roles-tab" data-toggle="tab" href="#roles" role="tab" aria-controls="roles" aria-selected="false">Roles</a>
                 </li>
             </ul>
@@ -30,6 +34,9 @@
                 </div>
                 <div class="tab-pane fade" id="createPermission" role="tabpanel" aria-labelledby="createPermission-tab">
                     <@permissionCreator.permissionCreator ownerId=c.owner.getId() permissionTemplateMap=c.permissionTemplateMap />
+                </div>
+                <div class="tab-pane fade" id="groups" role="tabpanel" aria-labelledby="groups-tab">
+                    <@groupHandler.groupHandler c=c adminPathBase="/admin/${ctx.staticUriElem.GROUPS_PATH_ELEMENT}" />
                 </div>
                 <div class="tab-pane fade" id="roles" role="tabpanel" aria-labelledby="roles-tab">
                     <@roleHandler.roleHandler c=c adminPathBase="/admin/${ctx.staticUriElem.USERS_PATH_ELEMENT}" />

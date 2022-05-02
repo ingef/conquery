@@ -254,6 +254,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               optional={optional}
               value={fieldProps.value as DragItemQuery}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
+              fieldName={field.name}
             />
           )}
         </ConnectedField>
@@ -273,6 +274,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               optional={optional}
               value={fieldProps.value as DragItemQuery[]}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
+              fieldName={field.name}
             />
           )}
         </ConnectedField>
@@ -321,7 +323,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
       );
     case "DATASET_SELECT":
       const datasetDefaultValue =
-        availableDatasets.length > 0 ? availableDatasets[0] : undefined;
+        availableDatasets.length > 0 ? availableDatasets[0] : null;
 
       return (
         <ConnectedField formField={field} control={control}>

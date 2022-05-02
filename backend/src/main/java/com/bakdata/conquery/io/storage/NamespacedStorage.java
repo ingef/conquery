@@ -109,8 +109,6 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 
 	}
 
-	protected abstract boolean isRegisterImports();
-
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
 		store
 				.onAdd(centralRegistry::register)
@@ -139,67 +137,47 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	}
 
 	private void decorateConceptStore(IdentifiableStore<Concept<?>> store) {
-		store
-				.onAdd(concept -> {
+		store.onAdd(concept -> {
 
-					if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get())) {
-						throw new IllegalStateException("Concept is not for this dataset.");
-					}
+				 if (concept.getDataset() != null && !concept.getDataset().equals(dataset.get())) {
+					 throw new IllegalStateException("Concept is not for this dataset.");
+				 }
 
-					concept.setDataset(dataset.get());
+				 concept.setDataset(dataset.get());
 
-					concept.initElements();
+				 concept.initElements();
 
-					concept.getSelects().forEach(centralRegistry::register);
-					for (Connector connector : concept.getConnectors()) {
-						centralRegistry.register(connector);
-						connector.collectAllFilters().forEach(centralRegistry::register);
-						connector.getSelects().forEach(centralRegistry::register);
-						connector.getValidityDates().forEach(centralRegistry::register);
-					}
-					//add imports of table
-					if (isRegisterImports()) {
-						for (Import imp : getAllImports()) {
-							for (Connector con : concept.getConnectors()) {
-								if (con.getTable().equals(imp.getTable())) {
-									con.addImport(imp);
-								}
-							}
-						}
-					}
+				 concept.getSelects().forEach(centralRegistry::register);
+				 for (Connector connector : concept.getConnectors()) {
+					 centralRegistry.register(connector);
+					 connector.collectAllFilters().forEach(centralRegistry::register);
+					 connector.getSelects().forEach(centralRegistry::register);
+					 connector.getValidityDates().forEach(centralRegistry::register);
+				 }
 
-					if (concept instanceof TreeConcept) {
-						((TreeConcept) concept).getAllChildren().values().forEach(centralRegistry::register);
-					}
-				})
-				.onRemove(concept -> {
-					concept.getSelects().forEach(centralRegistry::remove);
-					//see #146  remove from Dataset.concepts
-					for (Connector connector : concept.getConnectors()) {
-						connector.getSelects().forEach(centralRegistry::remove);
-						connector.collectAllFilters().forEach(centralRegistry::remove);
-						connector.getValidityDates().forEach(centralRegistry::remove);
-						centralRegistry.remove(connector);
-					}
 
-					if (concept instanceof TreeConcept) {
-						((TreeConcept) concept).getAllChildren().values().forEach(centralRegistry::remove);
-					}
-				});
+				 if (concept instanceof TreeConcept) {
+					 ((TreeConcept) concept).getAllChildren().values().forEach(centralRegistry::register);
+				 }
+			 })
+			 .onRemove(concept -> {
+				 concept.getSelects().forEach(centralRegistry::remove);
+				 //see #146  remove from Dataset.concepts
+				 for (Connector connector : concept.getConnectors()) {
+					 connector.getSelects().forEach(centralRegistry::remove);
+					 connector.collectAllFilters().forEach(centralRegistry::remove);
+					 connector.getValidityDates().forEach(centralRegistry::remove);
+					 centralRegistry.remove(connector);
+				 }
+
+				 if (concept instanceof TreeConcept) {
+					 ((TreeConcept) concept).getAllChildren().values().forEach(centralRegistry::remove);
+				 }
+			 });
 	}
 
 	private void decorateImportStore(IdentifiableStore<Import> store) {
-		store.onAdd(imp -> {
-			if (isRegisterImports()) {
-				for (Concept<?> c : getAllConcepts()) {
-					for (Connector con : c.getConnectors()) {
-						if (con.getTable().equals(imp.getTable())) {
-							con.addImport(imp);
-						}
-					}
-				}
-			}
-		});
+		// Intentionally left blank
 	}
 
 	public Dictionary getDictionary(DictionaryId id) {
@@ -292,7 +270,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 		concepts.remove(id);
 	}
 
-	public Collection<? extends Concept<?>> getAllConcepts() {
+	public Collection<Concept<?>> getAllConcepts() {
 		return concepts.getAll();
 	}
 

@@ -1,4 +1,5 @@
 import { exists } from "../../common/helpers/exists";
+import type { ProjectItemsFilterStateT } from "../../previous-queries/filter/reducer";
 import { FormConfigT } from "../../previous-queries/list/reducer";
 
 const configHasTag = (config: FormConfigT, searchTerm: string) => {
@@ -21,7 +22,10 @@ const configHasId = (config: FormConfigT, searchTerm: string) => {
   return config.id.toString() === searchTerm;
 };
 
-export const configHasFilterType = (config: FormConfigT, filter: string) => {
+export const configHasFilterType = (
+  config: FormConfigT,
+  filter: ProjectItemsFilterStateT,
+) => {
   if (filter === "all") return true;
 
   // Checks config.own, config.shared or config.system
@@ -59,7 +63,7 @@ export const configMatchesSearch = (
 export const selectFormConfigs = (
   formConfigs: FormConfigT[],
   searchTerm: string | null,
-  filter: string,
+  filter: ProjectItemsFilterStateT,
   folders: string[],
   noFoldersActive: boolean,
 ) => {

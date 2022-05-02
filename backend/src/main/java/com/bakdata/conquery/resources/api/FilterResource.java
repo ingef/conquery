@@ -17,7 +17,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HFilters;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -38,20 +38,20 @@ public class FilterResource extends HFilters {
 	@POST
 	@Path("resolve")
 	public ResolvedConceptsResult resolveFilterValues(FilterValues filterValues) {
-		return processor.resolveFilterValues((AbstractSelectFilter<?>) filter, filterValues.getValues());
+		return processor.resolveFilterValues((SelectFilter<?>) filter, filterValues.getValues());
 	}
 
 	@POST
 	@Path("autocomplete")
 	public ConceptsProcessor.AutoCompleteResult autocompleteTextFilter(@Valid FilterResource.AutocompleteRequest request) {
 
-		if (!(filter instanceof AbstractSelectFilter)) {
+		if (!(filter instanceof SelectFilter)) {
 			throw new WebApplicationException(filter.getId() + " is not a SELECT filter, but " + filter.getClass().getSimpleName() + ".", Status.BAD_REQUEST);
 		}
 
 
 		try {
-			return processor.autocompleteTextFilter((AbstractSelectFilter<?>) filter, request.getText(), request.getPage(), request.getPageSize());
+			return processor.autocompleteTextFilter((SelectFilter<?>) filter, request.getText(), request.getPage(), request.getPageSize());
 		}catch (IllegalArgumentException e) {
 			throw new BadRequestException(e);
 		}

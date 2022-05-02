@@ -103,7 +103,7 @@ public class FormTest extends ConqueryTestSpec {
 
 	@Override
 	public void executeTest(StandaloneSupport support) throws Exception {
-		DatasetRegistry namespaces = support.getNamespace().getNamespaces();
+		DatasetRegistry namespaces = support.getDatasetRegistry();
 
 		assertThat(support.getValidator().validate(form))
 				.describedAs("Form Validation Errors")

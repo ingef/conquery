@@ -8,9 +8,6 @@ import { useActiveLang } from "../localization/useActiveLang";
 import { ConceptListField, Form, GeneralField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
-export const selectFormContextState = (state: StateT, formType: string) =>
-  state.externalForms ? state.externalForms.formsContext[formType] : null;
-
 export const selectAvailableForms = (state: StateT) =>
   state.externalForms ? state.externalForms.availableForms : {};
 
@@ -22,15 +19,6 @@ export const selectFormConfig = (state: StateT): Form | null => {
   const activeFormType = selectActiveFormType(state);
 
   return (activeFormType && availableForms[activeFormType]) || null;
-};
-
-export const useSelectActiveFormName = (): string => {
-  const formConfig = useSelector<StateT, Form | null>((state) =>
-    selectFormConfig(state),
-  );
-  const activeLang = useActiveLang();
-
-  return (formConfig && formConfig.title[activeLang]) || "";
 };
 
 export const selectQueryRunner = (state: StateT) =>

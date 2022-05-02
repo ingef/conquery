@@ -2,23 +2,101 @@ package com.bakdata.conquery.util.search;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
 @Slf4j
 class QuickSearchTest {
+
 	@Test
-	public void listItems() {
-		final QuickSearch<Integer> quickSearch = new QuickSearch<>();
+	public void pants() {
+		final TrieSearch<String> search = new TrieSearch<>(2, "");
+		for (String item : List.of("Pants", "Pantshop", "Sweatpants", "PantsPants")) {
+			search.addItem(item, List.of(item));
+		}
 
-		quickSearch.addItem(0, "b");
-		quickSearch.addItem(1, "c");
-		quickSearch.addItem(2, "a");
+		search.shrinkToFit();
 
-		assertThat(quickSearch.listItems())
-				.containsExactly(0, 1, 2);
+		final List<String> results = search.findItems(List.of("pants"), Integer.MAX_VALUE);
 
+		assertThat(results).isEqualTo(List.of("Pants", "PantsPants", "Pantshop", "Sweatpants"));
 
 	}
 
+
+	private static TrieSearch<String> setup() {
+		final TrieSearch<String> search = new TrieSearch<>(2, "");
+		search.clear();
+
+		List<String> items = List.of(
+				"a",
+				"aa",
+				"aaa",
+				"aab",
+				"b",
+				"c",
+				"c aa",
+				"d baaacd"
+		);
+
+		for (String item : items) {
+			search.addItem(item, List.of(item));
+		}
+		return search;
+	}
+
+
+	@Test
+	public void searchOrder() {
+
+		final TrieSearch<String> search = setup();
+
+		// The more hits an item has, the more do we favor it.
+
+		assertThat(search.findItems(List.of("aa", "c"), Integer.MAX_VALUE))
+				.containsExactly(
+						"c aa",        // Two exact matches
+						"aa",        // One exact match
+						"c",        // One exact match
+						"aaa",        // One prefix match, onto a whole word
+						"aab",        // One prefix match, onto a whole word
+						"d baaacd"    // Two partial matches
+				);
+
+		// However negative matches are not considered (ie "c" is not used to weigh against "c aa")
+		assertThat(search.findItems(List.of("aa"), 4)).containsExactly("aa", "c aa", "aaa", "aab");
+	}
+
+	@Test
+	public void searchIdentities() {
+		final TrieSearch<String> search = setup();
+
+
+		// Exact matches should be first
+		assertThat(search.findItems(List.of("a"), 1)).containsExactly("a");
+		assertThat(search.findItems(List.of("aa"), 1)).containsExactly("aa");
+		assertThat(search.findItems(List.of("acd"), 1)).containsExactly("d baaacd");
+
+	}
+
+	@Test
+	public void testSuffixes() {
+		final TrieSearch<String> search = new TrieSearch<>(2, null);
+
+		assertThat(search.suffixes("baaacd"))
+				.containsExactly(
+						"baaacd!",
+						"aaacd",
+						"aacd",
+						"acd"
+				);
+
+		assertThat(search.suffixes("acd"))
+				.containsExactly("acd!");
+
+		assertThat(search.suffixes("aacd"))
+				.containsExactly("aacd!", "acd");
+	}
 }

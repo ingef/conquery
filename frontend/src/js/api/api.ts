@@ -7,7 +7,6 @@ import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker"
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
-import { transformFormQueryToApi } from "./apiExternalFormsHelper";
 import { transformQueryToApi } from "./apiHelper";
 import type {
   DatasetIdT,
@@ -88,19 +87,20 @@ export const usePostQueries = () => {
     });
 };
 
+export interface FormQueryPostPayload {
+  type: string;
+  values: any;
+  [fieldName: string]: unknown;
+}
 // Same signature as postQueries, plus a form query transformator
 export const usePostFormQueries = () => {
   const api = useApi<PostQueriesResponseT>();
 
-  return (
-    datasetId: DatasetIdT,
-    query: { form: any; formName: string },
-    { formQueryTransformation }: { formQueryTransformation: Function },
-  ) =>
+  return (datasetId: DatasetIdT, query: FormQueryPostPayload) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries`),
       method: "POST",
-      data: transformFormQueryToApi(query, formQueryTransformation), // Into backend-compatible format
+      data: query,
     });
 };
 
@@ -254,6 +254,9 @@ export const usePostLogin = () => {
     });
 };
 
+// This endpoint exists, but it's not used anymore,
+// since form configs are auto-saved when starting a form query.
+// TODO: remove if not needed after a while
 export const usePostFormConfig = () => {
   const api = useApi<PostFormConfigsResponseT>();
 

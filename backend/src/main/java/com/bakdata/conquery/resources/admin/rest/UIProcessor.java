@@ -55,8 +55,8 @@ public class UIProcessor {
 		Collection<FEAuthOverview.OverviewRow> overview = new TreeSet<>();
 		for (User user : getStorage().getAllUsers()) {
 			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, getStorage());
-			List<Role> effectiveRoles = user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toList());
-			userGroups.forEach(g -> effectiveRoles.addAll(g.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toList())));
+			Set<Role> effectiveRoles = user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toSet());
+			userGroups.forEach(g -> effectiveRoles.addAll(g.getRoles().stream().map(getStorage()::getRole).sorted().collect(Collectors.toList())));
 			overview.add(FEAuthOverview.OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
 		}
 
@@ -96,12 +96,15 @@ public class UIProcessor {
 
 	public List<User> getUsers(Role role) {
 		Collection<User> user = getStorage().getAllUsers();
-		return user.stream().filter(u -> u.getRoles().contains(role.getId())).collect(Collectors.toList());
+		return user.stream().filter(u -> u.getRoles().contains(role.getId())).sorted().collect(Collectors.toList());
 	}
 
 	private List<Group> getGroups(Role role) {
 		Collection<Group> groups = getStorage().getAllGroups();
-		return groups.stream().filter(g -> g.getRoles().contains(role.getId())).collect(Collectors.toList());
+		return groups.stream()
+					 .filter(g -> g.getRoles().contains(role.getId()))
+					 .sorted()
+					 .collect(Collectors.toList());
 	}
 
 	private SortedSet<FEPermission> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
@@ -114,9 +117,14 @@ public class UIProcessor {
 	}
 
 	public FEUserContent getUserContent(User user) {
+		final Collection<Group> availableGroups = new ArrayList<>(getStorage().getAllGroups());
+		availableGroups.removeIf(g -> g.containsMember(user));
+
 		return FEUserContent
 				.builder()
 				.owner(user)
+				.groups(AuthorizationHelper.getGroupsOf(user, getStorage()))
+				.availableGroups(availableGroups)
 				.roles(user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toList()))
 				.availableRoles(getStorage().getAllRoles())
 				.permissions(wrapInFEPermission(user.getPermissions()))
