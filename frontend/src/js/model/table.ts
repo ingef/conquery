@@ -115,6 +115,6 @@ export const tableWithDefaults =
     } as TableWithFilterValueT);
 
 export const resetTables = (
-  tables?: TableT[] | TableWithFilterValueT[],
+  tables: TableT[] | TableWithFilterValueT[],
   config: NodeResetConfig = {},
-) => (tables ? tables.map(tableWithDefaults(config)) : []);
+) => tables.map(tableWithDefaults(config));
