@@ -83,11 +83,13 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 			do {
 				all.get(1, TimeUnit.MINUTES);
 
+				// Count unfinished matching stats jobs.
 				if (log.isDebugEnabled()) {
 					final long unfinished = subJobs.values().stream().filter(Predicate.not(CompletableFuture::isDone)).count();
 					log.debug("{} still waiting for {} tasks", worker.getInfo().getDataset(), unfinished);
 				}
 
+				// When trace, also log the unfinished jobs.
 				if (log.isTraceEnabled()) {
 					subJobs.forEach((concept, future) -> {
 						if (future.isDone()) {
