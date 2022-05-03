@@ -42,6 +42,7 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.primitives.Ints;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -72,14 +73,15 @@ public class ConceptsProcessor {
 
 	@RequiredArgsConstructor
 	@ToString
-	private static class Cursor<T> {
+	/*package*/ static class Cursor<T> {
 		private final Iterator<T> provider;
 		private final List<T> past = new ArrayList<>();
 
 		private void take(final int n) {
 			int taken = 0;
-			while (taken++ < n && provider.hasNext()) {
+			while (taken < n && provider.hasNext()) {
 				past.add(provider.next());
+				taken++;
 			}
 		}
 
@@ -88,16 +90,19 @@ public class ConceptsProcessor {
 		}
 
 		public List<T> get(int from, int to) {
-			if (to > currentSize()) {
-				take(to - currentSize());
+			// Being inclusive in the API is easier to read
+			int end = Ints.saturatedCast((long) to + 1L);
+
+			if (end > currentSize()) {
+				take(end - currentSize());
 			}
 
 			// We have exceeded the data
-			if (from > currentSize()){
+			if (from > currentSize()) {
 				return Collections.emptyList();
 			}
 
-			return past.subList(from, Math.min(to, currentSize()));
+			return past.subList(from, Math.min(end, currentSize()));
 		}
 	}
 
