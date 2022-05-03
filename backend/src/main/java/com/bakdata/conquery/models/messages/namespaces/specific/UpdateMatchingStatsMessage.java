@@ -117,6 +117,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 
 
 		private void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
+			log.debug("BEGIN calculating for `{}`", concept.getId());
 
 			for (CBlock cBlock : worker.getStorage().getAllCBlocks()) {
 
@@ -166,6 +167,8 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 			}
 
 			getProgressReporter().report(1);
+
+			log.trace("DONE calculating for `{}`", concept.getId());
 		}
 
 	}
