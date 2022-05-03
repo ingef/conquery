@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.google.common.collect.ImmutableList;
 import com.univocity.parsers.csv.CsvParser;
+import io.dropwizard.util.Strings;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
@@ -89,6 +90,7 @@ public class FilterSearch {
 
 	/**
 	 * For a {@link SelectFilter}, decide which references to use for searching.
+	 *
 	 * @implSpec the order defines the precedence in the output.
 	 */
 	private static List<String> getSearchReferences(SelectFilter<?> filter) {
@@ -222,6 +224,7 @@ public class FilterSearch {
 
 	private static Stream<FEValue> fromTemplate(FilterTemplate template, CSVConfig parserConfig) {
 		final CsvParser parser = parserConfig.createParser();
+
 		// It is likely that multiple Filters reference the same file+config. However we want to ensure it is read only once to avoid wasting computation.
 		// We use Streams below to ensure a completely transparent lazy execution of parsing reference files
 		return Stream.of(new File(template.getFilePath()))
@@ -229,25 +232,21 @@ public class FilterSearch {
 					 // Univocity parser does not support streams, so we create one manually using their spliterator.
 					 .flatMap(iter -> StreamSupport.stream(iter.spliterator(), false))
 					 .map(row -> {
-						 final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
+						 // StringSubstitutor will coalesce null values to the raw template string which isn't nice looking.
+						 final StringSubstitutor substitutor =
+								 new StringSubstitutor(key -> Strings.nullToEmpty(row.getString(key)), "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
-						 substitutor.setEnableUndefinedVariableException(true);
 						 final String rowId = row.getString(template.getColumnValue());
 
 						 if (rowId == null) {
+							 log.warn("No id for row `{}` for `{}`", row, template);
 							 return null;
 						 }
 
-						 try {
-							 final String label = substitutor.replace(template.getValue());
-							 final String optionValue = substitutor.replace(template.getOptionValue());
+						 final String label = substitutor.replace(template.getValue());
+						 final String optionValue = substitutor.replace(template.getOptionValue());
 
-							 return new FEValue(rowId, label, optionValue);
-						 }
-						 catch (IllegalArgumentException exception) {
-							 log.warn("Missing template values for line `{}`", rowId, (Exception) (log.isTraceEnabled() ? exception : null));
-							 return new FEValue(rowId, rowId, rowId);
-						 }
+						 return new FEValue(rowId, label, optionValue);
 					 })
 					 .filter(Objects::nonNull)
 					 .distinct();
@@ -262,7 +261,7 @@ public class FilterSearch {
 				continue;
 			}
 
-			final String reference = Integer.toString(filter.getTemplate().hashCode());
+			final String reference = filter.getTemplate().toString();
 
 			if (suppliers.containsKey(reference)) {
 				continue;
