@@ -233,4 +233,9 @@ public class TrieSearch<T extends Comparable<T>> {
 		log.info("Stats=`{}`, with {} singletons.", statistics, singletons);
 	}
 
+	public Stream<T> stream() {
+		return trie.values().stream()
+				   .flatMap(Collection::stream)
+				   .distinct();
+	}
 }
