@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,5 +25,7 @@ class FEValueTest {
 		assertThat(filter.add(secondA)).isFalse();
 
 		assertThat(filter.add(similarA)).isTrue();
+
+		assertThat(Stream.of(firstA, secondA, similarA).distinct()).containsExactly(firstA, similarA);
 	}
 }
