@@ -92,17 +92,22 @@ public class ConceptsProcessor {
 				take(to - currentSize());
 			}
 
-			return past.subList(from, to);
+			// We have exceeded the data
+			if (from > currentSize()){
+				return Collections.emptyList();
+			}
+
+			return past.subList(from, Math.min(to, currentSize()));
 		}
 	}
 
-	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchCache =
+	private final LoadingCache<Pair<SelectFilter<?>, String>, Cursor<FEValue>> searchCache =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.build(new CacheLoader<>() {
 
 							@Override
-							public List<FEValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
+							public Cursor<FEValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
 								String searchTerm = filterAndSearch.getValue();
 								SelectFilter<?> filter = filterAndSearch.getKey();
 
@@ -111,13 +116,9 @@ public class ConceptsProcessor {
 								if (Strings.isNullOrEmpty(searchTerm)) {
 									return listAllValues(filter);
 								}
-
-								final List<FEValue> result = autocompleteTextFilter(filter, searchTerm);
-
-
-								log.debug("Got {} results for {}", result.size(), filterAndSearch);
-
-								return result;
+								else {
+									return autocompleteTextFilter(filter, searchTerm);
+								}
 							}
 
 						});
@@ -200,14 +201,14 @@ public class ConceptsProcessor {
 		try {
 			log.trace("Searching for for the term `{}`. (Page = {}, Items = {})", text, pageNumber, itemsPerPage);
 
-			List<FEValue> fullResult = searchCache.get(Pair.of(filter, text));
+			Cursor<FEValue> fullResult = searchCache.get(Pair.of(filter, text));
 
-			int startIncl = Math.min(itemsPerPage * pageNumber, fullResult.size());
-			int endExcl = Math.min(startIncl + itemsPerPage, fullResult.size());
+			int startIncl = itemsPerPage * pageNumber;
+			int endExcl = startIncl + itemsPerPage;
 
 			log.trace("Preparing subresult for search term `{}` in the index range [{}-{})", text, startIncl, endExcl);
 
-			return new AutoCompleteResult(fullResult.subList(startIncl, endExcl), fullResult.size());
+			return new AutoCompleteResult(fullResult.get(startIncl, endExcl), Integer.MAX_VALUE); //TODO how to estimate max?
 		}
 		catch (ExecutionException e) {
 			log.warn("Failed to search for \"{}\".", text, (Throwable) (log.isTraceEnabled() ? e : null));
@@ -216,44 +217,40 @@ public class ConceptsProcessor {
 	}
 
 
-	private List<FEValue> listAllValues(SelectFilter<?> filter) {
+	private Cursor<FEValue> listAllValues(SelectFilter<?> filter) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
-		List<FEValue> out = new ArrayList<>();
 
-		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
-			out.addAll(search.listItems());
-		}
-
-		return out;
+		return new Cursor<FEValue>(namespace.getFilterSearch()
+											.getSearchesFor(filter).stream()
+											.flatMap(TrieSearch::stream)
+											.distinct()
+											.iterator());
 	}
 
 	/**
 	 * Autocompletion for search terms. For values of {@link SelectFilter <?>}.
 	 * Is used by the serach cache to load missing items
 	 */
-	private List<FEValue> autocompleteTextFilter(SelectFilter<?> filter, String text) {
+	private Cursor<FEValue> autocompleteTextFilter(SelectFilter<?> filter, String text) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
-
-		List<FEValue> out = new ArrayList<>();
-
-		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
-
-			List<FEValue> result = createSourceSearchResult(
-					search,
-					Collections.singletonList(text),
-					OptionalInt.empty()
-			);
-
-			out.addAll(result);
-		}
 
 		// Note that FEValues is equals/hashcode only on value:
 		// The different sources might contain duplicate FEValue#values which we want to avoid as
 		// they are already sorted in terms of information weight by getSearchesFor
-		return out.stream()
-				  .distinct()
-				  .collect(Collectors.toList());
+
+		// Also note: currently we are still issuing large search requests, but much smaller allocations at once, and querying only when the past is not sufficient
+		return new Cursor<>(
+				namespace.getFilterSearch().getSearchesFor(filter).stream()
+						 .map(search -> createSourceSearchResult(
+								 search,
+								 Collections.singletonList(text),
+								 OptionalInt.empty()
+						 ))
+						 .flatMap(Collection::stream)
+						 .distinct().iterator());
+
+
 	}
 
 	/**
