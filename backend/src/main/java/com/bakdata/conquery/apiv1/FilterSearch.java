@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.univocity.parsers.csv.CsvParser;
 import io.dropwizard.util.Strings;
 import lombok.Value;
@@ -188,7 +189,7 @@ public class FilterSearch {
 
 
 			while (!service.awaitTermination(30, TimeUnit.SECONDS)) {
-				log.trace("Still waiting for {} to finish.", suppliers.size() - searchCache.size());
+				log.trace("Still waiting for {} to finish.", Sets.difference(synchronizedResult.keySet(), suppliers.keySet());
 			}
 
 			log.debug("DONE loading SourceSearch");
