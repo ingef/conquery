@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -81,26 +82,28 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 			final CompletableFuture<Void> all = CompletableFuture.allOf(subJobs.values().toArray(CompletableFuture[]::new));
 
 			do {
-				all.get(1, TimeUnit.MINUTES);
-
-				// Count unfinished matching stats jobs.
-				if (log.isDebugEnabled()) {
-					final long unfinished = subJobs.values().stream().filter(Predicate.not(CompletableFuture::isDone)).count();
-					log.debug("{} still waiting for {} tasks", worker.getInfo().getDataset(), unfinished);
+				try {
+					all.get(1, TimeUnit.MINUTES);
 				}
+				catch (TimeoutException exception) {
+					// Count unfinished matching stats jobs.
+					if (log.isDebugEnabled()) {
+						final long unfinished = subJobs.values().stream().filter(Predicate.not(CompletableFuture::isDone)).count();
+						log.debug("{} still waiting for {} tasks", worker.getInfo().getDataset(), unfinished);
+					}
 
-				// When trace, also log the unfinished jobs.
-				if (log.isTraceEnabled()) {
-					subJobs.forEach((concept, future) -> {
-						if (future.isDone()) {
-							return;
-						}
+					// When trace, also log the unfinished jobs.
+					if (log.isTraceEnabled()) {
+						subJobs.forEach((concept, future) -> {
+							if (future.isDone()) {
+								return;
+							}
 
-						log.trace("Still waiting for `{}`", concept.getId());
+							log.trace("Still waiting for `{}`", concept.getId());
 
-					});
+						});
+					}
 				}
-
 			} while (!all.isDone());
 
 			log.debug("All threads are done.");
