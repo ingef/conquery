@@ -189,7 +189,7 @@ public class FilterSearch {
 
 
 			while (!service.awaitTermination(30, TimeUnit.SECONDS)) {
-				log.trace("Still waiting for {} to finish.", Sets.difference(synchronizedResult.keySet(), suppliers.keySet());
+				log.trace("Still waiting for {} to finish.", Sets.difference(synchronizedResult.keySet(), suppliers.keySet()));
 			}
 
 			log.debug("DONE loading SourceSearch");
