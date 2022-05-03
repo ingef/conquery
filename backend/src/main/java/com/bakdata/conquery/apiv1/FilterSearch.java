@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -89,6 +90,7 @@ public class FilterSearch {
 
 	/**
 	 * For a {@link SelectFilter}, decide which references to use for searching.
+	 *
 	 * @implSpec the order defines the precedence in the output.
 	 */
 	private static List<String> getSearchReferences(SelectFilter<?> filter) {
@@ -186,8 +188,8 @@ public class FilterSearch {
 			service.shutdown();
 
 
-			while (!service.awaitTermination(30, TimeUnit.SECONDS)) {
-				log.trace("Still waiting for {} to finish.", suppliers.size() - searchCache.size());
+			while (!service.awaitTermination(1, TimeUnit.MINUTES)) {
+				log.trace("Still waiting for {} to finish.", Sets.difference(synchronizedResult.keySet(), suppliers.keySet()));
 			}
 
 			log.debug("DONE loading SourceSearch");
