@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -57,6 +58,7 @@ public class ConceptsProcessor {
 
 	private final DatasetRegistry namespaces;
 
+
 	private final LoadingCache<Concept<?>, FEList> nodeCache =
 			CacheBuilder.newBuilder()
 						.softValues()
@@ -67,6 +69,32 @@ public class ConceptsProcessor {
 								return FrontEndConceptBuilder.createTreeMap(concept);
 							}
 						});
+
+	@RequiredArgsConstructor
+	@ToString
+	private static class Cursor<T> {
+		private final Iterator<T> provider;
+		private final List<T> past = new ArrayList<>();
+
+		private void take(final int n) {
+			int taken = 0;
+			while (taken++ < n && provider.hasNext()) {
+				past.add(provider.next());
+			}
+		}
+
+		private int currentSize() {
+			return past.size();
+		}
+
+		public List<T> get(int from, int to) {
+			if (to > currentSize()) {
+				take(to - currentSize());
+			}
+
+			return past.subList(from, to);
+		}
+	}
 
 	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchCache =
 			CacheBuilder.newBuilder()
