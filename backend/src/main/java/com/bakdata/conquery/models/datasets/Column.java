@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -48,9 +47,9 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	private Table table;
 	@NotNull
 	private MajorTypeId type;
-	@JsonProperty
+
 	private int minSuffixLength = 3;
-	private boolean generateSuffixes = true;
+	private boolean generateSuffixes;
 
 	@JsonIgnore
 	@Getter(lazy = true)

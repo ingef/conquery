@@ -9,18 +9,21 @@ import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.univocity.parsers.csv.CsvParser;
 import io.dropwizard.util.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
 @EqualsAndHashCode
 @JsonIgnoreProperties({"columns"})
 @ToString
@@ -46,7 +49,6 @@ public class FilterTemplate implements Searchable {
 	 * More detailed value. Displayed when value is selected.
 	 */
 	private String optionValue;
-
 
 	private int minSuffixLength = 3;
 	private boolean generateSuffixes = true;

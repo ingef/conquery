@@ -25,6 +25,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -256,6 +257,10 @@ public class SerializationTests {
 		registry.register(column);
 
 		final Validator validator = Validators.newValidator();
+
+		registry.injectInto(Jackson.MAPPER)
+				.readerFor(Table.class)
+				.readValue("{\"name\" : \"table\", \"columns\" : [{\"name\" : \"column\", \"type\" : \"STRING\"}]}");
 
 		SerializationTestUtil
 				.forType(Table.class)

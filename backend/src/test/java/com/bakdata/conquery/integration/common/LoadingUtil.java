@@ -113,13 +113,14 @@ public class LoadingUtil {
 	}
 
 	private static void uploadTable(StandaloneSupport support, Table table) {
-		support.getDatasetsProcessor().addTable(table, support.getNamespace());
 		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addTable")
 									   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId()));
 
 		final Response response = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(table));
 
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+		assertThat(response.getStatusInfo().getFamily())
+				.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+				.isEqualTo(Response.Status.Family.SUCCESSFUL);
 	}
 
 	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws Exception {

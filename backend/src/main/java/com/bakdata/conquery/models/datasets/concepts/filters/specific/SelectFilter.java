@@ -19,13 +19,13 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Setter
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Slf4j
 @JsonIgnoreProperties({"searchType"})
 public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements Searchable {
